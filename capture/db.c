@@ -257,9 +257,15 @@ void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char 
     }
 }
 /******************************************************************************/
+LOCAL void moloch_db_send_bulk_cb(int code, unsigned char *data, int data_len, gpointer UNUSED(uw))
+{
+    if (code != 200)
+        LOG("Bulk issue.  Code: %d\n%.*s", code, data_len, data);
+}
+/******************************************************************************/
 LOCAL void moloch_db_send_bulk(char *json, int len)
 {
-    moloch_http_send(esServer, "POST", "/_bulk", 6, json, len, NULL, FALSE, NULL, NULL);
+    moloch_http_send(esServer, "POST", "/_bulk", 6, json, len, NULL, FALSE, moloch_db_send_bulk_cb, NULL);
 }
 LOCAL MolochDbSendBulkFunc sendBulkFunc = moloch_db_send_bulk;
 /******************************************************************************/
