@@ -167,9 +167,38 @@ exports.search = function (index, type, query, options, cb) {
     cb = options;
     options = undefined;
   }
-  var params = {index: fixIndex(index), type: type, body: query, rest_total_hits_as_int: true};
+
+  let params = {
+    index: fixIndex(index),
+    type: type,
+    body: query, rest_total_hits_as_int: true
+  };
+
   exports.merge(params, options);
+
   return internals.elasticSearchClient.search(params, cb);
+};
+
+// TODO ECR
+exports.cancelByOpaqueId = function(cancelId, cb) {
+  internals.elasticSearchClient.tasks.list({detailed: "true", group_by: "parents"})
+    .then((results) => {
+      for (let resultKey in results) {
+        let result = results[resultKey];
+        if (result.headers &&
+          result.headers['X-Opaque-Id'] &&
+          result.headers['X-Opaque-Id'] === cancelId) {
+          return internals.elasticSearchClient.tasks.cancel(
+            { taskId: result.id }, cb
+          );
+        }
+      }
+      // not found, return error
+      return cb('cancel id not found, cannot cancel es task');
+    })
+    .catch((error) => {
+      return cb(error);
+    });
 };
 
 function searchScrollInternal(index, type, query, options, cb) {
@@ -239,13 +268,20 @@ exports.searchScroll = function (index, type, query, options, cb) {
 };
 
 exports.searchPrimary = function (index, type, query, options, cb) {
+  // ALW - FIXME - 6.1+ has removed primary_first :(
+  let params = { preference: 'primaries', ignore_unavailable: 'true' };
+
+  if (options && options.cancelId) {
+    // set X-Opaque-Id header on the params so the task can be canceled
+    console.log('search and add cancel id', options.cancelId);
+    params.headers = { 'X-Opaque-Id': options.cancelId };
+  }
+
   if (!cb) {
     cb = options;
     options = undefined;
   }
 
-  // ALW - FIXME - 6.1+ has removed primary_first :(
-  var params = {preference: "primaries", ignore_unavailable: "true"};
   exports.merge(params, options);
   return exports.searchScroll(index, type, query, params, cb);
 };

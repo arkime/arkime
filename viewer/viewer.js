@@ -4219,9 +4219,29 @@ app.use('/buildQuery.json', logAction('query'), noCacheJson, function(req, res, 
   });
 });
 
+// TODO ECR move this elsewhere, maybe internals?
+let cancelId;
 app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson, function (req, res) {
   var graph = {};
   var map = {};
+
+  // TODO ECR
+  cancelId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  console.log('created cancel id:', cancelId); // TODO ECR remove
+  const options = { cancelId: cancelId };
+
+  req.on('close', (err) => {
+    console.log('Request canceled!!!!!!!!!!', cancelId); // TODO ECR remove
+    if (cancelId) {
+      Db.cancelByOpaqueId(cancelId, (err, result) => {
+        console.log('cancel sessions.json search task', cancelId); // TODO ECR remove
+        cancelId = undefined;
+        // TODO ECR or success true since search was canceled successfully?
+        return res.send(JSON.stringify({success: false, text: 'Search canceled'}));
+      });
+    }
+  });
+
   buildSessionQuery(req, function (bsqErr, query, indices) {
     if (bsqErr) {
       const r = {
@@ -4233,21 +4253,27 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
         health: Db.healthCache(),
         data:[]
       };
-      res.send(r);
-      return;
+      return res.send(r);
     }
 
     let addMissing = false;
     if (req.query.fields) {
       query._source = queryValueToArray(req.query.fields);
-      ["node", "srcIp", "srcPort", "dstIp", "dstPort"].forEach(function(item) {
+      ['node', 'srcIp', 'srcPort', 'dstIp', 'dstPort'].forEach((item) => {
         if (query._source.indexOf(item) === -1) {
           query._source.push(item);
         }
       });
     } else {
       addMissing = true;
-      query._source = ["ipProtocol", "rootId", "totDataBytes", "srcDataBytes", "dstDataBytes", "firstPacket", "lastPacket", "srcIp", "srcPort", "dstIp", "dstPort", "totPackets", "srcPackets", "dstPackets", "totBytes", "srcBytes", "dstBytes", "node", "http.uri", "srcGEO", "dstGEO", "email.subject", "email.src", "email.dst", "email.filename", "dns.host", "cert", "irc.channel", "http.xffGEO"];
+      query._source = [
+        'ipProtocol', 'rootId', 'totDataBytes', 'srcDataBytes',
+        'dstDataBytes', 'firstPacket', 'lastPacket', 'srcIp', 'srcPort',
+        'dstIp', 'dstPort', 'totPackets', 'srcPackets', 'dstPackets',
+        'totBytes', 'srcBytes', 'dstBytes', 'node', 'http.uri', 'srcGEO',
+        'dstGEO', 'email.subject', 'email.src', 'email.dst', 'email.filename',
+        'dns.host', 'cert', 'irc.channel', 'http.xffGEO'
+      ];
     }
 
     if (query.aggregations && query.aggregations.dbHisto) {
@@ -4258,12 +4284,14 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
       console.log(`sessions.json ${indices} query`, JSON.stringify(query, null, 1));
     }
 
-    Promise.all([Db.searchPrimary(indices, 'session', query),
+    Promise.all([Db.searchPrimary(indices, 'session', query, options),
                  Db.numberOfDocuments('sessions2-*'),
                  Db.healthCachePromise()
     ]).then(([sessions, total, health]) => {
+      cancelId = undefined; // unset cancelId
+
       if (Config.debug) {
-        console.log("sessions.json result", util.inspect(sessions, false, 50));
+        console.log('sessions.json result', util.inspect(sessions, false, 50));
       }
 
       if (sessions.error) { throw sessions.err; }
@@ -4285,7 +4313,7 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
         }
 
         if (addMissing) {
-          ["srcPackets", "dstPackets", "srcBytes", "dstBytes", "srcDataBytes", "dstDataBytes"].forEach(function(item) {
+          ['srcPackets', 'dstPackets', 'srcBytes', 'dstBytes', 'srcDataBytes', 'dstDataBytes'].forEach(function(item) {
             if (fields[item] === undefined) {
               fields[item] = -1;
             }
@@ -4299,24 +4327,22 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
           });
         }
       }, function () {
-
-        setTimeout(() => { // TODO ECR REMOVE
-          var r = {recordsTotal: total.count,
-                   recordsFiltered: (results?results.total:0),
-                   graph: graph,
-                   health: health,
-                   map: map,
-                   data: (results?results.results:[])};
-          res.logCounts(r.data.length, r.recordsFiltered, r.recordsTotal);
-          try {
-            res.send(r);
-          } catch (c) {
-          }
-        }, 5000);
-
+        setTimeout(() => {
+        var r = {recordsTotal: total.count,
+                 recordsFiltered: (results?results.total:0),
+                 graph: graph,
+                 health: health,
+                 map: map,
+                 data: (results?results.results:[])};
+        res.logCounts(r.data.length, r.recordsFiltered, r.recordsTotal);
+        try {
+          res.send(r);
+        } catch (c) {
+        }
+      }, 1000);
       });
     }).catch ((err) => {
-      console.log("ERROR - /sessions.json error", err);
+      console.log('ERROR - /sessions.json error', err);
       var r = {recordsTotal: 0,
                recordsFiltered: 0,
                graph: {},

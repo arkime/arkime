@@ -648,7 +648,7 @@ export default {
         this.loading = false;
         if (!this.sessions.data) {
           // show a page error if there is no data on the page
-          this.error = 'Request cancelled';
+          this.error = 'You canceled the search';
         }
       }
     },
@@ -1213,6 +1213,8 @@ export default {
      * @param {bool} updateTable Whether the table needs updating
      */
     loadData: function (updateTable) {
+      this.cancelPendingQuery(); // cancel pending query if it exists
+
       this.loading = true;
       this.error = '';
 
@@ -1268,6 +1270,7 @@ export default {
       pendingPromise = { cancellablePromise, source };
 
       cancellablePromise.then((response) => {
+        pendingPromise = null;
         this.stickySessions = []; // clear sticky sessions
         this.error = '';
         this.loading = false;
@@ -1296,6 +1299,7 @@ export default {
         // initialize sortable table
         if (!colDragDropInitialized) { this.initializeColDragDrop(); }
       }).catch((error) => {
+        pendingPromise = null;
         this.sessions.data = undefined;
         this.error = error.text || error;
         this.loading = false;

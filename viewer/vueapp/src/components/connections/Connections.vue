@@ -261,7 +261,8 @@
 
       <!-- loading overlay -->
       <moloch-loading
-        v-if="loading && !error">
+        v-if="loading && !error"
+        :cancel="cancelPendingQuery">
       </moloch-loading> <!-- /loading overlay -->
 
       <!-- page error -->
@@ -386,6 +387,7 @@ import MolochNoResults from '../utils/NoResults';
 import MolochFieldTypeahead from '../utils/FieldTypeahead';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
+import ConnectionsService from './ConnectionsService';
 // import external
 import Vue from 'vue';
 import * as d3 from 'd3';
@@ -407,6 +409,7 @@ let nodeScaleFactor = 0;
 let maxLog = Math.ceil(Math.pow(Math.E, 9));
 /* eslint-disable no-useless-escape */
 let idRegex = /[\[\]:. ]/g;
+let pendingPromise; // save a pending promise to be able to cancel it
 
 // drag helpers
 function dragstarted (d) {
@@ -606,6 +609,18 @@ export default {
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
+    /* Cancels the pending session query (if it's still pending) */
+    cancelPendingQuery: function () {
+      if (pendingPromise) {
+        pendingPromise.source.cancel();
+        pendingPromise = null;
+        this.loading = false;
+        if (!this.fields.length) {
+          // show a page error if there is no data on the page
+          this.error = 'You canceled the search';
+        }
+      }
+    },
     changeLength: function () {
       this.$router.push({
         query: {
@@ -711,6 +726,8 @@ export default {
     },
     /* helper functions ---------------------------------------------------- */
     loadData: function () {
+      this.cancelPendingQuery(); // cancel pending query if it exists
+
       this.error = '';
       this.loading = true;
 
@@ -731,17 +748,24 @@ export default {
       }
       this.query.fields = fields.join(',');
 
-      this.$http.get('connections.json', { params: this.query })
-        .then((response) => {
-          this.error = '';
-          this.loading = false;
-          // IMPORTANT: this kicks off drawing the connections graph
-          this.getFields(response.data);
-          this.recordsFiltered = response.data.recordsFiltered;
-        }, (error) => {
-          this.loading = false;
-          this.error = error.text || error;
-        });
+      const source = Vue.axios.CancelToken.source();
+      const cancellablePromise = ConnectionsService.get(this.query, source.token);
+
+      // set pending promise info so it can be cancelled
+      pendingPromise = { cancellablePromise, source };
+
+      cancellablePromise.then((response) => {
+        pendingPromise = null;
+        this.error = '';
+        this.loading = false;
+        // IMPORTANT: this kicks off drawing the connections graph
+        this.getFields(response.data);
+        this.recordsFiltered = response.data.recordsFiltered;
+      }).catch((error) => {
+        pendingPromise = null;
+        this.loading = false;
+        this.error = error.text || error;
+      });
     },
     getFields: function (connectionsData) {
       FieldService.get(true)
@@ -1283,6 +1307,11 @@ export default {
     }
   },
   beforeDestroy: function () {
+    if (pendingPromise) {
+      pendingPromise.source.cancel();
+      pendingPromise = null;
+    }
+
     // remove listeners
     window.removeEventListener('resize', resize);
     window.removeEventListener('keyup', closePopupsOnEsc);

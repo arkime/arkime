@@ -169,7 +169,8 @@
 
       <!-- loading overlay -->
       <moloch-loading
-        v-if="loading && !error">
+        v-if="loading && !error"
+        :cancel="cancelPendingQuery">
       </moloch-loading> <!-- /loading overlay -->
 
       <!-- page error -->
@@ -194,6 +195,9 @@
 </template>
 
 <script>
+import Vue from 'vue';
+
+import SpigraphService from './SpigraphService';
 import FieldService from '../search/FieldService';
 import MolochError from '../utils/Error';
 import MolochSearch from '../search/Search';
@@ -205,6 +209,7 @@ import MolochVisualizations from '../visualizations/Visualizations';
 let oldFieldObj;
 let refreshInterval;
 let respondedAt; // the time that the last data load succesfully responded
+let pendingPromise; // save a pending promise to be able to cancel it
 
 export default {
   name: 'Spigraph',
@@ -317,6 +322,18 @@ export default {
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
+    /* Cancels the pending session query (if it's still pending) */
+    cancelPendingQuery: function () {
+      if (pendingPromise) {
+        pendingPromise.source.cancel();
+        pendingPromise = null;
+        this.loading = false;
+        if (!this.items.length) {
+          // show a page error if there is no data on the page
+          this.error = 'You canceled the search';
+        }
+      }
+    },
     changeMaxElements: function () {
       this.$router.push({
         query: {
@@ -363,6 +380,8 @@ export default {
     },
     /* helper functions ---------------------------------------------------- */
     loadData: function () {
+      this.cancelPendingQuery(); // cancel pending query if it exists
+
       respondedAt = undefined;
       this.loading = true;
       this.error = false;
@@ -372,20 +391,27 @@ export default {
         this.query.map = true;
       }
 
-      this.$http.get('spigraph.json', { params: this.query })
-        .then((response) => {
-          respondedAt = Date.now();
-          this.error = '';
-          this.loading = false;
-          this.items = []; // clear items
-          this.processData(response.data);
-          this.recordsTotal = response.data.recordsTotal;
-          this.recordsFiltered = response.data.recordsFiltered;
-        }, (error) => {
-          respondedAt = undefined;
-          this.loading = false;
-          this.error = error.text || error;
-        });
+      const source = Vue.axios.CancelToken.source();
+      const cancellablePromise = SpigraphService.get(this.query, source.token);
+
+      // set pending promise info so it can be cancelled
+      pendingPromise = { cancellablePromise, source };
+
+      cancellablePromise.then((response) => {
+        pendingPromise = null;
+        respondedAt = Date.now();
+        this.error = '';
+        this.loading = false;
+        this.items = []; // clear items
+        this.processData(response.data);
+        this.recordsTotal = response.data.recordsTotal;
+        this.recordsFiltered = response.data.recordsFiltered;
+      }).catch((error) => {
+        pendingPromise = null;
+        respondedAt = undefined;
+        this.loading = false;
+        this.error = error.text || error;
+      });
     },
     processData: function (json) {
       this.mapData = json.map;
@@ -408,6 +434,12 @@ export default {
       }
 
       return undefined;
+    }
+  },
+  beforeDestroy: function () {
+    if (pendingPromise) {
+      pendingPromise.source.cancel();
+      pendingPromise = null;
     }
   }
 };
