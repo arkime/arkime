@@ -5,7 +5,7 @@
     <!-- search navbar -->
     <moloch-search
       :start="query.start"
-      :timezone="settings.timezone"
+      :timezone="user.settings.timezone"
       @changeSearch="loadData">
     </moloch-search> <!-- /search navbar -->
 
