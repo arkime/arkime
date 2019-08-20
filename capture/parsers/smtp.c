@@ -309,7 +309,7 @@ LOCAL void smtp_parse_email_addresses(int field, MolochSession_t *session, char 
 
         while (data < end && *data != '<' && *data != ',') data++;
 
-        if (*data == '<') {
+        if (data < end && *data == '<') {
             data++;
             start = data;
             while (data < end && *data != '>') data++;
