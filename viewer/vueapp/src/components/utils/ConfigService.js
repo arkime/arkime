@@ -64,6 +64,23 @@ export default {
     });
 
     return getMolochClickablesQIP;
+  },
+
+  /**
+   * Cancels any es tasks whose X-Opaque-Id equal this cancel id
+   * @param {string} cancelId   The X-Opaque-Id set for the es tasks to cancel
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  cancelEsTask: function (cancelId) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.post('estask/cancelOpaque', { cancelId: cancelId })
+        .then((response) => {
+          resolve(response);
+        }, (error) => {
+          reject(error);
+        });
+    });
   }
 
 };

@@ -3421,7 +3421,18 @@ app.post('/estask/cancel', logAction(), function(req, res) {
   }
 
   Db.taskCancel(req.body.taskId, (err, result) => {
-    return res.send(JSON.stringify({success: true, text: result}));
+    return res.send(JSON.stringify({ success: true, text: result }));
+  });
+});
+
+// TODO ECR
+app.post('/estask/cancelOpaque', logAction(), function(req, res) {
+  if (!req.body || !req.body.cancelId) {
+    return res.molochError(403, 'Missing cancel ID');
+  }
+
+  Db.cancelByOpaqueId(req.body.cancelId, (err, result) => {
+    return res.send(JSON.stringify({ success: true, text: result }));
   });
 });
 
@@ -4219,28 +4230,12 @@ app.use('/buildQuery.json', logAction('query'), noCacheJson, function(req, res, 
   });
 });
 
-// TODO ECR move this elsewhere, maybe internals?
-let cancelId;
 app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson, function (req, res) {
   var graph = {};
   var map = {};
 
-  // TODO ECR
-  cancelId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  console.log('created cancel id:', cancelId); // TODO ECR remove
-  const options = { cancelId: cancelId };
-
-  req.on('close', (err) => {
-    console.log('Request canceled!!!!!!!!!!', cancelId); // TODO ECR remove
-    if (cancelId) {
-      Db.cancelByOpaqueId(cancelId, (err, result) => {
-        console.log('cancel sessions.json search task', cancelId); // TODO ECR remove
-        cancelId = undefined;
-        // TODO ECR or success true since search was canceled successfully?
-        return res.send(JSON.stringify({success: false, text: 'Search canceled'}));
-      });
-    }
-  });
+  let options;
+  if (req.query.cancelId) { options = { cancelId: req.query.cancelId }; }
 
   buildSessionQuery(req, function (bsqErr, query, indices) {
     if (bsqErr) {
@@ -4288,8 +4283,6 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
                  Db.numberOfDocuments('sessions2-*'),
                  Db.healthCachePromise()
     ]).then(([sessions, total, health]) => {
-      cancelId = undefined; // unset cancelId
-
       if (Config.debug) {
         console.log('sessions.json result', util.inspect(sessions, false, 50));
       }

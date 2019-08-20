@@ -183,18 +183,24 @@ exports.search = function (index, type, query, options, cb) {
 exports.cancelByOpaqueId = function(cancelId, cb) {
   internals.elasticSearchClient.tasks.list({detailed: "true", group_by: "parents"})
     .then((results) => {
+      let found = false;
+      
       for (let resultKey in results) {
         let result = results[resultKey];
         if (result.headers &&
           result.headers['X-Opaque-Id'] &&
           result.headers['X-Opaque-Id'] === cancelId) {
-          return internals.elasticSearchClient.tasks.cancel(
-            { taskId: result.id }, cb
-          );
+          found = true;
+          console.log('canceling task', cancelId, result.id); // TODO ECR remove
+          // TODO ECR does this work with undefine cb?
+          internals.elasticSearchClient.tasks.cancel({ taskId: result.id });
         }
       }
+
       // not found, return error
-      return cb('cancel id not found, cannot cancel es task');
+      if (!found) { return cb('cancel id not found, cannot cancel es task(s)'); }
+
+      return cb();
     })
     .catch((error) => {
       return cb(error);

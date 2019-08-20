@@ -307,3 +307,15 @@ Vue.filter('buildExpression', function (field, value, op) {
 
   return `${field} ${op} ${value}`;
 });
+
+/**
+ * Creates a unique random string
+ *
+ * @example
+ * this.$options.filters.createRandomString();
+ *
+ * @returns {string} The unique random string
+ */
+Vue.filter('createRandomString', function () {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+});
