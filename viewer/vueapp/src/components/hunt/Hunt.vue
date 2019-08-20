@@ -1117,9 +1117,12 @@
 </template>
 
 <script>
+// import external
 import Vue from 'vue';
-
+// import services
 import SessionsService from '../sessions/SessionsService';
+import ConfigService from '../utils/ConfigService';
+// import components
 import ToggleBtn from '../utils/ToggleBtn';
 import MolochSearch from '../search/Search';
 import MolochLoading from '../utils/Loading';
@@ -1225,13 +1228,16 @@ export default {
     /* Cancels the pending session query (if it's still pending) */
     cancelPendingQuery: function () {
       if (pendingPromise) {
-        pendingPromise.source.cancel();
-        pendingPromise = null;
-        this.loadingSessions = false;
-        if (!this.sessions.data) {
-          // show a page error if there is no data on the page
-          this.loadingSessionsError = 'You canceled the search';
-        }
+        ConfigService.cancelEsTask(pendingPromise.cancelId)
+          .then((response) => {
+            pendingPromise.source.cancel();
+            pendingPromise = null;
+            this.loadingSessions = false;
+            if (!this.sessions.data) {
+              // show a page error if there is no data on the page
+              this.loadingSessionsError = 'You canceled the search';
+            }
+          });
       }
     },
     cancelCreateForm: function () {
@@ -1489,11 +1495,15 @@ export default {
       this.loadingSessions = true;
       this.loadingSessionsError = '';
 
+      // create unique cancel id to make canel req for corresponding es task
+      const cancelId = this.$options.filters.createRandomString();
+      this.sessionsQuery.cancelId = cancelId;
+
       const source = Vue.axios.CancelToken.source();
       const cancellablePromise = SessionsService.get(this.sessionsQuery, source.token);
 
       // set pending promise info so it can be cancelled
-      pendingPromise = { cancellablePromise, source };
+      pendingPromise = { cancellablePromise, source, cancelId };
 
       cancellablePromise.then((response) => {
         pendingPromise = null;

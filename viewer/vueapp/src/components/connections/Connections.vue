@@ -388,6 +388,7 @@ import MolochFieldTypeahead from '../utils/FieldTypeahead';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
 import ConnectionsService from './ConnectionsService';
+import ConfigService from '../utils/ConfigService';
 // import external
 import Vue from 'vue';
 import * as d3 from 'd3';
@@ -612,13 +613,16 @@ export default {
     /* Cancels the pending session query (if it's still pending) */
     cancelPendingQuery: function () {
       if (pendingPromise) {
-        pendingPromise.source.cancel();
-        pendingPromise = null;
-        this.loading = false;
-        if (!this.fields.length) {
-          // show a page error if there is no data on the page
-          this.error = 'You canceled the search';
-        }
+        ConfigService.cancelEsTask(pendingPromise.cancelId)
+          .then((response) => {
+            pendingPromise.source.cancel();
+            pendingPromise = null;
+            this.loading = false;
+            if (!this.fields.length) {
+              // show a page error if there is no data on the page
+              this.error = 'You canceled the search';
+            }
+          });
       }
     },
     changeLength: function () {
@@ -748,11 +752,15 @@ export default {
       }
       this.query.fields = fields.join(',');
 
+      // create unique cancel id to make canel req for corresponding es task
+      const cancelId = this.$options.filters.createRandomString();
+      this.query.cancelId = cancelId;
+
       const source = Vue.axios.CancelToken.source();
       const cancellablePromise = ConnectionsService.get(this.query, source.token);
 
       // set pending promise info so it can be cancelled
-      pendingPromise = { cancellablePromise, source };
+      pendingPromise = { cancellablePromise, source, cancelId };
 
       cancellablePromise.then((response) => {
         pendingPromise = null;

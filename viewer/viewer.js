@@ -2906,7 +2906,7 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
     processedRo[fields.rootId] = true;
 
     query.query.bool.filter.push({term: {rootId: fields.rootId}});
-    Db.searchPrimary(indices, 'session', query, function(err, result) {
+    Db.searchPrimary(indices, 'session', query, null, function (err, result) {
       if (err || result === undefined || result.hits === undefined || result.hits.hits === undefined) {
         console.log("ERROR fetching matching sessions", err, result);
         return nextCb(null);
@@ -2939,7 +2939,7 @@ function sessionsListFromQuery(req, res, fields, cb) {
     if (Config.debug) {
       console.log("sessionsListFromQuery query", JSON.stringify(query, null, 1));
     }
-    Db.searchPrimary(indices, 'session', query, function(err, result) {
+    Db.searchPrimary(indices, 'session', query, null, function (err, result) {
       if (err || result.error) {
           console.log("ERROR - Could not fetch list of sessions.  Err: ", err,  " Result: ", result, "query:", query);
           return res.send("Could not fetch list of sessions.  Err: " + err + " Result: " + result);
@@ -4528,7 +4528,7 @@ app.get('/spiview.json', logAction('spiview'), recordResponseTime, noCacheJson, 
 
     async.parallel({
       spi: function (sessionsCb) {
-        Db.searchPrimary(indices, 'session', query, function(err, result) {
+        Db.searchPrimary(indices, 'session', query, null, function (err, result) {
           if (Config.debug) {
             console.log("spiview.json result", util.inspect(result, false, 50));
           }
@@ -4742,7 +4742,7 @@ function buildConnections(req, res, cb) {
       console.log('buildConnections query', JSON.stringify(query, null, 2));
     }
 
-    Db.searchPrimary(indices, 'session', query, function (err, graph) {
+    Db.searchPrimary(indices, 'session', query, null, function (err, graph) {
       if (Config.debug) {
         console.log('buildConnections result', JSON.stringify(graph, null, 2));
       }
@@ -5004,7 +5004,7 @@ app.get('/multiunique.txt', logAction(), function(req, res) {
     if (Config.debug > 2) {
       console.log("multiunique aggregations", indices, JSON.stringify(query, false, 2));
     }
-    Db.searchPrimary(indices, 'session', query, function(err, result) {
+    Db.searchPrimary(indices, 'session', query, null, function (err, result) {
       if (err) {
         console.log('multiunique ERROR', err);
         res.status(400);
@@ -5105,7 +5105,7 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
     }
     query.size = 0;
     console.log("unique aggregations", indices, JSON.stringify(query));
-    Db.searchPrimary(indices, 'session', query, function(err, result) {
+    Db.searchPrimary(indices, 'session', query, null, function (err, result) {
       if (err) {
         console.log("Error", query, err);
         return doneCb?doneCb():res.end();
@@ -5677,7 +5677,7 @@ app.get('/bodyHash/:hash', logAction('bodyhash'), function(req, res) {
     if (Config.debug) {
       console.log(`sessions.json ${indices} query`, JSON.stringify(query, null, 1));
     }
-    Db.searchPrimary(indices, 'session', query, function(err, sessions) {
+    Db.searchPrimary(indices, 'session', query, null, function (err, sessions) {
       if (err ) {
         console.log ("Error -> Db Search ", err);
         res.status(400);
@@ -5975,7 +5975,7 @@ app.get('/:nodeName/entirePcap/:id.pcap', checkProxyRequest, function(req, res) 
 
   console.log("entirePcap query", JSON.stringify(query));
 
-  Db.searchPrimary('sessions2-*', 'session', query, function(err, data) {
+  Db.searchPrimary('sessions2-*', 'session', query, null, function (err, data) {
     async.forEachSeries(data.hits.hits, function(item, nextCb) {
       writePcap(res, Db.session2Sid(item), options, nextCb);
     }, function (err) {
