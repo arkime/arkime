@@ -10,7 +10,7 @@
       :num-matching-sessions="sessions.recordsFiltered"
       :start="query.start"
       :timezone="user.settings.timezone"
-      @changeSearch="loadData">
+      @changeSearch="cancelPendingQuery(true)">
     </moloch-search> <!-- /search navbar -->
 
     <!-- paging navbar -->
@@ -34,7 +34,7 @@
         :map-data="mapData"
         :primary="true"
         :timezone="user.settings.timezone"
-        @fetchMapData="loadData">
+        @fetchMapData="cancelPendingQuery(true)">
       </moloch-visualizations> <!-- /session visualizations -->
 
       <!-- sticky (opened) sessions -->
@@ -642,19 +642,31 @@ export default {
   methods: {
     /* exposed page functions ---------------------------------------------- */
     /* SESSIONS DATA */
-    /* Cancels the pending session query (if it's still pending) */
-    cancelPendingQuery: function () {
+    /**
+     * Cancels the pending session query (if it's still pending)
+     * @param {bool} runNewQuery Whether to run a new sessions query after canceling the request
+     * @param {bool} updateTable Whether the table needs updating
+     */
+    cancelPendingQuery: function (runNewQuery, updateTable) {
       if (pendingPromise) {
         ConfigService.cancelEsTask(pendingPromise.cancelId)
           .then((response) => {
             pendingPromise.source.cancel();
             pendingPromise = null;
-            this.loading = false;
-            if (!this.sessions.data) {
-              // show a page error if there is no data on the page
-              this.error = 'You canceled the search';
+
+            if (!runNewQuery) {
+              this.loading = false;
+              if (!this.sessions.data) {
+                // show a page error if there is no data on the page
+                this.error = 'You canceled the search';
+              }
+              return;
             }
+
+            this.loadData(updateTable);
           });
+      } else {
+        this.loadData(updateTable);
       }
     },
 
@@ -755,7 +767,7 @@ export default {
 
       this.saveTableState();
 
-      this.loadData(true);
+      this.cancelPendingQuery(true, true);
     },
     /**
      * Determines the sort order of a column
@@ -884,7 +896,7 @@ export default {
       this.saveTableState();
 
       if (reloadData) { // need data from the server
-        this.loadData(true);
+        this.cancelPendingQuery(true, true);
       } else { // have all the data, just need to reload the table
         this.reloadTable();
       }
@@ -946,7 +958,7 @@ export default {
 
       this.saveTableState();
 
-      this.loadData(true);
+      this.cancelPendingQuery(true, true);
     },
     /**
      * Deletes a previously saved custom column configuration
@@ -1049,7 +1061,7 @@ export default {
       this.saveInfoFields();
 
       if (reloadData) { // need data from the server
-        this.loadData(true);
+        this.cancelPendingQuery(true, true);
       } else { // have all the data, just need to reload the table
         this.reloadTable();
       }
@@ -1065,7 +1077,7 @@ export default {
       // unset the user setting for info fields
       this.saveInfoFields();
       // load the table data (assume missing fields)
-      this.loadData(true);
+      this.cancelPendingQuery(true, true);
     },
     /* Saves the info fields on the user settings */
     saveInfoFields: function () {
@@ -1204,7 +1216,7 @@ export default {
       if (!this.user.settings.manualQuery ||
         !JSON.parse(this.user.settings.manualQuery) ||
         componentInitialized) {
-        this.loadData();
+        this.cancelPendingQuery(true);
       } else {
         this.loading = false;
         this.error = 'Now, issue a query!';
@@ -1218,8 +1230,6 @@ export default {
      * @param {bool} updateTable Whether the table needs updating
      */
     loadData: function (updateTable) {
-      this.cancelPendingQuery(); // cancel pending query if it exists
-
       this.loading = true;
       this.error = '';
 
@@ -1546,7 +1556,7 @@ export default {
     changePaging: function (args) {
       this.query.start = args.start;
       this.query.length = args.length;
-      this.loadData();
+      this.cancelPendingQuery(true);
     }
   },
   beforeDestroy: function () {

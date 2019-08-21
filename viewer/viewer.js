@@ -4356,6 +4356,9 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
       return res.molochError(403, bsqErr.toString());
     }
 
+    let options;
+    if (req.query.cancelId) { options = { cancelId: req.query.cancelId }; }
+
     delete query.sort;
     query.size = 0;
     var size = +req.query.size || 20;
@@ -4372,7 +4375,7 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
 
     Promise.all([Db.healthCachePromise(),
                  Db.numberOfDocuments('sessions2-*'),
-                 Db.searchPrimary(indices, 'session', query)
+                 Db.searchPrimary(indices, 'session', query, options)
                 ])
     .then(([health, total, result]) => {
       if (result.error) {throw result.error;}
@@ -4738,11 +4741,14 @@ function buildConnections(req, res, cb) {
       query._source.push('dstPort');
     }
 
+    let options;
+    if (req.query.cancelId) { options = { cancelId: req.query.cancelId }; }
+
     if (Config.debug) {
       console.log('buildConnections query', JSON.stringify(query, null, 2));
     }
 
-    Db.searchPrimary(indices, 'session', query, null, function (err, graph) {
+    Db.searchPrimary(indices, 'session', query, options, function (err, graph) {
       if (Config.debug) {
         console.log('buildConnections result', JSON.stringify(graph, null, 2));
       }
