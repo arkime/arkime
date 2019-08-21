@@ -282,6 +282,11 @@ exports.searchPrimary = function (index, type, query, options, cb) {
     delete options.cancelId;
   }
 
+  if (!cb) {
+    cb = options;
+    options = undefined;
+  }
+
   exports.merge(params, options);
   return exports.searchScroll(index, type, query, params, cb);
 };
