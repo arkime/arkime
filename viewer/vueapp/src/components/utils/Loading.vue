@@ -23,7 +23,11 @@
 <script>
 export default {
   name: 'MolochLoading',
-  props: { cancel: Function }
+  methods: {
+    cancel: function () {
+      this.$emit('cancel');
+    }
+  }
 };
 </script>
 

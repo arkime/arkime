@@ -450,7 +450,7 @@
       <!-- loading overlay -->
       <moloch-loading
         v-if="loading && !error"
-        :cancel="cancelPendingQuery">
+        @cancel="cancelPendingQuery(false)">
       </moloch-loading> <!-- /loading overlay -->
 
       <!-- page error -->
@@ -664,8 +664,10 @@ export default {
             }
 
             this.loadData(updateTable);
+          }).catch((error) => {
+            this.loadData(updateTable);
           });
-      } else {
+      } else if (runNewQuery) {
         this.loadData(updateTable);
       }
     },
