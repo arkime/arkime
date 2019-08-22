@@ -1165,7 +1165,7 @@ export default {
         desc: true,
         searchTerm: '',
         start: 0, // first item index
-        length: this.$route.query.length || 50
+        length: Math.min(this.$route.query.length || 50, 10000)
       };
     },
     sessionsQuery: function () {
@@ -1448,6 +1448,7 @@ export default {
           this.loading = false;
         })
         .catch(() => {
+          this.loading = false;
           respondedAt = undefined;
         });
     },
