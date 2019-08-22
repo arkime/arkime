@@ -3425,7 +3425,6 @@ app.post('/estask/cancel', logAction(), function(req, res) {
   });
 });
 
-// TODO ECR
 app.post('/estask/cancelOpaque', logAction(), function(req, res) {
   if (!req.body || !req.body.cancelId) {
     return res.molochError(403, 'Missing cancel ID');

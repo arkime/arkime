@@ -190,7 +190,6 @@ exports.cancelByOpaqueId = function(cancelId, cb) {
           result.headers['X-Opaque-Id'] &&
           result.headers['X-Opaque-Id'] === cancelId) {
           found = true;
-          console.log('canceling task', cancelId, resultKey); // TODO ECR remove
           internals.elasticSearchClient.tasks.cancel({ taskId: resultKey }, () => {});
         }
       }
@@ -277,14 +276,8 @@ exports.searchPrimary = function (index, type, query, options, cb) {
 
   if (options && options.cancelId) {
     // set X-Opaque-Id header on the params so the task can be canceled
-    console.log('search and add cancel id', options.cancelId);
     params.headers = { 'X-Opaque-Id': options.cancelId };
     delete options.cancelId;
-  }
-
-  if (!cb) {
-    cb = options;
-    options = undefined;
   }
 
   exports.merge(params, options);
