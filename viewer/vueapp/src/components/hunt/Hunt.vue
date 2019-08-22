@@ -9,7 +9,7 @@
       :timezone="user.settings.timezone"
       :hide-actions="true"
       :hide-interval="true"
-      @changeSearch="loadSessions">
+      @changeSearch="cancelAndLoad(true)">
     </moloch-search> <!-- /search navbar -->
 
     <div>&nbsp;</div>
@@ -31,7 +31,7 @@
           </div>
           <button type="button"
             class="btn btn-warning btn-sm ml-3"
-            @click="cancelPendingQuery">
+            @click="cancelAndLoad">
             <span class="fa fa-ban">
             </span>&nbsp;
             cancel
@@ -1213,7 +1213,7 @@ export default {
     setTimeout(() => {
       // wait for computed queries
       this.loadData();
-      this.loadSessions();
+      this.cancelAndLoad(true);
       this.loadNotifiers();
     });
 
@@ -1225,19 +1225,32 @@ export default {
     }, 500);
   },
   methods: {
-    /* Cancels the pending session query (if it's still pending) */
-    cancelPendingQuery: function () {
+    /**
+     * Cancels the pending session query (if it's still pending) and runs a new
+     * query if requested
+     * @param {bool} runNewQuery  Whether to run a new spigraph query after
+     *                            canceling the request
+     */
+    cancelAndLoad: function (runNewQuery) {
       if (pendingPromise) {
         ConfigService.cancelEsTask(pendingPromise.cancelId)
           .then((response) => {
             pendingPromise.source.cancel();
             pendingPromise = null;
-            this.loadingSessions = false;
-            if (!this.sessions.data) {
-              // show a page error if there is no data on the page
-              this.loadingSessionsError = 'You canceled the search';
+
+            if (!runNewQuery) {
+              this.loadingSessions = false;
+              if (!this.sessions.data) {
+                // show a page error if there is no data on the page
+                this.loadingSessionsError = 'You canceled the search';
+              }
+              return;
             }
+
+            this.loadSessions();
           });
+      } else if (runNewQuery) {
+        this.loadSessions();
       }
     },
     cancelCreateForm: function () {
@@ -1490,8 +1503,6 @@ export default {
         });
     },
     loadSessions: function () {
-      this.cancelPendingQuery(); // cancel pending query if it exists
-
       this.loadingSessions = true;
       this.loadingSessionsError = '';
 

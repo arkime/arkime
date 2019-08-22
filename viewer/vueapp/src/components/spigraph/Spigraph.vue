@@ -6,7 +6,7 @@
     <moloch-search
       :num-matching-sessions="filtered"
       :timezone="user.settings.timezone"
-      @changeSearch="loadData">
+      @changeSearch="cancelAndLoad(true)">
     </moloch-search> <!-- /search navbar -->
 
     <!-- spigraph sub navbar -->
@@ -126,7 +126,7 @@
           :map-data="mapData"
           :primary="true"
           :timezone="user.settings.timezone"
-          @fetchMapData="loadData">
+          @fetchMapData="cancelAndLoad(true)">
         </moloch-visualizations>
       </div> <!-- /main visualization -->
 
@@ -170,7 +170,7 @@
       <!-- loading overlay -->
       <moloch-loading
         v-if="loading && !error"
-        :cancel="cancelPendingQuery">
+        @cancel="cancelAndLoad">
       </moloch-loading> <!-- /loading overlay -->
 
       <!-- page error -->
@@ -279,26 +279,26 @@ export default {
   },
   watch: {
     '$route.query.size': function (newVal, oldVal) {
-      this.loadData();
+      this.cancelAndLoad(true);
     },
     '$route.query.sort': function (newVal, oldVal) {
-      this.loadData();
+      this.cancelAndLoad(true);
     },
     '$route.query.field': function (newVal, oldVal) {
-      this.loadData();
+      this.cancelAndLoad(true);
     },
     // watch graph type and update sort
     'graphType': function (newVal, oldVal) {
       if (newVal && this.sortBy === 'graph') {
         this.query.sort = newVal;
-        if (oldVal) { this.loadData(); }
+        if (oldVal) { this.cancelAndLoad(true); }
       }
     }
   },
   created: function () {
     setTimeout(() => {
       // wait for query to be computed
-      this.loadData();
+      this.cancelAndLoad(true);
       this.changeRefreshInterval();
     });
 
@@ -325,19 +325,32 @@ export default {
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
-    /* Cancels the pending session query (if it's still pending) */
-    cancelPendingQuery: function () {
+    /**
+     * Cancels the pending session query (if it's still pending) and runs a new
+     * query if requested
+     * @param {bool} runNewQuery  Whether to run a new spigraph query after
+     *                            canceling the request
+     */
+    cancelAndLoad: function (runNewQuery) {
       if (pendingPromise) {
         ConfigService.cancelEsTask(pendingPromise.cancelId)
           .then((response) => {
             pendingPromise.source.cancel();
             pendingPromise = null;
-            this.loading = false;
-            if (!this.items.length) {
-              // show a page error if there is no data on the page
-              this.error = 'You canceled the search';
+
+            if (!runNewQuery) {
+              this.loading = false;
+              if (!this.items.length) {
+                // show a page error if there is no data on the page
+                this.error = 'You canceled the search';
+              }
+              return;
             }
+
+            this.loadData();
           });
+      } else if (runNewQuery) {
+        this.loadData();
       }
     },
     changeMaxElements: function () {
@@ -365,10 +378,10 @@ export default {
       if (refreshInterval) { clearInterval(refreshInterval); }
 
       if (this.refresh && this.refresh > 0) {
-        this.loadData();
+        this.cancelAndLoad(true);
         refreshInterval = setInterval(() => {
           if (respondedAt && Date.now() - respondedAt >= parseInt(this.refresh * 1000)) {
-            this.loadData();
+            this.cancelAndLoad(true);
           }
         }, 500);
       }
@@ -386,8 +399,6 @@ export default {
     },
     /* helper functions ---------------------------------------------------- */
     loadData: function () {
-      this.cancelPendingQuery(); // cancel pending query if it exists
-
       respondedAt = undefined;
       this.loading = true;
       this.error = false;

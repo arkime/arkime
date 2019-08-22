@@ -10,7 +10,7 @@
       :num-matching-sessions="sessions.recordsFiltered"
       :start="query.start"
       :timezone="user.settings.timezone"
-      @changeSearch="cancelPendingQuery(true)">
+      @changeSearch="cancelAndLoad(true)">
     </moloch-search> <!-- /search navbar -->
 
     <!-- paging navbar -->
@@ -34,7 +34,7 @@
         :map-data="mapData"
         :primary="true"
         :timezone="user.settings.timezone"
-        @fetchMapData="cancelPendingQuery(true)">
+        @fetchMapData="cancelAndLoad(true)">
       </moloch-visualizations> <!-- /session visualizations -->
 
       <!-- sticky (opened) sessions -->
@@ -450,7 +450,7 @@
       <!-- loading overlay -->
       <moloch-loading
         v-if="loading && !error"
-        @cancel="cancelPendingQuery(false)">
+        @cancel="cancelAndLoad(false)">
       </moloch-loading> <!-- /loading overlay -->
 
       <!-- page error -->
@@ -643,11 +643,13 @@ export default {
     /* exposed page functions ---------------------------------------------- */
     /* SESSIONS DATA */
     /**
-     * Cancels the pending session query (if it's still pending)
-     * @param {bool} runNewQuery Whether to run a new sessions query after canceling the request
-     * @param {bool} updateTable Whether the table needs updating
+     * Cancels the pending session query (if it's still pending) and runs a new
+     * query if requested
+     * @param {bool} runNewQuery  Whether to run a new sessions query after
+     *                            canceling the request
+     * @param {bool} updateTable  Whether the table needs updating
      */
-    cancelPendingQuery: function (runNewQuery, updateTable) {
+    cancelAndLoad: function (runNewQuery, updateTable) {
       if (pendingPromise) {
         ConfigService.cancelEsTask(pendingPromise.cancelId)
           .then((response) => {
@@ -663,8 +665,6 @@ export default {
               return;
             }
 
-            this.loadData(updateTable);
-          }).catch((error) => {
             this.loadData(updateTable);
           });
       } else if (runNewQuery) {
@@ -769,7 +769,7 @@ export default {
 
       this.saveTableState();
 
-      this.cancelPendingQuery(true, true);
+      this.cancelAndLoad(true, true);
     },
     /**
      * Determines the sort order of a column
@@ -898,7 +898,7 @@ export default {
       this.saveTableState();
 
       if (reloadData) { // need data from the server
-        this.cancelPendingQuery(true, true);
+        this.cancelAndLoad(true, true);
       } else { // have all the data, just need to reload the table
         this.reloadTable();
       }
@@ -960,7 +960,7 @@ export default {
 
       this.saveTableState();
 
-      this.cancelPendingQuery(true, true);
+      this.cancelAndLoad(true, true);
     },
     /**
      * Deletes a previously saved custom column configuration
@@ -1063,7 +1063,7 @@ export default {
       this.saveInfoFields();
 
       if (reloadData) { // need data from the server
-        this.cancelPendingQuery(true, true);
+        this.cancelAndLoad(true, true);
       } else { // have all the data, just need to reload the table
         this.reloadTable();
       }
@@ -1079,7 +1079,7 @@ export default {
       // unset the user setting for info fields
       this.saveInfoFields();
       // load the table data (assume missing fields)
-      this.cancelPendingQuery(true, true);
+      this.cancelAndLoad(true, true);
     },
     /* Saves the info fields on the user settings */
     saveInfoFields: function () {
@@ -1218,7 +1218,7 @@ export default {
       if (!this.user.settings.manualQuery ||
         !JSON.parse(this.user.settings.manualQuery) ||
         componentInitialized) {
-        this.cancelPendingQuery(true);
+        this.cancelAndLoad(true);
       } else {
         this.loading = false;
         this.error = 'Now, issue a query!';
@@ -1558,7 +1558,7 @@ export default {
     changePaging: function (args) {
       this.query.start = args.start;
       this.query.length = args.length;
-      this.cancelPendingQuery(true);
+      this.cancelAndLoad(true);
     }
   },
   beforeDestroy: function () {
