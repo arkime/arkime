@@ -70,7 +70,7 @@ export default {
       error: null,
       esHealth: null,
       errorTitle: null,
-      showTooltip: true,
+      showTooltip: true
     };
   },
   created: function () {
