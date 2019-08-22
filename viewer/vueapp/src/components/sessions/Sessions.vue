@@ -475,13 +475,16 @@
 </template>
 
 <script>
+// import external
 import Vue from 'vue';
-
+import Sortable from 'sortablejs';
+import '../../../../public/colResizable.js';
+// import services
 import FieldService from '../search/FieldService';
 import SessionsService from './SessionsService';
 import UserService from '../users/UserService';
 import ConfigService from '../utils/ConfigService';
-
+// import components
 import MolochSearch from '../search/Search';
 import customCols from './customCols.json';
 import MolochPaging from '../utils/Pagination';
@@ -492,9 +495,8 @@ import MolochNoResults from '../utils/NoResults';
 import MolochSessionDetail from './SessionDetail';
 import MolochVisualizations from '../visualizations/Visualizations';
 import MolochStickySessions from './StickySessions';
-
-import Sortable from 'sortablejs';
-import '../../../../public/colResizable.js';
+// import utils
+import Utils from '../utils/utils';
 
 const defaultTableState = {
   order: [['firstPacket', 'desc']],
@@ -1281,7 +1283,7 @@ export default {
       }
 
       // create unique cancel id to make canel req for corresponding es task
-      const cancelId = this.$options.filters.createRandomString();
+      const cancelId = Utils.createRandomString();
       this.query.cancelId = cancelId;
 
       const source = Vue.axios.CancelToken.source();

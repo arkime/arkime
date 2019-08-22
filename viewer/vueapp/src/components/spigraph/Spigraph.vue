@@ -208,6 +208,8 @@ import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
 import MolochFieldTypeahead from '../utils/FieldTypeahead';
 import MolochVisualizations from '../visualizations/Visualizations';
+// import utils
+import Utils from '../utils/utils';
 
 let oldFieldObj;
 let refreshInterval;
@@ -409,7 +411,7 @@ export default {
       }
 
       // create unique cancel id to make canel req for corresponding es task
-      const cancelId = this.$options.filters.createRandomString();
+      const cancelId = Utils.createRandomString();
       this.query.cancelId = cancelId;
 
       const source = Vue.axios.CancelToken.source();

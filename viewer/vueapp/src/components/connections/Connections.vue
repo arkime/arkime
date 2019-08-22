@@ -394,6 +394,8 @@ import Vue from 'vue';
 import * as d3 from 'd3';
 import saveSvgAsPng from 'save-svg-as-png';
 import { mixin as clickaway } from 'vue-clickaway';
+// import utils
+import Utils from '../utils/utils';
 
 // d3 force directed graph vars/functions ---------------------------------- */
 let colors, foregroundColor;
@@ -764,7 +766,7 @@ export default {
       this.query.fields = fields.join(',');
 
       // create unique cancel id to make canel req for corresponding es task
-      const cancelId = this.$options.filters.createRandomString();
+      const cancelId = Utils.createRandomString();
       this.query.cancelId = cancelId;
 
       const source = Vue.axios.CancelToken.source();

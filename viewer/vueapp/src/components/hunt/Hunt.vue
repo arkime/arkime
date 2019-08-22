@@ -1129,6 +1129,8 @@ import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
 import MolochPaging from '../utils/Pagination';
 import FocusInput from '../utils/FocusInput';
+// import utils
+import Utils from '../utils/utils';
 
 let timeout;
 let interval;
@@ -1507,7 +1509,7 @@ export default {
       this.loadingSessionsError = '';
 
       // create unique cancel id to make canel req for corresponding es task
-      const cancelId = this.$options.filters.createRandomString();
+      const cancelId = Utils.createRandomString();
       this.sessionsQuery.cancelId = cancelId;
 
       const source = Vue.axios.CancelToken.source();
