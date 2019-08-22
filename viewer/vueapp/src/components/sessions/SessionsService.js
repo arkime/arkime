@@ -10,22 +10,29 @@ export default {
   /* service methods ------------------------------------------------------- */
   /**
    * Gets a list of sessions from the server
-   * @param {object} query      Parameters to query the server
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
+   * @param {object} query        Parameters to query the server
+   * @param {object} cancelToken  Token to cancel the request
+   * @returns {Promise} Promise   A promise object that signals the completion
+   *                              or rejection of the request.
    */
-  get: function (query) {
+  get: function (query, cancelToken) {
     return new Promise((resolve, reject) => {
       let params = { flatten: 1 };
+      const sameParams = {
+        view: true,
+        start: true,
+        length: true,
+        facets: true,
+        bounding: true,
+        interval: true,
+        cancelId: true,
+        expression: true
+      };
 
       if (query) {
-        if (query.length) { params.length = query.length; }
-        if (query.start) { params.start = query.start; }
-        if (query.facets) { params.facets = query.facets; }
-        if (query.expression) { params.expression = query.expression; }
-        if (query.view) { params.view = query.view; }
-        if (query.bounding) { params.bounding = query.bounding; }
-        if (query.interval) { params.interval = query.interval; }
+        for (let param in sameParams) {
+          if (query[param]) { params[param] = query[param]; }
+        }
 
         // always send stopTime and startTime unless date is all time (-1)
         if (parseInt(query.date, 10) === -1) {
@@ -57,7 +64,8 @@ export default {
       let options = {
         url: 'sessions.json',
         method: 'GET',
-        params: params
+        params: params,
+        cancelToken: cancelToken
       };
 
       Vue.axios(options)
@@ -65,7 +73,9 @@ export default {
           if (response.data.bsqErr) { reject(response.data.bsqErr); }
           resolve(response);
         }, (error) => {
-          reject(error);
+          if (!Vue.axios.isCancel(error)) {
+            reject(error);
+          }
         });
     });
   },

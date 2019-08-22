@@ -9,7 +9,7 @@
       :timezone="user.settings.timezone"
       :hide-actions="true"
       :hide-interval="true"
-      @changeSearch="loadSessions">
+      @changeSearch="cancelAndLoad(true)">
     </moloch-search> <!-- /search navbar -->
 
     <div>&nbsp;</div>
@@ -23,13 +23,29 @@
           class="btn btn-theme-tertiary btn-sm pull-right">
           Create a packet search job
         </button>
-        <div class="mt-1" style="display:inline-block;">
-          <span v-if="loadingSessions">
+        <span v-if="loadingSessions">
+          <div class="mt-1" style="display:inline-block;">
             <span class="fa fa-spinner fa-spin fa-fw">
             </span>
             Loading sessions...
-          </span>
-          <span v-else>
+          </div>
+          <button type="button"
+            class="btn btn-warning btn-sm ml-3"
+            @click="cancelAndLoad">
+            <span class="fa fa-ban">
+            </span>&nbsp;
+            cancel
+          </button>
+        </span>
+        <span v-else-if="loadingSessionsError">
+          <div class="mt-1" style="display:inline-block;">
+            <span class="fa fa-exclamation-triangle fa-fw">
+            </span>
+            {{ loadingSessionsError }}
+          </div>
+        </span>
+        <span v-else-if="!loadingSessions && !loadingSessionsError">
+          <div class="mt-1" style="display:inline-block;">
             <span class="fa fa-info-circle fa-fw">
             </span>&nbsp;
             Creating a new packet search job will search the packets of
@@ -37,8 +53,8 @@
               {{ sessions.recordsFiltered | commaString }}
             </strong>
             sessions.
-          </span>
-        </div>
+          </div>
+        </span>
       </div>
     </form> <!-- /hunt create navbar -->
 
@@ -60,7 +76,7 @@
               <div class="row">
                 <div class="col-12">
                   <div class="alert"
-                    :class="{'alert-info':sessions.recordsFiltered < huntWarn,'alert-danger':sessions.recordsFiltered >= huntWarn}">
+                    :class="{'alert-info':sessions.recordsFiltered < huntWarn || !sessions.recordsFiltered,'alert-danger':sessions.recordsFiltered >= huntWarn}">
                     <em v-if="sessions.recordsFiltered > huntWarn && !loadingSessions">
                       That's a lot of sessions, this job will take a while.
                       <strong>
@@ -1101,17 +1117,25 @@
 </template>
 
 <script>
+// import external
+import Vue from 'vue';
+// import services
 import SessionsService from '../sessions/SessionsService';
+import ConfigService from '../utils/ConfigService';
+// import components
 import ToggleBtn from '../utils/ToggleBtn';
 import MolochSearch from '../search/Search';
 import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
 import MolochPaging from '../utils/Pagination';
 import FocusInput from '../utils/FocusInput';
+// import utils
+import Utils from '../utils/utils';
 
 let timeout;
 let interval;
 let respondedAt;
+let pendingPromise; // save a pending promise to be able to cancel it
 
 export default {
   name: 'PacketSearch',
@@ -1138,6 +1162,7 @@ export default {
       },
       runningJob: undefined, // the currenty running hunt job obj
       sessions: {}, // sessions a new job applies to
+      loadingSessionsError: '',
       loadingSessions: false,
       // new job search form
       createFormError: '',
@@ -1190,7 +1215,7 @@ export default {
     setTimeout(() => {
       // wait for computed queries
       this.loadData();
-      this.loadSessions();
+      this.cancelAndLoad(true);
       this.loadNotifiers();
     });
 
@@ -1202,6 +1227,34 @@ export default {
     }, 500);
   },
   methods: {
+    /**
+     * Cancels the pending session query (if it's still pending) and runs a new
+     * query if requested
+     * @param {bool} runNewQuery  Whether to run a new spigraph query after
+     *                            canceling the request
+     */
+    cancelAndLoad: function (runNewQuery) {
+      if (pendingPromise) {
+        ConfigService.cancelEsTask(pendingPromise.cancelId)
+          .then((response) => {
+            pendingPromise.source.cancel();
+            pendingPromise = null;
+
+            if (!runNewQuery) {
+              this.loadingSessions = false;
+              if (!this.sessions.data) {
+                // show a page error if there is no data on the page
+                this.loadingSessionsError = 'You canceled the search';
+              }
+              return;
+            }
+
+            this.loadSessions();
+          });
+      } else if (runNewQuery) {
+        this.loadSessions();
+      }
+    },
     cancelCreateForm: function () {
       this.jobName = '';
       this.jobSearch = '';
@@ -1454,15 +1507,28 @@ export default {
     },
     loadSessions: function () {
       this.loadingSessions = true;
+      this.loadingSessionsError = '';
 
-      SessionsService.get(this.sessionsQuery)
-        .then((response) => {
-          this.sessions = response.data;
-          this.loadingSessions = false;
-        })
-        .catch((error) => {
-          this.sessions = undefined;
-        });
+      // create unique cancel id to make canel req for corresponding es task
+      const cancelId = Utils.createRandomString();
+      this.sessionsQuery.cancelId = cancelId;
+
+      const source = Vue.axios.CancelToken.source();
+      const cancellablePromise = SessionsService.get(this.sessionsQuery, source.token);
+
+      // set pending promise info so it can be cancelled
+      pendingPromise = { cancellablePromise, source, cancelId };
+
+      cancellablePromise.then((response) => {
+        pendingPromise = null;
+        this.sessions = response.data;
+        this.loadingSessions = false;
+      }).catch((error) => {
+        pendingPromise = null;
+        this.sessions = {};
+        this.loadingSessions = false;
+        this.loadingSessionsError = 'Problem loading sessions. Try narrowing down your results on the sessions page first.';
+      });
     },
     /* retrieves the notifiers that have been configured */
     loadNotifiers: function () {
@@ -1473,6 +1539,11 @@ export default {
     }
   },
   beforeDestroy: function () {
+    if (pendingPromise) {
+      pendingPromise.source.cancel();
+      pendingPromise = null;
+    }
+
     if (interval) { clearInterval(interval); }
   }
 };

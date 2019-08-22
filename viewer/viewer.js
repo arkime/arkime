@@ -2906,7 +2906,7 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
     processedRo[fields.rootId] = true;
 
     query.query.bool.filter.push({term: {rootId: fields.rootId}});
-    Db.searchPrimary(indices, 'session', query, function(err, result) {
+    Db.searchPrimary(indices, 'session', query, null, function (err, result) {
       if (err || result === undefined || result.hits === undefined || result.hits.hits === undefined) {
         console.log("ERROR fetching matching sessions", err, result);
         return nextCb(null);
@@ -2939,7 +2939,7 @@ function sessionsListFromQuery(req, res, fields, cb) {
     if (Config.debug) {
       console.log("sessionsListFromQuery query", JSON.stringify(query, null, 1));
     }
-    Db.searchPrimary(indices, 'session', query, function(err, result) {
+    Db.searchPrimary(indices, 'session', query, null, function (err, result) {
       if (err || result.error) {
           console.log("ERROR - Could not fetch list of sessions.  Err: ", err,  " Result: ", result, "query:", query);
           return res.send("Could not fetch list of sessions.  Err: " + err + " Result: " + result);
@@ -3421,7 +3421,17 @@ app.post('/estask/cancel', logAction(), function(req, res) {
   }
 
   Db.taskCancel(req.body.taskId, (err, result) => {
-    return res.send(JSON.stringify({success: true, text: result}));
+    return res.send(JSON.stringify({ success: true, text: result }));
+  });
+});
+
+app.post('/estask/cancelById', logAction(), function(req, res) {
+  if (!req.body || !req.body.cancelId) {
+    return res.molochError(403, 'Missing cancel ID');
+  }
+
+  Db.cancelByOpaqueId(req.body.cancelId, (err, result) => {
+    return res.send(JSON.stringify({ success: true, text: result }));
   });
 });
 
@@ -4222,6 +4232,10 @@ app.use('/buildQuery.json', logAction('query'), noCacheJson, function(req, res, 
 app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson, function (req, res) {
   var graph = {};
   var map = {};
+
+  let options;
+  if (req.query.cancelId) { options = { cancelId: req.query.cancelId }; }
+
   buildSessionQuery(req, function (bsqErr, query, indices) {
     if (bsqErr) {
       const r = {
@@ -4233,21 +4247,27 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
         health: Db.healthCache(),
         data:[]
       };
-      res.send(r);
-      return;
+      return res.send(r);
     }
 
     let addMissing = false;
     if (req.query.fields) {
       query._source = queryValueToArray(req.query.fields);
-      ["node", "srcIp", "srcPort", "dstIp", "dstPort"].forEach(function(item) {
+      ['node', 'srcIp', 'srcPort', 'dstIp', 'dstPort'].forEach((item) => {
         if (query._source.indexOf(item) === -1) {
           query._source.push(item);
         }
       });
     } else {
       addMissing = true;
-      query._source = ["ipProtocol", "rootId", "totDataBytes", "srcDataBytes", "dstDataBytes", "firstPacket", "lastPacket", "srcIp", "srcPort", "dstIp", "dstPort", "totPackets", "srcPackets", "dstPackets", "totBytes", "srcBytes", "dstBytes", "node", "http.uri", "srcGEO", "dstGEO", "email.subject", "email.src", "email.dst", "email.filename", "dns.host", "cert", "irc.channel", "http.xffGEO"];
+      query._source = [
+        'ipProtocol', 'rootId', 'totDataBytes', 'srcDataBytes',
+        'dstDataBytes', 'firstPacket', 'lastPacket', 'srcIp', 'srcPort',
+        'dstIp', 'dstPort', 'totPackets', 'srcPackets', 'dstPackets',
+        'totBytes', 'srcBytes', 'dstBytes', 'node', 'http.uri', 'srcGEO',
+        'dstGEO', 'email.subject', 'email.src', 'email.dst', 'email.filename',
+        'dns.host', 'cert', 'irc.channel', 'http.xffGEO'
+      ];
     }
 
     if (query.aggregations && query.aggregations.dbHisto) {
@@ -4258,12 +4278,12 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
       console.log(`sessions.json ${indices} query`, JSON.stringify(query, null, 1));
     }
 
-    Promise.all([Db.searchPrimary(indices, 'session', query),
+    Promise.all([Db.searchPrimary(indices, 'session', query, options),
                  Db.numberOfDocuments('sessions2-*'),
                  Db.healthCachePromise()
     ]).then(([sessions, total, health]) => {
       if (Config.debug) {
-        console.log("sessions.json result", util.inspect(sessions, false, 50));
+        console.log('sessions.json result', util.inspect(sessions, false, 50));
       }
 
       if (sessions.error) { throw sessions.err; }
@@ -4285,7 +4305,7 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
         }
 
         if (addMissing) {
-          ["srcPackets", "dstPackets", "srcBytes", "dstBytes", "srcDataBytes", "dstDataBytes"].forEach(function(item) {
+          ['srcPackets', 'dstPackets', 'srcBytes', 'dstBytes', 'srcDataBytes', 'dstDataBytes'].forEach(function(item) {
             if (fields[item] === undefined) {
               fields[item] = -1;
             }
@@ -4299,6 +4319,7 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
           });
         }
       }, function () {
+        setTimeout(() => {
         var r = {recordsTotal: total.count,
                  recordsFiltered: (results?results.total:0),
                  graph: graph,
@@ -4310,9 +4331,10 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
           res.send(r);
         } catch (c) {
         }
+      }, 1000);
       });
     }).catch ((err) => {
-      console.log("ERROR - /sessions.json error", err);
+      console.log('ERROR - /sessions.json error', err);
       var r = {recordsTotal: 0,
                recordsFiltered: 0,
                graph: {},
@@ -4333,6 +4355,9 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
       return res.molochError(403, bsqErr.toString());
     }
 
+    let options;
+    if (req.query.cancelId) { options = { cancelId: req.query.cancelId }; }
+
     delete query.sort;
     query.size = 0;
     var size = +req.query.size || 20;
@@ -4349,7 +4374,7 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
 
     Promise.all([Db.healthCachePromise(),
                  Db.numberOfDocuments('sessions2-*'),
-                 Db.searchPrimary(indices, 'session', query)
+                 Db.searchPrimary(indices, 'session', query, options)
                 ])
     .then(([health, total, result]) => {
       if (result.error) {throw result.error;}
@@ -4505,7 +4530,7 @@ app.get('/spiview.json', logAction('spiview'), recordResponseTime, noCacheJson, 
 
     async.parallel({
       spi: function (sessionsCb) {
-        Db.searchPrimary(indices, 'session', query, function(err, result) {
+        Db.searchPrimary(indices, 'session', query, null, function (err, result) {
           if (Config.debug) {
             console.log("spiview.json result", util.inspect(result, false, 50));
           }
@@ -4715,11 +4740,14 @@ function buildConnections(req, res, cb) {
       query._source.push('dstPort');
     }
 
+    let options;
+    if (req.query.cancelId) { options = { cancelId: req.query.cancelId }; }
+
     if (Config.debug) {
       console.log('buildConnections query', JSON.stringify(query, null, 2));
     }
 
-    Db.searchPrimary(indices, 'session', query, function (err, graph) {
+    Db.searchPrimary(indices, 'session', query, options, function (err, graph) {
       if (Config.debug) {
         console.log('buildConnections result', JSON.stringify(graph, null, 2));
       }
@@ -4981,7 +5009,7 @@ app.get('/multiunique.txt', logAction(), function(req, res) {
     if (Config.debug > 2) {
       console.log("multiunique aggregations", indices, JSON.stringify(query, false, 2));
     }
-    Db.searchPrimary(indices, 'session', query, function(err, result) {
+    Db.searchPrimary(indices, 'session', query, null, function (err, result) {
       if (err) {
         console.log('multiunique ERROR', err);
         res.status(400);
@@ -5082,7 +5110,7 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
     }
     query.size = 0;
     console.log("unique aggregations", indices, JSON.stringify(query));
-    Db.searchPrimary(indices, 'session', query, function(err, result) {
+    Db.searchPrimary(indices, 'session', query, null, function (err, result) {
       if (err) {
         console.log("Error", query, err);
         return doneCb?doneCb():res.end();
@@ -5654,7 +5682,7 @@ app.get('/bodyHash/:hash', logAction('bodyhash'), function(req, res) {
     if (Config.debug) {
       console.log(`sessions.json ${indices} query`, JSON.stringify(query, null, 1));
     }
-    Db.searchPrimary(indices, 'session', query, function(err, sessions) {
+    Db.searchPrimary(indices, 'session', query, null, function (err, sessions) {
       if (err ) {
         console.log ("Error -> Db Search ", err);
         res.status(400);
@@ -5952,7 +5980,7 @@ app.get('/:nodeName/entirePcap/:id.pcap', checkProxyRequest, function(req, res) 
 
   console.log("entirePcap query", JSON.stringify(query));
 
-  Db.searchPrimary('sessions2-*', 'session', query, function(err, data) {
+  Db.searchPrimary('sessions2-*', 'session', query, null, function (err, data) {
     async.forEachSeries(data.hits.hits, function(item, nextCb) {
       writePcap(res, Db.session2Sid(item), options, nextCb);
     }, function (err) {

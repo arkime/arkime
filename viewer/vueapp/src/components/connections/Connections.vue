@@ -6,7 +6,7 @@
     <moloch-search
       :start="query.start"
       :timezone="user.settings.timezone"
-      @changeSearch="loadData">
+      @changeSearch="cancelAndLoad(true)">
     </moloch-search> <!-- /search navbar -->
 
     <!-- connections sub navbar -->
@@ -261,7 +261,8 @@
 
       <!-- loading overlay -->
       <moloch-loading
-        v-if="loading && !error">
+        v-if="loading && !error"
+        @cancel="cancelAndLoad">
       </moloch-loading> <!-- /loading overlay -->
 
       <!-- page error -->
@@ -386,11 +387,15 @@ import MolochNoResults from '../utils/NoResults';
 import MolochFieldTypeahead from '../utils/FieldTypeahead';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
+import ConnectionsService from './ConnectionsService';
+import ConfigService from '../utils/ConfigService';
 // import external
 import Vue from 'vue';
 import * as d3 from 'd3';
 import saveSvgAsPng from 'save-svg-as-png';
 import { mixin as clickaway } from 'vue-clickaway';
+// import utils
+import Utils from '../utils/utils';
 
 // d3 force directed graph vars/functions ---------------------------------- */
 let colors, foregroundColor;
@@ -407,6 +412,7 @@ let nodeScaleFactor = 0;
 let maxLog = Math.ceil(Math.pow(Math.E, 9));
 /* eslint-disable no-useless-escape */
 let idRegex = /[\[\]:. ]/g;
+let pendingPromise; // save a pending promise to be able to cancel it
 
 // drag helpers
 function dragstarted (d) {
@@ -564,10 +570,10 @@ export default {
   },
   watch: {
     '$route.query.length': function (newVal, oldVal) {
-      this.loadData();
+      this.cancelAndLoad(true);
     },
     '$route.query.minConn': function (newVal, oldVal) {
-      this.loadData();
+      this.cancelAndLoad(true);
     },
     '$route.query.nodeDist': function (newVal, oldVal) {
       simulation.force('link',
@@ -583,10 +589,10 @@ export default {
       simulation.alphaTarget(0.3).restart();
     },
     '$route.query.srcField': function (newVal, oldVal) {
-      this.loadData();
+      this.cancelAndLoad(true);
     },
     '$route.query.dstField': function (newVal, oldVal) {
-      this.loadData();
+      this.cancelAndLoad(true);
     }
   },
   mounted: function () {
@@ -597,7 +603,7 @@ export default {
     foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
     colors = ['', this.primaryColor, this.tertiaryColor, this.secondaryColor];
 
-    this.loadData();
+    this.cancelAndLoad(true);
 
     // close any node/link popups if the user presses escape
     window.addEventListener('keyup', closePopupsOnEsc);
@@ -606,6 +612,34 @@ export default {
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
+    /**
+     * Cancels the pending session query (if it's still pending) and runs a new
+     * query if requested
+     * @param {bool} runNewQuery  Whether to run a new connections query after
+     *                            canceling the request
+     */
+    cancelAndLoad: function (runNewQuery) {
+      if (pendingPromise) {
+        ConfigService.cancelEsTask(pendingPromise.cancelId)
+          .then((response) => {
+            pendingPromise.source.cancel();
+            pendingPromise = null;
+
+            if (!runNewQuery) {
+              this.loading = false;
+              if (!this.fields.length) {
+                // show a page error if there is no data on the page
+                this.error = 'You canceled the search';
+              }
+              return;
+            }
+
+            this.loadData();
+          });
+      } else if (runNewQuery) {
+        this.loadData();
+      }
+    },
     changeLength: function () {
       this.$router.push({
         query: {
@@ -677,7 +711,7 @@ export default {
       } else { // it's hidden
         // add it to the visible headers list
         list.push(id);
-        this.loadData();
+        this.cancelAndLoad(true);
       }
 
       this.saveVisibleFields();
@@ -731,17 +765,28 @@ export default {
       }
       this.query.fields = fields.join(',');
 
-      this.$http.get('connections.json', { params: this.query })
-        .then((response) => {
-          this.error = '';
-          this.loading = false;
-          // IMPORTANT: this kicks off drawing the connections graph
-          this.getFields(response.data);
-          this.recordsFiltered = response.data.recordsFiltered;
-        }, (error) => {
-          this.loading = false;
-          this.error = error.text || error;
-        });
+      // create unique cancel id to make canel req for corresponding es task
+      const cancelId = Utils.createRandomString();
+      this.query.cancelId = cancelId;
+
+      const source = Vue.axios.CancelToken.source();
+      const cancellablePromise = ConnectionsService.get(this.query, source.token);
+
+      // set pending promise info so it can be cancelled
+      pendingPromise = { cancellablePromise, source, cancelId };
+
+      cancellablePromise.then((response) => {
+        pendingPromise = null;
+        this.error = '';
+        this.loading = false;
+        // IMPORTANT: this kicks off drawing the connections graph
+        this.getFields(response.data);
+        this.recordsFiltered = response.data.recordsFiltered;
+      }).catch((error) => {
+        pendingPromise = null;
+        this.loading = false;
+        this.error = error.text || error;
+      });
     },
     getFields: function (connectionsData) {
       FieldService.get(true)
@@ -1283,6 +1328,11 @@ export default {
     }
   },
   beforeDestroy: function () {
+    if (pendingPromise) {
+      pendingPromise.source.cancel();
+      pendingPromise = null;
+    }
+
     // remove listeners
     window.removeEventListener('resize', resize);
     window.removeEventListener('keyup', closePopupsOnEsc);

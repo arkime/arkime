@@ -167,9 +167,41 @@ exports.search = function (index, type, query, options, cb) {
     cb = options;
     options = undefined;
   }
-  var params = {index: fixIndex(index), type: type, body: query, rest_total_hits_as_int: true};
+
+  let params = {
+    index: fixIndex(index),
+    type: type,
+    body: query, rest_total_hits_as_int: true
+  };
+
   exports.merge(params, options);
+
   return internals.elasticSearchClient.search(params, cb);
+};
+
+exports.cancelByOpaqueId = function(cancelId, cb) {
+  internals.elasticSearchClient.tasks.list({detailed: "true", group_by: "parents"})
+    .then((results) => {
+      let found = false;
+
+      for (let resultKey in results.tasks) {
+        let result = results.tasks[resultKey];
+        if (result.headers &&
+          result.headers['X-Opaque-Id'] &&
+          result.headers['X-Opaque-Id'] === cancelId) {
+          found = true;
+          internals.elasticSearchClient.tasks.cancel({ taskId: resultKey }, () => {});
+        }
+      }
+
+      // not found, return error
+      if (!found) { return cb('cancel id not found, cannot cancel es task(s)'); }
+
+      return cb();
+    })
+    .catch((error) => {
+      return cb(error);
+    });
 };
 
 function searchScrollInternal(index, type, query, options, cb) {
@@ -239,13 +271,15 @@ exports.searchScroll = function (index, type, query, options, cb) {
 };
 
 exports.searchPrimary = function (index, type, query, options, cb) {
-  if (!cb) {
-    cb = options;
-    options = undefined;
+  // ALW - FIXME - 6.1+ has removed primary_first :(
+  let params = { preference: 'primaries', ignore_unavailable: 'true' };
+
+  if (options && options.cancelId) {
+    // set X-Opaque-Id header on the params so the task can be canceled
+    params.headers = { 'X-Opaque-Id': options.cancelId };
+    delete options.cancelId;
   }
 
-  // ALW - FIXME - 6.1+ has removed primary_first :(
-  var params = {preference: "primaries", ignore_unavailable: "true"};
   exports.merge(params, options);
   return exports.searchScroll(index, type, query, params, cb);
 };

@@ -10,7 +10,7 @@
       :num-matching-sessions="sessions.recordsFiltered"
       :start="query.start"
       :timezone="user.settings.timezone"
-      @changeSearch="loadData">
+      @changeSearch="cancelAndLoad(true)">
     </moloch-search> <!-- /search navbar -->
 
     <!-- paging navbar -->
@@ -34,7 +34,7 @@
         :map-data="mapData"
         :primary="true"
         :timezone="user.settings.timezone"
-        @fetchMapData="loadData">
+        @fetchMapData="cancelAndLoad(true)">
       </moloch-visualizations> <!-- /session visualizations -->
 
       <!-- sticky (opened) sessions -->
@@ -449,7 +449,8 @@
 
       <!-- loading overlay -->
       <moloch-loading
-        v-if="loading && !error">
+        v-if="loading && !error"
+        @cancel="cancelAndLoad(false)">
       </moloch-loading> <!-- /loading overlay -->
 
       <!-- page error -->
@@ -474,10 +475,17 @@
 </template>
 
 <script>
-import UserService from '../users/UserService';
-import MolochSearch from '../search/Search';
+// import external
+import Vue from 'vue';
+import Sortable from 'sortablejs';
+import '../../../../public/colResizable.js';
+// import services
 import FieldService from '../search/FieldService';
 import SessionsService from './SessionsService';
+import UserService from '../users/UserService';
+import ConfigService from '../utils/ConfigService';
+// import components
+import MolochSearch from '../search/Search';
 import customCols from './customCols.json';
 import MolochPaging from '../utils/Pagination';
 import ToggleBtn from '../utils/ToggleBtn';
@@ -487,9 +495,8 @@ import MolochNoResults from '../utils/NoResults';
 import MolochSessionDetail from './SessionDetail';
 import MolochVisualizations from '../visualizations/Visualizations';
 import MolochStickySessions from './StickySessions';
-
-import Sortable from 'sortablejs';
-import '../../../../public/colResizable.js';
+// import utils
+import Utils from '../utils/utils';
 
 const defaultTableState = {
   order: [['firstPacket', 'desc']],
@@ -522,6 +529,9 @@ const defaultColWidths = {
   'node': 100,
   'info': 250
 };
+
+// save a pending promise to be able to cancel it
+let pendingPromise;
 
 export default {
   name: 'Sessions',
@@ -633,6 +643,37 @@ export default {
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
+    /* SESSIONS DATA */
+    /**
+     * Cancels the pending session query (if it's still pending) and runs a new
+     * query if requested
+     * @param {bool} runNewQuery  Whether to run a new sessions query after
+     *                            canceling the request
+     * @param {bool} updateTable  Whether the table needs updating
+     */
+    cancelAndLoad: function (runNewQuery, updateTable) {
+      if (pendingPromise) {
+        ConfigService.cancelEsTask(pendingPromise.cancelId)
+          .then((response) => {
+            pendingPromise.source.cancel();
+            pendingPromise = null;
+
+            if (!runNewQuery) {
+              this.loading = false;
+              if (!this.sessions.data) {
+                // show a page error if there is no data on the page
+                this.error = 'You canceled the search';
+              }
+              return;
+            }
+
+            this.loadData(updateTable);
+          });
+      } else if (runNewQuery) {
+        this.loadData(updateTable);
+      }
+    },
+
     /* SESSION DETAIL */
     /**
      * Toggles the display of the session detail for each session
@@ -730,7 +771,7 @@ export default {
 
       this.saveTableState();
 
-      this.loadData(true);
+      this.cancelAndLoad(true, true);
     },
     /**
      * Determines the sort order of a column
@@ -859,7 +900,7 @@ export default {
       this.saveTableState();
 
       if (reloadData) { // need data from the server
-        this.loadData(true);
+        this.cancelAndLoad(true, true);
       } else { // have all the data, just need to reload the table
         this.reloadTable();
       }
@@ -921,7 +962,7 @@ export default {
 
       this.saveTableState();
 
-      this.loadData(true);
+      this.cancelAndLoad(true, true);
     },
     /**
      * Deletes a previously saved custom column configuration
@@ -1024,7 +1065,7 @@ export default {
       this.saveInfoFields();
 
       if (reloadData) { // need data from the server
-        this.loadData(true);
+        this.cancelAndLoad(true, true);
       } else { // have all the data, just need to reload the table
         this.reloadTable();
       }
@@ -1040,7 +1081,7 @@ export default {
       // unset the user setting for info fields
       this.saveInfoFields();
       // load the table data (assume missing fields)
-      this.loadData(true);
+      this.cancelAndLoad(true, true);
     },
     /* Saves the info fields on the user settings */
     saveInfoFields: function () {
@@ -1179,7 +1220,7 @@ export default {
       if (!this.user.settings.manualQuery ||
         !JSON.parse(this.user.settings.manualQuery) ||
         componentInitialized) {
-        this.loadData();
+        this.cancelAndLoad(true);
       } else {
         this.loading = false;
         this.error = 'Now, issue a query!';
@@ -1241,41 +1282,51 @@ export default {
         }
       }
 
-      SessionsService.get(this.query)
-        .then((response) => {
-          this.stickySessions = []; // clear sticky sessions
-          this.error = '';
-          this.loading = false;
-          this.sessions = response.data;
-          this.mapData = response.data.map;
-          this.graphData = response.data.graph;
+      // create unique cancel id to make canel req for corresponding es task
+      const cancelId = Utils.createRandomString();
+      this.query.cancelId = cancelId;
 
-          if (updateTable) { this.reloadTable(); }
+      const source = Vue.axios.CancelToken.source();
+      const cancellablePromise = SessionsService.get(this.query, source.token);
 
-          if (parseInt(this.$route.query.openAll) === 1) {
-            this.openAll();
-          } else { // open the previously opened sessions
-            for (let sessionId of expandedSessions) {
-              for (let session of this.sessions.data) {
-                if (session.id === sessionId) {
-                  session.expanded = true;
-                  this.stickySessions.push(session);
-                }
+      // set pending promise info so it can be cancelled
+      pendingPromise = { cancellablePromise, source, cancelId };
+
+      cancellablePromise.then((response) => {
+        pendingPromise = null;
+        this.stickySessions = []; // clear sticky sessions
+        this.error = '';
+        this.loading = false;
+        this.sessions = response.data;
+        this.mapData = response.data.map;
+        this.graphData = response.data.graph;
+
+        if (updateTable) { this.reloadTable(); }
+
+        if (parseInt(this.$route.query.openAll) === 1) {
+          this.openAll();
+        } else { // open the previously opened sessions
+          for (let sessionId of expandedSessions) {
+            for (let session of this.sessions.data) {
+              if (session.id === sessionId) {
+                session.expanded = true;
+                this.stickySessions.push(session);
               }
             }
           }
+        }
 
-          // initialize resizable columns now that there is data
-          if (!colResizeInitialized) { this.initializeColResizable(); }
+        // initialize resizable columns now that there is data
+        if (!colResizeInitialized) { this.initializeColResizable(); }
 
-          // initialize sortable table
-          if (!colDragDropInitialized) { this.initializeColDragDrop(); }
-        })
-        .catch((error) => {
-          this.sessions.data = undefined;
-          this.error = error.text || error;
-          this.loading = false;
-        });
+        // initialize sortable table
+        if (!colDragDropInitialized) { this.initializeColDragDrop(); }
+      }).catch((error) => {
+        pendingPromise = null;
+        this.sessions.data = undefined;
+        this.error = error.text || error;
+        this.loading = false;
+      });
     },
     /**
      * Saves the table state
@@ -1509,7 +1560,7 @@ export default {
     changePaging: function (args) {
       this.query.start = args.start;
       this.query.length = args.length;
-      this.loadData();
+      this.cancelAndLoad(true);
     }
   },
   beforeDestroy: function () {
@@ -1518,6 +1569,11 @@ export default {
     componentInitialized = false;
     colResizeInitialized = false;
     colDragDropInitialized = false;
+
+    if (pendingPromise) {
+      pendingPromise.source.cancel();
+      pendingPromise = null;
+    }
 
     if (timeout) { clearTimeout(timeout); }
 
