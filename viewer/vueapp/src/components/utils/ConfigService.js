@@ -74,7 +74,7 @@ export default {
    */
   cancelEsTask: function (cancelId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post('estask/cancelOpaque', { cancelId: cancelId })
+      Vue.axios.post('estask/cancelById', { cancelId: cancelId })
         .then((response) => {
           resolve(response);
         }, (error) => {
