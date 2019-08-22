@@ -4,7 +4,8 @@
 
     <!-- error -->
     <div v-if="error"
-      class="error-div text-muted-more mt-2 text-right">
+      :title="errorTitle"
+      class="error-div text-muted-more mt-2 text-right pull-right cursor-help">
       <small>
         {{ error || 'Network Error' }} - try
         <a @click="reload"
@@ -68,6 +69,7 @@ export default {
     return {
       error: null,
       esHealth: null,
+      errorTitle: null,
       showTooltip: true
     };
   },
@@ -93,9 +95,16 @@ export default {
       this.$http.get('eshealth.json')
         .then((response) => {
           this.esHealth = response.data;
+          this.error = null;
+          this.errorTite = null;
         }, (error) => {
-          this.error = error;
           console.log(error);
+          this.error = error;
+          // truncate the error and show the full error in a title attribute
+          this.errorTitle = this.error;
+          if (this.error.length > 50) {
+            this.error = this.error.substring(0, 50) + '...';
+          }
         });
     },
     reload: function () {

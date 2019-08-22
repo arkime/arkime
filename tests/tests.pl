@@ -392,6 +392,8 @@ if ($main::cmd eq "--fix") {
     print "  --reip file ip newip  Create file.tmp, replace ip with newip\n";
     print "  --viewer              viewer tests\n";
     print "                        This will init local ES, import data, start a viewer, run tests\n";
+    print "  --viewerstart         viewer tests without reloading pcap\n";
+    print "  --fuzz                Run fuzzloch\n";
     print " [default]              Run each .pcap file thru ../capture/moloch-capture and compare to .test file\n";
 } elsif ($main::cmd =~ "^--viewer") {
     doGeo();

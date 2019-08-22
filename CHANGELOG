@@ -16,7 +16,7 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.0.0 2019/08/xx
+2.0.0 2019/08/19
   - NOTICE: This versions requires ES 6.7.x (6.8.2+/7.3+ recommended) or later
   - NOTICE: db.pl upgrade is required, see https://molo.ch/faq#how_do_i_upgrade_to_moloch_2
   - release - cyberchef 8.30.0, node 10.16.2, yara 3.10.0
