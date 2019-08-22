@@ -136,7 +136,8 @@
           </td>
           <!-- cell value -->
           <td v-for="(column, colindex) in computedColumns"
-            :key="column.id + colindex">
+            :key="column.id + colindex"
+            :class="{'break-all':column.breakword}">
             {{ calculateFormatValue(column, item, index) }}
           </td> <!-- /cell value -->
         </tr>
@@ -782,7 +783,7 @@ table thead tr th.ignore-element {
   padding: 0.1rem 0.5rem !important;
 }
 
-/* column clear button */
+/* column clear button ----------------------- */
 table thead th {
   position: relative;
 }
@@ -794,5 +795,10 @@ table thead th .btn-zero {
 }
 table thead th:hover .btn-zero {
   visibility: visible;
+}
+
+/* break words for long values in cells ------ */
+table tr td.break-all {
+  word-break: break-all;
 }
 </style>
