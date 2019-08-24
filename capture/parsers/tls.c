@@ -256,6 +256,7 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
                 break;
 
             if (etype == 0x2b && elen == 2) { // etype 0x2b is supported version
+                uint16_t supported_version = 0;
                 BSB_IMPORT_u16(ebsb, supported_version);
 
                 if (supported_version == 0x0304) {
