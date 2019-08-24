@@ -54,7 +54,7 @@ sanitize:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	    $(INCLUDE_PCAP) \
 	    $(INCLUDE_OTHER) \
 	    -DBUILD_VERSION='"$(BUILD_VERSION)"'
-	$(CC) $(SANITIZE_FLAGS) -rdynamic -ggdb $(O_FILES) -o moloch-capture \
+	$(CC) $(SANITIZE_FLAGS) -rdynamic -ggdb -pthread $(O_FILES) -o moloch-capture \
             @UNDEFINED_FLAGS@ \
 	    $(LIB_PCAP) \
 	    $(LIB_OTHER) \
@@ -68,7 +68,7 @@ fuzzloch:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	    $(INCLUDE_PCAP) \
 	    $(INCLUDE_OTHER) \
 	    -DBUILD_VERSION='"$(BUILD_VERSION)"'
-	$(CC) $(FUZZ_FLAGS) -rdynamic -ggdb $(O_FILES) -o fuzzloch-capture \
+	$(CC) $(FUZZ_FLAGS) -rdynamic -ggdb -pthread $(O_FILES) -o fuzzloch-capture \
             @UNDEFINED_FLAGS@ \
 	    $(LIB_PCAP) \
 	    $(LIB_OTHER) \
