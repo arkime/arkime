@@ -143,21 +143,10 @@ LOCAL int tls_is_grease_value(uint32_t val)
     return 1;
 }
 /******************************************************************************/
-LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned char *data, int len)
+LOCAL void tls_session_version(MolochSession_t *session, uint16_t ver)
 {
-    BSB bsb;
-    BSB_INIT(bsb, data, len);
-
-    uint16_t ver = 0;
-    BSB_IMPORT_u16(bsb, ver);
-    BSB_IMPORT_skip(bsb, 32);     // Random
-
-    if(BSB_IS_ERROR(bsb))
-        return;
-
     char str[100];
 
-    /* Parse SSL/TLS version */
     switch (ver) {
     case 0x0300:
         moloch_field_string_add(verField, session, "SSLv3", 5, TRUE);
@@ -182,6 +171,28 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
         snprintf(str, sizeof(str), "0x%04x", ver);
         moloch_field_string_add(verField, session, str, 6, TRUE);
     }
+}
+/******************************************************************************/
+LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned char *data, int len)
+{
+    BSB bsb;
+    BSB_INIT(bsb, data, len);
+
+    uint16_t ver = 0;
+    BSB_IMPORT_u16(bsb, ver);
+    BSB_IMPORT_skip(bsb, 32);     // Random
+
+    if(BSB_IS_ERROR(bsb))
+        return;
+
+    char str[100];
+    int  add12Later = FALSE;
+
+    // If ver is 0x303 that means there should be an extended header with actual version
+    if (ver != 0x0303)
+        tls_session_version(session, ver);
+    else
+        add12Later = TRUE;
 
     /* Parse sessionid, only for SSLv3 - TLSv1.2 */
     if (ver >= 0x0300 && ver <= 0x0303) {
@@ -244,10 +255,22 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
             if (elen > BSB_REMAINING(ebsb))
                 break;
 
+            if (etype == 0x2b && elen == 2) { // etype 0x2b is supported version
+                BSB_IMPORT_u16(ebsb, supported_version);
+
+                if (supported_version == 0x0304) {
+                    tls_session_version(session, supported_version);
+                    add12Later = FALSE;
+                }
+            }
+
             BSB_IMPORT_skip (ebsb, elen);
         }
         BSB_EXPORT_rewind(eja3bsb, 1); // Remove last -
     }
+
+    if (add12Later)
+        tls_session_version(session, 0x303);
 
     BSB_EXPORT_sprintf(ja3bsb, "%d,%d,%.*s", ver, cipher, (int)BSB_LENGTH(eja3bsb), eja3);
 

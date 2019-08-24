@@ -1,0 +1,281 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "communityId" : "1:SB1sNGEQ5U+jmB3am3T8bnBNTKI=",
+            "dns" : {
+               "ASN" : [
+                  "AS13335 Cloudflare, Inc.",
+                  "AS13335 Cloudflare, Inc.",
+                  "AS13335 Cloudflare, Inc.",
+                  "AS13335 Cloudflare, Inc."
+               ],
+               "GEO" : [
+                  "US",
+                  "US",
+                  "US",
+                  "US"
+               ],
+               "RIR" : [
+                  "ARIN",
+                  "",
+                  "",
+                  "ARIN"
+               ],
+               "host" : [
+                  "enabled.tls13.com"
+               ],
+               "hostCnt" : 1,
+               "ip" : [
+                  "104.16.125.34",
+                  "2606:4700:0000:0000:0000:0000:6810:7e22",
+                  "2606:4700:0000:0000:0000:0000:6810:7d22",
+                  "104.16.126.34"
+               ],
+               "ipCnt" : 4,
+               "opcode" : [
+                  "QUERY"
+               ],
+               "opcodeCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "qcCnt" : 1,
+               "qt" : [
+                  "AAAA",
+                  "A"
+               ],
+               "qtCnt" : 2,
+               "status" : [
+                  "NOERROR"
+               ],
+               "statusCnt" : 1
+            },
+            "dstBytes" : 242,
+            "dstDataBytes" : 158,
+            "dstIp" : "192.168.65.1",
+            "dstMac" : [
+               "f6:16:36:bc:f9:c6"
+            ],
+            "dstMacCnt" : 1,
+            "dstPackets" : 2,
+            "dstPayload8" : "ac66818000010002",
+            "dstPort" : 53,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1565212114674,
+            "ipProtocol" : 17,
+            "lastPacket" : 1565212114677,
+            "length" : 2,
+            "node" : "test",
+            "packetLen" : [
+               93,
+               93,
+               125,
+               149
+            ],
+            "packetPos" : [
+               24,
+               117,
+               210,
+               335
+            ],
+            "protocol" : [
+               "udp",
+               "dns"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 154,
+            "srcDataBytes" : 70,
+            "srcIp" : "192.168.65.3",
+            "srcMac" : [
+               "02:50:00:00:00:01"
+            ],
+            "srcMacCnt" : 1,
+            "srcPackets" : 2,
+            "srcPayload8" : "ac66010000010000",
+            "srcPort" : 42060,
+            "srcRIR" : "ARIN",
+            "timestamp" : "SET",
+            "totBytes" : 396,
+            "totDataBytes" : 228,
+            "totPackets" : 4
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-190807",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:PpyBSRmS+2VJ1i6VN2xoHEI0ljc=",
+            "dstASN" : "AS13335 Cloudflare, Inc.",
+            "dstBytes" : 5056,
+            "dstDataBytes" : 4238,
+            "dstGEO" : "US",
+            "dstIp" : "104.16.125.34",
+            "dstMac" : [
+               "f6:16:36:bc:f9:c6"
+            ],
+            "dstMacCnt" : 1,
+            "dstPackets" : 15,
+            "dstPayload8" : "160303007a020000",
+            "dstPort" : 443,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1565212114677,
+            "http" : {
+               "host" : [
+                  "enabled.tls13.com"
+               ],
+               "hostCnt" : 1
+            },
+            "initRTT" : 9,
+            "ipProtocol" : 6,
+            "lastPacket" : 1565212114804,
+            "length" : 127,
+            "node" : "test",
+            "packetLen" : [
+               90,
+               78,
+               70,
+               587,
+               70,
+               1436,
+               70,
+               1436,
+               70,
+               328,
+               70,
+               150,
+               116,
+               70,
+               119,
+               105,
+               133,
+               70,
+               70,
+               639,
+               101,
+               70,
+               718,
+               101,
+               70,
+               94,
+               70,
+               70,
+               70,
+               70,
+               70
+            ],
+            "packetPos" : [
+               484,
+               574,
+               652,
+               722,
+               1309,
+               1379,
+               2815,
+               2885,
+               4321,
+               4391,
+               4719,
+               4789,
+               4939,
+               5055,
+               5125,
+               5244,
+               5349,
+               5482,
+               5552,
+               5622,
+               6261,
+               6362,
+               6432,
+               7150,
+               7251,
+               7321,
+               7415,
+               7485,
+               7555,
+               7625,
+               7695
+            ],
+            "protocol" : [
+               "tls",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 1729,
+            "srcDataBytes" : 845,
+            "srcIp" : "192.168.65.3",
+            "srcMac" : [
+               "02:50:00:00:00:01"
+            ],
+            "srcMacCnt" : 1,
+            "srcPackets" : 16,
+            "srcPayload8" : "1603010200010001",
+            "srcPort" : 46638,
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 13,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 14,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "tls" : {
+               "cipher" : [
+                  "TLS_AES_256_GCM_SHA384"
+               ],
+               "cipherCnt" : 1,
+               "dstSessionId" : [
+                  "002ec375729614262a240f08055b7ef2a11799c7f032a7f5838890823f079bfc"
+               ],
+               "ja3" : [
+                  "eeadfd2f446a45ded96f804720a0c75b"
+               ],
+               "ja3Cnt" : 1,
+               "ja3s" : [
+                  "907bf3ecef1c987c889946b737b43de8"
+               ],
+               "ja3sCnt" : 1,
+               "ja3sstring" : [
+                  "771,4866,51-43"
+               ],
+               "ja3sstringCnt" : 1,
+               "ja3string" : [
+                  "771,4866-4867-4865-255,0-11-10-13172-16-22-23-49-13-43-45-51-21,29-23-30-25-24,0-1-2"
+               ],
+               "ja3stringCnt" : 1,
+               "srcSessionId" : [
+                  "002ec375729614262a240f08055b7ef2a11799c7f032a7f5838890823f079bfc"
+               ],
+               "version" : [
+                  "TLSv1.3"
+               ],
+               "versionCnt" : 1
+            },
+            "totBytes" : 6785,
+            "totDataBytes" : 5083,
+            "totPackets" : 31
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-190807",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+
