@@ -1990,6 +1990,52 @@ sub sessions2Update
           }
         }
       },
+      "suricata" : {
+	"properties" : {
+	  "action" : {
+	    "type" : "keyword"
+	  },
+	  "actionCnt" : {
+	    "type" : "long"
+	  },
+	  "category" : {
+	    "type" : "keyword"
+	  },
+	  "categoryCnt" : {
+	    "type" : "long"
+	  },
+	  "flowId" : {
+	    "type" : "keyword"
+	  },
+	  "flowIdCnt" : {
+	    "type" : "long"
+	  },
+	  "gid" : {
+	    "type" : "long"
+	  },
+	  "gidCnt" : {
+	    "type" : "long"
+	  },
+	  "severity" : {
+	    "type" : "long"
+	  },
+	  "severityCnt" : {
+	    "type" : "long"
+	  },
+	  "signature" : {
+	    "type" : "keyword"
+	  },
+	  "signatureCnt" : {
+	    "type" : "long"
+	  },
+	  "signatureId" : {
+	    "type" : "long"
+	  },
+	  "signatureIdCnt" : {
+	    "type" : "long"
+	  }
+	}
+      },
       "tags" : {
         "type" : "keyword"
       },
