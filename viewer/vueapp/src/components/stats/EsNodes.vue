@@ -105,13 +105,14 @@ export default {
         { id: 'read', name: 'Read/s', sort: 'read', doStats: true, default: true, width: 90, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.read); } },
         { id: 'write', name: 'Write/s', sort: 'write', doStats: true, default: true, width: 90, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.write); } },
         { id: 'searches', name: 'Searches/s', sort: 'searches', doStats: true, width: 100, default: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.searches); } },
+        { id: 'writesRejected', name: 'Write Tasks Rejected', sort: 'writesRejected', doStats: true, width: 100, default: true, canClear: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.writesRejected); } },
+
         // all the rest of the available stats
         { id: 'ip', name: 'IP', sort: 'ip', doStats: false, width: 100 },
         { id: 'ipExcluded', name: 'IP Excluded', sort: 'ipExcluded', doStats: false, width: 100 },
         { id: 'nodeExcluded', name: 'Node Excluded', sort: 'nodeExcluded', doStats: false, width: 125 },
         { id: 'nonHeapSize', name: 'Non Heap Size', sort: 'nonHeapSize', doStats: false, width: 100, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.nonHeapSize); } },
         { id: 'searchesTime', name: 'Search Time', sort: 'searchesTime', doStats: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.searchesTime); } },
-        { id: 'writesRejected', name: 'Write Tasks Rejected', sort: 'writesRejected', doStats: true, width: 100, canClear: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.writesRejected); } },
         { id: 'writesRejectedDelta', name: 'Write Tasks Rejected/s', sort: 'writesRejectedDelta', doStats: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.writesRejectedDelta); } },
         { id: 'writesCompleted', name: 'Write Tasks Completed', sort: 'writesCompleted', doStats: true, width: 100, canClear: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.writesCompleted); } },
         { id: 'writesCompletedDelta', name: 'Write Tasks Completed/s', sort: 'writesCompletedDelta', doStats: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.writesCompletedDelta); } },
