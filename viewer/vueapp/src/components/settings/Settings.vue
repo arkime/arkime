@@ -335,9 +335,8 @@
                 v-model="settings.sortColumn"
                 @change="update">
                 <option value="last">Last Used</option>
-                <option v-for="field in columns"
+                <option v-for="field in sortableColumns"
                   :key="field.dbField"
-                  v-if="field && !field.unsortable"
                   :value="field.dbField">
                   {{ field.friendlyName }}
                 </option>
@@ -499,27 +498,29 @@
                 </td>
                 <td>
                   <span v-if="item.sessionsColConfig">
-                    <label class="badge badge-secondary mr-1 mb-0 help-cursor"
-                      v-if="col && fieldsMap[col]"
-                      v-for="col in item.sessionsColConfig.visibleHeaders"
-                      v-b-tooltip.hover
-                      :title="fieldsMap[col].help"
-                      :key="col">
-                      {{ fieldsMap[col].friendlyName }}
-                    </label>
+                    <template v-for="col in item.sessionsColConfig.visibleHeaders">
+                      <label class="badge badge-secondary mr-1 mb-0 help-cursor"
+                        v-if="fieldsMap[col]"
+                        v-b-tooltip.hover
+                        :title="fieldsMap[col].help"
+                        :key="col">
+                        {{ fieldsMap[col].friendlyName }}
+                      </label>
+                    </template>
                   </span>
                 </td>
                 <td>
                   <span v-if="item.sessionsColConfig">
-                    <label class="badge badge-secondary mr-1 help-cursor"
-                      :title="fieldsMap[order[0]].help"
-                      v-for="order in item.sessionsColConfig.order"
-                      v-if="fieldsMap[order[0]]"
-                      v-b-tooltip.hover
-                      :key="order[0]">
-                      {{ fieldsMap[order[0]].friendlyName }}&nbsp;
-                      ({{ order[1] }})
-                    </label>
+                    <template v-for="order in item.sessionsColConfig.order">
+                      <label class="badge badge-secondary mr-1 help-cursor"
+                        :title="fieldsMap[order[0]].help"
+                        v-if="fieldsMap[order[0]]"
+                        v-b-tooltip.hover
+                        :key="order[0]">
+                        {{ fieldsMap[order[0]].friendlyName }}&nbsp;
+                        ({{ order[1] }})
+                      </label>
+                    </template>
                   </span>
                 </td>
                 <td>
@@ -865,14 +866,15 @@
                   Moloch Default
                 </td>
                 <td>
-                  <label class="badge badge-secondary mr-1 help-cursor"
-                    v-b-tooltip.hover
-                    :title="fieldsMap[col].help"
-                    v-for="col in defaultColConfig.columns"
-                    v-if="col && fieldsMap[col]"
-                    :key="col">
-                    {{ fieldsMap[col].friendlyName }}
-                  </label>
+                  <template v-for="col in defaultColConfig.columns">
+                    <label class="badge badge-secondary mr-1 help-cursor"
+                      v-b-tooltip.hover
+                      :title="fieldsMap[col].help"
+                      v-if="fieldsMap[col]"
+                      :key="col">
+                      {{ fieldsMap[col].friendlyName }}
+                    </label>
+                  </template>
                 </td>
                 <td>
                   <span v-for="order in defaultColConfig.order"
@@ -889,44 +891,46 @@
                 <td>&nbsp;</td>
               </tr> <!-- /default col configs -->
               <!-- col configs -->
-              <tr v-if="fieldsMap"
-                v-for="(config, index) in colConfigs"
-                :key="config.name">
-                <td>
-                  {{ config.name }}
-                </td>
-                <td>
-                  <label class="badge badge-secondary mr-1 help-cursor"
-                    :title="fieldsMap[col].help"
-                    v-b-tooltip.hover
-                    v-for="col in config.columns"
-                    v-if="col && fieldsMap[col]"
-                    :key="col">
-                    {{ fieldsMap[col].friendlyName }}
-                  </label>
-                </td>
-                <td>
-                  <span v-for="order in config.order"
-                    :key="order[0]">
-                    <label class="badge badge-secondary mr-1 help-cursor"
-                      :title="fieldsMap[order[0]].help"
-                      v-if="fieldsMap[order[0]]"
-                      v-b-tooltip.hover>
-                      {{ fieldsMap[order[0]].friendlyName }}&nbsp;
-                      ({{ order[1] }})
-                    </label>
-                  </span>
-                </td>
-                <td>
-                  <button type="button"
-                    class="btn btn-sm btn-danger pull-right"
-                    @click="deleteColConfig(config.name, index)">
-                    <span class="fa fa-trash-o">
-                    </span>&nbsp;
-                    Delete
-                  </button>
-                </td>
-              </tr> <!-- /col configs -->
+              <template v-if="fieldsMap">
+                <tr v-for="(config, index) in colConfigs"
+                  :key="config.name">
+                  <td>
+                    {{ config.name }}
+                  </td>
+                  <td>
+                    <template v-for="col in config.columns">
+                      <label class="badge badge-secondary mr-1 help-cursor"
+                        :title="fieldsMap[col].help"
+                        v-b-tooltip.hover
+                        v-if="fieldsMap[col]"
+                        :key="col">
+                        {{ fieldsMap[col].friendlyName }}
+                      </label>
+                    </template>
+                  </td>
+                  <td>
+                    <span v-for="order in config.order"
+                      :key="order[0]">
+                      <label class="badge badge-secondary mr-1 help-cursor"
+                        :title="fieldsMap[order[0]].help"
+                        v-if="fieldsMap[order[0]]"
+                        v-b-tooltip.hover>
+                        {{ fieldsMap[order[0]].friendlyName }}&nbsp;
+                        ({{ order[1] }})
+                      </label>
+                    </span>
+                  </td>
+                  <td>
+                    <button type="button"
+                      class="btn btn-sm btn-danger pull-right"
+                      @click="deleteColConfig(config.name, index)">
+                      <span class="fa fa-trash-o">
+                      </span>&nbsp;
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              </template> <!-- /col configs -->
               <!-- col config list error -->
               <tr v-if="colConfigError">
                 <td colspan="3">
@@ -997,32 +1001,33 @@
                 <td>&nbsp;</td>
               </tr> <!-- /default spiview field confg -->
               <!-- spiview field configs -->
-              <tr v-if="fieldsMap"
-                v-for="(config, index) in spiviewConfigs"
-                :key="config.name">
-                <td>
-                  {{ config.name }}
-                </td>
-                <td>
-                  <label class="badge badge-secondary mr-1 help-cursor"
-                    :title="fieldObj.help"
-                    v-b-tooltip.hover
-                    v-for="fieldObj in config.fieldObjs"
-                    :key="fieldObj.dbField">
-                    {{fieldObj.friendlyName}}
-                    ({{fieldObj.count}})
-                  </label>
-                </td>
-                <td>
-                  <button type="button"
-                    class="btn btn-sm btn-danger pull-right"
-                    @click="deleteSpiviewConfig(config.name, index)">
-                    <span class="fa fa-trash-o">
-                    </span>&nbsp;
-                    Delete
-                  </button>
-                </td>
-              </tr> <!-- /spiview field configs -->
+              <template v-if="fieldsMap">
+                <tr v-for="(config, index) in spiviewConfigs"
+                  :key="config.name">
+                  <td>
+                    {{ config.name }}
+                  </td>
+                  <td>
+                    <label class="badge badge-secondary mr-1 help-cursor"
+                      :title="fieldObj.help"
+                      v-b-tooltip.hover
+                      v-for="fieldObj in config.fieldObjs"
+                      :key="fieldObj.dbField">
+                      {{fieldObj.friendlyName}}
+                      ({{fieldObj.count}})
+                    </label>
+                  </td>
+                  <td>
+                    <button type="button"
+                      class="btn btn-sm btn-danger pull-right"
+                      @click="deleteSpiviewConfig(config.name, index)">
+                      <span class="fa fa-trash-o">
+                      </span>&nbsp;
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              </template> <!-- /spiview field configs -->
               <!-- spiview field config list error -->
               <tr v-if="spiviewConfigError">
                 <td colspan="3">
@@ -1622,16 +1627,17 @@
 
           <h3>
             Notifiers
-            <button v-if="notifierTypes"
-              v-for="notifier of notifierTypes"
-              :key="notifier.name"
-              class="btn btn-theme-tertiary btn-sm pull-right ml-1"
-              type="button"
-              @click="createNewNotifier(notifier)">
-              <span class="fa fa-plus-circle">
-              </span>&nbsp;
-              Create {{ notifier.name }} Notifier
-            </button>
+            <template v-if="notifierTypes">
+              <button v-for="notifier of notifierTypes"
+                :key="notifier.name"
+                class="btn btn-theme-tertiary btn-sm pull-right ml-1"
+                type="button"
+                @click="createNewNotifier(notifier)">
+                <span class="fa fa-plus-circle">
+                </span>&nbsp;
+                Create {{ notifier.name }} Notifier
+              </button>
+            </template>
           </h3>
 
           <p>
@@ -2187,6 +2193,9 @@ export default {
       set: function (newValue) {
         this.$store.commit('setViews', newValue);
       }
+    },
+    sortableColumns: function () {
+      return this.columns.filter(column => !column.unsortable);
     }
   },
   created: function () {

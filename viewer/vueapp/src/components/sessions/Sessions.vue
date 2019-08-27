@@ -84,30 +84,31 @@
                 </b-dropdown-header>
                 <b-dropdown-divider>
                 </b-dropdown-divider>
-                <template v-if="colVisMenuOpen"
-                  v-for="(group, key) in filteredFields">
-                  <b-dropdown-header
-                    :key="key"
-                    v-if="group.length"
-                    class="group-header">
-                    {{ key }}
-                  </b-dropdown-header>
-                  <template v-for="(field, k) in group">
-                    <b-dropdown-item
-                      :id="key + k + 'item'"
-                      :key="key + k + 'item'"
-                      :class="{'active':isColVisible(field.dbField) >= 0}"
-                      @click.stop.prevent="toggleColVis(field.dbField)">
-                      {{ field.friendlyName }}
-                      <small>({{ field.exp }})</small>
-                    </b-dropdown-item>
-                    <b-tooltip v-if="field.help"
-                      :key="key + k + 'tooltip'"
-                      :target="key + k + 'item'"
-                      placement="right"
-                      boundary="window">
-                      {{ field.help }}
-                    </b-tooltip>
+                <template v-if="colVisMenuOpen">
+                  <template v-for="(group, key) in filteredFields">
+                    <b-dropdown-header
+                      :key="key"
+                      v-if="group.length"
+                      class="group-header">
+                      {{ key }}
+                    </b-dropdown-header>
+                    <template v-for="(field, k) in group">
+                      <b-dropdown-item
+                        :id="key + k + 'item'"
+                        :key="key + k + 'item'"
+                        :class="{'active':isColVisible(field.dbField) >= 0}"
+                        @click.stop.prevent="toggleColVis(field.dbField)">
+                        {{ field.friendlyName }}
+                        <small>({{ field.exp }})</small>
+                      </b-dropdown-item>
+                      <b-tooltip v-if="field.help"
+                        :key="key + k + 'tooltip'"
+                        :target="key + k + 'item'"
+                        placement="right"
+                        boundary="window">
+                        {{ field.help }}
+                      </b-tooltip>
+                    </template>
                   </template>
                 </template>
               </b-dropdown> <!-- /column visibility button -->
@@ -239,30 +240,31 @@
                   </template>
                   <b-dropdown-divider>
                   </b-dropdown-divider>
-                  <template v-if="infoFieldVisMenuOpen"
-                    v-for="(group, key) in filteredFields">
-                    <b-dropdown-header
-                      :key="key"
-                      v-if="group.length"
-                      class="group-header">
-                      {{ key }}
-                    </b-dropdown-header>
-                    <template v-for="(field, k) in group">
-                      <b-dropdown-item
-                        :id="key + k + 'infoitem'"
-                        :key="key + k + 'infoitem'"
-                        :class="{'active':isInfoVisible(field.dbField) >= 0}"
-                        @click.stop.prevent="toggleInfoVis(field.dbField)">
-                        {{ field.friendlyName }}
-                        <small>({{ field.exp }})</small>
-                      </b-dropdown-item>
-                      <b-tooltip v-if="field.help"
-                        :key="key + k + 'infotooltip'"
-                        :target="key + k + 'infoitem'"
-                        placement="left"
-                        boundary="window">
-                        {{ field.help }}
-                      </b-tooltip>
+                  <template v-if="infoFieldVisMenuOpen">
+                    <template v-for="(group, key) in filteredFields">
+                      <b-dropdown-header
+                        :key="key"
+                        v-if="group.length"
+                        class="group-header">
+                        {{ key }}
+                      </b-dropdown-header>
+                      <template v-for="(field, k) in group">
+                        <b-dropdown-item
+                          :id="key + k + 'infoitem'"
+                          :key="key + k + 'infoitem'"
+                          :class="{'active':isInfoVisible(field.dbField) >= 0}"
+                          @click.stop.prevent="toggleInfoVis(field.dbField)">
+                          {{ field.friendlyName }}
+                          <small>({{ field.exp }})</small>
+                        </b-dropdown-item>
+                        <b-tooltip v-if="field.help"
+                          :key="key + k + 'infotooltip'"
+                          :target="key + k + 'infoitem'"
+                          placement="left"
+                          boundary="window">
+                          {{ field.help }}
+                        </b-tooltip>
+                      </template>
                     </template>
                   </template>
                 </b-dropdown> <!-- /info field visibility button -->
@@ -311,7 +313,6 @@
                 <!-- multiple field column -->
                 <template v-else-if="header.children && header.type !== 'seconds'">
                   <span v-for="child in header.children"
-                    v-if="child"
                     :key="child.dbField">
                     <b-dropdown-divider>
                     </b-dropdown-divider>

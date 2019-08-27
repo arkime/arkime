@@ -317,7 +317,6 @@
 
 <script>
 import MolochPaging from '../utils/Pagination';
-import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import ToggleBtn from '../utils/ToggleBtn';
 import MolochTime from '../search/Time';
@@ -330,7 +329,6 @@ export default {
   name: 'History',
   components: {
     MolochPaging,
-    MolochError,
     MolochLoading,
     MolochTime,
     ToggleBtn,

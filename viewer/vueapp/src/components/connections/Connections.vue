@@ -379,7 +379,6 @@
 <script>
 // import components
 import MolochSearch from '../search/Search';
-import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
@@ -501,7 +500,6 @@ export default {
   mixins: [ clickaway ],
   components: {
     MolochSearch,
-    MolochPaging,
     MolochError,
     MolochLoading,
     MolochNoResults,

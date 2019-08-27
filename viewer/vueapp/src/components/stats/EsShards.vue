@@ -73,65 +73,66 @@
             </td>
             <td v-for="node in nodes"
               :key="node">
-              <template v-if="stat.nodes[node]"
-                v-for="item in stat.nodes[node]">
-                <span :key="node + '-' + stat.name + '-' + item.shard + '-shard'"
-                  class="badge badge-pill badge-secondary cursor-help"
-                  :class="{'badge-primary':item.prirep === 'p', 'badge-notstarted':item.state !== 'STARTED','render-tooltip-bottom':index < 5}"
-                  :id="node + '-' + stat.name + '-' + item.shard + '-btn'"
-                  @mouseenter="showDetails(item)"
-                  @mouseleave="hideDetails(item)">
-                  {{ item.shard }}
-                  <span v-if="item.showDetails"
-                    class="shard-detail"
-                    @mouseenter="hideDetails(item)">
-                    <dl class="dl-horizontal">
-                      <dt>Index</dt>
-                      <dd>{{ stat.name }}</dd>
-                      <dt>Node</dt>
-                      <dd>{{ node }}</dd>
-                      <span v-if="item.ip">
-                        <dt>IP</dt>
-                        <dd>{{ item.ip }}</dd>
-                      </span>
-                      <dt>Shard</dt>
-                      <dd>{{ item.shard }}</dd>
-                      <dt>State</dt>
-                      <dd>{{ item.state }}</dd>
-                      <span v-if="item.ur">
-                        <dt>Reason</dt>
-                        <dd>{{ item.uf }}</dd>
-                      </span>
-                      <span v-if="item.uf">
-                        <dt>For</dt>
-                        <dd>{{ item.ur }}</dd>
-                      </span>
-                      <span v-if="item.store">
-                        <dt>Size</dt>
-                        <dd>{{ item.store | humanReadableBytes }}</dd>
-                      </span>
-                      <span v-if="item.docs">
-                        <dt>Documents</dt>
-                        <dd>{{ item.docs | round(0) | commaString }}</dd>
-                      </span>
-                      <span v-if="item.fm">
-                        <dt>Field Mem</dt>
-                        <dd>{{ item.fm | humanReadableBytes }}</dd>
-                      </span>
-                      <span v-if="item.sm">
-                        <dt>Segment Mem</dt>
-                        <dd>{{ item.sm | humanReadableBytes }}</dd>
-                      </span>
-                      <dt>Shard Type</dt>
-                      <template v-if="item.prirep === 'p'">
-                        <dd>primary</dd>
-                      </template>
-                      <template v-else>
-                        <dd>replicate</dd>
-                      </template>
-                    </dl>
+              <template v-if="stat.nodes[node]">
+                <template v-for="item in stat.nodes[node]">
+                  <span :key="node + '-' + stat.name + '-' + item.shard + '-shard'"
+                    class="badge badge-pill badge-secondary cursor-help"
+                    :class="{'badge-primary':item.prirep === 'p', 'badge-notstarted':item.state !== 'STARTED','render-tooltip-bottom':index < 5}"
+                    :id="node + '-' + stat.name + '-' + item.shard + '-btn'"
+                    @mouseenter="showDetails(item)"
+                    @mouseleave="hideDetails(item)">
+                    {{ item.shard }}
+                    <span v-if="item.showDetails"
+                      class="shard-detail"
+                      @mouseenter="hideDetails(item)">
+                      <dl class="dl-horizontal">
+                        <dt>Index</dt>
+                        <dd>{{ stat.name }}</dd>
+                        <dt>Node</dt>
+                        <dd>{{ node }}</dd>
+                        <span v-if="item.ip">
+                          <dt>IP</dt>
+                          <dd>{{ item.ip }}</dd>
+                        </span>
+                        <dt>Shard</dt>
+                        <dd>{{ item.shard }}</dd>
+                        <dt>State</dt>
+                        <dd>{{ item.state }}</dd>
+                        <span v-if="item.ur">
+                          <dt>Reason</dt>
+                          <dd>{{ item.uf }}</dd>
+                        </span>
+                        <span v-if="item.uf">
+                          <dt>For</dt>
+                          <dd>{{ item.ur }}</dd>
+                        </span>
+                        <span v-if="item.store">
+                          <dt>Size</dt>
+                          <dd>{{ item.store | humanReadableBytes }}</dd>
+                        </span>
+                        <span v-if="item.docs">
+                          <dt>Documents</dt>
+                          <dd>{{ item.docs | round(0) | commaString }}</dd>
+                        </span>
+                        <span v-if="item.fm">
+                          <dt>Field Mem</dt>
+                          <dd>{{ item.fm | humanReadableBytes }}</dd>
+                        </span>
+                        <span v-if="item.sm">
+                          <dt>Segment Mem</dt>
+                          <dd>{{ item.sm | humanReadableBytes }}</dd>
+                        </span>
+                        <dt>Shard Type</dt>
+                        <template v-if="item.prirep === 'p'">
+                          <dd>primary</dd>
+                        </template>
+                        <template v-else>
+                          <dd>replicate</dd>
+                        </template>
+                      </dl>
+                    </span>
                   </span>
-                </span>
+                </template>
               </template>
             </td>
           </tr>

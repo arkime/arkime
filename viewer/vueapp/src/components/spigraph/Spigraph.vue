@@ -131,41 +131,42 @@
       </div> <!-- /main visualization -->
 
       <!-- values -->
-      <div v-if="fieldObj"
-        v-for="(item, index) in items"
-        :key="item.name"
-        class="spi-graph-item pl-3 pr-3 pt-1">
-        <!-- field value -->
-        <div class="row">
-          <div class="col-md-12">
-            <div class="spi-bucket">
-              <strong>
-                <moloch-session-field
-                  :field="fieldObj"
-                  :value="item.name"
-                  :expr="fieldObj.exp"
-                  :parse="true"
-                  :pull-left="true"
-                  :session-btn="true">
-                </moloch-session-field>
-              </strong>
-              <sup>({{ item.count | commaString }})</sup>
+      <template v-if="fieldObj">
+        <div v-for="(item, index) in items"
+          :key="item.name"
+          class="spi-graph-item pl-3 pr-3 pt-1">
+          <!-- field value -->
+          <div class="row">
+            <div class="col-md-12">
+              <div class="spi-bucket">
+                <strong>
+                  <moloch-session-field
+                    :field="fieldObj"
+                    :value="item.name"
+                    :expr="fieldObj.exp"
+                    :parse="true"
+                    :pull-left="true"
+                    :session-btn="true">
+                  </moloch-session-field>
+                </strong>
+                <sup>({{ item.count | commaString }})</sup>
+              </div>
             </div>
-          </div>
-        </div> <!-- /field value -->
-        <!-- field visualization -->
-        <div class="row">
-          <div class="col-md-12">
-            <moloch-visualizations
-              :id="index.toString()"
-              :graph-data="item.graph"
-              :map-data="item.map"
-              :primary="false"
-              :timezone="user.settings.timezone">
-            </moloch-visualizations>
-          </div>
-        </div> <!-- /field visualization -->
-      </div> <!-- /values -->
+          </div> <!-- /field value -->
+          <!-- field visualization -->
+          <div class="row">
+            <div class="col-md-12">
+              <moloch-visualizations
+                :id="index.toString()"
+                :graph-data="item.graph"
+                :map-data="item.map"
+                :primary="false"
+                :timezone="user.settings.timezone">
+              </moloch-visualizations>
+            </div>
+          </div> <!-- /field visualization -->
+        </div>
+      </template> <!-- /values -->
 
       <!-- loading overlay -->
       <moloch-loading

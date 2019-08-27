@@ -71,8 +71,7 @@
           <thead>
             <tr>
               <th width="50px;">&nbsp;</th>
-              <th v-for="column of columns"
-                v-if="!column.additional"
+              <th v-for="column of notAdditionalCols"
                 :key="column.name"
                 class="cursor-pointer"
                 :class="{'no-wrap':column.nowrap}"
@@ -690,6 +689,9 @@ export default {
     },
     shiftKeyHold: function () {
       return this.$store.state.shiftKeyHold;
+    },
+    notAdditionalCols: function () {
+      return this.columns.filter(column => !column.additional);
     }
   },
   created: function () {

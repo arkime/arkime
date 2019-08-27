@@ -154,12 +154,15 @@ export default {
       return helpLink;
     },
     activePage: function () {
+      let activeLink;
       for (let page in this.menu) {
         let link = this.menu[page].link;
         if (link === this.$route.path.split('/')[1]) {
-          return link;
+          activeLink = link;
+          break;
         }
       }
+      return activeLink;
     },
     user: function () {
       return this.$store.state.user;

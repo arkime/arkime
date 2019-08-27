@@ -54,7 +54,6 @@ import cubism from '../../../../public/cubism.v1.js';
 import '../../../../public/highlight.min.js';
 
 import '../../cubismoverrides.css';
-import ToggleBtn from '../utils/ToggleBtn';
 import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
@@ -75,7 +74,6 @@ export default {
     'searchTerm'
   ],
   components: {
-    ToggleBtn,
     MolochPaging,
     MolochError,
     MolochLoading,

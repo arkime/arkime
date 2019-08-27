@@ -170,9 +170,9 @@
       <div v-if="decodingForm">
         <form class="form-inline well well-sm mt-1 mb-1">
           <span v-for="field in decodings[decodingForm].fields"
-            :key="field.name"
-            v-if="!field.disabled">
-            <div class="form-group mr-1">
+            :key="field.name">
+            <div class="form-group mr-1"
+              v-if="!field.disabled">
               <div class="input-group input-group-sm">
                 <span class="input-group-prepend">
                   <span class="input-group-text">
@@ -390,9 +390,9 @@
       <div v-if="decodingForm">
         <form class="form-inline well well-sm mt-1">
           <span v-for="field in decodings[decodingForm].fields"
-            :key="field.name"
-            v-if="!field.disabled">
-            <div class="form-group mr-1 mt-1">
+            :key="field.name">
+            <div class="form-group mr-1 mt-1"
+              v-if="!field.disabled">
               <div class="input-group input-group-sm">
                 <span class="input-group-prepend">
                   <span class="input-group-text">

@@ -511,25 +511,26 @@
                       <strong>{{ runningJob.query.stopTime * 1000 | timezoneDateString(user.settings.timezone, false) }}</strong>
                     </div>
                   </div>
-                  <div v-if="runningJob.errors"
-                    v-for="(error, index) in runningJob.errors"
-                    :key="index"
-                    class="row text-danger">
-                    <div class="col-12">
-                      <span class="fa fa-exclamation-triangle">
-                      </span>&nbsp;
-                      <span v-if="error.time">
-                        {{ error.time * 1000 | timezoneDateString(user.settings.timezone, false) }}
-                      </span>
-                      <span v-if="error.node">
-                        ({{ error.node }} node)
-                      </span>
-                      <span v-if="error.time || error.node">
-                        -
-                      </span>
-                      {{ error.value }}
+                  <template v-if="runningJob.errors">
+                    <div v-for="(error, index) in runningJob.errors"
+                      :key="index"
+                      class="row text-danger">
+                      <div class="col-12">
+                        <span class="fa fa-exclamation-triangle">
+                        </span>&nbsp;
+                        <span v-if="error.time">
+                          {{ error.time * 1000 | timezoneDateString(user.settings.timezone, false) }}
+                        </span>
+                        <span v-if="error.node">
+                          ({{ error.node }} node)
+                        </span>
+                        <span v-if="error.time || error.node">
+                          -
+                        </span>
+                        {{ error.value }}
+                      </div>
                     </div>
-                  </div>
+                  </template>
                 </div>
               </transition>
             </div>
@@ -767,25 +768,26 @@
                     <strong>{{ job.query.stopTime * 1000 | timezoneDateString(user.settings.timezone, false) }}</strong>
                   </div>
                 </div>
-                <div v-if="job.errors"
-                  v-for="(error, index) in job.errors"
-                  :key="index"
-                  class="row text-danger">
-                  <div class="col-12">
-                    <span class="fa fa-exclamation-triangle">
-                    </span>&nbsp;
-                    <span v-if="error.time">
-                      {{ error.time * 1000 | timezoneDateString(user.settings.timezone, false) }}
-                    </span>
-                    <span v-if="error.node">
-                      ({{ error.node }} node)
-                    </span>
-                    <span v-if="error.time || error.node">
-                      -
-                    </span>
-                    {{ error.value }}
+                <template v-if="job.errors">
+                  <div v-for="(error, index) in job.errors"
+                    :key="index"
+                    class="row text-danger">
+                    <div class="col-12">
+                      <span class="fa fa-exclamation-triangle">
+                      </span>&nbsp;
+                      <span v-if="error.time">
+                        {{ error.time * 1000 | timezoneDateString(user.settings.timezone, false) }}
+                      </span>
+                      <span v-if="error.node">
+                        ({{ error.node }} node)
+                      </span>
+                      <span v-if="error.time || error.node">
+                        -
+                      </span>
+                      {{ error.value }}
+                    </div>
                   </div>
-                </div>
+                </template>
               </td>
             </tr>
           </template> <!-- /packet search jobs -->
@@ -1064,25 +1066,26 @@
                     <strong>{{ job.query.stopTime * 1000 | timezoneDateString(user.settings.timezone, false) }}</strong>
                   </div>
                 </div>
-                <div v-if="job.errors"
-                  v-for="(error, index) in job.errors"
-                  :key="index"
-                  class="row text-danger">
-                  <div class="col-12">
-                    <span class="fa fa-exclamation-triangle">
-                    </span>&nbsp;
-                    <span v-if="error.time">
-                      {{ error.time * 1000 | timezoneDateString(user.settings.timezone, false) }}
-                    </span>
-                    <span v-if="error.node">
-                      ({{ error.node }} node)
-                    </span>
-                    <span v-if="error.time || error.node">
-                      -
-                    </span>
-                    {{ error.value }}
+                <template v-if="job.errors">
+                  <div v-for="(error, index) in job.errors"
+                    :key="index"
+                    class="row text-danger">
+                    <div class="col-12">
+                      <span class="fa fa-exclamation-triangle">
+                      </span>&nbsp;
+                      <span v-if="error.time">
+                        {{ error.time * 1000 | timezoneDateString(user.settings.timezone, false) }}
+                      </span>
+                      <span v-if="error.node">
+                        ({{ error.node }} node)
+                      </span>
+                      <span v-if="error.time || error.node">
+                        -
+                      </span>
+                      {{ error.value }}
+                    </div>
                   </div>
-                </div>
+                </template>
               </td>
             </tr>
           </template> <!-- /packet search jobs -->
@@ -1126,7 +1129,6 @@ import ConfigService from '../utils/ConfigService';
 import ToggleBtn from '../utils/ToggleBtn';
 import MolochSearch from '../search/Search';
 import MolochLoading from '../utils/Loading';
-import MolochNoResults from '../utils/NoResults';
 import MolochPaging from '../utils/Pagination';
 import FocusInput from '../utils/FocusInput';
 // import utils
@@ -1143,7 +1145,6 @@ export default {
     ToggleBtn,
     MolochSearch,
     MolochLoading,
-    MolochNoResults,
     MolochPaging
   },
   directives: { FocusInput },
