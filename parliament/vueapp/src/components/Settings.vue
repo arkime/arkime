@@ -365,16 +365,17 @@
           class="col">
           <h3>
             Notifiers
-            <button v-if="notifierTypes"
-              v-for="(notifierType, ntKey) of notifierTypes"
-              :key="notifierType.name"
-              class="btn btn-outline-primary btn-sm pull-right ml-1"
-              type="button"
-              @click="createNewNotifier(notifierType, ntKey)">
-              <span class="fa fa-plus-circle">
-              </span>&nbsp;
-              Create {{ notifierType.name }} Notifier
-            </button>
+            <template v-if="notifierTypes">
+              <button v-for="(notifierType, ntKey) of notifierTypes"
+                :key="notifierType.name"
+                class="btn btn-outline-primary btn-sm pull-right ml-1"
+                type="button"
+                @click="createNewNotifier(notifierType, ntKey)">
+                <span class="fa fa-plus-circle">
+                </span>&nbsp;
+                Create {{ notifierType.name }} Notifier
+              </button>
+            </template>
           </h3>
           <hr>
           <!-- hostname -->
