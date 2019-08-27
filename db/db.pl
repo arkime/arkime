@@ -85,6 +85,7 @@ my $ESTIMEOUT=60;
 my $UPGRADEALLSESSIONS = 1;
 my $DOHOTWARM = 0;
 my $WARMAFTER = -1;
+my $OPTIMIZEWARM = 0;
 my $TYPE = "string";
 my $SHARED = 0;
 my $DESCRIPTION = "";
@@ -146,7 +147,8 @@ sub showHelp($)
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "    --reverse                  - Optimize from most recent to oldest\n";
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
-    print "    --warmafter <num>          - Set molochwarm on indices after <num> <tpye>\n";
+    print "    --warmafter <wafter>       - Set molochwarm on indices after <wafter> <type>\n";
+    print "    --optmizewarm              - Only optimize warm green indices\n";
     print "  optimize                     - Optimize all indices in ES\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "  disable-users <days>         - Disable user accounts that have not been active\n";
@@ -2910,6 +2912,8 @@ sub parseArgs {
         } elsif ($ARGV[$pos] eq "--warmafter") {
             $pos++;
             $WARMAFTER = int($ARGV[$pos]);
+        } elsif ($ARGV[$pos] eq "--optimizewarm") {
+            $OPTIMIZEWARM = 1;
         } elsif ($ARGV[$pos] eq "--shared") {
             $SHARED = 1;
         } elsif ($ARGV[$pos] eq "--type") {
@@ -3078,11 +3082,12 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     showHelp("Invalid expire <type>") if ($ARGV[2] !~ /^(hourly|hourly[23468]|hourly12|daily|weekly|monthly)$/);
 
     # First handle sessions expire
-    my $indices = esGet("/${PREFIX}sessions2-*/_alias", 1);
+    my $indicesa = esGet("/_cat/indices/${PREFIX}sessions2*?format=json", 1);
+    my %indices = map { $_->{index} => $_ } @{$indicesa};
 
     my $endTime = time();
     my $endTimeIndex = time2index($ARGV[2], "sessions2-", $endTime);
-    delete $indices->{$endTimeIndex}; # Don't optimize current index
+    delete $indices{$endTimeIndex}; # Don't optimize current index
 
     my @startTime = kind2time($ARGV[2], int($ARGV[3]));
 
@@ -3093,16 +3098,16 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $warmTime = mktimegm(@warmTime);
     my $optimizecnt = 0;
     my $warmcnt = 0;
-    my @indiceskeys = sort (keys %{$indices});
+    my @indiceskeys = sort (keys %indices);
 
     foreach my $i (@indiceskeys) {
         my $t = index2time($i);
         if ($t >= $startTime) {
-            $indices->{$i}->{OPTIMIZEIT} = 1;
+            $indices{$i}->{OPTIMIZEIT} = 1;
             $optimizecnt++;
         }
         if ($WARMAFTER != -1 && $t < $warmTime) {
-            $indices->{$i}->{WARMIT} = 1;
+            $indices{$i}->{WARMIT} = 1;
             $warmcnt++;
         }
     }
@@ -3114,7 +3119,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     dbESVersion();
     optimizeOther() unless $NOOPTIMIZE ;
-    logmsg sprintf ("Expiring %s sessions indices, %s optimizing %s, warming %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt), commify($warmcnt));
+    logmsg sprintf ("Expiring %s sessions indices, %s optimizing %s, warming %s\n", commify(scalar(keys %indices) - $optimizecnt), $NOOPTIMIZE?"Not":"", commify($optimizecnt), commify($warmcnt));
     esPost("/_flush/synced", "", 1);
 
     @indiceskeys = reverse(@indiceskeys) if ($REVERSE);
@@ -3123,23 +3128,29 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $settings = esGet("/_settings?flat_settings&master_timeout=${ESTIMEOUT}s", 1);
 
     # Find all the shards that have too many segments and increment the OPTIMIZEIT count or not warm
-    my $shards = esGet("/_cat/shards?h=i,sc&format=json");
+    my $shards = esGet("/_cat/shards/${PREFIX}sessions2*?h=i,sc&format=json");
     for my $i (@{$shards}) {
-        if (exists $indices->{$i->{i}}->{OPTIMIZEIT} && defined $i->{sc} & int($i->{sc}) > $SEGMENTS) {
-            $indices->{$i->{i}}->{OPTIMIZEIT}++;
+        # Not expiring and too many segments
+        if (exists $indices{$i->{i}}->{OPTIMIZEIT} && defined $i->{sc} & int($i->{sc}) > $SEGMENTS) {
+            # Either not only optimizing warm or make sure we are green warm
+            if (!$OPTIMIZEWARM ||
+                ($settings->{$i->{i}}->{settings}->{"index.routing.allocation.require.molochtype"} eq "warm" && $indices{$i->{i}}->{health} eq "green")) {
+
+                $indices{$i->{i}}->{OPTIMIZEIT}++;
+            }
         }
 
-        if (exists $indices->{$i->{i}}->{WARMIT} && $settings->{$i->{i}}->{settings}->{"index.routing.allocation.require.molochtype"} ne "warm") {
-            $indices->{$i->{i}}->{WARMIT}++;
+        if (exists $indices{$i->{i}}->{WARMIT} && $settings->{$i->{i}}->{settings}->{"index.routing.allocation.require.molochtype"} ne "warm") {
+            $indices{$i->{i}}->{WARMIT}++;
         }
     }
 
     foreach my $i (@indiceskeys) {
         progress("$i ");
-        if (exists $indices->{$i}->{OPTIMIZEIT}) {
+        if (exists $indices{$i}->{OPTIMIZEIT}) {
 
             # 1 is set if it shouldn't be expired, > 1 means it needs to be optimized
-            if ($indices->{$i}->{OPTIMIZEIT} > 1) {
+            if ($indices{$i}->{OPTIMIZEIT} > 1) {
                 esForceMerge($i, $SEGMENTS) unless $NOOPTIMIZE;
             }
 
@@ -3156,7 +3167,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
             esDelete("/$i", 1);
         }
 
-        if ($indices->{$i}->{WARMIT} > 1) {
+        if ($indices{$i}->{WARMIT} > 1) {
             esPut("/$i/_settings?master_timeout=${ESTIMEOUT}s", '{"index": {"routing.allocation.require.molochtype": "warm"}}', 1);
         }
     }
