@@ -279,9 +279,9 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
 
     if (DLL_COUNT(simple_, &simpleQ) > simpleMaxQ) {
         packet->writerFilePos = 0;
+        notSaved++;
         if (packet->ts.tv_sec > lastError + 60) {
             lastError = packet->ts.tv_sec;
-            notSaved++;
             LOG("WARNING - Disk Q of %d is too large and exceed simpleMaxQ setting so not saving %u packets. Check the Moloch FAQ about (https://molo.ch/faq#why-am-i-dropping-packets) testing disk speed", DLL_COUNT(simple_, &simpleQ), notSaved);
         }
         return;
