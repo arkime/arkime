@@ -7956,7 +7956,7 @@ app.post('/upload', multer({dest:'/tmp', limits: internals.uploadLimits}).single
     res.write('<pre>');
     res.write(stdout);
     res.end('</pre>');
-    fs.unlink(req.file.path);
+    fs.unlinkSync(req.file.path);
   });
 });
 
