@@ -69,6 +69,7 @@ LOCAL MolochSimple_t        *currentInfo[MOLOCH_MAX_PACKET_THREADS];
 LOCAL MolochSimpleHead_t     freeList[MOLOCH_MAX_PACKET_THREADS];
 LOCAL uint32_t               pageSize;
 LOCAL enum MolochSimpleMode  simpleMode;
+LOCAL int                    simpleMaxQ;
 LOCAL const EVP_CIPHER      *cipher;
 LOCAL int                    openOptions;
 LOCAL struct timeval         lastSave[MOLOCH_MAX_PACKET_THREADS];
@@ -271,6 +272,11 @@ LOCAL char *writer_simple_get_kekId ()
 /******************************************************************************/
 LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPacket_t * const packet)
 {
+    if (DLL_COUNT(simple_, &simpleQ) > simpleMaxQ) {
+        packet->writerFilePos = 0;
+        return;
+    }
+
     int thread = session->thread;
 
     if (!currentInfo[thread]) {
@@ -480,6 +486,7 @@ void writer_simple_init(char *name)
     moloch_writer_exit         = writer_simple_exit;
     moloch_writer_write        = writer_simple_write;
 
+    simpleMaxQ = moloch_config_int(NULL, "simpleMaxQ", 1000, 10, 0xffff);
     char *mode = moloch_config_str(NULL, "simpleEncoding", NULL);
 
     if (mode && !mode[0]) {

@@ -697,30 +697,41 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
     uint32_t packets = session->packets[0] + session->packets[1];
 
     if (packets <= session->stopSaving) {
-        MOLOCH_THREAD_INCR_NUM(writtenBytes, packet->pktlen);
         moloch_writer_write(session, packet);
 
-        // If the last fileNum used in the session isn't the same as the
-        // lastest packets fileNum then we need to add to the filePos and
-        // fileNum arrays.
-        int16_t len;
-        if (session->lastFileNum != packet->writerFileNum) {
-            session->lastFileNum = packet->writerFileNum;
-            g_array_append_val(session->fileNumArray, packet->writerFileNum);
-            int64_t pos = -1LL * packet->writerFileNum;
-            g_array_append_val(session->filePosArray, pos);
+        // If writerFilePos is 0, then the writer couldn't save the packet
+        if (packet->writerFilePos == 0) {
+            if (!session->diskOverload) {
+                moloch_session_add_tag(session, "pcap-disk-overload");
+                session->diskOverload = 1;
+            }
+            MOLOCH_THREAD_INCR_NUM(unwrittenBytes, packet->pktlen);
+        } else {
+
+            MOLOCH_THREAD_INCR_NUM(writtenBytes, packet->pktlen);
+
+            // If the last fileNum used in the session isn't the same as the
+            // lastest packets fileNum then we need to add to the filePos and
+            // fileNum arrays.
+            int16_t len;
+            if (session->lastFileNum != packet->writerFileNum) {
+                session->lastFileNum = packet->writerFileNum;
+                g_array_append_val(session->fileNumArray, packet->writerFileNum);
+                int64_t pos = -1LL * packet->writerFileNum;
+                g_array_append_val(session->filePosArray, pos);
+
+                if (config.enablePacketLen) {
+                    len = 0;
+                    g_array_append_val(session->fileLenArray, len);
+                }
+            }
+
+            g_array_append_val(session->filePosArray, packet->writerFilePos);
 
             if (config.enablePacketLen) {
-                len = 0;
+                len = 16 + packet->pktlen;
                 g_array_append_val(session->fileLenArray, len);
             }
-        }
-
-        g_array_append_val(session->filePosArray, packet->writerFilePos);
-
-        if (config.enablePacketLen) {
-            len = 16 + packet->pktlen;
-            g_array_append_val(session->fileLenArray, len);
         }
 
         if (packets >= config.maxPackets || session->midSave) {

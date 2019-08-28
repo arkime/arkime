@@ -643,6 +643,7 @@ typedef struct moloch_session {
     uint16_t               outOfOrder:2;
     uint16_t               ackedUnseenSegment:2;
     uint16_t               stopYara:1;
+    uint16_t               diskOverload:1;
 } MolochSession_t;
 
 typedef struct moloch_session_head {
