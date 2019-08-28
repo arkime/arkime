@@ -2,7 +2,7 @@
    "sessions2" : [
       {
          "body" : {
-            "dstASN" : "AS35994 Akamai Technologies, Inc.",
+            "dstASN" : "AS20940 Akamai International B.V.",
             "dstBytes" : 328,
             "dstDataBytes" : 160,
             "dstGEO" : "US",
@@ -69,7 +69,7 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS35994 Akamai Technologies, Inc.",
+            "srcASN" : "AS20940 Akamai International B.V.",
             "srcBytes" : 328,
             "srcDataBytes" : 160,
             "srcGEO" : "US",
