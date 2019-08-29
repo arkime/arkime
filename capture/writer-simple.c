@@ -496,7 +496,7 @@ void writer_simple_init(char *name)
     moloch_writer_exit         = writer_simple_exit;
     moloch_writer_write        = writer_simple_write;
 
-    simpleMaxQ = moloch_config_int(NULL, "simpleMaxQ", 1000, 10, 0xffff);
+    simpleMaxQ = moloch_config_int(NULL, "simpleMaxQ", 2000, 50, 0xffff);
     char *mode = moloch_config_str(NULL, "simpleEncoding", NULL);
 
     if (mode && !mode[0]) {

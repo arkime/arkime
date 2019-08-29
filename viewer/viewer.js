@@ -704,6 +704,9 @@ function getViewUrl(node, cb) {
 
   var url = Config.getFull(node, "viewUrl");
   if (url) {
+    if (Config.debug > 1) {
+      console.log(`DEBUG: node:${node} is using ${url} because viewUrl was set for ${node} in config file`);
+    }
     cb(null, url, url.slice(0, 5) === "https"?https:http);
     return;
   }
@@ -711,6 +714,10 @@ function getViewUrl(node, cb) {
   Db.molochNodeStatsCache(node, function(err, stat) {
     if (err) {
       return cb(err);
+    }
+
+    if (Config.debug > 1) {
+      console.log(`DEBUG: node:${node} is using ${stat.hostname} from elasticsearch stats index`);
     }
 
     if (Config.isHTTPS(node)) {
