@@ -2215,7 +2215,8 @@ sub historyUpdate
         "dynamic": "true"
       },
       "timestamp": {
-        "type": "date"
+        "type": "date",
+        "format": "epoch_second"
       },
       "range": {
         "type": "integer"
@@ -3905,6 +3906,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         checkForOld5Indices();
         checkForOld6Indices();
         sessions2Update();
+        historyUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
