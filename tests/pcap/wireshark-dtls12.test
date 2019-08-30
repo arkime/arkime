@@ -1,0 +1,104 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "communityId" : "1:4PhOv3nsOLIpcaSMYHb5JcJsUJo=",
+            "dstASN" : "AS15733 Zumtobel Group AG",
+            "dstBytes" : 1338,
+            "dstDataBytes" : 842,
+            "dstGEO" : "AT",
+            "dstIp" : "2a03:39a0:001f:1004:b93c:3e15:d1e3:6848",
+            "dstMac" : [
+               "b0:d7:cc:00:0f:a8"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Tridonic GmbH & Co KG"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 8,
+            "dstPayload8" : "16fefd0000000000",
+            "dstPort" : 49191,
+            "fileId" : [],
+            "firstPacket" : 1527230471076,
+            "ipProtocol" : 17,
+            "lastPacket" : 1527230477913,
+            "length" : 6837,
+            "node" : "test",
+            "packetLen" : [
+               499,
+               114,
+               507,
+               515,
+               271,
+               103,
+               268,
+               92,
+               131,
+               92,
+               131,
+               131,
+               145,
+               145,
+               131,
+               109,
+               109
+            ],
+            "packetPos" : [
+               24,
+               523,
+               637,
+               1144,
+               1659,
+               1930,
+               2033,
+               2301,
+               2393,
+               2524,
+               2616,
+               2747,
+               2878,
+               3023,
+               3168,
+               3299,
+               3408
+            ],
+            "protocol" : [
+               "dtls",
+               "udp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS15733 Zumtobel Group AG",
+            "srcBytes" : 1883,
+            "srcDataBytes" : 1325,
+            "srcGEO" : "AT",
+            "srcIp" : "2a03:39a0:001f:1000:38b6:67b7:3eea:fe28",
+            "srcMac" : [
+               "78:f8:82:a3:f9:94",
+               "e8:de:27:f6:e3:02"
+            ],
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "LG Electronics (Mobile Communications)",
+               "Tp-Link Technologies Co.,Ltd."
+            ],
+            "srcOuiCnt" : 2,
+            "srcPackets" : 9,
+            "srcPayload8" : "16fefd0000000000",
+            "srcPort" : 48809,
+            "timestamp" : "SET",
+            "totBytes" : 3221,
+            "totDataBytes" : 2167,
+            "totPackets" : 17
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-180525",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

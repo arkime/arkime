@@ -39,6 +39,8 @@ gtp-u.pcap - https://www.cloudshark.org/captures/374cf36574b6
 gtp-iphone.pcap - Subset of http://www.pcapr.net/view/paulc/2014/10/5/11/iphone6_volte_limited.pcap.html
 http-post-upload.pcap - https://github.com/aol/moloch/issues/1037
 vxlan.pcap - https://www.cloudshark.org/captures/670aeb7bad79
+wireshark-dtls10.pcap - Subset of https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do=get&target=snakeoil.tgz
+wireshark-dtls12.pcap - Subset of https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do=get&target=ThreadCommissioning-JPAKE-DTLS-1.pcapng
 
 
 2) Viewer
