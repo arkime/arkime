@@ -299,11 +299,11 @@ Vue.filter('searchFields', function (searchTerm, fields, excludeTokens) {
  */
 Vue.filter('buildExpression', function (field, value, op) {
   // for values required to be strings in the search expression
-  const str = /[^(EXISTS!)-+a-zA-Z0-9_.@:*?/,[]]+/.test(value);
+  const needQuotes = value !== 'EXISTS!' && /[^-+a-zA-Z0-9_.@:*?/,\[\]]+/.test(value);
 
   // escape unescaped quotes
   value = value.toString().replace(/\\([\s\S])|(")/g, '\\$1$2');
-  if (str) { value = `"${value}"`; }
+  if (needQuotes) { value = `"${value}"`; }
 
   return `${field} ${op} ${value}`;
 });
