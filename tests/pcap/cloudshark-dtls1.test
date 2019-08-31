@@ -1,0 +1,305 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "cert" : [
+               {
+                  "hash" : "",
+                  "issuerON" : [
+                     "Internet Widgits Pty Ltd"
+                  ],
+                  "notAfter" : 1720007767000,
+                  "notBefore" : 1404647767000,
+                  "remainingDays" : 1,
+                  "serial" : "00f1965d11e3ff07ee",
+                  "subjectON" : [
+                     "Internet Widgits Pty Ltd"
+                  ],
+                  "validDays" : 3650
+               }
+            ],
+            "certCnt" : 1,
+            "communityId" : "1:UPZ9f3UdNc+eoCm8yVYQOonoaBE=",
+            "dstASN" : "AS24940 Hetzner Online GmbH",
+            "dstBytes" : 1018,
+            "dstDataBytes" : 934,
+            "dstGEO" : "DE",
+            "dstIp" : "188.40.206.23",
+            "dstMac" : [
+               "c0:25:06:be:ec:c3"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "AVM GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 2,
+            "dstPayload8" : "16feff0000000000",
+            "dstPort" : 7000,
+            "dstRIR" : "RIPE",
+            "fileId" : [],
+            "firstPacket" : 1404648102097,
+            "ipProtocol" : 17,
+            "lastPacket" : 1404648102237,
+            "length" : 139,
+            "node" : "test",
+            "packetLen" : [
+               222,
+               710,
+               304,
+               340,
+               135
+            ],
+            "packetPos" : [
+               24,
+               246,
+               956,
+               1260,
+               1600
+            ],
+            "protocol" : [
+               "dtls",
+               "udp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 613,
+            "srcDataBytes" : 487,
+            "srcIp" : "192.168.178.20",
+            "srcMac" : [
+               "50:e5:49:d8:73:12"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Giga-Byte Technology Co.,Ltd."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 3,
+            "srcPayload8" : "16feff0000000000",
+            "srcPort" : 6000,
+            "srcRIR" : "ARIN",
+            "timestamp" : "SET",
+            "totBytes" : 1631,
+            "totDataBytes" : 1421,
+            "totPackets" : 5
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-140706",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:DuL94POE3Q8ma0tVDRZS9/PU/5o=",
+            "dns" : {
+               "host" : [
+                  "<root>"
+               ],
+               "hostCnt" : 1,
+               "nameserverASN" : [
+                  "AS3557 Internet Systems Consortium, Inc.",
+                  "AS2149 Cogent Communications",
+                  "AS10515 VeriSign Infrastructure & Operations",
+                  "AS25152 Reseaux IP Europeens Network Coordination Centre (RIPE NCC)",
+                  "AS20144 ICANN",
+                  "AS7500 WIDE Project",
+                  "AS394353 B.Root-Server-OPS",
+                  "AS1508 Headquarters, USAISC",
+                  "AS21556 NASA Ames Research Center",
+                  "AS2149 Cogent Communications",
+                  "AS5927 DoD Network Information Center",
+                  "AS20172 VeriSign Global Registry Services",
+                  "AS10886 University of Maryland",
+                  "AS7500 WIDE Project",
+                  "AS25152 Reseaux IP Europeens Network Coordination Centre (RIPE NCC)",
+                  "AS3557 Internet Systems Consortium, Inc.",
+                  "AS10515 VeriSign Infrastructure & Operations",
+                  "AS29216 NETNOD Internet Exchange i Sverige AB",
+                  "AS394353 B.Root-Server-OPS",
+                  "AS20172 VeriSign Global Registry Services",
+                  "AS10886 University of Maryland",
+                  "AS20144 ICANN",
+                  "AS13 Headquarters, USAISC",
+                  "AS29216 NETNOD Internet Exchange i Sverige AB"
+               ],
+               "nameserverGEO" : [
+                  "US",
+                  "US",
+                  "US",
+                  "---",
+                  "US",
+                  "JP",
+                  "US",
+                  "US",
+                  "US",
+                  "US",
+                  "US",
+                  "US",
+                  "US",
+                  "JP",
+                  "NL",
+                  "US",
+                  "US",
+                  "SE",
+                  "US",
+                  "US",
+                  "US",
+                  "US",
+                  "US",
+                  "SE"
+               ],
+               "nameserverHost" : [
+                  "g.root-servers.net",
+                  "i.root-servers.net",
+                  "a.root-servers.net",
+                  "l.root-servers.net",
+                  "f.root-servers.net",
+                  "h.root-servers.net",
+                  "k.root-servers.net",
+                  "m.root-servers.net",
+                  "c.root-servers.net",
+                  "e.root-servers.net",
+                  "j.root-servers.net",
+                  "b.root-servers.net",
+                  "d.root-servers.net"
+               ],
+               "nameserverHostCnt" : 13,
+               "nameserverIp" : [
+                  "192.5.5.241",
+                  "2001:0500:0002:0000:0000:0000:0000:000c",
+                  "2001:0503:0c27:0000:0000:0000:0002:0030",
+                  "2001:07fd:0000:0000:0000:0000:0000:0001",
+                  "2001:0500:0003:0000:0000:0000:0000:0042",
+                  "2001:0dc3:0000:0000:0000:0000:0000:0035",
+                  "192.228.79.201",
+                  "2001:0500:0001:0000:0000:0000:803f:0235",
+                  "192.203.230.10",
+                  "192.33.4.12",
+                  "192.112.36.4",
+                  "198.41.0.4",
+                  "199.7.91.13",
+                  "202.12.27.33",
+                  "193.0.14.129",
+                  "2001:0500:002f:0000:0000:0000:0000:000f",
+                  "192.58.128.30",
+                  "192.36.148.17",
+                  "2001:0500:0084:0000:0000:0000:0000:000b",
+                  "2001:0503:ba3e:0000:0000:0000:0002:0030",
+                  "2001:0500:002d:0000:0000:0000:0000:000d",
+                  "199.7.83.42",
+                  "128.63.2.53",
+                  "2001:07fe:0000:0000:0000:0000:0000:0053"
+               ],
+               "nameserverIpCnt" : 24,
+               "nameserverRIR" : [
+                  "ARIN",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "ARIN",
+                  "",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN",
+                  "APNIC",
+                  "RIPE",
+                  "",
+                  "ARIN",
+                  "ARIN",
+                  "",
+                  "",
+                  "",
+                  "ARIN",
+                  "ARIN",
+                  ""
+               ],
+               "opcode" : [
+                  "QUERY"
+               ],
+               "opcodeCnt" : 1,
+               "qc" : [
+                  "IN"
+               ],
+               "qcCnt" : 1,
+               "qt" : [
+                  "NS"
+               ],
+               "qtCnt" : 1,
+               "status" : [
+                  "NOERROR"
+               ],
+               "statusCnt" : 1
+            },
+            "dstASN" : "AS25152 Reseaux IP Europeens Network Coordination Centre (RIPE NCC)",
+            "dstBytes" : 955,
+            "dstDataBytes" : 913,
+            "dstGEO" : "NL",
+            "dstIp" : "193.0.14.129",
+            "dstMac" : [
+               "c0:25:06:be:ec:c3"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "AVM GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 1,
+            "dstPayload8" : "273b85000001000e",
+            "dstPort" : 53,
+            "dstRIR" : "RIPE",
+            "fileId" : [],
+            "firstPacket" : 1404648108283,
+            "ipProtocol" : 17,
+            "lastPacket" : 1404648108320,
+            "length" : 36,
+            "node" : "test",
+            "packetLen" : [
+               86,
+               971
+            ],
+            "packetPos" : [
+               1735,
+               1821
+            ],
+            "protocol" : [
+               "udp",
+               "dns"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 70,
+            "srcDataBytes" : 28,
+            "srcIp" : "192.168.178.20",
+            "srcMac" : [
+               "50:e5:49:d8:73:12"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Giga-Byte Technology Co.,Ltd."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "273b012000010000",
+            "srcPort" : 60170,
+            "srcRIR" : "ARIN",
+            "timestamp" : "SET",
+            "totBytes" : 1025,
+            "totDataBytes" : 941,
+            "totPackets" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-140706",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

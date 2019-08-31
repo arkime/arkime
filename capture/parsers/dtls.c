@@ -267,7 +267,7 @@ LOCAL int dtls_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
 
     BSB_INIT(bbuf, data, len);
 
-    while (BSB_REMAINING(bbuf) > 11) {
+    while (BSB_NOT_ERROR(bbuf) && BSB_REMAINING(bbuf) > 11) {
         BSB_IMPORT_skip(bbuf, 11);
         uint16_t tlen = 0;
         BSB_IMPORT_u16(bbuf, tlen);
@@ -279,7 +279,7 @@ LOCAL int dtls_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
         BSB_INIT(msgBuf, BSB_WORK_PTR(bbuf), tlen);
         BSB_IMPORT_skip(bbuf, tlen);
 
-        while (BSB_NOT_ERROR(msgBuf) && BSB_REMAINING(msgBuf) > 12) {
+        while (BSB_NOT_ERROR(bbuf) && BSB_NOT_ERROR(msgBuf) && BSB_REMAINING(msgBuf) > 12) {
             uint8_t handshakeType = 0;
             BSB_IMPORT_u08(msgBuf, handshakeType);
             uint32_t handshakeLen = 0;
@@ -295,6 +295,11 @@ LOCAL int dtls_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
                 BSB_IMPORT_skip(msgBuf, handshakeLen);
                 continue;
             }
+
+            // Not enough data left
+            if (handshakeLen > BSB_REMAINING(msgBuf))
+                break;
+
             switch (handshakeType) {
             case 11: // Certificate
                 dtls_process_server_certificate(session, BSB_WORK_PTR(msgBuf), handshakeLen);
@@ -320,6 +325,8 @@ LOCAL void dtls_udp_classify(MolochSession_t *session, const unsigned char *data
 void moloch_parser_init()
 {
     moloch_parsers_classifier_register_udp("dtls", NULL, 0, (const unsigned char *)"\x16\x01\x00", 3, dtls_udp_classify);
+    moloch_parsers_classifier_register_udp("dtls", NULL, 0, (const unsigned char *)"\x16\xfe\xff", 3, dtls_udp_classify);
+    moloch_parsers_classifier_register_udp("dtls", NULL, 0, (const unsigned char *)"\x16\xfe\xfe", 3, dtls_udp_classify);
     moloch_parsers_classifier_register_udp("dtls", NULL, 0, (const unsigned char *)"\x16\xfe\xfd", 3, dtls_udp_classify);
 
     certsField = moloch_field_define("cert", "notreal",
