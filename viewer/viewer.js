@@ -44,6 +44,7 @@ var Config         = require('./config.js'),
     decode         = require('./decode.js'),
     onHeaders      = require('on-headers'),
     glob           = require('glob'),
+    unzip          = require('unzip'),
     helmet         = require('helmet');
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
@@ -62,6 +63,7 @@ var app = express();
 //// Config
 //////////////////////////////////////////////////////////////////////////////////
 var internals = {
+  CYBERCHEFVERSION: '9.4.0',
   elasticBase: Config.get("elasticsearch", "http://localhost:9200").split(","),
   esQueryTimeout: Config.get("elasticsearchTimeout", 300) + 's',
   userNameHeader: Config.get("userNameHeader"),
@@ -225,14 +227,6 @@ app.use(methodOverride());
 
 app.use('/font-awesome', express.static(__dirname + '/../node_modules/font-awesome', { maxAge: 600 * 1000}));
 app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap', { maxAge: 600 * 1000}));
-
-app.use('/cyberchef.htm', function(req, res, next) {
-  res.setHeader("Vary", "Accept-Encoding");
-  res.setHeader("Content-Type", "text/html");
-  res.setHeader("Content-Encoding", "gzip");
-  res.sendFile(__dirname + "/public/cyberchef.htm.gz");
-});
-
 
 app.use("/", express.static(__dirname + '/public', { maxAge: 600 * 1000}));
 
@@ -8003,8 +7997,30 @@ if (Config.get("regressionTests")) {
   });
 }
 
-app.use('/cyberchef.htm', function(req, res) {
-  res.sendFile('./public/cyberchef.htm');
+//////////////////////////////////////////////////////////////////////////////////
+// Cyberchef
+//////////////////////////////////////////////////////////////////////////////////
+
+app.use('/cyberchef/', function(req, res) {
+  let found = false;
+  let path = req.path.substring(1);
+  if (path === '')
+    path = `CyberChef_v${internals.CYBERCHEFVERSION}.html`;
+
+  fs.createReadStream(`public/CyberChef_v${internals.CYBERCHEFVERSION}.zip`)
+    .pipe(unzip.Parse())
+    .on('entry', function (entry) {
+      if (entry.path === path) {
+        entry.pipe(res);
+        found = true;
+      } else {
+        entry.autodrain();
+      }
+    })
+    .on('finish', function () {
+      if (!found)
+        res.status(404).end('Page not found');
+    })
 });
 
 /* cyberchef endpoint - loads the src or dst packets for a session and
@@ -8012,7 +8028,7 @@ app.use('/cyberchef.htm', function(req, res) {
 app.get("/:nodeName/session/:id/cyberchef", checkWebEnabled, checkProxyRequest, function(req, res) {
   processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
     if (err) {
-      console.log("ERROR - /cyberchef.htm", err);
+      console.log(`ERROR - /${req.params.nodeName}/session/${req.params.id}/cyberchef`, err);
       return res.end("Error - " + err);
     }
 

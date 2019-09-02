@@ -17,6 +17,7 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 2.0.1 2019/09/xx
+  - release - cyberchef 9.4.0
   - capture - label TLS 1.3 sessions correctly (issue #1137)
   - capture - New simpleMaxQ setting to control max disk Q
   - viewer - cancel current ES query on new query
