@@ -43,6 +43,8 @@ typedef struct {
     uint16_t         inBody:2;
     uint16_t         urlWhich:1;
     uint16_t         which:1;
+    uint16_t         isConnect:1;
+    uint16_t         reclassify:2;
 } HTTPInfo_t;
 
 extern MolochConfig_t        config;
@@ -416,6 +418,11 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
     LOG("HTTPDEBUG: which: %d code: %d method: %d", http->which, parser->status_code, parser->method);
 #endif
 
+    if (parser->method == HTTP_CONNECT) {
+        http->isConnect = 1;
+        http->reclassify = 3;
+    }
+
     int len = snprintf(version, sizeof(version), "%d.%d", parser->http_major, parser->http_minor);
 
     if (parser->status_code == 0) {
@@ -616,6 +623,19 @@ LOCAL int http_parse(MolochSession_t *session, void *uw, const unsigned char *da
 #ifdef HTTPDEBUG
     LOG("HTTPDEBUG: enter %d - %d %.*s", http->which, remaining, remaining, data);
 #endif
+
+    if (http->isConnect) {
+        // Check if either side needs to be classified
+        if (http->reclassify & (1 << which)) {
+            http->reclassify &= ~(1 << which);
+            moloch_parsers_classify_tcp(session, data, remaining, which);
+        }
+        // Both sides have been reclassified, remove http parser
+        if (!http->reclassify) {
+            moloch_parsers_unregister(session, uw);
+        }
+        return 0;
+    }
 
     if ((http->wParsers & (1 << http->which)) == 0) {
         return 0;

@@ -1,0 +1,211 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "cert" : [
+               {
+                  "alt" : [
+                     "lfoup01-b.cloudsink.net",
+                     "cloudsink.net",
+                     "ts01-b.cloudsink.net",
+                     "lfodown01-b.cloudsink.net"
+                  ],
+                  "altCnt" : 4,
+                  "hash" : "1c:8a:39:c5:f7:18:dd:cb:6c:e0:da:9c:53:f9:c1:36:d2:37:15:07",
+                  "issuerCN" : [
+                     "digicert sha2 high assurance server ca"
+                  ],
+                  "issuerON" : [
+                     "DigiCert Inc"
+                  ],
+                  "notAfter" : 1590753600000,
+                  "notBefore" : 1495670400000,
+                  "remainingDays" : 1,
+                  "serial" : "048d398cbd9d68c87e1ba3ec99c2b07d",
+                  "subjectCN" : [
+                     "lfoup01-b.cloudsink.net"
+                  ],
+                  "subjectON" : [
+                     "CrowdStrike, Inc."
+                  ],
+                  "validDays" : 1100
+               },
+               {
+                  "hash" : "a0:31:c4:67:82:e6:e6:c6:62:c2:c8:7c:76:da:9a:a6:2c:ca:bd:8e",
+                  "issuerCN" : [
+                     "digicert high assurance ev root ca"
+                  ],
+                  "issuerON" : [
+                     "DigiCert Inc"
+                  ],
+                  "notAfter" : 1855828800000,
+                  "notBefore" : 1382443200000,
+                  "remainingDays" : 1,
+                  "serial" : "04e1e7a4dc5cf2f36dc02b42b85d159f",
+                  "subjectCN" : [
+                     "digicert sha2 high assurance server ca"
+                  ],
+                  "subjectON" : [
+                     "DigiCert Inc"
+                  ],
+                  "validDays" : 5479
+               }
+            ],
+            "certCnt" : 2,
+            "communityId" : "1:sFCNFHlziFG+4mKUlz6T9fm4bYU=",
+            "dstBytes" : 4459,
+            "dstDataBytes" : 3901,
+            "dstIp" : "10.9.8.7",
+            "dstMac" : [
+               "00:10:db:ff:10:01"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 10,
+            "dstPayload8" : "485454502f312e30",
+            "dstPort" : 8080,
+            "fileId" : [],
+            "firstPacket" : 1567450613383,
+            "http" : {
+               "clientVersion" : [
+                  "1.0"
+               ],
+               "clientVersionCnt" : 1,
+               "method" : [
+                  "CONNECT"
+               ],
+               "methodCnt" : 1,
+               "requestHeader" : [
+                  "user-agent"
+               ],
+               "requestHeaderCnt" : 1,
+               "uri" : [
+                  "ts01-b.cloudsink.net:443"
+               ],
+               "uriCnt" : 1,
+               "useragent" : [
+                  "CrowdStrike Falcon Sensor"
+               ],
+               "useragentCnt" : 1
+            },
+            "initRTT" : 13,
+            "ipProtocol" : 6,
+            "lastPacket" : 1567450613614,
+            "length" : 231,
+            "node" : "test",
+            "packetLen" : [
+               82,
+               82,
+               76,
+               154,
+               72,
+               204,
+               76,
+               359,
+               72,
+               1430,
+               170,
+               1430,
+               831,
+               76,
+               76,
+               196,
+               72,
+               256
+            ],
+            "packetPos" : [
+               24,
+               106,
+               188,
+               264,
+               418,
+               490,
+               694,
+               770,
+               1129,
+               1201,
+               2631,
+               2801,
+               4231,
+               5062,
+               5138,
+               5214,
+               5410,
+               5482
+            ],
+            "protocol" : [
+               "http",
+               "tls",
+               "tcp"
+            ],
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "srcBytes" : 967,
+            "srcDataBytes" : 499,
+            "srcIp" : "10.11.12.13",
+            "srcMac" : [
+               "0c:c4:7a:f2:c1:d2"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Super Micro Computer, Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 8,
+            "srcPayload8" : "434f4e4e45435420",
+            "srcPort" : 54723,
+            "tcpflags" : {
+               "ack" : 9,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 7,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "tls" : {
+               "cipher" : [
+                  "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+               ],
+               "cipherCnt" : 1,
+               "ja3" : [
+                  "b288289af2999820648eb3ca4d8304c5"
+               ],
+               "ja3Cnt" : 1,
+               "ja3s" : [
+                  "b7bd51222a09f3ad66a340710ae9c01a"
+               ],
+               "ja3sCnt" : 1,
+               "ja3sstring" : [
+                  "771,49200,35-65281"
+               ],
+               "ja3sstringCnt" : 1,
+               "ja3string" : [
+                  "771,49200-49196-49192-49188-49172-49162-165-163-161-159-107-106-105-104-57-56-55-54-136-135-134-133-49202-49198-49194-49190-49167-49157-157-61-53-132-49199-49195-49191-49187-49171-49161-164-162-160-158-103-64-63-62-51-50-49-48-154-153-152-151-69-68-67-66-49201-49197-49193-49189-49166-49156-156-60-47-150-65-49170-49160-22-19-16-13-49165-49155-10-7-49169-49159-49164-49154-5-4-255,11-10-35-13-15,23-25-24-22,0-1-2"
+               ],
+               "ja3stringCnt" : 1,
+               "version" : [
+                  "TLSv1.2"
+               ],
+               "versionCnt" : 1
+            },
+            "totBytes" : 5426,
+            "totDataBytes" : 4400,
+            "totPackets" : 18
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-190902",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+
