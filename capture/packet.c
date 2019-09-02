@@ -569,6 +569,8 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
     int isNew;
     session = moloch_session_find_or_create(packet->ses, packet->hash, sessionId, &isNew); // Returns locked session
 
+    moloch_rules_run_every_packet(session, packet);
+
     if (isNew) {
         session->saveTime = packet->ts.tv_sec + config.tcpSaveTimeout;
         session->firstPacket = packet->ts;

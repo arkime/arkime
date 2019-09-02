@@ -1210,7 +1210,7 @@ typedef enum {
 void moloch_rules_init();
 void moloch_rules_recompile();
 void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointer value);
-int moloch_rules_run_every_packet(MolochPacket_t *packet);
+void moloch_rules_run_every_packet(MolochSession_t *session, MolochPacket_t *packet);
 void moloch_rules_session_create(MolochSession_t *session);
 void moloch_rules_run_session_setup(MolochSession_t *session, MolochPacket_t *packet);
 void moloch_rules_run_after_classify(MolochSession_t *session);

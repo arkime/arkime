@@ -1068,6 +1068,20 @@ void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointe
     }
 }
 /******************************************************************************/
+void moloch_rules_run_every_packet(MolochSession_t *session, MolochPacket_t *packet)
+{
+    int r;
+    MolochRule_t *rule;
+    for (r = 0; (rule = current.rules[MOLOCH_RULE_TYPE_EVERY_PACKET][r]); r++) {
+        if (rule->fieldsLen) {
+            moloch_rules_check_rule_fields(session, rule, -1);
+        } else if (rule->bpfp.bf_len && bpf_filter(rule->bpfp.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
+            MOLOCH_THREAD_INCR(rule->matched);
+            moloch_field_ops_run(session, &rule->ops);
+        }
+    }
+}
+/******************************************************************************/
 void moloch_rules_run_session_setup(MolochSession_t *session, MolochPacket_t *packet)
 {
     int r;
