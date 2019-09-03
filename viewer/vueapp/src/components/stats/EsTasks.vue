@@ -167,7 +167,7 @@ export default {
 
       this.query.filter = this.searchTerm;
 
-      this.query.size = this.pageSize || 1000;
+      this.query.size = this.pageSize || 500;
 
       if (desc !== undefined) { this.query.desc = desc; }
       if (sortField) { this.query.sortField = sortField; }

@@ -3369,8 +3369,6 @@ app.get('/estask/list', recordResponseTime, function(req, res) {
     for (const key in tasks) {
       let task = tasks[key];
 
-      if (regex && !task.action.match(regex)) { continue; }
-
       task.taskId = key;
       if (task.children) {
         task.childrenCount = task.children.length;
@@ -3390,11 +3388,13 @@ app.get('/estask/list', recordResponseTime, function(req, res) {
         task.user = '';
       }
 
+      if (regex && (!task.action.match(regex) && !task.user.match(regex))) { continue; }
+
       rtasks.push(task);
     }
 
     const sortField = req.query.sortField || 'action';
-    if (sortField === 'action') {
+    if (sortField === 'action' || sortField === 'user') {
       if (req.query.desc === 'true') {
         rtasks = rtasks.sort(function (a, b) { return b.action.localeCompare(a.index); });
       } else {

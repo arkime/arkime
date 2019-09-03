@@ -396,7 +396,7 @@ export default {
       recoveryShow: this.$route.query.recoveryShow || 'notdone',
       shardsShow: this.$route.query.shardsShow || 'notstarted',
       dataInterval: this.$route.query.refreshInterval || '15000',
-      pageSize: this.$route.query.size || '1000',
+      pageSize: this.$route.query.size || '500',
       refreshData: false,
       childError: '',
       multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
@@ -487,7 +487,7 @@ export default {
       if (queryParams.refreshInterval) {
         this.dataInterval = queryParams.refreshInterval;
       }
-      this.pageSize = queryParams.size || 1000;
+      this.pageSize = queryParams.size || 500;
     },
     clear: function () {
       this.searchTerm = undefined;
