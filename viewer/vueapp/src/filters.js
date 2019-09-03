@@ -299,6 +299,7 @@ Vue.filter('searchFields', function (searchTerm, fields, excludeTokens) {
  */
 Vue.filter('buildExpression', function (field, value, op) {
   // for values required to be strings in the search expression
+  /* eslint-disable no-useless-escape */
   const needQuotes = value !== 'EXISTS!' && /[^-+a-zA-Z0-9_.@:*?/,\[\]]+/.test(value);
 
   // escape unescaped quotes

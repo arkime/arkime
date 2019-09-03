@@ -8004,8 +8004,9 @@ if (Config.get("regressionTests")) {
 app.use('/cyberchef/', function(req, res) {
   let found = false;
   let path = req.path.substring(1);
-  if (path === '')
+  if (path === '') {
     path = `CyberChef_v${internals.CYBERCHEFVERSION}.html`;
+  }
 
   fs.createReadStream(`public/CyberChef_v${internals.CYBERCHEFVERSION}.zip`)
     .pipe(unzip.Parse())
@@ -8018,9 +8019,10 @@ app.use('/cyberchef/', function(req, res) {
       }
     })
     .on('finish', function () {
-      if (!found)
+      if (!found) {
         res.status(404).end('Page not found');
-    })
+      }
+    });
 });
 
 /* cyberchef endpoint - loads the src or dst packets for a session and
