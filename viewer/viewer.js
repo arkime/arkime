@@ -3431,7 +3431,7 @@ app.post('/estask/cancelById', logAction(), function(req, res) {
     return res.molochError(403, 'Missing cancel ID');
   }
 
-  Db.cancelByOpaqueId(req.body.cancelId, (err, result) => {
+  Db.cancelByOpaqueId(`${req.user.userId}::${req.body.cancelId}`, (err, result) => {
     return res.send(JSON.stringify({ success: true, text: result }));
   });
 });
@@ -4235,7 +4235,7 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
   var map = {};
 
   let options;
-  if (req.query.cancelId) { options = { cancelId: req.query.cancelId }; }
+  if (req.query.cancelId) { options = { cancelId: `${req.user.userId}::${req.query.cancelId}` }; }
 
   buildSessionQuery(req, function (bsqErr, query, indices) {
     if (bsqErr) {
@@ -4357,7 +4357,7 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
     }
 
     let options;
-    if (req.query.cancelId) { options = { cancelId: req.query.cancelId }; }
+    if (req.query.cancelId) { options = { cancelId: `${req.user.userId}::${req.query.cancelId}` }; }
 
     delete query.sort;
     query.size = 0;
@@ -4742,7 +4742,7 @@ function buildConnections(req, res, cb) {
     }
 
     let options;
-    if (req.query.cancelId) { options = { cancelId: req.query.cancelId }; }
+    if (req.query.cancelId) { options = { cancelId: `${req.user.userId}::${req.query.cancelId}` }; }
 
     if (Config.debug) {
       console.log('buildConnections query', JSON.stringify(query, null, 2));
