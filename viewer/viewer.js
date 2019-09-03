@@ -3383,6 +3383,13 @@ app.get('/estask/list', recordResponseTime, function(req, res) {
         if (!task.cancellable) { continue; }
       }
 
+      if (task.headers['X-Opaque-Id']) {
+        let parts = splitRemain(task.headers['X-Opaque-Id'], '::', 1);
+        task.user = (parts.length == 1?'':parts[0]);
+      } else {
+        task.user = '';
+      }
+
       rtasks.push(task);
     }
 

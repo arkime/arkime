@@ -163,7 +163,7 @@ exports.indexNow = function (index, type, id, document, cb) {
 };
 
 exports.search = function (index, type, query, options, cb) {
-  if (!cb) {
+  if (!cb && typeof options === 'function') {
     cb = options;
     options = undefined;
   }
@@ -312,7 +312,7 @@ exports.deleteByQuery = function (index, type, query, cb) {
 };
 
 exports.deleteDocument = function (index, type, id, options, cb) {
-  if (!cb) {
+  if (!cb && typeof options === 'function') {
     cb = options;
     options = undefined;
   }
@@ -323,7 +323,7 @@ exports.deleteDocument = function (index, type, id, options, cb) {
 
 // This API does not call fixIndex
 exports.deleteIndex = function (index, options, cb) {
-  if (!cb) {
+  if (!cb && typeof options === 'function') {
     cb = options;
     options = undefined;
   }
@@ -334,7 +334,7 @@ exports.deleteIndex = function (index, options, cb) {
 
 // This API does not call fixIndex
 exports.optimizeIndex = function (index, options, cb) {
-  if (!cb) {
+  if (!cb && typeof options === 'function') {
     cb = options;
     options = undefined;
   }
@@ -345,7 +345,7 @@ exports.optimizeIndex = function (index, options, cb) {
 
 // This API does not call fixIndex
 exports.closeIndex = function (index, options, cb) {
-  if (!cb) {
+  if (!cb && typeof options === 'function') {
     cb = options;
     options = undefined;
   }
@@ -356,7 +356,7 @@ exports.closeIndex = function (index, options, cb) {
 
 // This API does not call fixIndex
 exports.openIndex = function (index, options, cb) {
-  if (!cb) {
+  if (!cb && typeof options === 'function') {
     cb = options;
     options = undefined;
   }
@@ -442,7 +442,7 @@ exports.nodesInfo = function (options, cb) {
 };
 
 exports.update = function (index, type, id, document, options, cb) {
-  if (!cb) {
+  if (!cb && typeof options === 'function') {
     cb = options;
     options = undefined;
   }
