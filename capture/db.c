@@ -1230,6 +1230,10 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     uint64_t esDropped       = moloch_http_dropped_count(esServer);
     uint64_t totalBytes      = moloch_packet_total_bytes();
 
+    // Incase the reader stats goes to a lower number or wraps
+    if (totalDropped < lastDropped[n])
+        totalDropped += lastDropped[n];
+
     for (i = 0; config.pcapDir[i]; i++) {
         struct statvfs vfs;
         statvfs(config.pcapDir[i], &vfs);
