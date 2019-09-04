@@ -4427,7 +4427,7 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
       queriesInfo = queriesInfo.sort((a, b) => {return b.doc_count - a.doc_count;}).slice(0, size*2);
       let queries = queriesInfo.map((item) => {return item.query;});
 
-      Db.msearch(indices, 'session', queries, function(err, result) {
+      Db.msearch(indices, 'session', queries, options, function(err, result) {
         if (!result.responses) {
           return res.send(results);
         }

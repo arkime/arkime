@@ -101,7 +101,7 @@ export default {
         { id: 'cancellable', name: 'Cancellable', sort: 'cancellable', width: 100 },
         { id: 'id', name: 'ID', sort: 'id', width: 80 },
         { id: 'node', name: 'Node', sort: 'node', width: 180 },
-        { id: 'taskid', name: 'Task ID', sort: 'taskid', width: 150 },
+        { id: 'taskId', name: 'Task ID', sort: 'taskId', width: 150 },
         { id: 'type', name: 'Type', sort: 'type', width: 100 }
       ]
     };

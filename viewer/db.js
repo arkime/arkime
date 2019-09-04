@@ -180,7 +180,7 @@ exports.search = function (index, type, query, options, cb) {
 };
 
 exports.cancelByOpaqueId = function(cancelId, cb) {
-  internals.elasticSearchClient.tasks.list({detailed: "true", group_by: "parents"})
+  internals.elasticSearchClient.tasks.list({detailed: "false", group_by: "parents"})
     .then((results) => {
       let found = false;
 
@@ -277,14 +277,14 @@ exports.searchPrimary = function (index, type, query, options, cb) {
   if (options && options.cancelId) {
     // set X-Opaque-Id header on the params so the task can be canceled
     params.headers = { 'X-Opaque-Id': options.cancelId };
-    delete options.cancelId;
   }
 
   exports.merge(params, options);
+  delete params.cancelId;
   return exports.searchScroll(index, type, query, params, cb);
 };
 
-exports.msearch = function (index, type, queries, cb) {
+exports.msearch = function (index, type, queries, options, cb) {
   var body = [];
 
   for(var i = 0, ilen = queries.length; i < ilen; i++){
@@ -292,7 +292,14 @@ exports.msearch = function (index, type, queries, cb) {
     body.push(queries[i]);
   }
 
-  return internals.elasticSearchClient.msearch({body: body, rest_total_hits_as_int: true}, cb);
+  let params = {body: body, rest_total_hits_as_int: true};
+
+  if (options && options.cancelId) {
+    // set X-Opaque-Id header on the params so the task can be canceled
+    params.headers = { 'X-Opaque-Id': options.cancelId };
+  }
+
+  return internals.elasticSearchClient.msearch(params, cb);
 };
 
 exports.scroll = function (params, callback) {
@@ -426,7 +433,7 @@ exports.putClusterSettings = function(options, cb) {
 };
 
 exports.tasks = function(cb) {
-  return internals.elasticSearchClient.tasks.list({detailed: "true", group_by: "parents"}, cb);
+  return internals.elasticSearchClient.tasks.list({detailed: "false", group_by: "parents"}, cb);
 };
 
 exports.taskCancel = function(taskId, cb) {
