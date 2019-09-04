@@ -450,6 +450,7 @@
 
       <!-- loading overlay -->
       <moloch-loading
+        :can-cancel="true"
         v-if="loading && !error"
         @cancel="cancelAndLoad(false)">
       </moloch-loading> <!-- /loading overlay -->

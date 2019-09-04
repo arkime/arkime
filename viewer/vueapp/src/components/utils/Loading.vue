@@ -4,16 +4,17 @@
     <img src="../../assets/watching.gif" />
     <div class="loader circles"></div>
     <div class="loader-section rectangle"
-      :class="{'tall-rectangle':cancel}">
+      :class="{'tall-rectangle':canCancel}">
       <div class="im-hootin text-center">
         I'm hootin
-        <span v-if="cancel">
-          <br>
-          <a class="no-decoration cursor-pointer text-theme-accent"
+        <div v-if="canCancel"
+          class="mt-1">
+          <button type="button"
+            class="btn btn-sm btn-theme-primary"
             @click="cancel">
             cancel
-          </a>
-        </span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -23,6 +24,7 @@
 <script>
 export default {
   name: 'MolochLoading',
+  props: [ 'canCancel' ],
   methods: {
     cancel: function () {
       this.$emit('cancel');
@@ -52,12 +54,7 @@ export default {
 }
 /* taller rectangle to accommodate cancel action */
 .loading .tall-rectangle .im-hootin {
-  top: calc(50% + 60px);
-}
-
-/* cancel action */
-.loading .tall-rectangle .im-hootin .text-theme-accent {
-  color: var(--color-foreground-accent);
+  top: calc(50% + 50px);
 }
 
 .loading .loader {
@@ -101,7 +98,7 @@ export default {
   background: rgb(200, 200, 200, 0.5);
 }
 .loading .loader-section.rectangle.tall-rectangle {
-  height: 225px;
+  height: 245px;
 }
 
 /* spinning circles animation */
