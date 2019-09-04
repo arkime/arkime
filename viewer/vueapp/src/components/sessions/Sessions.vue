@@ -477,15 +477,14 @@
 </template>
 
 <script>
-// import external
+// IMPORTANT: don't change the order of imports (it messes up the flot graph)
 import Vue from 'vue';
-import Sortable from 'sortablejs';
-import '../../../../public/colResizable.js';
 // import services
 import FieldService from '../search/FieldService';
 import SessionsService from './SessionsService';
 import UserService from '../users/UserService';
 import ConfigService from '../utils/ConfigService';
+import Utils from '../utils/utils';
 // import components
 import MolochSearch from '../search/Search';
 import customCols from './customCols.json';
@@ -497,8 +496,9 @@ import MolochNoResults from '../utils/NoResults';
 import MolochSessionDetail from './SessionDetail';
 import MolochVisualizations from '../visualizations/Visualizations';
 import MolochStickySessions from './StickySessions';
-// import utils
-import Utils from '../utils/utils';
+// import external
+import Sortable from 'sortablejs';
+import '../../../../public/colResizable.js';
 
 const defaultTableState = {
   order: [['firstPacket', 'desc']],
