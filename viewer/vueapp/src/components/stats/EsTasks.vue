@@ -197,3 +197,9 @@ export default {
   }
 };
 </script>
+
+<style>
+#esTasksTable td {
+  vertical-align: top;
+}
+</style>
