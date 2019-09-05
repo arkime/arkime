@@ -311,17 +311,20 @@ LOCAL void suricata_process()
             strptime(line + out[i+2], "%Y-%m-%dT%H:%M:%S.%%06u%z", &tm);
             item->timestamp = timegm(&tm);
 
+            if (config.debug > 2) {
+                char buf[100];
+                ctime_r(&item->timestamp, buf);
+                LOG("Parsed date  = %24.24s from %lu which %s >= %lu", buf, item->timestamp,
+                        item->timestamp >= currentTime.tv_sec - suricataExpireSeconds?"is":"is not",
+                        currentTime.tv_sec - suricataExpireSeconds);
+            }
+
             if (item->timestamp < currentTime.tv_sec - suricataExpireSeconds) {
                 suricata_item_free(item);
                 return;
             }
         } else if (MATCH(line, "event_type")) {
             if (strncmp("alert", line + out[i+2], 5) != 0) {
-                suricata_item_free(item);
-                return;
-            }
-        } else if (MATCH(line, "event_type")) {
-            if (out[i+3] != 5 || strncmp("alert", line + out[i+2], 5) != 0) {
                 suricata_item_free(item);
                 return;
             }
@@ -343,7 +346,7 @@ LOCAL void suricata_process()
                 item->ses = SESSION_TCP;
             else if (strncmp("UDP", line + out[i+2], 3) == 0 || strncmp("017", line + out[i+2], 3) == 0)
                 item->ses = SESSION_UDP;
-            else if (strncmp("ICMP", line + out[i+2], 3) == 0 || strncmp("001", line + out[i+2], 3) == 0)
+            else if (strncmp("ICMP", line + out[i+2], 4) == 0 || strncmp("001", line + out[i+2], 3) == 0)
                 item->ses = SESSION_ICMP;
             else {
                 suricata_item_free(item);
@@ -455,6 +458,7 @@ LOCAL gboolean suricata_timer(gpointer UNUSED(user_data))
         fileSize = sb.st_size;
     } else if (fileSize > sb.st_size) {
         // File got smaller
+        suricata_read();
         suricata_close();
         suricata_open(&sb);
         fileSize = sb.st_size;
