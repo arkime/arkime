@@ -159,7 +159,7 @@ LOCAL void suricata_plugin_save(MolochSession_t *session, int UNUSED(final))
     int h = session->h_hash % alerts.num;
 
     for (item = alerts.items[h]; item; item = item->items_next) {
-        if (item->timestamp < session->firstPacket.tv_sec - 60*60) {
+        if (item->timestamp < session->firstPacket.tv_sec - suricataExpireSeconds) {
             suricata_alerts_del(item);
             continue;
         }
