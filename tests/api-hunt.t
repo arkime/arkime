@@ -136,8 +136,16 @@ my $hToken = getTokenCookie('huntuser');
   $json = viewerPutToken("/hunt/$id3/play?molochRegressionUser=user2", "{}", $otherToken);
   is ($json->{text}, "You cannot change another user\'s hunt unless you have admin privileges", "Non admin user cannot pause another user's hunt");
 
+  sleep(2);
+  esGet("/_flush");
+  esGet("/_refresh");
+
   $json = viewerDeleteToken("/hunt/$id3?molochRegressionUser=anonymous", $token);
   is ($json->{text}, "Deleted hunt item successfully");
+
+  sleep(2);
+  esGet("/_flush");
+  esGet("/_refresh");
 
 
 # Admin can delete any hunt
