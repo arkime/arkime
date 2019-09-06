@@ -22,3 +22,6 @@ config.dev.ini
 .DS_Store
 bundle/
 .idea
+parliament/issues.json
+tests/GeoLite2*
+tests/oui.txt
