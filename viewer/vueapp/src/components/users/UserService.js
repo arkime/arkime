@@ -1,7 +1,18 @@
 import Vue from 'vue';
 import store from '../../store';
 
-const defaultSettings = { timezone: 'local' };
+const defaultSettings = {
+  connDstField: 'ip.dst:port',
+  connSrcField: 'srcIp',
+  detailFormat: 'last',
+  numPackets: 'last',
+  showTimestamps: 'last',
+  sortColumn: 'firstPacket',
+  sortDirection: 'desc',
+  spiGraph: 'node',
+  theme: 'default-theme',
+  timezone: 'local'
+};
 
 export default {
 
