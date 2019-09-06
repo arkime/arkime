@@ -500,11 +500,6 @@ import MolochStickySessions from './StickySessions';
 import Sortable from 'sortablejs';
 import '../../../../public/colResizable.js';
 
-const defaultTableState = {
-  order: [['firstPacket', 'desc']],
-  visibleHeaders: ['firstPacket', 'lastPacket', 'src', 'srcPort', 'dst', 'dstPort', 'totPackets', 'dbby', 'node', 'info']
-};
-
 let defaultInfoFields = JSON.parse(JSON.stringify(customCols.info.children));
 
 let componentInitialized = false;
@@ -946,8 +941,8 @@ export default {
       this.loading = true;
 
       if (index === -1) { // default columns
-        this.tableState.visibleHeaders = defaultTableState.visibleHeaders.slice();
-        this.tableState.order = defaultTableState.order.slice();
+        this.tableState.visibleHeaders = Utils.getDefaultTableState().visibleHeaders.slice();
+        this.tableState.order = Utils.getDefaultTableState().order.slice();
         this.colWidths = {}; // clear out column widths to load defaults
         setTimeout(() => { this.saveColumnWidths(); });
         // reset field widths
@@ -1169,7 +1164,7 @@ export default {
           this.$store.commit('setSessionsTableState', this.tableState);
           if (Object.keys(this.tableState).length === 0 ||
             !this.tableState.visibleHeaders || !this.tableState.order) {
-            this.tableState = JSON.parse(JSON.stringify(defaultTableState));
+            this.tableState = JSON.parse(JSON.stringify(Utils.getDefaultTableState()));
           } else if (this.tableState.visibleHeaders[0] === '') {
             this.tableState.visibleHeaders.shift();
           }
@@ -1245,7 +1240,7 @@ export default {
         expandedSessions.push(session.id);
       }
 
-      this.sorts = this.tableState.order || JSON.parse(JSON.stringify(defaultTableState.order));
+      this.sorts = this.tableState.order || JSON.parse(JSON.stringify(Utils.getDefaultTableState().order));
 
       if (this.viewChanged && this.views) {
         for (let view in this.views) {

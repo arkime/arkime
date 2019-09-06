@@ -1,6 +1,8 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 
+import Utils from './components/utils/utils';
+
 Vue.use(Vuex);
 
 const store = new Vuex.Store({
@@ -29,6 +31,14 @@ const store = new Vuex.Store({
     loadingData: false,
     sorts: [['firstPacket', 'desc']],
     sortsParam: 'firstPacket:desc'
+  },
+  getters: {
+    sessionsTableState (state) {
+      if (!state.sessionsTableState.order) {
+        state.sessionsTableState = Utils.getDefaultTableState();
+      }
+      return state.sessionsTableState;
+    }
   },
   mutations: {
     setTimeRange (state, value) {

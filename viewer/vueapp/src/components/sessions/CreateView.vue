@@ -143,7 +143,7 @@ export default {
 
       if (this.useColConfig) {
         // save the current sessions table column configuration
-        data.sessionsColConfig = this.$store.state.sessionsTableState;
+        data.sessionsColConfig = this.$store.getters.sessionsTableState;
       }
 
       UserService.createView(data)
