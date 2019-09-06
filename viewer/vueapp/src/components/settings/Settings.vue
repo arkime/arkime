@@ -373,6 +373,7 @@
             </label>
             <div class="col-sm-6">
               <moloch-field-typeahead
+                :dropup="true"
                 :fields="fields"
                 query-param="field"
                 :initial-value="spiGraphTypeahead"
@@ -398,6 +399,7 @@
             </label>
             <div class="col-sm-6">
               <moloch-field-typeahead
+                :dropup="true"
                 :fields="fields"
                 query-param="field"
                 :initial-value="connSrcFieldTypeahead"
@@ -423,6 +425,7 @@
             </label>
             <div class="col-sm-6">
               <moloch-field-typeahead
+                :dropup="true"
                 :fields="fieldsPlus"
                 query-param="field"
                 :initial-value="connDstFieldTypeahead"
@@ -3287,12 +3290,6 @@ export default {
 </script>
 
 <style>
-/* fix dropdown location */
-.settings-page .dropdown-menu.field-typeahead {
-  margin-top: -15px;
-  left: 15px;
-}
-
 /* settings page, navbar, and content styles - */
 .settings-page {
   margin-top: 36px;

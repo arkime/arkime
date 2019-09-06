@@ -1,6 +1,6 @@
 <template>
 
-  <span>
+  <span :class="{'dropup':dropup}">
     <input
       type="text"
       ref="typeahead"
@@ -64,7 +64,8 @@ export default {
     },
     initialValue: String,
     queryParam: String,
-    page: String
+    page: String,
+    dropup: Boolean
   },
   data: function () {
     return {
@@ -236,6 +237,9 @@ export default {
 </script>
 
 <style scoped>
+.dropup .field-typeahead {
+  margin-bottom: 34px;
+}
 .field-typeahead {
   max-height: 300px;
   overflow-y: auto;
