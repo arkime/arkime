@@ -283,7 +283,8 @@ typedef struct {
 #define SESSION_ICMP  2
 #define SESSION_SCTP  3
 #define SESSION_ESP   4
-#define SESSION_MAX   5
+#define SESSION_SPS		5
+#define SESSION_MAX   6
 
 /******************************************************************************/
 /*
@@ -462,6 +463,15 @@ typedef struct {
     char     *tagsStr[10];
 } MolochIpInfo_t;
 
+typedef struct MolochSinglePacketSession_t MolochSinglePacketSession_t;
+struct MolochSinglePacketSession_t {
+    uint8_t  protocol;
+    uint16_t port;    // 0 => all. account for packet w 0 value port?
+    MolochSinglePacketSession_t *next;
+};
+MolochSinglePacketSession_t *sps;
+
+
 /******************************************************************************/
 /*
  * Parser
@@ -523,6 +533,7 @@ typedef struct molochpacket_t
     uint8_t        copied:1;       // don't need to copy
     uint8_t        wasfrag:1;      // was a fragment
     uint8_t        tunnel:6;       // tunnel type
+    uint8_t				 sps:1;					 // single packet session flag
 } MolochPacket_t;
 
 typedef struct

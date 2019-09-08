@@ -25,6 +25,8 @@
 
 extern MolochConfig_t        config;
 
+extern MolochSinglePacketSession_t *sps;
+
 LOCAL GKeyFile             *molochKeyFile;
 
 /******************************************************************************/
@@ -559,6 +561,59 @@ void moloch_config_load()
     config.maxStreams[SESSION_SCTP] = MAX(100, maxStreams/config.packetThreads/20);
     config.maxStreams[SESSION_ICMP] = MAX(100, maxStreams/config.packetThreads/200);
     config.maxStreams[SESSION_ESP] = MAX(100, maxStreams/config.packetThreads/200);
+    config.maxStreams[SESSION_SPS] = MAX(100, maxStreams/config.packetThreads/20);		// wag, using udp values
+
+
+		MolochSinglePacketSession_t *p;
+
+		sps = NULL;
+    gchar **sessionlessPackets     = moloch_config_str_list(keyfile, "sps", NULL);
+    if (sessionlessPackets) {
+        for (i = 0; sessionlessPackets[i]; i++) {
+            char *s = sessionlessPackets[i];
+
+						uint32_t j;
+						char *colon = ":";
+
+						for (j = 0; j < strlen (s); j++) {
+							if ( ! ((isdigit (s[j])) || (s[j] == *colon))) {
+								LOGEXIT ("sps input string '%s' format incorrect.", s);
+								abort ();
+							}
+							if ((colon != 0) && (s[j] == *colon)) {
+								colon = 0;
+							}
+						}
+
+						int protocol;
+						int port;
+	
+						if (colon == NULL) {
+							sscanf (s, "%d:%d", &protocol, &port);
+						} else {
+							sscanf (s, "%d", &protocol);
+							port = 0;
+						}
+
+						if ((protocol > 256) || (port > 16384)) {
+							LOGEXIT ("sps values too large protocol=%d port=%d", protocol, port);
+						}
+
+						p = malloc (sizeof (MolochSinglePacketSession_t));
+						p->protocol = protocol;
+						p->port = port;
+
+						p->next = sps;
+						sps = p;
+				}
+		}
+
+		p = sps;
+		while (p != NULL) {
+			LOG ("sps: protocol=%d port=%d", p->protocol, p->port);
+
+			p = p->next;
+		}
 
 
     gchar **saveUnknownPackets     = moloch_config_str_list(keyfile, "saveUnknownPackets", NULL);
