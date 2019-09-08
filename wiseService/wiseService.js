@@ -751,7 +751,7 @@ function printStats()
 
   for (var section in internals.sources) {
     let src = internals.sources[section];
-    console.log(sprintf("SRC %-30s    cached: %7d lookup: %7d refresh: %7d dropped: %7d avgMS: %7d",
+    console.log(sprintf("SRC %-30s    cached: %7d lookup: %9d refresh: %7d dropped: %7d avgMS: %7d",
       section, src.cacheHitStat, src.cacheMissStat, src.cacheRefreshStat, src.cacheDroppedStat, src.average100MS));
   }
 }
