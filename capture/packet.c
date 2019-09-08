@@ -566,9 +566,7 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         break;
     }
 
-#define SPS	
 
-#ifdef SPS
 		// overwrite the above if this is a single packet session
     switch (packet->sps) {
       case 0:
@@ -584,21 +582,20 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
       default:
         LOGEXIT ("unexpected value for packet->sps %d", packet->sps);
     }
-#endif
 
     int isNew;
     session = moloch_session_find_or_create(packet->ses, packet->hash, sessionId, &isNew); // Returns locked session
 
 
-#ifdef SPS
     if (packet->sps == 1) {
       if (isNew == 0) {
         LOGEXIT ("packet is sps but session not new.  error.");
       } else {
+#ifdef DEBUG_PACKET
       	moloch_session_add_tag(session, "sps");
+#endif
       }
     }
-#endif
 
 
     if (isNew) {
@@ -1247,8 +1244,6 @@ LOCAL int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const pa
     }
 
 		// sps detection
-
-#ifdef SPS
     packet->sps = 0;
 
     if (sps) {
@@ -1258,7 +1253,6 @@ LOCAL int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const pa
     	struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
     	struct tcphdr       *tcphdr = 0;
     	struct udphdr       *udphdr = 0;
-
 
 			if (!packet->v6) {
     		int ip_hdr_len = 4 * ip4->ip_hl;
@@ -1303,8 +1297,6 @@ LOCAL int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const pa
 			}	
 		}
 
-
-
 		if (packet->sps == 1) {
 			// make this sessionless
 			// create a 32 bit random value for hash.  the hash is already part of the packet structure
@@ -1314,11 +1306,6 @@ LOCAL int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const pa
 			// normal moloch session logic
     	packet->hash = moloch_session_hash(sessionId);
 		}
-
-#else
-   	packet->hash = moloch_session_hash(sessionId);
-#endif
-
 
     uint32_t thread = packet->hash % config.packetThreads;
 
