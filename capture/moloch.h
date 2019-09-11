@@ -534,6 +534,7 @@ typedef struct molochpacket_t
     uint8_t        wasfrag:1;      // was a fragment
     uint8_t        tunnel:6;       // tunnel type
     uint8_t				 sps:1;					 // single packet session flag
+    uint8_t				 ethernet:1;		 // ethernet as opposed to IP 
 } MolochPacket_t;
 
 typedef struct

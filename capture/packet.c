@@ -239,6 +239,43 @@ LOCAL void moloch_packet_tcp_finish(MolochSession_t *session)
     }
 }
 
+
+/******************************************************************************/
+LOCAL void moloch_packet_process_ethernet_frame(MolochSession_t * const UNUSED(session), MolochPacket_t * const packet)
+{
+    const uint8_t *data = packet->pkt;
+	
+		printf ("processing ethernet frame\n");
+
+    moloch_session_add_tag(session, "ethernet");
+    moloch_session_add_tag(session, "sps");
+		if ((data[14] == 0xfe) && (data[15] == 0xfe) && (data[16] == 03) && (data[17] == 0x83)) {
+    	moloch_session_add_tag(session, "isis");
+			return;
+		}
+
+		if ((data[12] == 0x88) && (data[13] == 0xcc)) {
+    	moloch_session_add_tag(session, "lldp");
+			return;
+		}
+
+		if ((data[12] == 0x08) && (data[13] == 0x06)) {
+    	moloch_session_add_tag(session, "arp");
+			return;
+		}
+
+		int i;
+		for (i = 0; i < packet->pktlen; i++) {
+
+			printf ("%02x ", data[i]);
+			if ( (i > 0) && (((i+1) % 16) == 0)) {
+				printf ("\n");
+			}
+		}
+		printf ("\n");
+
+
+}
 /******************************************************************************/
 LOCAL void moloch_packet_process_icmp(MolochSession_t * const UNUSED(session), MolochPacket_t * const packet)
 {
@@ -518,6 +555,13 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
     struct udphdr       *udphdr = 0;
     char                 sessionId[MOLOCH_SESSIONID_LEN];
 
+
+    if (packet->ethernet == 1) {
+      packet->protocol = 0;
+      sessionId[0] = 37;
+      memcpy (&sessionId[1], &(packet->hash), sizeof (packet->hash));
+    }
+
     switch (packet->protocol) {
     case IPPROTO_TCP:
         tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
@@ -591,9 +635,7 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
       if (isNew == 0) {
         LOGEXIT ("packet is sps but session not new.  error.");
       } else {
-#ifdef DEBUG_PACKET
       	moloch_session_add_tag(session, "sps");
-#endif
       }
     }
 
@@ -603,17 +645,29 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         session->firstPacket = packet->ts;
 
         session->protocol = packet->protocol;
-        if (ip4->ip_v == 4) {
-            ((uint32_t *)session->addr1.s6_addr)[2] = htonl(0xffff);
-            ((uint32_t *)session->addr1.s6_addr)[3] = ip4->ip_src.s_addr;
-            ((uint32_t *)session->addr2.s6_addr)[2] = htonl(0xffff);
-            ((uint32_t *)session->addr2.s6_addr)[3] = ip4->ip_dst.s_addr;
-            session->ip_tos = ip4->ip_tos;
-        } else {
-            session->addr1 = ip6->ip6_src;
-            session->addr2 = ip6->ip6_dst;
-            session->ip_tos = 0;
-        }
+
+				switch (packet->ethernet) {
+					case 0:
+        		if (ip4->ip_v == 4) {
+            		((uint32_t *)session->addr1.s6_addr)[2] = htonl(0xffff);
+            		((uint32_t *)session->addr1.s6_addr)[3] = ip4->ip_src.s_addr;
+            		((uint32_t *)session->addr2.s6_addr)[2] = htonl(0xffff);
+            		((uint32_t *)session->addr2.s6_addr)[3] = ip4->ip_dst.s_addr;
+            		session->ip_tos = ip4->ip_tos;
+        		} else {
+            		session->addr1 = ip6->ip6_src;
+            		session->addr2 = ip6->ip6_dst;
+            		session->ip_tos = 0;
+        		}
+						break;
+
+					case 1:
+            	((uint32_t *)session->addr1.s6_addr)[2] = 0;
+            	((uint32_t *)session->addr1.s6_addr)[3] = 0;
+            	((uint32_t *)session->addr2.s6_addr)[2] = 0;
+            	((uint32_t *)session->addr2.s6_addr)[3] = 0;
+            	session->ip_tos = 0;
+				}
         session->thread = thread;
 
         moloch_parsers_initial_tag(session);
@@ -840,6 +894,10 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         freePacket = moloch_packet_process_tcp(session, packet);
         moloch_packet_tcp_finish(session);
         break;
+    }
+
+    if (packet->ethernet == 1) {
+      moloch_packet_process_ethernet_frame(session, packet);
     }
 
     if (freePacket) {
@@ -1869,6 +1927,15 @@ LOCAL int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * cons
             n += 2;
             break;
         default:
+            printf ("got unknown ethernet type=%x\n", ethertype);
+            char  sessionId[MOLOCH_SESSIONID_LEN];
+
+            packet->ethernet = 1;
+            packet->ses = SESSION_SPS;
+            packet->hash = random ();
+            sessionId[0] = 37;
+            memcpy (&sessionId[1], &(packet->hash), sizeof (packet->hash));
+            return moloch_packet_ip(batch, packet, sessionId);
 #ifdef DEBUG_PACKET
             LOG("BAD PACKET: Unknown ethertype %x", ethertype);
 #endif
