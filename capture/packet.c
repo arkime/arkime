@@ -245,8 +245,6 @@ LOCAL void moloch_packet_process_ethernet_frame(MolochSession_t * const UNUSED(s
 {
     const uint8_t *data = packet->pkt;
 	
-		printf ("processing ethernet frame\n");
-
     moloch_session_add_tag(session, "ethernet");
     moloch_session_add_tag(session, "sps");
 		if ((data[14] == 0xfe) && (data[15] == 0xfe) && (data[16] == 03) && (data[17] == 0x83)) {
@@ -263,6 +261,11 @@ LOCAL void moloch_packet_process_ethernet_frame(MolochSession_t * const UNUSED(s
     	moloch_session_add_tag(session, "arp");
 			return;
 		}
+
+		char unknown[64];
+		sprintf (unknown, "unk-eth-%02x-%02x", data[12], data[13]);
+   	moloch_session_add_tag(session, unknown);
+		return;
 
 		int i;
 		for (i = 0; i < packet->pktlen; i++) {
@@ -1927,7 +1930,6 @@ LOCAL int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * cons
             n += 2;
             break;
         default:
-            printf ("got unknown ethernet type=%x\n", ethertype);
             char  sessionId[MOLOCH_SESSIONID_LEN];
 
             packet->ethernet = 1;
