@@ -45,7 +45,8 @@ var Config         = require('./config.js'),
     onHeaders      = require('on-headers'),
     glob           = require('glob'),
     unzip          = require('unzip'),
-    helmet         = require('helmet');
+    helmet         = require('helmet'),
+    uuid           = require('uuidv4').default;
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -191,6 +192,20 @@ if (Config.get('hstsHeader', false) && Config.isHTTPS()) {
     includeSubDomains: true
   }));
 }
+// calculate nonce
+app.use((req, res, next) => {
+  res.locals.nonce = Buffer.from(uuid()).toString('base64');
+  next();
+});
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    styleSrc: ["'self'", "'unsafe-inline'"],
+    scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
+    objectSrc: ["'none'"],
+    imgSrc: ["'self'", 'data:']
+  }
+}))
 
 function molochError (status, text) {
   /* jshint validthis: true */
@@ -8111,7 +8126,8 @@ app.use((req, res) => {
     multiViewer: Config.get('multiES', false),
     themeUrl: theme === 'custom-theme' ? 'user.css' : '',
     huntWarn: Config.get('huntWarn', 100000),
-    huntLimit: limit
+    huntLimit: limit,
+    serverNonce: res.locals.nonce
   };
 
   // Create a fresh Vue app instance
