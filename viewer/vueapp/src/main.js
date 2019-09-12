@@ -1,6 +1,7 @@
+import './createNonce';
+
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
-
 import Vue from 'vue';
 import Vuex from 'vuex';
 import axios from 'axios';
@@ -29,8 +30,6 @@ import './themes/green.css';
 import './themes/cotton-candy.css';
 import './themes/dark-2.css';
 import './themes/dark-3.css';
-
-__webpack_nonce__ = '<%=nonce%>'; // eslint-disable-line no-global-assign, no-undef, camelcase
 
 Vue.config.productionTip = false;
 
