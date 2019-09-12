@@ -1558,9 +1558,9 @@ app.get('/user/settings', getSettingUser, recordResponseTime, function(req, res)
     return res.send(JSON.stringify({success:false, text:'User not found'}));
   }
 
-  var settings = req.settingUser.settings || settingDefaults;
+  let settings = req.settingUser.settings || settingDefaults;
 
-  var cookieOptions = { path: app.locals.basePath };
+  let cookieOptions = { path: app.locals.basePath, sameSite: 'Strict' };
   if (Config.isHTTPS()) { cookieOptions.secure = true; }
 
   res.cookie(
@@ -8105,7 +8105,7 @@ app.use(cspHeader, (req, res) => {
     return res.status(403).send('Permission denied');
   }
 
-  let cookieOptions = { path: app.locals.basePath };
+  let cookieOptions = { path: app.locals.basePath, sameSite: 'Strict' };
   if (Config.isHTTPS()) { cookieOptions.secure = true; }
 
   // send cookie for basic, non admin functions
