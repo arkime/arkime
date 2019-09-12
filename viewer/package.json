@@ -11,7 +11,6 @@
   "dependencies": {
     "compression": "^1.6.2",
     "fs-ext": "^0.5.0",
-    "helmet": "^3.15.1",
     "method-override": "^2.3.6",
     "multer": "^1.2.0",
     "passport": "^0.3.2",
@@ -90,7 +89,6 @@
     "style-loader": "^0.19.0",
     "uglifyjs-webpack-plugin": "1.2.5",
     "url-loader": "^1.0.1",
-    "uuidv4": "^5.0.1",
     "vue": "^2.6.10",
     "vue-bootstrap-datetimepicker": "^5.0.1",
     "vue-clickaway": "^2.2.2",

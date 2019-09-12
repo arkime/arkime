@@ -212,8 +212,6 @@ const cspHeader = helmet.contentSecurityPolicy({
 const unsafeInlineCspHeader = helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
-    /* can remove unsafe-inline for css when this is fixed
-    https://github.com/vuejs/vue-style-loader/issues/33 */
     styleSrc: ["'self'", "'unsafe-inline'"],
     scriptSrc: ["'self'", "'unsafe-eval'", "'unsafe-inline'"],
     objectSrc: ["'self'", 'data:'],
