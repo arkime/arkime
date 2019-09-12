@@ -45,7 +45,8 @@ var Config         = require('./config.js'),
     onHeaders      = require('on-headers'),
     glob           = require('glob'),
     unzip          = require('unzip'),
-    helmet         = require('helmet');
+    helmet         = require('helmet'),
+    uuid           = require('uuidv4').default;
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -191,6 +192,34 @@ if (Config.get('hstsHeader', false) && Config.isHTTPS()) {
     includeSubDomains: true
   }));
 }
+// calculate nonce
+app.use((req, res, next) => {
+  res.locals.nonce = Buffer.from(uuid()).toString('base64');
+  next();
+});
+// define csp headers
+const cspHeader = helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    /* can remove unsafe-inline for css when this is fixed
+    https://github.com/vuejs/vue-style-loader/issues/33 */
+    styleSrc: ["'self'", "'unsafe-inline'"],
+    scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
+    objectSrc: ["'none'"],
+    imgSrc: ["'self'", 'data:']
+  }
+});
+const unsafeInlineCspHeader = helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    styleSrc: ["'self'", "'unsafe-inline'"],
+    scriptSrc: ["'self'", "'unsafe-eval'", "'unsafe-inline'"],
+    objectSrc: ["'self'", 'data:'],
+    workerSrc: ["'self'", 'data:', 'blob:'],
+    imgSrc: ["'self'", 'data:'],
+    fontSrc: ["'self'", 'data:']
+  }
+});
 
 function molochError (status, text) {
   /* jshint validthis: true */
@@ -5534,7 +5563,7 @@ function localSessionDetail(req, res) {
 /**
  * Get SPI data for a session
  */
-app.get('/:nodeName/session/:id/detail', logAction(), function(req, res) {
+app.get('/:nodeName/session/:id/detail', cspHeader, logAction(), (req, res) => {
   Db.getWithOptions(Db.sid2Index(req.params.id), 'session', Db.sid2Id(req.params.id), {}, function(err, session) {
     if (err || !session.found) {
       return res.end("Couldn't look up SPI data, error for session " + safeStr(req.params.id) + " Error: " +  err);
@@ -8007,8 +8036,7 @@ if (Config.get("regressionTests")) {
 //////////////////////////////////////////////////////////////////////////////////
 // Cyberchef
 //////////////////////////////////////////////////////////////////////////////////
-
-app.use('/cyberchef/', function(req, res) {
+app.use('/cyberchef/', unsafeInlineCspHeader, (req, res) => {
   let found = false;
   let path = req.path.substring(1);
   if (path === '') {
@@ -8034,7 +8062,7 @@ app.use('/cyberchef/', function(req, res) {
 
 /* cyberchef endpoint - loads the src or dst packets for a session and
  * sends them to cyberchef */
-app.get("/:nodeName/session/:id/cyberchef", checkWebEnabled, checkProxyRequest, function(req, res) {
+app.get("/:nodeName/session/:id/cyberchef", checkWebEnabled, checkProxyRequest, unsafeInlineCspHeader, (req, res) => {
   processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
     if (err) {
       console.log(`ERROR - /${req.params.nodeName}/session/${req.params.id}/cyberchef`, err);
@@ -8068,7 +8096,7 @@ app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
 // expose vue bundle (dev)
 app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
 
-app.use((req, res) => {
+app.use(cspHeader, (req, res) => {
   if (req.path === '/users' && !req.user.createEnabled) {
     return res.status(403).send('Permission denied');
   }
@@ -8111,7 +8139,8 @@ app.use((req, res) => {
     multiViewer: Config.get('multiES', false),
     themeUrl: theme === 'custom-theme' ? 'user.css' : '',
     huntWarn: Config.get('huntWarn', 100000),
-    huntLimit: limit
+    huntLimit: limit,
+    serverNonce: res.locals.nonce
   };
 
   // Create a fresh Vue app instance
