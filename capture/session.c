@@ -155,10 +155,8 @@ uint32_t moloch_session_hash(const void *key)
 #endif
 
 /******************************************************************************/
-int moloch_session_cmp(const void *keyv, const void *elementv)
+LOCAL int moloch_session_cmp(const void *keyv, const MolochSession_t *session)
 {
-    MolochSession_t *session = (MolochSession_t *)elementv;
-
     return memcmp(keyv, session->sessionId, MIN(((uint8_t *)keyv)[0], session->sessionId[0])) == 0;
 }
 /******************************************************************************/
@@ -254,6 +252,9 @@ LOCAL void moloch_session_free (MolochSession_t *session)
     moloch_field_free(session);
 
     moloch_packet_tcp_free(session);
+
+    if (session->pq)
+        moloch_pq_free(session);
 
     MOLOCH_TYPE_FREE(MolochSession_t, session);
 }
@@ -592,7 +593,7 @@ void moloch_session_init()
     int t;
     for (t = 0; t < config.packetThreads; t++) {
         for (s = 0; s < SESSION_MAX; s++) {
-            HASHP_INIT(h_, sessions[t][s], primes[s], moloch_session_hash, moloch_session_cmp);
+            HASHP_INIT(h_, sessions[t][s], primes[s], moloch_session_hash, (HASH_CMP_FUNC)moloch_session_cmp);
             DLL_INIT(q_, &sessionsQ[t][s]);
         }
 
@@ -617,6 +618,7 @@ LOCAL void moloch_session_flush_close(MolochSession_t *session, gpointer UNUSED(
             moloch_session_save(session);
         );
     }
+    moloch_pq_flush();
 }
 /******************************************************************************/
 /* Only called on main thread. Wait for all packet threads to be empty and then
