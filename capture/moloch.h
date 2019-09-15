@@ -644,6 +644,7 @@ typedef struct moloch_session {
     uint16_t               ackedUnseenSegment:2;
     uint16_t               stopYara:1;
     uint16_t               diskOverload:1;
+    uint16_t               pq:1;
 } MolochSession_t;
 
 typedef struct moloch_session_head {
@@ -698,7 +699,7 @@ typedef struct {
 
 /******************************************************************************/
 /*
- * Callback function definitions
+ * Callback cb definitions
  */
 typedef int (*MolochWatchFd_func)(gint fd, GIOCondition cond, gpointer data);
 
@@ -939,7 +940,6 @@ void     moloch_session_id6 (char *buf, uint8_t *addr1, uint16_t port1, uint8_t 
 char    *moloch_session_id_string (char *sessionId, char *buf);
 
 uint32_t moloch_session_hash(const void *key);
-int      moloch_session_cmp(const void *keyv, const void *elementv);
 
 MolochSession_t *moloch_session_find(int ses, char *sessionId);
 MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *sessionId, int *isNew);
@@ -1233,6 +1233,46 @@ void *moloch_trie_best_reverse(MolochTrie_t *trie, const char *key, const int le
 void *moloch_trie_del_forward(MolochTrie_t *trie, const char *key, const int len);
 void *moloch_trie_del_reverse(MolochTrie_t *trie, const char *key, const int len);
 
+/******************************************************************************/
+/*
+ * pq.c
+ */
+typedef void (*MolochPQ_cb)(MolochSession_t *session, gpointer uw);
+
+typedef struct molochpqitem {
+    struct molochpqitem *pql_next, *pql_prev;
+    struct molochpqitem *pqh_next, *pqh_prev;
+
+    MolochSession_t     *session;
+    void                *uw;
+    time_t               expire;
+    uint32_t             pqh_hash;
+    uint32_t             pqh_bucket;
+} MolochPQItem_t;
+
+typedef struct {
+    struct molochpqitem *pql_next, *pql_prev;
+    struct molochpqitem *pqh_next, *pqh_prev;
+    int                  pql_count;
+    int                  pqh_count;
+} MolochPQHead_t;
+
+typedef HASH_VAR(s_, MolochPQHash_t, MolochPQHead_t, 51);
+
+typedef struct {
+    int                 maxSeconds;
+    time_t              bucket0[MOLOCH_MAX_PACKET_THREADS];
+    MolochPQ_cb         cb;
+    MolochPQHash_t      keys[MOLOCH_MAX_PACKET_THREADS];
+    MolochPQHead_t     *buckets[MOLOCH_MAX_PACKET_THREADS];
+} MolochPQ_t;
+
+void moloch_pq_init(MolochPQ_t *pq, int maxSeconds, MolochPQ_cb cb);
+void moloch_pq_upsert(MolochPQ_t *pq, MolochSession_t *session, int seconds,  void *uw);
+void moloch_pq_remove(MolochPQ_t *pq, MolochSession_t *session);
+void moloch_pq_run(int thread, int max);
+void moloch_pq_free(MolochSession_t *session);
+void moloch_pq_flush();
 
 /******************************************************************************/
 /*

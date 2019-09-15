@@ -51,6 +51,7 @@ LOCAL int                    icmpCodeField;
 
 LOCAL uint64_t               droppedFrags;
 
+time_t                       currentTime[MOLOCH_MAX_PACKET_THREADS];
 time_t                       lastPacketSecs[MOLOCH_MAX_PACKET_THREADS];
 LOCAL int                    inProgress[MOLOCH_MAX_PACKET_THREADS];
 
@@ -511,6 +512,8 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
 
     lastPacketSecs[thread] = packet->ts.tv_sec;
 
+    moloch_pq_run(thread, 10);
+
     MolochSession_t     *session;
     struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
     struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
@@ -833,6 +836,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
         if (DLL_COUNT(packet_, &packetQ[thread]) == 0) {
             struct timespec ts;
             clock_gettime(CLOCK_REALTIME_COARSE, &ts);
+            currentTime[thread] = ts.tv_sec;
             ts.tv_sec++;
             MOLOCH_COND_TIMEDWAIT(packetQ[thread].lock, ts);
 
@@ -2006,10 +2010,8 @@ LOCAL uint32_t moloch_packet_frag_hash(const void *key)
     return n;
 }
 /******************************************************************************/
-LOCAL int moloch_packet_frag_cmp(const void *keyv, const void *elementv)
+LOCAL int moloch_packet_frag_cmp(const void *keyv, const MolochFrags_t *element)
 {
-    MolochFrags_t *element = (MolochFrags_t *)elementv;
-
     return memcmp(keyv, element->key, 10) == 0;
 }
 /******************************************************************************/
@@ -2178,7 +2180,7 @@ void moloch_packet_init()
 #endif
     }
 
-    HASH_INIT(fragh_, fragsHash, moloch_packet_frag_hash, moloch_packet_frag_cmp);
+    HASH_INIT(fragh_, fragsHash, moloch_packet_frag_hash, (HASH_CMP_FUNC)moloch_packet_frag_cmp);
     DLL_INIT(fragl_, &fragsList);
 
     moloch_add_can_quit(moloch_packet_outstanding, "packet outstanding");
