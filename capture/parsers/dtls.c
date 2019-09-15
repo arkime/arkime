@@ -163,7 +163,6 @@ LOCAL void dtls_process_server_certificate(MolochSession_t *session, const unsig
         if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
             {badreason = 1; goto bad_cert;}
         BSB_INIT(bsb, value, alen);
-        LOG("ALW: %d %d %d", apc, atag, alen);
 
         /* signedCertificate */
         if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))

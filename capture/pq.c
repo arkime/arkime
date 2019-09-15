@@ -23,6 +23,7 @@ extern time_t                lastPacketSecs[MOLOCH_MAX_PACKET_THREADS];
 
 LOCAL int         numPQs;
 LOCAL MolochPQ_t *pqs[10];
+LOCAL uint32_t    pqEntries;
 
 
 /******************************************************************************/
@@ -108,6 +109,7 @@ void moloch_pq_upsert(MolochPQ_t *pq, MolochSession_t *session, int timeout, voi
     item->session = session;
     item->uw = uw;
     session->pq = 1;
+    pqEntries++;
 }
 /******************************************************************************/
 void moloch_pq_remove(MolochPQ_t *pq, MolochSession_t *session)
@@ -122,10 +124,14 @@ void moloch_pq_remove(MolochPQ_t *pq, MolochSession_t *session)
     DLL_REMOVE(pql_, &pq->buckets[session->thread][bucket], item);
     HASH_REMOVE(pqh_, pq->keys[session->thread], item);
     MOLOCH_TYPE_FREE(MolochPQItem_t, item);
+    pqEntries++;
 }
 /******************************************************************************/
 void moloch_pq_run(int thread, int max)
 {
+    if (pqEntries == 0)
+        return;
+
     int i;
     for (i = 0; i < numPQs; i++) {
         if (lastPacketSecs[thread] != pqs[i]->bucket0[thread])
