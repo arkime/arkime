@@ -19,7 +19,7 @@
 
 var util           = require('util')
   , wiseSource     = require('./wiseSource.js')
-  , redis          = require('redis')
+  , redis          = require('ioredis')
   ;
 
 //////////////////////////////////////////////////////////////////////////////////
