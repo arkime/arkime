@@ -59,7 +59,6 @@ function WISERedisCache (options) {
   this.cacheSize = +options.cacheSize || 10000;
   this.cache = {};
 
-  options.return_buffers = true; // force buffers on for the bson decoding to work
   this.client = redis.createClient(options);
 }
 
@@ -80,7 +79,7 @@ WISERedisCache.prototype.get = function(query, cb) {
   }
 
   // Check redis
-  this.client.get(query.typeName + "-" + query.value, (err, reply) => {
+  this.client.getBuffer(query.typeName + "-" + query.value, (err, reply) => {
     if (reply === null) {
       return cb(null, undefined);
     }
