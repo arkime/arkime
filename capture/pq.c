@@ -124,7 +124,7 @@ void moloch_pq_remove(MolochPQ_t *pq, MolochSession_t *session)
     DLL_REMOVE(pql_, &pq->buckets[session->thread][bucket], item);
     HASH_REMOVE(pqh_, pq->keys[session->thread], item);
     MOLOCH_TYPE_FREE(MolochPQItem_t, item);
-    pqEntries++;
+    pqEntries--;
 }
 /******************************************************************************/
 void moloch_pq_run(int thread, int max)

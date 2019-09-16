@@ -18,7 +18,7 @@
 'use strict';
 
 var LRU = require('lru-cache')
-  , redis = require('redis')
+  , redis = require('ioredis')
   , Bson = require('bson')
   , BSON = new Bson()
   ;
