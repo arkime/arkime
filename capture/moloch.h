@@ -981,6 +981,7 @@ void moloch_session_add_cmd_thread(int thread, gpointer uw1, gpointer uw2, Moloc
 /*
  * packet.c
  */
+typedef int (*MolochPacketEnqueue_cb)(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
 
 void     moloch_packet_init();
 uint64_t moloch_packet_dropped_packets();
@@ -1003,6 +1004,8 @@ void     moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const
 
 void     moloch_packet_set_linksnap(int linktype, int snaplen);
 void     moloch_packet_drophash_add(MolochSession_t *session, int which, int min);
+
+void     moloch_packet_add_ethernet_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb);
 
 
 /******************************************************************************/
