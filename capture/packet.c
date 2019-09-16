@@ -248,7 +248,44 @@ LOCAL void moloch_packet_process_ethernet_frame(MolochSession_t * const UNUSED(s
     moloch_session_add_tag(session, "ethernet");
     moloch_session_add_tag(session, "sps");
 		if ((data[14] == 0xfe) && (data[15] == 0xfe) && (data[16] == 03) && (data[17] == 0x83)) {
+			char tag[64];
+			
     	moloch_session_add_tag(session, "isis");
+
+			switch (data[21]) {
+				case 15:
+    			moloch_session_add_tag(session, "isis-l1-hello");
+					break;
+				case 16:
+    			moloch_session_add_tag(session, "isis-l2-hello");
+					break;
+				case 17:
+    			moloch_session_add_tag(session, "isis-p2p-hello");
+					break;
+				case 18:
+    			moloch_session_add_tag(session, "isis-l1-lsp");
+					break;
+				case 20:
+    			moloch_session_add_tag(session, "isis-l2-lsp");
+					break;
+				case 24:
+    			moloch_session_add_tag(session, "isis-l1-csnp");
+					break;
+				case 25:
+    			moloch_session_add_tag(session, "isis-l2-csnp");
+					break;
+				case 26:
+    			moloch_session_add_tag(session, "isis-l1-psnp");
+					break;
+				case 27:
+    			moloch_session_add_tag(session, "isis-l2-psnp");
+					break;
+				
+				default:
+					sprintf (tag, "isis-unk-%d", data[21]);	
+    			moloch_session_add_tag(session, tag);
+			}
+
 			return;
 		}
 
@@ -1930,9 +1967,10 @@ LOCAL int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * cons
             n += 2;
             break;
         default:
-            char  sessionId[MOLOCH_SESSIONID_LEN];
 
             packet->ethernet = 1;
+            char  sessionId[MOLOCH_SESSIONID_LEN];
+
             packet->ses = SESSION_SPS;
             packet->hash = random ();
             sessionId[0] = 37;
