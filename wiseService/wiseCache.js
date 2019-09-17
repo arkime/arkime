@@ -18,7 +18,6 @@
 'use strict';
 
 var LRU = require('lru-cache')
-  , redis = require('ioredis')
   , Bson = require('bson')
   , BSON = new Bson()
   ;
@@ -54,31 +53,13 @@ exports.WISEMemoryCache = WISEMemoryCache;
 // Redis Cache
 /******************************************************************************/
 
-function WISERedisCache (options) {
+function WISERedisCache (redisType, options) {
   options = options || {};
   this.cacheSize = +options.cacheSize || 10000;
   this.cacheTimeout = options.getConfig('cache', 'cacheTimeout') * 60 || 24*60*60;
   this.cache = {};
 
-  if (options._type === 'redis') {
-    this.client = redis.createClient(options);
-  } else if (options._type === 'redis-sentinel') {
-    let o = {sentinels: [], name: options.getConfig('cache', 'redis-name')}
-    options.getConfig('cache', 'redis-sentinels').split(';').forEach((key) => {
-      let parts = key.split(':');
-      o.sentinels.push({host: parts[0], port: parts[1] || 26379});
-    });
-    o.sentinelPassword = options.getConfig('cache', 'sentinelPassword');
-    o.password = options.getConfig('cache', 'password');
-    this.client = new redis(o);
-  } else if (options._type === 'redis-cluster') {
-    let o = [];
-    options.getConfig('cache', 'redis-clusters').split(';').forEach((key) => {
-      let parts = key.split(':');
-      o.push({host: parts[0], port: parts[1] || 26379});
-    });
-    this.client = new redis.Cluster(o);
-  }
+  this.client = options.createRedisClient(redisType, 'cache');
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -138,9 +119,7 @@ exports.createCache = function(options) {
   case 'redis':
   case 'redis-cluster':
   case 'redis-sentinel':
-    options._type = type;
-    options.url = options.getConfig('cache', 'url');
-    return new WISERedisCache(options);
+    return new WISERedisCache(type, options);
   default:
     console.log('Unknown cache type', type);
     process.exit(1);

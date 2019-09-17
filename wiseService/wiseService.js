@@ -31,6 +31,7 @@ const ini            = require('iniparser')
     , wiseCache      = require('./wiseCache.js')
     , cluster        = require("cluster")
     , crypto         = require("crypto")
+    , redis          = require("ioredis")
   ;
 
 require('console-stamp')(console, '[HH:MM:ss.l]');
@@ -212,6 +213,7 @@ internals.sourceApi = {
   getConfigSections: getConfigSections,
   getConfigSection: getConfigSection,
   addField: addField,
+  createRedisClient: createRedisClient,
   addView: function (name, input) {
     if (input.includes("require:")) {
       var match = input.match(/require:([^;]+)/);
@@ -724,6 +726,32 @@ if (getConfig("wiseService", "regressionTests")) {
   });
 }
 //////////////////////////////////////////////////////////////////////////////////
+function createRedisClient(redisType, section) {
+
+  if (redisType === 'redis') {
+    return new redis(getConfig(section, 'url'));
+  } else if (redisType === 'redis-sentinel') {
+    let options = {sentinels: [], name: getConfig(section, 'redisName')}
+    getConfig(section, 'redisSentinels', 'localhost').split(';').forEach((key) => {
+      let parts = key.split(':');
+      options.sentinels.push({host: parts[0], port: parts[1] || 26379});
+    });
+    options.sentinelPassword = getConfig(section, 'sentinelPassword');
+    options.password = getConfig(section, 'redisPassword');
+    return new redis(options);
+  } else if (redisType === 'redis-cluster') {
+    let options = [];
+    getConfig(section, 'redisClusters').split(';').forEach((key) => {
+      let parts = key.split(':');
+      options.push({host: parts[0], port: parts[1] || 26379});
+    });
+    return new redis.Cluster(options);
+  } else {
+      console.log(`${section} - ERROR - unknown redisType '${redisType}'`);
+      process.exit();
+  }
+}
+//////////////////////////////////////////////////////////////////////////////////
 function printStats()
 {
   var keys = Object.keys(internals.types).sort();
@@ -777,7 +805,7 @@ b=="?"||b=="_"?".":b=="#"?"\\d":d&&b.charAt(0)=="{"?b+g:b=="<"?"\\b(?=\\w)":b=="
 //// Main
 //////////////////////////////////////////////////////////////////////////////////
 function main() {
-  internals.cache = wiseCache.createCache({getConfig: getConfig});
+  internals.cache = wiseCache.createCache({getConfig: getConfig, createRedisClient: createRedisClient});
 
   addField("field:tags"); // Always add tags field so we have at least 1 field
 
