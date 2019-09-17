@@ -535,6 +535,9 @@ typedef struct molochpacket_t
     uint8_t        tunnel:6;       // tunnel type
     uint8_t				 sps:1;					 // single packet session flag
     uint8_t				 ethernet:1;		 // ethernet as opposed to IP 
+		uint8_t			 	 sll:1;	 				 // is packet from sll capture
+		char			 	   sll_source[6];	 // sll src, == interface
+		uint8_t			 	 sll_packet_type;	 // sll packet direction
 } MolochPacket_t;
 
 typedef struct

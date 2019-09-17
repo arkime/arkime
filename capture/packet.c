@@ -21,10 +21,13 @@
 #include <arpa/inet.h>
 #include <errno.h>
 
-//#define DEBUG_PACKET
+#define DEBUG_PACKET
 
 /******************************************************************************/
 extern MolochConfig_t        config;
+
+unsigned long random_count = 0;
+unsigned long random_count2 = 1024 * 1024 * 1024;
 
 MolochPcapFileHdr_t          pcapFileHeader;
 
@@ -247,6 +250,7 @@ LOCAL void moloch_packet_process_ethernet_frame(MolochSession_t * const UNUSED(s
 	
     moloch_session_add_tag(session, "ethernet");
     moloch_session_add_tag(session, "sps");
+
 		if ((data[14] == 0xfe) && (data[15] == 0xfe) && (data[16] == 03) && (data[17] == 0x83)) {
 			char tag[64];
 			
@@ -673,7 +677,7 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
 
     if (packet->sps == 1) {
       if (isNew == 0) {
-        LOGEXIT ("packet is sps but session not new.  error.");
+        LOGEXIT ("packet is sps but session not new. hash=%u random_count=%lu random_count2=%lu error.", packet->hash, random_count, random_count2);
       } else {
       	moloch_session_add_tag(session, "sps");
       }
@@ -1399,7 +1403,9 @@ LOCAL int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const pa
 			// make this sessionless
 			// create a 32 bit random value for hash.  the hash is already part of the packet structure
 			// we use this random value later as the sessionId (to make it unique)
-			packet->hash = random ();
+			random_count++;
+			// packet->hash = random ();
+			packet->hash = random_count;
 		} else {
 			// normal moloch session logic
     	packet->hash = moloch_session_hash(sessionId);
@@ -1950,7 +1956,13 @@ LOCAL int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * cons
 #endif
         return MOLOCH_PACKET_CORRUPT;
     }
+
     int n = 12;
+		if (packet->sll == 1) {
+			// sll frame.  sll header expcet protocol was removed
+			n = 0;
+		}
+
     while (n+2 < len) {
         int ethertype = data[n] << 8 | data[n+1];
         n += 2;
@@ -1972,7 +1984,10 @@ LOCAL int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * cons
             char  sessionId[MOLOCH_SESSIONID_LEN];
 
             packet->ses = SESSION_SPS;
-            packet->hash = random ();
+            // packet->hash = random ();
+						random_count2++;
+						packet->hash = random_count2;
+						random_count++;
             sessionId[0] = 37;
             memcpy (&sessionId[1], &(packet->hash), sizeof (packet->hash));
             return moloch_packet_ip(batch, packet, sessionId);
@@ -1992,6 +2007,10 @@ LOCAL int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * cons
 /******************************************************************************/
 LOCAL int moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
+		// https://www.tcpdump.org/linktypes/LINKTYPE_LINUX_SLL.html
+		
+		printf ("in moloch_packet_sll\n");
+
     if (len < 16) {
 #ifdef DEBUG_PACKET
         LOG("BAD PACKET: Too short %d", len);
@@ -2000,10 +2019,14 @@ LOCAL int moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const 
     }
 
     int ethertype = data[14] << 8 | data[15];
+		printf ("in moloch_packet_sll ethertype=%x\n", ethertype);
+
     switch (ethertype) {
     case 0x0800:
+				printf ("sll ipv4\n");
         return moloch_packet_ip4(batch, packet, data+16, len - 16);
     case 0x86dd:
+				printf ("sll ipv6\n");
         return moloch_packet_ip6(batch, packet, data+16, len - 16);
     case 0x8864:
         return moloch_packet_pppoe(batch, packet, data+16, len - 16);
@@ -2015,8 +2038,25 @@ LOCAL int moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const 
         else
             return moloch_packet_ip4(batch, packet, data+20, len - 20);
     default:
+				printf ("in sll, hit default\n");
+				packet->sll = 1;
+				packet->sll_packet_type = data[1];
+
+				printf ("before copy\n");
+
+				// copy in src, defines interface 
+        memcpy(&(packet->sll_source), &data[5], sizeof (packet->sll_source));
+
+				printf ("after copy\n");
+			
+				// skip over entire sll header EXCEPT last two bytes which
+				// details the protocol
+				return moloch_packet_ether(batch, packet, data + 14, len - 14);
+				abort ();
+
+				printf ("sll unknown ethertype %x\n", ethertype);
 #ifdef DEBUG_PACKET
-        LOG("BAD PACKET: Unknown ethertype %x", ethertype);
+        LOG("BAD PACKET: sll parsing Unknown ethertype %x", ethertype);
 #endif
         if (BIT_ISSET(ethertype, config.etherSavePcap))
             moloch_packet_save_unknown_packet(0, packet);
@@ -2151,10 +2191,15 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
         rc = moloch_packet_frame_relay(batch, packet, packet->pkt, packet->pktlen);
         break;
     case 113: // SLL
-        if (packet->pkt[0] == 0 && packet->pkt[1] <= 4)
+				printf ("this is an sll packet\n");
+
+        if (packet->pkt[0] == 0 && packet->pkt[1] <= 4) {
+						printf ("making call to packet_sll\n");
             rc = moloch_packet_sll(batch, packet, packet->pkt, packet->pktlen);
-        else
-            rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
+        } else {
+						LOGEXIT ("sll header oddity packet->pkt[0]=%d packet->pkt[1]=%d.  should be 0 and [0..4]", packet->pkt[0], packet->pkt[1]);
+            //rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
+				}
         break;
     case 127: // radiotap
         rc = moloch_packet_radiotap(batch, packet, packet->pkt, packet->pktlen);
