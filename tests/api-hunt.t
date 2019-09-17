@@ -146,6 +146,11 @@ my $hToken = getTokenCookie('huntuser');
   $json = viewerDeleteToken("/hunt/$id3?molochRegressionUser=anonymous", $token);
   is ($json->{text}, "Deleted hunt item successfully");
 
+  sleep(2);
+  esGet("/_flush");
+  esGet("/_refresh");
+  sleep(2);
+
 # Admin can delete any hunt
   $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt 16","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $otherToken);
   my $id4 = $json->{hunt}->{id};
