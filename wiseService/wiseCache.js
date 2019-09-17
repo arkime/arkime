@@ -57,6 +57,7 @@ exports.WISEMemoryCache = WISEMemoryCache;
 function WISERedisCache (options) {
   options = options || {};
   this.cacheSize = +options.cacheSize || 10000;
+  this.cacheTimeout = options.getConfig('cache', 'cacheTimeout') * 60 || 24*60*60;
   this.cache = {};
 
   if (options._type === 'redis') {
@@ -119,7 +120,7 @@ WISERedisCache.prototype.set = function(query, value) {
   cache.set(query.value, value);
 
   var data = BSON.serialize(value, false, true, false);
-  this.client.set(query.typeName + '-' + query.value, data);
+  this.client.setex(query.typeName + '-' + query.value, this.cacheTimeout, data);
 };
 
 exports.WISERedisCache = WISERedisCache;
