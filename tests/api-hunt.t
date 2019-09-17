@@ -1,4 +1,4 @@
-use Test::More tests => 219;
+use Test::More tests => 221;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -15,74 +15,77 @@ my $json;
 # Delete old hunts
   esPost("/tests_hunts/hunt/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
 
+  sleep(2);
+  esGet("/_flush");
+  esGet("/_refresh");
+  sleep(2);
+
+# Make sure no hunts
+  my $hunts = viewerGet("/hunt/list");
+  eq_or_diff($hunts, from_json('{"recordsTotal": 0, "data": [], "recordsFiltered": 0}'));
+
 # Create huntuser
   $json = viewerPostToken("/user/create", '{"userId": "huntuser", "userName": "UserName", "enabled":true, "password":"password", "packetSearch":true}', $token);
 
 my $hToken = getTokenCookie('huntuser');
 
+##### ERRORS
 # Must have token to add a hunt
   $json = viewerPost("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 1","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}');
-  my $hunts = viewerGet("/hunt/list");
-  is (@{$hunts->{data}}, 0, "Can't add a job without a token");
+  eq_or_diff($json, from_json('{"text": "Missing token", "success": false}'));
 
 # Must apply to sessions to add a hunt
   $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":0,"name":"test hunt 2","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
-  $hunts = viewerGet("/hunt/list");
-  is (@{$hunts->{data}}, 0, "Can't add a job that doesn't apply to sessions");
+  eq_or_diff($json, from_json('{"text": "This hunt does not apply to any sessions", "success": false}'));
 
 # Must have a name to add a hunt
   $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
-  $hunts = viewerGet("/hunt/list");
-  is (@{$hunts->{data}}, 0, "Can't add a job without a name");
+  eq_or_diff($json, from_json('{"text": "Missing hunt name", "success": false}'));
 
 # Must have a size to add a hunt
   $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 3","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
-  $hunts = viewerGet("/hunt/list");
-  is (@{$hunts->{data}}, 0, "Can't add a job without a size");
+  eq_or_diff($json, from_json('{"text": "Missing max mumber of packets to examine per session", "success": false}'));
 
 # Must have search text to add a hunt
   $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 4","size":"50","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
-  $hunts = viewerGet("/hunt/list");
-  is (@{$hunts->{data}}, 0, "Can't add a job without search text");
+  eq_or_diff($json, from_json('{"text": "Missing packet search text", "success": false}'));
 
 # Must have search text type to add a hunt
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 5","size":"50","search":"test search text","type":"raw","src":true,"dst":true}}', $token);
-  $hunts = viewerGet("/hunt/list");
-  is (@{$hunts->{data}}, 0, "Can't add a job without search text type");
+  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 5","size":"50","search":"test search text","type":"raw","src":true,"dst":true, "query": {"startTime":0, "stopTime":1}}}', $token);
+  eq_or_diff($json, from_json('{"text": "Missing packet search text type", "success": false}'));
 
 # Must have a valid search text type to add a hunt
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 6","size":"50","search":"test search text","searchType":"asdf","type":"raw","src":true,"dst":true}}', $token);
-  $hunts = viewerGet("/hunt/list");
-  is (@{$hunts->{data}}, 0, "Can't add a job without search text type");
+  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 6","size":"50","search":"test search text","searchType":"asdf","type":"raw","src":true,"dst":true, "query": {"startTime":0, "stopTime":1}}}', $token);
+  eq_or_diff($json, from_json('{"text": "Improper packet search text type. Must be \"ascii\", \"asciicase\", \"hex\", \"wildcard\", \"hexregex\", or \"regex\"", "success": false}'));
 
 # Must have a type to add a hunt
-  $json = viewerPostToken("/hunt",'{"hunt":{"totalSessions":1,"name":"test hunt 7","size":"50","search":"test search text","searchType":"ascii","src":true,"dst":true}}', $token);
-  $hunts = viewerGet("/hunt/list");
-  is (@{$hunts->{data}}, 0, "Can't add a job without a type");
+  $json = viewerPostToken("/hunt",'{"hunt":{"totalSessions":1,"name":"test hunt 7","size":"50","search":"test search text","searchType":"ascii","src":true,"dst":true, "query": {"startTime":0, "stopTime":1}}}', $token);
+  eq_or_diff($json, from_json('{"text": "Missing packet search type (raw or reassembled packets)", "success": false}'));
 
 # Must have a valid type to add a hunt
-  $json = viewerPostToken("/hunt",'{"hunt":{"totalSessions":1,"name":"test hunt 8","size":"50","search":"test search text","searchType":"ascii","type":"asdf","src":true,"dst":true}}', $token);
-  $hunts = viewerGet("/hunt/list");
-  is (@{$hunts->{data}}, 0, "Can't add a job without a type");
+  $json = viewerPostToken("/hunt",'{"hunt":{"totalSessions":1,"name":"test hunt 8","size":"50","search":"test search text","searchType":"ascii","type":"asdf","src":true,"dst":true, "query": {"startTime":0, "stopTime":1}}}', $token);
+  eq_or_diff($json, from_json('{"text": "Improper packet search type. Must be \"raw\" or \"reassembled\"", "success": false}'));
 
 # Must have src or dst to add a hunt
   $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 9","size":"50","search":"test search text","searchType":"ascii","type":"raw"}}', $token);
-  $hunts = viewerGet("/hunt/list");
-  is (@{$hunts->{data}}, 0, "Can't add a job without a type");
+  eq_or_diff($json, from_json('{"text": "The hunt must search source or destination packets (or both)", "success": false}'));
 
 # Must have query to add a hunt
   $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 10","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
-  $hunts = viewerGet("/hunt/list");
-  is (@{$hunts->{data}}, 0, "Can't add a job without a query");
+  eq_or_diff($json, from_json('{"text": "Missing query", "success": false}'));
 
 # Must have fully formed query to add a hunt
   $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 11","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000}}}', $token);
-  $hunts = viewerGet("/hunt/list");
-  is (@{$hunts->{data}}, 0, "Can't add a job without a query stopTime");
+  eq_or_diff($json, from_json('{"text": "Missing fully formed query (must include start time and stop time)", "success": false}'));
 
   $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 12","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"stopTime":1536872891}}}', $token);
-  $hunts = viewerGet("/hunt/list");
-  is (@{$hunts->{data}}, 0, "Can't add a job without a query starTime");
+  eq_or_diff($json, from_json('{"text": "Missing fully formed query (must include start time and stop time)", "success": false}'));
+
+# Make sure no hunts
+  my $hunts = viewerGet("/hunt/list");
+  eq_or_diff($hunts, from_json('{"recordsTotal": 0, "data": [], "recordsFiltered": 0}'));
+
+##### GOOD
 
 # Add a valid hunt, and it should immediately run
   $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"hunt":{"totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $token);
@@ -93,6 +96,7 @@ my $hToken = getTokenCookie('huntuser');
   is ($json->{hunt}->{name}, "test hunt 13", "Strip special chars");
 
 # Hunt should finish
+  viewerGet("/processHuntJobs");
   sleep(2);
   esGet("/_flush");
   esGet("/_refresh");
@@ -109,6 +113,7 @@ my $hToken = getTokenCookie('huntuser');
 
   $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt 14","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $otherToken);
 
+  viewerGet("/processHuntJobs");
   sleep(2);
   esGet("/_flush");
   esGet("/_refresh");
@@ -123,6 +128,7 @@ my $hToken = getTokenCookie('huntuser');
   sleep(2);
   esGet("/_flush");
   esGet("/_refresh");
+  sleep(2);
 
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 1, "User can remove their own hunt");
@@ -149,6 +155,7 @@ my $hToken = getTokenCookie('huntuser');
   sleep(2);
   esGet("/_flush");
   esGet("/_refresh");
+  sleep(2);
 
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 1, "Admin can remove any hunt");
