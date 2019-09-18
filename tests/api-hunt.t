@@ -1,4 +1,4 @@
-use Test::More tests => 221;
+use Test::More tests => 245;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -15,10 +15,8 @@ my $json;
 # Delete old hunts
   esPost("/tests_hunts/hunt/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
 
-  sleep(2);
   esGet("/_flush");
   esGet("/_refresh");
-  sleep(2);
 
 # Make sure no hunts
   my $hunts = viewerGet("/hunt/list");
@@ -128,7 +126,6 @@ my $hToken = getTokenCookie('huntuser');
   sleep(2);
   esGet("/_flush");
   esGet("/_refresh");
-  sleep(2);
 
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 1, "User can remove their own hunt");
@@ -149,7 +146,6 @@ my $hToken = getTokenCookie('huntuser');
   sleep(2);
   esGet("/_flush");
   esGet("/_refresh");
-  sleep(2);
 
 # Admin can delete any hunt
   $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt 16","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $otherToken);
@@ -160,7 +156,6 @@ my $hToken = getTokenCookie('huntuser');
   sleep(2);
   esGet("/_flush");
   esGet("/_refresh");
-  sleep(2);
 
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 1, "Admin can remove any hunt");
@@ -178,23 +173,29 @@ my $hToken = getTokenCookie('huntuser');
   sub createHunts {
     my ($stype, $str) = @_;
 
-    $HUNTS{"raw-$stype-both-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":1,"name":"test-a","size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}}', $hToken);
-    $HUNTS{"raw-$stype-src-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":1,"name":"test-b","size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":true,"dst":false,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}}', $hToken);
-    $HUNTS{"raw-$stype-dst-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":1,"name":"test-c","size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":false,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}}', $hToken);
-    $HUNTS{"reassembled-$stype-both-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":1,"name":"test-d","size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}}', $hToken);
-    $HUNTS{"reassembled-$stype-src-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":1,"name":"test-e","size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":true,"dst":false,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}}', $hToken);
-    $HUNTS{"reassembled-$stype-dst-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":1,"name":"test-f","size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":false,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}}', $hToken);
+    $HUNTS{"raw-$stype-both-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":1,"name":"' . "raw-$stype-both-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}}', $hToken);
+    $HUNTS{"raw-$stype-src-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":1,"name":"' . "raw-$stype-src-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":true,"dst":false,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}}', $hToken);
+    $HUNTS{"raw-$stype-dst-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":1,"name":"' . "raw-$stype-dst-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":false,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}}', $hToken);
+    $HUNTS{"reassembled-$stype-both-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":1,"name":"' . "reassembled-$stype-both-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}}', $hToken);
+    $HUNTS{"reassembled-$stype-src-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":1,"name":"' . "reassembled-$stype-src-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":true,"dst":false,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}}', $hToken);
+    $HUNTS{"reassembled-$stype-dst-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":1,"name":"' . "reassembled-$stype-dst-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":false,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}}', $hToken);
   }
 
   # Check hunt vars given name and what the match count should be
   sub checkHunt {
-      my ($name, $match) = @_;
+      my ($name, $match, $checkResults) = @_;
       my $id = $HUNTS{$name}->{hunt}->{id};
+      my $hname = $HUNTS{$name}->{hunt}->{name};
       my $result = $RESULTS{$id};
       is ($result->{status}, 'finished', "$name finished check");
       is ($result->{searchedSessions}, 1, "$name searchedSessions check");
       is ($result->{totalSessions}, 1, "$name totalSessions check");
       is ($result->{matchedSessions}, $match, "$name match check");
+
+      if ($checkResults) {
+          countTest($match, "date=-1&expression=" . uri_escape("huntId=$id"));
+          countTest($match, "date=-1&expression=" . uri_escape("huntName=$hname"));
+      }
   }
 
 
@@ -214,6 +215,9 @@ my $hToken = getTokenCookie('huntuser');
   # Actually process the hunts
   viewerGet("/processHuntJobs");
 
+  esGet("/_flush");
+  esGet("/_refresh");
+
   # create hash of results
   $hunts = viewerGet("/hunt/list?history=true");
   foreach my $item (@{$hunts->{data}}) {
@@ -221,12 +225,12 @@ my $hToken = getTokenCookie('huntuser');
   }
 
   # Check results
-  checkHunt("raw-ascii-both-Get", 1);
-  checkHunt("raw-ascii-src-Get", 1);
-  checkHunt("raw-ascii-dst-Get", 0);
-  checkHunt("reassembled-ascii-both-Get", 1);
-  checkHunt("reassembled-ascii-src-Get", 1);
-  checkHunt("reassembled-ascii-dst-Get", 0);
+  checkHunt("raw-ascii-both-Get", 1, 1);
+  checkHunt("raw-ascii-src-Get", 1, 1);
+  checkHunt("raw-ascii-dst-Get", 0, 1);
+  checkHunt("reassembled-ascii-both-Get", 1, 1);
+  checkHunt("reassembled-ascii-src-Get", 1, 1);
+  checkHunt("reassembled-ascii-dst-Get", 0, 1);
 
   checkHunt("raw-ascii-both-Gif", 1);
   checkHunt("raw-ascii-src-Gif", 0);
