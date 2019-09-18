@@ -612,6 +612,7 @@ gboolean moloch_ready_gfunc (gpointer UNUSED(user_data))
     if (config.debug)
         LOG("maxField = %d", config.maxField);
 
+		config.pcapReadOffline = 0;
     if (config.pcapReadOffline) {
         if (config.dryRun || !config.copyPcap) {
             moloch_writers_start("inplace");
@@ -772,6 +773,8 @@ int main(int argc, char **argv)
     if (config.insecure)
         LOG("\n\nDON'T DO IT!!!! `--insecure` is a bad idea\n\n");
 
+		
+
     moloch_free_later_init();
     moloch_hex_init();
     moloch_config_init();
@@ -779,10 +782,12 @@ int main(int argc, char **argv)
     moloch_readers_init();
     moloch_plugins_init();
     moloch_plugins_load(config.rootPlugins);
+
     if (config.pcapReadOffline)
         moloch_readers_set("libpcap-file");
     else
         moloch_readers_set(NULL);
+
     if (!config.pcapReadOffline) {
         moloch_drop_privileges();
         config.copyPcap = 1;

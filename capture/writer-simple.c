@@ -332,7 +332,8 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         default:
             LOGEXIT("Unknown simpleMode %d", simpleMode);
         }
-
+	
+				config.pcapReadOffline = 0;
         /* If offline pcap honor umask, otherwise disable other RW */
         if (config.pcapReadOffline) {
             currentInfo[thread]->file->fd = open(name,  openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);

@@ -1368,6 +1368,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     if (n == 0) {
         char     stats_key[200];
         int      stats_key_len = 0;
+				config.pcapReadOffline = 0;
         if (config.pcapReadOffline) {
             stats_key_len = snprintf(stats_key, sizeof(stats_key), "/%sstats/stat/%s", config.prefix, config.nodeName);
         } else {
@@ -1396,6 +1397,8 @@ LOCAL gboolean moloch_db_flush_gfunc (gpointer user_data )
 {
     int             thread;
     struct timeval  currentTime;
+
+		printf ("called flush_gfunc\n");
 
     gettimeofday(&currentTime, NULL);
 
@@ -1596,6 +1599,7 @@ fetch_file_num:
     if (data)
         free(data);
 
+		config.pcapReadOffline = 0;
     if (!config.pcapReadOffline) {
         /* If doing a live file create a file number now */
         snprintf(key, sizeof(key), "fn-%s", config.nodeName);

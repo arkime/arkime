@@ -21,7 +21,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 
-#define DEBUG_PACKET
+// #define DEBUG_PACKET
 
 /******************************************************************************/
 extern MolochConfig_t        config;
@@ -250,6 +250,10 @@ LOCAL void moloch_packet_process_ethernet_frame(MolochSession_t * const UNUSED(s
 	
     moloch_session_add_tag(session, "ethernet");
     moloch_session_add_tag(session, "sps");
+		
+		if (packet->sll == 1) {
+    	moloch_session_add_tag(session, "encap-sll");
+		}
 
 		if ((data[14] == 0xfe) && (data[15] == 0xfe) && (data[16] == 03) && (data[17] == 0x83)) {
 			char tag[64];
@@ -971,6 +975,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
              * seconds in the past so moloch_session_process_commands will clean things up.  10 seconds is arbitrary but
              * we want to make sure we don't set the time ahead of any packets that are currently being read off the wire
              */
+						config.pcapReadOffline = 0;
             if (!config.pcapReadOffline && DLL_COUNT(packet_, &packetQ[thread]) == 0 && ts.tv_sec - 10 > lastPacketSecs[thread]) {
                 lastPacketSecs[thread] = ts.tv_sec - 10;
             }
@@ -1336,6 +1341,8 @@ LOCAL int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const pa
             initialDropped = stats.dropped;
         }
         initialPacket = packet->ts;
+				config.pcapReadOffline = 0;
+			
         if (!config.pcapReadOffline)
             LOG("Initial Packet = %ld Initial Dropped = %u", initialPacket.tv_sec, initialDropped);
     }
@@ -1963,6 +1970,8 @@ LOCAL int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * cons
 			n = 0;
 		}
 
+		printf ("in packet_ether sll=%d n=%d\n", packet->sll, n);
+
     while (n+2 < len) {
         int ethertype = data[n] << 8 | data[n+1];
         n += 2;
@@ -2009,8 +2018,6 @@ LOCAL int moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const 
 {
 		// https://www.tcpdump.org/linktypes/LINKTYPE_LINUX_SLL.html
 		
-		printf ("in moloch_packet_sll\n");
-
     if (len < 16) {
 #ifdef DEBUG_PACKET
         LOG("BAD PACKET: Too short %d", len);
@@ -2019,7 +2026,7 @@ LOCAL int moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const 
     }
 
     int ethertype = data[14] << 8 | data[15];
-		printf ("in moloch_packet_sll ethertype=%x\n", ethertype);
+		printf ("in moloch_packet_sll sll=%d ethertype=%x\n", packet->sll, ethertype);
 
     switch (ethertype) {
     case 0x0800:
@@ -2038,16 +2045,12 @@ LOCAL int moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const 
         else
             return moloch_packet_ip4(batch, packet, data+20, len - 20);
     default:
-				printf ("in sll, hit default\n");
 				packet->sll = 1;
 				packet->sll_packet_type = data[1];
-
-				printf ("before copy\n");
 
 				// copy in src, defines interface 
         memcpy(&(packet->sll_source), &data[5], sizeof (packet->sll_source));
 
-				printf ("after copy\n");
 			
 				// skip over entire sll header EXCEPT last two bytes which
 				// details the protocol
@@ -2191,10 +2194,9 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
         rc = moloch_packet_frame_relay(batch, packet, packet->pkt, packet->pktlen);
         break;
     case 113: // SLL
-				printf ("this is an sll packet\n");
+				printf ("processing sll packet\n");
 
         if (packet->pkt[0] == 0 && packet->pkt[1] <= 4) {
-						printf ("making call to packet_sll\n");
             rc = moloch_packet_sll(batch, packet, packet->pkt, packet->pktlen);
         } else {
 						LOGEXIT ("sll header oddity packet->pkt[0]=%d packet->pkt[1]=%d.  should be 0 and [0..4]", packet->pkt[0], packet->pkt[1]);

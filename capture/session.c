@@ -644,6 +644,7 @@ void moloch_session_exit()
         }
     }
 
+		config.pcapReadOffline = 0;
     if (!config.pcapReadOffline || config.debug)
         LOG("sessions: %u tcp: %u udp: %u icmp: %u sctp: %u esp: %u sps: %u",
             moloch_session_monitoring(),
