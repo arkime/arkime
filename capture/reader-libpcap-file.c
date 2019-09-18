@@ -46,6 +46,8 @@ extern char                *readerFileName[256];
 extern MolochFieldOps_t     readerFieldOps[256];
 extern uint32_t             readerOutputIds[256];
 
+LOCAL  int                  offlineDispatchAfter;
+
 LOCAL struct {
     GRegex    *regex;
     int        field;
@@ -513,7 +515,7 @@ LOCAL gboolean reader_libpcapfile_read()
 
     int r;
     if (pktsToRead > 0) {
-        r = pcap_dispatch(pcap, MIN(pktsToRead, 5000), reader_libpcapfile_pcap_cb, NULL);
+        r = pcap_dispatch(pcap, MIN(pktsToRead, offlineDispatchAfter), reader_libpcapfile_pcap_cb, NULL);
 
         if (r > 0)
             pktsToRead -= r;
@@ -521,7 +523,7 @@ LOCAL gboolean reader_libpcapfile_read()
         if (pktsToRead == 0)
             r = 0;
     } else {
-        r = pcap_dispatch(pcap, 5000, reader_libpcapfile_pcap_cb, NULL);
+        r = pcap_dispatch(pcap, offlineDispatchAfter, reader_libpcapfile_pcap_cb, NULL);
     }
     moloch_packet_batch_flush(&batch);
 
@@ -684,6 +686,8 @@ LOCAL void reader_libpcapfile_start() {
 /******************************************************************************/
 void reader_libpcapfile_init(char *UNUSED(name))
 {
+    offlineDispatchAfter        = moloch_config_int(NULL, "offlineDispatchAfter", 1000, 1, 0x7fff);
+
     moloch_reader_start         = reader_libpcapfile_start;
     moloch_reader_stats         = reader_libpcapfile_stats;
 
