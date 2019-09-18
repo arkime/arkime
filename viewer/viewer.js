@@ -4384,8 +4384,8 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
 });
 
 app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime, noCacheJson, function(req, res) {
-
   req.query.facets = 1;
+
   buildSessionQuery(req, function(bsqErr, query, indices) {
     var results = {items: [], graph: {}, map: {}};
     if (bsqErr) {
@@ -4404,17 +4404,19 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
     if (req.query.exp === 'ip.dst:port') { field = 'ip.dst:port'; }
 
     if (field === 'ip.dst:port') {
-      query.aggregations.field = {terms: {field: 'dstIp', size: size}, aggregations: {sub: {terms: {field: 'dstPort', size: size}}}};
+      query.aggregations.field = { terms: { field: 'dstIp', size: size }, aggregations: { sub: { terms: { field: 'dstPort', size: size } } } };
+    } else if (field === 'fileand') {
+      query.aggregations.field = { terms: { field: 'node', size: 1000 }, aggregations: { sub: { terms: { field: 'fileId', size: size } } } };
     } else {
-      query.aggregations.field = {terms: {field: field, size: size*2}};
+      query.aggregations.field = { terms: { field: field, size: size * 2 } };
     }
 
-    Promise.all([Db.healthCachePromise(),
-                 Db.numberOfDocuments('sessions2-*'),
-                 Db.searchPrimary(indices, 'session', query, options)
-                ])
-    .then(([health, total, result]) => {
-      if (result.error) {throw result.error;}
+    Promise.all([
+      Db.healthCachePromise(),
+      Db.numberOfDocuments('sessions2-*'),
+      Db.searchPrimary(indices, 'session', query, options)
+    ]).then(([health, total, result]) => {
+      if (result.error) { throw result.error; }
 
       results.health = health;
       results.recordsTotal = total.count;
@@ -4427,9 +4429,9 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
         result.aggregations = {field: {buckets: []}};
       }
 
-      var aggs = result.aggregations.field.buckets;
-      var filter = {term: {}};
-      var sfilter = {term: {}};
+      let aggs = result.aggregations.field.buckets;
+      let filter = { term: {} };
+      let sfilter = { term: {} };
       query.query.bool.filter.push(filter);
 
       if (field === 'ip.dst:port') {
@@ -4438,8 +4440,74 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
 
       delete query.aggregations.field;
 
-      var queriesInfo = [];
-      aggs.forEach(function(item) {
+      let queriesInfo = [];
+      function endCb () {
+        console.log('END CB'); // TODO ECR REMOVE
+        queriesInfo = queriesInfo.sort((a, b) => {return b.doc_count - a.doc_count;}).slice(0, size * 2);
+        let queries = queriesInfo.map((item) => {return item.query;});
+
+        Db.msearch(indices, 'session', queries, options, function(err, result) {
+          if (!result.responses) {
+            return res.send(results);
+          }
+
+          result.responses.forEach(function(item, i) {
+            var r = {name: queriesInfo[i].key, count: queriesInfo[i].doc_count};
+
+            r.graph = graphMerge(req, query, result.responses[i].aggregations);
+            if (r.graph.xmin === null) {
+              r.graph.xmin = results.graph.xmin || results.graph.pa1Histo[0][0];
+            }
+
+            if (r.graph.xmax === null) {
+              r.graph.xmax = results.graph.xmax || results.graph.pa1Histo[results.graph.pa1Histo.length - 1][0];
+            }
+
+            r.map = mapMerge(result.responses[i].aggregations);
+            results.items.push(r);
+            r.lpHisto = 0.0;
+            r.dbHisto = 0.0;
+            r.byHisto = 0.0;
+            r.paHisto = 0.0;
+            var graph = r.graph;
+            for (let i = 0; i < graph.lpHisto.length; i++) {
+              r.lpHisto += graph.lpHisto[i][1];
+              r.dbHisto += graph.db1Histo[i][1] + graph.db2Histo[i][1];
+              r.byHisto += graph.by1Histo[i][1] + graph.by2Histo[i][1];
+              r.paHisto += graph.pa1Histo[i][1] + graph.pa2Histo[i][1];
+            }
+            if (results.items.length === result.responses.length) {
+              var s = req.query.sort || 'lpHisto';
+              results.items = results.items.sort(function (a, b) {
+                var result;
+                if (s === 'name') { result = a.name.localeCompare(b.name); }
+                else { result = b[s] - a[s]; }
+                return result;
+              }).slice(0, size);
+              return res.send(results);
+            }
+          });
+        });
+      }
+
+      let intermediatResults = [];
+      function findFileNames () {
+        async.each(intermediatResults, function (fsitem, cb) {
+          let split = fsitem.key.split(':');
+          let node = split[0];
+          let fileId = split[1];
+          Db.fileIdToFile(node, fileId, function (file) {
+            if (file && file.name) {
+              queriesInfo.push({ key: file.name, doc_count: fsitem.doc_count, query: fsitem.query });
+            }
+            cb();
+          });
+        }, function () {
+          endCb();
+        });
+      }
+
+      aggs.forEach((item) => {
         if (field === 'ip.dst:port') {
           filter.term.dstIp = item.key;
           let sep = (item.key.indexOf(":") === -1)? ':' : '.';
@@ -4447,57 +4515,21 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
             sfilter.term.dstPort = sitem.key;
             queriesInfo.push({key: item.key + sep + sitem.key, doc_count: sitem.doc_count, query: JSON.stringify(query)});
           });
+        } else if (field === 'fileand') {
+          filter.term.node = item.key;
+          item.sub.buckets.forEach((sitem) => {
+            sfilter.term.fileand = sitem.key;
+            intermediatResults.push({key: filter.term.node + ':' + sitem.key, doc_count: sitem.doc_count, query: JSON.stringify(query)});
+          });
         } else {
           filter.term[field] = item.key;
           queriesInfo.push({key: item.key, doc_count: item.doc_count, query: JSON.stringify(query)});
         }
       });
 
-      queriesInfo = queriesInfo.sort((a, b) => {return b.doc_count - a.doc_count;}).slice(0, size*2);
-      let queries = queriesInfo.map((item) => {return item.query;});
+      if (field === 'fileand') { return findFileNames(); }
 
-      Db.msearch(indices, 'session', queries, options, function(err, result) {
-        if (!result.responses) {
-          return res.send(results);
-        }
-
-        result.responses.forEach(function(item, i) {
-          var r = {name: queriesInfo[i].key, count: queriesInfo[i].doc_count};
-
-          r.graph = graphMerge(req, query, result.responses[i].aggregations);
-          if (r.graph.xmin === null) {
-            r.graph.xmin = results.graph.xmin || results.graph.pa1Histo[0][0];
-          }
-
-          if (r.graph.xmax === null) {
-            r.graph.xmax = results.graph.xmax || results.graph.pa1Histo[results.graph.pa1Histo.length-1][0];
-          }
-
-          r.map = mapMerge(result.responses[i].aggregations);
-          results.items.push(r);
-          r.lpHisto = 0.0;
-          r.dbHisto = 0.0;
-          r.byHisto = 0.0;
-          r.paHisto = 0.0;
-          var graph = r.graph;
-          for (let i = 0; i < graph.lpHisto.length; i++) {
-            r.lpHisto += graph.lpHisto[i][1];
-            r.dbHisto += graph.db1Histo[i][1] + graph.db2Histo[i][1];
-            r.byHisto += graph.by1Histo[i][1] + graph.by2Histo[i][1];
-            r.paHisto += graph.pa1Histo[i][1] + graph.pa2Histo[i][1];
-          }
-          if (results.items.length === result.responses.length) {
-            var s = req.query.sort || 'lpHisto';
-            results.items = results.items.sort(function (a, b) {
-              var result;
-              if (s === 'name') { result = a.name.localeCompare(b.name); }
-              else { result = b[s] - a[s]; }
-              return result;
-            }).slice(0, size);
-            return res.send(results);
-          }
-        });
-      });
+      return endCb();
     }).catch((err) => {
       console.log('spigraph.json error', err);
       return res.molochError(403, errorString(err));
