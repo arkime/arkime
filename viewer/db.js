@@ -454,7 +454,7 @@ exports.update = function (index, type, id, document, options, cb) {
     options = undefined;
   }
 
-  var params = {index: fixIndex(index), type: type, body: document, id: id};
+  var params = {index: fixIndex(index), type: type, body: document, id: id, timeout: '10m'};
   exports.merge(params, options);
   return internals.elasticSearchClient.update(params, cb);
 };
@@ -476,7 +476,8 @@ exports.addTagsToSession = function (index, id, tags, node, cb) {
     retry_on_conflict: 3,
     index: fixIndex(index),
     type: 'session',
-    id: id
+    id: id,
+    timeout: '10m'
   };
 
   let script = `
@@ -513,7 +514,8 @@ exports.removeTagsFromSession = function (index, id, tags, node, cb) {
     retry_on_conflict: 3,
     index: fixIndex(index),
     type: 'session',
-    id: id
+    id: id,
+    timeout: '10m'
   };
 
   let script = `
@@ -550,7 +552,8 @@ exports.addHuntToSession = function (index, id, huntId, huntName, cb) {
     retry_on_conflict: 3,
     index: fixIndex(index),
     type: 'session',
-    id: id
+    id: id,
+    timeout: '10m'
   };
 
   let script = `
