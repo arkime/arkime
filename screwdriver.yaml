@@ -63,28 +63,28 @@ jobs:
             - AWS_ACCESS_KEY_ID
             - AWS_SECRET_ACCESS_KEY
 
-    ubuntu-14:
-        requires: [~pr, ~commit]
-        image: andywick/moloch-build-14:2.1.0
-        steps:
-            - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
-            - ln -s /thirdparty .
-            - build: ./easybutton-build.sh --daq --pfring --rminstall
-            - test-capture: (cd tests ; ./tests.pl)
-            - export PATH=/data/moloch/bin:$PATH
-            - npm -g config set user root; npm -g config set cache-min 9999999
-            - installing: make install
-            - cp -r capture/plugins/lua/samples /data/moloch/lua
-            - build-package: |
-                export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js`
-                if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "http://molo.ch" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
-                  aws s3 cp --quiet moloch*amd64.deb s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}_ubuntu14_amd64.deb --acl public-read
-                  aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}_ubuntu14_amd64.deb --acl public-read
-                fi
-        secrets:
-            - AWS_ACCESS_KEY_ID
-            - AWS_SECRET_ACCESS_KEY
+#    ubuntu-14:
+#        requires: [~pr, ~commit]
+#        image: andywick/moloch-build-14:2.1.0
+#        steps:
+#            - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
+#            - ln -s /thirdparty .
+#            - build: ./easybutton-build.sh --daq --pfring --rminstall
+#            - test-capture: (cd tests ; ./tests.pl)
+#            - export PATH=/data/moloch/bin:$PATH
+#            - npm -g config set user root; npm -g config set cache-min 9999999
+#            - installing: make install
+#            - cp -r capture/plugins/lua/samples /data/moloch/lua
+#            - build-package: |
+#                export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js`
+#                if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
+#                  fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "http://molo.ch" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
+#                  aws s3 cp --quiet moloch*amd64.deb s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}_ubuntu14_amd64.deb --acl public-read
+#                  aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}_ubuntu14_amd64.deb --acl public-read
+#                fi
+#        secrets:
+#            - AWS_ACCESS_KEY_ID
+#            - AWS_SECRET_ACCESS_KEY
 
     ubuntu-16:
         requires: [~pr, ~commit]
@@ -201,7 +201,7 @@ jobs:
             - AWS_SECRET_ACCESS_KEY
 
     slack:
-        requires: [centos-6, centos-7, ubuntu-14, ubuntu-16, ubuntu-18]
+        requires: [centos-6, centos-7, ubuntu-16, ubuntu-18]
         image: andywick/moloch-build-7:6
         annotations:
             beta.screwdriver.cd/cpu: LOW
@@ -269,27 +269,27 @@ jobs:
             - AWS_ACCESS_KEY_ID
             - AWS_SECRET_ACCESS_KEY
 
-    release-ubuntu-14:
-        requires: [release-build]
-        image: andywick/moloch-build-14:2.1.0
-        steps:
-            - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
-            - ln -s /thirdparty .
-            - build: ./easybutton-build.sh --daq --pfring --rminstall
-            - export PATH=/data/moloch/bin:$PWD/node_modules/.bin:$PATH
-            - npm -g config set user root; npm -g config set cache-min 9999999
-            - installing: make install
-            - cp -r capture/plugins/lua/samples /data/moloch/lua
-            - npm install license-checker; release/notice.txt.pl /data/moloch NOTICE release/CAPTURENOTICE > /data/moloch/NOTICE.txt
-            - build-package: |
-                export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js`
-                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration 1 --template-scripts --after-install "release/afterinstall.sh" --url "http://molo.ch" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
-
-                aws s3 cp moloch_${MOLOCH_VERSION}-1_amd64.deb s3://files.molo.ch/builds/ubuntu-14.04/ --acl public-read
-                ls -l *.deb
-        secrets:
-            - AWS_ACCESS_KEY_ID
-            - AWS_SECRET_ACCESS_KEY
+#    release-ubuntu-14:
+#        requires: [release-build]
+#        image: andywick/moloch-build-14:2.1.0
+#        steps:
+#            - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
+#            - ln -s /thirdparty .
+#            - build: ./easybutton-build.sh --daq --pfring --rminstall
+#            - export PATH=/data/moloch/bin:$PWD/node_modules/.bin:$PATH
+#            - npm -g config set user root; npm -g config set cache-min 9999999
+#            - installing: make install
+#            - cp -r capture/plugins/lua/samples /data/moloch/lua
+#            - npm install license-checker; release/notice.txt.pl /data/moloch NOTICE release/CAPTURENOTICE > /data/moloch/NOTICE.txt
+#            - build-package: |
+#                export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js`
+#                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration 1 --template-scripts --after-install "release/afterinstall.sh" --url "http://molo.ch" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
+#
+#                aws s3 cp moloch_${MOLOCH_VERSION}-1_amd64.deb s3://files.molo.ch/builds/ubuntu-14.04/ --acl public-read
+#                ls -l *.deb
+#        secrets:
+#            - AWS_ACCESS_KEY_ID
+#            - AWS_SECRET_ACCESS_KEY
 
     release-ubuntu-16:
         requires: [release-build]
