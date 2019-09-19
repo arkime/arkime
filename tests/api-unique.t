@@ -209,15 +209,16 @@ fe80::2d0:9ff:fee3:e8de.0, 1
 eq_or_diff($mtxt, $txt, "single doesn't match multi", { context => 3 });
 
 #
+my $fpwd = getcwd() . "/pcap";
 $txt = get("date=-1&field=fileand&expression=$files&counts=1");
 $mtxt = get("date=-1&field=fileand&expression=$files&counts=1", 1);
 eq_or_diff($txt,
-"$pwd/socks-http-example.pcap, 3
-$pwd/socks-http-pass.pcap, 3
-$pwd/socks-https-example.pcap, 3
-$pwd/socks5-http-302.pcap, 1
-$pwd/socks5-rdp.pcap, 1
-$pwd/socks5-reverse.pcap, 1
-$pwd/socks5-smtp-503.pcap, 1
-$pwd/v6-http.pcap, 6
+"$fpwd/socks-http-example.pcap, 3
+$fpwd/socks-http-pass.pcap, 3
+$fpwd/socks-https-example.pcap, 3
+$fpwd/socks5-http-302.pcap, 1
+$fpwd/socks5-rdp.pcap, 1
+$fpwd/socks5-reverse.pcap, 1
+$fpwd/socks5-smtp-503.pcap, 1
+$fpwd/v6-http.pcap, 6
 ", "filename counts");
