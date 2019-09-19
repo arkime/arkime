@@ -1,4 +1,4 @@
-use Test::More tests => 78;
+use Test::More tests => 79;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -141,3 +141,8 @@ my ($json, $mjson);
 # no map data
     $json = viewerGet("/spigraph.json?date=-1&field=http.useragent&expression=" . uri_escape("file=$pwd/socks5-reverse.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
     eq_or_diff($json->{map}, from_json('{}'), "no map data");
+
+# file field works
+    # $json = viewerGet("/spigraph.json?date=-1&field=fileand");
+    $json = viewerGet("/spigraph.json?date=-1&field=fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    cmp_ok ($json->{recordsFiltered}, '==', 6);
