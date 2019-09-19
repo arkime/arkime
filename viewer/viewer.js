@@ -4442,7 +4442,6 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
 
       let queriesInfo = [];
       function endCb () {
-        console.log('END CB'); // TODO ECR REMOVE
         queriesInfo = queriesInfo.sort((a, b) => {return b.doc_count - a.doc_count;}).slice(0, size * 2);
         let queries = queriesInfo.map((item) => {return item.query;});
 
@@ -4490,9 +4489,9 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
         });
       }
 
-      let intermediatResults = [];
+      let intermediateResults = [];
       function findFileNames () {
-        async.each(intermediatResults, function (fsitem, cb) {
+        async.each(intermediateResults, function (fsitem, cb) {
           let split = fsitem.key.split(':');
           let node = split[0];
           let fileId = split[1];
@@ -4519,7 +4518,7 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
           filter.term.node = item.key;
           item.sub.buckets.forEach((sitem) => {
             sfilter.term.fileand = sitem.key;
-            intermediatResults.push({key: filter.term.node + ':' + sitem.key, doc_count: sitem.doc_count, query: JSON.stringify(query)});
+            intermediateResults.push({key: filter.term.node + ':' + sitem.key, doc_count: sitem.doc_count, query: JSON.stringify(query)});
           });
         } else {
           filter.term[field] = item.key;
@@ -5112,7 +5111,7 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
   noCache(req, res, 'text/plain; charset=utf-8');
 
   if (req.query.field === undefined && req.query.exp === undefined) {
-    return res.send("Missing field or exp parameter");
+    return res.send('Missing field or exp parameter');
   }
 
   /* How should the results be written.  Use setImmediate to not blow stack frame */
@@ -5127,7 +5126,7 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
       return;
     }
 
-    var spiDataMaxIndices = +Config.get("spiDataMaxIndices", 4);
+    var spiDataMaxIndices = +Config.get('spiDataMaxIndices', 4);
     if (spiDataMaxIndices !== -1) {
       if (req.query.date === '-1' ||
           (req.query.date !== undefined && +req.query.date > spiDataMaxIndices)) {
@@ -5145,11 +5144,11 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
     };
   } else if (parseInt(req.query.counts, 10) || 0) {
     writeCb = function (item) {
-      res.write("" + item.key + ", " + item.doc_count + "\n");
+      res.write(`${item.key}, ${item.doc_count}\n`);
     };
   } else {
     writeCb = function (item) {
-      res.write("" + item.key + "\n");
+      res.write(`${item.key}\n`);
     };
   }
 
@@ -5158,7 +5157,7 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
 
   if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
     eachCb = function(item) {
-      var sep = (item.key.indexOf(":") === -1)? ':' : '.';
+      var sep = (item.key.indexOf(':') === -1)? ':' : '.';
       item.field2.buckets.forEach((item2) => {
         item2.key = item.key + sep + item2.key;
         writeCb(item2);
@@ -5171,30 +5170,64 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
     delete query.aggregations;
 
     if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srcPort|ip.src:srcPort)/)) {
-      query.aggregations = {field: { terms : {field : "srcIp", size: aggSize}, aggregations: {field2: {terms: {field: "srcPort", size: 100}}}}};
+      query.aggregations = {field: { terms : {field : 'srcIp', size: aggSize}, aggregations: {field2: {terms: {field: 'srcPort', size: 100}}}}};
     } else if (req.query.field.match(/(ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
-      query.aggregations = {field: { terms : {field : "dstIp", size: aggSize}, aggregations: {field2: {terms: {field: "dstPort", size: 100}}}}};
-    } else  {
+      query.aggregations = {field: { terms : {field : 'dstIp', size: aggSize}, aggregations: {field2: {terms: {field: 'dstPort', size: 100}}}}};
+    } else if (req.query.field === 'fileand') {
+      query.aggregations = { field: { terms : { field : 'node', size: aggSize }, aggregations: { field2: { terms: { field: 'fileId', size: 100 } } } } };
+    } else {
       query.aggregations = {field: { terms : {field : req.query.field, size: aggSize}}};
     }
+
     query.size = 0;
-    console.log("unique aggregations", indices, JSON.stringify(query));
+    console.log('unique aggregations', indices, JSON.stringify(query));
+
+    function findFileNames (result) {
+      let intermediateResults = [];
+      let aggs = result.aggregations.field.buckets;
+      aggs.forEach((item) => {
+        item.field2.buckets.forEach((sitem) => {
+          intermediateResults.push({ key: item.key + ':' + sitem.key, doc_count: sitem.doc_count });
+        });
+      });
+
+      async.each(intermediateResults, (fsitem, cb) => {
+        let split = fsitem.key.split(':');
+        let node = split[0];
+        let fileId = split[1];
+        Db.fileIdToFile(node, fileId, function (file) {
+          if (file && file.name) {
+            eachCb({key: file.name, doc_count: fsitem.doc_count });
+          }
+          cb();
+        });
+      }, function () {
+        return res.end();
+      });
+    }
+
     Db.searchPrimary(indices, 'session', query, null, function (err, result) {
       if (err) {
-        console.log("Error", query, err);
+        console.log('Error', query, err);
         return doneCb?doneCb():res.end();
       }
       if (Config.debug) {
-        console.log("unique.txt result", util.inspect(result, false, 50));
+        console.log('unique.txt result', util.inspect(result, false, 50));
       }
       if (!result.aggregations || !result.aggregations.field) {
-        return doneCb?doneCb():res.end();
+        return doneCb ? doneCb() : res.end();
+      }
+
+
+      if (req.query.field === 'fileand') {
+        return findFileNames(result);
       }
 
       for (var i = 0, ilen = result.aggregations.field.buckets.length; i < ilen; i++) {
         eachCb(result.aggregations.field.buckets[i]);
       }
-      return doneCb?doneCb():res.end();
+
+      return doneCb ? doneCb() : res.end();
     });
   });
 });
