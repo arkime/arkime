@@ -143,5 +143,6 @@ my ($json, $mjson);
     eq_or_diff($json->{map}, from_json('{}'), "no map data");
 
 # file field works
-    $json = viewerGet("/spigraph.json?date=-1&field=fileand");
-    cmp_ok ($json->{recordsFiltered}, '==', 272);
+    # $json = viewerGet("/spigraph.json?date=-1&field=fileand");
+    $json = viewerGet("/spigraph.json?date=-1&field=fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    cmp_ok ($json->{recordsFiltered}, '==', 6);

@@ -1,4 +1,4 @@
-use Test::More tests => 70;
+use Test::More tests => 71;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -148,9 +148,11 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     eq_or_diff($json->{map}, from_json('{}'), "no map data");
 
 # Check file != blah.pcap
-    my $json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file!=$pwd/https-connect.pcap"));
-    is ($json->{recordsFiltered}, 271, "file !=");
+    my $json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    is ($json->{recordsFiltered}, 6, "file ==");
+    my $json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file!=$pwd/bigendian.pcap&&file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    is ($json->{recordsFiltered}, 5, "file !=");
 
 # Check file == EXISTS!
-    my $json = viewerGet("/sessions.json?date=-1&expression=file=EXISTS!");
-    is ($json->{recordsFiltered}, 272, "file == EXISTS!");
+    my $json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file==EXISTS!&&file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    is ($json->{recordsFiltered}, 6, "file == EXISTS!");
