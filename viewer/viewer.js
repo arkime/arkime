@@ -4356,7 +4356,6 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
           });
         }
       }, function () {
-        setTimeout(() => {
         var r = {recordsTotal: total.count,
                  recordsFiltered: (results?results.total:0),
                  graph: graph,
@@ -4368,7 +4367,6 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
           res.send(r);
         } catch (c) {
         }
-      }, 1000);
       });
     }).catch ((err) => {
       console.log('ERROR - /sessions.json error', err);
