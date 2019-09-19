@@ -2606,7 +2606,7 @@ function lookupQueryItems(query, doneCb) {
 
   //jshint latedef: nofunc
   function process(parent, obj, item) {
-    //console.log("\nprocess:\n", item, obj, typeof obj[item], "\n");
+    // console.log("\nprocess:\n", item, obj, typeof obj[item], "\n");
     if (item === "fileand" && typeof obj[item] === "string") {
       var name = obj.fileand;
       delete obj.fileand;
@@ -2627,6 +2627,8 @@ function lookupQueryItems(query, doneCb) {
           doneCb(err);
         }
       });
+    } else if (item === 'field' && obj.field === 'fileand') {
+      obj.field = 'fileId';
     } else if (typeof obj[item] === "object") {
       convert(obj, obj[item]);
     }
@@ -5115,10 +5117,10 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
   }
 
   /* How should the results be written.  Use setImmediate to not blow stack frame */
-  var writeCb;
-  var doneCb;
-  var items = [];
-  var aggSize = 1000000;
+  let writeCb;
+  let doneCb;
+  let items = [];
+  let aggSize = 1000000;
 
   if (req.query.autocomplete !== undefined) {
     if (!Config.get('valueAutoComplete', !Config.get('multiES', false))) {
@@ -5126,7 +5128,7 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
       return;
     }
 
-    var spiDataMaxIndices = +Config.get('spiDataMaxIndices', 4);
+    let spiDataMaxIndices = +Config.get('spiDataMaxIndices', 4);
     if (spiDataMaxIndices !== -1) {
       if (req.query.date === '-1' ||
           (req.query.date !== undefined && +req.query.date > spiDataMaxIndices)) {
@@ -5153,11 +5155,11 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
   }
 
   /* How should each item be processed. */
-  var eachCb = writeCb;
+  let eachCb = writeCb;
 
   if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
     eachCb = function(item) {
-      var sep = (item.key.indexOf(':') === -1)? ':' : '.';
+      let sep = (item.key.indexOf(':') === -1)? ':' : '.';
       item.field2.buckets.forEach((item2) => {
         item2.key = item.key + sep + item2.key;
         writeCb(item2);
@@ -5223,7 +5225,7 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
         return findFileNames(result);
       }
 
-      for (var i = 0, ilen = result.aggregations.field.buckets.length; i < ilen; i++) {
+      for (let i = 0, ilen = result.aggregations.field.buckets.length; i < ilen; i++) {
         eachCb(result.aggregations.field.buckets[i]);
       }
 
@@ -5233,14 +5235,14 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
 });
 
 function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
-  var fields;
+  let fields;
 
   function processFile(pcap, pos, i, nextCb) {
     pcap.ref();
     pcap.readPacket(pos, function(packet) {
       switch(packet) {
       case null:
-        var msg = util.format(session._id, "in file", pcap.filename, "couldn't read packet at", pos, "packet #", i, "of", fields.packetPos.length);
+        let msg = util.format(session._id, "in file", pcap.filename, "couldn't read packet at", pos, "packet #", i, "of", fields.packetPos.length);
         console.log("ERROR - processSessionIdDisk -", msg);
         endCb(msg, null);
         break;
