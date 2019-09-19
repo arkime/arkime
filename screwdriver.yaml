@@ -19,15 +19,15 @@ shared:
 jobs:
     centos-6:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-6:2.0.0
+        image: andywick/moloch-build-6:2.1.0
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
-            - build: scl enable devtoolset-6 python27 "./easybutton-build.sh --daq --pfring --rminstall"
+            - build: scl enable devtoolset-7 python27 "./easybutton-build.sh --daq --pfring --rminstall"
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
-            - installing: scl enable devtoolset-6 python27 "make install"
+            - installing: scl enable devtoolset-7 python27 "make install"
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
@@ -42,7 +42,7 @@ jobs:
 
     centos-7:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-7:2.0.0
+        image: andywick/moloch-build-7:2.1.0
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -65,7 +65,7 @@ jobs:
 
     ubuntu-14:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-14:2.0.0
+        image: andywick/moloch-build-14:2.1.0
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -88,7 +88,7 @@ jobs:
 
     ubuntu-16:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-16:2.0.0
+        image: andywick/moloch-build-16:2.1.0
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -117,7 +117,7 @@ jobs:
 
     ubuntu-18:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-18:2.0.0
+        image: andywick/moloch-build-18:2.1.0
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
@@ -141,13 +141,13 @@ jobs:
 
     centos-7-sanitize:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-7:2.0.0
+        image: andywick/moloch-build-7:2.1.0
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
-            - build: scl enable devtoolset-6 "./easybutton-build.sh --rminstall"
-            - yum -y install libasan-static devtoolset-6-libasan-devel libasan3 devtoolset-6-libubsan-devel libubsan which java-1.8.0-openjdk-headless
-            - build-sanitize: (cd capture; scl enable devtoolset-6 "make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize")
+            - build: scl enable devtoolset-7 "./easybutton-build.sh --rminstall"
+            - yum -y install libasan-static devtoolset-7-libasan-devel libasan4 devtoolset-7-libubsan-devel libubsan which java-1.8.0-openjdk-headless
+            - build-sanitize: (cd capture; scl enable devtoolset-7 "make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize")
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
@@ -172,7 +172,7 @@ jobs:
 
     ubuntu-16-sanitize:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-16:2.0.0
+        image: andywick/moloch-build-16:2.1.0
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -219,7 +219,7 @@ jobs:
             - SLACK
 
     release-build:
-        image: andywick/moloch-build-6:2.0.0
+        image: andywick/moloch-build-6:2.1.0
         requires: []
         annotations:
             beta.screwdriver.cd/cpu: LOW
@@ -229,14 +229,14 @@ jobs:
 
     release-centos-6:
         requires: [release-build]
-        image: andywick/moloch-build-6:2.0.0
+        image: andywick/moloch-build-6:2.1.0
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
-            - build: scl enable devtoolset-6 python27 "./easybutton-build.sh --daq --pfring --rminstall"
+            - build: scl enable devtoolset-7 python27 "./easybutton-build.sh --daq --pfring --rminstall"
             - export PATH=/data/moloch/bin:$PWD/node_modules/.bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
-            - installing: scl enable devtoolset-6 python27 "make install"
+            - installing: scl enable devtoolset-7 python27 "make install"
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - npm install license-checker; release/notice.txt.pl /data/moloch NOTICE release/CAPTURENOTICE > /data/moloch/NOTICE.txt
             - build-package: |
@@ -250,7 +250,7 @@ jobs:
 
     release-centos-7:
         requires: [release-build]
-        image: andywick/moloch-build-7:2.0.0
+        image: andywick/moloch-build-7:2.1.0
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -271,7 +271,7 @@ jobs:
 
     release-ubuntu-14:
         requires: [release-build]
-        image: andywick/moloch-build-14:2.0.0
+        image: andywick/moloch-build-14:2.1.0
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -293,7 +293,7 @@ jobs:
 
     release-ubuntu-16:
         requires: [release-build]
-        image: andywick/moloch-build-16:2.0.0
+        image: andywick/moloch-build-16:2.1.0
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -314,7 +314,7 @@ jobs:
 
     release-ubuntu-18:
         requires: [release-build]
-        image: andywick/moloch-build-18:2.0.0
+        image: andywick/moloch-build-18:2.1.0
         steps:
             - (cd / ; curl http://files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
