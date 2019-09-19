@@ -1,4 +1,4 @@
-use Test::More tests => 68;
+use Test::More tests => 70;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -146,3 +146,11 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
 # no map data
     $json = viewerGet("/sessions.json?startTime=1386004308&stopTime=1386004400&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
     eq_or_diff($json->{map}, from_json('{}'), "no map data");
+
+# Check file != blah.pcap
+    my $json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file!=$pwd/https-connect.pcap"));
+    is ($json->{recordsFiltered}, 271, "file !=");
+
+# Check file == EXISTS!
+    my $json = viewerGet("/sessions.json?date=-1&expression=file=EXISTS!");
+    is ($json->{recordsFiltered}, 272, "file == EXISTS!");
