@@ -363,27 +363,6 @@ void moloch_parsers_initial_tag(MolochSession_t *session)
         }
     }
 
-    switch(session->protocol) {
-    case IPPROTO_TCP:
-        moloch_session_add_protocol(session, "tcp");
-        break;
-    case IPPROTO_UDP:
-        moloch_session_add_protocol(session, "udp");
-        break;
-    case IPPROTO_ICMP:
-        moloch_session_add_protocol(session, "icmp");
-        break;
-    case IPPROTO_ICMPV6:
-        moloch_session_add_protocol(session, "icmp");
-        break;
-    case IPPROTO_SCTP:
-        moloch_session_add_protocol(session, "sctp");
-        break;
-    case IPPROTO_ESP:
-        moloch_session_add_protocol(session, "esp");
-        break;
-    }
-
     moloch_field_ops_run(session, &config.ops);
 }
 

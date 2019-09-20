@@ -593,7 +593,7 @@ void moloch_session_init()
     }
 
     if (config.debug)
-        LOG("session hash size %d %d %d %d %d", primes[SESSION_ICMP], primes[SESSION_UDP], primes[SESSION_TCP], primes[SESSION_SCTP], primes[SESSION_ESP]);
+        LOG("session hash size %d %d %d %d %d %d", primes[SESSION_ICMP], primes[SESSION_UDP], primes[SESSION_TCP], primes[SESSION_SCTP], primes[SESSION_ESP], primes[SESSION_OTHER]);
 
     int t;
     for (t = 0; t < config.packetThreads; t++) {
@@ -641,7 +641,7 @@ void moloch_session_flush()
 /******************************************************************************/
 void moloch_session_exit()
 {
-    uint32_t counts[SESSION_MAX] = {0, 0, 0, 0};
+    uint32_t counts[SESSION_MAX] = {0, 0, 0, 0, 0, 0};
 
     int t, s;
 
@@ -652,13 +652,14 @@ void moloch_session_exit()
     }
 
     if (!config.pcapReadOffline || config.debug)
-        LOG("sessions: %u tcp: %u udp: %u icmp: %u sctp: %u esp: %u",
+        LOG("sessions: %u tcp: %u udp: %u icmp: %u sctp: %u esp: %u other: %u",
             moloch_session_monitoring(),
             counts[SESSION_TCP],
             counts[SESSION_UDP],
             counts[SESSION_ICMP],
             counts[SESSION_SCTP],
-            counts[SESSION_ESP]
+            counts[SESSION_ESP],
+            counts[SESSION_OTHER]
             );
 
     moloch_session_flush();

@@ -283,7 +283,8 @@ typedef struct {
 #define SESSION_ICMP  2
 #define SESSION_SCTP  3
 #define SESSION_ESP   4
-#define SESSION_MAX   5
+#define SESSION_OTHER 5
+#define SESSION_MAX   6
 
 /******************************************************************************/
 /*
@@ -515,7 +516,8 @@ typedef struct molochpacket_t
     uint16_t       vlan;           // non zero if the reader gets the vlan
     uint8_t        ipOffset;       // offset to ip header from start
     uint8_t        vpnIpOffset;    // offset to vpn ip header from start
-    uint8_t        protocol;       // ip protocol
+    uint8_t        ipProtocol;     // ip protocol
+    uint8_t        mProtocol;      // moloch protocol
     uint8_t        readerPos;      // position for filename/ops
     uint8_t        direction:1;    // direction of packet
     uint8_t        ses:3;          // type of session
@@ -624,7 +626,8 @@ typedef struct moloch_session {
     uint16_t               maxFields;
 
     uint8_t                consumed[2];
-    uint8_t                protocol;
+    uint8_t                ipProtocol;
+    uint8_t                mProtocol;
     uint8_t                firstBytesLen[2];
     uint8_t                ip_tos;
     uint8_t                tcp_flags;
@@ -981,7 +984,19 @@ void moloch_session_add_cmd_thread(int thread, gpointer uw1, gpointer uw2, Moloc
 /*
  * packet.c
  */
+#define MOLOCH_PACKET_DO_PROCESS               0
+#define MOLOCH_PACKET_IP_DROPPED               1
+#define MOLOCH_PACKET_OVERLOAD_DROPPED         2
+#define MOLOCH_PACKET_CORRUPT                  3
+#define MOLOCH_PACKET_UNKNOWN                  4
+#define MOLOCH_PACKET_IPPORT_DROPPED           5
+#define MOLOCH_PACKET_DONT_PROCESS             6
+#define MOLOCH_PACKET_DONT_PROCESS_OR_FREE     7
+#define MOLOCH_PACKET_MAX                      8
+
 typedef int (*MolochPacketEnqueue_cb)(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
+
+typedef int (*MolochPacketSessionId_cb)(char *sessionId, MolochPacket_t * const packet, const uint8_t *data, int len);
 
 void     moloch_packet_init();
 uint64_t moloch_packet_dropped_packets();
@@ -1001,11 +1016,23 @@ void     moloch_packet_add_packet_ip(char *ipstr, int mode);
 void     moloch_packet_batch_init(MolochPacketBatch_t *batch);
 void     moloch_packet_batch_flush(MolochPacketBatch_t *batch);
 void     moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const packet);
+void     moloch_packet_batch_process(MolochPacketBatch_t * batch, MolochPacket_t * const packet, int thread);
 
 void     moloch_packet_set_linksnap(int linktype, int snaplen);
 void     moloch_packet_drophash_add(MolochSession_t *session, int which, int min);
 
 void     moloch_packet_add_ethernet_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb);
+
+
+/******************************************************************************/
+typedef void (*MolochProtocolCreateSessionId_cb)(char *sessionId, MolochPacket_t * const packet);
+typedef void (*MolochProtocolPreProcess_cb)(MolochSession_t *session, MolochPacket_t * const packet, int isNewSession);
+typedef int  (*MolochProtocolProcess_cb)(MolochSession_t *session, MolochPacket_t * const packet);
+
+int moloch_mprotocol_register(MolochProtocolCreateSessionId_cb createSessionId,
+                              MolochProtocolPreProcess_cb      preProcess,
+                              MolochProtocolProcess_cb         process);
+void moloch_mprotocol_init();
 
 
 /******************************************************************************/

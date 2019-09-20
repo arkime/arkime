@@ -145,7 +145,7 @@ LOCAL void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
         switch (netflowVersion) {
         case 1:
             BSB_EXPORT_u08(bsb[thread], 0); // pad
-            BSB_EXPORT_u08(bsb[thread], session->protocol);
+            BSB_EXPORT_u08(bsb[thread], session->ipProtocol);
             BSB_EXPORT_u08(bsb[thread], session->ip_tos); // tos
             BSB_EXPORT_u08(bsb[thread], session->tcp_flags); // tcp_flags
             BSB_EXPORT_ptr(bsb[thread], zero, 8); //pad
@@ -153,7 +153,7 @@ LOCAL void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
         case 5:
             BSB_EXPORT_u08(bsb[thread], 0); // pad
             BSB_EXPORT_u08(bsb[thread], session->tcp_flags); // tcp_flags
-            BSB_EXPORT_u08(bsb[thread], session->protocol);
+            BSB_EXPORT_u08(bsb[thread], session->ipProtocol);
             BSB_EXPORT_u08(bsb[thread], session->ip_tos); // tos
             BSB_EXPORT_u16(bsb[thread], 0); // src as
             BSB_EXPORT_u16(bsb[thread], 0); // dst as
@@ -164,7 +164,7 @@ LOCAL void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
         case 7:
             BSB_EXPORT_u08(bsb[thread], 0); // pad
             BSB_EXPORT_u08(bsb[thread], session->tcp_flags);
-            BSB_EXPORT_u08(bsb[thread], session->protocol);
+            BSB_EXPORT_u08(bsb[thread], session->ipProtocol);
             BSB_EXPORT_u08(bsb[thread], session->ip_tos);
             BSB_EXPORT_u16(bsb[thread], 0); // src as
             BSB_EXPORT_u16(bsb[thread], 0); // dst as
@@ -194,7 +194,7 @@ LOCAL void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
         switch (netflowVersion) {
         case 1:
             BSB_EXPORT_u08(bsb[thread], 0); // pad
-            BSB_EXPORT_u08(bsb[thread], session->protocol);
+            BSB_EXPORT_u08(bsb[thread], session->ipProtocol);
             BSB_EXPORT_u08(bsb[thread], session->ip_tos); // tos
             BSB_EXPORT_u08(bsb[thread], session->tcp_flags); // tcp_flags
             BSB_EXPORT_ptr(bsb[thread], zero, 8); //pad
@@ -202,7 +202,7 @@ LOCAL void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
         case 5:
             BSB_EXPORT_u08(bsb[thread], 0); // pad
             BSB_EXPORT_u08(bsb[thread], session->tcp_flags); // tcp_flags
-            BSB_EXPORT_u08(bsb[thread], session->protocol);
+            BSB_EXPORT_u08(bsb[thread], session->ipProtocol);
             BSB_EXPORT_u08(bsb[thread], session->ip_tos); // tos
             BSB_EXPORT_u16(bsb[thread], 0); // src as
             BSB_EXPORT_u16(bsb[thread], 0); // dst as
@@ -213,7 +213,7 @@ LOCAL void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
         case 7:
             BSB_EXPORT_u08(bsb[thread], 0); // pad
             BSB_EXPORT_u08(bsb[thread], session->tcp_flags);
-            BSB_EXPORT_u08(bsb[thread], session->protocol);
+            BSB_EXPORT_u08(bsb[thread], session->ipProtocol);
             BSB_EXPORT_u08(bsb[thread], session->ip_tos);
             BSB_EXPORT_u16(bsb[thread], 0); // src as
             BSB_EXPORT_u16(bsb[thread], 0); // dst as

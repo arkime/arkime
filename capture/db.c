@@ -290,14 +290,14 @@ gchar *moloch_db_community_id(MolochSession_t *session)
         if (cmp < 0 || (cmp == 0 && session->port1 < session->port2)) {
             g_checksum_update(checksum, (guchar *)session->sessionId+1, 16);
             g_checksum_update(checksum, (guchar *)session->sessionId+19, 16);
-            g_checksum_update(checksum, (guchar *)&session->protocol, 1);
+            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
             g_checksum_update(checksum, (guchar *)&zero, 1);
             g_checksum_update(checksum, (guchar *)session->sessionId+17, 2);
             g_checksum_update(checksum, (guchar *)session->sessionId+35, 2);
         } else {
             g_checksum_update(checksum, (guchar *)session->sessionId+19, 16);
             g_checksum_update(checksum, (guchar *)session->sessionId+1, 16);
-            g_checksum_update(checksum, (guchar *)&session->protocol, 1);
+            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
             g_checksum_update(checksum, (guchar *)&zero, 1);
             g_checksum_update(checksum, (guchar *)session->sessionId+35, 2);
             g_checksum_update(checksum, (guchar *)session->sessionId+17, 2);
@@ -308,14 +308,14 @@ gchar *moloch_db_community_id(MolochSession_t *session)
         if (cmp < 0 || (cmp == 0 && session->port1 < session->port2)) {
             g_checksum_update(checksum, (guchar *)session->sessionId+1, 4);
             g_checksum_update(checksum, (guchar *)session->sessionId+7, 4);
-            g_checksum_update(checksum, (guchar *)&session->protocol, 1);
+            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
             g_checksum_update(checksum, (guchar *)&zero, 1);
             g_checksum_update(checksum, (guchar *)session->sessionId+5, 2);
             g_checksum_update(checksum, (guchar *)session->sessionId+11, 2);
         }  else {
             g_checksum_update(checksum, (guchar *)session->sessionId+7, 4);
             g_checksum_update(checksum, (guchar *)session->sessionId+1, 4);
-            g_checksum_update(checksum, (guchar *)&session->protocol, 1);
+            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
             g_checksum_update(checksum, (guchar *)&zero, 1);
             g_checksum_update(checksum, (guchar *)session->sessionId+11, 2);
             g_checksum_update(checksum, (guchar *)session->sessionId+5, 2);
@@ -527,7 +527,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                       timediff,
                       session->port1,
                       session->port2,
-                      session->protocol);
+                      session->ipProtocol);
 
     // Currently don't do communityId for ICMP because it requires magic
     if (session->ses != SESSION_ICMP) {
@@ -536,7 +536,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         g_free(communityId);
     }
 
-    if (session->protocol == IPPROTO_TCP) {
+    if (session->ipProtocol == IPPROTO_TCP) {
         BSB_EXPORT_sprintf(jbsb,
                            "\"tcpflags\":{"
                            "\"syn\": %d,"
@@ -1302,6 +1302,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         "\"icmpSessions\": %u, "
         "\"sctpSessions\": %u, "
         "\"espSessions\": %u, "
+        "\"otherSessions\": %u, "
         "\"deltaPackets\": %" PRIu64 ", "
         "\"deltaBytes\": %" PRIu64 ", "
         "\"deltaWrittenBytes\": %" PRIu64 ", "
@@ -1343,6 +1344,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         moloch_session_watch_count(SESSION_ICMP),
         moloch_session_watch_count(SESSION_SCTP),
         moloch_session_watch_count(SESSION_ESP),
+        moloch_session_watch_count(SESSION_OTHER),
         (totalPackets - lastPackets[n]),
         (totalBytes - lastBytes[n]),
         (writtenBytes - lastWrittenBytes[n]),
