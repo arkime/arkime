@@ -184,6 +184,18 @@ export default {
       molochClickables: undefined
     };
   },
+  watch: {
+    // watch route update of time params to rebuild the menu
+    '$route.query.date': function (newVal, oldVal) {
+      if (this.molochClickables) { this.buildMenu(); }
+    },
+    '$route.query.startTime': function (newVal, oldVal) {
+      if (this.molochClickables) { this.buildMenu(); }
+    },
+    '$route.query.stopTime': function (newVal, oldVal) {
+      if (this.molochClickables) { this.buildMenu(); }
+    }
+  },
   computed: {
     expression: function () {
       return this.$store.state.expression;
