@@ -61,6 +61,7 @@ LOCAL int                    maxTcpOutOfOrderPackets;
 extern MolochFieldOps_t      readerFieldOps[256];
 
 LOCAL MolochPacketEnqueue_cb ethernetCbs[0x10000];
+LOCAL MolochPacketEnqueue_cb ipCbs[0x100];
 
 int tcpMProtocol;
 int udpMProtocol;
@@ -1140,6 +1141,7 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
         return MOLOCH_PACKET_DONT_PROCESS_OR_FREE;
     }
 
+    packet->ipProtocol = ip4->ip_p;
     switch (ip4->ip_p) {
     case IPPROTO_IPV4:
         return moloch_packet_ip4(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
@@ -1206,6 +1208,8 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
         packet->mProtocol = udpMProtocol;
         break;
     case IPPROTO_SCTP:
+        LOG("ALW1 %d < %d", len, ip_hdr_len);
+        LOG("ALW2 %d %d", packet->payloadOffset, packet->payloadLen);
         if (len < ip_hdr_len + 12) {
 #ifdef DEBUG_PACKET
             LOG("BAD PACKET: too small for sctp hdr %p %d", packet, len);
@@ -1219,20 +1223,6 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
         packet->ses = SESSION_SCTP;
         packet->mProtocol = sctpMProtocol;
         break;
-    case IPPROTO_ESP:
-        if (!config.trackESP)
-            return MOLOCH_PACKET_UNKNOWN;
-        moloch_session_id(sessionId, ip4->ip_src.s_addr, 0,
-                          ip4->ip_dst.s_addr, 0);
-        packet->ses = SESSION_ESP;
-        packet->mProtocol = espMProtocol;
-        break;
-    case IPPROTO_ICMP:
-        moloch_session_id(sessionId, ip4->ip_src.s_addr, 0,
-                          ip4->ip_dst.s_addr, 0);
-        packet->ses = SESSION_ICMP;
-        packet->mProtocol = icmpMProtocol;
-        break;
     case IPPROTO_GRE:
         packet->tunnel |= MOLOCH_PACKET_TUNNEL_GRE;
         packet->vpnIpOffset = packet->ipOffset; // ipOffset will get reset
@@ -1240,13 +1230,16 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
     case IPPROTO_IPV6:
         return moloch_packet_ip6(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
     default:
+        if (ipCbs[ip4->ip_p]) {
+            return ipCbs[ip4->ip_p](batch, packet, data, len);
+        }
+
         if (config.logUnknownProtocols)
             LOG("Unknown protocol %d", ip4->ip_p);
         if (BIT_ISSET(ip4->ip_p, config.ipSavePcap))
             moloch_packet_save_unknown_packet(1, packet);
         return MOLOCH_PACKET_UNKNOWN;
     }
-    packet->ipProtocol = ip4->ip_p;
     packet->hash = moloch_session_hash(sessionId);
     return MOLOCH_PACKET_DO_PROCESS;
 }
@@ -1283,6 +1276,23 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
     packet->ipOffset = (uint8_t*)data - packet->pkt;
     packet->v6 = 1;
 
+    packet->payloadOffset = packet->ipOffset + ip_hdr_len;
+
+    if (ip_len + (int)sizeof(struct ip6_hdr) < ip_hdr_len) {
+#ifdef DEBUG_PACKET
+        LOG ("ERROR - %d + %ld < %d", ip_len, (long)sizeof(struct ip6_hdr), ip_hdr_len);
+#endif
+        return MOLOCH_PACKET_CORRUPT;
+    }
+    packet->payloadLen = ip_len + sizeof(struct ip6_hdr) - ip_hdr_len;
+
+    if (packet->pktlen < packet->payloadOffset + packet->payloadLen) {
+#ifdef DEBUG_PACKET
+        LOG ("ERROR - %d < %d + %d", packet->pktlen, packet->payloadOffset, packet->payloadLen);
+#endif
+        return MOLOCH_PACKET_CORRUPT;
+    }
+
 
 #ifdef DEBUG_PACKET
     LOG("Got ip6 header %p %d", packet, packet->pktlen);
@@ -1290,6 +1300,8 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
     int nxt = ip6->ip6_nxt;
     int done = 0;
     do {
+        packet->ipProtocol = nxt;
+
         switch (nxt) {
         case IPPROTO_HOPOPTS:
         case IPPROTO_DSTOPTS:
@@ -1302,12 +1314,31 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
             }
             nxt = data[ip_hdr_len];
             ip_hdr_len += ((data[ip_hdr_len+1] + 1) << 3);
+
+            packet->payloadOffset = packet->ipOffset + ip_hdr_len;
+
+            if (ip_len + (int)sizeof(struct ip6_hdr) < ip_hdr_len) {
+#ifdef DEBUG_PACKET
+                LOG ("ERROR - %d + %ld < %d", ip_len, (long)sizeof(struct ip6_hdr), ip_hdr_len);
+#endif
+                return MOLOCH_PACKET_CORRUPT;
+            }
+            packet->payloadLen = ip_len + sizeof(struct ip6_hdr) - ip_hdr_len;
+
+            if (packet->pktlen < packet->payloadOffset + packet->payloadLen) {
+#ifdef DEBUG_PACKET
+                LOG ("ERROR - %d < %d + %d", packet->pktlen, packet->payloadOffset, packet->payloadLen);
+#endif
+                return MOLOCH_PACKET_CORRUPT;
+            }
+
             break;
         case IPPROTO_FRAGMENT:
 #ifdef DEBUG_PACKET
             LOG("ERROR - Don't support ip6 fragements yet!");
 #endif
             return MOLOCH_PACKET_UNKNOWN;
+
         case IPPROTO_TCP:
             if (len < ip_hdr_len + (int)sizeof(struct tcphdr)) {
                 return MOLOCH_PACKET_CORRUPT;
@@ -1370,34 +1401,14 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
             packet->mProtocol = sctpMProtocol;
             done = 1;
             break;
-        case IPPROTO_ESP:
-            if (!config.trackESP)
-                return MOLOCH_PACKET_UNKNOWN;
-            moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, 0,
-                               ip6->ip6_dst.s6_addr, 0);
-            packet->ses = SESSION_ESP;
-            packet->mProtocol = espMProtocol;
-            done = 1;
-            break;
-        case IPPROTO_ICMP:
-            moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, 0,
-                               ip6->ip6_dst.s6_addr, 0);
-            packet->ses = SESSION_ICMP;
-            packet->mProtocol = icmpMProtocol;
-            done = 1;
-            break;
-        case IPPROTO_ICMPV6:
-            moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, 0,
-                               ip6->ip6_dst.s6_addr, 0);
-            packet->ses = SESSION_ICMP;
-            packet->mProtocol = icmpv6MProtocol;
-            done = 1;
-            break;
         case IPPROTO_IPV4:
             return moloch_packet_ip4(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
         case IPPROTO_IPV6:
             return moloch_packet_ip6(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
         default:
+            if (ipCbs[nxt])
+                return ipCbs[nxt](batch, packet, data, len);
+
             if (config.logUnknownProtocols)
                 LOG("Unknown protocol %d %d", ip6->ip6_nxt, nxt);
             if (BIT_ISSET(nxt, config.ipSavePcap))
@@ -1411,24 +1422,6 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
             return MOLOCH_PACKET_CORRUPT;
         }
     } while (!done);
-
-    packet->ipProtocol = nxt;
-    packet->payloadOffset = packet->ipOffset + ip_hdr_len;
-
-    if (ip_len + (int)sizeof(struct ip6_hdr) < ip_hdr_len) {
-#ifdef DEBUG_PACKET
-        LOG ("ERROR - %d + %ld < %d", ip_len, (long)sizeof(struct ip6_hdr), ip_hdr_len);
-#endif
-        return MOLOCH_PACKET_CORRUPT;
-    }
-    packet->payloadLen = ip_len + sizeof(struct ip6_hdr) - ip_hdr_len;
-
-    if (packet->pktlen < packet->payloadOffset + packet->payloadLen) {
-#ifdef DEBUG_PACKET
-        LOG ("ERROR - %d < %d + %d", packet->pktlen, packet->payloadOffset, packet->payloadLen);
-#endif
-        return MOLOCH_PACKET_CORRUPT;
-    }
 
     packet->hash = moloch_session_hash(sessionId);
     return MOLOCH_PACKET_DO_PROCESS;
@@ -1855,9 +1848,14 @@ LOCAL gboolean moloch_packet_save_drophash(gpointer UNUSED(user_data))
     return TRUE;
 }
 /******************************************************************************/
-void moloch_packet_add_ethernet_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb)
+void moloch_packet_set_ethernet_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb)
 {
     ethernetCbs[type] = enqueueCb;
+}
+/******************************************************************************/
+void moloch_packet_set_ip_cb(uint8_t type, MolochPacketEnqueue_cb enqueueCb)
+{
+    ipCbs[type] = enqueueCb;
 }
 /******************************************************************************/
 void moloch_packet_init()
@@ -2010,13 +2008,13 @@ void moloch_packet_init()
     maxTcpOutOfOrderPackets = moloch_config_int(NULL, "maxTcpOutOfOrderPackets", 256, 64, 10000);
 
 
-    moloch_packet_add_ethernet_cb(0x6559, moloch_packet_frame_relay);
-    moloch_packet_add_ethernet_cb(0x0800, moloch_packet_ip4);
-    moloch_packet_add_ethernet_cb(0x86dd, moloch_packet_ip6);
-    moloch_packet_add_ethernet_cb(0x880b, moloch_packet_ppp);
-    moloch_packet_add_ethernet_cb(0x8847, moloch_packet_mpls);
-    moloch_packet_add_ethernet_cb(0x8864, moloch_packet_pppoe);
-    moloch_packet_add_ethernet_cb(0x88be, moloch_packet_erspan);
+    moloch_packet_set_ethernet_cb(0x6559, moloch_packet_frame_relay);
+    moloch_packet_set_ethernet_cb(0x0800, moloch_packet_ip4);
+    moloch_packet_set_ethernet_cb(0x86dd, moloch_packet_ip6);
+    moloch_packet_set_ethernet_cb(0x880b, moloch_packet_ppp);
+    moloch_packet_set_ethernet_cb(0x8847, moloch_packet_mpls);
+    moloch_packet_set_ethernet_cb(0x8864, moloch_packet_pppoe);
+    moloch_packet_set_ethernet_cb(0x88be, moloch_packet_erspan);
 }
 /******************************************************************************/
 uint64_t moloch_packet_dropped_packets()

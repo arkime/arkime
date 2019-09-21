@@ -2,7 +2,7 @@
    "sessions2" : [
       {
          "body" : {
-            "communityId" : "1:279kB8hTT8+U5Fy7DHesvUl0yvk=",
+            "communityId" : "1:Fvz2S3vupDK3qMC5dl8pH3uH3T0=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "192.168.56.12",
@@ -20,7 +20,7 @@
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1467818432675,
-            "ipProtocol" : 0,
+            "ipProtocol" : 17,
             "lastPacket" : 1467818432675,
             "length" : 0,
             "node" : "test",
