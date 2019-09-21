@@ -87,13 +87,14 @@ my $hToken = getTokenCookie('huntuser');
 
 # Add a valid hunt, and it should immediately run
   $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"hunt":{"totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $token);
-  $hunts = viewerGet("/hunt/list");
-  is (exists $hunts->{runningJob}, 1, "Running hunt 1");
+  is ($json->{success}, 1);
 
 # Make sure the hunt's name doesn't contain special chars
   is ($json->{hunt}->{name}, "test hunt 13", "Strip special chars");
 
 # Hunt should finish
+  esGet("/_flush");
+  esGet("/_refresh");
   viewerGet("/processHuntJobs");
   sleep(2);
   esGet("/_flush");
