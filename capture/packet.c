@@ -250,17 +250,23 @@ LOCAL void moloch_packet_process_ethernet_frame(MolochSession_t * const UNUSED(s
 	
     moloch_session_add_tag(session, "ethernet");
     moloch_session_add_tag(session, "sps");
-		
+
+	
+		int offset = 14;
 		if (packet->sll == 1) {
-    	moloch_session_add_tag(session, "encap-sll");
+			offset = 16;
+    	moloch_session_add_tag(session, "sll");
 		}
 
-		if ((data[14] == 0xfe) && (data[15] == 0xfe) && (data[16] == 03) && (data[17] == 0x83)) {
+
+		// isis
+		if ( ((packet->sll == 0) && (data[14] == 0xfe) && (data[15] == 0xfe) && (data[16] == 03) && (data[17] == 0x83)) 
+		   || ((packet->sll == 1) && (data[14] == 0x0) && (data[15] == 0x3 || data[15] == 0x4) && (data[16] == 0xfe) && (data[17] == 0xfe) && (data[18] == 03) && (data[19] == 0x83)) ) {
 			char tag[64];
 			
     	moloch_session_add_tag(session, "isis");
 
-			switch (data[21]) {
+			switch (data[offset+7]) {
 				case 15:
     			moloch_session_add_tag(session, "isis-l1-hello");
 					break;
@@ -297,7 +303,8 @@ LOCAL void moloch_packet_process_ethernet_frame(MolochSession_t * const UNUSED(s
 			return;
 		}
 
-		if ((data[12] == 0x88) && (data[13] == 0xcc)) {
+		if ( ((packet->sll == 0) && (data[12] == 0x88) && (data[13] == 0xcc)) 
+			  || ((packet->sll == 1) && (data[14] == 0x88) && (data[15] == 0xcc)) ) {
     	moloch_session_add_tag(session, "lldp");
 			return;
 		}
@@ -1966,11 +1973,9 @@ LOCAL int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * cons
 
     int n = 12;
 		if (packet->sll == 1) {
-			// sll frame.  sll header expcet protocol was removed
+			// sll frame with sll header intact
 			n = 0;
 		}
-
-		printf ("in packet_ether sll=%d n=%d\n", packet->sll, n);
 
     while (n+2 < len) {
         int ethertype = data[n] << 8 | data[n+1];
@@ -1996,7 +2001,7 @@ LOCAL int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * cons
             // packet->hash = random ();
 						random_count2++;
 						packet->hash = random_count2;
-						random_count++;
+						// random_count++;
             sessionId[0] = 37;
             memcpy (&sessionId[1], &(packet->hash), sizeof (packet->hash));
             return moloch_packet_ip(batch, packet, sessionId);
@@ -2026,14 +2031,14 @@ LOCAL int moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const 
     }
 
     int ethertype = data[14] << 8 | data[15];
-		printf ("in moloch_packet_sll sll=%d ethertype=%x\n", packet->sll, ethertype);
+		// printf ("moloch_packet_sll sll=%d ethertype=%x\n", packet->sll, ethertype);
 
     switch (ethertype) {
     case 0x0800:
-				printf ("sll ipv4\n");
+				// printf ("sll ipv4\n");
         return moloch_packet_ip4(batch, packet, data+16, len - 16);
     case 0x86dd:
-				printf ("sll ipv6\n");
+				// printf ("sll ipv6\n");
         return moloch_packet_ip6(batch, packet, data+16, len - 16);
     case 0x8864:
         return moloch_packet_pppoe(batch, packet, data+16, len - 16);
@@ -2052,9 +2057,7 @@ LOCAL int moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const 
         memcpy(&(packet->sll_source), &data[5], sizeof (packet->sll_source));
 
 			
-				// skip over entire sll header EXCEPT last two bytes which
-				// details the protocol
-				return moloch_packet_ether(batch, packet, data + 14, len - 14);
+				return moloch_packet_ether(batch, packet, data, len);
 				abort ();
 
 				printf ("sll unknown ethertype %x\n", ethertype);
@@ -2194,8 +2197,6 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
         rc = moloch_packet_frame_relay(batch, packet, packet->pkt, packet->pktlen);
         break;
     case 113: // SLL
-				printf ("processing sll packet\n");
-
         if (packet->pkt[0] == 0 && packet->pkt[1] <= 4) {
             rc = moloch_packet_sll(batch, packet, packet->pkt, packet->pktlen);
         } else {

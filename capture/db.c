@@ -1398,8 +1398,6 @@ LOCAL gboolean moloch_db_flush_gfunc (gpointer user_data )
     int             thread;
     struct timeval  currentTime;
 
-		printf ("called flush_gfunc\n");
-
     gettimeofday(&currentTime, NULL);
 
     for (thread = 0; thread < config.packetThreads; thread++) {
