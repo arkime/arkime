@@ -464,6 +464,7 @@ export default {
             .replace('%ISOSTART%', isostart.toISOString())
             .replace('%ISOSTOP%', isostop.toISOString())
             .replace('%FIELD%', info.field)
+            .replace('%DBFIELD%', info.info.dbField)
             .replace('%TEXT%', text)
             .replace('%UCTEXT%', text.toUpperCase())
             .replace('%HOST%', host)
@@ -475,6 +476,7 @@ export default {
 
           name = (name)
             .replace('%FIELD%', info.field)
+            .replace('%DBFIELD%', info.info.dbField)
             .replace('%TEXT%', text)
             .replace('%HOST%', host)
             .replace('%URL%', url);
@@ -484,6 +486,7 @@ export default {
 
           value = (value)
             .replace('%FIELD%', info.field)
+            .replace('%DBFIELD%', info.info.dbField)
             .replace('%TEXT%', text)
             .replace('%HOST%', host)
             .replace('%URL%', url);
