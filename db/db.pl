@@ -3333,7 +3333,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
       progress("Waiting for relocation to finish\n");
     }
     logmsg("Shrinking ${PREFIX}$ARGV[2] to ${PREFIX}$ARGV[2]-shrink\n");
-    $json = esPut("/${PREFIX}$ARGV[2]/_shrink/${PREFIX}$ARGV[2]-shrink?master_timeout=${ESTIMEOUT}s&copy_settings=true", '{"settings": {"index.routing.allocation.require._name": null, "index.blocks.write": null}}');
+    $json = esPut("/${PREFIX}$ARGV[2]/_shrink/${PREFIX}$ARGV[2]-shrink?master_timeout=${ESTIMEOUT}s&copy_settings=true", '{"settings": {"index.routing.allocation.require._name": null, "index.blocks.write": null, "index.codec": "best_compression", "index.number_of_shards": ' . $ARGV[4] . '}}');
 
     logmsg("Checking for completion\n");
     my $status = esGet("/${PREFIX}$ARGV[2]-shrink/_refresh", 0);
