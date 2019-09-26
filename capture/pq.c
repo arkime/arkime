@@ -58,9 +58,6 @@ LOCAL void moloch_pq_shift(MolochPQ_t *pq, int thread)
     if (shift > pq->maxSeconds)
         shift = pq->maxSeconds;
 
-    if (shift < 0)
-        shift = 0;
-
     for (int i = 1; i <= pq->maxSeconds; i++) {
         if (i <= shift) {
             DLL_PUSH_TAIL_DLL(pql_, &pq->buckets[thread][0], &pq->buckets[thread][i]);
@@ -74,14 +71,23 @@ LOCAL void moloch_pq_shift(MolochPQ_t *pq, int thread)
 /******************************************************************************/
 void moloch_pq_upsert(MolochPQ_t *pq, MolochSession_t *session, int timeout, void *uw)
 {
+    // timeout is relative to lastPacketSecs, figure out time
+    time_t expire = lastPacketSecs[session->thread] + timeout;
+
+    // Now recalculate bucket0 if we need to
+    if (lastPacketSecs[session->thread] > pq->bucket0[session->thread])
+        moloch_pq_shift(pq, session->thread);
+
+    // Now make timeout relative to bucket0
+    timeout = expire - pq->bucket0[session->thread];
+
+    // In the past, just run now
     if (timeout < 0)
         timeout = 0;
 
+    // To far in the future for this PQ
     if (timeout > pq->maxSeconds)
         timeout = pq->maxSeconds;
-
-    if (lastPacketSecs[session->thread] != pq->bucket0[session->thread])
-        moloch_pq_shift(pq, session->thread);
 
     MolochPQItem_t *item;
     HASH_FIND(pqh_, (pq->keys[session->thread]), session->sessionId, item);
@@ -97,7 +103,7 @@ void moloch_pq_upsert(MolochPQ_t *pq, MolochSession_t *session, int timeout, voi
         // Move the item from 1 bucket to another
         DLL_REMOVE(pql_, &pq->buckets[session->thread][bucket], item);
         DLL_PUSH_TAIL(pql_, &pq->buckets[session->thread][timeout], item);
-        item->expire = timeout + pq->bucket0[session->thread];
+        item->expire = expire;
         return;
     } 
 
@@ -105,7 +111,7 @@ void moloch_pq_upsert(MolochPQ_t *pq, MolochSession_t *session, int timeout, voi
     item = MOLOCH_TYPE_ALLOC(MolochPQItem_t);
     DLL_PUSH_TAIL(pql_, &pq->buckets[session->thread][timeout], item);
     HASH_ADD(pqh_, pq->keys[session->thread], session->sessionId, item);
-    item->expire = lastPacketSecs[session->thread] + timeout;
+    item->expire = expire;
     item->session = session;
     item->uw = uw;
     session->pq = 1;
