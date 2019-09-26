@@ -184,6 +184,18 @@ export default {
       molochClickables: undefined
     };
   },
+  watch: {
+    // watch route update of time params to rebuild the menu
+    '$route.query.date': function (newVal, oldVal) {
+      if (this.molochClickables) { this.buildMenu(); }
+    },
+    '$route.query.startTime': function (newVal, oldVal) {
+      if (this.molochClickables) { this.buildMenu(); }
+    },
+    '$route.query.stopTime': function (newVal, oldVal) {
+      if (this.molochClickables) { this.buildMenu(); }
+    }
+  },
   computed: {
     expression: function () {
       return this.$store.state.expression;
@@ -452,6 +464,7 @@ export default {
             .replace('%ISOSTART%', isostart.toISOString())
             .replace('%ISOSTOP%', isostop.toISOString())
             .replace('%FIELD%', info.field)
+            .replace('%DBFIELD%', info.info.dbField)
             .replace('%TEXT%', text)
             .replace('%UCTEXT%', text.toUpperCase())
             .replace('%HOST%', host)
@@ -463,6 +476,7 @@ export default {
 
           name = (name)
             .replace('%FIELD%', info.field)
+            .replace('%DBFIELD%', info.info.dbField)
             .replace('%TEXT%', text)
             .replace('%HOST%', host)
             .replace('%URL%', url);
@@ -472,6 +486,7 @@ export default {
 
           value = (value)
             .replace('%FIELD%', info.field)
+            .replace('%DBFIELD%', info.info.dbField)
             .replace('%TEXT%', text)
             .replace('%HOST%', host)
             .replace('%URL%', url);

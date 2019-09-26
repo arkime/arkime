@@ -5070,7 +5070,7 @@ app.get('/multiunique.txt', logAction(), function(req, res) {
     let lastQ = query;
     for (let i = 0; i < fields.length; i++) {
       query.query.bool.must.push({ exists: { field: fields[i].dbField } });
-      lastQ.aggregations = {field: { terms : {field : fields[i].dbField, size: 1000000}}};
+      lastQ.aggregations = {field: { terms : {field : fields[i].dbField, size: +Config.get('maxAggSize', 10000)}}};
       lastQ = lastQ.aggregations.field;
     }
 
@@ -5118,7 +5118,7 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
   let writeCb;
   let doneCb;
   let items = [];
-  let aggSize = 1000000;
+  let aggSize = +Config.get('maxAggSize', 10000);
 
   if (req.query.autocomplete !== undefined) {
     if (!Config.get('valueAutoComplete', !Config.get('multiES', false))) {

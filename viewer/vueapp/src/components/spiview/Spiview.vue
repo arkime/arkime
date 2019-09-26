@@ -856,7 +856,10 @@ export default {
 
             field.active = false;
 
-            if (field.noFacet || field.regex || field.type.match(/textfield/)) { continue; }
+            if (field.noFacet || field.regex ||
+              (field.type && field.type.match(/textfield/))) {
+              continue;
+            }
 
             if (this.categoryObjects.hasOwnProperty(field.group)) {
               // already created, just add a new field
