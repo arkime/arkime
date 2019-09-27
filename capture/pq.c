@@ -140,7 +140,7 @@ void moloch_pq_run(int thread, int max)
 
     int i;
     for (i = 0; i < numPQs; i++) {
-        if (lastPacketSecs[thread] != pqs[i]->bucket0[thread])
+        if (lastPacketSecs[thread] > pqs[i]->bucket0[thread])
             moloch_pq_shift(pqs[i], thread);
 
         int cnt = max;
