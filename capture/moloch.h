@@ -1270,35 +1270,10 @@ void *moloch_trie_del_reverse(MolochTrie_t *trie, const char *key, const int len
  */
 typedef void (*MolochPQ_cb)(MolochSession_t *session, gpointer uw);
 
-typedef struct molochpqitem {
-    struct molochpqitem *pql_next, *pql_prev;
-    struct molochpqitem *pqh_next, *pqh_prev;
+struct MolochPQ_t;
+typedef struct MolochPQ_t MolochPQ_t;
 
-    MolochSession_t     *session;
-    void                *uw;
-    time_t               expire;
-    uint32_t             pqh_hash;
-    uint32_t             pqh_bucket;
-} MolochPQItem_t;
-
-typedef struct {
-    struct molochpqitem *pql_next, *pql_prev;
-    struct molochpqitem *pqh_next, *pqh_prev;
-    int                  pql_count;
-    int                  pqh_count;
-} MolochPQHead_t;
-
-typedef HASH_VAR(s_, MolochPQHash_t, MolochPQHead_t, 51);
-
-typedef struct {
-    int                 maxSeconds;
-    time_t              bucket0[MOLOCH_MAX_PACKET_THREADS];
-    MolochPQ_cb         cb;
-    MolochPQHash_t      keys[MOLOCH_MAX_PACKET_THREADS];
-    MolochPQHead_t     *buckets[MOLOCH_MAX_PACKET_THREADS];
-} MolochPQ_t;
-
-void moloch_pq_init(MolochPQ_t *pq, int maxSeconds, MolochPQ_cb cb);
+MolochPQ_t *moloch_pq_alloc(int maxSeconds, MolochPQ_cb cb);
 void moloch_pq_upsert(MolochPQ_t *pq, MolochSession_t *session, int seconds,  void *uw);
 void moloch_pq_remove(MolochPQ_t *pq, MolochSession_t *session);
 void moloch_pq_run(int thread, int max);

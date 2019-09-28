@@ -518,7 +518,7 @@ LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *dat
                 BSB_IMPORT_skip(cbsb, skiplen);  // Session Id
 
                 BSB_IMPORT_u16(cbsb, skiplen);   // Ciper Suites Length
-                while (skiplen > 0) {
+                while (BSB_NOT_ERROR(cbsb) && skiplen > 0) {
                     uint16_t c = 0;
                     BSB_IMPORT_u16(cbsb, c);
                     if (!tls_is_grease_value(c)) {
@@ -612,7 +612,7 @@ LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *dat
         }
         BSB_IMPORT_skip(sslbsb, ssllen + 5);
 
-        if (BSB_NOT_ERROR(ja3bsb) && BSB_NOT_ERROR(ecja3bsb) && BSB_NOT_ERROR(eja3bsb) && BSB_NOT_ERROR(ecfja3bsb)) {
+        if (BSB_LENGTH(ja3bsb) > 0 && BSB_NOT_ERROR(ja3bsb) && BSB_NOT_ERROR(ecja3bsb) && BSB_NOT_ERROR(eja3bsb) && BSB_NOT_ERROR(ecfja3bsb)) {
             BSB_EXPORT_sprintf(ja3bsb, "%.*s,%.*s,%.*s", (int)BSB_LENGTH(eja3bsb), eja3, (int)BSB_LENGTH(ecja3bsb), ecja3, (int)BSB_LENGTH(ecfja3bsb), ecfja3);
 
             if (config.ja3Strings) {

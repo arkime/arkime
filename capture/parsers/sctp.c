@@ -30,15 +30,22 @@ extern int                   sctpMProtocol;
 int sctp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     char                 sessionId[MOLOCH_SESSIONID_LEN];
+    struct udphdr       *udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset); /* Not really udp, but port in same location */
+
+    if (packet->payloadLen < (int)sizeof(struct udphdr))
+        return MOLOCH_PACKET_CORRUPT;
 
     if (packet->v6) {
-        struct ip6_hdr *ip6 = (struct ip6_hdr *)data;
-        moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr, 0);
+       struct ip6_hdr *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
+        moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, udphdr->uh_sport,
+                           ip6->ip6_dst.s6_addr, udphdr->uh_dport);
     } else {
         struct ip *ip4 = (struct ip*)data;
-        moloch_session_id(sessionId, ip4->ip_src.s_addr, 0, ip4->ip_dst.s_addr, 0);
+        moloch_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
+                          ip4->ip_dst.s_addr, udphdr->uh_dport);
     }
-    packet->ses = SESSION_ICMP;
+    moloch_print_hex_string((unsigned char*)sessionId, sessionId[0]);
+    packet->ses = SESSION_SCTP;
     packet->mProtocol = sctpMProtocol;
     packet->hash = moloch_session_hash(sessionId);
     return MOLOCH_PACKET_DO_PROCESS;
@@ -46,17 +53,18 @@ int sctp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * co
 /******************************************************************************/
 void sctp_create_sessionid(char *sessionId, MolochPacket_t *packet)
 {
-    struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
-    struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
     struct udphdr       *udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset); /* Not really udp, but port in same location */
 
     if (packet->v6) {
+        struct ip6_hdr *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
         moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, udphdr->uh_sport,
                            ip6->ip6_dst.s6_addr, udphdr->uh_dport);
     } else {
+        struct ip *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
         moloch_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
                           ip4->ip_dst.s_addr, udphdr->uh_dport);
     }
+    moloch_print_hex_string((unsigned char*)sessionId, sessionId[0]);
 }
 /******************************************************************************/
 void sctp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, int isNewSession)
@@ -87,6 +95,7 @@ void sctp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, i
 /******************************************************************************/
 void moloch_parser_init()
 {
+    moloch_packet_set_ip_cb(IPPROTO_SCTP, sctp_packet_enqueue);
     sctpMProtocol = moloch_mprotocol_register(sctp_create_sessionid,
                                               sctp_pre_process,
                                               NULL);

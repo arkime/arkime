@@ -18,12 +18,12 @@
 
 extern MolochConfig_t        config;
 
-LOCAL MolochPQ_t spq;
+LOCAL MolochPQ_t *bgpPq;
 
 /******************************************************************************/
 LOCAL int bgp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *UNUSED(data), int UNUSED(remaining), int UNUSED(which))
 {
-    moloch_pq_upsert(&spq, session, 5, NULL);
+    moloch_pq_upsert(bgpPq, session, 5, NULL);
     return 0;
 }
 /******************************************************************************/
@@ -44,5 +44,5 @@ LOCAL void bgp_pq_cb(MolochSession_t *session, void UNUSED(*uw))
 void moloch_parser_init()
 {
     moloch_parsers_classifier_register_port("bgp",  NULL, 179, MOLOCH_PARSERS_PORT_TCP_DST, bgp_tcp_classify);
-    moloch_pq_init(&spq, 10, bgp_pq_cb);
+    bgpPq = moloch_pq_alloc(10, bgp_pq_cb);
 }

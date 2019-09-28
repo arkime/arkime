@@ -1207,22 +1207,6 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
         packet->ses = SESSION_UDP;
         packet->mProtocol = udpMProtocol;
         break;
-    case IPPROTO_SCTP:
-        LOG("ALW1 %d < %d", len, ip_hdr_len);
-        LOG("ALW2 %d %d", packet->payloadOffset, packet->payloadLen);
-        if (len < ip_hdr_len + 12) {
-#ifdef DEBUG_PACKET
-            LOG("BAD PACKET: too small for sctp hdr %p %d", packet, len);
-#endif
-            return MOLOCH_PACKET_CORRUPT;
-        }
-        udphdr = (struct udphdr *)((char*)ip4 + ip_hdr_len); /* Not really udp, but port in same location */
-
-        moloch_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
-                          ip4->ip_dst.s_addr, udphdr->uh_dport);
-        packet->ses = SESSION_SCTP;
-        packet->mProtocol = sctpMProtocol;
-        break;
     case IPPROTO_GRE:
         packet->tunnel |= MOLOCH_PACKET_TUNNEL_GRE;
         packet->vpnIpOffset = packet->ipOffset; // ipOffset will get reset
@@ -1386,19 +1370,6 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
 
             packet->ses = SESSION_UDP;
             packet->mProtocol = udpMProtocol;
-            done = 1;
-            break;
-        case IPPROTO_SCTP:
-            if (len < ip_hdr_len + 12) {
-                return MOLOCH_PACKET_CORRUPT;
-            }
-
-            udphdr = (struct udphdr *)(data + ip_hdr_len); /* Not really udp, but port in same location */
-
-            moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, udphdr->uh_sport,
-                               ip6->ip6_dst.s6_addr, udphdr->uh_dport);
-            packet->ses = SESSION_SCTP;
-            packet->mProtocol = sctpMProtocol;
             done = 1;
             break;
         case IPPROTO_IPV4:

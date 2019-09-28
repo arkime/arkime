@@ -18,7 +18,7 @@
 
 extern MolochConfig_t        config;
 
-LOCAL MolochPQ_t spq;
+LOCAL MolochPQ_t *arpPq;
 
 LOCAL int arpMProtocol;
 
@@ -79,7 +79,7 @@ LOCAL void arp_pq_cb(MolochSession_t *session, void UNUSED(*uw))
 void moloch_parser_init()
 {
     moloch_packet_set_ethernet_cb(0x0806, arp_packet_enqueue);
-    moloch_pq_init(&spq, 10, arp_pq_cb);
+    arpPq = moloch_pq_alloc(10, arp_pq_cb);
     arpMProtocol = moloch_mprotocol_register(arp_create_sessionid,
                                              arp_pre_process,
                                              arp_process);
