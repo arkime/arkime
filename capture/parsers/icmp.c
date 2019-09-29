@@ -33,19 +33,15 @@ LOCAL int                    icmpCodeField;
 
 
 /******************************************************************************/
-int icmp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
+int icmp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *UNUSED(data), int UNUSED(len))
 {
     char                 sessionId[MOLOCH_SESSIONID_LEN];
 
     if (packet->v6) {
-        if (len < (int)sizeof(struct ip6_hdr))
-            return MOLOCH_PACKET_CORRUPT;
-        struct ip6_hdr *ip6 = (struct ip6_hdr *)data;
+        struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
         moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr, 0);
     } else {
-        if (len < (int)sizeof(struct ip))
-            return MOLOCH_PACKET_CORRUPT;
-        struct ip *ip4 = (struct ip*)data;
+        struct ip *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
         moloch_session_id(sessionId, ip4->ip_src.s_addr, 0, ip4->ip_dst.s_addr, 0);
     }
     packet->ses = SESSION_ICMP;
@@ -54,14 +50,11 @@ int icmp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * co
     return MOLOCH_PACKET_DO_PROCESS;
 }
 /******************************************************************************/
-int icmpv6_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
+int icmpv6_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *UNUSED(data), int UNUSED(len))
 {
     char                 sessionId[MOLOCH_SESSIONID_LEN];
 
-    if (len < (int)sizeof(struct ip6_hdr))
-        return MOLOCH_PACKET_CORRUPT;
-
-    struct ip6_hdr *ip6 = (struct ip6_hdr *)data;
+    struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
     moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr, 0);
     packet->ses = SESSION_ICMP;
     packet->mProtocol = icmpv6MProtocol;

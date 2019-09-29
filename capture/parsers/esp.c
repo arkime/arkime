@@ -28,15 +28,15 @@ extern MolochConfig_t        config;
 extern int                    espMProtocol;
 
 /******************************************************************************/
-int esp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int UNUSED(len))
+int esp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *UNUSED(data), int UNUSED(len))
 {
     char                 sessionId[MOLOCH_SESSIONID_LEN];
 
     if (packet->v6) {
-        struct ip6_hdr *ip6 = (struct ip6_hdr *)data;
+        struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
         moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr, 0);
     } else {
-        struct ip *ip4 = (struct ip*)data;
+        struct ip *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
         moloch_session_id(sessionId, ip4->ip_src.s_addr, 0, ip4->ip_dst.s_addr, 0);
     }
 

@@ -1199,7 +1199,7 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
     case IPPROTO_IPV6:
         return moloch_packet_ip6(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
     default:
-        return moloch_packet_run_ip_cb(batch, packet, data, len, ip4->ip_p, "IP4");
+        return moloch_packet_run_ip_cb(batch, packet, data + ip_hdr_len, len - ip_hdr_len, ip4->ip_p, "IP4");
     }
     packet->hash = moloch_session_hash(sessionId);
     return MOLOCH_PACKET_DO_PROCESS;
@@ -1354,7 +1354,7 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
         case IPPROTO_IPV6:
             return moloch_packet_ip6(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
         default:
-            return moloch_packet_run_ip_cb(batch, packet, data, len, nxt, "IP6");
+            return moloch_packet_run_ip_cb(batch, packet, data + ip_hdr_len, len - ip_hdr_len, nxt, "IP6");
         }
         if (ip_hdr_len > len) {
 #ifdef DEBUG_PACKET
