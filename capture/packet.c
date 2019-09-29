@@ -19,6 +19,7 @@
 #include "patricia.h"
 #include <inttypes.h>
 #include <arpa/inet.h>
+#include <net/ethernet.h>
 #include <errno.h>
 
 //#define DEBUG_PACKET
@@ -94,7 +95,6 @@ LOCAL  MOLOCH_LOCK_DEFINE(frags);
 LOCAL int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
 LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
 LOCAL int moloch_packet_frame_relay(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
-LOCAL int moloch_packet_ppp(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
 LOCAL int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
 
 typedef struct molochfrags_t {
@@ -750,8 +750,7 @@ LOCAL int moloch_packet_erspan(MolochPacketBatch_t * batch, MolochPacket_t * con
 
     if (config.logUnknownProtocols)
         LOG("Unknown ERSPAN protocol %d", *data >> 4);
-    if (BIT_ISSET(0x88be, config.etherSavePcap))
-        moloch_packet_save_unknown_packet(0, packet);
+    moloch_packet_save_ethernet(packet, 0x88be);
     return MOLOCH_PACKET_UNKNOWN;
 }
 /******************************************************************************/
@@ -767,14 +766,6 @@ LOCAL int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const
     BSB_IMPORT_u16(bsb, flags_version);
     uint16_t type = 0;
     BSB_IMPORT_u16(bsb, type);
-
-    if (!ethernetCbs[type]) {
-        if (config.logUnknownProtocols)
-            LOG("Unknown GRE protocol 0x%04x(%d)", type, type);
-        if (BIT_ISSET(type, config.etherSavePcap))
-            moloch_packet_save_unknown_packet(0, packet);
-        return MOLOCH_PACKET_UNKNOWN;
-    }
 
     if (flags_version & (0x8000 | 0x4000)) {
         BSB_IMPORT_skip(bsb, 4); // skip len and offset
@@ -810,13 +801,7 @@ LOCAL int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const
     if (BSB_IS_ERROR(bsb))
         return MOLOCH_PACKET_CORRUPT;
 
-    if (ethernetCbs[type]) {
-        return ethernetCbs[type](batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
-    }
-
-    if (BIT_ISSET(type, config.etherSavePcap))
-        moloch_packet_save_unknown_packet(0, packet);
-    return MOLOCH_PACKET_UNKNOWN;
+    return moloch_packet_run_ethernet_cb(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), type, "GRE");
 }
 /******************************************************************************/
 void moloch_packet_frags_free(MolochFrags_t * const frags)
@@ -1214,15 +1199,7 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
     case IPPROTO_IPV6:
         return moloch_packet_ip6(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
     default:
-        if (ipCbs[ip4->ip_p]) {
-            return ipCbs[ip4->ip_p](batch, packet, data, len);
-        }
-
-        if (config.logUnknownProtocols)
-            LOG("Unknown protocol %d", ip4->ip_p);
-        if (BIT_ISSET(ip4->ip_p, config.ipSavePcap))
-            moloch_packet_save_unknown_packet(1, packet);
-        return MOLOCH_PACKET_UNKNOWN;
+        return moloch_packet_run_ip_cb(batch, packet, data, len, ip4->ip_p, "IP4");
     }
     packet->hash = moloch_session_hash(sessionId);
     return MOLOCH_PACKET_DO_PROCESS;
@@ -1377,14 +1354,7 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
         case IPPROTO_IPV6:
             return moloch_packet_ip6(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
         default:
-            if (ipCbs[nxt])
-                return ipCbs[nxt](batch, packet, data, len);
-
-            if (config.logUnknownProtocols)
-                LOG("Unknown protocol %d %d", ip6->ip6_nxt, nxt);
-            if (BIT_ISSET(nxt, config.ipSavePcap))
-                moloch_packet_save_unknown_packet(1, packet);
-            return MOLOCH_PACKET_UNKNOWN;
+            return moloch_packet_run_ip_cb(batch, packet, data, len, nxt, "IP6");
         }
         if (ip_hdr_len > len) {
 #ifdef DEBUG_PACKET
@@ -1408,98 +1378,7 @@ LOCAL int moloch_packet_frame_relay(MolochPacketBatch_t *batch, MolochPacket_t *
     if (type == 0x03cc)
         return moloch_packet_ip4(batch, packet, data+4, len-4);
 
-    if (ethernetCbs[type])
-        return ethernetCbs[type](batch, packet, data+4, len-4);
-
-    return MOLOCH_PACKET_UNKNOWN;
-}
-/******************************************************************************/
-LOCAL int moloch_packet_pppoe(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
-{
-    if (len < 8 || data[0] != 0x11 || data[1] != 0) {
-#ifdef DEBUG_PACKET
-        LOG("BAD PACKET: Len or bytes %d %d %d", len, data[0], data[1]);
-#endif
-        return MOLOCH_PACKET_CORRUPT;
-    }
-
-    uint16_t plen = data[4] << 8 | data[5];
-    uint16_t type = data[6] << 8 | data[7];
-    if (plen != len-6)
-        return MOLOCH_PACKET_CORRUPT;
-
-    packet->tunnel |= MOLOCH_PACKET_TUNNEL_PPPOE;
-    switch (type) {
-    case 0x21:
-        return moloch_packet_ip4(batch, packet, data + 8, plen-2);
-    case 0x57:
-        return moloch_packet_ip6(batch, packet, data + 8, plen-2);
-    default:
-#ifdef DEBUG_PACKET
-        LOG("BAD PACKET: Unknown pppoe type %d", type);
-#endif
-        return MOLOCH_PACKET_UNKNOWN;
-    }
-}
-/******************************************************************************/
-LOCAL int moloch_packet_ppp(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
-{
-    if (len < 4 || data[2] != 0x00) {
-#ifdef DEBUG_PACKET
-        LOG("BAD PACKET: Len or bytes %d %d %d", len, data[2], data[3]);
-#endif
-        return MOLOCH_PACKET_CORRUPT;
-    }
-
-    packet->tunnel |= MOLOCH_PACKET_TUNNEL_PPP;
-    switch (data[3]) {
-    case 0x21:
-        return moloch_packet_ip4(batch, packet, data + 4, len-4);
-    case 0x57:
-        return moloch_packet_ip6(batch, packet, data + 4, len-4);
-    default:
-#ifdef DEBUG_PACKET
-        LOG("BAD PACKET: Unknown ppp type %d", data[3]);
-#endif
-        if (BIT_ISSET(0x880b, config.etherSavePcap))
-            moloch_packet_save_unknown_packet(0, packet);
-        return MOLOCH_PACKET_UNKNOWN;
-    }
-}
-/******************************************************************************/
-LOCAL int moloch_packet_mpls(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
-{
-    while (1) {
-        if (len < 4 + (int)sizeof(struct ip)) {
-#ifdef DEBUG_PACKET
-            LOG("BAD PACKET: Len %d", len);
-#endif
-            return MOLOCH_PACKET_CORRUPT;
-        }
-
-        int S = data[2] & 0x1;
-
-        data += 4;
-        len -= 4;
-
-        if (S) {
-            packet->tunnel |= MOLOCH_PACKET_TUNNEL_MPLS;
-            switch (data[0] >> 4) {
-            case 4:
-                return moloch_packet_ip4(batch, packet, data, len);
-            case 6:
-                return moloch_packet_ip6(batch, packet, data, len);
-            default:
-#ifdef DEBUG_PACKET
-                LOG("BAD PACKET: Unknown mpls type %d", data[0] >> 4);
-#endif
-                if (BIT_ISSET(0x8847, config.etherSavePcap))
-                    moloch_packet_save_unknown_packet(0, packet);
-                return MOLOCH_PACKET_UNKNOWN;
-            }
-        }
-    }
-    return MOLOCH_PACKET_CORRUPT;
+    return moloch_packet_run_ethernet_cb(batch, packet, data+4, len-4, type, "FrameRelay");
 }
 /******************************************************************************/
 LOCAL int moloch_packet_ieee802(MolochPacketBatch_t *UNUSED(batch), MolochPacket_t * const UNUSED(packet), const uint8_t *UNUSED(data), int UNUSED(len))
@@ -1527,14 +1406,7 @@ LOCAL int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * cons
             n += 2;
             break;
         default:
-            if (ethernetCbs[ethertype])
-                return ethernetCbs[ethertype](batch, packet, data+n, len - n);
-#ifdef DEBUG_PACKET
-            LOG("BAD PACKET: Unknown ethertype %x", ethertype);
-#endif
-            if (BIT_ISSET(ethertype, config.etherSavePcap))
-                moloch_packet_save_unknown_packet(0, packet);
-            return MOLOCH_PACKET_UNKNOWN;
+            return moloch_packet_run_ethernet_cb(batch, packet, data+n,len-n, ethertype, "Ether");
         } // switch
     }
 #ifdef DEBUG_PACKET
@@ -1560,14 +1432,7 @@ LOCAL int moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const 
         else
             return moloch_packet_ip4(batch, packet, data+20, len - 20);
     default:
-        if (ethernetCbs[ethertype])
-            return ethernetCbs[ethertype](batch, packet, data+16, len-16);
-#ifdef DEBUG_PACKET
-        LOG("BAD PACKET: Unknown ethertype %x", ethertype);
-#endif
-        if (BIT_ISSET(ethertype, config.etherSavePcap))
-            moloch_packet_save_unknown_packet(0, packet);
-        return MOLOCH_PACKET_UNKNOWN;
+        return moloch_packet_run_ethernet_cb(batch, packet, data+16,len-16, ethertype, "SLL");
     } // switch
     return MOLOCH_PACKET_CORRUPT;
 }
@@ -1629,14 +1494,10 @@ LOCAL int moloch_packet_radiotap(MolochPacketBatch_t * batch, MolochPacket_t * c
 
     hl += 3;
 
-    uint16_t type = (data[hl] << 8) | data[hl+1];
+    uint16_t ethertype = (data[hl] << 8) | data[hl+1];
     hl += 2;
 
-    if (ethernetCbs[type]) {
-        return ethernetCbs[type](batch, packet, data+hl, len-hl);
-    }
-
-    return MOLOCH_PACKET_UNKNOWN;
+    return moloch_packet_run_ethernet_cb(batch, packet, data+hl,len-hl, ethertype, "RadioTap");
 }
 /******************************************************************************/
 void moloch_packet_batch_init(MolochPacketBatch_t *batch)
@@ -1819,9 +1680,40 @@ LOCAL gboolean moloch_packet_save_drophash(gpointer UNUSED(user_data))
     return TRUE;
 }
 /******************************************************************************/
+void moloch_packet_save_ethernet( MolochPacket_t * const packet, uint16_t type)
+{
+    if (BIT_ISSET(type, config.etherSavePcap))
+        moloch_packet_save_unknown_packet(0, packet);
+}
+/******************************************************************************/
+int moloch_packet_run_ethernet_cb(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len, uint16_t type, const char *str)
+{
+    if (ethernetCbs[type]) {
+        return ethernetCbs[type](batch, packet, data, len);
+    }
+
+    if (config.logUnknownProtocols)
+        LOG("Unknown %s ethernet protocol 0x%04x(%d)", str, type, type);
+    moloch_packet_save_ethernet(packet, type);
+    return MOLOCH_PACKET_UNKNOWN;
+}
+/******************************************************************************/
 void moloch_packet_set_ethernet_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb)
 {
     ethernetCbs[type] = enqueueCb;
+}
+/******************************************************************************/
+int moloch_packet_run_ip_cb(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len, uint16_t type, const char *str)
+{
+    if (ipCbs[type]) {
+        return ipCbs[type](batch, packet, data, len);
+    }
+
+    if (config.logUnknownProtocols)
+        LOG("Unknown %s protocol %d", str, type);
+    if (BIT_ISSET(type, config.ipSavePcap))
+        moloch_packet_save_unknown_packet(1, packet);
+    return MOLOCH_PACKET_UNKNOWN;
 }
 /******************************************************************************/
 void moloch_packet_set_ip_cb(uint8_t type, MolochPacketEnqueue_cb enqueueCb)
@@ -1980,11 +1872,8 @@ void moloch_packet_init()
 
 
     moloch_packet_set_ethernet_cb(0x6559, moloch_packet_frame_relay);
-    moloch_packet_set_ethernet_cb(0x0800, moloch_packet_ip4);
-    moloch_packet_set_ethernet_cb(0x86dd, moloch_packet_ip6);
-    moloch_packet_set_ethernet_cb(0x880b, moloch_packet_ppp);
-    moloch_packet_set_ethernet_cb(0x8847, moloch_packet_mpls);
-    moloch_packet_set_ethernet_cb(0x8864, moloch_packet_pppoe);
+    moloch_packet_set_ethernet_cb(ETHERTYPE_IP, moloch_packet_ip4);
+    moloch_packet_set_ethernet_cb(ETHERTYPE_IPV6, moloch_packet_ip6);
     moloch_packet_set_ethernet_cb(0x88be, moloch_packet_erspan);
 }
 /******************************************************************************/

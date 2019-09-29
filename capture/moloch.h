@@ -1021,7 +1021,11 @@ void     moloch_packet_batch_process(MolochPacketBatch_t * batch, MolochPacket_t
 void     moloch_packet_set_linksnap(int linktype, int snaplen);
 void     moloch_packet_drophash_add(MolochSession_t *session, int which, int min);
 
+void     moloch_packet_save_ethernet(MolochPacket_t * const packet, uint16_t type);
+int      moloch_packet_run_ethernet_cb(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len, uint16_t type, const char *str);
 void     moloch_packet_set_ethernet_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb);
+
+int      moloch_packet_run_ip_cb(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len, uint16_t type, const char *str);
 void     moloch_packet_set_ip_cb(uint8_t type, MolochPacketEnqueue_cb enqueueCb);
 
 

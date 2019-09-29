@@ -33,3 +33,25 @@ A single thread that is responsible for writing out to disk the completed pcap b
 
 
 # Files
+
+## Creating new parsers
+
+### Ethernet
+
+moloch_packet_set_ethernet_cb
+moloch_mprotocol_register
+
+### IP
+
+moloch_packet_set_ip_cb
+moloch_mprotocol_register
+
+### TCP/UDP
+
+moloch_parsers_register2
+define moloch_parsers_register
+
+#define moloch_parsers_classifier_register_tcp
+#define moloch_parsers_classifier_register_udp
+
+#define moloch_parsers_classifier_register_port
