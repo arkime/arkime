@@ -739,71 +739,6 @@ LOCAL void moloch_packet_save_unknown_packet(int type, MolochPacket_t * const pa
 }
 
 /******************************************************************************/
-LOCAL int moloch_packet_erspan(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
-{
-    if (unlikely(len) < 8 || unlikely(!data))
-        return MOLOCH_PACKET_CORRUPT;
-
-    if ((*data >> 4) == 1)
-        return moloch_packet_ether(batch, packet, data + 8, len - 8);
-
-
-    if (config.logUnknownProtocols)
-        LOG("Unknown ERSPAN protocol %d", *data >> 4);
-    moloch_packet_save_ethernet(packet, 0x88be);
-    return MOLOCH_PACKET_UNKNOWN;
-}
-/******************************************************************************/
-LOCAL int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
-{
-    BSB bsb;
-    if (unlikely(len) < 4 || unlikely(!data))
-        return MOLOCH_PACKET_CORRUPT;
-
-    BSB_INIT(bsb, data, len);
-
-    uint16_t flags_version = 0;
-    BSB_IMPORT_u16(bsb, flags_version);
-    uint16_t type = 0;
-    BSB_IMPORT_u16(bsb, type);
-
-    if (flags_version & (0x8000 | 0x4000)) {
-        BSB_IMPORT_skip(bsb, 4); // skip len and offset
-    }
-
-    // key
-    if (flags_version & 0x2000) {
-        BSB_IMPORT_skip(bsb, 4);
-    }
-
-    // sequence number
-    if (flags_version & 0x1000) {
-        BSB_IMPORT_skip(bsb, 4);
-    }
-
-    // routing
-    if (flags_version & 0x4000) {
-        while (BSB_NOT_ERROR(bsb)) {
-            BSB_IMPORT_skip(bsb, 3);
-            int len = 0;
-            BSB_IMPORT_u08(bsb, len);
-            if (len == 0)
-                break;
-            BSB_IMPORT_skip(bsb, len);
-        }
-    }
-
-    // ack number
-    if (flags_version & 0x0080) {
-        BSB_IMPORT_skip(bsb, 4);
-    }
-
-    if (BSB_IS_ERROR(bsb))
-        return MOLOCH_PACKET_CORRUPT;
-
-    return moloch_packet_run_ethernet_cb(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), type, "GRE");
-}
-/******************************************************************************/
 void moloch_packet_frags_free(MolochFrags_t * const frags)
 {
     MolochPacket_t *packet;
@@ -1192,10 +1127,6 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
         packet->ses = SESSION_UDP;
         packet->mProtocol = udpMProtocol;
         break;
-    case IPPROTO_GRE:
-        packet->tunnel |= MOLOCH_PACKET_TUNNEL_GRE;
-        packet->vpnIpOffset = packet->ipOffset; // ipOffset will get reset
-        return moloch_packet_gre4(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
     case IPPROTO_IPV6:
         return moloch_packet_ip6(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
     default:
@@ -1871,10 +1802,10 @@ void moloch_packet_init()
     maxTcpOutOfOrderPackets = moloch_config_int(NULL, "maxTcpOutOfOrderPackets", 256, 64, 10000);
 
 
+    moloch_packet_set_ethernet_cb(0, moloch_packet_ether);
     moloch_packet_set_ethernet_cb(0x6559, moloch_packet_frame_relay);
     moloch_packet_set_ethernet_cb(ETHERTYPE_IP, moloch_packet_ip4);
     moloch_packet_set_ethernet_cb(ETHERTYPE_IPV6, moloch_packet_ip6);
-    moloch_packet_set_ethernet_cb(0x88be, moloch_packet_erspan);
 }
 /******************************************************************************/
 uint64_t moloch_packet_dropped_packets()
