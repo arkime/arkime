@@ -94,14 +94,18 @@ function processSessionIdS3(session, headerCb, packetCb, endCb, limit) {
   function readyToProcess () {
     var itemPos = 0;
 
-    function process(data, ipos, nextCb) {
-      // console.log("NEXT", data.params);
+    function process(data, nextCb) {
+      //console.log("NEXT", data);
+      data.params.Range = 'bytes=' + data.packetStart + "-" + (data.rangeEnd - 1);
       s3.getObject(data.params, function (err, s3data) {
         if (err) {
           console.log("WARNING - Only have SPI data, PCAP file no longer available", data.info.name, err);
           return nextCb("Only have SPI data, PCAP file no longer available for " + data.info.name);
         }
-        packetCb(pcap, s3data.Body, nextCb, ipos);
+        async.each(data.subPackets, function (sp, nextCb) {
+          packetCb(pcap, s3data.Body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart), nextCb, sp.itemPos);
+        },
+        nextCb);
       });
     }
 
@@ -121,12 +125,15 @@ function processSessionIdS3(session, headerCb, packetCb, endCb, limit) {
             var params = {
               Bucket: parts[3],
               Key: parts[4],
-              Range: 'bytes=' + pos + "-" + (pos + len - 1),
             };
             packetData[pp] = {
               params: params,
-              info: info
+              info: info,
+              packetStart: pos,
+              packetEnd: pos + len,
+              rangeEnd: pos + len,
             };
+            packetData[pp].subPackets = [packetData[pp]];
           }
           return nextCb(null);
         });
@@ -136,18 +143,32 @@ function processSessionIdS3(session, headerCb, packetCb, endCb, limit) {
     },
     function (pcapErr, results) {
       // Now we have all the packetData objects. Set the itemPos correctly
+      var packetDataOpt = [];
+      var previousData = null;
       for (var i = 0; i < packetData.length; i++) {
         var data = packetData[i];
         if (data) {
           data.itemPos = itemPos++;
+          // See if we should glue these two together
+          if (previousData) {
+            if (previousData.info.name == data.info.name) {
+              // Referencing the same file
+              if (data.packetStart > previousData.packetStart &&
+                  data.packetStart < previousData.rangeEnd + 32768) {
+                // This is within 32k bytes -- just extend the fetch
+                previousData.rangeEnd = data.packetEnd;
+
+                previousData.subPackets.push(data);
+                continue;
+              }
+            }
+          }
+          packetDataOpt.push(data);
+          previousData = data;
         }
       }
-      async.eachLimit(packetData, limit || 1, function(data, nextCb) {
-        if (data) {
-          process(data, data.itemPos, nextCb);
-        } else {
-          return nextCb(null);
-        }
+      async.eachLimit(packetDataOpt, limit || 1, function(data, nextCb) {
+        process(data, nextCb);
       },
       function (pcapErr, results) {
         endCb(pcapErr, fields);
