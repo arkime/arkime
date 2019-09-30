@@ -5217,7 +5217,7 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
 function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) {
   var options;
   if (!fullSession) {
-    options  = { _source: 'node,totPackets,packetPos,srcIp,srcPort,ipProtocol' };
+    options  = { _source: 'node,totPackets,packetLen,packetPos,srcIp,srcPort,ipProtocol' };
   }
 
   Db.getWithOptions(Db.sid2Index(id), 'session', Db.sid2Id(id), options, function(err, session) {

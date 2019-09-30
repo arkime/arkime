@@ -92,43 +92,66 @@ function processSessionIdS3(session, headerCb, packetCb, endCb, limit) {
   });
 
   function readyToProcess () {
-    var params;
     var itemPos = 0;
-    var saveInfo;
 
-    function process(ipos, nextCb) {
-      //console.log("NEXT", params);
-      s3.getObject(params, function (err, data) {
+    function process(data, ipos, nextCb) {
+      // console.log("NEXT", data.params);
+      s3.getObject(data.params, function (err, s3data) {
         if (err) {
-          console.log("WARNING - Only have SPI data, PCAP file no longer available", saveInfo.name, err);
-          return nextCb("Only have SPI data, PCAP file no longer available for " + saveInfo.name);
+          console.log("WARNING - Only have SPI data, PCAP file no longer available", data.info.name, err);
+          return nextCb("Only have SPI data, PCAP file no longer available for " + data.info.name);
         }
-        packetCb(pcap, data.Body, nextCb, ipos);
+        packetCb(pcap, s3data.Body, nextCb, ipos);
       });
     }
+
+    // FIrst pass, convert packetPos and packetLen into packetData
+    var packetData = [];
 
     async.eachLimit(Object.keys(fields.packetPos), limit || 1, function(p, nextCb) {
       var pos = fields.packetPos[p];
 
       if (pos < 0) {
         Db.fileIdToFile(fields.node, pos * -1, function(info) {
-          saveInfo = info;
           var parts = splitRemain(info.name,'/', 4);
-          params = {
-            Bucket: parts[3],
-            Key: parts[4]
-          };
+          p = parseInt(p);
+          for (var pp = p + 1; pp < fields.packetPos.length && fields.packetPos[pp] >= 0; pp++) {
+            var pos = fields.packetPos[pp];
+            var len = fields.packetLen[pp];
+            var params = {
+              Bucket: parts[3],
+              Key: parts[4],
+              Range: 'bytes=' + pos + "-" + (pos + len - 1),
+            };
+            packetData[pp] = {
+              params: params,
+              info: info
+            };
+          }
           return nextCb(null);
         });
         return;
       }
-
-      var len = fields.packetLen[p];
-      params.Range = "bytes=" + pos + "-" + (pos+len-1);
-      process(itemPos++, nextCb);
+      return nextCb(null);
     },
     function (pcapErr, results) {
-      endCb(pcapErr, fields);
+      // Now we have all the packetData objects. Set the itemPos correctly
+      for (var i = 0; i < packetData.length; i++) {
+        var data = packetData[i];
+        if (data) {
+          data.itemPos = itemPos++;
+        }
+      }
+      async.eachLimit(packetData, limit || 1, function(data, nextCb) {
+        if (data) {
+          process(data, data.itemPos, nextCb);
+        } else {
+          return nextCb(null);
+        }
+      },
+      function (pcapErr, results) {
+        endCb(pcapErr, fields);
+      });
     });
   }
 }
