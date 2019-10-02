@@ -90,6 +90,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
       } else {
         header = data.Body;
       }
+      header = header.subarray(0, 24);
       pcap = Pcap.make(info.name, header);
       if (headerCb) {
         headerCb(pcap, header);
