@@ -86,8 +86,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         return endCb("Couldn't open s3 file, save might not be complete yet - " + info.name, fields);
       }
       if (params.Key.endsWith('.gz')) {
-        header = zlib.gunzipSync(data.Body, { finishFlush: zlib.constants.Z_BLOCK });
-	      console.log("header=" + JSON.stringify(header));
+        header = zlib.gunzipSync(data.Body, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
       } else {
         header = data.Body;
       }
@@ -119,7 +118,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
             if (!decompressed[sp.rangeStart]) {
               var offset = sp.rangeStart - data.rangeStart;
               decompressed[sp.rangeStart] = zlib.inflateRawSync(s3data.Body.subarray(offset, offset + COMPRESSED_BLOCK_SIZE),
-                  { finishFlush: zlib.constants.Z_BLOCK });
+                  { finishFlush: zlib.constants.Z_SYNC_FLUSH });
             }
           }
           async.each(data.subPackets, function (sp, nextCb) {
@@ -160,7 +159,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
               compressed: compressed
             };
             if (compressed) {
-              pd.rangeStart = pos >> COMPRESSED_WITHIN_BLOCK_BITS;
+              pd.rangeStart = Math.floor(pos / (1 << COMPRESSED_WITHIN_BLOCK_BITS));
               pd.rangeEnd = pd.rangeStart + COMPRESSED_BLOCK_SIZE;
               pd.packetStart = pos & ((1 << COMPRESSED_WITHIN_BLOCK_BITS) - 1);
               pd.packetEnd = pd.packetStart + len;

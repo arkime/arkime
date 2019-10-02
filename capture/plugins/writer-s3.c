@@ -56,6 +56,7 @@ LOCAL  uint64_t              outputFilePos = 0;
 LOCAL  uint64_t              outputActualFilePos = 0;
 LOCAL  uint64_t              outputLastBlockStart = 0;
 LOCAL  uint32_t              outputOffsetInBlock = 0;
+LOCAL  uint32_t              outputDataSinceLastMiniBlock = 0;
 LOCAL  z_stream              z_strm;
 
 SavepcapS3File_t            *currentFile;
@@ -366,22 +367,19 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
 LOCAL void make_new_block(void) {
     if (s3WriteGzip) {
         // We need to make a new block
-        if (z_strm.avail_out <= 16) {
+
+        while (TRUE) {
+            deflate(&z_strm, Z_FULL_FLUSH);
+            if (z_strm.avail_out > 0) {
+                break;
+            }
             writer_s3_flush(FALSE);
         }
 
-		unsigned pending;
-		deflatePending(&z_strm, &pending, NULL);
-		LOG("mnb_deflatePending=%d", pending);
-	
-        LOG("make_new_block-before: actualFilePos=%ld", outputActualFilePos);
-
-        deflate(&z_strm, Z_FULL_FLUSH);
         outputActualFilePos = z_strm.total_out;
         outputLastBlockStart = outputActualFilePos;
         outputOffsetInBlock = 0;
-
-        LOG("make_new_block-after: actualFilePos=%ld", outputActualFilePos);
+        outputDataSinceLastMiniBlock = 0;
 
         outputFilePos = (outputLastBlockStart << COMPRESSED_WITHIN_BLOCK_BITS) + outputOffsetInBlock;
     }
@@ -389,12 +387,24 @@ LOCAL void make_new_block(void) {
 /******************************************************************************/
 LOCAL void ensure_space_for_output(size_t space) {
     if (s3WriteGzip) {
-        if (outputActualFilePos + 64 + deflateBound(&z_strm, space) > outputLastBlockStart + COMPRESSED_BLOCK_SIZE) {
-		unsigned pending;
-		deflatePending(&z_strm, &pending, NULL);
-		LOG("deflatePending=%d", pending);
+        size_t max_need_space = outputActualFilePos - outputLastBlockStart + 64 + deflateBound(&z_strm, space + outputDataSinceLastMiniBlock);
+        if (max_need_space >= COMPRESSED_BLOCK_SIZE) {
             // Might not fit.
-            make_new_block();
+            // Do a normal flush
+            while (TRUE) {
+                deflate(&z_strm, Z_BLOCK);
+                if (z_strm.avail_out > 0) {
+                    outputActualFilePos = z_strm.total_out;
+                    outputDataSinceLastMiniBlock = 0;
+                    break;
+                }
+                writer_s3_flush(FALSE);
+            }
+            // Recompute after the flush
+            max_need_space = outputActualFilePos - outputLastBlockStart + 64 + deflateBound(&z_strm, space + outputDataSinceLastMiniBlock);
+            if (max_need_space >= 3 * COMPRESSED_BLOCK_SIZE / 4) {
+                make_new_block();
+            }
         }
     }
 }
@@ -433,6 +443,7 @@ LOCAL void append_to_output(void *data, size_t length, gboolean packetHeader, si
         }
 
         outputOffsetInBlock += length;
+        outputDataSinceLastMiniBlock += length;
 
         if (!packetHeader && 
                 (outputOffsetInBlock >= (1 << COMPRESSED_WITHIN_BLOCK_BITS) - 16 ||
@@ -461,11 +472,12 @@ void writer_s3_flush(gboolean all)
 
     if (s3WriteGzip) {
       if (all) {
-        if (z_strm.avail_out < 64) {
-          writer_s3_flush(FALSE);
-        }
-
         deflate(&z_strm, Z_FINISH);
+
+        if (z_strm.avail_out == 0) {
+          writer_s3_flush(FALSE);
+          deflate(&z_strm, Z_FINISH);
+        }
       }
 
       outputPos = z_strm.next_out - (Bytef *) outputBuffer;
@@ -523,11 +535,13 @@ void writer_s3_create(const MolochPacket_t *packet)
     outputFilePos = 0;
     outputActualFilePos = 0;
     outputLastBlockStart = 0;
+    outputLastBlockStart = 0;
+    outputDataSinceLastMiniBlock = 0;
 
     outputBuffer = moloch_http_get_buffer(config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN);
     outputPos = 0;
     append_to_output(&pcapFileHeader, 24, FALSE, 0);
-    make_new_block();			// So we can read the header in a small amount of data fetched
+    make_new_block();                   // So we can read the header in a small amount of data fetched
 
     if (config.debug)
         LOG("Init-Request: %s", currentFile->outputFileName);
