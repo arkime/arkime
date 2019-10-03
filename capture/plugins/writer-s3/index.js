@@ -19,29 +19,27 @@
 
 var AWS = require('aws-sdk');
 var async = require('async');
-var util = require('util');
 var S3s = {};
 var Config;
 var Db;
 var Pcap;
 
-//////////////////////////////////////////////////////////////////////////////////
-//https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
-function splitRemain(str, separator, limit) {
-    str = str.split(separator);
-    if(str.length <= limit) {return str;}
+/// ///////////////////////////////////////////////////////////////////////////////
+// https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
+function splitRemain (str, separator, limit) {
+  str = str.split(separator);
+  if (str.length <= limit) { return str; }
 
-    var ret = str.splice(0, limit);
-    ret.push(str.join(separator));
+  var ret = str.splice(0, limit);
+  ret.push(str.join(separator));
 
-    return ret;
+  return ret;
 }
-//////////////////////////////////////////////////////////////////////////////////
-function makeS3(node, region)
-{
-  var key = Config.getFull(node, "s3AccessKeyId");
+/// ///////////////////////////////////////////////////////////////////////////////
+function makeS3 (node, region) {
+  var key = Config.getFull(node, 's3AccessKeyId');
   if (!key) {
-    console.log("ERROR - No s3AccessKeyId set for ", node);
+    console.log('ERROR - No s3AccessKeyId set for ', node);
     return undefined;
   }
 
@@ -50,23 +48,24 @@ function makeS3(node, region)
     return s3;
   }
 
-  var secret = Config.getFull(node, "s3SecretAccessKey");
+  var secret = Config.getFull(node, 's3SecretAccessKey');
   if (!secret) {
-    console.log("ERROR - No s3SecretAccessKey set for ", node);
+    console.log('ERROR - No s3SecretAccessKey set for ', node);
   }
   var s3Params = {region: region,
-                  accessKeyId: key, 
-                  secretAccessKey: secret};
-  return S3s[region + key] = new AWS.S3(s3Params);
+    accessKeyId: key,
+    secretAccessKey: secret};
+  var rv = S3s[region + key] = new AWS.S3(s3Params);
+  return rv;
 }
-//////////////////////////////////////////////////////////////////////////////////
-function processSessionIdS3(session, headerCb, packetCb, endCb, limit) {
+/// ///////////////////////////////////////////////////////////////////////////////
+function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
   var fields = session._source || session.fields;
 
   // Get first pcap header
   var header, pcap, s3;
-  Db.fileIdToFile(fields.node, fields.packetPos[0] * -1, function(info) {
-    var parts = splitRemain(info.name,'/', 4);
+  Db.fileIdToFile(fields.node, fields.packetPos[0] * -1, function (info) {
+    var parts = splitRemain(info.name, '/', 4);
 
     // Make s3 for this request, all will be in same region
     s3 = makeS3(fields.node, parts[2]);
@@ -76,7 +75,7 @@ function processSessionIdS3(session, headerCb, packetCb, endCb, limit) {
       Key: parts[4],
       Range: 'bytes=0-23'
     };
-    //console.log("HEADER", params);
+    // console.log("HEADER", params);
     s3.getObject(params, function (err, data) {
       if (err) {
         console.log(err, info);
@@ -92,73 +91,116 @@ function processSessionIdS3(session, headerCb, packetCb, endCb, limit) {
   });
 
   function readyToProcess () {
-    var params;
     var itemPos = 0;
-    var saveInfo;
 
-    function process(ipos, nextCb) {
-      //console.log("NEXT", params);
-      s3.getObject(params, function (err, data) {
+    function process (data, nextCb) {
+      // console.log("NEXT", data);
+      data.params.Range = 'bytes=' + data.packetStart + '-' + (data.rangeEnd - 1);
+      s3.getObject(data.params, function (err, s3data) {
         if (err) {
-          console.log("WARNING - Only have SPI data, PCAP file no longer available", saveInfo.name, err);
-          return nextCb("Only have SPI data, PCAP file no longer available for " + saveInfo.name);
+          console.log('WARNING - Only have SPI data, PCAP file no longer available', data.info.name, err);
+          return nextCb('Only have SPI data, PCAP file no longer available for ' + data.info.name);
         }
-        packetCb(pcap, data.Body, nextCb, ipos);
+        async.each(data.subPackets, function (sp, nextCb) {
+          packetCb(pcap, s3data.Body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart), nextCb, sp.itemPos);
+        },
+        nextCb);
       });
     }
 
-    async.eachLimit(Object.keys(fields.packetPos), limit || 1, function(p, nextCb) {
+    // FIrst pass, convert packetPos and packetLen into packetData
+    var packetData = [];
+
+    async.eachLimit(Object.keys(fields.packetPos), limit || 1, function (p, nextCb) {
       var pos = fields.packetPos[p];
 
       if (pos < 0) {
-        Db.fileIdToFile(fields.node, pos * -1, function(info) {
-          saveInfo = info;
-          var parts = splitRemain(info.name,'/', 4);
-          params = {
-            Bucket: parts[3],
-            Key: parts[4]
-          };
+        Db.fileIdToFile(fields.node, pos * -1, function (info) {
+          var parts = splitRemain(info.name, '/', 4);
+          p = parseInt(p);
+          for (var pp = p + 1; pp < fields.packetPos.length && fields.packetPos[pp] >= 0; pp++) {
+            var pos = fields.packetPos[pp];
+            var len = fields.packetLen[pp];
+            var params = {
+              Bucket: parts[3],
+              Key: parts[4]
+            };
+            packetData[pp] = {
+              params: params,
+              info: info,
+              packetStart: pos,
+              packetEnd: pos + len,
+              rangeEnd: pos + len
+            };
+            packetData[pp].subPackets = [packetData[pp]];
+          }
           return nextCb(null);
         });
         return;
       }
-
-      var len = fields.packetLen[p];
-      params.Range = "bytes=" + pos + "-" + (pos+len-1);
-      process(itemPos++, nextCb);
+      return nextCb(null);
     },
     function (pcapErr, results) {
-      endCb(pcapErr, fields);
+      // Now we have all the packetData objects. Set the itemPos correctly
+      var packetDataOpt = [];
+      var previousData = null;
+      for (var i = 0; i < packetData.length; i++) {
+        var data = packetData[i];
+        if (data) {
+          data.itemPos = itemPos++;
+          // See if we should glue these two together
+          if (previousData) {
+            if (previousData.info.name === data.info.name) {
+              // Referencing the same file
+              if (data.packetStart > previousData.packetStart &&
+                  data.packetStart < previousData.rangeEnd + 32768) {
+                // This is within 32k bytes -- just extend the fetch
+                previousData.rangeEnd = data.packetEnd;
+
+                previousData.subPackets.push(data);
+                continue;
+              }
+            }
+          }
+          packetDataOpt.push(data);
+          previousData = data;
+        }
+      }
+      async.eachLimit(packetDataOpt, limit || 1, function (data, nextCb) {
+        process(data, nextCb);
+      },
+      function (pcapErr, results) {
+        endCb(pcapErr, fields);
+      });
     });
   }
 }
-//////////////////////////////////////////////////////////////////////////////////
-function s3Expire()
-{
+/// ///////////////////////////////////////////////////////////////////////////////
+function s3Expire () {
   var query = { _source: [ 'num', 'name', 'first', 'size', 'node' ],
-                  from: '0',
-                  size: 1000,
-                 query: { bool: {
-                    must: [
-                          {range: {first: {lte: Math.floor(Date.now()/1000 - (+Config.get("s3ExpireDays"))*60*60*24)}}},
-                          {prefix: {name: "s3://"}}
-                        ]
-                 }},
-                 sort: { first: { order: 'asc' } } };
-  Db.search('files', 'file', query, function(err, data) {
+    from: '0',
+    size: 1000,
+    query: { bool: {
+      must: [
+        {range: {first: {lte: Math.floor(Date.now() / 1000 - (+Config.get('s3ExpireDays')) * 60 * 60 * 24)}}},
+        {prefix: {name: 's3://'}}
+      ]
+    }},
+    sort: { first: { order: 'asc' } } };
+  Db.search('files', 'file', query, function (err, data) {
     if (!data.hits || !data.hits.hits) {
       return;
     }
-    //console.log("HITS", data.hits.hits);
+    // console.log("HITS", data.hits.hits);
 
-    data.hits.hits.forEach(function(item) {
-      var parts = splitRemain(item._source.name,'/', 4);
+    data.hits.hits.forEach(function (item) {
+      var parts = splitRemain(item._source.name, '/', 4);
       var s3 = makeS3(item._source.node, parts[2]);
       s3.deleteObject({Bucket: parts[3], Key: parts[4]}, function (err, data) {
         if (err) {
           console.log("Couldn't delete from S3", item._id, item._source);
         } else {
-          Db.deleteDocument('files', 'file', item._id, function(err, data) {
+          Db.deleteDocument('files', 'file', item._id, function (err, data) {
             if (err) {
               console.log("Couldn't delete from ES", item._id, item._source);
             }
@@ -168,15 +210,15 @@ function s3Expire()
     });
   });
 }
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
 exports.init = function (config, emitter, api) {
-  api.registerWriter("s3", {localNode: false, processSessionId: processSessionIdS3 });
+  api.registerWriter('s3', {localNode: false, processSessionId: processSessionIdS3});
   Config = config;
   Db = api.getDb();
   Pcap = api.getPcap();
 
-  if (Config.get("s3ExpireDays") !== undefined) {
+  if (Config.get('s3ExpireDays') !== undefined) {
     s3Expire();
-    setInterval(s3Expire, 600*1000);
+    setInterval(s3Expire, 600 * 1000);
   }
-}
+};
