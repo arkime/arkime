@@ -608,9 +608,6 @@ void writer_s3_init(char *UNUSED(name))
     s3MaxConns            = moloch_config_int(NULL, "s3MaxConns", 20, 5, 1000);
     s3MaxRequests         = moloch_config_int(NULL, "s3MaxRequests", 500, 10, 5000);
 
-    // Must have packetLen for s3 writer
-    config.enablePacketLen = TRUE;
-
     if (!s3Bucket) {
         printf("Must set s3Bucket to save to s3\n");
         exit(1);
@@ -637,6 +634,12 @@ void writer_s3_init(char *UNUSED(name))
     }
 
     config.maxFileSizeB = MIN(config.maxFileSizeB, config.pcapWriteSize*2000);
+
+    if (s3WriteGzip) {
+      // We only have 33 bits of offset to play with. Limit the file size to that
+      // minus a bit to allow for the last compressed chunk to be emitted
+      config.maxFileSizeB = MIN(config.maxFileSizeB, 0x1fff00000LL);
+    }
 
     char host[200];
     snprintf(host, sizeof(host), "https://%s", s3Host);

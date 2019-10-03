@@ -145,7 +145,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
       });
     }
 
-    // FIrst pass, convert packetPos and packetLen into packetData
+    // FIrst pass, convert packetPos and packetLen (if we have it) into packetData
     var packetData = [];
 
     async.eachLimit(Object.keys(fields.packetPos), limit || 1, function (p, nextCb) {
@@ -158,7 +158,10 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
           var compressed = info.name.endsWith('.gz');
           for (var pp = p + 1; pp < fields.packetPos.length && fields.packetPos[pp] >= 0; pp++) {
             var pos = fields.packetPos[pp];
-            var len = fields.packetLen[pp];
+            var len = 65536;
+            if (fields.packetLen) {
+              len = fields.packetLen[pp];
+            }
             var params = {
               Bucket: parts[3],
               Key: parts[4]
@@ -200,7 +203,8 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
             if (previousData.info.name === data.info.name) {
               // Referencing the same file
               if (data.rangeStart >= previousData.rangeStart &&
-                  data.rangeStart < previousData.rangeEnd + 32768) {
+                  data.rangeStart < previousData.rangeEnd + 32768 &&
+                  data.rangeEnd > previousData.rangeEnd) {
                 // This is within 32k bytes -- just extend the fetch
                 previousData.rangeEnd = data.rangeEnd;
 
