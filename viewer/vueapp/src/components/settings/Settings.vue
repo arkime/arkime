@@ -1644,7 +1644,7 @@
           </h3>
 
           <p>
-            Configure notifiers that can be added to cron queries.
+            Configure notifiers that can be added to cron queries and hunt jobs.
           </p>
 
           <hr>

@@ -45,7 +45,8 @@ var Config         = require('./config.js'),
     onHeaders      = require('on-headers'),
     glob           = require('glob'),
     unzip          = require('unzip'),
-    helmet         = require('helmet');
+    helmet         = require('helmet'),
+    uuid           = require('uuidv4').default;
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -191,6 +192,34 @@ if (Config.get('hstsHeader', false) && Config.isHTTPS()) {
     includeSubDomains: true
   }));
 }
+// calculate nonce
+app.use((req, res, next) => {
+  res.locals.nonce = Buffer.from(uuid()).toString('base64');
+  next();
+});
+// define csp headers
+const cspHeader = helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    /* can remove unsafe-inline for css when this is fixed
+    https://github.com/vuejs/vue-style-loader/issues/33 */
+    styleSrc: ["'self'", "'unsafe-inline'"],
+    scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
+    objectSrc: ["'none'"],
+    imgSrc: ["'self'", 'data:']
+  }
+});
+const unsafeInlineCspHeader = helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    styleSrc: ["'self'", "'unsafe-inline'"],
+    scriptSrc: ["'self'", "'unsafe-eval'", "'unsafe-inline'"],
+    objectSrc: ["'self'", 'data:'],
+    workerSrc: ["'self'", 'data:', 'blob:'],
+    imgSrc: ["'self'", 'data:'],
+    fontSrc: ["'self'", 'data:']
+  }
+});
 
 function molochError (status, text) {
   /* jshint validthis: true */
@@ -1529,9 +1558,9 @@ app.get('/user/settings', getSettingUser, recordResponseTime, function(req, res)
     return res.send(JSON.stringify({success:false, text:'User not found'}));
   }
 
-  var settings = req.settingUser.settings || settingDefaults;
+  let settings = req.settingUser.settings || settingDefaults;
 
-  var cookieOptions = { path: app.locals.basePath };
+  let cookieOptions = { path: app.locals.basePath, sameSite: 'Strict' };
   if (Config.isHTTPS()) { cookieOptions.secure = true; }
 
   res.cookie(
@@ -2577,7 +2606,7 @@ function lookupQueryItems(query, doneCb) {
 
   //jshint latedef: nofunc
   function process(parent, obj, item) {
-    //console.log("\nprocess:\n", item, obj, typeof obj[item], "\n");
+    // console.log("\nprocess:\n", item, obj, typeof obj[item], "\n");
     if (item === "fileand" && typeof obj[item] === "string") {
       var name = obj.fileand;
       delete obj.fileand;
@@ -2598,6 +2627,8 @@ function lookupQueryItems(query, doneCb) {
           doneCb(err);
         }
       });
+    } else if (item === 'field' && obj.field === 'fileand') {
+      obj.field = 'fileId';
     } else if (typeof obj[item] === "object") {
       convert(obj, obj[item]);
     }
@@ -4327,7 +4358,6 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
           });
         }
       }, function () {
-        setTimeout(() => {
         var r = {recordsTotal: total.count,
                  recordsFiltered: (results?results.total:0),
                  graph: graph,
@@ -4339,7 +4369,6 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
           res.send(r);
         } catch (c) {
         }
-      }, 1000);
       });
     }).catch ((err) => {
       console.log('ERROR - /sessions.json error', err);
@@ -4355,8 +4384,8 @@ app.get('/sessions.json', logAction('sessions'), recordResponseTime, noCacheJson
 });
 
 app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime, noCacheJson, function(req, res) {
-
   req.query.facets = 1;
+
   buildSessionQuery(req, function(bsqErr, query, indices) {
     var results = {items: [], graph: {}, map: {}};
     if (bsqErr) {
@@ -4375,17 +4404,19 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
     if (req.query.exp === 'ip.dst:port') { field = 'ip.dst:port'; }
 
     if (field === 'ip.dst:port') {
-      query.aggregations.field = {terms: {field: 'dstIp', size: size}, aggregations: {sub: {terms: {field: 'dstPort', size: size}}}};
+      query.aggregations.field = { terms: { field: 'dstIp', size: size }, aggregations: { sub: { terms: { field: 'dstPort', size: size } } } };
+    } else if (field === 'fileand') {
+      query.aggregations.field = { terms: { field: 'node', size: 1000 }, aggregations: { sub: { terms: { field: 'fileId', size: size } } } };
     } else {
-      query.aggregations.field = {terms: {field: field, size: size*2}};
+      query.aggregations.field = { terms: { field: field, size: size * 2 } };
     }
 
-    Promise.all([Db.healthCachePromise(),
-                 Db.numberOfDocuments('sessions2-*'),
-                 Db.searchPrimary(indices, 'session', query, options)
-                ])
-    .then(([health, total, result]) => {
-      if (result.error) {throw result.error;}
+    Promise.all([
+      Db.healthCachePromise(),
+      Db.numberOfDocuments('sessions2-*'),
+      Db.searchPrimary(indices, 'session', query, options)
+    ]).then(([health, total, result]) => {
+      if (result.error) { throw result.error; }
 
       results.health = health;
       results.recordsTotal = total.count;
@@ -4398,9 +4429,9 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
         result.aggregations = {field: {buckets: []}};
       }
 
-      var aggs = result.aggregations.field.buckets;
-      var filter = {term: {}};
-      var sfilter = {term: {}};
+      let aggs = result.aggregations.field.buckets;
+      let filter = { term: {} };
+      let sfilter = { term: {} };
       query.query.bool.filter.push(filter);
 
       if (field === 'ip.dst:port') {
@@ -4409,8 +4440,73 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
 
       delete query.aggregations.field;
 
-      var queriesInfo = [];
-      aggs.forEach(function(item) {
+      let queriesInfo = [];
+      function endCb () {
+        queriesInfo = queriesInfo.sort((a, b) => {return b.doc_count - a.doc_count;}).slice(0, size * 2);
+        let queries = queriesInfo.map((item) => {return item.query;});
+
+        Db.msearch(indices, 'session', queries, options, function(err, result) {
+          if (!result.responses) {
+            return res.send(results);
+          }
+
+          result.responses.forEach(function(item, i) {
+            var r = {name: queriesInfo[i].key, count: queriesInfo[i].doc_count};
+
+            r.graph = graphMerge(req, query, result.responses[i].aggregations);
+            if (r.graph.xmin === null) {
+              r.graph.xmin = results.graph.xmin || results.graph.pa1Histo[0][0];
+            }
+
+            if (r.graph.xmax === null) {
+              r.graph.xmax = results.graph.xmax || results.graph.pa1Histo[results.graph.pa1Histo.length - 1][0];
+            }
+
+            r.map = mapMerge(result.responses[i].aggregations);
+            results.items.push(r);
+            r.lpHisto = 0.0;
+            r.dbHisto = 0.0;
+            r.byHisto = 0.0;
+            r.paHisto = 0.0;
+            var graph = r.graph;
+            for (let i = 0; i < graph.lpHisto.length; i++) {
+              r.lpHisto += graph.lpHisto[i][1];
+              r.dbHisto += graph.db1Histo[i][1] + graph.db2Histo[i][1];
+              r.byHisto += graph.by1Histo[i][1] + graph.by2Histo[i][1];
+              r.paHisto += graph.pa1Histo[i][1] + graph.pa2Histo[i][1];
+            }
+            if (results.items.length === result.responses.length) {
+              var s = req.query.sort || 'lpHisto';
+              results.items = results.items.sort(function (a, b) {
+                var result;
+                if (s === 'name') { result = a.name.localeCompare(b.name); }
+                else { result = b[s] - a[s]; }
+                return result;
+              }).slice(0, size);
+              return res.send(results);
+            }
+          });
+        });
+      }
+
+      let intermediateResults = [];
+      function findFileNames () {
+        async.each(intermediateResults, function (fsitem, cb) {
+          let split = fsitem.key.split(':');
+          let node = split[0];
+          let fileId = split[1];
+          Db.fileIdToFile(node, fileId, function (file) {
+            if (file && file.name) {
+              queriesInfo.push({ key: file.name, doc_count: fsitem.doc_count, query: fsitem.query });
+            }
+            cb();
+          });
+        }, function () {
+          endCb();
+        });
+      }
+
+      aggs.forEach((item) => {
         if (field === 'ip.dst:port') {
           filter.term.dstIp = item.key;
           let sep = (item.key.indexOf(":") === -1)? ':' : '.';
@@ -4418,57 +4514,21 @@ app.get('/spigraph.json', logAction('spigraph'), fieldToExp, recordResponseTime,
             sfilter.term.dstPort = sitem.key;
             queriesInfo.push({key: item.key + sep + sitem.key, doc_count: sitem.doc_count, query: JSON.stringify(query)});
           });
+        } else if (field === 'fileand') {
+          filter.term.node = item.key;
+          item.sub.buckets.forEach((sitem) => {
+            sfilter.term.fileand = sitem.key;
+            intermediateResults.push({key: filter.term.node + ':' + sitem.key, doc_count: sitem.doc_count, query: JSON.stringify(query)});
+          });
         } else {
           filter.term[field] = item.key;
           queriesInfo.push({key: item.key, doc_count: item.doc_count, query: JSON.stringify(query)});
         }
       });
 
-      queriesInfo = queriesInfo.sort((a, b) => {return b.doc_count - a.doc_count;}).slice(0, size*2);
-      let queries = queriesInfo.map((item) => {return item.query;});
+      if (field === 'fileand') { return findFileNames(); }
 
-      Db.msearch(indices, 'session', queries, options, function(err, result) {
-        if (!result.responses) {
-          return res.send(results);
-        }
-
-        result.responses.forEach(function(item, i) {
-          var r = {name: queriesInfo[i].key, count: queriesInfo[i].doc_count};
-
-          r.graph = graphMerge(req, query, result.responses[i].aggregations);
-          if (r.graph.xmin === null) {
-            r.graph.xmin = results.graph.xmin || results.graph.pa1Histo[0][0];
-          }
-
-          if (r.graph.xmax === null) {
-            r.graph.xmax = results.graph.xmax || results.graph.pa1Histo[results.graph.pa1Histo.length-1][0];
-          }
-
-          r.map = mapMerge(result.responses[i].aggregations);
-          results.items.push(r);
-          r.lpHisto = 0.0;
-          r.dbHisto = 0.0;
-          r.byHisto = 0.0;
-          r.paHisto = 0.0;
-          var graph = r.graph;
-          for (let i = 0; i < graph.lpHisto.length; i++) {
-            r.lpHisto += graph.lpHisto[i][1];
-            r.dbHisto += graph.db1Histo[i][1] + graph.db2Histo[i][1];
-            r.byHisto += graph.by1Histo[i][1] + graph.by2Histo[i][1];
-            r.paHisto += graph.pa1Histo[i][1] + graph.pa2Histo[i][1];
-          }
-          if (results.items.length === result.responses.length) {
-            var s = req.query.sort || 'lpHisto';
-            results.items = results.items.sort(function (a, b) {
-              var result;
-              if (s === 'name') { result = a.name.localeCompare(b.name); }
-              else { result = b[s] - a[s]; }
-              return result;
-            }).slice(0, size);
-            return res.send(results);
-          }
-        });
-      });
+      return endCb();
     }).catch((err) => {
       console.log('spigraph.json error', err);
       return res.molochError(403, errorString(err));
@@ -5010,7 +5070,7 @@ app.get('/multiunique.txt', logAction(), function(req, res) {
     let lastQ = query;
     for (let i = 0; i < fields.length; i++) {
       query.query.bool.must.push({ exists: { field: fields[i].dbField } });
-      lastQ.aggregations = {field: { terms : {field : fields[i].dbField, size: 1000000}}};
+      lastQ.aggregations = {field: { terms : {field : fields[i].dbField, size: +Config.get('maxAggSize', 10000)}}};
       lastQ = lastQ.aggregations.field;
     }
 
@@ -5051,14 +5111,14 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
   noCache(req, res, 'text/plain; charset=utf-8');
 
   if (req.query.field === undefined && req.query.exp === undefined) {
-    return res.send("Missing field or exp parameter");
+    return res.send('Missing field or exp parameter');
   }
 
   /* How should the results be written.  Use setImmediate to not blow stack frame */
-  var writeCb;
-  var doneCb;
-  var items = [];
-  var aggSize = 1000000;
+  let writeCb;
+  let doneCb;
+  let items = [];
+  let aggSize = +Config.get('maxAggSize', 10000);
 
   if (req.query.autocomplete !== undefined) {
     if (!Config.get('valueAutoComplete', !Config.get('multiES', false))) {
@@ -5066,7 +5126,7 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
       return;
     }
 
-    var spiDataMaxIndices = +Config.get("spiDataMaxIndices", 4);
+    let spiDataMaxIndices = +Config.get('spiDataMaxIndices', 4);
     if (spiDataMaxIndices !== -1) {
       if (req.query.date === '-1' ||
           (req.query.date !== undefined && +req.query.date > spiDataMaxIndices)) {
@@ -5084,20 +5144,20 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
     };
   } else if (parseInt(req.query.counts, 10) || 0) {
     writeCb = function (item) {
-      res.write("" + item.key + ", " + item.doc_count + "\n");
+      res.write(`${item.key}, ${item.doc_count}\n`);
     };
   } else {
     writeCb = function (item) {
-      res.write("" + item.key + "\n");
+      res.write(`${item.key}\n`);
     };
   }
 
   /* How should each item be processed. */
-  var eachCb = writeCb;
+  let eachCb = writeCb;
 
   if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
     eachCb = function(item) {
-      var sep = (item.key.indexOf(":") === -1)? ':' : '.';
+      let sep = (item.key.indexOf(':') === -1)? ':' : '.';
       item.field2.buckets.forEach((item2) => {
         item2.key = item.key + sep + item2.key;
         writeCb(item2);
@@ -5110,43 +5170,77 @@ app.get('/unique.txt', logAction(), fieldToExp, function(req, res) {
     delete query.aggregations;
 
     if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srcPort|ip.src:srcPort)/)) {
-      query.aggregations = {field: { terms : {field : "srcIp", size: aggSize}, aggregations: {field2: {terms: {field: "srcPort", size: 100}}}}};
+      query.aggregations = {field: { terms : {field : 'srcIp', size: aggSize}, aggregations: {field2: {terms: {field: 'srcPort', size: 100}}}}};
     } else if (req.query.field.match(/(ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
-      query.aggregations = {field: { terms : {field : "dstIp", size: aggSize}, aggregations: {field2: {terms: {field: "dstPort", size: 100}}}}};
-    } else  {
+      query.aggregations = {field: { terms : {field : 'dstIp', size: aggSize}, aggregations: {field2: {terms: {field: 'dstPort', size: 100}}}}};
+    } else if (req.query.field === 'fileand') {
+      query.aggregations = { field: { terms : { field : 'node', size: aggSize }, aggregations: { field2: { terms: { field: 'fileId', size: 100 } } } } };
+    } else {
       query.aggregations = {field: { terms : {field : req.query.field, size: aggSize}}};
     }
+
     query.size = 0;
-    console.log("unique aggregations", indices, JSON.stringify(query));
+    console.log('unique aggregations', indices, JSON.stringify(query));
+
+    function findFileNames (result) {
+      let intermediateResults = [];
+      let aggs = result.aggregations.field.buckets;
+      aggs.forEach((item) => {
+        item.field2.buckets.forEach((sitem) => {
+          intermediateResults.push({ key: item.key + ':' + sitem.key, doc_count: sitem.doc_count });
+        });
+      });
+
+      async.each(intermediateResults, (fsitem, cb) => {
+        let split = fsitem.key.split(':');
+        let node = split[0];
+        let fileId = split[1];
+        Db.fileIdToFile(node, fileId, function (file) {
+          if (file && file.name) {
+            eachCb({key: file.name, doc_count: fsitem.doc_count });
+          }
+          cb();
+        });
+      }, function () {
+        return res.end();
+      });
+    }
+
     Db.searchPrimary(indices, 'session', query, null, function (err, result) {
       if (err) {
-        console.log("Error", query, err);
+        console.log('Error', query, err);
         return doneCb?doneCb():res.end();
       }
       if (Config.debug) {
-        console.log("unique.txt result", util.inspect(result, false, 50));
+        console.log('unique.txt result', util.inspect(result, false, 50));
       }
       if (!result.aggregations || !result.aggregations.field) {
-        return doneCb?doneCb():res.end();
+        return doneCb ? doneCb() : res.end();
       }
 
-      for (var i = 0, ilen = result.aggregations.field.buckets.length; i < ilen; i++) {
+
+      if (req.query.field === 'fileand') {
+        return findFileNames(result);
+      }
+
+      for (let i = 0, ilen = result.aggregations.field.buckets.length; i < ilen; i++) {
         eachCb(result.aggregations.field.buckets[i]);
       }
-      return doneCb?doneCb():res.end();
+
+      return doneCb ? doneCb() : res.end();
     });
   });
 });
 
 function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
-  var fields;
+  let fields;
 
   function processFile(pcap, pos, i, nextCb) {
     pcap.ref();
     pcap.readPacket(pos, function(packet) {
       switch(packet) {
       case null:
-        var msg = util.format(session._id, "in file", pcap.filename, "couldn't read packet at", pos, "packet #", i, "of", fields.packetPos.length);
+        let msg = util.format(session._id, "in file", pcap.filename, "couldn't read packet at", pos, "packet #", i, "of", fields.packetPos.length);
         console.log("ERROR - processSessionIdDisk -", msg);
         endCb(msg, null);
         break;
@@ -5534,7 +5628,7 @@ function localSessionDetail(req, res) {
 /**
  * Get SPI data for a session
  */
-app.get('/:nodeName/session/:id/detail', logAction(), function(req, res) {
+app.get('/:nodeName/session/:id/detail', cspHeader, logAction(), (req, res) => {
   Db.getWithOptions(Db.sid2Index(req.params.id), 'session', Db.sid2Id(req.params.id), {}, function(err, session) {
     if (err || !session.found) {
       return res.end("Couldn't look up SPI data, error for session " + safeStr(req.params.id) + " Error: " +  err);
@@ -5836,7 +5930,8 @@ function writePcap(res, id, options, doneCb) {
   },
   function(err, session) {
     if (err) {
-      console.log("writePcap", err);
+      console.trace("writePcap", err);
+      doneCb(err);
     }
     res.write(b.slice(0, boffset));
     doneCb(err);
@@ -8007,8 +8102,7 @@ if (Config.get("regressionTests")) {
 //////////////////////////////////////////////////////////////////////////////////
 // Cyberchef
 //////////////////////////////////////////////////////////////////////////////////
-
-app.use('/cyberchef/', function(req, res) {
+app.use('/cyberchef/', unsafeInlineCspHeader, (req, res) => {
   let found = false;
   let path = req.path.substring(1);
   if (path === '') {
@@ -8034,7 +8128,7 @@ app.use('/cyberchef/', function(req, res) {
 
 /* cyberchef endpoint - loads the src or dst packets for a session and
  * sends them to cyberchef */
-app.get("/:nodeName/session/:id/cyberchef", checkWebEnabled, checkProxyRequest, function(req, res) {
+app.get("/:nodeName/session/:id/cyberchef", checkWebEnabled, checkProxyRequest, unsafeInlineCspHeader, (req, res) => {
   processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
     if (err) {
       console.log(`ERROR - /${req.params.nodeName}/session/${req.params.id}/cyberchef`, err);
@@ -8068,7 +8162,7 @@ app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
 // expose vue bundle (dev)
 app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
 
-app.use((req, res) => {
+app.use(cspHeader, (req, res) => {
   if (req.path === '/users' && !req.user.createEnabled) {
     return res.status(403).send('Permission denied');
   }
@@ -8077,7 +8171,7 @@ app.use((req, res) => {
     return res.status(403).send('Permission denied');
   }
 
-  let cookieOptions = { path: app.locals.basePath };
+  let cookieOptions = { path: app.locals.basePath, sameSite: 'Strict' };
   if (Config.isHTTPS()) { cookieOptions.secure = true; }
 
   // send cookie for basic, non admin functions
@@ -8111,7 +8205,8 @@ app.use((req, res) => {
     multiViewer: Config.get('multiES', false),
     themeUrl: theme === 'custom-theme' ? 'user.css' : '',
     huntWarn: Config.get('huntWarn', 100000),
-    huntLimit: limit
+    huntLimit: limit,
+    serverNonce: res.locals.nonce
   };
 
   // Create a fresh Vue app instance

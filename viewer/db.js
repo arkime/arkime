@@ -454,7 +454,7 @@ exports.update = function (index, type, id, document, options, cb) {
     options = undefined;
   }
 
-  var params = {index: fixIndex(index), type: type, body: document, id: id};
+  var params = {index: fixIndex(index), type: type, body: document, id: id, timeout: '10m'};
   exports.merge(params, options);
   return internals.elasticSearchClient.update(params, cb);
 };
@@ -476,7 +476,8 @@ exports.addTagsToSession = function (index, id, tags, node, cb) {
     retry_on_conflict: 3,
     index: fixIndex(index),
     type: 'session',
-    id: id
+    id: id,
+    timeout: '10m'
   };
 
   let script = `
@@ -513,7 +514,8 @@ exports.removeTagsFromSession = function (index, id, tags, node, cb) {
     retry_on_conflict: 3,
     index: fixIndex(index),
     type: 'session',
-    id: id
+    id: id,
+    timeout: '10m'
   };
 
   let script = `
@@ -550,7 +552,8 @@ exports.addHuntToSession = function (index, id, huntId, huntName, cb) {
     retry_on_conflict: 3,
     index: fixIndex(index),
     type: 'session',
-    id: id
+    id: id,
+    timeout: '10m'
   };
 
   let script = `
@@ -1085,72 +1088,68 @@ exports.loadFields = function(cb) {
 };
 
 exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
-  var indices = [];
   exports.getAliasesCache("sessions2-*", (err, aliases) => {
 
     if (err || aliases.error) {
-      return cb("");
+      return cb('');
     }
 
-    var offset = 86400;
-    var hourlyN;
-    if (rotateIndex === "hourly") {
-      offset = 3600;
-      hourlyN = 1;
-    } else if (rotateIndex.startsWith("hourly")) {
-      var match = rotateIndex.match(/^hourly(\d+)$/);
-      hourlyN = +match[1];
-      offset = 3600 * hourlyN;
-      rotateIndex = "hourly";
+    let indices = [];
+
+    // Guess how long hour indices we find are
+    let hlength = 0;
+    if (rotateIndex === 'hourly') {
+      hlength = 60*60;
+    } else if (rotateIndex.startsWith('hourly')) {
+      hlength = +rotateIndex.substring(6)*60*60;
+    } else {
+      hlength = 12*60*60; // Max hourly can be is 12 hours
     }
 
-    startTime = Math.floor(startTime/offset)*offset;
+    // Go thru each index, convert to start/stop range and see if our time range overlaps
+    // For hourly and month indices we may search extra
+    for (let iname in aliases) {
+      let index = iname;
+      if (index.endsWith('-shrink')) {
+        index = index.substring(0,index.length-7);
+      }
+      index = index.substring(internals.prefix.length + 10);
+      let year, month, day = 0, hour = 0, length;
 
-    while (startTime < stopTime) {
-      var iname;
-      var d = new Date(startTime*1000);
-      switch (rotateIndex) {
-      case "monthly":
-        iname = internals.prefix + "sessions2-" +
-          twoDigitString(d.getUTCFullYear()%100) + 'm' +
-          twoDigitString(d.getUTCMonth()+1);
-        break;
-      case "weekly":
-        var jan = new Date(d.getUTCFullYear(), 0, 0);
-        iname = internals.prefix + "sessions2-" +
-          twoDigitString(d.getUTCFullYear()%100) + 'w' +
-          twoDigitString(Math.floor((d - jan) / 604800000));
-        break;
-      case "hourly":
-        iname = internals.prefix + "sessions2-" +
-          twoDigitString(d.getUTCFullYear()%100) +
-          twoDigitString(d.getUTCMonth()+1) +
-          twoDigitString(d.getUTCDate()) + 'h' +
-          twoDigitString((d.getUTCHours()/hourlyN)*hourlyN);
-        break;
-      default:
-        iname = internals.prefix + "sessions2-" +
-          twoDigitString(d.getUTCFullYear()%100) +
-          twoDigitString(d.getUTCMonth()+1) +
-          twoDigitString(d.getUTCDate());
-        break;
+      if (+index[0] >= 6) {
+        year = 1900 + (+index[0])*10 + (+index[1]);
+      } else {
+        year = 2000 + (+index[0])*10 + (+index[1]);
       }
 
-      startTime += offset;
-
-      if (aliases[iname] && (indices.length === 0 || iname !== indices[indices.length-1])) {
-        indices.push(iname);
+      if (index[2] === 'w') {
+        length = 7*24*60*60;
+        month = 1;
+        day = (+index[3]*10 + (+index[4]))*7;
+      } else if (index[2] === 'm') {
+        month = (+index[3])*10 + (+index[4]);
+        length = 31*24*60*60;
+      } else if (index.length === 6) {
+        month = (+index[2])*10 + (+index[3]);
+        day = (+index[4])*10 + (+index[5]);
+        length = 24*60*60;
+      } else {
+        month = (+index[2])*10 + (+index[3]);
+        day = (+index[4])*10 + (+index[5]);
+        hour = (+index[7])*10 + (+index[8]);
+        length = hlength;
       }
 
-      // Check for shrink version
-      iname += '-shrink';
-      if (aliases[iname] && (indices.length === 0 || iname !== indices[indices.length-1])) {
+      let start = Date.UTC(year, month-1, day, hour)/1000;
+      let stop = Date.UTC(year, month-1, day, hour)/1000+length;
+
+      if (stop >= startTime && start <= stopTime) {
         indices.push(iname);
       }
     }
 
     if (indices.length === 0) {
-      return cb("sessions2-*");
+      return cb(internals.prefix + 'sessions2-*');
     }
 
     return cb(indices.join());

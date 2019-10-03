@@ -4,10 +4,11 @@
     <base href="{{ path }}">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta property="csp-nonce" content="{{ serverNonce }}">
     <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
     <title>Moloch</title>
     <link rel="stylesheet" href="{{ themeUrl }}">
-    <script>
+    <script nonce="{{ serverNonce }}">
       const MOLOCH_TITLE_CONFIG = '{{ titleConfig }}';
       const MOLOCH_DEMO_MODE = {{ demoMode }};
       const MOLOCH_DEV_MODE = {{ devMode }};

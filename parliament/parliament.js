@@ -16,6 +16,8 @@ const jwt     = require('jsonwebtoken');
 const bcrypt  = require('bcrypt');
 const glob    = require('glob');
 const os      = require('os');
+const helmet  = require('helmet');
+const uuid    = require('uuidv4').default;
 const upgrade = require('./upgrade');
 
 /* app setup --------------------------------------------------------------- */
@@ -202,7 +204,29 @@ let clusterId = 0;
 let noPacketsMap = {};
 
 // super secret
-app.disable('x-powered-by');
+app.use(helmet.hidePoweredBy());
+app.use(helmet.xssFilter());
+app.use(helmet.hsts({
+  maxAge: 31536000,
+  includeSubDomains: true
+}));
+// calculate nonce
+app.use((req, res, next) => {
+  res.locals.nonce = Buffer.from(uuid()).toString('base64');
+  next();
+});
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    /* can remove unsafe-inline for css when this is fixed
+    https://github.com/vuejs/vue-style-loader/issues/33 */
+    styleSrc: ["'self'", "'unsafe-inline'"],
+    scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
+    objectSrc: ["'none'"],
+    imgSrc: ["'self'", 'data:'],
+    frameSrc: ["'none'"]
+  }
+}));
 
 // expose vue bundles (prod)
 app.use('/parliament/static', express.static(`${__dirname}/vueapp/dist/static`));

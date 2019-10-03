@@ -1,3 +1,5 @@
+import uuid from 'uuidv4';
+
 export default {
 
   /**
@@ -5,7 +7,7 @@ export default {
    * @returns {string} The unique random string
    */
   createRandomString: function () {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    return uuid();
   },
 
   /** @returns the default sessions table state if none is defined by the user */

@@ -56,11 +56,8 @@ void moloch_field_by_exp_add_special_type(char *exp, int pos, int type)
     HASH_ADD(e_, fieldsByExp, info->expression, info);
 }
 /******************************************************************************/
-LOCAL int moloch_field_exp_cmp(const void *keyv, const void *elementv)
+LOCAL int moloch_field_exp_cmp(const char *key, const MolochFieldInfo_t *element)
 {
-    char *key = (char*)keyv;
-    MolochFieldInfo_t *element = (MolochFieldInfo_t *)elementv;
-
     return strcmp(key, element->expression) == 0;
 }
 /******************************************************************************/
@@ -1436,7 +1433,7 @@ void moloch_field_init()
 {
     config.maxField = 0;
     HASH_INIT(d_, fieldsByDb, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(e_, fieldsByExp, moloch_string_hash, moloch_field_exp_cmp);
+    HASH_INIT(e_, fieldsByExp, moloch_string_hash, (HASH_CMP_FUNC)moloch_field_exp_cmp);
 
     moloch_field_by_exp_add_special("dontSaveSPI", MOLOCH_FIELD_SPECIAL_STOP_SPI);
     moloch_field_by_exp_add_special("_dontSaveSPI", MOLOCH_FIELD_SPECIAL_STOP_SPI);

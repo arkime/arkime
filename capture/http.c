@@ -131,10 +131,8 @@ LOCAL gboolean moloch_http_send_timer_callback(gpointer);
 LOCAL void moloch_http_add_request(MolochHttpServer_t *server, MolochHttpRequest_t *request, gboolean async);
 
 /******************************************************************************/
-int moloch_http_conn_cmp(const void *keyv, const void *elementv)
+LOCAL int moloch_http_conn_cmp(const void *keyv, const MolochHttpConn_t *conn)
 {
-    MolochHttpConn_t *conn = (MolochHttpConn_t *)elementv;
-
     return memcmp(keyv, conn->sessionId, MIN(((uint8_t *)keyv)[0], conn->sessionId[0])) == 0;
 }
 /******************************************************************************/
@@ -1026,7 +1024,7 @@ void moloch_http_init()
 
     curl_global_init(CURL_GLOBAL_SSL);
 
-    HASH_INIT(h_, connections, moloch_session_hash, moloch_http_conn_cmp);
+    HASH_INIT(h_, connections, moloch_session_hash, (HASH_CMP_FUNC)moloch_http_conn_cmp);
     DLL_INIT(rqt_, &requests);
 }
 /******************************************************************************/

@@ -613,7 +613,9 @@ export default {
       for (let group in this.groupedFields) {
         filteredGroupedFields[group] = this.$options.filters.searchFields(
           this.colQuery,
-          this.groupedFields[group]
+          this.groupedFields[group],
+          false,
+          true
         );
       }
 

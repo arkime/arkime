@@ -15,10 +15,10 @@ GLIB=2.56.2
 YARA=3.10.0
 MAXMIND=1.3.2
 PCAP=1.9.0
-CURL=7.61.1
+CURL=7.66.0
 LUA=5.3.5
 DAQ=2.0.6
-NODE=10.16.2
+NODE=10.16.3
 
 TDIR="/data/moloch"
 DOPFRING=0
@@ -117,12 +117,11 @@ if [ "$UNAME" = "Darwin" ]; then
     echo './configure --with-libpcap=/opt/local --with-yara=/opt/local LDFLAGS="-L/opt/local/lib" --with-glib2=no GLIB2_CFLAGS="-I/opt/local/include/glib-2.0 -I/opt/local/lib/glib-2.0/include" GLIB2_LIBS="-L/opt/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" --with-pfring=no --with-curl=yes --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua"'
     ./configure --with-libpcap=/opt/local --with-yara=/opt/local LDFLAGS="-L/opt/local/lib" --with-glib2=no GLIB2_CFLAGS="-I/opt/local/include/glib-2.0 -I/opt/local/lib/glib-2.0/include" GLIB2_LIBS="-L/opt/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" --with-pfring=no --with-curl=yes --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua"
   elif [ -x "/usr/local/bin/brew" ]; then
-    brew install libpcap yara glib jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml
+    brew install libpcap yara glib jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml openssl
 
     echo "MOLOCH: Building capture"
-    echo './configure --with-libpcap=/usr/local/opt/libpcap --with-yara=/usr/local LDFLAGS="-L/usr/local/lib" --with-glib2=no GLIB2_CFLAGS="-I/usr/local/include/glib-2.0 -I/usr/local/lib/glib-2.0/include -I/usr/local/opt/openssl/include" GLIB2_LIBS="-L/usr/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -L/usr/local/opt/openssl/lib" --with-pfring=no --with-curl=yes --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -l
-lua'
-    ./configure --with-libpcap=/usr/local/opt/libpcap --with-yara=/usr/local LDFLAGS="-L/usr/local/lib" --with-glib2=no GLIB2_CFLAGS="-I/usr/local/include/glib-2.0 -I/usr/local/lib/glib-2.0/include -I/usr/local/opt/openssl/include" GLIB2_LIBS="-L/usr/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -L/usr/local/opt/openssl/lib" --with-pfring=no --with-curl=yes --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -llua"
+    echo './configure --with-libpcap=/usr/local/opt/libpcap --with-yara=/usr/local LDFLAGS="-L/usr/local/lib" --with-glib2=no GLIB2_CFLAGS="-I/usr/local/include/glib-2.0 -I/usr/local/lib/glib-2.0/include -I/usr/local/opt/openssl@1.1/include" GLIB2_LIBS="-L/usr/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -L/usr/local/opt/openssl@1.1/lib" --with-pfring=no --with-curl=yes --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -llua'
+    ./configure --with-libpcap=/usr/local/opt/libpcap --with-yara=/usr/local LDFLAGS="-L/usr/local/lib" --with-glib2=no GLIB2_CFLAGS="-I/usr/local/include/glib-2.0 -I/usr/local/lib/glib-2.0/include -I/usr/local/opt/openssl@1.1/include" GLIB2_LIBS="-L/usr/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -L/usr/local/opt/openssl@1.1/lib" --with-pfring=no --with-curl=yes --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -llua"
 
   else
       echo "MOLOCH: Please install MacPorts or Homebrew"

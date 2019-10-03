@@ -160,6 +160,10 @@ sub showHelp($)
     print "    --type <type>              - Type of shortcut = string, ip, number, default is string\n";
     print "    --shared                   - Whether the shortcut is shared to all users\n";
     print "    --description <description>- Description of the shortcut\n";
+    print "  shrink <index> <node> <num>  - Shrink a session index\n";
+    print "      index                    - The session index to shring\n";
+    print "      node                     - The node to temporarily use for shrinking\n";
+    print "      num                      - Number of shards to shrink to\n";
     print "\n";
     print "Backup and Restore Commands:\n";
     print "  backup <basename>            - Backup everything but sessions; filenames created start with <basename>\n";
@@ -232,7 +236,7 @@ sub esGet
     my ($url, $dontcheck) = @_;
     logmsg "GET ${main::elasticsearch}$url\n" if ($verbose > 2);
     my $response = $main::userAgent->get("${main::elasticsearch}$url");
-    if (($response->code == 500 && $ARGV[1] ne "init") || ($response->code != 200 && !$dontcheck)) {
+    if (($response->code == 500 && $ARGV[1] ne "init" && $ARGV[1] ne "shrink") || ($response->code != 200 && !$dontcheck)) {
       die "Couldn't GET ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
     }
     my $json = from_json($response->content);
@@ -2957,17 +2961,17 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut)$/);
-showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut)$/);
+showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
 parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean)$/);
 parseArgs(3) if ($ARGV[1] =~ /^(restore)$/);
 
-$ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean)$/);
+$ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean|shrink)$/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => $ESTIMEOUT + 5, keep_alive => 5);
 if ($CLIENTCERT ne "") {
@@ -3190,6 +3194,9 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         if (exists $hindices->{$iname} && $hindices->{$iname}->{OPTIMIZEIT} != 1) {
             $hindices->{$iname}->{OPTIMIZEIT} = 1;
             $optimizecnt++;
+        } elsif (exists $hindices->{"$iname-shrink"} && $hindices->{"$iname-shrink"}->{OPTIMIZEIT} != 1) {
+            $hindices->{"$iname-shrink"}->{OPTIMIZEIT} = 1;
+            $optimizecnt++;
         }
         $startTime += 24*60*60;
     }
@@ -3313,6 +3320,31 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     print "${verb} shortcut ${shortcutName}\n";
 
+    exit 0;
+} elsif ($ARGV[1] =~ /^(shrink)$/) {
+    die "Only shrink history and sessions2 indices" if ($ARGV[2] !~ /(sessions2|history)/);
+
+    logmsg("Moving all shards for ${PREFIX}$ARGV[2] to $ARGV[3]\n");
+    my $json = esPut("/${PREFIX}$ARGV[2]/_settings?master_timeout=${ESTIMEOUT}s", "{\"settings\": {\"index.routing.allocation.total_shards_per_node\": null, \"index.routing.allocation.require._name\" : \"$ARGV[3]\", \"index.blocks.write\": true}}");
+
+    while (1) {
+      $json = esGet("/_cluster/health?wait_for_no_relocating_shards=true&timeout=30s", 1);
+      last if ($json->{relocating_shards} == 0);
+      progress("Waiting for relocation to finish\n");
+    }
+    logmsg("Shrinking ${PREFIX}$ARGV[2] to ${PREFIX}$ARGV[2]-shrink\n");
+    $json = esPut("/${PREFIX}$ARGV[2]/_shrink/${PREFIX}$ARGV[2]-shrink?master_timeout=${ESTIMEOUT}s&copy_settings=true", '{"settings": {"index.routing.allocation.require._name": null, "index.blocks.write": null, "index.codec": "best_compression", "index.number_of_shards": ' . $ARGV[4] . '}}');
+
+    logmsg("Checking for completion\n");
+    my $status = esGet("/${PREFIX}$ARGV[2]-shrink/_refresh", 0);
+    my $status = esGet("/${PREFIX}$ARGV[2]-shrink/_flush", 0);
+    my $status = esGet("/_stats/docs", 0);
+    if ($status->{indices}->{"${PREFIX}$ARGV[2]-shrink"}->{primaries}->{docs}->{count} == $status->{indices}->{"${PREFIX}$ARGV[2]"}->{primaries}->{docs}->{count}) {
+        logmsg("Deleting old index\n");
+        esDelete("/${PREFIX}$ARGV[2]", 1);
+    } else {
+        logmsg("Doc counts don't match, not deleting old index\n");
+    }
     exit 0;
 } elsif ($ARGV[1] eq "info") {
     dbVersion(0);

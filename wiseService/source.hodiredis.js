@@ -19,7 +19,7 @@
 
 var wiseSource     = require('./wiseSource.js')
   , util           = require('util')
-  , redis          = require('redis')
+  , redis          = require('ioredis')
   ;
 //////////////////////////////////////////////////////////////////////////////////
 function HODIRedisSource (api, section) {

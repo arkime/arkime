@@ -19,7 +19,6 @@
 
 var util           = require('util')
   , wiseSource     = require('./wiseSource.js')
-  , redis          = require('redis')
   ;
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -42,7 +41,8 @@ function RedisSource (api, section) {
     return;
   }
 
-  this.client = redis.createClient({url: this.url});
+  this.client = api.createRedisClient(api.getConfig(section, 'redisType', 'redis'), section);
+
   this[this.typeFunc] = RedisSource.prototype.fetch;
   this.api.addSource(this.section, this);
 }

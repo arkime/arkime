@@ -494,7 +494,7 @@ function formatQuery(yy, field, op, value)
     if (op === "eq")
       return {fileand: stripQuotes(value)}
     if (op === "ne")
-      return {bool: {must_not: {findand: stripQuotes(value)}}};
+      return {bool: {must_not: {fileand: stripQuotes(value)}}};
     throw op + " - not supported for file queries";
     break;
   case "viewand":

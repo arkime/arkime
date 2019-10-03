@@ -57,11 +57,12 @@
         <moloch-table
           id="fieldTable"
           :data="files"
-          :loadData="loadData"
+          :load-data="loadData"
           :columns="columns"
           :no-results="true"
           :desc="query.desc"
-          :sortField="query.sortField"
+          :sort-field="query.sortField"
+          :action-column="true"
           table-animation="list"
           table-classes="table-sm"
           table-state-name="fieldsCols"
@@ -112,7 +113,7 @@ export default {
         { id: 'node', name: 'Node', sort: 'node', help: 'What moloch capture node this file lives on', width: 120, default: true },
         { id: 'name', name: 'Name', sort: 'name', help: 'The complete file path', width: 500, default: true },
         { id: 'locked', name: 'Locked', sort: 'locked', dataFunction: (item) => { return item.locked === 1 ? 'True' : 'False'; }, help: 'If locked Moloch viewer won\'t delete this file to free space', width: 100, default: true },
-        { id: 'first', name: 'First Date', sort: 'first', dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.first, this.user.settings.timezone, this.user.settings.ms); }, help: 'Timestamp of the first packet in the file', width: 220, default: true },
+        { id: 'first', name: 'First Date', sort: 'first', dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.first * 1000, this.user.settings.timezone); }, help: 'Timestamp of the first packet in the file', width: 220, default: true },
         { id: 'filesize', name: 'File Size', sort: 'filesize', classes: 'text-right', help: 'Size of the file in bytes, blank if the file is still being written to', width: 100, default: true, dataFunction: (item) => { return this.$options.filters.commaString(item.filesize); } }
       ]
     };

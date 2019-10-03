@@ -155,10 +155,8 @@ uint32_t moloch_session_hash(const void *key)
 #endif
 
 /******************************************************************************/
-int moloch_session_cmp(const void *keyv, const void *elementv)
+LOCAL int moloch_session_cmp(const void *keyv, const MolochSession_t *session)
 {
-    MolochSession_t *session = (MolochSession_t *)elementv;
-
     return memcmp(keyv, session->sessionId, MIN(((uint8_t *)keyv)[0], session->sessionId[0])) == 0;
 }
 /******************************************************************************/
@@ -254,6 +252,9 @@ LOCAL void moloch_session_free (MolochSession_t *session)
     moloch_field_free(session);
 
     moloch_packet_tcp_free(session);
+
+    if (session->pq)
+        moloch_pq_free(session);
 
     MOLOCH_TYPE_FREE(MolochSession_t, session);
 }
@@ -436,7 +437,7 @@ MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *ses
 
     if (HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash) > 15) {
         char buf[100];
-        LOG("ERROR - Large number of chains: %s %u %u %d %u", moloch_session_id_string(sessionId, buf), hash, hash % sessions[thread][ses].size, thread, HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash));
+        LOG("ERROR - Large number of chains: %s %u %u %d %u %u - might want to increase maxStreams see https://molo.ch/settings#maxstreams", moloch_session_id_string(sessionId, buf), hash, hash % sessions[thread][ses].size, thread, HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash), sessions[thread][ses].size);
     }
 
     session->filePosArray = g_array_sized_new(FALSE, FALSE, sizeof(uint64_t), 100);
@@ -562,7 +563,12 @@ int moloch_session_idle_seconds(int ses)
 /******************************************************************************/
 LOCAL uint32_t moloch_get_prime(uint32_t v)
 {
-    static uint32_t primes[] = {10007, 49999, 99991, 199799, 400009, 500009, 732209, 1092757, 1299827, 1500007, 1987411, 2999999, 5000011, 8000009, 11000027, 15485863, 0};
+    static uint32_t primes[] = {1009, 10007, 49999, 99991, 199799, 400009, 500009, 732209,
+                                1092757, 1299827, 1500007, 1987411, 2999999, 4000037,
+                                5000011, 6000011, 7000003, 8000009, 9000011, 10000019,
+                                11000027, 12000017, 13000027, 14000029, 15000017, 16000057,
+                                17000023, 18000041, 19000013, 20000003, 21000037, 22000001,
+                                0};
 
     int p;
     for (p = 0; primes[p]; p++) {
@@ -592,7 +598,7 @@ void moloch_session_init()
     int t;
     for (t = 0; t < config.packetThreads; t++) {
         for (s = 0; s < SESSION_MAX; s++) {
-            HASHP_INIT(h_, sessions[t][s], primes[s], moloch_session_hash, moloch_session_cmp);
+            HASHP_INIT(h_, sessions[t][s], primes[s], moloch_session_hash, (HASH_CMP_FUNC)moloch_session_cmp);
             DLL_INIT(q_, &sessionsQ[t][s]);
         }
 
@@ -617,6 +623,7 @@ LOCAL void moloch_session_flush_close(MolochSession_t *session, gpointer UNUSED(
             moloch_session_save(session);
         );
     }
+    moloch_pq_flush();
 }
 /******************************************************************************/
 /* Only called on main thread. Wait for all packet threads to be empty and then

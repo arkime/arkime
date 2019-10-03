@@ -18,7 +18,6 @@
 'use strict';
 
 var LRU = require('lru-cache')
-  , redis = require('redis')
   , Bson = require('bson')
   , BSON = new Bson()
   ;
@@ -54,13 +53,13 @@ exports.WISEMemoryCache = WISEMemoryCache;
 // Redis Cache
 /******************************************************************************/
 
-function WISERedisCache (options) {
+function WISERedisCache (redisType, options) {
   options = options || {};
   this.cacheSize = +options.cacheSize || 10000;
+  this.cacheTimeout = options.getConfig('cache', 'cacheTimeout') * 60 || 24*60*60;
   this.cache = {};
 
-  options.return_buffers = true; // force buffers on for the bson decoding to work
-  this.client = redis.createClient(options);
+  this.client = options.createRedisClient(redisType, 'cache');
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -80,7 +79,7 @@ WISERedisCache.prototype.get = function(query, cb) {
   }
 
   // Check redis
-  this.client.get(query.typeName + "-" + query.value, (err, reply) => {
+  this.client.getBuffer(query.typeName + '-' + query.value, (err, reply) => {
     if (reply === null) {
       return cb(null, undefined);
     }
@@ -102,7 +101,7 @@ WISERedisCache.prototype.set = function(query, value) {
   cache.set(query.value, value);
 
   var data = BSON.serialize(value, false, true, false);
-  this.client.set(query.typeName + "-" + query.value, data);
+  this.client.setex(query.typeName + '-' + query.value, this.cacheTimeout, data);
 };
 
 exports.WISERedisCache = WISERedisCache;
@@ -111,17 +110,18 @@ exports.WISERedisCache = WISERedisCache;
 // Load Cache
 /******************************************************************************/
 exports.createCache = function(options) {
-  var type = options.getConfig("cache", "type", "memory");
-  options.cacheSize = options.getConfig("cache", "cacheSize");
+  var type = options.getConfig('cache', 'type', 'memory');
+  options.cacheSize = options.getConfig('cache', 'cacheSize');
 
   switch (type) {
-  case "memory":
+  case 'memory':
     return new WISEMemoryCache(options);
-  case "redis":
-    options.url = options.getConfig("cache", "url");
-    return new WISERedisCache(options);
+  case 'redis':
+  case 'redis-cluster':
+  case 'redis-sentinel':
+    return new WISERedisCache(type, options);
   default:
-    console.log("Unknown cache type", type);
+    console.log('Unknown cache type', type);
     process.exit(1);
   }
 };

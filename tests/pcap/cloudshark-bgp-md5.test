@@ -1,0 +1,168 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "communityId" : "1:g99Vgks0T67b4ifViWJVGKZmmpU=",
+            "dstBytes" : 643,
+            "dstDataBytes" : 102,
+            "dstIp" : "192.168.100.2",
+            "dstMac" : [
+               "c2:02:4f:3d:00:00"
+            ],
+            "dstMacCnt" : 1,
+            "dstPackets" : 7,
+            "dstPayload8" : "ffffffffffffffff",
+            "dstPort" : 179,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1259261324431,
+            "initRTT" : 3,
+            "ipProtocol" : 6,
+            "lastPacket" : 1259261384739,
+            "length" : 60308,
+            "node" : "test",
+            "packetLen" : [
+               94,
+               94,
+               90,
+               135,
+               135,
+               109,
+               109,
+               109,
+               109,
+               109,
+               109,
+               90,
+               90,
+               109
+            ],
+            "packetPos" : [
+               24,
+               118,
+               212,
+               302,
+               437,
+               572,
+               681,
+               790,
+               899,
+               1008,
+               1117,
+               1226,
+               1316,
+               1406
+            ],
+            "protocol" : [
+               "bgp",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "rootId" : "SET",
+            "segmentCnt" : 1,
+            "srcBytes" : 624,
+            "srcDataBytes" : 102,
+            "srcIp" : "192.168.100.1",
+            "srcMac" : [
+               "c2:01:4f:3d:00:00"
+            ],
+            "srcMacCnt" : 1,
+            "srcPackets" : 7,
+            "srcPayload8" : "ffffffffffffffff",
+            "srcPort" : 25820,
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 3,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 8,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 1267,
+            "totDataBytes" : 204,
+            "totPackets" : 14
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-091126",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:g99Vgks0T67b4ifViWJVGKZmmpU=",
+            "dstBytes" : 74,
+            "dstDataBytes" : 19,
+            "dstIp" : "192.168.100.2",
+            "dstMac" : [
+               "c2:02:4f:3d:00:00"
+            ],
+            "dstMacCnt" : 1,
+            "dstPackets" : 1,
+            "dstPayload8" : "ffffffffffffffff",
+            "dstPort" : 179,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1259261324431,
+            "ipProtocol" : 6,
+            "lastPacket" : 1259261384967,
+            "length" : 60536,
+            "node" : "test",
+            "packetLen" : [
+               109,
+               90
+            ],
+            "packetPos" : [
+               1515,
+               1624
+            ],
+            "protocol" : [
+               "bgp",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "rootId" : "SET",
+            "segmentCnt" : 2,
+            "srcBytes" : 93,
+            "srcDataBytes" : 19,
+            "srcIp" : "192.168.100.1",
+            "srcMac" : [
+               "c2:01:4f:3d:00:00"
+            ],
+            "srcMacCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "ffffffffffffffff",
+            "srcPort" : 25820,
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 1,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 2,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 0,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 167,
+            "totDataBytes" : 38,
+            "totPackets" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-091126",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

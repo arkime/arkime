@@ -298,7 +298,7 @@ export default {
 
       // TODO instead of just showing the default columns, show the ones currently in the table
       let columns = this.columns.filter((column) => {
-        return column.default && column.id !== 'node' && column.id !== 'time';
+        return column.default && column.doStats;
       });
       let headerNames = columns.map(function (item) { return item.name; });
       let dataSrcs = columns.map(function (item) { return item.sort; });

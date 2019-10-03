@@ -37,6 +37,15 @@ function splitRemain (str, separator, limit) {
   var ret = str.splice(0, limit);
   ret.push(str.join(separator));
 
+/// ///////////////////////////////////////////////////////////////////////////////
+// https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
+function splitRemain (str, separator, limit) {
+  str = str.split(separator);
+  if (str.length <= limit) { return str; }
+
+  var ret = str.splice(0, limit);
+  ret.push(str.join(separator));
+
   return ret;
 }
 /// ///////////////////////////////////////////////////////////////////////////////
