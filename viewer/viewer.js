@@ -5930,7 +5930,8 @@ function writePcap(res, id, options, doneCb) {
   },
   function(err, session) {
     if (err) {
-      console.log("writePcap", err);
+      console.trace("writePcap", err);
+      doneCb(err);
     }
     res.write(b.slice(0, boffset));
     doneCb(err);
