@@ -71,6 +71,7 @@ LOCAL  char                  *s3AccessKeyId;
 LOCAL  char                  *s3SecretAccessKey;
 LOCAL  char                   s3Compress;
 LOCAL  char                   s3WriteGzip;
+LOCAL  char                  *s3StorageClass;
 LOCAL  uint32_t               s3MaxConns;
 LOCAL  uint32_t               s3MaxRequests;
 
@@ -86,7 +87,7 @@ void writer_s3_flush(gboolean all);
 
 
 
-void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, int len, gboolean reduce, MolochHttpResponse_cb cb, gpointer uw);
+void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, int len, gboolean specifyStorageClass, MolochHttpResponse_cb cb, gpointer uw);
 
 LOCAL  MOLOCH_LOCK_DEFINE(output);
 /******************************************************************************/
@@ -229,12 +230,13 @@ void writer_s3_header_cb (char *url, const char *field, const char *value, int v
 }
 /******************************************************************************/
 GChecksum *checksum;
-void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, int len, gboolean reduce, MolochHttpResponse_cb cb, gpointer uw)
+void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, int len, gboolean specifyStorageClass, MolochHttpResponse_cb cb, gpointer uw)
 {
     char           canonicalRequest[1000];
     char           datetime[17];
     char           fullpath[1000];
     char           bodyHash[1000];
+    char           storageClassHeader[1000];
     struct timeval outputFileTime;
 
     gettimeofday(&outputFileTime, 0);
@@ -249,6 +251,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
             gm->tm_sec);
 
 
+    snprintf(storageClassHeader, sizeof(storageClassHeader), "x-amz-storage-class:%s\n", s3StorageClass);
 
     g_checksum_reset(checksum);
     g_checksum_update(checksum, data, len);
@@ -273,8 +276,8 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
              s3Host,
              bodyHash,
              datetime,
-             (reduce?"x-amz-storage-class:REDUCED_REDUNDANCY\n":""),
-             (reduce?";x-amz-storage-class":""),
+             (specifyStorageClass?storageClassHeader:""),
+             (specifyStorageClass?";x-amz-storage-class":""),
              bodyHash);
     //LOG("canonicalRequest: %s", canonicalRequest);
 
@@ -348,14 +351,16 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
             "Authorization: AWS4-HMAC-SHA256 Credential=%s/%8.8s/%s/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date%s,Signature=%s"
             , 
             s3AccessKeyId, datetime, s3Region, 
-            (reduce?";x-amz-storage-class":""),
+            (specifyStorageClass?";x-amz-storage-class":""),
             signature
             );
 
     snprintf(strs[1], 1000, "x-amz-content-sha256: %s" , bodyHash);
     snprintf(strs[2], 1000, "x-amz-date: %s", datetime);
-    if (reduce) {
-        headers[5] = "x-amz-storage-class: REDUCED_REDUNDANCY";
+    if (specifyStorageClass) {
+        // Note the missing newline in this place
+        snprintf(storageClassHeader, sizeof(storageClassHeader), "x-amz-storage-class: %s", s3StorageClass);
+        headers[5] = storageClassHeader;
     } else {
         headers[5] = NULL;
     }
@@ -599,6 +604,7 @@ void writer_s3_init(char *UNUSED(name))
     s3SecretAccessKey     = moloch_config_str(NULL, "s3SecretAccessKey", NULL);
     s3Compress            = moloch_config_boolean(NULL, "s3Compress", FALSE);
     s3WriteGzip           = moloch_config_boolean(NULL, "s3WriteGzip", FALSE);
+    s3StorageClass        = moloch_config_str(NULL, "s3StorageClass", "STANDARD");
     s3MaxConns            = moloch_config_int(NULL, "s3MaxConns", 20, 5, 1000);
     s3MaxRequests         = moloch_config_int(NULL, "s3MaxRequests", 500, 10, 5000);
 
