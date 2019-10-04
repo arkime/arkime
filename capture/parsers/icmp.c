@@ -33,6 +33,7 @@ LOCAL int                    icmpCodeField;
 
 
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 int icmp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *UNUSED(data), int UNUSED(len))
 {
     char                 sessionId[MOLOCH_SESSIONID_LEN];
@@ -50,6 +51,7 @@ int icmp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * co
     return MOLOCH_PACKET_DO_PROCESS;
 }
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 int icmpv6_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *UNUSED(data), int UNUSED(len))
 {
     char                 sessionId[MOLOCH_SESSIONID_LEN];
@@ -62,6 +64,7 @@ int icmpv6_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * 
     return MOLOCH_PACKET_DO_PROCESS;
 }
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 void icmp_create_sessionid(char *sessionId, MolochPacket_t *packet)
 {
     struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
@@ -74,6 +77,7 @@ void icmp_create_sessionid(char *sessionId, MolochPacket_t *packet)
     }
 }
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 void icmp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, int isNewSession)
 {
     struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
@@ -106,12 +110,14 @@ int icmp_process(MolochSession_t *session, MolochPacket_t * const packet)
     return 1;
 }
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 void icmpv6_create_sessionid(char *sessionId, MolochPacket_t *packet)
 {
     struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
     moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr, 0);
 }
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 void icmpv6_pre_process(MolochSession_t *session, MolochPacket_t * const packet, int isNewSession)
 {
     struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);

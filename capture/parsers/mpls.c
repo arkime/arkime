@@ -18,6 +18,7 @@
 extern MolochConfig_t        config;
 
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 LOCAL int mpls_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     while (1) {

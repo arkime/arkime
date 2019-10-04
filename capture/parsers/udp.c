@@ -28,6 +28,7 @@ extern MolochConfig_t        config;
 extern int                   udpMProtocol;
 
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 void udp_create_sessionid(char *sessionId, MolochPacket_t *packet)
 {
     struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
@@ -43,6 +44,7 @@ void udp_create_sessionid(char *sessionId, MolochPacket_t *packet)
     }
 }
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 void udp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, int isNewSession)
 {
     struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);

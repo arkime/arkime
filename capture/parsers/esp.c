@@ -28,6 +28,7 @@ extern MolochConfig_t        config;
 LOCAL  int                   espMProtocol;
 
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 int esp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *UNUSED(data), int UNUSED(len))
 {
     char                 sessionId[MOLOCH_SESSIONID_LEN];
@@ -47,6 +48,7 @@ int esp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * con
     return MOLOCH_PACKET_DO_PROCESS;
 }
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 LOCAL void esp_create_sessionid(char *sessionId, MolochPacket_t *packet)
 {
     struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
