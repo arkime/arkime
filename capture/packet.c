@@ -66,10 +66,6 @@ LOCAL MolochPacketEnqueue_cb ipCbs[0x100];
 
 int tcpMProtocol;
 int udpMProtocol;
-int espMProtocol;
-int sctpMProtocol;
-int icmpMProtocol;
-int icmpv6MProtocol;
 
 typedef struct {
     MolochProtocolCreateSessionId_cb  createSessionId;

@@ -25,8 +25,8 @@
 /******************************************************************************/
 extern MolochConfig_t        config;
 
-extern int                   icmpMProtocol;
-extern int                   icmpv6MProtocol;
+LOCAL int                    icmpMProtocol;
+LOCAL int                    icmpv6MProtocol;
 
 LOCAL int                    icmpTypeField;
 LOCAL int                    icmpCodeField;

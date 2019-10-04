@@ -25,8 +25,6 @@
 /******************************************************************************/
 extern MolochConfig_t        config;
 
-extern int                    espMProtocol;
-
 /******************************************************************************/
 int gre_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int UNUSED(len))
 {

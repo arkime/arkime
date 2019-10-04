@@ -25,7 +25,7 @@
 /******************************************************************************/
 extern MolochConfig_t        config;
 
-extern int                   sctpMProtocol;
+LOCAL  int                   sctpMProtocol;
 /******************************************************************************/
 int sctp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *UNUSED(data), int UNUSED(len))
 {
