@@ -67,14 +67,8 @@ LOCAL MolochPacketEnqueue_cb ipCbs[0x100];
 int tcpMProtocol;
 int udpMProtocol;
 
-typedef struct {
-    MolochProtocolCreateSessionId_cb  createSessionId;
-    MolochProtocolPreProcess_cb       preProcess;
-    MolochProtocolProcess_cb          process;
-} MolochProtocolCbs_t;
-
 LOCAL int                    mProtocolCnt;
-LOCAL MolochProtocolCbs_t    mProtocolCbs[0x100];
+LOCAL MolochProtocol_t       mProtocolCbs[0x100];
 
 /******************************************************************************/
 
@@ -114,12 +108,12 @@ typedef struct {
 
 typedef HASH_VAR(h_, MolochFragsHash_t, MolochFragsHead_t, 199337);
 
-MolochFragsHash_t          fragsHash;
-MolochFragsHead_t          fragsList;
+LOCAL MolochFragsHash_t          fragsHash;
+LOCAL MolochFragsHead_t          fragsList;
 
 // These are in network byte order
-MolochDropHashGroup_t      packetDrop4;
-MolochDropHashGroup_t      packetDrop6;
+LOCAL MolochDropHashGroup_t      packetDrop4;
+LOCAL MolochDropHashGroup_t      packetDrop6;
 
 #ifndef IPPROTO_IPV4
 #define IPPROTO_IPV4            4
@@ -490,7 +484,7 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
     mProtocolCbs[packet->mProtocol].createSessionId(sessionId, packet);
 
     int isNew;
-    session = moloch_session_find_or_create(packet->ses, packet->hash, sessionId, &isNew); // Returns locked session
+    session = moloch_session_find_or_create(mProtocolCbs[packet->mProtocol].ses, packet->hash, sessionId, &isNew); // Returns locked session
 
     if (isNew) {
         session->saveTime = packet->ts.tv_sec + config.tcpSaveTimeout;
@@ -1086,7 +1080,6 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
 
         moloch_session_id(sessionId, ip4->ip_src.s_addr, tcphdr->th_sport,
                           ip4->ip_dst.s_addr, tcphdr->th_dport);
-        packet->ses = SESSION_TCP;
         packet->mProtocol = tcpMProtocol;
 
         break;
@@ -1120,7 +1113,6 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
 
         moloch_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
                           ip4->ip_dst.s_addr, udphdr->uh_dport);
-        packet->ses = SESSION_UDP;
         packet->mProtocol = udpMProtocol;
         break;
     case IPPROTO_IPV6:
@@ -1249,7 +1241,6 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
 
             moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, tcphdr->th_sport,
                                ip6->ip6_dst.s6_addr, tcphdr->th_dport);
-            packet->ses = SESSION_TCP;
             packet->mProtocol = tcpMProtocol;
             done = 1;
             break;
@@ -1272,7 +1263,6 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
                 }
             }
 
-            packet->ses = SESSION_UDP;
             packet->mProtocol = udpMProtocol;
             done = 1;
             break;
@@ -1308,9 +1298,21 @@ LOCAL int moloch_packet_frame_relay(MolochPacketBatch_t *batch, MolochPacket_t *
     return moloch_packet_run_ethernet_cb(batch, packet, data+4, len-4, type, "FrameRelay");
 }
 /******************************************************************************/
-LOCAL int moloch_packet_ieee802(MolochPacketBatch_t *UNUSED(batch), MolochPacket_t * const UNUSED(packet), const uint8_t *UNUSED(data), int UNUSED(len))
+LOCAL int moloch_packet_ieee802(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
-    return MOLOCH_PACKET_UNKNOWN;
+    BSB bsb;
+    BSB_INIT(bsb, data, len);
+
+    if (len < 6 || memcmp(data+2, "\xfe\xfe\x03", 3) != 0)
+        return MOLOCH_PACKET_CORRUPT;
+
+    int etherlen = data[0] << 8 | data[+1];
+    int ethertype = data[5];
+
+    if (etherlen > len - 2)
+        return MOLOCH_PACKET_CORRUPT;
+
+    return moloch_packet_run_ethernet_cb(batch, packet, data+6, len-6, ethertype, "ieee802");
 }
 /******************************************************************************/
 LOCAL int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
@@ -1531,7 +1533,7 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
 
     MOLOCH_THREAD_INCR(totalPackets);
     if (totalPackets % config.logEveryXPackets == 0) {
-        moloch_packet_log(packet->ses);
+        moloch_packet_log(mProtocolCbs[packet->mProtocol].ses);
     }
 
     uint32_t thread = packet->hash % config.packetThreads;
@@ -1907,11 +1909,25 @@ void moloch_packet_exit()
         fclose(unknownPacketFile[2]);
 }
 /******************************************************************************/
-int moloch_mprotocol_register(MolochProtocolCreateSessionId_cb createSessionId,
-                              MolochProtocolPreProcess_cb      preProcess,
-                              MolochProtocolProcess_cb         process)
+int moloch_mprotocol_register_internal(char                            *name,
+                                       int                              ses,
+                                       MolochProtocolCreateSessionId_cb createSessionId,
+                                       MolochProtocolPreProcess_cb      preProcess,
+                                       MolochProtocolProcess_cb         process,
+                                       size_t                           sessionsize,
+                                       int                              apiversion)
 {
+    if (sizeof(MolochSession_t) != sessionsize) {
+        LOGEXIT("Parser '%s' built with different version of moloch.h\n %u != %u", name, (unsigned int)sizeof(MolochSession_t),  (unsigned int)sessionsize);
+    }
+
+    if (MOLOCH_API_VERSION != apiversion) {
+        LOGEXIT("Parser '%s' built with different version of moloch.h\n %d %d", name, MOLOCH_API_VERSION, apiversion);
+    }
+
     int num = ++mProtocolCnt; // Leave 0 empty so we know if not set in code
+    mProtocolCbs[num].name = name;
+    mProtocolCbs[num].ses = ses;
     mProtocolCbs[num].createSessionId = createSessionId;
     mProtocolCbs[num].preProcess = preProcess;
     mProtocolCbs[num].process = process;

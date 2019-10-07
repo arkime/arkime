@@ -45,7 +45,6 @@ int sctp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * co
         moloch_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
                           ip4->ip_dst.s_addr, udphdr->uh_dport);
     }
-    packet->ses = SESSION_SCTP;
     packet->mProtocol = sctpMProtocol;
     packet->hash = moloch_session_hash(sessionId);
     return MOLOCH_PACKET_DO_PROCESS;
@@ -97,7 +96,9 @@ void sctp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, i
 void moloch_parser_init()
 {
     moloch_packet_set_ip_cb(IPPROTO_SCTP, sctp_packet_enqueue);
-    sctpMProtocol = moloch_mprotocol_register(sctp_create_sessionid,
+    sctpMProtocol = moloch_mprotocol_register("sctp",
+                                              SESSION_SCTP,
+                                              sctp_create_sessionid,
                                               sctp_pre_process,
                                               NULL);
 }

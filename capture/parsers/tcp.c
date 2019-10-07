@@ -102,7 +102,9 @@ int tcp_process(MolochSession_t *session, MolochPacket_t * const packet)
 /******************************************************************************/
 void moloch_parser_init()
 {
-    tcpMProtocol = moloch_mprotocol_register(tcp_create_sessionid,
+    tcpMProtocol = moloch_mprotocol_register("tcp",
+                                             SESSION_TCP,
+                                             tcp_create_sessionid,
                                              tcp_pre_process,
                                              tcp_process);
 }

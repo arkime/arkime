@@ -102,7 +102,9 @@ int udp_process(MolochSession_t *session, MolochPacket_t * const packet)
 /******************************************************************************/
 void moloch_parser_init()
 {
-    udpMProtocol = moloch_mprotocol_register(udp_create_sessionid,
+    udpMProtocol = moloch_mprotocol_register("udp",
+                                             SESSION_UDP,
+                                             udp_create_sessionid,
                                              udp_pre_process,
                                              udp_process);
 }

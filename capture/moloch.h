@@ -520,7 +520,6 @@ typedef struct molochpacket_t
     uint8_t        mProtocol;      // moloch protocol
     uint8_t        readerPos;      // position for filename/ops
     uint8_t        direction:1;    // direction of packet
-    uint8_t        ses:3;          // type of session
     uint8_t        v6:1;           // v6 or not
     uint8_t        copied:1;       // don't need to copy
     uint8_t        wasfrag:1;      // was a fragment
@@ -1034,9 +1033,23 @@ typedef void (*MolochProtocolCreateSessionId_cb)(char *sessionId, MolochPacket_t
 typedef void (*MolochProtocolPreProcess_cb)(MolochSession_t *session, MolochPacket_t * const packet, int isNewSession);
 typedef int  (*MolochProtocolProcess_cb)(MolochSession_t *session, MolochPacket_t * const packet);
 
-int moloch_mprotocol_register(MolochProtocolCreateSessionId_cb createSessionId,
-                              MolochProtocolPreProcess_cb      preProcess,
-                              MolochProtocolProcess_cb         process);
+typedef struct {
+    char                             *name;
+    int                               ses;
+    MolochProtocolCreateSessionId_cb  createSessionId;
+    MolochProtocolPreProcess_cb       preProcess;
+    MolochProtocolProcess_cb          process;
+} MolochProtocol_t;
+
+int moloch_mprotocol_register_internal(char                            *name,
+                                       int                              ses,
+                                       MolochProtocolCreateSessionId_cb createSessionId,
+                                       MolochProtocolPreProcess_cb      preProcess,
+                                       MolochProtocolProcess_cb         process,
+                                       size_t                           sessionsize,
+                                       int                              apiversion);
+#define moloch_mprotocol_register(name, ses, createSessionId, preProcess, process) moloch_mprotocol_register_internal(name, ses, createSessionId, preProcess, process, sizeof(MolochSession_t), MOLOCH_API_VERSION)
+
 void moloch_mprotocol_init();
 
 

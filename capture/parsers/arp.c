@@ -64,7 +64,6 @@ int arp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * con
 
     arp_create_sessionid(sessionId, packet);
 
-    packet->ses  = SESSION_OTHER;
     packet->hash = moloch_session_hash(sessionId);
     packet->mProtocol = arpMProtocol;
 
@@ -80,7 +79,9 @@ void moloch_parser_init()
 {
     moloch_packet_set_ethernet_cb(0x0806, arp_packet_enqueue);
     arpPq = moloch_pq_alloc(10, arp_pq_cb);
-    arpMProtocol = moloch_mprotocol_register(arp_create_sessionid,
+    arpMProtocol = moloch_mprotocol_register("arp",
+                                             SESSION_OTHER,
+                                             arp_create_sessionid,
                                              arp_pre_process,
                                              arp_process);
 }

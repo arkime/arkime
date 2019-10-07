@@ -45,7 +45,6 @@ int icmp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * co
         struct ip *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
         moloch_session_id(sessionId, ip4->ip_src.s_addr, 0, ip4->ip_dst.s_addr, 0);
     }
-    packet->ses = SESSION_ICMP;
     packet->mProtocol = icmpMProtocol;
     packet->hash = moloch_session_hash(sessionId);
     return MOLOCH_PACKET_DO_PROCESS;
@@ -58,7 +57,6 @@ int icmpv6_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * 
 
     struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
     moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr, 0);
-    packet->ses = SESSION_ICMP;
     packet->mProtocol = icmpv6MProtocol;
     packet->hash = moloch_session_hash(sessionId);
     return MOLOCH_PACKET_DO_PROCESS;
@@ -137,10 +135,14 @@ void moloch_parser_init()
     moloch_packet_set_ip_cb(IPPROTO_ICMP, icmp_packet_enqueue);
     moloch_packet_set_ip_cb(IPPROTO_ICMPV6, icmpv6_packet_enqueue);
 
-    icmpMProtocol = moloch_mprotocol_register(icmp_create_sessionid,
+    icmpMProtocol = moloch_mprotocol_register("icmp",
+                                              SESSION_ICMP,
+                                              icmp_create_sessionid,
                                               icmp_pre_process,
                                               icmp_process);
-    icmpv6MProtocol = moloch_mprotocol_register(icmpv6_create_sessionid,
+    icmpv6MProtocol = moloch_mprotocol_register("icmpv6",
+                                                SESSION_ICMP,
+                                                icmpv6_create_sessionid,
                                                 icmpv6_pre_process,
                                                 icmp_process);
     icmpTypeField = moloch_field_define("general", "integer",

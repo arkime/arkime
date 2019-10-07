@@ -41,7 +41,6 @@ int esp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * con
         moloch_session_id(sessionId, ip4->ip_src.s_addr, 0, ip4->ip_dst.s_addr, 0);
     }
 
-    packet->ses = SESSION_ESP;
     packet->mProtocol = espMProtocol;
     packet->hash = moloch_session_hash(sessionId);
 
@@ -76,7 +75,9 @@ void moloch_parser_init()
         return;
 
     moloch_packet_set_ip_cb(IPPROTO_ESP, esp_packet_enqueue);
-    espMProtocol = moloch_mprotocol_register(esp_create_sessionid,
+    espMProtocol = moloch_mprotocol_register("esp",
+                                             SESSION_ESP,
+                                             esp_create_sessionid,
                                              esp_pre_process,
                                              NULL);
 }

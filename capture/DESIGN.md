@@ -36,28 +36,30 @@ A single thread that is responsible for writing out to disk the completed pcap b
 
 # Creating new parsers
 
-Packets have two phases of life and most parsers will need to deal with both phases.
+Packets have two phases of life and many parsers will need to deal with both phases.
 The first phase runs on the reader thread and should do very basic parsing and validation of the packet.
-The second phase runs on the packet thread and does whatever decoding and SPI data generation need to be done.
+The second phase runs on the packet thread and does whatever decoding and SPI data generation needs to be done.
 
 ## Ethernet/IP Enqueue phase
 
 This phase is responsible for 
 * basic decoding and verification of the packet
-* setting the `ses` field with the packet session type
+* setting the `mProtocol` field with the moloch protocol
 * setting the `hash` field with the hash of the session id
-* setting the `mProtocol` field with which the moloch protocol information
 
-You only need to create a new enqueue callback for special ethernet and ip protocols, which can be set with the moloch_packet_set_ethernet_cb and moloch_packet_set_ip_cb.
+You only need to create a new enqueue callback for special ethernet and ip protocols, which can be set with the moloch_packet_set_ethernet_cb and moloch_packet_set_ip_cb..
+Normal TCP/UDP traffic should not set a enqueue callback.
 
 ## Ethernet/IP Process phase
 
 This phase is responsible for actually processing the packets and generating the SPI data.
-You only need to create new process callbacks for special ethernet adn ip protocols.
+You only need to create new process callbacks for special ethernet and ip protocols.
 The callbacks are set with the moloch_mprotocol_register
 
-moloch_mprotocol_register (create_session_id, pre_process, process)
+moloch_mprotocol_register (char *name, int ses, create_session_id, pre_process, process)
 
+* name - the name of this protocol
+* ses - the SESSION_* type, usually SESSION_OTHER
 * create_session_id - required - Given a packet, fill in the session id
 * pre_process - required - called before saving/rules. Given the session, packet, isNewSession - can be used to set any initial SPI data fields or packet direction
 * process - optional - called after saving to disk and rules.  Should generate most of the SPI data or enqueue for higher level protocol decoding.  Returns if the packet should be freed or not yet.
