@@ -100,5 +100,6 @@ void moloch_parser_init()
                                               SESSION_SCTP,
                                               sctp_create_sessionid,
                                               sctp_pre_process,
+                                              NULL,
                                               NULL);
 }

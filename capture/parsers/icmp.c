@@ -139,12 +139,16 @@ void moloch_parser_init()
                                               SESSION_ICMP,
                                               icmp_create_sessionid,
                                               icmp_pre_process,
-                                              icmp_process);
+                                              icmp_process,
+                                              NULL);
+
     icmpv6MProtocol = moloch_mprotocol_register("icmpv6",
                                                 SESSION_ICMP,
                                                 icmpv6_create_sessionid,
                                                 icmpv6_pre_process,
-                                                icmp_process);
+                                                icmp_process,
+                                                NULL);
+
     icmpTypeField = moloch_field_define("general", "integer",
         "icmp.type", "ICMP Type", "icmp.type",
         "ICMP type field values",

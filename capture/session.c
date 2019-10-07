@@ -22,6 +22,7 @@
 extern MolochConfig_t        config;
 extern uint32_t              pluginsCbs;
 extern time_t                lastPacketSecs[MOLOCH_MAX_PACKET_THREADS];
+extern MolochProtocol_t      mProtocols[0x100];
 
 /******************************************************************************/
 
@@ -251,7 +252,8 @@ LOCAL void moloch_session_free (MolochSession_t *session)
         MOLOCH_SIZE_FREE(pluginData, session->pluginData);
     moloch_field_free(session);
 
-    moloch_packet_tcp_free(session);
+    if (mProtocols[session->mProtocol].sFree)
+        mProtocols[session->mProtocol].sFree(session);
 
     if (session->pq)
         moloch_pq_free(session);
@@ -270,7 +272,8 @@ LOCAL void moloch_session_save(MolochSession_t *session)
     } else
         DLL_REMOVE(q_, &sessionsQ[session->thread][session->ses], session);
 
-    moloch_packet_tcp_free(session);
+    if (mProtocols[session->mProtocol].sFree)
+        mProtocols[session->mProtocol].sFree(session);
 
     if (session->parserInfo) {
         int i;
@@ -405,7 +408,7 @@ MolochSession_t *moloch_session_find(int ses, char *sessionId)
 }
 /******************************************************************************/
 // Should only be used by packet, lots of side effects
-MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *sessionId, int *isNew)
+MolochSession_t *moloch_session_find_or_create(int mProtocol, uint32_t hash, char *sessionId, int *isNew)
 {
     MolochSession_t *session;
 
@@ -414,6 +417,7 @@ MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *ses
     }
 
     int      thread = hash % config.packetThreads;
+    int      ses = mProtocols[mProtocol].ses;
 
     HASH_FIND_HASH(h_, sessions[thread][ses], hash, sessionId, session);
 
@@ -428,6 +432,7 @@ MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *ses
 
     session = MOLOCH_TYPE_ALLOC0(MolochSession_t);
     session->ses = ses;
+    session->mProtocol = mProtocol;
     session->stopSaving = 0xffff;
 
     memcpy(session->sessionId, sessionId, sessionId[0]);

@@ -79,5 +79,6 @@ void moloch_parser_init()
                                              SESSION_ESP,
                                              esp_create_sessionid,
                                              esp_pre_process,
+                                             NULL,
                                              NULL);
 }

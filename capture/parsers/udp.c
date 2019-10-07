@@ -106,5 +106,6 @@ void moloch_parser_init()
                                              SESSION_UDP,
                                              udp_create_sessionid,
                                              udp_pre_process,
-                                             udp_process);
+                                             udp_process,
+                                             NULL);
 }

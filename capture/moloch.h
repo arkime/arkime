@@ -944,7 +944,7 @@ char    *moloch_session_id_string (char *sessionId, char *buf);
 uint32_t moloch_session_hash(const void *key);
 
 MolochSession_t *moloch_session_find(int ses, char *sessionId);
-MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *sessionId, int *isNew);
+MolochSession_t *moloch_session_find_or_create(int mProtocol, uint32_t hash, char *sessionId, int *isNew);
 
 void     moloch_session_init();
 void     moloch_session_exit();
@@ -1032,6 +1032,7 @@ void     moloch_packet_set_ip_cb(uint8_t type, MolochPacketEnqueue_cb enqueueCb)
 typedef void (*MolochProtocolCreateSessionId_cb)(char *sessionId, MolochPacket_t * const packet);
 typedef void (*MolochProtocolPreProcess_cb)(MolochSession_t *session, MolochPacket_t * const packet, int isNewSession);
 typedef int  (*MolochProtocolProcess_cb)(MolochSession_t *session, MolochPacket_t * const packet);
+typedef void (*MolochProtocolSessionFree_cb)(MolochSession_t *session);
 
 typedef struct {
     char                             *name;
@@ -1039,6 +1040,7 @@ typedef struct {
     MolochProtocolCreateSessionId_cb  createSessionId;
     MolochProtocolPreProcess_cb       preProcess;
     MolochProtocolProcess_cb          process;
+    MolochProtocolSessionFree_cb      sFree;
 } MolochProtocol_t;
 
 int moloch_mprotocol_register_internal(char                            *name,
@@ -1046,9 +1048,10 @@ int moloch_mprotocol_register_internal(char                            *name,
                                        MolochProtocolCreateSessionId_cb createSessionId,
                                        MolochProtocolPreProcess_cb      preProcess,
                                        MolochProtocolProcess_cb         process,
+                                       MolochProtocolSessionFree_cb     sFree,
                                        size_t                           sessionsize,
                                        int                              apiversion);
-#define moloch_mprotocol_register(name, ses, createSessionId, preProcess, process) moloch_mprotocol_register_internal(name, ses, createSessionId, preProcess, process, sizeof(MolochSession_t), MOLOCH_API_VERSION)
+#define moloch_mprotocol_register(name, ses, createSessionId, preProcess, process, sFree) moloch_mprotocol_register_internal(name, ses, createSessionId, preProcess, process, sFree, sizeof(MolochSession_t), MOLOCH_API_VERSION)
 
 void moloch_mprotocol_init();
 

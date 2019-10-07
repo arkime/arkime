@@ -83,5 +83,6 @@ void moloch_parser_init()
                                              SESSION_OTHER,
                                              arp_create_sessionid,
                                              arp_pre_process,
-                                             arp_process);
+                                             arp_process,
+                                             NULL);
 }
