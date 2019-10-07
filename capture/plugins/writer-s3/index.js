@@ -19,10 +19,14 @@
 
 var AWS = require('aws-sdk');
 var async = require('async');
+var zlib = require('zlib');
 var S3s = {};
 var Config;
 var Db;
 var Pcap;
+
+var COMPRESSED_BLOCK_SIZE = 100000;
+var COMPRESSED_WITHIN_BLOCK_BITS = 20;
 
 /// ///////////////////////////////////////////////////////////////////////////////
 // https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
@@ -73,7 +77,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
     var params = {
       Bucket: parts[3],
       Key: parts[4],
-      Range: 'bytes=0-23'
+      Range: 'bytes=0-128'
     };
     // console.log("HEADER", params);
     s3.getObject(params, function (err, data) {
@@ -81,7 +85,12 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         console.log(err, info);
         return endCb("Couldn't open s3 file, save might not be complete yet - " + info.name, fields);
       }
-      header = data.Body;
+      if (params.Key.endsWith('.gz')) {
+        header = zlib.gunzipSync(data.Body, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+      } else {
+        header = data.Body;
+      }
+      header = header.subarray(0, 24);
       pcap = Pcap.make(info.name, header);
       if (headerCb) {
         headerCb(pcap, header);
@@ -95,20 +104,39 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
 
     function process (data, nextCb) {
       // console.log("NEXT", data);
-      data.params.Range = 'bytes=' + data.packetStart + '-' + (data.rangeEnd - 1);
+      data.params.Range = 'bytes=' + data.rangeStart + '-' + (data.rangeEnd - 1);
       s3.getObject(data.params, function (err, s3data) {
         if (err) {
           console.log('WARNING - Only have SPI data, PCAP file no longer available', data.info.name, err);
           return nextCb('Only have SPI data, PCAP file no longer available for ' + data.info.name);
         }
-        async.each(data.subPackets, function (sp, nextCb) {
-          packetCb(pcap, s3data.Body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart), nextCb, sp.itemPos);
-        },
-        nextCb);
+        if (data.compressed) {
+          // Need to decompress the block(s)
+          var decompressed = {};
+          // First build a map from rangeStart to the decompressed block
+          for (var i = 0; i < data.subPackets.length; i++) {
+            var sp = data.subPackets[i];
+            if (!decompressed[sp.rangeStart]) {
+              var offset = sp.rangeStart - data.rangeStart;
+              decompressed[sp.rangeStart] = zlib.inflateRawSync(s3data.Body.subarray(offset, offset + COMPRESSED_BLOCK_SIZE),
+                  { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+            }
+          }
+          async.each(data.subPackets, function (sp, nextCb) {
+            var block = decompressed[sp.rangeStart];
+            packetCb(pcap, block.subarray(sp.packetStart, sp.packetEnd), nextCb, sp.itemPos);
+          },
+          nextCb);
+        } else {
+          async.each(data.subPackets, function (sp, nextCb) {
+            packetCb(pcap, s3data.Body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart), nextCb, sp.itemPos);
+          },
+          nextCb);
+        }
       });
     }
 
-    // FIrst pass, convert packetPos and packetLen into packetData
+    // FIrst pass, convert packetPos and packetLen (if we have it) into packetData
     var packetData = [];
 
     async.eachLimit(Object.keys(fields.packetPos), limit || 1, function (p, nextCb) {
@@ -118,20 +146,33 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         Db.fileIdToFile(fields.node, pos * -1, function (info) {
           var parts = splitRemain(info.name, '/', 4);
           p = parseInt(p);
+          var compressed = info.name.endsWith('.gz');
           for (var pp = p + 1; pp < fields.packetPos.length && fields.packetPos[pp] >= 0; pp++) {
             var pos = fields.packetPos[pp];
-            var len = fields.packetLen[pp];
+            var len = 65536;
+            if (fields.packetLen) {
+              len = fields.packetLen[pp];
+            }
             var params = {
               Bucket: parts[3],
               Key: parts[4]
             };
-            packetData[pp] = {
+            var pd = packetData[pp] = {
               params: params,
               info: info,
-              packetStart: pos,
-              packetEnd: pos + len,
-              rangeEnd: pos + len
+              compressed: compressed
             };
+            if (compressed) {
+              pd.rangeStart = Math.floor(pos / (1 << COMPRESSED_WITHIN_BLOCK_BITS));
+              pd.rangeEnd = pd.rangeStart + COMPRESSED_BLOCK_SIZE;
+              pd.packetStart = pos & ((1 << COMPRESSED_WITHIN_BLOCK_BITS) - 1);
+              pd.packetEnd = pd.packetStart + len;
+            } else {
+              pd.rangeStart = pos;
+              pd.rangeEnd = pos + len;
+              pd.packetStart = pos;
+              pd.packetEnd = pos + len;
+            }
             packetData[pp].subPackets = [packetData[pp]];
           }
           return nextCb(null);
@@ -152,10 +193,11 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
           if (previousData) {
             if (previousData.info.name === data.info.name) {
               // Referencing the same file
-              if (data.packetStart > previousData.packetStart &&
-                  data.packetStart < previousData.rangeEnd + 32768) {
+              if (data.rangeStart >= previousData.rangeStart &&
+                  data.rangeStart < previousData.rangeEnd + 32768 &&
+                  data.rangeEnd > previousData.rangeEnd) {
                 // This is within 32k bytes -- just extend the fetch
-                previousData.rangeEnd = data.packetEnd;
+                previousData.rangeEnd = data.rangeEnd;
 
                 previousData.subPackets.push(data);
                 continue;
