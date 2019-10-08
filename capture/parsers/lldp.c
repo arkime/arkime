@@ -23,9 +23,10 @@ LOCAL MolochPQ_t *lldpPq;
 LOCAL int lldpMProtocol;
 
 /******************************************************************************/
-void lldp_create_sessionid(char *sessionId, MolochPacket_t *packet)
+void lldp_create_sessionid(char *sessionId, MolochPacket_t * const UNUSED (packet))
 {
-    uint8_t *data = packet->pkt + packet->payloadOffset;
+		// not used, but leaving for now 
+    // uint8_t *data = packet->pkt + packet->payloadOffset;
 
     sessionId[0] = 4;
     sessionId[1] = 0x00;
