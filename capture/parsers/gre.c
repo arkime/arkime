@@ -31,7 +31,7 @@ int gre_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * con
     packet->tunnel |= MOLOCH_PACKET_TUNNEL_GRE;
     packet->vpnIpOffset = packet->ipOffset; // ipOffset will get reset
 
-    LOG("ALW ipOffset %d payloadOffset %d diff %d", packet->ipOffset, packet->payloadOffset, (int)(data - packet->pkt));
+    //LOG("ALW ipOffset %d payloadOffset %d diff %d", packet->ipOffset, packet->payloadOffset, (int)(data - packet->pkt));
 
     BSB bsb;
     if (unlikely(len) < 4 || unlikely(!data))

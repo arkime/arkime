@@ -729,14 +729,17 @@ void moloch_parsers_init()
                 LOG("Loaded %s", path);
             }
 
-            g_free (path);
-
             parser_init();
 
             hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
             hstring->str = filenames[i];
             hstring->len = strlen(filenames[i]);
             HASH_ADD(s_, loaded, hstring->str, hstring);
+
+            if (config.debug)
+                LOG("Loaded %s", path);
+
+            g_free (path);
         }
         g_dir_close(dir);
     }

@@ -779,6 +779,7 @@ gboolean moloch_field_ip_equal (gconstpointer v1, gconstpointer v2)
 }
 /******************************************************************************/
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
+SUPPRESS_SIGNED_INTEGER_OVERFLOW
 guint moloch_field_ip_hash (gconstpointer v)
 {
   const signed char *p;
@@ -873,7 +874,7 @@ added:
     return TRUE;
 }
 /******************************************************************************/
-gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, int i)
+gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, uint32_t i)
 {
     MolochField_t        *field;
 
@@ -979,6 +980,7 @@ added:
     return TRUE;
 }
 /******************************************************************************/
+SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 SUPPRESS_SHIFT
 uint32_t moloch_field_certsinfo_hash(const void *key)
 {

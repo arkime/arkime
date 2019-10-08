@@ -34,6 +34,19 @@ A single thread that is responsible for writing out to disk the completed pcap b
 
 # Files
 
+# Parsers vs Plugins
+
+In reality there isn't much difference between parsers other then when they are loaded and when they are initialized.
+
+## Parsers
+Anything in the parsers directories (parsersDir) are auto loaded and the moloch_parser_init function is called.
+
+## Plugins
+Which plugins to use have to be explicitly listed in rootPlugins and plugins variables.
+The rootPlugins are loaded first, before capture has dropped privileges.
+The normal plugins are loaded after the parsres.
+The function moloch_plugin_init is called on loading.
+
 # Creating new parsers
 
 Packets have two phases of life and many parsers will need to deal with both phases.

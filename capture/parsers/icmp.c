@@ -55,6 +55,9 @@ int icmpv6_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * 
 {
     char                 sessionId[MOLOCH_SESSIONID_LEN];
 
+    if (!packet->v6)
+        return MOLOCH_PACKET_CORRUPT;
+
     struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
     moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr, 0);
     packet->mProtocol = icmpv6MProtocol;

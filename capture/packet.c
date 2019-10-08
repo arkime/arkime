@@ -195,20 +195,22 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
     if (isNew) {
         session->saveTime = packet->ts.tv_sec + config.tcpSaveTimeout;
         session->firstPacket = packet->ts;
-
-        session->ipProtocol = packet->ipProtocol;
-        if (ip4->ip_v == 4) {
-            ((uint32_t *)session->addr1.s6_addr)[2] = htonl(0xffff);
-            ((uint32_t *)session->addr1.s6_addr)[3] = ip4->ip_src.s_addr;
-            ((uint32_t *)session->addr2.s6_addr)[2] = htonl(0xffff);
-            ((uint32_t *)session->addr2.s6_addr)[3] = ip4->ip_dst.s_addr;
-            session->ip_tos = ip4->ip_tos;
-        } else {
-            session->addr1 = ip6->ip6_src;
-            session->addr2 = ip6->ip6_dst;
-            session->ip_tos = 0;
-        }
         session->thread = thread;
+
+        if (packet->ipProtocol) {
+            session->ipProtocol = packet->ipProtocol;
+            if (ip4->ip_v == 4) {
+                ((uint32_t *)session->addr1.s6_addr)[2] = htonl(0xffff);
+                ((uint32_t *)session->addr1.s6_addr)[3] = ip4->ip_src.s_addr;
+                ((uint32_t *)session->addr2.s6_addr)[2] = htonl(0xffff);
+                ((uint32_t *)session->addr2.s6_addr)[3] = ip4->ip_dst.s_addr;
+                session->ip_tos = ip4->ip_tos;
+            } else {
+                session->addr1 = ip6->ip6_src;
+                session->addr2 = ip6->ip6_dst;
+                session->ip_tos = 0;
+            }
+        }
     }
 
     mProtocols[packet->mProtocol].preProcess(session, packet, isNew);
@@ -1289,6 +1291,7 @@ int moloch_packet_outstanding()
 }
 /******************************************************************************/
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
+SUPPRESS_SIGNED_INTEGER_OVERFLOW
 LOCAL uint32_t moloch_packet_frag_hash(const void *key)
 {
     int i;

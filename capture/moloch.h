@@ -1178,7 +1178,7 @@ gboolean moloch_field_string_add_lower(int pos, MolochSession_t *session, const 
 gboolean moloch_field_string_add_host(int pos, MolochSession_t *session, char *string, int len);
 const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const char *string, int len, gpointer uw, gboolean copy);
 gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i);
-gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, int i);
+gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, uint32_t i);
 gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *val);
 gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str);
 gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCertsInfo_t *certs, int len);
