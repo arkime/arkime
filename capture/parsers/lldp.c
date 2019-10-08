@@ -33,8 +33,8 @@ void lldp_create_sessionid(char *sessionId, MolochPacket_t *packet)
     sessionId[3] = 0x88;
     sessionId[4] = 0xcc;
 
-		// I'm not sure what fields are required and if one can expect a specific ordering.  
-	  // so not sure it makes sense to try and further tease out sessions from the lldp traffic here.
+    // I'm not sure what fields are required and if one can expect a specific ordering.  
+    // so not sure it makes sense to try and further tease out sessions from the lldp traffic here.
 }
 /******************************************************************************/
 void lldp_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
@@ -52,7 +52,7 @@ int lldp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * co
 {
     char sessionId[MOLOCH_SESSIONID_LEN];
 
-		// no sanity checks as we don't parse
+    // no sanity checks as we don't parse
 
     packet->payloadOffset = data - packet->pkt;
     packet->payloadLen = len;
