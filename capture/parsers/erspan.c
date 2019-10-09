@@ -23,8 +23,7 @@ int erspan_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * 
         return MOLOCH_PACKET_CORRUPT;
 
     if ((*data >> 4) == 1)
-        return moloch_packet_run_ethernet_cb(batch, packet, data+8,len-8, 0, "ERSpan");
-
+        return moloch_packet_run_ethernet_cb(batch, packet, data+8,len-8, MOLOCH_ETHERTYPE_ETHER, "ERSpan");
 
     if (config.logUnknownProtocols)
         LOG("Unknown ERSPAN protocol %d", *data >> 4);

@@ -1512,7 +1512,7 @@ void moloch_packet_init()
     moloch_add_can_quit(moloch_packet_frags_outstanding, "packet frags outstanding");
 
 
-    moloch_packet_set_ethernet_cb(0, moloch_packet_ether);
+    moloch_packet_set_ethernet_cb(MOLOCH_ETHERTYPE_ETHER, moloch_packet_ether);
     moloch_packet_set_ethernet_cb(0x6559, moloch_packet_frame_relay);
     moloch_packet_set_ethernet_cb(ETHERTYPE_IP, moloch_packet_ip4);
     moloch_packet_set_ethernet_cb(ETHERTYPE_IPV6, moloch_packet_ip6);

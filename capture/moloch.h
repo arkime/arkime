@@ -53,7 +53,7 @@
 #define SUPPRESS_ALIGNMENT
 #endif
 
-#define MOLOCH_API_VERSION 200
+#define MOLOCH_API_VERSION 210
 
 #define MOLOCH_SESSIONID_LEN 37
 
@@ -61,6 +61,7 @@
 
 #define MOLOCH_PACKET_MAX_LEN 0x10000
 
+#define MOLOCH_ETHERTYPE_ETHER   0
 #define MOLOCH_ETHERTYPE_UNKNOWN 1
 
 #define MOLOCH_SESSION_v6(s) ((s)->sessionId[0] == 37)
