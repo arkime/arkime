@@ -283,12 +283,10 @@ LOCAL int dtls_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
             BSB_IMPORT_u08(msgBuf, handshakeType);
             uint32_t handshakeLen = 0;
             BSB_IMPORT_u24(msgBuf, handshakeLen);
-            uint16_t msgSeq = 0;
-            BSB_IMPORT_u16(msgBuf, msgSeq);
+            BSB_IMPORT_skip(msgBuf, 2); // msgSeq
             uint32_t frameOffset = 0;
             BSB_IMPORT_u24(msgBuf, frameOffset);
-            uint32_t frameLength = 0;
-            BSB_IMPORT_u24(msgBuf, frameLength);
+            BSB_IMPORT_skip(msgBuf, 3); // frameLength
             // ALW fix - don't handle fragmented packets yet
             if (frameOffset != 0) {
                 BSB_IMPORT_skip(msgBuf, handshakeLen);
@@ -296,7 +294,7 @@ LOCAL int dtls_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
             }
 
             // Not enough data left
-            if (handshakeLen > BSB_REMAINING(msgBuf))
+            if (BSB_IS_ERROR(msgBuf) || handshakeLen > BSB_REMAINING(msgBuf))
                 break;
 
             switch (handshakeType) {

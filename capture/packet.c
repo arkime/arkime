@@ -1008,9 +1008,6 @@ LOCAL int moloch_packet_frame_relay(MolochPacketBatch_t *batch, MolochPacket_t *
 /******************************************************************************/
 LOCAL int moloch_packet_ieee802(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
-    BSB bsb;
-    BSB_INIT(bsb, data, len);
-
     if (len < 6 || memcmp(data+2, "\xfe\xfe\x03", 3) != 0)
         return MOLOCH_PACKET_CORRUPT;
 
