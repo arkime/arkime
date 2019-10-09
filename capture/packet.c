@@ -1327,6 +1327,10 @@ int moloch_packet_run_ethernet_cb(MolochPacketBatch_t * batch, MolochPacket_t * 
         return ethernetCbs[type](batch, packet, data, len);
     }
 
+    if (ethernetCbs[MOLOCH_ETHERTYPE_UNKNOWN]) {
+      return ethernetCbs[MOLOCH_ETHERTYPE_UNKNOWN](batch, packet, data, len);
+    }
+
     if (config.logUnknownProtocols)
         LOG("Unknown %s ethernet protocol 0x%04x(%d)", str, type, type);
     moloch_packet_save_ethernet(packet, type);
@@ -1335,6 +1339,9 @@ int moloch_packet_run_ethernet_cb(MolochPacketBatch_t * batch, MolochPacket_t * 
 /******************************************************************************/
 void moloch_packet_set_ethernet_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb)
 {
+    if (ethernetCbs[type]) 
+      LOG ("redining existing callback type %d", type);
+
     ethernetCbs[type] = enqueueCb;
 }
 /******************************************************************************/

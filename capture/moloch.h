@@ -61,6 +61,8 @@
 
 #define MOLOCH_PACKET_MAX_LEN 0x10000
 
+#define MOLOCH_ETHERTYPE_UNKNOWN 1
+
 #define MOLOCH_SESSION_v6(s) ((s)->sessionId[0] == 37)
 
 /******************************************************************************/
