@@ -241,7 +241,7 @@
                   <b-dropdown-divider>
                   </b-dropdown-divider>
                   <template v-if="infoFieldVisMenuOpen">
-                    <template v-for="(group, key) in filteredFields">
+                    <template v-for="(group, key) in filteredInfoFields">
                       <b-dropdown-header
                         :key="key"
                         v-if="group.length"
@@ -608,18 +608,10 @@ export default {
       return this.$store.state.user;
     },
     filteredFields: function () {
-      let filteredGroupedFields = {};
-
-      for (let group in this.groupedFields) {
-        filteredGroupedFields[group] = this.$options.filters.searchFields(
-          this.colQuery,
-          this.groupedFields[group],
-          false,
-          true
-        );
-      }
-
-      return filteredGroupedFields;
+      return this.filterFields(false, true, false);
+    },
+    filteredInfoFields: function () {
+      return this.filterFields(false, true, true);
     },
     views: function () {
       return this.$store.state.views;
@@ -1139,6 +1131,27 @@ export default {
     fieldExists: function (field, op) {
       const fullExpression = this.$options.filters.buildExpression(field, 'EXISTS!', op);
       this.$store.commit('addToExpression', { expression: fullExpression });
+    },
+    /**
+     * Filters grouped fields based on a query string
+     * @param {boolean} excludeTokens   Whether to exclude token fields
+     * @param {boolean} excludeFilename Whether to exclude the filename field
+     * @param {boolean} excludeInfo     Whether to exclude the special info "field"
+     */
+    filterFields: function (excludeTokens, excludeFilename, excludeInfo) {
+      let filteredGroupedFields = {};
+
+      for (let group in this.groupedFields) {
+        filteredGroupedFields[group] = this.$options.filters.searchFields(
+          this.colQuery,
+          this.groupedFields[group],
+          excludeTokens,
+          excludeFilename,
+          excludeInfo
+        );
+      }
+
+      return filteredGroupedFields;
     },
 
     /* helper functions ---------------------------------------------------- */
