@@ -30,7 +30,7 @@ void isis_create_sessionid(char *sessionId, MolochPacket_t *packet)
     sessionId[0] = 1;
     sessionId[1] = 0x83;
 
-		// for now, lump all isis into the same session
+    // for now, lump all isis into the same session
 }
 /******************************************************************************/
 void isis_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
@@ -48,9 +48,9 @@ int isis_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * co
 {
     char sessionId[MOLOCH_SESSIONID_LEN];
 
-		// no sanity checks until we parse.  the thinking is that it will make sense to 
-		// high level parse to determine isis packet type (eg hello, csnp/psnp, lsp) and
-		// protocol tag with these additional discriminators
+    // no sanity checks until we parse.  the thinking is that it will make sense to 
+    // high level parse to determine isis packet type (eg hello, csnp/psnp, lsp) and
+    // protocol tag with these additional discriminators
 
     packet->payloadOffset = data - packet->pkt;
     packet->payloadLen = len;
