@@ -744,6 +744,10 @@ void moloch_parsers_init()
         g_dir_close(dir);
     }
 
+    if (loaded.count == 0) {
+        LOG("WARNING - No parsers loaded, is parsersDir set correctly");
+    }
+
     HASH_FORALL_POP_HEAD(s_, loaded, hstring,
         g_free(hstring->str);
         MOLOCH_TYPE_FREE(MolochString_t, hstring);
