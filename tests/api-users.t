@@ -228,11 +228,15 @@ my $pwd = "*/pcap";
     $info = viewerPostToken("/user/views/toggleShare?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.4","user":"test1","shared":true,"name":"view1"}', $test1Token);
     ok($info->{success}, "view: share");
 
+    sleep(1);
+
     $info = viewerGet("/user/views?molochRegressionUser=test1");
     eq_or_diff($info, from_json('{"view1":{"expression":"ip == 1.2.3.4","user":"test1","shared":true}}'), "view: 1 shared item");
 
     $info = viewerPostToken("/user/views/toggleShare?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.4","user":"test1","shared":false,"name":"view1"}', $test1Token);
     ok($info->{success}, "view: unshare");
+
+    sleep(1);
 
     $info = viewerPostToken("/user/views/delete?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.4","user":"test1","shared":false,"name":"view1"}', $test1Token);
     ok($info->{success}, "view: delete found");
