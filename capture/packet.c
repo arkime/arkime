@@ -1357,6 +1357,10 @@ int moloch_packet_run_ip_cb(MolochPacketBatch_t * batch, MolochPacket_t * const 
         return ipCbs[type](batch, packet, data, len);
     }
 
+    if (ipCbs[MOLOCH_IPPROTO_UNKNOWN]) {
+        return ipCbs[MOLOCH_IPPROTO_UNKNOWN](batch, packet, data, len);
+    }
+
     if (config.logUnknownProtocols)
         LOG("Unknown %s protocol %d", str, type);
     if (BIT_ISSET(type, config.ipSavePcap))
