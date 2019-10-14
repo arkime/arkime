@@ -60,7 +60,7 @@ LOCAL patricia_tree_t       *ipTree6 = 0;
 extern MolochFieldOps_t      readerFieldOps[256];
 
 LOCAL MolochPacketEnqueue_cb ethernetCbs[0x10000];
-LOCAL MolochPacketEnqueue_cb ipCbs[0x100];
+LOCAL MolochPacketEnqueue_cb ipCbs[0x110];
 
 int tcpMProtocol;
 int udpMProtocol;
