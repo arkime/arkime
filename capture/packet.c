@@ -1228,7 +1228,6 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
         else
             LOGEXIT("ERROR - Unsupported pcap link type %u", pcapFileHeader.linktype);
     }
-    LOG("%d", rc);
     if (unlikely(packet->mProtocol == 0) && likely(rc == MOLOCH_PACKET_DO_PROCESS)) {
         if (config.debug)
             LOG("Packet was market as do process but no mProtocol was set");
