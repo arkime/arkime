@@ -64,6 +64,8 @@
 #define MOLOCH_ETHERTYPE_ETHER   0
 #define MOLOCH_ETHERTYPE_UNKNOWN 1
 
+#define MOLOCH_IP_CORRUPT 0x101
+
 #define MOLOCH_SESSION_v6(s) ((s)->sessionId[0] == 37)
 
 /******************************************************************************/
