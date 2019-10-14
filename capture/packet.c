@@ -705,6 +705,10 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
     struct udphdr       *udphdr = 0;
     char                 sessionId[MOLOCH_SESSIONID_LEN];
 
+#ifdef DEBUG_PACKET
+    LOG("enter %p %p %d", packet, data, len);
+#endif
+
     if (len < (int)sizeof(struct ip)) {
 #ifdef DEBUG_PACKET
         LOG("BAD PACKET: too small for header %p %d", packet, len);
@@ -743,6 +747,9 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
         if ((node = patricia_search_best3 (ipTree4, (u_char*)&ip4->ip_dst, 32)) && node->data == NULL)
             return MOLOCH_PACKET_IP_DROPPED;
     }
+
+    if ((uint8_t*)data - packet->pkt >= 2048)
+        return MOLOCH_PACKET_CORRUPT;
 
     packet->ipOffset = (uint8_t*)data - packet->pkt;
     packet->v6 = 0;
@@ -839,6 +846,10 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
     struct tcphdr       *tcphdr = 0;
     struct udphdr       *udphdr = 0;
     char                 sessionId[MOLOCH_SESSIONID_LEN];
+
+#ifdef DEBUG_PACKET
+    LOG("enter %p %p %d", packet, data, len);
+#endif
 
     if (len < (int)sizeof(struct ip6_hdr)) {
         return MOLOCH_PACKET_CORRUPT;
@@ -1008,6 +1019,10 @@ LOCAL int moloch_packet_frame_relay(MolochPacketBatch_t *batch, MolochPacket_t *
 /******************************************************************************/
 LOCAL int moloch_packet_ieee802(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
+#ifdef DEBUG_PACKET
+    LOG("enter %p %p %d", packet, data, len);
+#endif
+
     if (len < 6 || memcmp(data+2, "\xfe\xfe\x03", 3) != 0)
         return MOLOCH_PACKET_CORRUPT;
 
@@ -1165,6 +1180,7 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
 
 #ifdef DEBUG_PACKET
     LOG("enter %p %u %d", packet, pcapFileHeader.linktype, packet->pktlen);
+    moloch_print_hex_string(packet->pkt, packet->pktlen);
 #endif
 
     switch(pcapFileHeader.linktype) {
@@ -1212,6 +1228,7 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
         else
             LOGEXIT("ERROR - Unsupported pcap link type %u", pcapFileHeader.linktype);
     }
+    LOG("%d", rc);
     if (unlikely(packet->mProtocol == 0) && likely(rc == MOLOCH_PACKET_DO_PROCESS)) {
         if (config.debug)
             LOG("Packet was market as do process but no mProtocol was set");
@@ -1329,6 +1346,10 @@ void moloch_packet_save_ethernet( MolochPacket_t * const packet, uint16_t type)
 /******************************************************************************/
 int moloch_packet_run_ethernet_cb(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len, uint16_t type, const char *str)
 {
+#ifdef DEBUG_PACKET
+    LOG("enter %p %d %s %p %d", packet, type, str, data, len);
+#endif
+
     if (ethernetCbs[type]) {
         return ethernetCbs[type](batch, packet, data, len);
     }
@@ -1353,6 +1374,14 @@ void moloch_packet_set_ethernet_cb(uint16_t type, MolochPacketEnqueue_cb enqueue
 /******************************************************************************/
 int moloch_packet_run_ip_cb(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len, uint16_t type, const char *str)
 {
+#ifdef DEBUG_PACKET
+    LOG("enter %p %d %s %p %d", packet, type, str, data, len);
+#endif
+
+    if (type > 255) {
+        return MOLOCH_PACKET_CORRUPT;
+    }
+
     if (ipCbs[type]) {
         return ipCbs[type](batch, packet, data, len);
     }
