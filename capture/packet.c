@@ -1218,6 +1218,12 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
         rc = MOLOCH_PACKET_UNKNOWN;
     }
 
+    if (rc == MOLOCH_PACKET_CORRUPT) {
+      if (ipCbs[MOLOCH_CORRUPT_IP]) {
+        ipCbs[MOLOCH_CORRUPT_IP](batch, packet, packet->pkt, packet->pktlen);
+      }
+    }
+
     if (unlikely(rc == MOLOCH_PACKET_CORRUPT) && config.corruptSavePcap) {
         moloch_packet_save_unknown_packet(2, packet);
     }
@@ -1225,9 +1231,11 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
     MOLOCH_THREAD_INCR(packetStats[rc]);
 
     if (rc) {
-        if (rc != MOLOCH_PACKET_DONT_PROCESS_OR_FREE)
-            moloch_packet_free(packet);
-        return;
+        if (!ipCbs[MOLOCH_CORRUPT_IP]) {
+          if (rc != MOLOCH_PACKET_DONT_PROCESS_OR_FREE)
+              moloch_packet_free(packet);
+          return;
+        }
     }
 
     /* This packet we are going to process */
