@@ -254,6 +254,8 @@ my $pwd = "*/pcap";
     ok($info->{success}, "view2: unshare");
     $info = viewerPostToken("/user/views/delete?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.4","user":"test1","shared":false,"name":"view2"}', $test1Token);
 
+    sleep(1);
+
     $info = viewerGet("/user/views?molochRegressionUser=test1");
     eq_or_diff($info, from_json("{}"), "view: empty");
 
