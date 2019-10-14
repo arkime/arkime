@@ -1030,7 +1030,7 @@ int      moloch_packet_run_ethernet_cb(MolochPacketBatch_t * batch, MolochPacket
 void     moloch_packet_set_ethernet_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb);
 
 int      moloch_packet_run_ip_cb(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len, uint16_t type, const char *str);
-void     moloch_packet_set_ip_cb(uint8_t type, MolochPacketEnqueue_cb enqueueCb);
+void     moloch_packet_set_ip_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb);
 
 
 /******************************************************************************/

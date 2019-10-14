@@ -25,7 +25,7 @@ LOCAL int corruptIpMProtocol;
 /******************************************************************************/
 void corruptIp_create_sessionid(char *sessionId, MolochPacket_t *packet)
 {
-    uint8_t *data = packet->pkt + packet->payloadOffset;
+    // uint8_t *data = packet->pkt + packet->payloadOffset;
 
 		printf ("corruptIp-- creating session id\n");
 

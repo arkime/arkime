@@ -1219,7 +1219,9 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
     }
 
     if (rc == MOLOCH_PACKET_CORRUPT) {
+			printf ("corrupt packet\n");
       if (ipCbs[MOLOCH_CORRUPT_IP]) {
+				printf ("before cb for corrupt packet\n");
         ipCbs[MOLOCH_CORRUPT_IP](batch, packet, packet->pkt, packet->pktlen);
       }
     }
@@ -1372,7 +1374,7 @@ int moloch_packet_run_ip_cb(MolochPacketBatch_t * batch, MolochPacket_t * const 
     return MOLOCH_PACKET_UNKNOWN;
 }
 /******************************************************************************/
-void moloch_packet_set_ip_cb(uint8_t type, MolochPacketEnqueue_cb enqueueCb)
+void moloch_packet_set_ip_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb)
 {
     ipCbs[type] = enqueueCb;
 }
