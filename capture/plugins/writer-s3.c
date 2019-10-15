@@ -69,6 +69,7 @@ LOCAL  char                   s3Host[100];
 LOCAL  char                  *s3Bucket;
 LOCAL  char                  *s3AccessKeyId;
 LOCAL  char                  *s3SecretAccessKey;
+LOCAL  char                  *s3Token;
 LOCAL  char                   s3Compress;
 LOCAL  char                   s3WriteGzip;
 LOCAL  char                  *s3StorageClass;
@@ -237,6 +238,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     char           fullpath[1000];
     char           bodyHash[1000];
     char           storageClassHeader[1000];
+    char           tokenHeader[1000];
     struct timeval outputFileTime;
 
     gettimeofday(&outputFileTime, 0);
@@ -339,13 +341,14 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     snprintf(fullpath, sizeof(fullpath), "/%s%s?%s", s3Bucket, path, qs);
 
     char strs[3][1000];
-    char *headers[7];
+    char *headers[8];
     headers[0] = "Expect:";
     headers[1] = "Content-Type:";
     headers[2] = strs[0];
     headers[3] = strs[1];
     headers[4] = strs[2];
-    headers[6] = NULL;
+
+    int nextHeader = 5;
 
     snprintf(strs[0], 1000,
             "Authorization: AWS4-HMAC-SHA256 Credential=%s/%8.8s/%s/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date%s,Signature=%s"
@@ -357,13 +360,19 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
 
     snprintf(strs[1], 1000, "x-amz-content-sha256: %s" , bodyHash);
     snprintf(strs[2], 1000, "x-amz-date: %s", datetime);
+
     if (specifyStorageClass) {
         // Note the missing newline in this place
         snprintf(storageClassHeader, sizeof(storageClassHeader), "x-amz-storage-class: %s", s3StorageClass);
-        headers[5] = storageClassHeader;
-    } else {
-        headers[5] = NULL;
+        headers[nextHeader++] = storageClassHeader;
     }
+
+    if (s3Token) {
+        snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token:%s", s3Token);
+        headers[nextHeader++] = tokenHeader;
+    }
+
+    headers[nextHeader] = NULL;
 
     inprogress++;
     moloch_http_send(s3Server, method, fullpath, strlen(fullpath), (char*)data, len, headers, FALSE, cb, uw);
@@ -607,6 +616,7 @@ void writer_s3_init(char *UNUSED(name))
     s3StorageClass        = moloch_config_str(NULL, "s3StorageClass", "STANDARD");
     s3MaxConns            = moloch_config_int(NULL, "s3MaxConns", 20, 5, 1000);
     s3MaxRequests         = moloch_config_int(NULL, "s3MaxRequests", 500, 10, 5000);
+    s3Token               = NULL;
 
     if (!s3Bucket) {
         printf("Must set s3Bucket to save to s3\n");
@@ -616,6 +626,44 @@ void writer_s3_init(char *UNUSED(name))
     if (!s3AccessKeyId) {
         printf("Must set s3AccessKeyId to save to s3\n");
         exit(1);
+    }
+
+    if (strcmp(s3AccessKeyId, "iam") == 0) {
+        // Fetch the data from the EC2 metadata service
+        size_t rlen;
+        void *metadataServer = moloch_http_create_server("http://169.254.169.254", 10, 10, 0);
+
+        s3AccessKeyId = 0;
+
+        unsigned char *rolename = moloch_http_get(metadataServer, "/latest/meta-data/iam/security-credentials/", -1, &rlen);
+
+        if (!rolename || !rlen || rolename[0] == '<') {
+            printf("Cannot retrieve role name from metadata service\n");
+            exit(1);
+        }
+
+        char role_url[1000];
+        snprintf(role_url, sizeof(role_url), "/latest/meta-data/iam/security-credentials/%.*s", (int) rlen, rolename);
+
+        free(rolename);
+
+        unsigned char *credentials = moloch_http_get(metadataServer, role_url, -1, &rlen);
+
+        if (credentials && rlen) {
+            // Now need to extract access key, secret key and token
+            s3AccessKeyId = moloch_js0n_get_str(credentials, rlen, "AccessKeyId");
+            s3SecretAccessKey = moloch_js0n_get_str(credentials, rlen, "SecretAccessKey");
+            s3Token = moloch_js0n_get_str(credentials, rlen, "Token");
+        }
+
+        if (!s3AccessKeyId || !s3SecretAccessKey || !s3Token) {
+            printf("Cannot retrieve credentials from metadata servie at %s\n", role_url);
+            exit(1);
+        }
+
+        free(credentials);
+
+        moloch_http_free_server(metadataServer);
     }
 
     if (!s3SecretAccessKey) {
