@@ -246,6 +246,67 @@
           </button>
         </div> <!-- /error (from child component) -->
 
+        <!-- shrink index -->
+        <div v-if="shrinkIndex"
+          class="ml-4 form-inline">
+          <strong>
+            Shrink {{ shrinkIndex.index }}
+          </strong>
+          <!-- new # shards -->
+          <div class="input-group input-group-sm ml-2">
+            <div class="input-group-prepend">
+              <span class="input-group-text">
+                # Shards
+              </span>
+            </div>
+            <select v-model="shrinkFactor"
+              class="form-control"
+              style="-webkit-appearance:none;">
+              <option v-for="factor in shrinkFactors"
+                :key="factor"
+                :value="factor">
+                {{ factor }}
+              </option>
+            </select>
+          </div> <!-- /new # shards -->
+          <!-- temporary node -->
+          <div v-if="nodes && temporaryNode"
+            class="input-group input-group-sm ml-2">
+            <div class="input-group-prepend">
+              <span class="input-group-text">
+                Temporary Node
+              </span>
+            </div>
+            <select v-model="temporaryNode"
+              class="form-control"
+              style="-webkit-appearance:none;">
+              <option v-for="node in nodes"
+                :key="node.name"
+                :value="node.name">
+                {{ node.name }}
+              </option>
+            </select>
+          </div> <!-- /new shards input -->
+          <!-- ok button -->
+          <button class="btn btn-sm btn-success pull-right ml-2"
+            v-b-tooltip.hover
+            title="shrink"
+            @click="executeShrink(index)"
+            type="button">
+            <span class="fa fa-check">
+            </span>
+          </button> <!-- /ok button -->
+          <!-- cancel button -->
+          <button class="btn btn-sm btn-warning pull-right ml-2"
+            v-b-tooltip.hover
+            title="cancel"
+            @click="cancelShrink"
+            type="button">
+            <span class="fa fa-ban">
+            </span>
+          </button> <!-- /cancel button -->
+        </div> <!-- /shrink index -->
+
       </div>
     </form> <!-- /stats sub navbar -->
 
@@ -324,6 +385,7 @@
             :data-interval="dataInterval"
             @errored="onError"
             @confirm="confirm"
+            @shrink="shrink"
             :searchTerm="searchTerm"
             :issueConfirmation="issueConfirmation"
             :user="user">
@@ -377,6 +439,7 @@ import EsIndices from './EsIndices';
 import CaptureGraphs from './CaptureGraphs';
 import CaptureStats from './CaptureStats';
 import FocusInput from '../utils/FocusInput';
+import utils from '../utils/utils';
 
 let searchInputTimeout;
 
@@ -403,7 +466,12 @@ export default {
       confirmMessage: '',
       itemToConfirm: undefined,
       issueConfirmation: undefined,
-      searchTerm: undefined
+      searchTerm: undefined,
+      shrinkIndex: undefined,
+      shrinkFactor: undefined,
+      shrinkFactors: undefined,
+      temporaryNode: undefined,
+      nodes: undefined
     };
   },
   computed: {
@@ -527,6 +595,29 @@ export default {
         this.itemToConfirm = undefined;
         this.confirmMessage = '';
       });
+    },
+    shrink: function (index) {
+      this.shrinkIndex = index;
+      this.shrinkFactors = utils.findFactors(parseInt(index.pri));
+      this.shrinkFactors.length === 1
+        ? this.shrinkFactor = this.shrinkFactors[0]
+        : this.shrinkFactor = this.shrinkFactors[1];
+
+      // find nodes for dropdown
+      this.$http.get('esstats.json', {})
+        .then((response) => {
+          this.nodes = response.data.data;
+          this.temporaryNode = this.nodes[0].name;
+        });
+    },
+    cancelShrink: function () {
+      this.shrinkIndex = undefined;
+      this.shrinkFactor = undefined;
+      this.shrinkFactors = undefined;
+      this.temporaryNode = undefined;
+    },
+    executeShrink: function (index) {
+      console.log('shrink!'); // TODO ECR
     }
   }
 };
