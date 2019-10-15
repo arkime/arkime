@@ -92,6 +92,7 @@
             </b-dropdown-item>
             <b-dropdown-item
               v-if="expression"
+              class="no-wrap"
               @click.prevent.stop="newTabSessions(expr, pd.queryVal, '==', true)"
               :title="'Open a new Sessions tab with ' + expr + ' == ' + pd.queryVal + ' as the root search expression'">
               <span class="fa fa-external-link"></span>&nbsp;
