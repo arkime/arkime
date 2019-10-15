@@ -623,12 +623,7 @@ void writer_s3_init(char *UNUSED(name))
         exit(1);
     }
 
-    if (!s3AccessKeyId) {
-        printf("Must set s3AccessKeyId to save to s3\n");
-        exit(1);
-    }
-
-    if (strcmp(s3AccessKeyId, "iam") == 0) {
+    if (!s3AccessKeyId || !s3AccessKeyId[0]) {
         // Fetch the data from the EC2 metadata service
         size_t rlen;
         void *metadataServer = moloch_http_create_server("http://169.254.169.254", 10, 10, 0);
@@ -657,7 +652,7 @@ void writer_s3_init(char *UNUSED(name))
         }
 
         if (!s3AccessKeyId || !s3SecretAccessKey || !s3Token) {
-            printf("Cannot retrieve credentials from metadata servie at %s\n", role_url);
+            printf("Cannot retrieve credentials from metadata service at %s\n", role_url);
             exit(1);
         }
 

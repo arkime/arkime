@@ -41,24 +41,25 @@ function splitRemain (str, separator, limit) {
 }
 /// ///////////////////////////////////////////////////////////////////////////////
 function makeS3 (node, region) {
-  var key = Config.getFull(node, 's3AccessKeyId');
-  if (!key) {
-    console.log('ERROR - No s3AccessKeyId set for ', node);
-    return undefined;
-  }
-
   var s3 = S3s[region + key];
   if (s3) {
     return s3;
   }
 
-  var secret = Config.getFull(node, 's3SecretAccessKey');
-  if (!secret) {
-    console.log('ERROR - No s3SecretAccessKey set for ', node);
+  var s3Params = {region: region};
+
+  var key = Config.getFull(node, 's3AccessKeyId');
+  if (key) {
+    var secret = Config.getFull(node, 's3SecretAccessKey');
+    if (!secret) {
+      console.log('ERROR - No s3SecretAccessKey set for ', node);
+    }
+
+    s3Params.accessKeyId = key;
+    s3Params.secretAccessKey = secret;
   }
-  var s3Params = {region: region,
-    accessKeyId: key,
-    secretAccessKey: secret};
+
+  // Lets hope that we can find a credential provider elsewhere
   var rv = S3s[region + key] = new AWS.S3(s3Params);
   return rv;
 }
