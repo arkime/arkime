@@ -60,7 +60,7 @@ LOCAL patricia_tree_t       *ipTree6 = 0;
 extern MolochFieldOps_t      readerFieldOps[256];
 
 LOCAL MolochPacketEnqueue_cb ethernetCbs[0x10000];
-LOCAL MolochPacketEnqueue_cb ipCbs[0x100];
+LOCAL MolochPacketEnqueue_cb ipCbs[0x110];
 
 int tcpMProtocol;
 int udpMProtocol;
@@ -1234,16 +1234,24 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
         rc = MOLOCH_PACKET_UNKNOWN;
     }
 
-    if (unlikely(rc == MOLOCH_PACKET_CORRUPT) && config.corruptSavePcap) {
-        moloch_packet_save_unknown_packet(2, packet);
+    if (rc == MOLOCH_PACKET_CORRUPT) {
+      if (ipCbs[MOLOCH_IPPROTO_CORRUPT]) {
+        ipCbs[MOLOCH_IPPROTO_CORRUPT](batch, packet, packet->pkt, packet->pktlen);
+      }
     }
+
 
     MOLOCH_THREAD_INCR(packetStats[rc]);
 
     if (rc) {
+      if (unlikely(rc == MOLOCH_PACKET_CORRUPT) && config.corruptSavePcap) {
+          moloch_packet_save_unknown_packet(2, packet);
+      }
+      if (! ((rc == MOLOCH_PACKET_CORRUPT) && (ipCbs[MOLOCH_IPPROTO_CORRUPT]))) {
         if (rc != MOLOCH_PACKET_DONT_PROCESS_OR_FREE)
             moloch_packet_free(packet);
         return;
+      }
     }
 
     /* This packet we are going to process */
@@ -1377,7 +1385,7 @@ int moloch_packet_run_ip_cb(MolochPacketBatch_t * batch, MolochPacket_t * const 
     LOG("enter %p %d %s %p %d", packet, type, str, data, len);
 #endif
 
-    if (type > 255) {
+    if (type >= 0x110) {
         return MOLOCH_PACKET_CORRUPT;
     }
 
@@ -1396,8 +1404,11 @@ int moloch_packet_run_ip_cb(MolochPacketBatch_t * batch, MolochPacket_t * const 
     return MOLOCH_PACKET_UNKNOWN;
 }
 /******************************************************************************/
-void moloch_packet_set_ip_cb(uint8_t type, MolochPacketEnqueue_cb enqueueCb)
+void moloch_packet_set_ip_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb)
 {
+    if (type > 0x110) 
+      LOGEXIT ("type value to large %d", type);
+
     ipCbs[type] = enqueueCb;
 }
 /******************************************************************************/
