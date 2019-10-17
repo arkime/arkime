@@ -30,7 +30,7 @@ LOCAL  int                   sctpMProtocol;
 SUPPRESS_ALIGNMENT
 int sctp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *UNUSED(data), int UNUSED(len))
 {
-    char                 sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t             sessionId[MOLOCH_SESSIONID_LEN];
     struct udphdr       *udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset); /* Not really udp, but port in same location */
 
     if (packet->payloadLen < (int)sizeof(struct udphdr))
@@ -51,7 +51,7 @@ int sctp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * co
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-void sctp_create_sessionid(char *sessionId, MolochPacket_t *packet)
+void sctp_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
 {
     struct udphdr       *udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset); /* Not really udp, but port in same location */
 

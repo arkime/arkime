@@ -327,7 +327,7 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
 
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-void tcp_create_sessionid(char *sessionId, MolochPacket_t *packet)
+void tcp_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
 {
     struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
     struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);

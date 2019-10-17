@@ -36,7 +36,7 @@ LOCAL int                    icmpCodeField;
 SUPPRESS_ALIGNMENT
 int icmp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *UNUSED(data), int UNUSED(len))
 {
-    char                 sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t                 sessionId[MOLOCH_SESSIONID_LEN];
 
     if (packet->v6) {
         struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
@@ -53,7 +53,7 @@ int icmp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * co
 SUPPRESS_ALIGNMENT
 int icmpv6_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *UNUSED(data), int UNUSED(len))
 {
-    char                 sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t                 sessionId[MOLOCH_SESSIONID_LEN];
 
     if (!packet->v6)
         return MOLOCH_PACKET_CORRUPT;
@@ -66,7 +66,7 @@ int icmpv6_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * 
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-void icmp_create_sessionid(char *sessionId, MolochPacket_t *packet)
+void icmp_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
 {
     struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
     struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
@@ -112,7 +112,7 @@ int icmp_process(MolochSession_t *session, MolochPacket_t * const packet)
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-void icmpv6_create_sessionid(char *sessionId, MolochPacket_t *packet)
+void icmpv6_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
 {
     struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
     moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr, 0);

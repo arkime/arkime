@@ -57,7 +57,7 @@ LOCAL MolochSesCmdHead_t   sessionCmds[MOLOCH_MAX_PACKET_THREADS];
 
 
 /******************************************************************************/
-void moloch_session_id (char *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2)
+void moloch_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2)
 {
     buf[0] = 13;
     if (addr1 < addr2) {
@@ -83,7 +83,7 @@ void moloch_session_id (char *buf, uint32_t addr1, uint16_t port1, uint32_t addr
     }
 }
 /******************************************************************************/
-void moloch_session_id6 (char *buf, uint8_t *addr1, uint16_t port1, uint8_t *addr2, uint16_t port2)
+void moloch_session_id6 (uint8_t *buf, uint8_t *addr1, uint16_t port1, uint8_t *addr2, uint16_t port2)
 {
     buf[0] = 37;
     int cmp = memcmp(addr1, addr2, 16);
@@ -110,10 +110,10 @@ void moloch_session_id6 (char *buf, uint8_t *addr1, uint16_t port1, uint8_t *add
     }
 }
 /******************************************************************************/
-char *moloch_session_id_string (char *sessionId, char *buf)
+char *moloch_session_id_string (uint8_t *sessionId, char *buf)
 {
     // ALW: Rewrite to make pretty
-    return moloch_sprint_hex_string(buf, (uint8_t *)sessionId, sessionId[0]);
+    return moloch_sprint_hex_string(buf, sessionId, sessionId[0]);
 }
 #ifndef NEWHASH
 /******************************************************************************/
@@ -396,7 +396,7 @@ int moloch_session_need_save_outstanding()
     return count;
 }
 /******************************************************************************/
-MolochSession_t *moloch_session_find(int ses, char *sessionId)
+MolochSession_t *moloch_session_find(int ses, uint8_t *sessionId)
 {
     MolochSession_t *session;
 
@@ -408,7 +408,7 @@ MolochSession_t *moloch_session_find(int ses, char *sessionId)
 }
 /******************************************************************************/
 // Should only be used by packet, lots of side effects
-MolochSession_t *moloch_session_find_or_create(int mProtocol, uint32_t hash, char *sessionId, int *isNew)
+MolochSession_t *moloch_session_find_or_create(int mProtocol, uint32_t hash, uint8_t *sessionId, int *isNew)
 {
     MolochSession_t *session;
 

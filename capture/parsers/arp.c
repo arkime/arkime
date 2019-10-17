@@ -23,7 +23,7 @@ LOCAL MolochPQ_t *arpPq;
 LOCAL int arpMProtocol;
 
 /******************************************************************************/
-void arp_create_sessionid(char *sessionId, MolochPacket_t *packet)
+void arp_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
 {
     uint8_t *data = packet->pkt + packet->payloadOffset;
 
@@ -51,7 +51,7 @@ int arp_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(
 /******************************************************************************/
 int arp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
 {
-    char sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t sessionId[MOLOCH_SESSIONID_LEN];
 
     if (len < 28)
         return MOLOCH_PACKET_CORRUPT;

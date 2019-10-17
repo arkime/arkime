@@ -23,7 +23,7 @@ LOCAL MolochPQ_t *lldpPq;
 LOCAL int lldpMProtocol;
 
 /******************************************************************************/
-void lldp_create_sessionid(char *sessionId, MolochPacket_t * const UNUSED (packet))
+void lldp_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUSED (packet))
 {
 		// not used, but leaving for now 
     // uint8_t *data = packet->pkt + packet->payloadOffset;
@@ -51,7 +51,7 @@ int lldp_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED
 /******************************************************************************/
 int lldp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
 {
-    char sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t sessionId[MOLOCH_SESSIONID_LEN];
 
     // no sanity checks as we don't parse
 

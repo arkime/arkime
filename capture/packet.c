@@ -60,7 +60,7 @@ LOCAL patricia_tree_t       *ipTree6 = 0;
 extern MolochFieldOps_t      readerFieldOps[256];
 
 LOCAL MolochPacketEnqueue_cb ethernetCbs[0x10000];
-LOCAL MolochPacketEnqueue_cb ipCbs[0x110];
+LOCAL MolochPacketEnqueue_cb ipCbs[MOLOCH_IPPROTO_MAX];
 
 int tcpMProtocol;
 int udpMProtocol;
@@ -184,7 +184,7 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
     MolochSession_t     *session;
     struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
     struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
-    char                 sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t              sessionId[MOLOCH_SESSIONID_LEN];
 
 
     mProtocols[packet->mProtocol].createSessionId(sessionId, packet);
@@ -703,7 +703,7 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
     struct ip           *ip4 = (struct ip*)data;
     struct tcphdr       *tcphdr = 0;
     struct udphdr       *udphdr = 0;
-    char                 sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t              sessionId[MOLOCH_SESSIONID_LEN];
 
 #ifdef DEBUG_PACKET
     LOG("enter %p %p %d", packet, data, len);
@@ -845,7 +845,7 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
     struct ip6_hdr      *ip6 = (struct ip6_hdr *)data;
     struct tcphdr       *tcphdr = 0;
     struct udphdr       *udphdr = 0;
-    char                 sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t              sessionId[MOLOCH_SESSIONID_LEN];
 
 #ifdef DEBUG_PACKET
     LOG("enter %p %p %d", packet, data, len);
@@ -1228,30 +1228,31 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
         else
             LOGEXIT("ERROR - Unsupported pcap link type %u", pcapFileHeader.linktype);
     }
+
     if (unlikely(packet->mProtocol == 0) && likely(rc == MOLOCH_PACKET_DO_PROCESS)) {
         if (config.debug)
             LOG("Packet was market as do process but no mProtocol was set");
         rc = MOLOCH_PACKET_UNKNOWN;
     }
 
-    if (rc == MOLOCH_PACKET_CORRUPT) {
-      if (ipCbs[MOLOCH_IPPROTO_CORRUPT]) {
-        ipCbs[MOLOCH_IPPROTO_CORRUPT](batch, packet, packet->pkt, packet->pktlen);
-      }
-    }
-
-
     MOLOCH_THREAD_INCR(packetStats[rc]);
 
-    if (rc) {
-      if (unlikely(rc == MOLOCH_PACKET_CORRUPT) && config.corruptSavePcap) {
-          moloch_packet_save_unknown_packet(2, packet);
-      }
-      if (! ((rc == MOLOCH_PACKET_CORRUPT) && (ipCbs[MOLOCH_IPPROTO_CORRUPT]))) {
-        if (rc != MOLOCH_PACKET_DONT_PROCESS_OR_FREE)
+    if (unlikely(rc)) {
+        if (rc == MOLOCH_PACKET_CORRUPT) {
+            if (config.corruptSavePcap) {
+                moloch_packet_save_unknown_packet(2, packet);
+            }
+
+            // A CORRUPT callback is expected to free the packet.
+            if (ipCbs[MOLOCH_IPPROTO_CORRUPT]) {
+                ipCbs[MOLOCH_IPPROTO_CORRUPT](batch, packet, packet->pkt, packet->pktlen);
+            } else {
+                moloch_packet_free(packet);
+            }
+        } else if (rc != MOLOCH_PACKET_DONT_PROCESS_OR_FREE) {
             moloch_packet_free(packet);
+        }
         return;
-      }
     }
 
     /* This packet we are going to process */
@@ -1385,7 +1386,7 @@ int moloch_packet_run_ip_cb(MolochPacketBatch_t * batch, MolochPacket_t * const 
     LOG("enter %p %d %s %p %d", packet, type, str, data, len);
 #endif
 
-    if (type >= 0x110) {
+    if (type >= MOLOCH_IPPROTO_MAX) {
         return MOLOCH_PACKET_CORRUPT;
     }
 
@@ -1406,7 +1407,7 @@ int moloch_packet_run_ip_cb(MolochPacketBatch_t * batch, MolochPacket_t * const 
 /******************************************************************************/
 void moloch_packet_set_ip_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb)
 {
-    if (type > 0x110) 
+    if (type >= MOLOCH_IPPROTO_MAX) 
       LOGEXIT ("type value to large %d", type);
 
     ipCbs[type] = enqueueCb;

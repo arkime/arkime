@@ -31,7 +31,7 @@ LOCAL  int                   espMProtocol;
 SUPPRESS_ALIGNMENT
 int esp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *UNUSED(data), int UNUSED(len))
 {
-    char                 sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t                 sessionId[MOLOCH_SESSIONID_LEN];
 
     if (packet->v6) {
         struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
@@ -48,7 +48,7 @@ int esp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * con
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-LOCAL void esp_create_sessionid(char *sessionId, MolochPacket_t *packet)
+LOCAL void esp_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
 {
     struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
     struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);

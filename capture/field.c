@@ -982,6 +982,7 @@ added:
 /******************************************************************************/
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 SUPPRESS_SHIFT
+SUPPRESS_INT_CONVERSION
 uint32_t moloch_field_certsinfo_hash(const void *key)
 {
     MolochCertsInfo_t *ci = (MolochCertsInfo_t *)key;

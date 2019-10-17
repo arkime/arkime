@@ -41,16 +41,19 @@
 #define SUPPRESS_UNSIGNED_INTEGER_OVERFLOW __attribute__((no_sanitize("unsigned-integer-overflow")))
 #define SUPPRESS_SHIFT __attribute__((no_sanitize("shift")))
 #define SUPPRESS_ALIGNMENT __attribute__((no_sanitize("alignment")))
+#define SUPPRESS_INT_CONVERSION __attribute__((no_sanitize("implicit-integer-sign-change")))
 #elif __GNUC__ >= 5
 #define SUPPRESS_SIGNED_INTEGER_OVERFLOW
 #define SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 #define SUPPRESS_SHIFT __attribute__((no_sanitize_undefined()))
 #define SUPPRESS_ALIGNMENT __attribute__((no_sanitize_undefined()))
+#define SUPPRESS_INT_CONVERSION
 #else
 #define SUPPRESS_SIGNED_INTEGER_OVERFLOW
 #define SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 #define SUPPRESS_SHIFT
 #define SUPPRESS_ALIGNMENT
+#define SUPPRESS_INT_CONVERSION
 #endif
 
 #define MOLOCH_API_VERSION 210
@@ -65,6 +68,7 @@
 #define MOLOCH_ETHERTYPE_UNKNOWN 1
 #define MOLOCH_IPPROTO_UNKNOWN 255
 #define MOLOCH_IPPROTO_CORRUPT 256
+#define MOLOCH_IPPROTO_MAX     257
 
 #define MOLOCH_SESSION_v6(s) ((s)->sessionId[0] == 37)
 
@@ -588,7 +592,7 @@ typedef struct moloch_session {
     int                    h_bucket;
     uint32_t               h_hash;
 
-    char                   sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t                sessionId[MOLOCH_SESSIONID_LEN];
 
     MolochField_t        **fields;
 
@@ -934,7 +938,7 @@ void moloch_http_set_headers(void *server, char **headers);
 void moloch_http_set_header_cb(void *server, MolochHttpHeader_cb cb);
 void moloch_http_free_server(void *server);
 
-gboolean moloch_http_is_moloch(uint32_t hash, char *key);
+gboolean moloch_http_is_moloch(uint32_t hash, uint8_t *sessionId);
 
 /******************************************************************************/
 /*
@@ -942,14 +946,14 @@ gboolean moloch_http_is_moloch(uint32_t hash, char *key);
  */
 
 
-void     moloch_session_id (char *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2);
-void     moloch_session_id6 (char *buf, uint8_t *addr1, uint16_t port1, uint8_t *addr2, uint16_t port2);
-char    *moloch_session_id_string (char *sessionId, char *buf);
+void     moloch_session_id (uint8_t *sessionId, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2);
+void     moloch_session_id6 (uint8_t *sessionId, uint8_t *addr1, uint16_t port1, uint8_t *addr2, uint16_t port2);
+char    *moloch_session_id_string (uint8_t *sessionId, char *buf);
 
 uint32_t moloch_session_hash(const void *key);
 
-MolochSession_t *moloch_session_find(int ses, char *sessionId);
-MolochSession_t *moloch_session_find_or_create(int mProtocol, uint32_t hash, char *sessionId, int *isNew);
+MolochSession_t *moloch_session_find(int ses, uint8_t *sessionId);
+MolochSession_t *moloch_session_find_or_create(int mProtocol, uint32_t hash, uint8_t *sessionId, int *isNew);
 
 void     moloch_session_init();
 void     moloch_session_exit();
@@ -1000,7 +1004,7 @@ void moloch_session_add_cmd_thread(int thread, gpointer uw1, gpointer uw2, Moloc
 
 typedef int (*MolochPacketEnqueue_cb)(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
 
-typedef int (*MolochPacketSessionId_cb)(char *sessionId, MolochPacket_t * const packet, const uint8_t *data, int len);
+typedef int (*MolochPacketSessionId_cb)(uint8_t *sessionId, MolochPacket_t * const packet, const uint8_t *data, int len);
 
 void     moloch_packet_init();
 uint64_t moloch_packet_dropped_packets();
@@ -1034,7 +1038,7 @@ void     moloch_packet_set_ip_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb
 
 
 /******************************************************************************/
-typedef void (*MolochProtocolCreateSessionId_cb)(char *sessionId, MolochPacket_t * const packet);
+typedef void (*MolochProtocolCreateSessionId_cb)(uint8_t *sessionId, MolochPacket_t * const packet);
 typedef void (*MolochProtocolPreProcess_cb)(MolochSession_t *session, MolochPacket_t * const packet, int isNewSession);
 typedef int  (*MolochProtocolProcess_cb)(MolochSession_t *session, MolochPacket_t * const packet);
 typedef void (*MolochProtocolSessionFree_cb)(MolochSession_t *session);

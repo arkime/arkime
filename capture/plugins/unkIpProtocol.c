@@ -23,7 +23,7 @@ LOCAL MolochPQ_t *unkIpProtocolPq;
 LOCAL int unkIpProtocolMProtocol;
 
 /******************************************************************************/
-void unkIpProtocol_create_sessionid(char *sessionId, MolochPacket_t * const UNUSED (packet))
+void unkIpProtocol_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUSED (packet))
 {
     // uint8_t *data = packet->pkt + packet->payloadOffset;
 
@@ -47,7 +47,7 @@ int unkIpProtocol_process(MolochSession_t *UNUSED(session), MolochPacket_t * con
 /******************************************************************************/
 int unkIpProtocol_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
 {
-    char sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t sessionId[MOLOCH_SESSIONID_LEN];
 
     // no sanity checks
 

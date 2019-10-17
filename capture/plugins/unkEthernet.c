@@ -23,7 +23,7 @@ LOCAL MolochPQ_t *unkEthernetPq;
 LOCAL int unkEthernetMProtocol;
 
 /******************************************************************************/
-void unkEthernet_create_sessionid(char *sessionId, MolochPacket_t * const UNUSED (packet))
+void unkEthernet_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUSED (packet))
 {
     // uint8_t *data = packet->pkt + packet->payloadOffset;
 
@@ -47,7 +47,7 @@ int unkEthernet_process(MolochSession_t *UNUSED(session), MolochPacket_t * const
 /******************************************************************************/
 int unkEthernet_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
 {
-    char sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t sessionId[MOLOCH_SESSIONID_LEN];
 
     // no sanity checks until we parse.  the thinking is that it will make sense to 
     // high level parse to determine unkEthernet packet type (eg hello, csnp/psnp, lsp) and
