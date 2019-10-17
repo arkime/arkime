@@ -1385,7 +1385,7 @@ int moloch_packet_run_ip_cb(MolochPacketBatch_t * batch, MolochPacket_t * const 
     LOG("enter %p %d %s %p %d", packet, type, str, data, len);
 #endif
 
-    if (type > 0x110) {
+    if (type >= 0x110) {
         return MOLOCH_PACKET_CORRUPT;
     }
 
