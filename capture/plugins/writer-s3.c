@@ -233,7 +233,7 @@ void writer_s3_header_cb (char *url, const char *field, const char *value, int v
 GChecksum *checksum;
 void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, int len, gboolean specifyStorageClass, MolochHttpResponse_cb cb, gpointer uw)
 {
-    char           canonicalRequest[1000];
+    char           canonicalRequest[2000];
     char           datetime[17];
     char           fullpath[1000];
     char           bodyHash[1000];
@@ -254,6 +254,9 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
 
 
     snprintf(storageClassHeader, sizeof(storageClassHeader), "x-amz-storage-class:%s\n", s3StorageClass);
+    if (s3Token) {
+      snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token:%s\n", s3Token);
+    }
 
     g_checksum_reset(checksum);
     g_checksum_update(checksum, data, len);
@@ -267,9 +270,10 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
              "x-amz-content-sha256:%s\n"
              "x-amz-date:%s\n"
              "%s"
+             "%s"
              "\n"      
              // SignedHeaders
-             "host;x-amz-content-sha256;x-amz-date%s\n" 
+             "host;x-amz-content-sha256;x-amz-date%s%s\n" 
              "%s"     // HexEncode(Hash(RequestPayload))
              ,
              method,
@@ -279,7 +283,9 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
              bodyHash,
              datetime,
              (specifyStorageClass?storageClassHeader:""),
+             (s3Token?tokenHeader:""),
              (specifyStorageClass?";x-amz-storage-class":""),
+             (s3Token?";x-amz-security-token":""),
              bodyHash);
     //LOG("canonicalRequest: %s", canonicalRequest);
 
@@ -351,10 +357,11 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     int nextHeader = 5;
 
     snprintf(strs[0], 1000,
-            "Authorization: AWS4-HMAC-SHA256 Credential=%s/%8.8s/%s/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date%s,Signature=%s"
+            "Authorization: AWS4-HMAC-SHA256 Credential=%s/%8.8s/%s/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date%s%s,Signature=%s"
             , 
             s3AccessKeyId, datetime, s3Region, 
             (specifyStorageClass?";x-amz-storage-class":""),
+            (s3Token?";x-amz-security-token":""),
             signature
             );
 
