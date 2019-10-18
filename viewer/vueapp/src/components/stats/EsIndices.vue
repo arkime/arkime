@@ -211,7 +211,6 @@ export default {
         });
     },
     openShrinkIndexForm (index) {
-      console.log('shrink index form for', index.index); // TODO ECR remove
       this.$emit('shrink', index);
     },
     /* helper functions ------------------------------------------ */
