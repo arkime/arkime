@@ -282,10 +282,10 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
              s3Host,
              bodyHash,
              datetime,
-             (specifyStorageClass?storageClassHeader:""),
              (s3Token?tokenHeader:""),
-             (specifyStorageClass?";x-amz-storage-class":""),
+             (specifyStorageClass?storageClassHeader:""),
              (s3Token?";x-amz-security-token":""),
+             (specifyStorageClass?";x-amz-storage-class":""),
              bodyHash);
     //LOG("canonicalRequest: %s", canonicalRequest);
 
@@ -360,23 +360,23 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
             "Authorization: AWS4-HMAC-SHA256 Credential=%s/%8.8s/%s/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date%s%s,Signature=%s"
             , 
             s3AccessKeyId, datetime, s3Region, 
-            (specifyStorageClass?";x-amz-storage-class":""),
             (s3Token?";x-amz-security-token":""),
+            (specifyStorageClass?";x-amz-storage-class":""),
             signature
             );
 
     snprintf(strs[1], 1000, "x-amz-content-sha256: %s" , bodyHash);
     snprintf(strs[2], 1000, "x-amz-date: %s", datetime);
 
+    if (s3Token) {
+        snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token:%s", s3Token);
+        headers[nextHeader++] = tokenHeader;
+    }
+
     if (specifyStorageClass) {
         // Note the missing newline in this place
         snprintf(storageClassHeader, sizeof(storageClassHeader), "x-amz-storage-class: %s", s3StorageClass);
         headers[nextHeader++] = storageClassHeader;
-    }
-
-    if (s3Token) {
-        snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token:%s", s3Token);
-        headers[nextHeader++] = tokenHeader;
     }
 
     headers[nextHeader] = NULL;
