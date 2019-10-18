@@ -27,6 +27,16 @@ export default {
         'info'
       ]
     };
+  },
+
+  /**
+   * Finds all of the factors of a given number
+   * @param {int} An integer to find factors for
+   * @returns {array} An array of factors
+   */
+  findFactors: function (num) {
+    let numArr = [...Array(num).keys()];
+    return numArr.filter((i) => { return num % i === 0; });
   }
 
 };

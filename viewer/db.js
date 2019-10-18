@@ -372,6 +372,12 @@ exports.openIndex = function (index, options, cb) {
   return internals.elasticSearchClient.indices.open(params, cb);
 };
 
+exports.shrinkIndex = function (index, options, cb) {
+  let params = { index: index, target: `${index}-shrink` };
+  exports.merge(params, options);
+  return internals.elasticSearchClient.indices.shrink(params, cb);
+};
+
 exports.indexStats = function(index, cb) {
   return internals.elasticSearchClient.indices.stats({index: fixIndex(index)}, cb);
 };
@@ -414,6 +420,19 @@ exports.indices = function(cb, index) {
 
 exports.indicesSettings = function(cb, index) {
   return internals.elasticSearchClient.indices.getSettings({flatSettings: true, index: fixIndex(index)}, cb);
+};
+
+exports.setIndexSettings = (index, options, cb) => {
+  return internals.elasticSearchClient.indices.putSettings(
+    {
+      index: index,
+      body: options.body
+    },
+    () => {
+      internals.healthCache = {};
+      cb();
+    }
+  );
 };
 
 exports.shards = function(cb) {
