@@ -3378,10 +3378,14 @@ app.post('/esindices/:index/open', logAction(), checkCookieToken, function(req, 
 
 app.post('/esindices/:index/shrink', logAction(), checkCookieToken, (req, res) => {
   if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
+  if (!req.body || !req.body.target) {
+    return res.molochError(403, 'Missing target');
+  }
 
   let settingsParams = {
     body: {
-      'index.routing.allocation.require._name': req.query.target,
+      'index.routing.allocation.total_shards_per_node': null,
+      'index.routing.allocation.require._name': req.body.target,
       'index.blocks.write': true
     }
   };
@@ -3400,7 +3404,7 @@ app.post('/esindices/:index/shrink', logAction(), checkCookieToken, (req, res) =
           'index.routing.allocation.require._name': null,
           'index.blocks.write': null,
           'index.codec': 'best_compression',
-          'index.number_of_shards': req.query.numShards || 1
+          'index.number_of_shards': req.body.numShards || 1
         }
       }
     };
