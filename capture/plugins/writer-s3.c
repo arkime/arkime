@@ -287,7 +287,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
              (s3Token?";x-amz-security-token":""),
              (specifyStorageClass?";x-amz-storage-class":""),
              bodyHash);
-    //LOG("canonicalRequest: %s", canonicalRequest);
+    LOG("canonicalRequest: %s", canonicalRequest);
 
     g_checksum_reset(checksum);
     g_checksum_update(checksum, (guchar*)canonicalRequest, -1);
@@ -303,7 +303,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
              datetime,
              s3Region,
              g_checksum_get_string(checksum));
-    //LOG("stringToSign: %s", stringToSign);
+    LOG("stringToSign: %s", stringToSign);
 
     char kSecret[1000];
     snprintf(kSecret, sizeof(kSecret), "AWS4%s", s3SecretAccessKey);
@@ -342,7 +342,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     strcpy(signature, g_hmac_get_string(hmac));
     g_hmac_unref(hmac);
 
-    //LOG("signature: %s", signature);
+    LOG("signature: %s", signature);
 
     snprintf(fullpath, sizeof(fullpath), "/%s%s?%s", s3Bucket, path, qs);
 
@@ -365,11 +365,13 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
             signature
             );
 
+    LOG("strs[0]: %s", strs[0]);
+
     snprintf(strs[1], 1000, "x-amz-content-sha256: %s" , bodyHash);
     snprintf(strs[2], 1000, "x-amz-date: %s", datetime);
 
     if (s3Token) {
-        snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token:%s", s3Token);
+        snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token: %s", s3Token);
         headers[nextHeader++] = tokenHeader;
     }
 
