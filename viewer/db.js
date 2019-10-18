@@ -425,10 +425,13 @@ exports.indicesSettings = function(cb, index) {
 exports.setIndexSettings = (index, options, cb) => {
   return internals.elasticSearchClient.indices.putSettings(
     {
-      index: fixIndex(index),
+      index: index,
       body: options.body
     },
-    cb
+    () => {
+      internals.healthCache = {};
+      cb();
+    }
   );
 };
 

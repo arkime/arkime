@@ -3418,7 +3418,7 @@ app.post('/esindices/:index/shrink', logAction(), checkCookieToken, (req, res) =
             });
           }
         });
-    }, 1000);
+    }, 10000);
 
     // always return right away, shrinking might take a while
     return res.send(JSON.stringify({ success: true }));
