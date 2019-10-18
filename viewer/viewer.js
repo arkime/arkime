@@ -3798,7 +3798,8 @@ app.get('/esstats.json', recordResponseTime, noCacheJson, function(req, res) {
         writesQueueSize: threadpoolInfo.queue_size,
         load: node.os.load_average !== undefined ? /* ES 2*/ node.os.load_average : /*ES 5*/ node.os.cpu.load_average["5m"],
         version: version,
-        molochtype: molochtype
+        molochtype: molochtype,
+        roles: node.roles
       });
     }
 
