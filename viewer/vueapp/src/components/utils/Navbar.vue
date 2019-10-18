@@ -198,7 +198,7 @@ export default {
 
 <style scoped>
 nav.navbar {
-  z-index: 6;
+  z-index: 7;
   max-height: 36px;
   min-height: 36px;
 }
