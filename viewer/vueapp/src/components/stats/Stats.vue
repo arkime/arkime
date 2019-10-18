@@ -291,7 +291,7 @@
           <button class="btn btn-sm btn-success pull-right ml-2"
             v-b-tooltip.hover
             title="shrink"
-            @click="executeShrink(index)"
+            @click="executeShrink(shrinkIndex)"
             type="button">
             <span class="fa fa-check">
             </span>
@@ -305,7 +305,11 @@
             <span class="fa fa-ban">
             </span>
           </button> <!-- /cancel button -->
-        </div> <!-- /shrink index -->
+        </div>
+        <span v-if="shrinkIndex && shrinkError"
+          class="text-danger ml-2">
+          {{ shrinkError }}
+        </span> <!-- /shrink index -->
 
       </div>
     </form> <!-- /stats sub navbar -->
@@ -471,7 +475,8 @@ export default {
       shrinkFactor: undefined,
       shrinkFactors: undefined,
       temporaryNode: undefined,
-      nodes: undefined
+      nodes: undefined,
+      shrinkError: undefined
     };
   },
   computed: {
@@ -615,9 +620,21 @@ export default {
       this.shrinkFactor = undefined;
       this.shrinkFactors = undefined;
       this.temporaryNode = undefined;
+      this.shrinkError = undefined;
     },
     executeShrink: function (index) {
-      console.log('shrink!'); // TODO ECR
+      this.$http.post(`esindices/${index.index}/shrink`, {
+        target: this.temporaryNode,
+        numShards: this.shrinkFactor
+      }).then((response) => {
+        if (!response.data.success) {
+          this.shrinkError = response.data.text;
+          return;
+        }
+        this.cancelShrink();
+      }).catch((error) => {
+        this.shrinkError = error.text || error;
+      });
     }
   }
 };
@@ -654,7 +671,7 @@ form.stats-form {
   position: fixed;
   left: 0;
   right: 0;
-  z-index : 5;
+  z-index : 6;
   background-color: var(--color-quaternary-lightest);
 
   -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xxlg) -8px #333;

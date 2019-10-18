@@ -3376,6 +3376,42 @@ app.post('/esindices/:index/open', logAction(), checkCookieToken, function(req, 
   return res.send(JSON.stringify({ success: true, text: {} }));
 });
 
+app.post('/esindices/:index/shrink', logAction(), checkCookieToken, (req, res) => {
+  if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
+
+  let settingsParams = {
+    body: {
+      'index.routing.allocation.require._name': req.query.target,
+      'index.blocks.write': true
+    }
+  };
+
+  Db.setIndexSettings(req.params.index, settingsParams, (err, results) => {
+    let shrinkParams = {
+      body: {
+        settings: {
+          'index.routing.allocation.require._name': null,
+          'index.blocks.write': null,
+          'index.codec': 'best_compression',
+          'index.number_of_shards': req.query.numShards || 1
+        }
+      }
+    };
+
+    Db.shrinkIndex(req.params.index, shrinkParams, (err, results) => {
+      if (err) {
+        console.log(`ERROR - ${req.params.index} shrink failed`, err);
+        return res.send(JSON.stringify({
+          success: false,
+          text: err.message || 'Error shrinking index'
+        }));
+      }
+
+      return res.send(JSON.stringify({ success: true, info: results }));
+    });
+  });
+});
+
 app.get('/estask/list', recordResponseTime, function(req, res) {
   if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
 
