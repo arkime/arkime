@@ -248,6 +248,9 @@ LOCAL void sccp_classify(MolochSession_t *session, const unsigned char *data, in
 /******************************************************************************/
 LOCAL void wudo_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
+    if (len < 15)
+        return;
+
     if (memcmp(data, "\x00\x00\x00\x00", 4) == 0) {
         moloch_session_add_protocol(session, "wudo");
     }
