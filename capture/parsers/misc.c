@@ -246,6 +246,16 @@ LOCAL void sccp_classify(MolochSession_t *session, const unsigned char *data, in
     }
 }
 /******************************************************************************/
+LOCAL void wudo_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (memcmp(data, "\x00\x00\x00\x00", 4) == 0) {
+        moloch_session_add_protocol(session, "wudo");
+    }
+    else if (memcmp(data, "\x0eSwarm protocol", 15) == 0) {
+        moloch_session_add_protocol(session, "wudo");
+    }
+}
+/******************************************************************************/
 LOCAL void mqtt_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 30 || memcmp("MQ", data+4, 2) != 0)
@@ -495,6 +505,8 @@ void moloch_parser_init()
     SIMPLE_CLASSIFY_TCP("zookeeper", "\x00\x00\x00\x2d\x00\x00\x00\x00");
 
     moloch_parsers_classifier_register_port("sccp",  NULL, 2000, MOLOCH_PARSERS_PORT_TCP_DST, sccp_classify);
+
+    moloch_parsers_classifier_register_port("wudo",  NULL, 7680, MOLOCH_PARSERS_PORT_TCP_DST, wudo_classify);
 
     CLASSIFY_TCP("mqtt", 0, "\x10", mqtt_classify);
 
