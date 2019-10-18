@@ -3387,6 +3387,13 @@ app.post('/esindices/:index/shrink', logAction(), checkCookieToken, (req, res) =
   };
 
   Db.setIndexSettings(req.params.index, settingsParams, (err, results) => {
+    if (err) {
+      return res.send(JSON.stringify({
+        success: false,
+        text: err.message || 'Error shrinking index'
+      }));
+    }
+
     let shrinkParams = {
       body: {
         settings: {
@@ -3398,17 +3405,23 @@ app.post('/esindices/:index/shrink', logAction(), checkCookieToken, (req, res) =
       }
     };
 
-    Db.shrinkIndex(req.params.index, shrinkParams, (err, results) => {
-      if (err) {
-        console.log(`ERROR - ${req.params.index} shrink failed`, err);
-        return res.send(JSON.stringify({
-          success: false,
-          text: err.message || 'Error shrinking index'
-        }));
-      }
+    // wait for no more reloacting shards
+    let shrinkCheckInterval = setInterval(() => {
+      Db.healthCachePromise()
+        .then((result) => {
+          if (result.relocating_shards === 0) {
+            clearInterval(shrinkCheckInterval);
+            Db.shrinkIndex(req.params.index, shrinkParams, (err, results) => {
+              if (err) {
+                console.log(`ERROR - ${req.params.index} shrink failed`, err);
+              }
+            });
+          }
+        });
+    }, 1000);
 
-      return res.send(JSON.stringify({ success: true, info: results }));
-    });
+    // always return right away, shrinking might take a while
+    return res.send(JSON.stringify({ success: true }));
   });
 });
 
