@@ -45,7 +45,7 @@ void isis_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(pa
 
     switch (packet->pkt[21]) {
       case 0x10: 
-        moloch_session_add_protocol(session, "isis-hello");
+        moloch_session_add_protocol(session, "isishello");
         break;
       case 0x19: 
         moloch_session_add_protocol(session, "isis-csnp");
