@@ -478,6 +478,7 @@ Pcap.prototype.ip4 = function (buffer, obj, pos) {
     this.sctp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj, pos + obj.ip.hl*4);
     break;
   default:
+    obj.ip.data = buffer.slice(obj.ip.hl*4, obj.ip.len);
     console.log("v4 Unknown ip.p", obj);
   }
 };
@@ -527,6 +528,7 @@ Pcap.prototype.ip6 = function (buffer, obj, pos) {
       this.sctp(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
       return;
     default:
+      obj.ip.data = buffer.slice(offset, offset+obj.ip.len);
       console.log("v6 Unknown ip.p", obj);
       return;
     }
@@ -611,6 +613,7 @@ Pcap.prototype.ethertype = function(buffer, obj, pos) {
     this.ethertype(buffer.slice(4), obj, pos+4);
     break;
   default:
+    obj.ether.data = buffer.slice(2);
     console.trace("Unknown ether.type", obj);
     break;
   }
@@ -1004,7 +1007,7 @@ exports.packetFlow = function (session, packets, numPackets, cb) {
 
     if (!sKey) {
       sKey = Pcap.keyFromSession(session);
-      if (packets[0].ip.p !== 6) {
+      if (!packets[0].ip || packets[0].ip.p !== 6) {
         sKey = Pcap.key(packets[0]);
       }
     }
@@ -1013,34 +1016,38 @@ exports.packetFlow = function (session, packets, numPackets, cb) {
     if (!dKey && !match) { dKey = result.key; }
     result.src = match;
 
-    switch (item.ip.p) {
-      case 1:
-      case 58:
-        result.data = item.icmp.data;
-        break;
-      case 6:
-        result.data = item.tcp.data;
-        result.tcpflags = {
-          syn: item.tcp.synflag,
-          ack: item.tcp.ackflag,
-          psh: item.tcp.pshflag,
-          rst: item.tcp.rstflag,
-          fin: item.tcp.finflag,
-          urg: item.tcp.urgflag
-        };
-        break;
-      case 17:
-        result.data = item.udp.data;
-        break;
-      case 132:
-        result.data = item.sctp.data;
-        break;
-      case 50:
-        result.data = item.esp.data;
-        break;
-      default:
-        error = 'Couldn\'t decode pcap file, check viewer log';
-        break;
+    if (!item.ip) {
+        result.data = item.ether.data;
+    } else {
+      switch (item.ip.p) {
+        case 1:
+        case 58:
+          result.data = item.icmp.data;
+          break;
+        case 6:
+          result.data = item.tcp.data;
+          result.tcpflags = {
+            syn: item.tcp.synflag,
+            ack: item.tcp.ackflag,
+            psh: item.tcp.pshflag,
+            rst: item.tcp.rstflag,
+            fin: item.tcp.finflag,
+            urg: item.tcp.urgflag
+          };
+          break;
+        case 17:
+          result.data = item.udp.data;
+          break;
+        case 132:
+          result.data = item.sctp.data;
+          break;
+        case 50:
+          result.data = item.esp.data;
+          break;
+        default:
+          result.data = item.ip.data;
+          break;
+      }
     }
 
     return result;
@@ -1052,6 +1059,7 @@ exports.packetFlow = function (session, packets, numPackets, cb) {
 };
 
 exports.key = function(packet) {
+  if (!packet.ip) { return packet.ether.addr1; }
   switch(packet.ip.p) {
   case 6: // tcp
     return packet.ip.addr1 + ':' + packet.tcp.sport;

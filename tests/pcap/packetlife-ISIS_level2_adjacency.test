@@ -2,16 +2,13 @@
    "sessions2" : [
       {
          "body" : {
-            "communityId" : "1:4SnyfFEDvFzES83woV4WDURQZv8=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
-            "dstIp" : "0000:0000:0000:0000:0000:0000:0000:0000",
             "dstMac" : [
                "01:80:c2:00:00:15"
             ],
             "dstMacCnt" : 1,
             "dstPackets" : 0,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 1213758559132,
             "ipProtocol" : 0,
@@ -115,15 +112,12 @@
             "segmentCnt" : 1,
             "srcBytes" : 52379,
             "srcDataBytes" : 0,
-            "srcIp" : "0000:0000:0000:0000:0000:0000:0000:0000",
             "srcMac" : [
                "c2:02:29:98:00:00",
                "c2:03:29:a9:00:00"
             ],
             "srcMacCnt" : 2,
             "srcPackets" : 43,
-            "srcPort" : 0,
-            "timestamp" : "SET",
             "totBytes" : 52379,
             "totDataBytes" : 0,
             "totPackets" : 43

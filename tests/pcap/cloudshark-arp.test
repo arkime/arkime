@@ -70,10 +70,8 @@
       },
       {
          "body" : {
-            "communityId" : "1:hC91SVicBmLPVe4NbQsi0828Z3c=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
-            "dstIp" : "0000:0000:0000:0000:0000:0000:0000:0000",
             "dstMac" : [
                "00:1a:6b:6c:0c:cc",
                "ff:ff:ff:ff:ff:ff"
@@ -84,7 +82,6 @@
             ],
             "dstOuiCnt" : 1,
             "dstPackets" : 0,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 1352595620652,
             "ipProtocol" : 0,
@@ -106,7 +103,6 @@
             "segmentCnt" : 1,
             "srcBytes" : 102,
             "srcDataBytes" : 0,
-            "srcIp" : "0000:0000:0000:0000:0000:0000:0000:0000",
             "srcMac" : [
                "00:1a:6b:6c:0c:cc",
                "00:1d:09:f0:92:ab"
@@ -118,8 +114,6 @@
             ],
             "srcOuiCnt" : 2,
             "srcPackets" : 2,
-            "srcPort" : 0,
-            "timestamp" : "SET",
             "totBytes" : 102,
             "totDataBytes" : 0,
             "totPackets" : 2
@@ -133,10 +127,8 @@
       },
       {
          "body" : {
-            "communityId" : "1:D+9cRn8tdPUqqMaFTjpSyAZjOGs=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
-            "dstIp" : "0000:0000:0000:0000:0000:0000:0000:0000",
             "dstMac" : [
                "00:1a:6b:6c:0c:cc",
                "00:1d:09:f0:92:ab"
@@ -148,7 +140,6 @@
             ],
             "dstOuiCnt" : 2,
             "dstPackets" : 0,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 1352595625652,
             "ipProtocol" : 0,
@@ -170,7 +161,6 @@
             "segmentCnt" : 1,
             "srcBytes" : 102,
             "srcDataBytes" : 0,
-            "srcIp" : "0000:0000:0000:0000:0000:0000:0000:0000",
             "srcMac" : [
                "00:1a:6b:6c:0c:cc",
                "00:1d:09:f0:92:ab"
@@ -182,8 +172,6 @@
             ],
             "srcOuiCnt" : 2,
             "srcPackets" : 2,
-            "srcPort" : 0,
-            "timestamp" : "SET",
             "totBytes" : 102,
             "totDataBytes" : 0,
             "totPackets" : 2
