@@ -35,8 +35,29 @@ void isis_create_sessionid(char *sessionId, MolochPacket_t *packet)
 /******************************************************************************/
 void isis_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
 {
+    char msg[32];
+
     if (isNewSession)
         moloch_session_add_protocol(session, "isis");
+
+    if (packet->pktlen < 22) 
+      return;
+
+    switch (packet->pkt[21]) {
+      case 0x10: 
+        moloch_session_add_protocol(session, "isis-hello");
+        break;
+      case 0x19: 
+        moloch_session_add_protocol(session, "isis-csnp");
+        break;
+      case 0x14: 
+      case 0x16: 
+        moloch_session_add_protocol(session, "isis-lsp");
+        break;
+      default: 
+        sprintf (msg, "isis-unkmsg-%d", packet->pkt[21]);
+        moloch_session_add_protocol(session, msg);
+    }
 }
 /******************************************************************************/
 int isis_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))
