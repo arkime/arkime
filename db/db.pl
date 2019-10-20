@@ -161,7 +161,7 @@ sub showHelp($)
     print "    --shared                   - Whether the shortcut is shared to all users\n";
     print "    --description <description>- Description of the shortcut\n";
     print "  shrink <index> <node> <num>  - Shrink a session index\n";
-    print "      index                    - The session index to shring\n";
+    print "      index                    - The session index to shrink\n";
     print "      node                     - The node to temporarily use for shrinking\n";
     print "      num                      - Number of shards to shrink to\n";
     print "\n";
@@ -3926,7 +3926,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         if ($main::versionNumber <= 60) {
             lookupsCreate();
         }
-            
+
         historyUpdate();
         sessions2Update();
 

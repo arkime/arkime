@@ -18,7 +18,7 @@
       <tr ref="draggableColumns">
         <th v-if="actionColumn"
           class="ignore-element text-left"
-          style="width:50px;">
+          style="min-width:50px;">
           <!-- column visibility button -->
           <b-dropdown
             size="sm"
