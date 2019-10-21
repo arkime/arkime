@@ -319,7 +319,7 @@ LOCAL void suricata_process()
                              (t[30] - '0')*60;
                 if (t[26] == '-')
                     offset *= -1;
-                item->timestamp += offset;
+                item->timestamp -= offset;
             }
 
             if (config.debug > 2) {
