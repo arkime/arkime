@@ -67,6 +67,7 @@
                 <span v-else>&nbsp;</span>
               </span>
               <span class="node-badge badge badge-primary badge-pill"
+                style="padding-left:.5rem;"
                 :class="{'show-badge cursor-help': item.roles.indexOf('data') > -1}">
                 <span v-if="item.roles.indexOf('data') > -1"
                   title="Data Node"
@@ -274,6 +275,7 @@ table.table tr.border-top-bold > td {
 .node-badge {
   opacity: 0;
   width: 1.6rem;
+  line-height: 1.2;
   font-size: 0.75rem;
   background-color: var(--color-primary);
 
