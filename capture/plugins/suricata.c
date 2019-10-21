@@ -308,8 +308,19 @@ LOCAL void suricata_process()
 
         if (MATCH(line, "timestamp")) {
             struct tm tm;
-            strptime(line + out[i+2], "%Y-%m-%dT%H:%M:%S.%%06u%z", &tm);
+            strptime(line + out[i+2], "%Y-%m-%dT%H:%M:%S.%%06u", &tm);
             item->timestamp = timegm(&tm);
+
+            if (out[i+3] > 30) {
+                char *t = line + out[i+2];
+                int offset = (t[27] - '0')*10*3600 +
+                             (t[28] - '0')*3600 +
+                             (t[29] - '0')*10*60 +
+                             (t[30] - '0')*60;
+                if (t[26] == '-')
+                    offset *= -1;
+                item->timestamp += offset;
+            }
 
             if (config.debug > 2) {
                 char buf[100];
