@@ -329,6 +329,7 @@ if (Config.get("passwordSecret")) {
     });
   });
 } else if (Config.get("regressionTests", false)) {
+  console.log('WARNING - The setting "regressionTests" is set to true, do NOT use in production, for testing only');
   app.locals.alwaysShowESStatus = true;
   app.locals.noPasswordSecret   = true;
   app.use(function(req, res, next) {
@@ -344,6 +345,7 @@ if (Config.get("passwordSecret")) {
   });
 } else {
   /* Shared password isn't set, who cares about auth, db is only used for settings */
+  console.log('WARNING - The setting "passwordSecret" is not set, all access is anonymous');
   app.locals.alwaysShowESStatus = true;
   app.locals.noPasswordSecret   = true;
   app.use(function(req, res, next) {
@@ -3376,6 +3378,59 @@ app.post('/esindices/:index/open', logAction(), checkCookieToken, function(req, 
   return res.send(JSON.stringify({ success: true, text: {} }));
 });
 
+app.post('/esindices/:index/shrink', logAction(), checkCookieToken, (req, res) => {
+  if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
+  if (!req.body || !req.body.target) {
+    return res.molochError(403, 'Missing target');
+  }
+
+  let settingsParams = {
+    body: {
+      'index.routing.allocation.total_shards_per_node': null,
+      'index.routing.allocation.require._name': req.body.target,
+      'index.blocks.write': true
+    }
+  };
+
+  Db.setIndexSettings(req.params.index, settingsParams, (err, results) => {
+    if (err) {
+      return res.send(JSON.stringify({
+        success: false,
+        text: err.message || 'Error shrinking index'
+      }));
+    }
+
+    let shrinkParams = {
+      body: {
+        settings: {
+          'index.routing.allocation.require._name': null,
+          'index.blocks.write': null,
+          'index.codec': 'best_compression',
+          'index.number_of_shards': req.body.numShards || 1
+        }
+      }
+    };
+
+    // wait for no more reloacting shards
+    let shrinkCheckInterval = setInterval(() => {
+      Db.healthCachePromise()
+        .then((result) => {
+          if (result.relocating_shards === 0) {
+            clearInterval(shrinkCheckInterval);
+            Db.shrinkIndex(req.params.index, shrinkParams, (err, results) => {
+              if (err) {
+                console.log(`ERROR - ${req.params.index} shrink failed`, err);
+              }
+            });
+          }
+        });
+    }, 10000);
+
+    // always return right away, shrinking might take a while
+    return res.send(JSON.stringify({ success: true }));
+  });
+});
+
 app.get('/estask/list', recordResponseTime, function(req, res) {
   if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
 
@@ -3749,7 +3804,8 @@ app.get('/esstats.json', recordResponseTime, noCacheJson, function(req, res) {
         writesQueueSize: threadpoolInfo.queue_size,
         load: node.os.load_average !== undefined ? /* ES 2*/ node.os.load_average : /*ES 5*/ node.os.cpu.load_average["5m"],
         version: version,
-        molochtype: molochtype
+        molochtype: molochtype,
+        roles: node.roles
       });
     }
 

@@ -81,13 +81,13 @@
               v-if="sessionBtn"
               @click.prevent.stop="goToSessions(expr, pd.queryVal, '==')"
               :title="'Open in Sessions with ' + expr + ' == ' + pd.queryVal + ' added to the search expression'">
-              <span class="fa fa-folder-open-o"></span>&nbsp;
+              <span class="fa fa-folder-open-o fa-fw"></span>
               Open Sessions
             </b-dropdown-item>
             <b-dropdown-item
               @click.prevent.stop="newTabSessions(expr, pd.queryVal, '==')"
               :title="'Open a new Sessions tab with ' + expr + ' == ' + pd.queryVal + ' added to the search expression'">
-              <span class="fa fa-external-link-square"></span>&nbsp;
+              <span class="fa fa-external-link-square fa-fw"></span>
               New Sessions Tab
             </b-dropdown-item>
             <b-dropdown-item
@@ -95,13 +95,13 @@
               class="no-wrap"
               @click.prevent.stop="newTabSessions(expr, pd.queryVal, '==', true)"
               :title="'Open a new Sessions tab with ' + expr + ' == ' + pd.queryVal + ' as the root search expression'">
-              <span class="fa fa-external-link"></span>&nbsp;
+              <span class="fa fa-external-link fa-fw"></span>
               New Sessions Tab (with only this value)
             </b-dropdown-item>
             <b-dropdown-item
               @click="doCopy(pd.value)"
               title="Copy value to clipboard">
-              <span class="fa fa-clipboard"></span>&nbsp;
+              <span class="fa fa-clipboard fa-fw"></span>
               Copy value
             </b-dropdown-item>
           </div>
