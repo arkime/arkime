@@ -31,7 +31,8 @@ var Config         = require('./config.js'),
     ESC            = require('elasticsearch'),
     http           = require('http'),
     https          = require('https'),
-    fs             = require('fs');
+    fs             = require('fs'),
+    util           = require('util');
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -51,6 +52,9 @@ if(esClientKey) {
 
 var clients = {};
 var nodes = [];
+var crossClusterSearchEnabled = false;
+var esCoordinatingClient = undefined;
+var esCrossClusters = {};
 var httpAgent  =  new http.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 100});
 var httpsAgent =  new https.Agent(Object.assign({keepAlive: true, keepAliveMsecs:5000, maxSockets: 100}, esSSLOptions));
 
@@ -116,6 +120,74 @@ function node2Prefix(node) {
   }
   return "";
 }
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//// Cross Cluster Search Begin
+//////////////////////////////////////////////////////////////////////////////////
+
+// add cross cluster information to indices
+function addClusterInfo(index, cluster) { // cluster = [cluster_one, cluster_two, ...]
+  var new_index = []
+  //console.log(esCrossClusters);
+  cluster.forEach((val) => {  // esCrossClusters = {"cluster_one": "PREFIX1", "cluster_two": "PREFIX2", "cluster_three": ""}
+    if(esCrossClusters[val] !== undefined) {
+      new_index.push(val + ":" +  esCrossClusters[val] + index);   //cluster_one:PREFIX1_index
+    }
+  });
+  return new_index.join(","); // cluster_one:PREFIX1_index,cluster_two:PREFIX2_index, cluster_three:index
+}
+
+function fixIndex(index, cluster) {
+  if (index === undefined || cluster === undefined) {
+    return undefined;
+  } else if (Array.isArray(index)) {
+    return index.map((val) => {
+      return addClusterInfo(val, cluster);
+    });
+  } else {
+    return addClusterInfo(index, cluster);
+  }
+}
+
+function merge (to, from) {
+  for (var key in from) {
+    to[key] = from[key];
+  }
+}
+
+function crossClusterSearch(index, type, query, options, cluster, cb) {
+  var params = {index: fixIndex(index, cluster), type: type, body: query};
+  merge(params, options);
+  return esCoordinatingClient.search(params, (err, result) => {
+    for (var i = 0; i < result.hits.hits.length; i++) {
+      result.hits.hits[i]._source.clusterName = result.hits.hits[i]._index.split(":")[0];
+    }
+    //console.log(util.inspect(result, false, 50));
+    cb(err, result);
+  });
+}
+
+function searchAllCluster(index, type, query, options, cb) {
+  var clusters = Object.keys(esCrossClusters);
+  return crossClusterSearch(index, type, query, options, clusters, cb)
+}
+
+function validCluster(cluster) {
+  var found = false;
+  cluster.forEach((val) => {
+    if(esCrossClusters[val] !== undefined)
+    {
+      found = true;
+    }
+  });
+  return found;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+//// Cross Cluster Search End
+//////////////////////////////////////////////////////////////////////////////////
+
 
 function simpleGather(req, res, bodies, doneCb) {
   async.map(nodes, (node, asyncCb) => {
@@ -291,14 +363,35 @@ app.get("/:index/:type/_search", (req, res) => {
 });
 
 app.get("/:index/:type/:id", function(req, res) {
-  simpleGather(req, res, null, (err, results) => {
-    for (var i = 0; i < results.length; i++) {
-      if (results[i].found) {
-        return res.send(results[i]);
+  if (crossClusterSearchEnabled) { // use cross cluster search
+    // req.params.index -> index ; req.params.type -> type ; req.params.id -> document id
+    var index = req.params.index.replace(/MULTIPREFIX_/g, "");
+    index = index.split(",");
+    var type = req.params.type;
+    var query = { query: { terms: { "_id": [req.params.id] } } };
+    var options = undefined;
+    searchAllCluster(index, type, query, options, (err, results) => {
+      //console.log(util.inspect(results, false, 50));
+      if (err || results.hits.total == 0) {
+          //console.log(util.inspect(results, false, 50));
+          return res.send({ "_index" : index, "_type" : "session", "_id" : req.params.id, "found" : false });
+      } else {
+          results.hits.hits[0].found = true;
+          //console.log(util.inspect(results.hits.hits[0], false, 50));
+          return res.send(results.hits.hits[0]);
       }
-    }
-    res.send(results[0]);
-  });
+      //res.send(results);
+    });
+  } else {
+    simpleGather(req, res, null, (err, results) => {
+      for (var i = 0; i < results.length; i++) {
+        if (results[i].found) {
+          return res.send(results[i]);
+        }
+      }
+      res.send(results[0]);
+    });
+  }
 });
 
 app.get("/_cluster/settings", function(req, res) {
@@ -600,67 +693,114 @@ function newResult(search) {
 }
 
 app.post("/MULTIPREFIX_fields/field/_search", function(req, res) {
-  simpleGather(req, res, null, (err, results) => {
-    var obj = {
-      hits: {
-        total: 0,
-        hits: [
-        ]
-      }
-    };
-    var unique = {};
-    for (var i = 0; i < results.length; i++) {
-      var result = results[i];
-
-      if (result.error) {
-        console.log("ERROR - GET /fields/field/_search", result.error);
-      }
-
-      for (var h = 0; h < result.hits.total; h++) {
-        var hit = result.hits.hits[h];
+  var obj = {
+    hits: {
+      total: 0,
+      hits: [
+      ]
+    }
+  };
+  var unique = {};
+  if (crossClusterSearchEnabled) { // cross cluster search
+    // req.params.index -> index ; req.params.type -> type ; req.query -> options -> everything after _search?
+    var index = ["fields"];
+    var type = "field";
+    var query = req.body;
+    var options = req.query || undefined;
+    searchAllCluster(index, type, query, options, (err, results) => {
+      if (err) {console.log("ERROR - GET /fields/field/_search", result.error);}
+      for (var h = 0; h < results.hits.total; h++) {
+        var hit = results.hits.hits[h];
         if (!unique[hit._id]) {
           unique[hit._id] = 1;
           obj.hits.total++;
           obj.hits.hits.push(hit);
         }
       }
-    }
-    res.send(obj);
-  });
+      res.send(obj);
+    });
+  } else {
+    simpleGather(req, res, null, (err, results) => {
+      for (var i = 0; i < results.length; i++) {
+        var result = results[i];
+
+        if (result.error) {
+          console.log("ERROR - GET /fields/field/_search", result.error);
+        }
+
+        for (var h = 0; h < result.hits.total; h++) {
+          var hit = result.hits.hits[h];
+          if (!unique[hit._id]) {
+            unique[hit._id] = 1;
+            obj.hits.total++;
+            obj.hits.hits.push(hit);
+          }
+        }
+      }
+      res.send(obj);
+    });
+  }
 });
 
 app.post("/:index/:type/_search", function(req, res) {
-  var bodies = {};
-  var search = JSON.parse(req.body);
-  //console.log("DEBUG - INCOMING SEARCH", JSON.stringify(search, null, 2));
+  if (crossClusterSearchEnabled) { // cross cluster search
+    // req.params.index -> index ; req.params.type -> type ; req.query -> options -> everything after _search?
+    var index = req.params.index.replace(/MULTIPREFIX_/g, "");
+    index = index.split(",");
+    var type = req.params.type;
+    var query = req.body;
+    var options = req.query || undefined;
+    var cluster = undefined;
 
-  async.each(nodes, (node, asyncCb) => {
-    fixQuery(node, req.body, (err, body) => {
-      //console.log("DEBUG - OUTGOING SEARCH", node, JSON.stringify(body, null, 2));
-      bodies[node] = JSON.stringify(body);
-      asyncCb(null);
+    query = JSON.parse(query);
+    if (query._cluster) {
+      cluster = query._cluster; // an array [cluster_one, cluster_two, ...]
+      delete query._cluster;
+    }
+
+    cluster = Object.keys(esCrossClusters); // all cluster
+    query = JSON.stringify(query);
+    if (cluster !== undefined && validCluster(cluster)) {
+      crossClusterSearch(index, type, query, options, cluster, (err, results) => {
+        //console.log(util.inspect(results, false, 50));
+        res.send(results);
+      });
+    } else {      
+      res.send({"hits" : { "total" : 0, "hits" : [ ] } });
+    }
+  } else {
+    var bodies = {};
+    var search = JSON.parse(req.body);
+    //console.log("DEBUG - INCOMING SEARCH", JSON.stringify(search, null, 2));
+
+    async.each(nodes, (node, asyncCb) => {
+      fixQuery(node, req.body, (err, body) => {
+        //console.log("DEBUG - OUTGOING SEARCH", node, JSON.stringify(body, null, 2));
+        bodies[node] = JSON.stringify(body);
+        asyncCb(null);
+      });
+    }, (err) => {
+      simpleGather(req, res, bodies, (err, results) => {
+        var obj = newResult(search);
+
+        for (var i = 0; i < results.length; i++) {
+          combineResults(obj, results[i]);
+        }
+
+        if (obj.facets) {
+          facetConvert2Arr(obj.facets);
+        }
+
+        if (obj.aggregations) {
+          aggConvert2Arr(obj.aggregations);
+        }
+
+        sortResults(search, obj);
+
+        res.send(obj);
+      });
     });
-  }, (err) => {
-    simpleGather(req, res, bodies, (err, results) => {
-      var obj = newResult(search);
-
-      for (var i = 0; i < results.length; i++) {
-        combineResults(obj, results[i]);
-      }
-
-      if (obj.facets) {
-        facetConvert2Arr(obj.facets);
-      }
-
-      if (obj.aggregations) {
-        aggConvert2Arr(obj.aggregations);
-      }
-
-      sortResults(search, obj);
-
-      res.send(obj);
-    });
-  });
+  }
 });
 
 function msearch(req, res) {
@@ -784,6 +924,25 @@ nodes.forEach((node) => {
     }
   });
 });
+
+
+if (Config.get("crossClusterES", false)) { //support cross cluster search
+  crossClusterSearchEnabled = true;
+  var cluster_info = Config.get("esCrossClusters", "").split(";"); // cluster_info = ["cluster_one,prefix:PREFIX1", "cluster_two,prefix:PREFIX2", "cluster_three]
+  cluster_info.forEach((cluster) => {  // cluster = cluster_one,prefix:PREFIX1
+    esCrossClusters[cluster.split(",")[0]] = node2Prefix(cluster); // {"cluster_one": "PREFIX1", ..., cluster_three": ""}
+  });
+  esCoordinatingClient = new ESC.Client({
+    host: Config.get("esCrossClusterCoordinator"),
+    apiVersion: "6.3",
+    requestTimeout: 300000,
+    keepAlive: true,
+    ssl: {rejectUnauthorized: !Config.insecure}
+  });
+
+  console.log(esCrossClusters);
+}
+
 
 console.log(nodes);
 
