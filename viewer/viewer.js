@@ -329,6 +329,7 @@ if (Config.get("passwordSecret")) {
     });
   });
 } else if (Config.get("regressionTests", false)) {
+  console.log('WARNING - The setting "regressionTests" is set to true, do NOT use in production, for testing only');
   app.locals.alwaysShowESStatus = true;
   app.locals.noPasswordSecret   = true;
   app.use(function(req, res, next) {
@@ -344,6 +345,7 @@ if (Config.get("passwordSecret")) {
   });
 } else {
   /* Shared password isn't set, who cares about auth, db is only used for settings */
+  console.log('WARNING - The setting "passwordSecret" is not set, all access is anonymous');
   app.locals.alwaysShowESStatus = true;
   app.locals.noPasswordSecret   = true;
   app.use(function(req, res, next) {
