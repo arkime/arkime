@@ -5474,7 +5474,6 @@ function localSessionDetailReturnFull(req, res, session, incoming) {
   if (req.packetsOnly) { // only return packets
     res.render('sessionPackets.pug', {
       filename: 'sessionPackets',
-      cache: true,
       user: req.user,
       session: session,
       data: incoming,
