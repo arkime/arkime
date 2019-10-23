@@ -24,7 +24,7 @@ LOCAL int isisMProtocol;
 LOCAL int typeField;
 
 /******************************************************************************/
-void isis_create_sessionid(char *sessionId, MolochPacket_t *packet)
+void isis_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
 {
     sessionId[0] = 1;
     sessionId[1] = 0x83;
@@ -87,7 +87,7 @@ int isis_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED
 /******************************************************************************/
 int isis_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
 {
-    char sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t sessionId[MOLOCH_SESSIONID_LEN];
 
     // no sanity checks until we parse.  the thinking is that it will make sense to 
     // high level parse to determine isis packet type (eg hello, csnp/psnp, lsp) and
@@ -121,7 +121,7 @@ void moloch_parser_init()
                                              NULL);
 
 
-    typeField = moloch_field_define("isis","uptermfield",
+    typeField = moloch_field_define("isis","lotermfield",
         "isis.msgType", "isis.msgType", "isis.msgType",
         "ISIS Msg Type field",
         MOLOCH_FIELD_TYPE_STR_GHASH, 0,
