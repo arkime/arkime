@@ -5700,7 +5700,6 @@ app.get('/:nodeName/session/:id/detail', cspHeader, logAction(), (req, res) => {
     fixFields(session, () => {
       pug.render(internals.sessionDetailNew, {
         filename    : "sessionDetail",
-        cache       : true,
         user        : req.user,
         session     : session,
         Db          : Db,
