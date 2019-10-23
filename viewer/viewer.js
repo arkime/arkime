@@ -5474,6 +5474,7 @@ function localSessionDetailReturnFull(req, res, session, incoming) {
   if (req.packetsOnly) { // only return packets
     res.render('sessionPackets.pug', {
       filename: 'sessionPackets',
+      cache: true,
       user: req.user,
       session: session,
       data: incoming,
@@ -5700,6 +5701,7 @@ app.get('/:nodeName/session/:id/detail', cspHeader, logAction(), (req, res) => {
     fixFields(session, () => {
       pug.render(internals.sessionDetailNew, {
         filename    : "sessionDetail",
+        cache       : true,
         user        : req.user,
         session     : session,
         Db          : Db,
