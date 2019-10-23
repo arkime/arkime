@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 62;
+const MIN_DB_VERSION = 64;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -7458,6 +7458,10 @@ app.put('/lookups/:id', getSettingUser, logAction('lookups/:id'), checkCookieTok
     if (err) {
       console.log('fetching shortcut to update failed', err, fetchedVar);
       return res.molochError(500, 'Fetching shortcut to update failed');
+    }
+
+    if (fetchedVar._source.locked) {
+      return res.molochError(403, 'Locked Shortcut. Use db.pl script to update this shortcut.');
     }
 
     // only allow admins or lookup creator to update lookup item

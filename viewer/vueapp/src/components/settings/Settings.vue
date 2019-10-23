@@ -1920,7 +1920,7 @@
                 <tr :key="`${item.id}-content`">
                   <td>
                     <input type="checkbox"
-                      :disabled="!user.createEnabled && item.userId !== user.userId"
+                      :disabled="(!user.createEnabled && item.userId !== user.userId) || item.locked"
                       v-model="item.shared"
                       @input="toggleShortcutShared(item)"
                     />
@@ -1942,12 +1942,25 @@
                       <span v-if="!item.newValue">
                         <button type="button"
                           v-b-tooltip.hover
+                          v-if="!item.locked"
                           @click="toggleEditShortcut(item)"
                           title="Make changes to this shortcut's value"
                           class="btn btn-sm btn-theme-tertiary pull-right ml-1">
-                          <span class="fa fa-pencil">
+                          <span class="fa fa-pencil fa-fw">
                           </span>
                         </button>
+                        <div v-else
+                          v-b-tooltip.hover
+                          class="pull-right ml-1"
+                          style="display:inline-block"
+                          title="Locked shortcut. Ask your admin to use db.pl to update this shortcut.">
+                          <button :disabled="true"
+                            type="button"
+                            class="btn btn-sm btn-warning disabled cursor-help">
+                            <span class="fa fa-lock fa-fw">
+                            </span>
+                          </button>
+                        </div>
                         <button type="button"
                           v-b-tooltip.hover
                           title="Delete this shortcut"
