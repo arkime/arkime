@@ -21,12 +21,11 @@ extern MolochConfig_t        config;
 LOCAL MolochPQ_t *isisPq;
 
 LOCAL int isisMProtocol;
+LOCAL int typeField;
 
 /******************************************************************************/
-void isis_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
+void isis_create_sessionid(char *sessionId, MolochPacket_t *packet)
 {
-    uint8_t *data = packet->pkt + packet->payloadOffset;
-
     sessionId[0] = 1;
     sessionId[1] = 0x83;
 
@@ -35,8 +34,50 @@ void isis_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
 /******************************************************************************/
 void isis_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
 {
+    char msg[32];
+
     if (isNewSession)
         moloch_session_add_protocol(session, "isis");
+
+    if (packet->pktlen < 22) {
+      sprintf (msg, "err-len-%d", packet->pktlen);
+      moloch_field_string_add(typeField, session, msg, -1, TRUE);
+      return;
+    }
+
+    switch (packet->pkt[21]) {
+      case 15:
+        moloch_field_string_add(typeField, session, "lan-l1-hello", -1, TRUE);
+        break;
+      case 16:
+        moloch_field_string_add(typeField, session, "lan-l2-hello", -1, TRUE);
+        break;
+      case 17:
+        moloch_field_string_add(typeField, session, "p2p-hello", -1, TRUE);
+        break;
+      case 18:
+        moloch_field_string_add(typeField, session, "l1-lsp", -1, TRUE);
+        break;
+      case 20:
+        moloch_field_string_add(typeField, session, "l2-lsp", -1, TRUE);
+        break;
+      case 24:
+        moloch_field_string_add(typeField, session, "l1-csnp", -1, TRUE);
+        break;
+      case 25:
+        moloch_field_string_add(typeField, session, "l2-csnp", -1, TRUE);
+        break;
+      case 26:
+        moloch_field_string_add(typeField, session, "l1-psnp", -1, TRUE);
+        break;
+      case 27:
+        moloch_field_string_add(typeField, session, "l2-psnp", -1, TRUE);
+        break;
+      default:
+        sprintf (msg, "unk-%d", packet->pkt[21]);
+        LOG("isis %s\n", msg);
+        moloch_field_string_add(typeField, session, msg, -1, TRUE);
+    }
 }
 /******************************************************************************/
 int isis_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))
@@ -46,7 +87,7 @@ int isis_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED
 /******************************************************************************/
 int isis_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
 {
-    uint8_t sessionId[MOLOCH_SESSIONID_LEN];
+    char sessionId[MOLOCH_SESSIONID_LEN];
 
     // no sanity checks until we parse.  the thinking is that it will make sense to 
     // high level parse to determine isis packet type (eg hello, csnp/psnp, lsp) and
@@ -78,4 +119,11 @@ void moloch_parser_init()
                                              isis_pre_process,
                                              isis_process,
                                              NULL);
+
+
+    typeField = moloch_field_define("isis","uptermfield",
+        "isis.msgType", "isis.msgType", "isis.msgType",
+        "ISIS Msg Type field",
+        MOLOCH_FIELD_TYPE_STR_GHASH, 0,
+        (char *)NULL);
 }
