@@ -97,7 +97,7 @@ uint32_t writer_s3_queue_length()
     int q = 0;
 
     SavepcapS3File_t *file;
-    DLL_FOREACH(fs3_, &fileQ, file) 
+    DLL_FOREACH(fs3_, &fileQ, file)
     {
         if (config.debug && DLL_COUNT(os3_, &file->outputQ) > 0)
             LOG("Waiting: %s - %d", file->outputFileName, DLL_COUNT(os3_, &file->outputQ));
@@ -243,7 +243,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
 
     gettimeofday(&outputFileTime, 0);
     struct tm         *gm = gmtime(&outputFileTime.tv_sec);
-    snprintf(datetime, sizeof(datetime), 
+    snprintf(datetime, sizeof(datetime),
             "%04d%02d%02dT%02d%02d%02dZ",
             gm->tm_year + 1900,
             gm->tm_mon+1,
@@ -271,9 +271,9 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
              "x-amz-date:%s\n"
              "%s"
              "%s"
-             "\n"      
+             "\n"
              // SignedHeaders
-             "host;x-amz-content-sha256;x-amz-date%s%s\n" 
+             "host;x-amz-content-sha256;x-amz-date%s%s\n"
              "%s"     // HexEncode(Hash(RequestPayload))
              ,
              method,
@@ -287,7 +287,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
              (s3Token?";x-amz-security-token":""),
              (specifyStorageClass?";x-amz-storage-class":""),
              bodyHash);
-    LOG("canonicalRequest: %s", canonicalRequest);
+    //LOG("canonicalRequest: %s", canonicalRequest);
 
     g_checksum_reset(checksum);
     g_checksum_update(checksum, (guchar*)canonicalRequest, -1);
@@ -303,7 +303,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
              datetime,
              s3Region,
              g_checksum_get_string(checksum));
-    LOG("stringToSign: %s", stringToSign);
+    //LOG("stringToSign: %s", stringToSign);
 
     char kSecret[1000];
     snprintf(kSecret, sizeof(kSecret), "AWS4%s", s3SecretAccessKey);
@@ -342,7 +342,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     strcpy(signature, g_hmac_get_string(hmac));
     g_hmac_unref(hmac);
 
-    LOG("signature: %s", signature);
+    //LOG("signature: %s", signature);
 
     snprintf(fullpath, sizeof(fullpath), "/%s%s?%s", s3Bucket, path, qs);
 
@@ -358,14 +358,12 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
 
     snprintf(strs[0], 1000,
             "Authorization: AWS4-HMAC-SHA256 Credential=%s/%8.8s/%s/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date%s%s,Signature=%s"
-            , 
-            s3AccessKeyId, datetime, s3Region, 
+            ,
+            s3AccessKeyId, datetime, s3Region,
             (s3Token?";x-amz-security-token":""),
             (specifyStorageClass?";x-amz-storage-class":""),
             signature
             );
-
-    LOG("strs[0]: %s", strs[0]);
 
     snprintf(strs[1], 1000, "x-amz-content-sha256: %s" , bodyHash);
     snprintf(strs[2], 1000, "x-amz-date: %s", datetime);
@@ -468,7 +466,7 @@ LOCAL void append_to_output(void *data, size_t length, gboolean packetHeader, si
         outputOffsetInBlock += length;
         outputDataSinceLastMiniBlock += length;
 
-        if (!packetHeader && 
+        if (!packetHeader &&
                 (outputOffsetInBlock >= (1 << COMPRESSED_WITHIN_BLOCK_BITS) - 16 ||
                 outputActualFilePos > outputLastBlockStart + COMPRESSED_BLOCK_SIZE)) {
             // We need to make a new block
@@ -548,7 +546,7 @@ void writer_s3_create(const MolochPacket_t *packet)
     int                offset = 6 + strlen(s3Region) + strlen(s3Bucket);
 
     snprintf(filename, sizeof(filename), "s3://%s/%s/%s/#NUMHEX#-%02d%02d%02d-#NUM#.pcap%s", s3Region, s3Bucket, config.nodeName, tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday, s3WriteGzip ? ".gz" : "");
-    
+
     currentFile = MOLOCH_TYPE_ALLOC0(SavepcapS3File_t);
     DLL_INIT(os3_, &currentFile->outputQ);
     DLL_PUSH_TAIL(fs3_, &fileQ, currentFile);
