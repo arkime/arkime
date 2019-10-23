@@ -1258,14 +1258,16 @@ export default {
       this.sorts = this.tableState.order || JSON.parse(JSON.stringify(Utils.getDefaultTableState().order));
 
       if (this.viewChanged && this.views) {
+        this.mapHeadersToFields();
+
         for (let view in this.views) {
           if (view === this.query.view && this.views[view].sessionsColConfig) {
             this.tableState = JSON.parse(JSON.stringify(this.views[view].sessionsColConfig));
-            this.mapHeadersToFields();
             this.sorts = this.tableState.order;
             this.saveTableState();
           }
         }
+
         this.updateTable = true;
         this.viewChanged = false;
       } else {
@@ -1464,6 +1466,8 @@ export default {
     },
     /* Initializes column drag and drop */
     initializeColDragDrop: function () {
+      if (!this.$refs.draggableColumns) { return; }
+
       colDragDropInitialized = true;
       draggableColumns = Sortable.create(this.$refs.draggableColumns, {
         animation: 100,
