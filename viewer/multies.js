@@ -159,11 +159,20 @@ function crossClusterSearch(index, type, query, options, cluster, cb) {
   var params = {index: fixIndex(index, cluster), type: type, body: query};
   merge(params, options);
   return esCoordinatingClient.search(params, (err, result) => {
-    for (var i = 0; i < result.hits.hits.length; i++) {
-      result.hits.hits[i]._source.clusterName = result.hits.hits[i]._index.split(":")[0];
+   if (err || result.error) {
+      //console.log(util.inspect(result, false, 50));
+      console.log("Error:", err);
+     // console.log(result);
+      cb(err, result);
+    } else {
+      console.log (index, " ",  type, " params: ", params, " result:", result);
+      if (result && result.hits && result.hits.hits) {
+       for (var i = 0; i < result.hits.hits.length; i++) {
+          result.hits.hits[i]._source.clusterName = result.hits.hits[i]._index.split(":")[0];
+        }
+      }
+      cb(err, result);
     }
-    //console.log(util.inspect(result, false, 50));
-    cb(err, result);
   });
 }
 
@@ -932,7 +941,7 @@ if (Config.get("crossClusterES", false)) { //support cross cluster search
   });
   esCoordinatingClient = new ESC.Client({
     host: Config.get("esCrossClusterCoordinator"),
-    apiVersion: "6.3",
+    apiVersion: "6.6",
     requestTimeout: 300000,
     keepAlive: true,
     ssl: {rejectUnauthorized: !Config.insecure}
