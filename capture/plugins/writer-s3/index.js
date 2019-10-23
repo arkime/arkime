@@ -125,12 +125,18 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
           }
           async.each(data.subPackets, function (sp, nextCb) {
             var block = decompressed[sp.rangeStart];
-            packetCb(pcap, block.subarray(sp.packetStart, sp.packetEnd), nextCb, sp.itemPos);
+            var packetData = block.subarray(sp.packetStart, sp.packetEnd);
+            var len = (pcap.bigEndian?packetData.readUInt32BE(8):packetData.readUInt32LE(8));
+
+            packetCb(pcap, packetData.subarray(0, len + 16), nextCb, sp.itemPos);
           },
           nextCb);
         } else {
           async.each(data.subPackets, function (sp, nextCb) {
-            packetCb(pcap, s3data.Body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart), nextCb, sp.itemPos);
+            var packetData = s3data.Body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart);
+            var len = (pcap.bigEndian?packetData.readUInt32BE(8):packetData.readUInt32LE(8));
+
+            packetCb(pcap, packetData.subarray(0, len + 16), nextCb, sp.itemPos);
           },
           nextCb);
         }
