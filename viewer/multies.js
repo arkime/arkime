@@ -31,8 +31,7 @@ var Config         = require('./config.js'),
     ESC            = require('elasticsearch'),
     http           = require('http'),
     https          = require('https'),
-    fs             = require('fs'),
-    util           = require('util');
+    fs             = require('fs');
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -53,7 +52,7 @@ if(esClientKey) {
 var clients = {};
 var nodes = [];
 var crossClusterSearchEnabled = false;
-var esCoordinatingClient = undefined;
+var esCoordinatingClient = null;
 var esCrossClusters = {};
 var httpAgent  =  new http.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 100});
 var httpsAgent =  new https.Agent(Object.assign({keepAlive: true, keepAliveMsecs:5000, maxSockets: 100}, esSSLOptions));
@@ -128,7 +127,7 @@ function node2Prefix(node) {
 
 // add cross cluster information to indices
 function addClusterInfo(index, cluster) { // cluster = [cluster_one, cluster_two, ...]
-  var new_index = []
+  var new_index = [];
   //console.log(esCrossClusters);
   cluster.forEach((val) => {  // esCrossClusters = {"cluster_one": "PREFIX1", "cluster_two": "PREFIX2", "cluster_three": ""}
     if(esCrossClusters[val] !== undefined) {
@@ -170,7 +169,7 @@ function crossClusterSearch(index, type, query, options, cluster, cb) {
 
 function searchAllCluster(index, type, query, options, cb) {
   var clusters = Object.keys(esCrossClusters);
-  return crossClusterSearch(index, type, query, options, clusters, cb)
+  return crossClusterSearch(index, type, query, options, clusters, cb);
 }
 
 function validCluster(cluster) {
@@ -369,10 +368,9 @@ app.get("/:index/:type/:id", function(req, res) {
     index = index.split(",");
     var type = req.params.type;
     var query = { query: { terms: { "_id": [req.params.id] } } };
-    var options = undefined;
-    searchAllCluster(index, type, query, options, (err, results) => {
+    searchAllCluster(index, type, query, null, (err, results) => {
       //console.log(util.inspect(results, false, 50));
-      if (err || results.hits.total == 0) {
+      if (err || results.hits.total === 0) {
           //console.log(util.inspect(results, false, 50));
           return res.send({ "_index" : index, "_type" : "session", "_id" : req.params.id, "found" : false });
       } else {
@@ -707,10 +705,10 @@ app.post("/MULTIPREFIX_fields/field/_search", function(req, res) {
     var type = "field";
     var query = req.body;
     var options = req.query || undefined;
-    searchAllCluster(index, type, query, options, (err, results) => {
+    searchAllCluster(index, type, query, options, (err, result) => {
       if (err) {console.log("ERROR - GET /fields/field/_search", result.error);}
-      for (var h = 0; h < results.hits.total; h++) {
-        var hit = results.hits.hits[h];
+      for (var h = 0; h < result.hits.total; h++) {
+        var hit = result.hits.hits[h];
         if (!unique[hit._id]) {
           unique[hit._id] = 1;
           obj.hits.total++;
@@ -750,7 +748,7 @@ app.post("/:index/:type/_search", function(req, res) {
     var type = req.params.type;
     var query = req.body;
     var options = req.query || undefined;
-    var cluster = undefined;
+    var cluster = null;
 
     query = JSON.parse(query);
     if (query._cluster) {
