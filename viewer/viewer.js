@@ -3137,7 +3137,7 @@ app.get('/history/list', recordResponseTime, function (req, res) {
     res.send(r);
   }).catch(err => {
     console.log('ERROR - /history/logs', err);
-    return res.molochError(500, 'Error retrieving log history - ' + err);
+    return res.molochError(500, 'Error retrieving log history - ' + safeStr(err));
   });
 });
 
