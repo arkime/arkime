@@ -716,6 +716,9 @@ exports.setLookup = function (id, username, doc, cb) {
 exports.getLookup = function (id, cb) {
   return internals.elasticSearchClient.get({index:fixIndex('lookups'), type:'lookup', id:id}, cb);
 };
+exports.getQuery = function (id, cb) {
+  return internals.usersElasticSearchClient.get({index:fixIndex('queries'), type: 'query', id: id}, cb);
+};
 exports.getLookupsCache = function (name, cb) {
   if (internals.lookupsCache[name] && internals.lookupsCache._timeStamp > Date.now() - 30000) {
     return cb(null, internals.lookupsCache[name]);

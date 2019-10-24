@@ -2025,20 +2025,28 @@ app.post('/user/cron/create', [noCacheJson, checkCookieToken, logAction(), postS
 });
 
 // deletes a user's specified cron query
-app.post('/user/cron/delete', [noCacheJson, checkCookieToken, logAction(), postSettingUser], function(req, res) {
+app.post('/user/cron/delete', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
   if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
 
   if (!req.body.key) { return res.molochError(403, 'Missing cron query key'); }
 
-  Db.deleteDocument('queries', 'query', req.body.key, {refresh: true}, function(err, sq) {
-    if (err) {
-      console.log('/user/cron/delete error', err, sq);
-      return res.molochError(500, 'Delete cron query failed');
+  Db.getQuery(req.body.key, function(err, query) {
+
+    if (err || !query.found || req.settingUser.userId !== query._source.creator ) {
+      console.log('cron query delete failed', err, query);
+      return res.molochError(403, 'Cron query not found or does not belong to you');
     }
-    res.send(JSON.stringify({
-      success : true,
-      text    : 'Deleted cron query successfully'
-    }));
+
+    Db.deleteDocument('queries', 'query', req.body.key, {refresh: true}, function(err, sq) {
+      if (err) {
+        console.log('/user/cron/delete error', err, sq);
+        return res.molochError(500, 'Delete cron query failed');
+      }
+      res.send(JSON.stringify({
+        success : true,
+        text    : 'Deleted cron query successfully'
+      }));
+    });
   });
 });
 
