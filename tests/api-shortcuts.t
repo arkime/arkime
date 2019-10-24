@@ -1,4 +1,4 @@
-use Test::More tests => 35;
+use Test::More tests => 37;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -12,7 +12,9 @@ my $otherToken = getTokenCookie('user2');
 
 # empty shortcuts
 my $shortcuts = viewerGet("/lookups");
-is(@{$shortcuts}, 0, "Empty shortcuts");
+is(@{$shortcuts->{data}}, 0, "Empty shortcuts");
+is($shortcuts->{recordsTotal}, 0, "Empty shortcuts with records total");
+is($shortcuts->{recordsFiltered}, 0, "Empty shortcuts with records filtered");
 
 # create shortcut required fields
 my $json = viewerPostToken("/lookups", '{}', $token);
@@ -67,7 +69,7 @@ my $shortcut2Id = $json->{var}->{id}; # save id for cleanup later
 
 # get shortcuts should have 1
 $shortcuts = viewerGet("/lookups?molochRegressionUser=user2");
-is(@{$shortcuts}, 1, "1 shortcut for this user");
+is(@{$shortcuts->{data}}, 1, "1 shortcut for this user");
 
 # create shared shortcut by another user
 $json = viewerPostToken("/lookups?molochRegressionUser=user2", '{"var":{"shared":true,"name":"other_test_shortcut_2","type":"string","value":"udp"}}', $otherToken);
@@ -77,19 +79,19 @@ my $shortcut3Id = $json->{var}->{id}; # save id for cleanup later
 
 # shared shortcut exists for user
 $shortcuts = viewerGet("/lookups?molochRegressionUser=user2");
-is(@{$shortcuts}, 2, "2 shortcuts for this user");
+is(@{$shortcuts->{data}}, 2, "2 shortcuts for this user");
 
 # unshared shortcut can't be seen by nonadmin users
 $shortcuts = viewerGet('/lookups?molochRegressionUser=user3');
-is(@{$shortcuts}, 1, "nonadmin user can only see shared shortcuts");
+is(@{$shortcuts->{data}}, 1, "nonadmin user can only see shared shortcuts");
 
 # get only shortcuts of a specific type
 $shortcuts = viewerGet("/lookups?fieldType=string");
-is(@{$shortcuts}, 2, "should be 2 shortcuts of type string");
-is($shortcuts->[0]->{type}, 'string', 'shortcut should be of type string');
+is(@{$shortcuts->{data}}, 2, "should be 2 shortcuts of type string");
+is($shortcuts->{data}->[0]->{type}, 'string', 'shortcut should be of type string');
 $shortcuts = viewerGet("/lookups?fieldType=ip");
-is(@{$shortcuts}, 1, "should be 2 shortcuts of type ip");
-is($shortcuts->[0]->{type}, 'ip', 'shortcut should be of type ip');
+is(@{$shortcuts->{data}}, 1, "should be 2 shortcuts of type ip");
+is($shortcuts->{data}->[0]->{type}, 'ip', 'shortcut should be of type ip');
 
 # get shortcuts map
 $shortcuts = viewerGet("/lookups?map=true");

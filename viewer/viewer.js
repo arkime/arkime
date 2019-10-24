@@ -7291,8 +7291,20 @@ app.get('/lookups', getSettingUser, recordResponseTime, function (req, res) {
         ]
       }
     },
-    sort: { name: { order: 'asc' } }
+    sort: {},
+    size: req.query.length || 50,
+    from: req.query.start || 0
   };
+
+  query.sort[req.query.sort || 'name'] = {
+    order: req.query.desc === 'true' ? 'desc' : 'asc'
+  };
+
+  if (req.query.searchTerm) {
+    query.query.bool.must = [{
+      wildcard: { name: '*' + req.query.searchTerm + '*' }
+    }];
+  }
 
   // if fieldType exists, filter it
   if (req.query.fieldType) {
@@ -7305,50 +7317,57 @@ app.get('/lookups', getSettingUser, recordResponseTime, function (req, res) {
     }
   }
 
-  Db.searchLookups(query)
-    .then((lookups) => {
-      if (lookups.error) { throw lookups.error; }
+  Promise.all([
+    Db.searchLookups(query),
+    Db.numberOfDocuments('lookups')
+  ]).then(([lookups, total]) => {
+    if (lookups.error) { throw lookups.error; }
 
-      let results = { list: [], map: {} };
-      for (const hit of lookups.hits.hits) {
-        let lookup = hit._source;
-        lookup.id = hit._id;
+    let results = { list: [], map: {} };
+    for (const hit of lookups.hits.hits) {
+      let lookup = hit._source;
+      lookup.id = hit._id;
 
-        if (lookup.number) {
-          lookup.type = 'number';
-        } else if (lookup.ip) {
-          lookup.type = 'ip';
-        } else {
-          lookup.type = 'string';
-        }
-
-        const values = lookup[lookup.type];
-
-        if (req.query.fieldFormat && req.query.fieldFormat === 'true') {
-          const name = `$${lookup.name}`;
-          lookup.exp = name;
-          lookup.dbField = name;
-          lookup.help = lookup.description ?
-            `${lookup.description}: ${values.join(', ')}` :
-            `${values.join(',')}`;
-        }
-
-        lookup.value = values.join('\n');
-        delete lookup[lookup.type];
-
-        if (map) {
-          results.map[lookup.id] = lookup;
-        } else {
-          results.list.push(lookup);
-        }
+      if (lookup.number) {
+        lookup.type = 'number';
+      } else if (lookup.ip) {
+        lookup.type = 'ip';
+      } else {
+        lookup.type = 'string';
       }
 
-      const sendResults = map ? results.map : results.list;
-      res.send(sendResults);
-    }).catch((err) => {
-      console.log('ERROR - /lookups', err);
-      return res.molochError(500, 'Error retrieving lookups - ' + err);
-    });
+      const values = lookup[lookup.type];
+
+      if (req.query.fieldFormat && req.query.fieldFormat === 'true') {
+        const name = `$${lookup.name}`;
+        lookup.exp = name;
+        lookup.dbField = name;
+        lookup.help = lookup.description ?
+          `${lookup.description}: ${values.join(', ')}` :
+          `${values.join(',')}`;
+      }
+
+      lookup.value = values.join('\n');
+      delete lookup[lookup.type];
+
+      if (map) {
+        results.map[lookup.id] = lookup;
+      } else {
+        results.list.push(lookup);
+      }
+    }
+
+    const sendResults = map ? results.map : {
+      recordsTotal: total.count,
+      recordsFiltered: lookups.hits.total,
+      data: results.list
+    };
+
+    res.send(sendResults);
+  }).catch((err) => {
+    console.log('ERROR - /lookups', err);
+    return res.molochError(500, 'Error retrieving lookups - ' + err);
+  });
 });
 
 function createLookupsArray (lookupsString) {
@@ -7439,6 +7458,10 @@ app.put('/lookups/:id', getSettingUser, logAction('lookups/:id'), checkCookieTok
     if (err) {
       console.log('fetching shortcut to update failed', err, fetchedVar);
       return res.molochError(500, 'Fetching shortcut to update failed');
+    }
+
+    if (fetchedVar._source.locked) {
+      return res.molochError(403, 'Locked Shortcut. Use db.pl script to update this shortcut.');
     }
 
     // only allow admins or lookup creator to update lookup item

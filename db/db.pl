@@ -58,6 +58,7 @@
 # 61 - shortcuts
 # 62 - hunt error timestamp and node
 # 63 - Upgrade for ES 7.x: sequence_v3, fields_v3, queries_v3, files_v6, users_v7, dstats_v4, stats_v4, hunts_v2
+# 64 - lock shortcuts
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -66,7 +67,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 63;
+my $VERSION = 64;
 my $verbose = 0;
 my $PREFIX = "";
 my $SECURE = 1;
@@ -89,6 +90,7 @@ my $OPTIMIZEWARM = 0;
 my $TYPE = "string";
 my $SHARED = 0;
 my $DESCRIPTION = "";
+my $LOCKED = 0;
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -160,6 +162,7 @@ sub showHelp($)
     print "    --type <type>              - Type of shortcut = string, ip, number, default is string\n";
     print "    --shared                   - Whether the shortcut is shared to all users\n";
     print "    --description <description>- Description of the shortcut\n";
+    print "    --locked                   - Whether the shortcut is locked and cannot be modified by the web interface\n";
     print "  shrink <index> <node> <num>  - Shrink a session index\n";
     print "      index                    - The session index to shrink\n";
     print "      node                     - The node to temporarily use for shrinking\n";
@@ -2429,6 +2432,9 @@ sub lookupsUpdate
       },
       "string": {
         "type": "keyword"
+      },
+      "locked": {
+        "type": "boolean"
       }
     }
   }
@@ -2922,6 +2928,8 @@ sub parseArgs {
             $OPTIMIZEWARM = 1;
         } elsif ($ARGV[$pos] eq "--shared") {
             $SHARED = 1;
+        } elsif ($ARGV[$pos] eq "--locked") {
+            $LOCKED = 1;
         } elsif ($ARGV[$pos] eq "--type") {
             $pos++;
             $TYPE = $ARGV[$pos];
@@ -3308,6 +3316,9 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     }
     if ($SHARED) {
       $newShortcut->{shared} = \1;
+    }
+    if ($LOCKED) {
+      $newShortcut->{locked} = \1;
     }
 
     my $verb = "Created";
@@ -3937,11 +3948,12 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
         checkForOld5Indices();
         checkForOld6Indices();
-    } elsif ($main::versionNumber <= 63) {
+    } elsif ($main::versionNumber <= 64) {
         checkForOld5Indices();
         checkForOld6Indices();
         sessions2Update();
         historyUpdate();
+        lookupsUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
