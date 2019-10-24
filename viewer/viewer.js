@@ -4147,6 +4147,8 @@ app.get('/dstats.json', [noCacheJson], function(req, res) {
 });
 
 app.get('/:nodeName/:fileNum/filesize.json', [noCacheJson], function(req, res) {
+  if (req.user.hideFiles) { return res.molochError(403, 'Need permission to view files'); }
+
   Db.fileIdToFile(req.params.nodeName, req.params.fileNum, function(file) {
     if (!file) {
       return res.send({filesize: -1});
