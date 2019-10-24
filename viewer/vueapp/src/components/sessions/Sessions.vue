@@ -241,7 +241,7 @@
                   <b-dropdown-divider>
                   </b-dropdown-divider>
                   <template v-if="infoFieldVisMenuOpen">
-                    <template v-for="(group, key) in filteredFields">
+                    <template v-for="(group, key) in filteredInfoFields">
                       <b-dropdown-header
                         :key="key"
                         v-if="group.length"
@@ -608,18 +608,10 @@ export default {
       return this.$store.state.user;
     },
     filteredFields: function () {
-      let filteredGroupedFields = {};
-
-      for (let group in this.groupedFields) {
-        filteredGroupedFields[group] = this.$options.filters.searchFields(
-          this.colQuery,
-          this.groupedFields[group],
-          false,
-          true
-        );
-      }
-
-      return filteredGroupedFields;
+      return this.filterFields(false, true, false);
+    },
+    filteredInfoFields: function () {
+      return this.filterFields(false, true, true);
     },
     views: function () {
       return this.$store.state.views;
@@ -1140,6 +1132,27 @@ export default {
       const fullExpression = this.$options.filters.buildExpression(field, 'EXISTS!', op);
       this.$store.commit('addToExpression', { expression: fullExpression });
     },
+    /**
+     * Filters grouped fields based on a query string
+     * @param {boolean} excludeTokens   Whether to exclude token fields
+     * @param {boolean} excludeFilename Whether to exclude the filename field
+     * @param {boolean} excludeInfo     Whether to exclude the special info "field"
+     */
+    filterFields: function (excludeTokens, excludeFilename, excludeInfo) {
+      let filteredGroupedFields = {};
+
+      for (let group in this.groupedFields) {
+        filteredGroupedFields[group] = this.$options.filters.searchFields(
+          this.colQuery,
+          this.groupedFields[group],
+          excludeTokens,
+          excludeFilename,
+          excludeInfo
+        );
+      }
+
+      return filteredGroupedFields;
+    },
 
     /* helper functions ---------------------------------------------------- */
     reloadTable: function () {
@@ -1245,14 +1258,16 @@ export default {
       this.sorts = this.tableState.order || JSON.parse(JSON.stringify(Utils.getDefaultTableState().order));
 
       if (this.viewChanged && this.views) {
+        this.mapHeadersToFields();
+
         for (let view in this.views) {
           if (view === this.query.view && this.views[view].sessionsColConfig) {
             this.tableState = JSON.parse(JSON.stringify(this.views[view].sessionsColConfig));
-            this.mapHeadersToFields();
             this.sorts = this.tableState.order;
             this.saveTableState();
           }
         }
+
         this.updateTable = true;
         this.viewChanged = false;
       } else {
@@ -1451,6 +1466,8 @@ export default {
     },
     /* Initializes column drag and drop */
     initializeColDragDrop: function () {
+      if (!this.$refs.draggableColumns) { return; }
+
       colDragDropInitialized = true;
       draggableColumns = Sortable.create(this.$refs.draggableColumns, {
         animation: 100,

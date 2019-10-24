@@ -263,9 +263,10 @@ Vue.filter('readableTimeCompact', function (ms) {
  * @param {array} fields            The list of fields to search
  * @param {boolean} excludeTokens   Whether to exclude token fields
  * @param {boolean} excludeFilename Whether to exclude the filename field
+ * @param {boolean} excludeInfo     Whether to exclude the special info "field"
  * @returns {array}                 An array of fields that match the search term
  */
-Vue.filter('searchFields', function (searchTerm, fields, excludeTokens, excludeFilename) {
+Vue.filter('searchFields', function (searchTerm, fields, excludeTokens, excludeFilename, excludeInfo) {
   if (!searchTerm) { searchTerm = ''; }
   return fields.filter((field) => {
     if (field.regex !== undefined || field.noFacet === 'true') {
@@ -277,6 +278,10 @@ Vue.filter('searchFields', function (searchTerm, fields, excludeTokens, excludeF
     }
 
     if (excludeFilename && field.type && field.type === 'fileand') {
+      return false;
+    }
+
+    if (excludeInfo && field.exp === 'info') {
       return false;
     }
 

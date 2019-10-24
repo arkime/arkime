@@ -161,9 +161,10 @@ sub showHelp($)
     print "    --shared                   - Whether the shortcut is shared to all users\n";
     print "    --description <description>- Description of the shortcut\n";
     print "  shrink <index> <node> <num>  - Shrink a session index\n";
-    print "      index                    - The session index to shring\n";
+    print "      index                    - The session index to shrink\n";
     print "      node                     - The node to temporarily use for shrinking\n";
     print "      num                      - Number of shards to shrink to\n";
+    print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default 1\n";
     print "\n";
     print "Backup and Restore Commands:\n";
     print "  backup <basename>            - Backup everything but sessions; filenames created start with <basename>\n";
@@ -3322,6 +3323,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     exit 0;
 } elsif ($ARGV[1] =~ /^(shrink)$/) {
+    parseArgs(5);
     die "Only shrink history and sessions2 indices" if ($ARGV[2] !~ /(sessions2|history)/);
 
     logmsg("Moving all shards for ${PREFIX}$ARGV[2] to $ARGV[3]\n");
@@ -3342,6 +3344,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     if ($status->{indices}->{"${PREFIX}$ARGV[2]-shrink"}->{primaries}->{docs}->{count} == $status->{indices}->{"${PREFIX}$ARGV[2]"}->{primaries}->{docs}->{count}) {
         logmsg("Deleting old index\n");
         esDelete("/${PREFIX}$ARGV[2]", 1);
+        esPut("/${PREFIX}$ARGV[2]-shrink/_settings?master_timeout=${ESTIMEOUT}s", "{\"index.routing.allocation.total_shards_per_node\" : $SHARDSPERNODE}") if ($SHARDSPERNODE ne "null");
     } else {
         logmsg("Doc counts don't match, not deleting old index\n");
     }
@@ -3926,7 +3929,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         if ($main::versionNumber <= 60) {
             lookupsCreate();
         }
-            
+
         historyUpdate();
         sessions2Update();
 

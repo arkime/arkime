@@ -15,9 +15,6 @@ my $json;
 # Delete old hunts
   esPost("/tests_hunts/hunt/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
 
-  esGet("/_flush");
-  esGet("/_refresh");
-
 # Make sure no hunts
   my $hunts = viewerGet("/hunt/list");
   eq_or_diff($hunts, from_json('{"recordsTotal": 0, "data": [], "recordsFiltered": 0}'));
@@ -93,12 +90,8 @@ my $hToken = getTokenCookie('huntuser');
   is ($json->{hunt}->{name}, "test hunt 13", "Strip special chars");
 
 # Hunt should finish
-  esGet("/_flush");
-  esGet("/_refresh");
   viewerGet("/processHuntJobs");
-  sleep(2);
-  esGet("/_flush");
-  esGet("/_refresh");
+
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 1, "Add hunt 1");
 
@@ -113,9 +106,6 @@ my $hToken = getTokenCookie('huntuser');
   $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt 14","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $otherToken);
 
   viewerGet("/processHuntJobs");
-  sleep(2);
-  esGet("/_flush");
-  esGet("/_refresh");
 
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 2, "Add hunt 2");
@@ -124,16 +114,13 @@ my $hToken = getTokenCookie('huntuser');
   $json = viewerDeleteToken("/hunt/$id2?molochRegressionUser=user2", $otherToken);
   is ($json->{text}, "Deleted hunt item successfully");
 
-  sleep(2);
-  esGet("/_flush");
-  esGet("/_refresh");
-
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 1, "User can remove their own hunt");
 
 # If the user is not an admin they can only pause their own hunts
   $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"hunt":{"totalSessions":1,"name":"test hunt 15~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $token);
   my $id3 = $json->{hunt}->{id};
+
   $json = viewerPutToken("/hunt/$id3/pause?molochRegressionUser=user2", "{}", $otherToken);
   is ($json->{text}, "You cannot change another user\'s hunt unless you have admin privileges", "Non admin user cannot pause another user's hunt");
 
@@ -144,19 +131,13 @@ my $hToken = getTokenCookie('huntuser');
   $json = viewerDeleteToken("/hunt/$id3?molochRegressionUser=anonymous", $token);
   is ($json->{text}, "Deleted hunt item successfully");
 
-  sleep(2);
-  esGet("/_flush");
-  esGet("/_refresh");
-
 # Admin can delete any hunt
   $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt 16","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $otherToken);
   my $id4 = $json->{hunt}->{id};
+
+  sleep(2); # Wait for it to finish processing
   $json = viewerDeleteToken("/hunt/$id4?molochRegressionUser=anonymous", $token);
   is ($json->{text}, "Deleted hunt item successfully");
-
-  sleep(2);
-  esGet("/_flush");
-  esGet("/_refresh");
 
   $hunts = viewerGet("/hunt/list");
   is (@{$hunts->{data}}, 1, "Admin can remove any hunt");

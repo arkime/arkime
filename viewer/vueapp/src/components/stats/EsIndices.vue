@@ -55,6 +55,11 @@
               @click="openIndex(item.index)">
               Open Index {{ item.index }}
             </b-dropdown-item>
+            <b-dropdown-item
+              v-if="item.pri > 1"
+              @click="openShrinkIndexForm(item)">
+              Shrink Index {{ item.index }}
+            </b-dropdown-item>
           </b-dropdown>
         </template>
       </moloch-table>
@@ -204,6 +209,9 @@ export default {
         }, (error) => {
           this.$emit('errored', error.text || error);
         });
+    },
+    openShrinkIndexForm (index) {
+      this.$emit('shrink', index);
     },
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {

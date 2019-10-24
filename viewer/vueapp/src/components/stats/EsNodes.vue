@@ -33,27 +33,51 @@
         table-state-name="esNodesCols"
         table-widths-state-name="esNodesColWidths">
         <template slot="actions"
-          slot-scope="{ item }">
-          <b-dropdown size="sm"
-            class="row-actions-btn"
-            v-has-permission="'createEnabled'">
-            <b-dropdown-item v-if="!item.nodeExcluded"
-              @click="exclude('name', item)">
-              Exclude node {{ item.name }}
-            </b-dropdown-item>
-            <b-dropdown-item v-else
-              @click="include('name', item)">
-              Include node {{ item.name }}
-            </b-dropdown-item>
-            <b-dropdown-item v-if="!item.ipExcluded"
-              @click="exclude('ip', item)">
-              Exclude IP {{ item.ip }}
-            </b-dropdown-item>
-            <b-dropdown-item v-else
-              @click="include('ip', item)">
-              Include IP {{ item.ip }}
-            </b-dropdown-item>
-          </b-dropdown>
+          slot-scope="{ item }"
+          class="display-inline">
+          <span class="no-wrap">
+            <b-dropdown size="sm"
+              class="row-actions-btn"
+              v-has-permission="'createEnabled'">
+              <b-dropdown-item v-if="!item.nodeExcluded"
+                @click="exclude('name', item)">
+                Exclude node {{ item.name }}
+              </b-dropdown-item>
+              <b-dropdown-item v-else
+                @click="include('name', item)">
+                Include node {{ item.name }}
+              </b-dropdown-item>
+              <b-dropdown-item v-if="!item.ipExcluded"
+                @click="exclude('ip', item)">
+                Exclude IP {{ item.ip }}
+              </b-dropdown-item>
+              <b-dropdown-item v-else
+                @click="include('ip', item)">
+                Include IP {{ item.ip }}
+              </b-dropdown-item>
+            </b-dropdown>
+            <span class="ml-1">
+              <span class="node-badge badge badge-primary badge-pill"
+                :class="{'show-badge cursor-help': item.roles.indexOf('master') > -1}">
+                <span v-if="item.roles.indexOf('master') > -1"
+                  title="Master Node"
+                  v-b-tooltip.hover>
+                  M
+                </span>
+                <span v-else>&nbsp;</span>
+              </span>
+              <span class="node-badge badge badge-primary badge-pill"
+                style="padding-left:.5rem;"
+                :class="{'show-badge cursor-help': item.roles.indexOf('data') > -1}">
+                <span v-if="item.roles.indexOf('data') > -1"
+                  title="Data Node"
+                  v-b-tooltip.hover>
+                  D
+                </span>
+                <span v-else>&nbsp;</span>
+              </span>
+            </span>
+          </span>
         </template>
       </moloch-table>
 
@@ -246,5 +270,17 @@ table.table tr.border-top-bold > td {
 }
 .table .hover-menu .btn-group {
   visibility: hidden;
+}
+
+.node-badge {
+  opacity: 0;
+  width: 1.6rem;
+  line-height: 1.2;
+  font-size: 0.75rem;
+  background-color: var(--color-primary);
+
+}
+.node-badge.show-badge {
+  opacity: 1;
 }
 </style>
