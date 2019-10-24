@@ -1290,17 +1290,31 @@ function issueAlert (notifierName, alertMessage, continueProcess) {
 }
 
 app.get('/notifierTypes', checkCookieToken, function (req, res) {
-  if (internals.notifiers) {
-    return res.send(internals.notifiers);
+  if (!internals.notifiers) {
+    buildNotifiers();
   }
-
-  buildNotifiers();
 
   return res.send(internals.notifiers);
 });
 
 // get created notifiers
 app.get('/notifiers', checkCookieToken, function (req, res) {
+  function cloneNotifiers(notifiers) {
+    var clone = {};
+
+    for (var key in notifiers) {
+      if (notifiers.hasOwnProperty(key)) {
+        var notifier = notifiers[key];
+        clone[key] = {
+          name: notifier.name,
+          type : notifier.type
+        };
+      }
+    }
+
+    return clone;
+  }
+
   Db.getUser('_moloch_shared', (err, sharedUser) => {
     if (!sharedUser || !sharedUser.found) {
       return res.send({});
@@ -1308,7 +1322,11 @@ app.get('/notifiers', checkCookieToken, function (req, res) {
       sharedUser = sharedUser._source;
     }
 
-    return res.send(sharedUser.notifiers);
+    if (req.user.createEnabled) {
+      return res.send(sharedUser.notifiers);
+    }
+
+    return res.send(cloneNotifiers(sharedUser.notifiers));
   });
 });
 
