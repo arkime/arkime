@@ -7208,7 +7208,7 @@ app.get('/hunt/list', recordResponseTime, function (req, res) {
       res.send(r);
     }).catch(err => {
       console.log('ERROR - /hunt/list', err);
-      return res.molochError(500, 'Error retrieving hunts - ' + err);
+      return res.molochError(500, 'Error retrieving hunts - ' + safeStr(err));
     });
 });
 
