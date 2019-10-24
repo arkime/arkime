@@ -449,8 +449,8 @@ export default {
      * @param {number} time date in seconds from 1970
      */
     isStartOfDay: function (time) {
-      const currentTime = moment(time * 1000);
-      const startOfDayTime = moment(time * 1000).startOf('day');
+      const currentTime = this.findTimeInTimezone(time * 1000);
+      const startOfDayTime = this.findTimeInTimezone(time * 1000).startOf('day');
       return startOfDayTime.isSame(currentTime, 'seconds');
     },
     /**
@@ -459,8 +459,8 @@ export default {
      * @param {number} time date in seconds from 1970
      */
     isEndOfDay: function (time) {
-      const currentTime = moment(time * 1000);
-      const endOfDayTime = moment(time * 1000).endOf('day');
+      const currentTime = this.findTimeInTimezone(time * 1000);
+      const endOfDayTime = this.findTimeInTimezone(time * 1000).endOf('day');
       return endOfDayTime.isSame(currentTime, 'seconds');
     },
     /**
@@ -469,7 +469,7 @@ export default {
      */
     prevTime: function (startOrStop) {
       if (startOrStop === 'start') {
-        let newTime = moment(this.time.startTime * 1000).startOf('day');
+        let newTime = this.findTimeInTimezone(this.time.startTime * 1000).startOf('day');
         if (this.isStartOfDay(this.time.startTime)) {
           // it's the beginning of the day, so go to the beginning of the PREV day
           newTime = newTime.subtract(1, 'days');
@@ -478,11 +478,12 @@ export default {
         this.time.startTime = Math.floor(this.localStartTime.valueOf() / 1000);
       } else {
         // stop time always goes to end of day of the previous day
-        let newTime = moment(this.time.stopTime * 1000).endOf('day');
+        let newTime = this.findTimeInTimezone(this.time.stopTime * 1000).endOf('day');
         newTime = newTime.subtract(1, 'days');
         this.localStopTime = newTime;
         this.time.stopTime = Math.floor(this.localStopTime.valueOf() / 1000);
       }
+      this.timeRange = '0';
       this.validateDate();
     },
     /**
@@ -492,12 +493,12 @@ export default {
     nextTime: function (startOrStop) {
       if (startOrStop === 'start') {
         // start time always goes to the beginning of the next day
-        let newTime = moment(this.time.startTime * 1000).startOf('day');
+        let newTime = this.findTimeInTimezone(this.time.startTime * 1000).startOf('day');
         newTime = newTime.add(1, 'days');
         this.localStartTime = newTime;
         this.time.startTime = Math.floor(this.localStartTime.valueOf() / 1000);
       } else {
-        let newTime = moment(this.time.stopTime * 1000).endOf('day');
+        let newTime = this.findTimeInTimezone(this.time.stopTime * 1000).endOf('day');
         if (this.isEndOfDay(this.time.stopTime)) {
           // it's the end of the day, so go to the end of the NEXT day
           newTime = newTime.add(1, 'days');
@@ -505,6 +506,7 @@ export default {
         this.localStopTime = newTime;
         this.time.stopTime = Math.floor(this.localStopTime.valueOf() / 1000);
       }
+      this.timeRange = '0';
       this.validateDate();
     },
     /**
@@ -598,6 +600,24 @@ export default {
     /* Sets the current time in seconds */
     setCurrentTime: function () {
       currentTimeSec = Math.floor(new Date().getTime() / 1000);
+    },
+    /**
+     * Find the time relative to the user specified timezone setting
+     * @param {number} time The time in ms
+     */
+    findTimeInTimezone: function (time) {
+      let newTime = moment(time);
+
+      if (this.timezone === 'gmt') {
+        newTime = moment.tz(time, 'utc');
+      } else if (this.timezone === 'localtz') {
+        newTime = moment.tz(
+          time,
+          Intl.DateTimeFormat().resolvedOptions().timeZone
+        );
+      }
+
+      return newTime;
     },
     /**
      * Fired when time component search params are changed
