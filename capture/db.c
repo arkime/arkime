@@ -1243,6 +1243,11 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         totalSpaceM += (uint64_t)(vfs.f_frsize/1000.0*vfs.f_blocks/1000.0);
     }
 
+    if (totalSpaceM == 0) {
+        // Prevents some divide by Zero problems later
+        totalSpaceM = 1;
+    }
+
     const uint64_t cursec = currentTime.tv_sec;
     uint64_t diffms = (currentTime.tv_sec - lastTime[n].tv_sec)*1000 + (currentTime.tv_usec/1000 - lastTime[n].tv_usec/1000);
 
