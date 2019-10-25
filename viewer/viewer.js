@@ -1358,6 +1358,11 @@ app.post('/notifiers', [noCacheJson, getSettingUser, checkCookieToken], function
     if (field.required) {
       for (let sentField of req.body.notifier.fields) {
         if (sentField.name === field.name && !sentField.value) {
+          if (sentField.name === "slackWebhookUrl"){
+            if (!sentField.value.startsWith('https://hooks.slack.com/')){
+              return res.molochError(403, `Please use a valid slack webhook url`);
+            }
+          }
           return res.molochError(403, `Missing a value for ${field.name}`);
         }
       }
