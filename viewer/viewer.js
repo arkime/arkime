@@ -7618,7 +7618,7 @@ function pcapScrub(req, res, sid, whatToRemove, endCb) {
   });
 }
 
-app.get('/:nodeName/delete/:whatToRemove/:sid', [checkProxyRequest], function (req, res) {
+app.post('/:nodeName/delete/:whatToRemove/:sid', [checkProxyRequest], function (req, res) {
   noCache(req, res);
   if (!req.user.removeEnabled) { return res.molochError(200, 'Need remove data privileges'); }
 
