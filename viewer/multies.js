@@ -117,6 +117,12 @@ function node2Prefix(node) {
   return "";
 }
 
+var activeESNodes = [];
+
+function getActiveNodes(){
+  return activeESNodes.slice();
+}
+
 function simpleGather(req, res, bodies, doneCb) {
   var nodes = getActiveNodes();
   async.map(nodes, (node, asyncCb) => {
@@ -786,35 +792,52 @@ nodes.forEach((node) => {
   });
 });
 
+activeESNodes = nodes.slice();
+
 // Ping (HEAD /) periodically to maintian a list of active ES nodes
-var activeESNodes = nodes.slice();
-
-async function pingESNodes() {
-  var active = [];
-  for (var i = 0; i< nodes.length; i++) {
-    // remove credential from elastic url
-    var host = nodes[i].split("://");
-    host = host[host.length > 1 ? 1 : 0 ].split("@"); // user:pass@elastic.com:9200
-    host = host [host.length > 1 ? host.length-1 : 0 ];
-    try {
-      var result = await clients[nodes[i]].ping({requestTimeout: 3*1000}); // 3*1000 ms
-      if(result) {
-        active.push(nodes[i]);
-      } else {
-        console.log("Elasticsearch is down at ", host);
-      }
-    } catch (err) {
-      console.log("Elasticsearch is down at ", host);
+function pingESNodes(client, node, cb) {
+  client.ping({
+    requestTimeout: 3*1000 //ping usually has a 3000ms timeout
+  }, function (error) {
+    if (error) {
+      cb({value: false, node: node}); // ES cluster is down
+    } else {
+      cb({value: true, node: node}); // ES cluster is up
     }
+  });
+}
+
+function getPingPromise(client, node){
+  return new Promise((resolve, reject) => {
+      pingESNodes(client, node, (result) => {
+        if(result.value === true) { // ES cluster is up
+          resolve(result.node);
+        } else { // ES cluster is down
+          var host = result.node.split("://");
+          host = host[host.length > 1 ? 1 : 0 ].split("@"); // user:pass@elastic.com:9200
+          host = host [host.length > 1 ? host.length-1 : 0];
+          console.log("Elasticsearch is down at ", host);
+          resolve(null);
+        }
+      });
+    });
+}
+
+function enumarateActiveNodes(){
+  var ping_tasks = [];
+  for (var i = 0; i < nodes.length; i++) {
+    ping_tasks.push(getPingPromise(clients[nodes[i]], nodes[i]));
   }
-  activeESNodes = active.slice();
+  Promise.all(ping_tasks).then(function(values) {
+    var active_nodes = [];
+    for (var i = 0; i < values.length; i++) {
+      if(values[i]) { active_nodes.push(values[i]); }
+    }
+    activeESNodes = active_nodes.slice();
+  });
 }
 
-function getActiveNodes(){
-  return activeESNodes.slice();
-}
-
-setInterval(pingESNodes, 1*60*1000); // 1*60*1000 ms
+setInterval(enumarateActiveNodes, 1*60*1000); // 1*60*1000 ms
 
 console.log(nodes);
 
