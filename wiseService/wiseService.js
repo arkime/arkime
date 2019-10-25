@@ -588,6 +588,15 @@ app.post("/get", function(req, res) {
         typeName = internals.type2Name[type];
       }
 
+      // prevent ERR_OUT_OF_RANGE DoS
+      if (offset >= buf.length) {
+        return res.end("Error when parsing packet");
+      }
+      // prevent typeName DoS
+      if (!typeName) {
+        return res.end("Error when parsing packet");
+      }
+
       var len  = buf.readUInt16BE(offset);
       offset += 2;
 
