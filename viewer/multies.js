@@ -118,6 +118,7 @@ function node2Prefix(node) {
 }
 
 function simpleGather(req, res, bodies, doneCb) {
+  var nodes = getActiveNodes();
   async.map(nodes, (node, asyncCb) => {
     var result = "";
     var url = node2Url(node) + req.url;
@@ -633,7 +634,7 @@ app.post("/:index/:type/_search", function(req, res) {
   var bodies = {};
   var search = JSON.parse(req.body);
   //console.log("DEBUG - INCOMING SEARCH", JSON.stringify(search, null, 2));
-
+  var nodes = getActiveNodes();
   async.each(nodes, (node, asyncCb) => {
     fixQuery(node, req.body, (err, body) => {
       //console.log("DEBUG - OUTGOING SEARCH", node, JSON.stringify(body, null, 2));
@@ -666,7 +667,7 @@ app.post("/:index/:type/_search", function(req, res) {
 function msearch(req, res) {
   var lines = req.body.split(/[\r\n]/);
   var bodies = {};
-
+  var nodes = getActiveNodes();
   async.each(nodes, (node, nodeCb) => {
     var nlines = [];
     async.eachSeries(lines, (line, lineCb) => {
@@ -784,6 +785,36 @@ nodes.forEach((node) => {
     }
   });
 });
+
+// Ping (HEAD /) periodically to maintian a list of active ES nodes
+var activeESNodes = nodes.slice();
+
+async function pingESNodes() {
+  var active = [];
+  for (var i = 0; i< nodes.length; i++) {
+    // remove credential from elastic url
+    var host = nodes[i].split("://");
+    host = host[host.length > 1 ? 1 : 0 ].split("@"); // user:pass@elastic.com:9200
+    host = host [host.length > 1 ? host.length-1 : 0 ];
+    try {
+      var result = await clients[nodes[i]].ping({requestTimeout: 3*1000}); // 3*1000 ms
+      if(result) {
+        active.push(nodes[i]);
+      } else {
+        console.log("Elasticsearch is down at ", host);
+      }
+    } catch (err) {
+      console.log("Elasticsearch is down at ", host);
+    }
+  }
+  activeESNodes = active.slice();
+}
+
+function getActiveNodes(){
+  return activeESNodes.slice();
+}
+
+setInterval(pingESNodes, 1*60*1000); // 1*60*1000 ms
 
 console.log(nodes);
 
