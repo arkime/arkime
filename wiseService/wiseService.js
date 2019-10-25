@@ -588,6 +588,16 @@ app.post("/get", function(req, res) {
         typeName = internals.type2Name[type];
       }
 
+      // prevent ERR_OUT_OF_RANGE when parsing raw HTTP requests
+      if (offset => buf.length) {
+        return res.end("Error parsing packet");
+      }
+      
+      // prevent dereferencing error in typeName
+      if (!typeName) {
+        return res.end("Error parsing packet");
+      }
+
       var len  = buf.readUInt16BE(offset);
       offset += 2;
 
