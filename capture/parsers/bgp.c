@@ -29,8 +29,14 @@ LOCAL int bgp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned 
     if (len < 19 || memcmp("\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff", data, 16) != 0)
         return 0;
 
-    if (data[18] > 0 && data[18] < 5)
+    if (data[18] > 0 && data[18] < 5) {
         moloch_field_string_add(typeField, session, types[data[18]], -1, TRUE);
+    } else {
+        char msg[16];
+
+        sprintf (msg, "UNKMSG-%d", data[18]);    
+        moloch_field_string_add(typeField, session, msg, -1, TRUE);
+    }
 
     moloch_pq_upsert(bgpPq, session, 5, NULL);
     return 0;
