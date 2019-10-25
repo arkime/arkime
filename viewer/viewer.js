@@ -1642,7 +1642,7 @@ function saveSharedView (req, res, user, view, endpoint, successMessage, errorMe
 // also remove any special characters except ('-', '_', ':', and ' ')
 function sanitizeViewName (req, res, next) {
   if (req.body.name) {
-    req.body.name = req.body.name.replace(/(^shared:)|[^-a-zA-Z0-9_: ]/g, '');
+    req.body.name = req.body.name.replace(/(^(shared:)+)|[^-a-zA-Z0-9_: ]/g, '');
   }
   next();
 }
