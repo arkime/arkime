@@ -32,11 +32,15 @@ my $notAdminToken = getTokenCookie('notadmin');
   $json = viewerPostToken("/notifiers", '{"notifier":{"name":"test1","type":"slack","fields":"badfields"}}', $token);
   is($json->{text}, "Notifier fields must be an array", "notifier fields must be an array");
 
+# view notifier requires admin access
+  $json = viewerGetToken("/notifiers?molochRegressionUser=notadmin", '{}', $notAdminToken);
+  is($json->{text}, "Need admin privileges to see a notifier", "seeing a notifier requires admin");
+
 # create notifier requires token and admin access
   $json = viewerPost("/notifiers", '{}');
   is($json->{text}, "Missing token", "create notifier requires token");
   $json = viewerPostToken("/notifiers?molochRegressionUser=notadmin", '{}', $notAdminToken);
-  is($json->{text}, "Need admin privelages to create a notifier", "create notifier requires admin");
+  is($json->{text}, "Need admin privileges to create a notifier", "create notifier requires admin");
 
 # create notifier needs valid notifier type
   $json = viewerPostToken("/notifiers", '{"notifier":{"name":"test1","type":"unknown","fields":[]}}', $token);
@@ -56,7 +60,7 @@ my $notAdminToken = getTokenCookie('notadmin');
 
 # update notifier requires admin access
   $json = viewerPutToken("/notifiers/test1?molochRegressionUser=notadmin", '{}', $notAdminToken);
-  is($json->{text}, "Need admin privelages to update a notifier", "update notifier requires admin");
+  is($json->{text}, "Need admin privileges to update a notifier", "update notifier requires admin");
 
 # update notifier needs valid name
   $json = viewerPutToken("/notifiers/badname", '{}', $token);

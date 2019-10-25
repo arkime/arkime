@@ -118,7 +118,7 @@ function userCleanup(suser) {
   suser.settings = suser.settings || {};
   if (suser.emailSearch === undefined) { suser.emailSearch = false; }
   if (suser.removeEnabled === undefined) { suser.removeEnabled = false; }
-  // if multies and not users elasticsearch, disable admin privelages
+  // if multies and not users elasticsearch, disable admin privileges
   if (Config.get('multiES', false) && !Config.get('usersElasticsearch')) {
     suser.createEnabled = false;
   }
@@ -1301,6 +1301,11 @@ app.get('/notifierTypes', checkCookieToken, function (req, res) {
 
 // get created notifiers
 app.get('/notifiers', checkCookieToken, function (req, res) {
+  let user = req.settingUser;
+  if (!user.createEnabled) {
+    return res.molochError(401, 'Need admin privileges to see a notifier');
+  }
+
   Db.getUser('_moloch_shared', (err, sharedUser) => {
     if (!sharedUser || !sharedUser.found) {
       return res.send({});
@@ -1316,7 +1321,7 @@ app.get('/notifiers', checkCookieToken, function (req, res) {
 app.post('/notifiers', [noCacheJson, getSettingUser, checkCookieToken], function (req, res) {
   let user = req.settingUser;
   if (!user.createEnabled) {
-    return res.molochError(401, 'Need admin privelages to create a notifier');
+    return res.molochError(401, 'Need admin privileges to create a notifier');
   }
 
   if (!req.body.notifier) {
@@ -1412,7 +1417,7 @@ app.post('/notifiers', [noCacheJson, getSettingUser, checkCookieToken], function
 app.put('/notifiers/:name', [noCacheJson, getSettingUser, checkCookieToken], function (req, res) {
   let user = req.settingUser;
   if (!user.createEnabled) {
-    return res.molochError(401, 'Need admin privelages to update a notifier');
+    return res.molochError(401, 'Need admin privileges to update a notifier');
   }
 
   Db.getUser('_moloch_shared', (err, sharedUser) => {
@@ -1504,7 +1509,7 @@ app.put('/notifiers/:name', [noCacheJson, getSettingUser, checkCookieToken], fun
 app.delete('/notifiers/:name', [noCacheJson, getSettingUser, checkCookieToken], function (req, res) {
   let user = req.settingUser;
   if (!user.createEnabled) {
-    return res.molochError(401, 'Need admin privelages to delete a notifier');
+    return res.molochError(401, 'Need admin privileges to delete a notifier');
   }
 
   Db.getUser('_moloch_shared', (err, sharedUser) => {
@@ -1540,7 +1545,7 @@ app.delete('/notifiers/:name', [noCacheJson, getSettingUser, checkCookieToken], 
 app.post('/notifiers/:name/test', [noCacheJson, getSettingUser, checkCookieToken], function (req, res) {
   let user = req.settingUser;
   if (!user.createEnabled) {
-    return res.molochError(401, 'Need admin privelages to test a notifier');
+    return res.molochError(401, 'Need admin privileges to test a notifier');
   }
 
   function continueProcess () {
@@ -1789,7 +1794,7 @@ app.post('/user/views/delete', [noCacheJson, checkCookieToken, logAction(), post
         if (sharedUser.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
         // only admins or the user that created the view can delete the shared view
         if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
-          return res.molochError(401, `Need admin privelages to delete another user's shared view`);
+          return res.molochError(401, `Need admin privileges to delete another user's shared view`);
         }
         delete sharedUser.views[req.body.name];
       }
@@ -1857,7 +1862,7 @@ app.post('/user/views/toggleShare', [noCacheJson, checkCookieToken, logAction(),
       if (sharedUser.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
       // only admins or the user that created the view can update the shared view
       if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
-        return res.molochError(401, `Need admin privelages to unshare another user's shared view`);
+        return res.molochError(401, `Need admin privileges to unshare another user's shared view`);
       }
       // save the view for later to determine who the view belongs to
       view = sharedUser.views[req.body.name];
@@ -1885,7 +1890,7 @@ app.post('/user/views/update', [noCacheJson, checkCookieToken, logAction(), post
         if (sharedUser.views[req.body.key] === undefined) { return res.molochError(404, 'View not found'); }
         // only admins or the user that created the view can update the shared view
         if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
-          return res.molochError(401, `Need admin privelages to update another user's shared view`);
+          return res.molochError(401, `Need admin privileges to update another user's shared view`);
         }
         sharedUser.views[req.body.name] = {
           expression: req.body.expression,
