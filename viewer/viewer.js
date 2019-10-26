@@ -4955,7 +4955,7 @@ app.get('/connections.json', logAction('connections'), recordResponseTime, funct
   let health;
   Db.healthCache(function (err, h) { health = h; });
   buildConnections(req, res, function (err, nodes, links, total) {
-    if (err) { return res.molochError(403, err.toString()); }
+    if (err) { return res.molochError(403, 'Connection error' }
     res.send({ health: health, nodes: nodes, links: links, recordsFiltered: total });
   });
 });
