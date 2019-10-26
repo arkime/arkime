@@ -224,6 +224,7 @@ const unsafeInlineCspHeader = helmet.contentSecurityPolicy({
 function molochError (status, text) {
   /* jshint validthis: true */
   this.status(status || 403);
+  this.setHeader('Content-Type', `application/json`);
   return this.send(JSON.stringify({ success: false, text: text }));
 }
 
