@@ -2027,8 +2027,19 @@ app.post('/user/cron/create', [noCacheJson, checkCookieToken, logAction(), postS
 // deletes a user's specified cron query
 app.post('/user/cron/delete', [noCacheJson, checkCookieToken, logAction(), postSettingUser], function(req, res) {
   if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
-
   if (!req.body.key) { return res.molochError(403, 'Missing cron query key'); }
+
+  Db.get('queries', 'query', req.body.key, function(err, sq) {
+    if (err || !sq.found) {
+      console.log('/user/cron/delete failed', err, sq);
+      return res.molochError(404, 'Not Found query');
+    }
+    let cron = sq._source;
+    if (cron.creator !== req.user.userId) {
+      console.log('/user/cron/delete failed', err, sq);
+      return res.molochError(403, 'Unauthorized query');
+    }
+  });
 
   Db.deleteDocument('queries', 'query', req.body.key, {refresh: true}, function(err, sq) {
     if (err) {
