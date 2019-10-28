@@ -165,10 +165,12 @@ function crossClusterSearch(index, type, query, options, cluster, cb) {
      // console.log(result);
       cb(err, result);
     } else {
-      console.log (index, " ",  type, " params: ", params, " result:", result);
+      //console.log (index, " ",  type, " params: ", params, " result:", result);
       if (result && result.hits && result.hits.hits) {
        for (var i = 0; i < result.hits.hits.length; i++) {
-          result.hits.hits[i]._source.clusterName = result.hits.hits[i]._index.split(":")[0];
+          if(result.hits.hits[i]._index){
+            result.hits.hits[i]._source.clusterName = result.hits.hits[i]._index.split(":")[0];
+          }
         }
       }
       cb(err, result);
