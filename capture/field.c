@@ -314,7 +314,9 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
                 minfo->dbGroupNum = groupNum;
             } else {
                 minfo->dbGroupNum = MOLOCH_THREAD_INCRNEW(groupNum);
-                memcpy(lastGroup, minfo->dbField, (firstdot-minfo->dbField)+1);
+                int buflen = MIN(100, (firstdot-minfo->dbField)+1);
+                memcpy(lastGroup, minfo->dbField, buflen);
+                lastGroup[buflen] = 0;
             }
             minfo->dbGroup = minfo->dbField;
             minfo->dbGroupLen = firstdot - minfo->dbField;
