@@ -186,8 +186,9 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
     if (!group) {
         char *dot = strchr(field, '.');
         if (dot) {
-            memcpy(groupbuf, field, MIN(100, dot-field));
-            groupbuf[dot-field] = 0;
+            int buflen = MIN(100, dot-field);
+            memcpy(groupbuf, field, buflen);
+            groupbuf[buflen] = 0;
             group = groupbuf;
         } else {
             group = "general";
