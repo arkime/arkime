@@ -2024,7 +2024,8 @@ app.post('/user/cron/create', [noCacheJson, checkCookieToken, logAction(), postS
   });
 });
 
-// deletes a user's specified cron query
+// deletes a user's 
+
 app.post('/user/cron/delete', [noCacheJson, checkCookieToken, logAction(), postSettingUser], function(req, res) {
   if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
   if (!req.body.key) { return res.molochError(403, 'Missing cron query key'); }
@@ -2062,6 +2063,18 @@ app.post('/user/cron/update', [noCacheJson, checkCookieToken, logAction(), postS
   if (!req.body.query)  { return res.molochError(403, 'Missing cron query expression'); }
   if (!req.body.action) { return res.molochError(403, 'Missing cron query action'); }
   if (!req.body.tags)   { return res.molochError(403, 'Missing cron query tag(s)'); }
+  
+  Db.get('queries', 'query', req.body.key, function(err, sq) {
+    if (err || !sq.found) {
+      console.log('/user/cron/update failed', err, sq);
+      return res.molochError(404, 'Not Found query');
+    }
+    let cron = sq._source;
+    if (cron.creator !== req.user.userId) {
+      console.log('/user/cron/update failed', err, sq);
+      return res.molochError(403, 'Unauthorized query');
+    }
+  });
 
   var document = {
     doc: {
