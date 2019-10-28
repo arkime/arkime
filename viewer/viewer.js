@@ -7305,10 +7305,17 @@ app.get('/lookups', [noCacheJson, getSettingUser, recordResponseTime], function 
   let query = {
     query: {
       bool: {
-        should: [
-          { term: { shared: true } },
-          { term: { userId: req.settingUser.userId } }
+        must: [
+          {
+            bool: {
+              should: [
+                { term: { shared: true } },
+                { term: { userId: req.settingUser.userId } }
+              ]
+            }
+          }
         ]
+
       }
     },
     sort: {},
@@ -7321,9 +7328,9 @@ app.get('/lookups', [noCacheJson, getSettingUser, recordResponseTime], function 
   };
 
   if (req.query.searchTerm) {
-    query.query.bool.must = [{
+    query.query.bool.must.push({
       wildcard: { name: '*' + req.query.searchTerm + '*' }
-    }];
+    });
   }
 
   // if fieldType exists, filter it
@@ -7331,9 +7338,9 @@ app.get('/lookups', [noCacheJson, getSettingUser, recordResponseTime], function 
     const fieldType = internals.lookupTypeMap[req.query.fieldType];
 
     if (fieldType) {
-      query.query.bool.must = [{
+      query.query.bool.must.push({
         exists: { field: fieldType }
-      }];
+      });
     }
   }
 
