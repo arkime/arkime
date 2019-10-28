@@ -2024,7 +2024,7 @@ app.post('/user/cron/create', [noCacheJson, checkCookieToken, logAction(), postS
   });
 });
 
-// deletes a user's 
+// deletes a user's specified cron query
 
 app.post('/user/cron/delete', [noCacheJson, checkCookieToken, logAction(), postSettingUser], function(req, res) {
   if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
