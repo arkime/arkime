@@ -5815,6 +5815,7 @@ app.get('/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', checkProxyRequest, f
       console.trace(err);
       return res.end("Error");
     }
+    res.setHeader("Content-Disposition", "attachment");
 
     if (req.params.bodyType === "file") {
       res.setHeader("Content-Type", "application/force-download");
