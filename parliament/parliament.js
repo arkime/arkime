@@ -1583,7 +1583,7 @@ router.put('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next)
 });
 
 // Get a list of issues
-router.get('/issues', (req, res, next) => {
+router.get('/issues', verifyToken, (req, res, next) => {
   let issuesClone = JSON.parse(JSON.stringify(issues));
 
   // filter out provisional issues
