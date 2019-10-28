@@ -3037,7 +3037,6 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     sub bopen {
         my ($index) = @_;
-        print "$index $GZ\n";
         if ($GZ) {
             return new IO::Compress::Gzip "$ARGV[2].${PREFIX}${index}.json.gz" or die "cannot open $ARGV[2].${PREFIX}${index}.json.gz: $GzipError\n";
         } else {
