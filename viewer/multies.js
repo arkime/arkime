@@ -813,6 +813,7 @@ function getPingPromise(client, node){
         if(result.value === true) { // ES cluster is up
           resolve(result.node);
         } else { // ES cluster is down
+          // remove credential from the url
           var host = result.node.split("://");
           host = host[host.length > 1 ? 1 : 0 ].split("@"); // user:pass@elastic.com:9200
           host = host [host.length > 1 ? host.length-1 : 0];
