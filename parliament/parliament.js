@@ -1470,6 +1470,17 @@ router.post('/groups/:id/clusters', verifyToken, (req, res, next) => {
     return next(error);
   }
 
+  if (
+    !(req.body.url.startsWith('https://') || req.body.url.startsWith('http://')) ||
+    (req.body.url.startsWith('http://unix:' || req.body.url.startsWith('https://unix:')))
+  ) {
+    let message;
+    message = 'Invalid URL. The cluster URL must start with "http" or "https"';
+    const error = new Error(message);
+    error.httpStatusCode = 422;
+    return next(error);
+  }
+
   let newCluster = {
     title       : req.body.title,
     description : req.body.description,
@@ -1542,6 +1553,17 @@ router.put('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next)
       message = 'A cluster must have a url.';
     }
 
+    const error = new Error(message);
+    error.httpStatusCode = 422;
+    return next(error);
+  }
+
+  if (
+    !(req.body.url.startsWith('https://') || req.body.url.startsWith('http://')) ||
+    (req.body.url.startsWith('http://unix:' || req.body.url.startsWith('https://unix:')))
+  ) {
+    let message;
+    message = 'Invalid URL. The cluster URL must start with "http" or "https"';
     const error = new Error(message);
     error.httpStatusCode = 422;
     return next(error);
