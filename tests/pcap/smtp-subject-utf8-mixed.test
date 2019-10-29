@@ -77,6 +77,10 @@
                   "1.0"
                ],
                "mimeVersionCnt" : 1,
+               "smtpHelloDomain" : [
+                  "xxxxxxxxxxxxx.xxx.com"
+               ],
+               "smtpHelloDomainCnt" : 1,
                "src" : [
                   "xxxxx@xxx.net"
                ],

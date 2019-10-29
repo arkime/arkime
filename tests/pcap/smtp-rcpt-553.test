@@ -26,6 +26,10 @@
                   "123456@example"
                ],
                "dstCnt" : 1,
+               "smtpHelloDomain" : [
+                  "localhost"
+               ],
+               "smtpHelloDomainCnt" : 1,
                "src" : [
                   "12345678@aol.com"
                ],

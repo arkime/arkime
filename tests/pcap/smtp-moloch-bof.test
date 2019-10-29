@@ -42,6 +42,10 @@
                   "1.0"
                ],
                "mimeVersionCnt" : 1,
+               "smtpHelloDomain" : [
+                  "adcdtest"
+               ],
+               "smtpHelloDomainCnt" : 1,
                "src" : [
                   "matt@zpdt.example.com",
                   "ibmuser@zpdt.example.com"

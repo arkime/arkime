@@ -53,6 +53,10 @@
                   "1.0"
                ],
                "mimeVersionCnt" : 1,
+               "smtpHelloDomain" : [
+                  "xxxxxxxx.xxx.aol.com"
+               ],
+               "smtpHelloDomainCnt" : 1,
                "src" : [
                   "1234567899@aol.com"
                ],

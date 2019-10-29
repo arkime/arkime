@@ -33,6 +33,10 @@
                   "subject"
                ],
                "headerCnt" : 3,
+               "smtpHelloDomain" : [
+                  "xxxxxxxxxxxxx.xxx.com"
+               ],
+               "smtpHelloDomainCnt" : 1,
                "src" : [
                   "user1@xxx.net"
                ],

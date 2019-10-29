@@ -21,6 +21,12 @@
             "dstPackets" : 10,
             "dstPayload8" : "0500050000010a00",
             "dstPort" : 1080,
+            "email" : {
+               "smtpHelloDomain" : [
+                  "user"
+               ],
+               "smtpHelloDomainCnt" : 1
+            },
             "fileId" : [],
             "firstPacket" : 1385474626674,
             "initRTT" : 1730,
