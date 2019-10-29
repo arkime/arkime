@@ -795,50 +795,39 @@ nodes.forEach((node) => {
 activeESNodes = nodes.slice();
 
 // Ping (HEAD /) periodically to maintian a list of active ES nodes
-function pingESNodes(client, node, cb) {
-  client.ping({
-    requestTimeout: 3*1000 //ping usually has a 3000ms timeout
-  }, function (error) {
-    if (error) {
-      cb({value: false, node: node}); // ES cluster is down
-    } else {
-      cb({value: true, node: node}); // ES cluster is up
-    }
-  });
-}
-
-function getPingPromise(client, node){
+function pingESNode(client, node){
   return new Promise((resolve, reject) => {
-      pingESNodes(client, node, (result) => {
-        if(result.value === true) { // ES cluster is up
-          resolve(result.node);
-        } else { // ES cluster is down
-          // remove credential from the url
-          var host = result.node.split("://");
-          host = host[host.length > 1 ? 1 : 0 ].split("@"); // user:pass@elastic.com:9200
-          host = host [host.length > 1 ? host.length-1 : 0];
-          console.log("Elasticsearch is down at ", host);
-          resolve(null);
-        }
+      client.ping({
+        requestTimeout: 3*1000 //ping usually has a 3000ms timeout
+      }, function (error) {
+        resolve({isActive: error ? false : true, node: node});
       });
     });
 }
 
-function enumarateActiveNodes(){
+function enumerateActiveNodes(){
   var ping_tasks = [];
   for (var i = 0; i < nodes.length; i++) {
-    ping_tasks.push(getPingPromise(clients[nodes[i]], nodes[i]));
+    ping_tasks.push(pingESNode(clients[nodes[i]], nodes[i]));
   }
   Promise.all(ping_tasks).then(function(values) {
     var active_nodes = [];
     for (var i = 0; i < values.length; i++) {
-      if(values[i]) { active_nodes.push(values[i]); }
+      if(values[i].isActive) { // true -> node is active
+        active_nodes.push(values[i].node);
+      } else { // false -> node is down
+        // remove credential from the url
+        var host = values[i].node.split("://");
+        host = host[host.length > 1 ? 1 : 0 ].split("@"); // user:pass@elastic.com:9200
+        host = host [host.length > 1 ? host.length-1 : 0];
+        console.log("Elasticsearch is down at ", host);
+      }
     }
     activeESNodes = active_nodes.slice();
   });
 }
 
-setInterval(enumarateActiveNodes, 1*60*1000); // 1*60*1000 ms
+setInterval(enumerateActiveNodes, 1*60*1000); // 1*60*1000 ms
 
 console.log(nodes);
 
