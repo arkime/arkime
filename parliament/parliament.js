@@ -1471,7 +1471,7 @@ router.post('/groups/:id/clusters', verifyToken, (req, res, next) => {
   }
 
   if (
-    req.body.url.startsWith('http://unix:' || req.body.url.startsWith('https://unix:'))
+    req.body.url.startsWith('http://unix:') || req.body.url.startsWith('https://unix:')
   ) {
     let message;
     message = 'Invalid URL. The cluster URL must start with "http" or "https"';
@@ -1482,7 +1482,7 @@ router.post('/groups/:id/clusters', verifyToken, (req, res, next) => {
 
   if (req.body.localUrl) {
     if (
-      req.body.localUrl.startsWith('http://unix:' || req.body.localUrl.startsWith('https://unix:'))
+      req.body.localUrl.startsWith('http://unix:') || req.body.localUrl.startsWith('https://unix:')
     ) {
       let message;
       message = 'Invalid local URL';
@@ -1570,7 +1570,7 @@ router.put('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next)
   }
 
   if (
-    req.body.url.startsWith('http://unix:' || req.body.url.startsWith('https://unix:'))
+    req.body.url.startsWith('http://unix:') || req.body.url.startsWith('https://unix:')
   ) {
     let message;
     message = 'Invalid URL. The cluster URL should not contain unix domain sockets';
@@ -1581,7 +1581,7 @@ router.put('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next)
 
   if (req.body.localUrl) {
     if (
-      req.body.localUrl.startsWith('http://unix:' || req.body.localUrl.startsWith('https://unix:'))
+      req.body.localUrl.startsWith('http://unix:') || req.body.localUrl.startsWith('https://unix:')
     ) {
       let message;
       message = 'Invalid URL. The cluster URL should not contain unix domain sockets';
