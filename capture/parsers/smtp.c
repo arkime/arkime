@@ -461,8 +461,8 @@ LOCAL int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *d
                 *state = EMAIL_IGNORE;
                 email->state[(which+1)%2] = EMAIL_TLS_OK;
                 return 0;
-            } else if (strncasecmp(line->str, "HELO", 4) == 0 ||
-                       strncasecmp(line->str, "EHLO", 4) == 0) {
+            } else if (strncasecmp(line->str, "HELO ", 5) == 0 ||
+                       strncasecmp(line->str, "EHLO ", 5) == 0) {
                 moloch_field_string_add_lower(helloField, session, line->str+5, -1);
                 *state = EMAIL_CMD;
             } else {
