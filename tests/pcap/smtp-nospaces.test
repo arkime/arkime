@@ -22,10 +22,6 @@
                   "reciever@example.com"
                ],
                "dstCnt" : 1,
-               "smtpHelloDomain" : [
-                  ""
-               ],
-               "smtpHelloDomainCnt" : 1,
                "src" : [
                   "random@example.com"
                ],
