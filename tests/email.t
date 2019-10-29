@@ -1,4 +1,4 @@
-use Test::More tests => 96;
+use Test::More tests => 102;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -48,6 +48,11 @@ countTest(6, "date=-1&expression=" . uri_escape("$files&&protocols==smtp"));
     countTest(1, "date=-1&expression=" . uri_escape("$files&&email.fn==\"a.zip\""));
     countTest(0, "date=-1&expression=" . uri_escape("$files&&email.fn==\"A.zip\""));
     countTest(1, "date=-1&expression=" . uri_escape("$files&&email.fn.cnt==1"));
+
+# email.smtp-hello
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&email.smtp-hello ==\"localhost\""));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&email.smtp-hello ==\"Localhost\""));
+    countTest(6, "date=-1&expression=" . uri_escape("$files&&email.smtp-hello.cnt==1"));
 
 SKIP: {
     skip "Upgrade test", 6 if ($ENV{MOLOCH_REINDEX_TEST}); # reindex doesn't have email.has-header

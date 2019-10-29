@@ -105,6 +105,12 @@
             "dstPayload8" : "323230206d782e67",
             "dstPort" : 25,
             "dstRIR" : "ARIN",
+            "email" : {
+               "smtpHello" : [
+                  "xxxxxxxxxxxxx.xxx.com"
+               ],
+               "smtpHelloCnt" : 1
+            },
             "fileId" : [],
             "firstPacket" : 1388017124762,
             "initRTT" : 5,

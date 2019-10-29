@@ -182,7 +182,7 @@ void parse_args(int argc, char **argv)
         glib_minor_version !=  GLIB_MINOR_VERSION ||
         glib_micro_version !=  GLIB_MICRO_VERSION) {
 
-        LOG("WARNING - gilb compiled %d.%d.%d vs linked %u.%u.%u",
+        LOG("WARNING - glib compiled %d.%d.%d vs linked %u.%u.%u",
                 GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION, GLIB_MICRO_VERSION,
                 glib_major_version, glib_minor_version, glib_micro_version);
     }
