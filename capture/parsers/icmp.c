@@ -30,6 +30,8 @@ LOCAL int                    icmpv6MProtocol;
 
 LOCAL int                    icmpTypeField;
 LOCAL int                    icmpCodeField;
+LOCAL int                    icmpPayloadSrcIp;
+LOCAL int                    icmpPayloadDstIp;
 
 
 /******************************************************************************/
@@ -103,11 +105,35 @@ void icmp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, i
 int icmp_process(MolochSession_t *session, MolochPacket_t * const packet)
 {
     const uint8_t *data = packet->pkt + packet->payloadOffset;
+    struct ip     *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
 
     if (packet->payloadLen >= 2) {
         moloch_field_int_add(icmpTypeField, session, data[0]);
         moloch_field_int_add(icmpCodeField, session, data[1]);
     }
+
+    if (ip4->ip_v == 4) {
+      switch (data[0]) {
+        case 3:
+        case 11:
+          // icmp header (8) + ip header (20) + proto header (8)
+          if (packet->payloadLen >= 36) {
+            uint32_t ip;
+
+            ip = ntohl ((packet->pkt[54] << 24) + (packet->pkt[55] << 16) +
+                   (packet->pkt[56] << 8) + packet->pkt[57]);
+
+            moloch_field_ip4_add(icmpPayloadSrcIp, session, ip);
+
+            ip = ntohl ((packet->pkt[58] << 24) + (packet->pkt[59] << 16) +
+                   (packet->pkt[60] << 8) + packet->pkt[61]);
+
+            moloch_field_ip4_add(icmpPayloadDstIp, session, ip);
+          }
+          break;
+      }
+    }
+
     return 1;
 }
 /******************************************************************************/
@@ -164,4 +190,15 @@ void moloch_parser_init()
         MOLOCH_FIELD_TYPE_INT_GHASH, 0,
         (char *)NULL);
 
+    icmpPayloadSrcIp = moloch_field_define("general", "ip",
+        "icmp.payload.src.ip", "ICMP payload src IP", "icmp.payload.src.ip",
+        "ICMP payload src IP values",
+        MOLOCH_FIELD_TYPE_IP_GHASH, 0,
+        (char *)NULL);
+
+    icmpPayloadDstIp = moloch_field_define("general", "ip",
+        "icmp.payload.dst.ip", "ICMP payload dst IP", "icmp.payload.dst.ip",
+        "ICMP payload dst IP values",
+        MOLOCH_FIELD_TYPE_IP_GHASH, 0,
+        (char *)NULL);
 }
