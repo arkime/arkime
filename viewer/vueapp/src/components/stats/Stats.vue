@@ -427,6 +427,17 @@
             :user="user">
           </es-recovery>
         </b-tab>
+        <b-tab title="ES Settings"
+          @click="tabIndexChange(7)"
+          v-if="!multiviewer">
+          <es-recovery v-if="user && tabIndex === 7"
+            :settings-show="settingsShow"
+            :data-interval="dataInterval"
+            :refreshData="refreshData"
+            :searchTerm="searchTerm"
+            :user="user">
+          </es-recovery>
+        </b-tab>
       </b-tabs>
     </div> <!-- /stats content -->
 
@@ -440,6 +451,7 @@ import EsNodes from './EsNodes';
 import EsTasks from './EsTasks';
 import EsRecovery from './EsRecovery';
 import EsIndices from './EsIndices';
+import EsSettings from './EsSettings';
 import CaptureGraphs from './CaptureGraphs';
 import CaptureStats from './CaptureStats';
 import FocusInput from '../utils/FocusInput';

@@ -3547,6 +3547,41 @@ app.post('/estask/cancelById', [noCacheJson, logAction()], function(req, res) {
   });
 });
 
+app.get('/essetting/list', [noCacheJson, recordResponseTime], function(req, res) {
+  if (!req.user.createEnabled) { return res.molochError(403, "Need admin privileges"); }
+
+  Promise.all([Db.getClusterSettings({flatSettings: true, include_defaults: true})
+              ]).then(([settings]) => {
+
+    let rsettings = [];
+
+    function addSetting(key, type, name, url, help) {
+      let current = settings.transient[key] || settings.persistent[key] || '';
+      let defaultValue = settings.defaults[key];
+      if (!defaultValue) { return; }
+      rsettings.push({key: key, current: current, default: defaultValue, name: name, type: type, url: url, help: help});
+    }
+
+    addSetting('search.max_buckets', 'integer',
+               'Max Aggregation Size',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket.html');
+    addSetting('cluster.routing.allocation.disk.watermark.flood_stage', 'diskorpercent',
+               'Disk Watermark Flood',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html');
+    addSetting('cluster.routing.allocation.disk.watermark.high', 'diskorpercent',
+               'Disk Watermark High',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html');
+    addSetting('cluster.routing.allocation.disk.watermark.low', 'diskorpercent',
+               'Disk Watermark Low',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html');
+    addSetting('cluster.routing.allocation.cluster_concurrent_rebalance', 'integer',
+               'Concurrent Rebalances',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html');
+
+    return res.send(rsettings);
+  });
+});
+
 app.get('/esshard/list', [noCacheJson, recordResponseTime], function(req, res) {
   if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
 
