@@ -1483,11 +1483,10 @@ router.post('/groups/:id/clusters', verifyToken, (req, res, next) => {
 
   if (req.body.localUrl) {
     if (
-      !(req.body.localUrl.startsWith('https://') || req.body.localUrl.startsWith('http://')) ||
-      (req.body.localUrl.startsWith('http://unix:' || req.body.localUrl.startsWith('https://unix:')))
+      req.body.localUrl.startsWith('http://unix:' || req.body.localUrl.startsWith('https://unix:'))
     ) {
       let message;
-      message = 'Invalid local URL. The cluster local URL must start with "http" or "https"';
+      message = 'Invalid local URL';
       const error = new Error(message);
       error.httpStatusCode = 422;
       return next(error);
@@ -1584,11 +1583,10 @@ router.put('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next)
 
   if (req.body.localUrl) {
     if (
-      !(req.body.localUrl.startsWith('https://') || req.body.localUrl.startsWith('http://')) ||
-      (req.body.localUrl.startsWith('http://unix:' || req.body.localUrl.startsWith('https://unix:')))
+      req.body.localUrl.startsWith('http://unix:' || req.body.localUrl.startsWith('https://unix:'))
     ) {
       let message;
-      message = 'Invalid local URL. The cluster local URL must start with "http" or "https"';
+      message = 'Invalid local URL';
       const error = new Error(message);
       error.httpStatusCode = 422;
       return next(error);
