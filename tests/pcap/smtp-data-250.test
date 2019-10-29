@@ -58,10 +58,10 @@
                   "1.0"
                ],
                "mimeVersionCnt" : 1,
-               "smtpHelloDomain" : [
+               "smtpHello" : [
                   "localhost"
                ],
-               "smtpHelloDomainCnt" : 1,
+               "smtpHelloCnt" : 1,
                "src" : [
                   "12345678@aol.com"
                ],

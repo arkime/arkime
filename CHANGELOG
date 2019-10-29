@@ -29,6 +29,9 @@ NOTICE: Restart wiseService before capture when upgrading
   - db - new shrink command
   - capture - support named pipes better (issue #1169)
   - wise - switch to ioredis implementation so clusters/sentinel works
+  - viewer - Fix some XSS/rXSS by setting correct content type
+  - viewer - Improve permission checking
+  - capture - New email.smtpHello field
 
 
 2.0.1 2019/09/09

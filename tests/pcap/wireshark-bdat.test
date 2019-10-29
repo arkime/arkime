@@ -46,10 +46,10 @@
                   "E1bwpfB-0000Be-Tu@testhost.test.ex"
                ],
                "idCnt" : 1,
-               "smtpHelloDomain" : [
+               "smtpHello" : [
                   "testhost.test.ex"
                ],
-               "smtpHelloDomainCnt" : 1,
+               "smtpHelloCnt" : 1,
                "src" : [
                   "sender@dom",
                   ""

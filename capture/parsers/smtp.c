@@ -999,8 +999,8 @@ void moloch_parser_init()
         (char *)NULL);
 
     helloField = moloch_field_define("email", "lotermfield",
-        "email.smtp-hello-domain", "SMTP Hello Domain", "email.smtpHelloDomain",
-        "SMTP HELO/EHLO Domain",
+        "email.smtp-hello", "SMTP Hello", "email.smtpHello",
+        "SMTP HELO/EHLO",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 
