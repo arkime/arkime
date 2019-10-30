@@ -120,6 +120,12 @@ function node2Prefix(node) {
   return "";
 }
 
+var activeESNodes = [];
+
+function getActiveNodes(){
+  return activeESNodes.slice();
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////
 //// Cross Cluster Search Begin
@@ -169,6 +175,7 @@ function crossClusterSearch(index, type, query, options, cluster, cb) {
       if (result && result.hits && result.hits.hits) {
        for (var i = 0; i < result.hits.hits.length; i++) {
           if(result.hits.hits[i]._index){
+            //console.log(result.hits.hits[i]);
             result.hits.hits[i]._source.clusterName = result.hits.hits[i]._index.split(":")[0];
           }
         }
@@ -200,6 +207,7 @@ function validCluster(cluster) {
 
 
 function simpleGather(req, res, bodies, doneCb) {
+  var nodes = getActiveNodes();
   async.map(nodes, (node, asyncCb) => {
     var result = "";
     var url = node2Url(node) + req.url;
@@ -389,7 +397,6 @@ app.get("/:index/:type/:id", function(req, res) {
           //console.log(util.inspect(results.hits.hits[0], false, 50));
           return res.send(results.hits.hits[0]);
       }
-      //res.send(results);
     });
   } else {
     simpleGather(req, res, null, (err, results) => {
@@ -781,7 +788,7 @@ app.post("/:index/:type/_search", function(req, res) {
     var bodies = {};
     var search = JSON.parse(req.body);
     //console.log("DEBUG - INCOMING SEARCH", JSON.stringify(search, null, 2));
-
+    var nodes = getActiveNodes();
     async.each(nodes, (node, asyncCb) => {
       fixQuery(node, req.body, (err, body) => {
         //console.log("DEBUG - OUTGOING SEARCH", node, JSON.stringify(body, null, 2));
@@ -815,7 +822,7 @@ app.post("/:index/:type/_search", function(req, res) {
 function msearch(req, res) {
   var lines = req.body.split(/[\r\n]/);
   var bodies = {};
-
+  var nodes = getActiveNodes();
   async.each(nodes, (node, nodeCb) => {
     var nlines = [];
     async.eachSeries(lines, (line, lineCb) => {
@@ -934,7 +941,6 @@ nodes.forEach((node) => {
   });
 });
 
-
 if (Config.get("crossClusterES", false)) { //support cross cluster search
   crossClusterSearchEnabled = true;
   var cluster_info = Config.get("esCrossClusters", "").split(";"); // cluster_info = ["cluster_one,prefix:PREFIX1", "cluster_two,prefix:PREFIX2", "cluster_three]
@@ -952,6 +958,42 @@ if (Config.get("crossClusterES", false)) { //support cross cluster search
   console.log(esCrossClusters);
 }
 
+activeESNodes = nodes.slice();
+
+// Ping (HEAD /) periodically to maintian a list of active ES nodes
+function pingESNode(client, node){
+  return new Promise((resolve, reject) => {
+      client.ping({
+        requestTimeout: 3*1000 //ping usually has a 3000ms timeout
+      }, function (error) {
+        resolve({isActive: error ? false : true, node: node});
+      });
+    });
+}
+
+function enumerateActiveNodes(){
+  var ping_tasks = [];
+  for (var i = 0; i < nodes.length; i++) {
+    ping_tasks.push(pingESNode(clients[nodes[i]], nodes[i]));
+  }
+  Promise.all(ping_tasks).then(function(values) {
+    var active_nodes = [];
+    for (var i = 0; i < values.length; i++) {
+      if(values[i].isActive) { // true -> node is active
+        active_nodes.push(values[i].node);
+      } else { // false -> node is down
+        // remove credential from the url
+        var host = values[i].node.split("://");
+        host = host[host.length > 1 ? 1 : 0 ].split("@"); // user:pass@elastic.com:9200
+        host = host [host.length > 1 ? host.length-1 : 0];
+        console.log("Elasticsearch is down at ", host);
+      }
+    }
+    activeESNodes = active_nodes.slice();
+  });
+}
+
+setInterval(enumerateActiveNodes, 1*60*1000); // 1*60*1000 ms
 
 console.log(nodes);
 
