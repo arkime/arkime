@@ -903,7 +903,6 @@ function checkCronAccess (req, res, next) {
   } else {
     Db.get('queries', 'query', req.body.key, (err, query) => {
       if (err || !query.found) {
-        console.log('/user/cron/update failed', err, query);
         return res.molochError(403, 'Unknown cron query');
       }
       if (query._source.creator === req.user.userId) {
