@@ -103,18 +103,45 @@ exports.store2ha1 = function(passstore) {
 
 exports.obj2auth = function(obj, secret) {
   secret = secret || exports.getFull("default", "serverSecret") || exports.getFull("default", "passwordSecret", "password");
+
   var c = crypto.createCipher('aes192', secret);
   var e = c.update(JSON.stringify(obj), "binary", "hex");
   e += c.final("hex");
-  return e;
+
+  var h = crypto.createHmac('sha256', secret);
+  h.update(e, 'hex');
+  var countedSignature = h.digest('hex');
+
+  return e + '.' + countedSignature;
 };
 
-exports.auth2obj = function(auth, secret) {
+exports.auth2obj = function(auth, checkSignature, secret) {
+  checkSignature = checkSignature || false;
   secret = secret || exports.getFull("default", "serverSecret") || exports.getFull("default", "passwordSecret", "password");
+  var splitted = auth.split('.');
+  var payload = splitted[0];
+  var signature = splitted[1];
+
+  if (checkSignature) {
+    var h = crypto.createHmac('sha256', secret);
+    h.update(payload, 'hex');
+    var countedSignature = h.digest('hex');
+
+    if (signature !== countedSignature) {
+      throw 'Incorrect signature';
+    }
+  }
   var c = crypto.createDecipher('aes192', secret);
-  var d = c.update(auth, "hex", "binary");
-  d += c.final("binary");
-  return JSON.parse(d);
+  var d = '';
+  try {
+    d = c.update(payload, "hex", "binary");
+    d += c.final("binary");
+    return JSON.parse(d);
+  }
+  catch(error) {
+    console.log(error);
+    throw 'Incorrect auth supplied';
+  }
 };
 
 //////////////////////////////////////////////////////////////////////////////////
