@@ -128,7 +128,7 @@ exports.auth2obj = function(auth, checkSignature, secret) {
     var countedSignature = h.digest('hex');
 
     if (signature !== countedSignature) {
-      throw 'Incorrect signature'
+      throw 'Incorrect signature';
     }
   }
   var c = crypto.createDecipher('aes192', secret);
@@ -140,7 +140,7 @@ exports.auth2obj = function(auth, checkSignature, secret) {
   }
   catch(error) {
     console.log(error);
-    throw 'Incorrect auth supplied'
+    throw 'Incorrect auth supplied';
   }
 };
 
