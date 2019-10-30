@@ -130,9 +130,15 @@ exports.auth2obj = function(auth, secret) {
   }
   else {
     var c = crypto.createDecipher('aes192', secret);
-    var d = c.update(payload, "hex", "binary");
-    d += c.final("binary");
-    return JSON.parse(d);
+    var d = '';
+    try {
+      d = c.update(payload, "hex", "binary");
+      d += c.final("binary");
+      return JSON.parse(d);
+    }
+    catch(error) {
+      throw 'Incorrect auth supplied'
+    }     
   }
 };
 
