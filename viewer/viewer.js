@@ -856,7 +856,7 @@ function checkCookieToken(req, res, next) {
     return res.molochError(500, 'Missing token');
   }
 
-  req.token = Config.auth2obj(req.headers['x-moloch-cookie']);
+  req.token = Config.auth2obj(req.headers['x-moloch-cookie'], true);
   var diff = Math.abs(Date.now() - req.token.date);
   if (diff > 2400000 || /* req.token.pid !== process.pid || */
       req.token.userId !== req.user.userId) {
