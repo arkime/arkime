@@ -119,14 +119,19 @@ int icmp_process(MolochSession_t *session, MolochPacket_t * const packet)
           // icmp header (8) + ip header (20) + proto header (8)
           if (packet->payloadLen >= 36) {
             uint32_t ip;
+						uint32_t offset;;
 
-            ip = ntohl ((packet->pkt[54] << 24) + (packet->pkt[55] << 16) +
-                   (packet->pkt[56] << 8) + packet->pkt[57]);
+						// icmp header (8), 12 bytes into IP paylaod to get first address
+						offset = packet->payloadOffset + 8 + 12;
+
+            ip = ntohl ((packet->pkt[offset] << 24) + (packet->pkt[offset+1] << 16) +
+                   (packet->pkt[offset+2] << 8) + packet->pkt[offset+3]);
+
 
             moloch_field_ip4_add(icmpPayloadSrcIp, session, ip);
 
-            ip = ntohl ((packet->pkt[58] << 24) + (packet->pkt[59] << 16) +
-                   (packet->pkt[60] << 8) + packet->pkt[61]);
+            ip = ntohl ((packet->pkt[offset+4] << 24) + (packet->pkt[offset+5] << 16) +
+                   (packet->pkt[offset+6] << 8) + packet->pkt[offset+7]);
 
             moloch_field_ip4_add(icmpPayloadDstIp, session, ip);
           }
