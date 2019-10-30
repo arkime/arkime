@@ -771,20 +771,7 @@ app.post("/:index/:type/_search", function(req, res) {
       cluster = query._cluster; // an array [cluster_one, cluster_two, ...]
       delete query._cluster;
     }
-  var bodies = {};
-  var search = JSON.parse(req.body);
-  //console.log("DEBUG - INCOMING SEARCH", JSON.stringify(search, null, 2));
-  var nodes = getActiveNodes();
-  async.each(nodes, (node, asyncCb) => {
-    fixQuery(node, req.body, (err, body) => {
-      //console.log("DEBUG - OUTGOING SEARCH", node, JSON.stringify(body, null, 2));
-      bodies[node] = JSON.stringify(body);
-      asyncCb(null);
-    });
-  }, (err) => {
-    simpleGather(req, res, bodies, (err, results) => {
-      var obj = newResult(search);
-
+    
     cluster = Object.keys(esCrossClusters); // all cluster
     query = JSON.stringify(query);
     if (cluster !== undefined && validCluster(cluster)) {
