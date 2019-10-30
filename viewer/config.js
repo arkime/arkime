@@ -101,38 +101,53 @@ exports.store2ha1 = function(passstore) {
   }
 };
 
-exports.obj2auth = function(obj, secret) {
+exports.obj2auth = function(obj, sign, secret) {
+  sign = sign || false;
   secret = secret || exports.getFull("default", "serverSecret") || exports.getFull("default", "passwordSecret", "password");
 
   var c = crypto.createCipher('aes192', secret);
   var e = c.update(JSON.stringify(obj), "binary", "hex");
   e += c.final("hex");
 
-  var h = crypto.createHmac('sha256', secret);
-  h.update(e, 'hex');
-  var countedSignature = h.digest('hex');
+  if (sign) {
+    var h = crypto.createHmac('sha256', secret);
+    h.update(e, 'hex');
+    var countedSignature = h.digest('hex');
 
-  return e + '.' + countedSignature;
-};
-
-exports.auth2obj = function(auth, secret) {
-  secret = secret || exports.getFull("default", "serverSecret") || exports.getFull("default", "passwordSecret", "password");
-  var splitted = auth.split('.');
-  var payload = splitted[0];
-  var signature = splitted[1];
-
-  var h = crypto.createHmac('sha256', secret);
-  h.update(payload, 'hex');
-  var countedSignature = h.digest('hex');
-
-  if (signature !== countedSignature) {
-    return null;
+    return e + '.' + countedSignature;
   }
   else {
-    var c = crypto.createDecipher('aes192', secret);
-    var d = c.update(payload, "hex", "binary");
+    return e;
+  }
+};
+
+exports.auth2obj = function(auth, sign, secret) {
+  sign = sign || false;
+  secret = secret || exports.getFull("default", "serverSecret") || exports.getFull("default", "passwordSecret", "password");
+
+  var splitted = auth.split('.');
+  var payload = splitted[0];
+
+  if (sign) {
+    var signature = splitted[1];
+    var h = crypto.createHmac('sha256', secret);
+    h.update(payload, 'hex');
+    var countedSignature = h.digest('hex');
+
+    if (signature !== countedSignature) {
+      throw 'Incorrect signature provided';
+    }
+  }
+  var c = crypto.createDecipher('aes192', secret);
+  var d = '';
+  try {
+    d = c.update(payload, "hex", "binary");
     d += c.final("binary");
     return JSON.parse(d);
+  }
+  catch(error) {
+    console.log(error);
+    throw 'Incorrect auth provided';
   }
 };
 

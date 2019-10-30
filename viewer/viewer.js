@@ -660,7 +660,7 @@ function addAuth(info, user, node, secret) {
                                                      user: user.userId,
                                                      node: node,
                                                      path: info.path
-                                                    }, secret);
+                                                    }, false, secret);
 }
 
 function loadCaTrust(node) {
@@ -856,7 +856,7 @@ function checkCookieToken(req, res, next) {
     return res.molochError(500, 'Missing token');
   }
 
-  req.token = Config.auth2obj(req.headers['x-moloch-cookie']);
+  req.token = Config.auth2obj(req.headers['x-moloch-cookie'], true);
   var diff = Math.abs(Date.now() - req.token.date);
   if (diff > 2400000 || /* req.token.pid !== process.pid || */
       req.token.userId !== req.user.userId) {
@@ -1585,7 +1585,7 @@ app.get('/user/settings', [noCacheJson, getSettingUser, recordResponseTime], fun
 
   res.cookie(
      'MOLOCH-COOKIE',
-     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
+     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}, true),
      cookieOptions
   );
 
@@ -8283,7 +8283,7 @@ app.use(cspHeader, (req, res) => {
   // send cookie for basic, non admin functions
   res.cookie(
      'MOLOCH-COOKIE',
-     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
+     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}, true),
      cookieOptions
   );
 
