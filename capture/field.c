@@ -186,7 +186,9 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
     if (!group) {
         char *dot = strchr(field, '.');
         if (dot) {
-            memcpy(groupbuf, field, MIN(100, dot-field));
+            if (dot-field >= (int)sizeof(groupbuf) - 1)
+                LOGEXIT("ERROR - field '%s' too long", field);
+            memcpy(groupbuf, field, dot-field);
             groupbuf[dot-field] = 0;
             group = groupbuf;
         } else {
@@ -310,6 +312,10 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
         if (firstdot) {
             static char lastGroup[100] = "";
             static int groupNum = 0;
+
+            if (firstdot-minfo->dbField+1 >= (int)sizeof(lastGroup) - 1)
+                LOGEXIT("ERROR - field '%s' too long", minfo->dbField);
+
             if (memcmp(minfo->dbField, lastGroup, (firstdot-minfo->dbField)+1) == 0) {
                 minfo->dbGroupNum = groupNum;
             } else {

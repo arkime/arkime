@@ -15,6 +15,7 @@ if (user.emailSearch && session.email)
     +arrayList(session.email, 'md5', "Attachment MD5s", "email.md5", null, null, session)
     +arrayList(session.email, 'sha256', "Attachment SHA256s", "email.sha256", null, null, session)
     +arrayList(session.email, "bodyMagic", "Attachment libfile", "email.bodymagic")
+    +arrayList(session.email, 'smtpHello', "SMTP Hello", "email.smtp-hello")
     if (session.email.header)
       each value,i in session.email.header
         +arrayList(session.email, "header-" + value, value + " Header", "email." + value)

@@ -1864,13 +1864,51 @@
             Use <code>$</code> to autocomplete shortcuts in search expressions.
           </p>
 
-          <table v-if="shortcuts && shortcuts.length"
+          <div class="row">
+            <div class="col-5">
+              <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                  <div class="input-group-text">
+                    <span class="fa fa-search"></span>
+                  </div>
+                </div>
+                <input type="text"
+                  class="form-control"
+                  v-model="shortcutsQuery.search"
+                  @input="getShortcutsTimeout"
+                />
+              </div>
+            </div>
+            <div class="col-7">
+              <moloch-paging v-if="shortcuts.data"
+                class="pull-right"
+                @changePaging="changeShortcutsPaging"
+                :length-default="shortcutsSize"
+                :records-total="shortcuts.recordsTotal"
+                :records-filtered="shortcuts.recordsFiltered">
+              </moloch-paging>
+            </div>
+          </div>
+
+          <table v-if="shortcuts.data"
             class="table table-striped table-sm">
             <thead>
               <tr>
                 <th>Shared</th>
-                <th>Name</th>
-                <th>Description</th>
+                <th class="cursor-pointer"
+                  @click.self="sortShortcuts('name')">
+                  Name
+                  <span v-show="shortcutsQuery.sortField === 'name' && !shortcutsQuery.desc" class="fa fa-sort-asc"></span>
+                  <span v-show="shortcutsQuery.sortField === 'name' && shortcutsQuery.desc" class="fa fa-sort-desc"></span>
+                  <span v-show="shortcutsQuery.sortField !== 'name'" class="fa fa-sort"></span>
+                </th>
+                <th class="cursor-pointer"
+                  @click.self="sortShortcuts('description')">
+                  Description
+                  <span v-show="shortcutsQuery.sortField === 'description' && !shortcutsQuery.desc" class="fa fa-sort-asc"></span>
+                  <span v-show="shortcutsQuery.sortField === 'description' && shortcutsQuery.desc" class="fa fa-sort-desc"></span>
+                  <span v-show="shortcutsQuery.sortField !== 'description'" class="fa fa-sort"></span>
+                </th>
                 <th>Value(s)</th>
                 <th>Type</th>
                 <th>&nbsp;</th>
@@ -1878,11 +1916,11 @@
             </thead>
             <tbody>
               <!-- shortcuts -->
-              <template v-for="(item, index) in shortcuts">
+              <template v-for="(item, index) in shortcuts.data">
                 <tr :key="`${item.id}-content`">
                   <td>
                     <input type="checkbox"
-                      :disabled="!user.createEnabled && item.userId !== user.userId"
+                      :disabled="(!user.createEnabled && item.userId !== user.userId) || item.locked"
                       v-model="item.shared"
                       @input="toggleShortcutShared(item)"
                     />
@@ -1904,12 +1942,25 @@
                       <span v-if="!item.newValue">
                         <button type="button"
                           v-b-tooltip.hover
+                          v-if="!item.locked"
                           @click="toggleEditShortcut(item)"
                           title="Make changes to this shortcut's value"
                           class="btn btn-sm btn-theme-tertiary pull-right ml-1">
-                          <span class="fa fa-pencil">
+                          <span class="fa fa-pencil fa-fw">
                           </span>
                         </button>
+                        <div v-else
+                          v-b-tooltip.hover
+                          class="pull-right ml-1"
+                          style="display:inline-block"
+                          title="Locked shortcut. Ask your admin to use db.pl to update this shortcut.">
+                          <button :disabled="true"
+                            type="button"
+                            class="btn btn-sm btn-warning disabled cursor-help">
+                            <span class="fa fa-lock fa-fw">
+                            </span>
+                          </button>
+                        </div>
                         <button type="button"
                           v-b-tooltip.hover
                           title="Delete this shortcut"
@@ -1951,6 +2002,16 @@
                   </td>
                 </tr>
               </template> <!-- /shortcuts -->
+              <!-- no shortcuts -->
+              <tr v-if="shortcuts.data && shortcuts.data.length === 0">
+                <td colspan="6">
+                  <p class="text-center mb-0">
+                    <span class="fa fa-folder-open">
+                    </span>&nbsp;
+                    No shortcuts or none that match your search
+                  </p>
+                </td>
+              </tr> <!-- /no shortcuts -->
               <!-- shortcuts list error -->
               <tr v-if="shortcutsListError">
                 <td colspan="6">
@@ -2087,6 +2148,8 @@ import MolochPaging from '../utils/Pagination';
 
 let clockInterval;
 
+let shortcutsInputTimeout;
+
 const defaultSpiviewConfig = { fields: ['dstIp', 'protocol', 'srcIp'] };
 const defaultColConfig = {
   order: [['firstPacket', 'desc']],
@@ -2175,14 +2238,21 @@ export default {
       newNotifier: undefined,
       newNotifierError: '',
       // shortcut settings vars
-      shortcuts: undefined,
+      shortcuts: {},
       shortcutsListError: '',
       newShortcutShared: false,
       newShortcutName: '',
       newShortcutDescription: '',
       newShortcutValue: '',
       newShortcutType: 'string',
-      shortcutFormError: ''
+      shortcutFormError: '',
+      shortcutsStart: 0,
+      shortcutsSize: 50,
+      shortcutsQuery: {
+        desc: false,
+        sortField: 'name',
+        search: ''
+      }
     };
   },
   computed: {
@@ -2909,6 +2979,35 @@ export default {
         });
     },
     /* SHORTCUTS --------------------------------------- */
+    /**
+     * triggered when shortcuts paging is changed
+     * @param {object} newParams Object containing length & start
+     */
+    changeShortcutsPaging: function (newParams) {
+      this.shortcutsSize = newParams.length;
+      this.shortcutsStart = newParams.start;
+      this.getShortcuts();
+    },
+    /* triggered when shortcuts search input is changed
+     * debounces the input so it only issues a request after keyups cease for 400ms */
+    getShortcutsTimeout: function () {
+      if (shortcutsInputTimeout) { clearTimeout(shortcutsInputTimeout); }
+      shortcutsInputTimeout = setTimeout(() => {
+        shortcutsInputTimeout = null;
+        this.getShortcuts();
+      }, 400);
+    },
+    /**
+     * triggered when a sortable shortcuts column is clicked
+     * if the sort field is the same as the current sort field, toggle the desc
+     * flag, otherwise set it to default (false)
+     * @param {string} sort The field to sort on
+     */
+    sortShortcuts: function (sort) {
+      this.shortcutsQuery.desc = this.shortcutsQuery.sortField === sort ? !this.shortcutsQuery.desc : false;
+      this.shortcutsQuery.sortField = sort;
+      this.getShortcuts();
+    },
     /* toggles shared var on a shortcut and saves the shortcut */
     toggleShortcutShared: function (shortcut) {
       this.$set(shortcut, 'shared', !shortcut.shared);
@@ -2945,7 +3044,7 @@ export default {
       this.$http.post('lookups', { var: data })
         .then((response) => {
           // add it to the list
-          this.shortcuts.push(response.data.var);
+          this.shortcuts.data.push(response.data.var);
           // clear the inputs and any error
           this.shortcutFormError = false;
           this.newShortcutName = '';
@@ -2999,7 +3098,7 @@ export default {
       this.$http.delete(`lookups/${shortcut.id}`)
         .then((response) => {
           // remove it from the array
-          this.shortcuts.splice(index, 1);
+          this.shortcuts.data.splice(index, 1);
           // display success message to user
           this.msg = response.data.text;
           this.msgType = 'success';
@@ -3247,10 +3346,21 @@ export default {
     },
     getShortcuts: function () {
       let url = 'lookups';
-      if (this.userId) { url += `?userId=${this.userId}`; }
-      this.$http.get(url)
+
+      let queryParams = {
+        length: this.shortcutsSize,
+        start: this.shortcutsStart,
+        desc: this.shortcutsQuery.desc,
+        sort: this.shortcutsQuery.sortField
+      };
+
+      if (this.shortcutsQuery.search) { queryParams.searchTerm = this.shortcutsQuery.search; }
+      if (this.userId) { queryParams.userId = this.userId; }
+
+      this.$http.get(url, { params: queryParams })
         .then((response) => {
           this.shortcuts = response.data;
+          this.shortcutsListError = '';
         }, (error) => {
           this.shortcutsListError = error.text || error;
         });
@@ -3276,6 +3386,7 @@ export default {
   },
   beforeDestroy: function () {
     if (clockInterval) { clearInterval(clockInterval); }
+    if (shortcutsInputTimeout) { clearTimeout(shortcutsInputTimeout); }
 
     // remove userId route query parameter so that when a user
     // comes back to this page, they are on their own settings

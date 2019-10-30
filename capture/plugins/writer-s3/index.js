@@ -41,24 +41,25 @@ function splitRemain (str, separator, limit) {
 }
 /// ///////////////////////////////////////////////////////////////////////////////
 function makeS3 (node, region) {
-  var key = Config.getFull(node, 's3AccessKeyId');
-  if (!key) {
-    console.log('ERROR - No s3AccessKeyId set for ', node);
-    return undefined;
-  }
-
   var s3 = S3s[region + key];
   if (s3) {
     return s3;
   }
 
-  var secret = Config.getFull(node, 's3SecretAccessKey');
-  if (!secret) {
-    console.log('ERROR - No s3SecretAccessKey set for ', node);
+  var s3Params = {region: region};
+
+  var key = Config.getFull(node, 's3AccessKeyId');
+  if (key) {
+    var secret = Config.getFull(node, 's3SecretAccessKey');
+    if (!secret) {
+      console.log('ERROR - No s3SecretAccessKey set for ', node);
+    }
+
+    s3Params.accessKeyId = key;
+    s3Params.secretAccessKey = secret;
   }
-  var s3Params = {region: region,
-    accessKeyId: key,
-    secretAccessKey: secret};
+
+  // Lets hope that we can find a credential provider elsewhere
   var rv = S3s[region + key] = new AWS.S3(s3Params);
   return rv;
 }
@@ -124,12 +125,18 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
           }
           async.each(data.subPackets, function (sp, nextCb) {
             var block = decompressed[sp.rangeStart];
-            packetCb(pcap, block.subarray(sp.packetStart, sp.packetEnd), nextCb, sp.itemPos);
+            var packetData = block.subarray(sp.packetStart, sp.packetEnd);
+            var len = (pcap.bigEndian?packetData.readUInt32BE(8):packetData.readUInt32LE(8));
+
+            packetCb(pcap, packetData.subarray(0, len + 16), nextCb, sp.itemPos);
           },
           nextCb);
         } else {
           async.each(data.subPackets, function (sp, nextCb) {
-            packetCb(pcap, s3data.Body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart), nextCb, sp.itemPos);
+            var packetData = s3data.Body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart);
+            var len = (pcap.bigEndian?packetData.readUInt32BE(8):packetData.readUInt32LE(8));
+
+            packetCb(pcap, packetData.subarray(0, len + 16), nextCb, sp.itemPos);
           },
           nextCb);
         }
