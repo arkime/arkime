@@ -323,6 +323,19 @@ function verifyToken (req, res, next) {
   });
 }
 
+// Verify cluster URLs
+function verifyUrl (req, res, next) {
+  var re = new RegExp("^(http|https)://", "i");
+  // verify that url starts with http:// or https://
+  if (!re.test(req.body.url) || (req.body.localUrl && !re.test(req.body.localUrl))) {
+    return res.status(400).json({
+      success: false,
+      text: `Invalid URL ${req.body.url}.`
+    });
+  }
+  next();
+}
+
 /* Helper functions -------------------------------------------------------- */
 // list of alerts that will be sent at every 10 seconds
 let alerts = [];
@@ -1456,7 +1469,7 @@ router.put('/groups/:id', verifyToken, (req, res, next) => {
 });
 
 // Create a new cluster within an existing group
-router.post('/groups/:id/clusters', verifyToken, (req, res, next) => {
+router.post('/groups/:id/clusters', verifyToken, verifyUrl, (req, res, next) => {
   if (!req.body.title || !req.body.url) {
     let message;
     if (!req.body.title) {
@@ -1505,7 +1518,7 @@ router.post('/groups/:id/clusters', verifyToken, (req, res, next) => {
 });
 
 // Delete a cluster
-router.delete('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next) => {
+router.delete('/groups/:groupId/clusters/:clusterId', verifyToken, verifyUrl, (req, res, next) => {
   let clusterIndex = 0;
   let foundCluster = false;
   for (let group of parliament.groups) {
