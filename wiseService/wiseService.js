@@ -589,7 +589,7 @@ app.post("/get", function(req, res) {
           typeName = internals.type2Name[type];
         }
 
-        var len  = buf.readUInt16BE(offset);  // aca crashea
+        var len  = buf.readUInt16BE(offset);
         offset += 2;
 
         var value = buf.toString('utf8', offset, offset+len);
