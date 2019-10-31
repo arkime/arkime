@@ -124,11 +124,11 @@ $result = parliamentPost("/parliament/api/groups/0/clusters", '{"token": "' . $t
 eq_or_diff($result, from_json('{"success":false,"text":"A cluster must have a url."}'));
 
 # Add cluster
-$result = parliamentPost("/parliament/api/groups/0/clusters", '{"token": "' . $token . '", "title": "cluster 1", "url": "super/fancy/url"}');
+$result = parliamentPost("/parliament/api/groups/0/clusters", '{"token": "' . $token . '", "title": "cluster 1", "url": "https://super/fancy/url"}');
 ok ($result->{success});
 
 # Update cluster
-$result = parliamentPut("/parliament/api/groups/0/clusters/0", '{"token": "' . $token . '", "title": "cluster 1a", "url": "super/fancy/urla"}');
+$result = parliamentPut("/parliament/api/groups/0/clusters/0", '{"token": "' . $token . '", "title": "cluster 1a", "url": "https://super/fancy/urla"}');
 ok ($result->{success});
 
 # Delete cluster no token

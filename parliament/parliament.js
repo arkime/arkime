@@ -323,12 +323,27 @@ function verifyToken (req, res, next) {
   });
 }
 
-// Verify cluster URLs
-function verifyUrl (req, res, next) {
+// Verify clusters
+function checkCluster (req, res, next) {
+  // existence checks for compulsory fields
+  if (!req.body.title || !req.body.url) {
+    let message;
+    if (!req.body.title) {
+      message = 'A cluster must have a title.';
+    } else if (!req.body.url) {
+      message = 'A cluster must have a url.';
+    }
+
+    return res.status(422).json({
+      success: false,
+      text: message
+    });
+  }
+
   var re = new RegExp("^(http|https)://", "i");
   // verify that url starts with http:// or https://
   if (!re.test(req.body.url) || (req.body.localUrl && !re.test(req.body.localUrl))) {
-    return res.status(400).json({
+    return res.status(422).json({
       success: false,
       text: `Invalid URL ${req.body.url}.`
     });
@@ -1469,20 +1484,7 @@ router.put('/groups/:id', verifyToken, (req, res, next) => {
 });
 
 // Create a new cluster within an existing group
-router.post('/groups/:id/clusters', verifyToken, verifyUrl, (req, res, next) => {
-  if (!req.body.title || !req.body.url) {
-    let message;
-    if (!req.body.title) {
-      message = 'A cluster must have a title.';
-    } else if (!req.body.url) {
-      message = 'A cluster must have a url.';
-    }
-
-    const error = new Error(message);
-    error.httpStatusCode = 422;
-    return next(error);
-  }
-
+router.post('/groups/:id/clusters', verifyToken, checkCluster, (req, res, next) => {
   let newCluster = {
     title       : req.body.title,
     description : req.body.description,
@@ -1546,20 +1548,7 @@ router.delete('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, ne
 });
 
 // Update a cluster
-router.put('/groups/:groupId/clusters/:clusterId', verifyToken, verifyUrl, (req, res, next) => {
-  if (!req.body.title || !req.body.url) {
-    let message;
-    if (!req.body.title) {
-      message = 'A cluster must have a title.';
-    } else if (!req.body.url) {
-      message = 'A cluster must have a url.';
-    }
-
-    const error = new Error(message);
-    error.httpStatusCode = 422;
-    return next(error);
-  }
-
+router.put('/groups/:groupId/clusters/:clusterId', verifyToken, checkCluster, (req, res, next) => {
   let foundCluster = false;
   for (let group of parliament.groups) {
     if (group.id === parseInt(req.params.groupId)) {
