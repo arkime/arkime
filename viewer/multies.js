@@ -383,11 +383,18 @@ app.get("/:index/:type/_search", (req, res) => {
 app.get("/:index/:type/:id", function(req, res) {
   if (crossClusterSearchEnabled) { // use cross cluster search
     // req.params.index -> index ; req.params.type -> type ; req.params.id -> document id
+
     var index = req.params.index.replace(/MULTIPREFIX_/g, "");
     index = index.split(",");
     var type = req.params.type;
     var query = { query: { terms: { "_id": [req.params.id] } } };
-    searchAllCluster(index, type, query, null, (err, results) => {
+    var options = req.query || undefined;
+    var cluster = req.query._cluster ? req.query._cluster.split(",") : Object.keys(esCrossClusters);
+
+    if(req.query._cluster) {delete req.query._cluster};
+    console.log(cluster);
+
+    crossClusterSearch(index, type, query, options, cluster, (err, results) => {
       //console.log(util.inspect(results, false, 50));
       if (err || results.hits.total === 0) {
           //console.log(util.inspect(results, false, 50));

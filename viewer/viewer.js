@@ -5684,8 +5684,11 @@ function localSessionDetail(req, res) {
 /**
  * Get SPI data for a session
  */
-app.get('/:nodeName/session/:id/detail', cspHeader, logAction(), (req, res) => {
-  Db.getWithOptions(Db.sid2Index(req.params.id), 'session', Db.sid2Id(req.params.id), {}, function(err, session) {
+var spiEndpoint = Config.get("crossClusterES", false) ? "/:clusterName/node/:nodeName/session/:id/detail" : "/:nodeName/session/:id/detail";
+app.get(spiEndpoint, cspHeader, logAction(), (req, res) => {
+  console.log(req.params.clusterName);
+  var filter = req.params.clusterName ? {_cluster: req.params.clusterName} : {};
+  Db.getWithOptions(Db.sid2Index(req.params.id), 'session', Db.sid2Id(req.params.id), filter, function(err, session) {
     if (err || !session.found) {
       return res.end("Couldn't look up SPI data, error for session " + safeStr(req.params.id) + " Error: " +  err);
     }

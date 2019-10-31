@@ -87,9 +87,10 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getDetail: function (id, node) {
+  getDetail: function (id, node, cluster) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`${node}/session/${id}/detail`)
+      let url = cluster ? `${cluster}/node/${node}/session/${id}/detail` : `${node}/session/${id}/detail`;
+      Vue.axios.get(url)
         .then((response) => {
           resolve(response);
         }, (error) => {

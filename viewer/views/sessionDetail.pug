@@ -60,6 +60,11 @@ dl
     strong -&nbsp;
     +clickableValue('stoptime', session.lastPacket)
 
+  if (session.clusterName)
+    dt Cluster
+    dd
+      strong.medium.ml-1 #{session.clusterName}
+ 
   dt
     +clickableLabel('node', 'Node')
   dd
