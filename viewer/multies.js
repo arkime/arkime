@@ -126,7 +126,6 @@ function getActiveNodes(){
   return activeESNodes.slice();
 }
 
-
 //////////////////////////////////////////////////////////////////////////////////
 //// Cross Cluster Search Begin
 //////////////////////////////////////////////////////////////////////////////////
@@ -204,7 +203,6 @@ function validCluster(cluster) {
 //////////////////////////////////////////////////////////////////////////////////
 //// Cross Cluster Search End
 //////////////////////////////////////////////////////////////////////////////////
-
 
 function simpleGather(req, res, bodies, doneCb) {
   var nodes = getActiveNodes();
@@ -780,7 +778,7 @@ app.post("/:index/:type/_search", function(req, res) {
       cluster = query._cluster; // an array [cluster_one, cluster_two, ...]
       delete query._cluster;
     }
-
+    
     cluster = Object.keys(esCrossClusters); // all cluster
     query = JSON.stringify(query);
     if (cluster !== undefined && validCluster(cluster)) {

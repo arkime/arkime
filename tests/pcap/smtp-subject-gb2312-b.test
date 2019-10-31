@@ -108,6 +108,10 @@
                   "837ccb607e312b170fac7383d7ccfd61fa5072793f19a25e75fbacb56539b86b"
                ],
                "sha256Cnt" : 1,
+               "smtpHello" : [
+                  "xxxxxxxxxxxxxxxxx4.xxxxx.net"
+               ],
+               "smtpHelloCnt" : 1,
                "src" : [
                   "xxxxxxxxx@xxxxxxx.com"
                ],

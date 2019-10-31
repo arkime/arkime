@@ -93,6 +93,10 @@
                   "61479904e443b354d4427a51b990c696f731e341e4c63328e07c1a92658ba591"
                ],
                "sha256Cnt" : 1,
+               "smtpHello" : [
+                  "xxxxxxxxxxxxx.xxx.com"
+               ],
+               "smtpHelloCnt" : 1,
                "src" : [
                   "xxxxx@xxx.net"
                ],
