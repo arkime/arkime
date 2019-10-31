@@ -122,7 +122,7 @@ exports.auth2obj = function(auth, checkSignature, secret) {
   var payload = splitted[0];
   var signature = splitted[1];
 
-  if (checkSignature) {
+  if (checkSignature || splitted.length > 1) {
     var h = crypto.createHmac('sha256', secret);
     h.update(payload, 'hex');
     var countedSignature = h.digest('hex');
