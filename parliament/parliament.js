@@ -1518,7 +1518,7 @@ router.post('/groups/:id/clusters', verifyToken, verifyUrl, (req, res, next) => 
 });
 
 // Delete a cluster
-router.delete('/groups/:groupId/clusters/:clusterId', verifyToken, verifyUrl, (req, res, next) => {
+router.delete('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next) => {
   let clusterIndex = 0;
   let foundCluster = false;
   for (let group of parliament.groups) {
@@ -1546,7 +1546,7 @@ router.delete('/groups/:groupId/clusters/:clusterId', verifyToken, verifyUrl, (r
 });
 
 // Update a cluster
-router.put('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next) => {
+router.put('/groups/:groupId/clusters/:clusterId', verifyToken, verifyUrl, (req, res, next) => {
   if (!req.body.title || !req.body.url) {
     let message;
     if (!req.body.title) {
