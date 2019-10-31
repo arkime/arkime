@@ -323,29 +323,24 @@ function verifyToken (req, res, next) {
   });
 }
 
-// Verify clusters
+// Verify cluster
 function checkCluster (req, res, next) {
-  // existence checks for compulsory fields
-  if (!req.body.title || !req.body.url) {
-    let message;
-    if (!req.body.title) {
-      message = 'A cluster must have a title.';
-    } else if (!req.body.url) {
-      message = 'A cluster must have a url.';
-    }
-
+  let message;
+  let re = new RegExp("^(http|https)://", "i");
+  if (!req.body.title) {  // existence checks for compulsory fields
+    message = 'A cluster must have a title.';
+  } else if (!req.body.url) {
+    message = 'A cluster must have a url.';
+  } else if (!re.test(req.body.url)) {  // verify that url starts with http:// or https://
+    message = `Invalid URL ${req.body.url}.`;
+  } else if (req.body.localUrl && !re.test(req.body.localUrl)) {
+    message = `Invalid local URL ${req.body.localUrl}.`;
+  }
+  
+  if (message) {
     return res.status(422).json({
       success: false,
       text: message
-    });
-  }
-
-  var re = new RegExp("^(http|https)://", "i");
-  // verify that url starts with http:// or https://
-  if (!re.test(req.body.url) || (req.body.localUrl && !re.test(req.body.localUrl))) {
-    return res.status(422).json({
-      success: false,
-      text: `Invalid URL ${req.body.url}.`
     });
   }
   next();
