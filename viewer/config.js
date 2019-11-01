@@ -122,9 +122,8 @@ exports.obj2auth = function(obj, c2s, secret) {
 
 exports.auth2obj = function(auth, c2s, secret) {
   secret = secret || exports.getFull("default", "serverSecret") || exports.getFull("default", "passwordSecret", "password");
-  var splitted = auth.split('.');
-  var payload = splitted[0];
-  var signature = splitted[1];
+  let splitted = auth.split('.');
+  let payload = splitted[0];
 
   // if sig missing error if c2s or s2sSignedAuth
   if (splitted.length === 1 && (c2s || exports.getFull("default", "s2sSignedAuth", true))) {
@@ -132,19 +131,19 @@ exports.auth2obj = function(auth, c2s, secret) {
   }
 
   if (splitted.length > 1) {
-    var h = crypto.createHmac('sha256', secret);
+    let signature = Buffer.from(splitted[1], 'hex');
+    let h = crypto.createHmac('sha256', secret);
     h.update(payload, 'hex');
-    var countedSignature = h.digest('hex');
+    let countedSignature = h.digest();
 
-    if (signature !== countedSignature) {
+    if (!crypto.timingSafeEqual(signature, countedSignature)) {
       throw 'Incorrect signature';
     }
   }
 
-  var c = crypto.createDecipher('aes192', secret);
-  var d = '';
   try {
-    d = c.update(payload, "hex", "binary");
+    let c = crypto.createDecipher('aes192', secret);
+    let d = c.update(payload, "hex", "binary");
     d += c.final("binary");
     return JSON.parse(d);
   }
