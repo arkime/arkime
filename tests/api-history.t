@@ -93,7 +93,7 @@ my $pwd = "*/pcap";
 
 # Can't delete items when not admin
     $json = viewerDelete("/history/list/$item->{id}?molochRegressionUser=historytest1");
-    eq_or_diff($json, from_json('{"success": false, "text": "Need admin privileges"}', {relaxed => 1}), "Test Delete Not Admin", { context => 3 });
+    eq_or_diff($json, from_json('{"success": false, "text": "You do not have permission to access this resource"}', {relaxed => 1}), "Test Delete Not Admin", { context => 3 });
 
 # Delete item no index
     $json = viewerDelete("/history/list/$item->{id}");

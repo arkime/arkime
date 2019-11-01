@@ -8217,15 +8217,7 @@ app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
 // expose vue bundle (dev)
 app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
 
-app.use([cspHeader, checkPermissions(['webEnabled'])], (req, res) => {
-  if (req.path === '/users' && !req.user.createEnabled) {
-    return res.status(403).send('Permission denied');
-  }
-
-  if (req.path === '/settings' && Config.get('demoMode', false)) {
-    return res.status(403).send('Permission denied');
-  }
-
+app.use(cspHeader, (req, res) => {
   let cookieOptions = { path: app.locals.basePath, sameSite: 'Strict' };
   if (Config.isHTTPS()) { cookieOptions.secure = true; }
 
@@ -8235,6 +8227,18 @@ app.use([cspHeader, checkPermissions(['webEnabled'])], (req, res) => {
      Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}, true),
      cookieOptions
   );
+
+  if (!req.user.webEnabled) {
+    return res.status(403).send('Permission denied');
+  }
+
+  if (req.path === '/users' && !req.user.createEnabled) {
+    return res.status(403).send('Permission denied');
+  }
+
+  if (req.path === '/settings' && Config.get('demoMode', false)) {
+    return res.status(403).send('Permission denied');
+  }
 
   const renderer = vueServerRenderer.createRenderer({
     template: fs.readFileSync('./vueapp/dist/index.html', 'utf-8')
