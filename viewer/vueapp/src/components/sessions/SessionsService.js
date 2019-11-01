@@ -89,7 +89,7 @@ export default {
    */
   getDetail: function (id, node, cluster) {
     return new Promise((resolve, reject) => {
-      let url = cluster ? `${cluster}/node/${node}/session/${id}/detail` : `${node}/session/${id}/detail`;
+      let url = cluster ? `${node}/session/${id}/detail?cluster=${cluster}` : `${node}/session/${id}/detail`;
       Vue.axios.get(url)
         .then((response) => {
           resolve(response);

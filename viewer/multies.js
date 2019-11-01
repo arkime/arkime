@@ -184,22 +184,6 @@ function crossClusterSearch(index, type, query, options, cluster, cb) {
   });
 }
 
-function searchAllCluster(index, type, query, options, cb) {
-  var clusters = Object.keys(esCrossClusters);
-  return crossClusterSearch(index, type, query, options, clusters, cb);
-}
-
-function validCluster(cluster) {
-  var found = false;
-  cluster.forEach((val) => {
-    if(esCrossClusters[val] !== undefined)
-    {
-      found = true;
-    }
-  });
-  return found;
-}
-
 //////////////////////////////////////////////////////////////////////////////////
 //// Cross Cluster Search End
 //////////////////////////////////////////////////////////////////////////////////
@@ -728,7 +712,8 @@ app.post("/MULTIPREFIX_fields/field/_search", function(req, res) {
     var type = "field";
     var query = req.body;
     var options = req.query || undefined;
-    searchAllCluster(index, type, query, options, (err, result) => {
+    var cluster = Object.keys(esCrossClusters); // all cluster
+    crossClusterSearch(index, type, query, options, cluster, (err, result) => {
       if (err) {console.log("ERROR - GET /fields/field/_search", result.error);}
       for (var h = 0; h < result.hits.total; h++) {
         var hit = result.hits.hits[h];
@@ -770,25 +755,17 @@ app.post("/:index/:type/_search", function(req, res) {
     index = index.split(",");
     var type = req.params.type;
     var query = req.body;
-    var options = req.query || undefined;
-    var cluster = null;
-
-    query = JSON.parse(query);
-    if (query._cluster) {
-      cluster = query._cluster; // an array [cluster_one, cluster_two, ...]
-      delete query._cluster;
+    var options = req.query;
+    var cluster = Object.keys(esCrossClusters); // all cluster
+    if(options._cluster) {
+      cluster = options._cluster;
+      delete options._cluster;
     }
+    crossClusterSearch(index, type, query, options, cluster, (err, results) => {
+      //console.log(util.inspect(results, false, 50));
+      res.send(results);
+    });
     
-    cluster = Object.keys(esCrossClusters); // all cluster
-    query = JSON.stringify(query);
-    if (cluster !== undefined && validCluster(cluster)) {
-      crossClusterSearch(index, type, query, options, cluster, (err, results) => {
-        //console.log(util.inspect(results, false, 50));
-        res.send(results);
-      });
-    } else {      
-      res.send({"hits" : { "total" : 0, "hits" : [ ] } });
-    }
   } else {
     var bodies = {};
     var search = JSON.parse(req.body);
