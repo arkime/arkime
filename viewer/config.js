@@ -101,7 +101,7 @@ exports.store2ha1 = function(passstore) {
   }
 };
 
-exports.obj2auth = function(obj, secret) {
+exports.obj2auth = function(obj, c2s, secret) {
   secret = secret || exports.getFull("default", "serverSecret") || exports.getFull("default", "passwordSecret", "password");
 
   var c = crypto.createCipher('aes192', secret);
@@ -112,17 +112,26 @@ exports.obj2auth = function(obj, secret) {
   h.update(e, 'hex');
   var countedSignature = h.digest('hex');
 
-  return e + '.' + countedSignature;
+  // include sig if c2s or s2sSignedAuth
+  if (c2s || exports.getFull("default", "s2sSignedAuth", true)) {
+    return e + '.' + countedSignature;
+  }
+
+  return e;
 };
 
-exports.auth2obj = function(auth, checkSignature, secret) {
-  checkSignature = checkSignature || false;
+exports.auth2obj = function(auth, c2s, secret) {
   secret = secret || exports.getFull("default", "serverSecret") || exports.getFull("default", "passwordSecret", "password");
   var splitted = auth.split('.');
   var payload = splitted[0];
   var signature = splitted[1];
 
-  if (checkSignature || splitted.length > 1) {
+  // if sig missing error if c2s or s2sSignedAuth
+  if (splitted.length === 1 && (c2s || exports.getFull("default", "s2sSignedAuth", true))) {
+    throw 'Missing signature';
+  }
+
+  if (splitted.length > 1) {
     var h = crypto.createHmac('sha256', secret);
     h.update(payload, 'hex');
     var countedSignature = h.digest('hex');
@@ -131,6 +140,7 @@ exports.auth2obj = function(auth, checkSignature, secret) {
       throw 'Incorrect signature';
     }
   }
+
   var c = crypto.createDecipher('aes192', secret);
   var d = '';
   try {

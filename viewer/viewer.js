@@ -274,7 +274,7 @@ if (Config.get("passwordSecret")) {
 
     // S2S Auth
     if (req.headers['x-moloch-auth']) {
-      var obj = Config.auth2obj(req.headers['x-moloch-auth']);
+      var obj = Config.auth2obj(req.headers['x-moloch-auth'], false);
       obj.path = obj.path.replace(Config.basePath(), "/");
       if (obj.path !== req.url) {
         console.log("ERROR - mismatch url", obj.path, req.url);
@@ -660,7 +660,7 @@ function addAuth(info, user, node, secret) {
                                                      user: user.userId,
                                                      node: node,
                                                      path: info.path
-                                                    }, secret);
+                                                    }, false, secret);
 }
 
 function loadCaTrust(node) {
@@ -1585,7 +1585,7 @@ app.get('/user/settings', [noCacheJson, getSettingUser, recordResponseTime], fun
 
   res.cookie(
      'MOLOCH-COOKIE',
-     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
+     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}, true),
      cookieOptions
   );
 
@@ -8283,7 +8283,7 @@ app.use(cspHeader, (req, res) => {
   // send cookie for basic, non admin functions
   res.cookie(
      'MOLOCH-COOKIE',
-     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
+     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}, true),
      cookieOptions
   );
 
