@@ -389,7 +389,7 @@ app.get("/:index/:type/:id", function(req, res) {
     var options = req.query || undefined;
     var cluster = req.query._cluster ? req.query._cluster.split(",") : Object.keys(esCrossClusters);
 
-    if(req.query._cluster) {delete req.query._cluster};
+    if(req.query._cluster) { delete req.query._cluster; }
     console.log(cluster);
 
     crossClusterSearch(index, type, query, options, cluster, (err, results) => {
