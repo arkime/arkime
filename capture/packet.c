@@ -1080,11 +1080,9 @@ LOCAL int moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const 
             return moloch_packet_ip6(batch, packet, data+20, len - 20);
         else
             return moloch_packet_ip4(batch, packet, data+20, len - 20);
-    case 4:
-      // ethertype 4 in sll encap => 802.2 llc
-      return moloch_packet_ieee802(batch, packet, &(packet->pkt[14]), packet->pktlen-14);
     default:
-        return moloch_packet_run_ethernet_cb(batch, packet, data+16,len-16, ethertype, "SLL");
+			printf ("sll ethertype=%x\n", ethertype);
+      return moloch_packet_ieee802(batch, packet, &(packet->pkt[14]), packet->pktlen-14);
     } // switch
     return MOLOCH_PACKET_CORRUPT;
 }
