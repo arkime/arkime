@@ -8217,7 +8217,7 @@ app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
 // expose vue bundle (dev)
 app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
 
-app.use(cspHeader, (req, res) => {
+app.use([cspHeader, checkPermissions(['webEnabled'])], (req, res) => {
   if (req.path === '/users' && !req.user.createEnabled) {
     return res.status(403).send('Permission denied');
   }
