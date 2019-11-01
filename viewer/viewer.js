@@ -274,7 +274,7 @@ if (Config.get("passwordSecret")) {
 
     // S2S Auth
     if (req.headers['x-moloch-auth']) {
-      var obj = Config.auth2obj(req.headers['x-moloch-auth']);
+      var obj = Config.auth2obj(req.headers['x-moloch-auth'], false);
       obj.path = obj.path.replace(Config.basePath(), "/");
       if (obj.path !== req.url) {
         console.log("ERROR - mismatch url", obj.path, req.url);
@@ -660,7 +660,7 @@ function addAuth(info, user, node, secret) {
                                                      user: user.userId,
                                                      node: node,
                                                      path: info.path
-                                                    }, secret);
+                                                    }, false, secret);
 }
 
 function loadCaTrust(node) {
@@ -868,18 +868,6 @@ function checkCookieToken(req, res, next) {
   return next();
 }
 
-// TODO ECR can we define exactly what the webEnabled permission excludes the user from doing?
-// Also, should we remove this middleware and replace it with checkPermissions('webEnabled')?
-function checkWebEnabled(req, res, next) {
-  if (!req.user.webEnabled) {
-    return res.send("Moloch Permision Denied");
-  }
-
-  return next();
-}
-
-// TODO ECR
-// TODO TEST createEnabled
 function checkPermissions (permissions) {
   const inversePermissions = {
     hidePcap: true,
@@ -888,7 +876,7 @@ function checkPermissions (permissions) {
     disablePcapDownload: true
   };
 
-  return function (req, res, next) {
+  return (req, res, next) => {
     for (let permission of permissions) {
       if ((!req.user[permission] && !inversePermissions[permission]) ||
         (req.user[permission] && inversePermissions[permission])) {
@@ -1046,8 +1034,8 @@ app.get(['/', '/app'], function(req, res) {
   }
 });
 
-app.get('/about', checkWebEnabled, function(req, res) {
-  res.redirect("help");
+app.get('/about', checkPermissions(['webEnabled']), (req, res) => {
+  res.redirect('help');
 });
 
 app.get('/molochclusters', function(req, res) {
@@ -1609,7 +1597,7 @@ app.get('/user/settings', [noCacheJson, getSettingUser, recordResponseTime], fun
 
   res.cookie(
      'MOLOCH-COOKIE',
-     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
+     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}, true),
      cookieOptions
   );
 
@@ -3253,7 +3241,7 @@ app.get('/file/list', [noCacheJson, logAction('files'), checkPermissions(['hideF
   });
 });
 
-app.get('/titleconfig', checkWebEnabled, function(req, res) {
+app.get('/titleconfig', checkPermissions(['webEnabled']), (req, res) => {
   var titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_');
 
   titleConfig = titleConfig.replace(/_cluster_/g, internals.clusterName)
@@ -3263,7 +3251,7 @@ app.get('/titleconfig', checkWebEnabled, function(req, res) {
   res.send(titleConfig);
 });
 
-app.get('/molochRightClick', [noCacheJson, checkWebEnabled], function(req, res) {
+app.get('/molochRightClick', [noCacheJson, checkPermissions(['webEnabled'])], (req, res) => {
   if(!app.locals.molochRightClick) {
     res.status(404);
     res.send('Cannot locate right clicks');
@@ -3277,7 +3265,6 @@ app.get('/eshealth.json', [noCacheJson], function(req, res) {
   });
 });
 
-// TODO ECR should this checkCookieToken?
 app.get('/esindices/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats'])], (req, res) => {
   async.parallel({
     indices: Db.indicesCache,
@@ -3349,7 +3336,6 @@ app.get('/esindices/list', [noCacheJson, recordResponseTime, checkPermissions(['
   });
 });
 
-// TODO ECR should this have removeEnabled too?
 app.delete('/esindices/:index', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
   if (!req.params.index) {
     return res.molochError(403, 'Missing index to delete');
@@ -3379,7 +3365,6 @@ app.post('/esindices/:index/optimize', [noCacheJson, logAction(), checkCookieTok
   return res.send(JSON.stringify({ success: true, text: {} }));
 });
 
-// TODO ECR should this have removeEnabled too?
 app.post('/esindices/:index/close', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
   if (!req.params.index) {
     return res.molochError(403, 'Missing index to close');
@@ -3409,7 +3394,6 @@ app.post('/esindices/:index/open', [noCacheJson, logAction(), checkCookieToken, 
   return res.send(JSON.stringify({ success: true, text: {} }));
 });
 
-// TODO ECR should this have removeEnabled too?
 app.post('/esindices/:index/shrink', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
   if (!req.body || !req.body.target) {
     return res.molochError(403, 'Missing target');
@@ -3462,7 +3446,6 @@ app.post('/esindices/:index/shrink', [noCacheJson, logAction(), checkCookieToken
   });
 });
 
-// TODO ECR should this checkCookieToken?
 app.get('/estask/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats'])], (req, res) => {
   Db.tasks(function (err, tasks) {
     if (err) {
@@ -3537,8 +3520,7 @@ app.get('/estask/list', [noCacheJson, recordResponseTime, checkPermissions(['hid
   });
 });
 
-// TODO ECR should this checkCookieToken?
-app.post('/estask/cancel', [noCacheJson, logAction(), checkPermissions(['createEnabled'])], (req, res) => {
+app.post('/estask/cancel', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
   if (!req.body || !req.body.taskId) {
     return res.molochError(403, 'Missing/Empty required fields');
   }
@@ -3548,8 +3530,7 @@ app.post('/estask/cancel', [noCacheJson, logAction(), checkPermissions(['createE
   });
 });
 
-// TODO ECR should this checkCookieToken?
-app.post('/estask/cancelById', [noCacheJson, logAction(), checkPermissions(['createEnabled'])], (req, res) => {
+app.post('/estask/cancelById', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
   if (!req.body || !req.body.cancelId) {
     return res.molochError(403, 'Missing cancel ID');
   }
@@ -3559,7 +3540,6 @@ app.post('/estask/cancelById', [noCacheJson, logAction(), checkPermissions(['cre
   });
 });
 
-// TODO ECR should this checkCookieToken?
 app.get('/esshard/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats'])], (req, res) => {
   Promise.all([
     Db.shards(),
@@ -3734,7 +3714,6 @@ app.get('/esrecovery/list', [noCacheJson, recordResponseTime, checkPermissions([
   });
 });
 
-// TODO ECR should this checkCookieToken?
 app.get('/esstats.json', [noCacheJson, recordResponseTime, checkPermissions(['hideStats'])], (req, res) => {
   let stats = [];
   let r;
@@ -3931,7 +3910,6 @@ app.get('/parliament.json', [noCacheJson], function (req, res) {
     });
 });
 
-// TODO ECR should this checkCookieToken?
 app.get('/stats.json', [noCacheJson, recordResponseTime, checkPermissions(['hideStats'])], (req, res) => {
   let query = {
     from: 0,
@@ -4062,7 +4040,6 @@ app.get('/stats.json', [noCacheJson, recordResponseTime, checkPermissions(['hide
   });
 });
 
-// TODO ECR should this checkCookieToken?
 app.get('/dstats.json', [noCacheJson, checkPermissions(['hideStats'])], (req, res) => {
   var nodeName = req.query.nodeName;
 
@@ -6395,7 +6372,6 @@ app.put('/user/:userId/acknowledgeMsg', [noCacheJson, logAction(), checkCookieTo
   });
 });
 
-// TODO ECR should this have removeEnabled too?
 app.post('/user/delete', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
   if (req.body.userId === req.user.userId) {
     return res.molochError(403, 'Can not delete yourself');
@@ -6586,7 +6562,6 @@ app.post('/addTags', [noCacheJson, logAction()], function(req, res) {
   }
 });
 
-// TODO ECR checkCookieToken here?
 app.post('/removeTags', [noCacheJson, logAction(), checkPermissions(['removeEnabled'])], (req, res) => {
   var tags = [];
   if (req.body.tags) {
@@ -8208,7 +8183,7 @@ app.use('/cyberchef/', unsafeInlineCspHeader, (req, res) => {
 
 /* cyberchef endpoint - loads the src or dst packets for a session and
  * sends them to cyberchef */
-app.get("/:nodeName/session/:id/cyberchef", checkWebEnabled, checkProxyRequest, unsafeInlineCspHeader, (req, res) => {
+app.get('/:nodeName/session/:id/cyberchef', checkPermissions(['webEnabled']), checkProxyRequest, unsafeInlineCspHeader, (req, res) => {
   processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
     if (err) {
       console.log(`ERROR - /${req.params.nodeName}/session/${req.params.id}/cyberchef`, err);
@@ -8257,7 +8232,7 @@ app.use(cspHeader, (req, res) => {
   // send cookie for basic, non admin functions
   res.cookie(
      'MOLOCH-COOKIE',
-     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
+     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}, true),
      cookieOptions
   );
 
