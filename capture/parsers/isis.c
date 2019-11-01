@@ -45,7 +45,8 @@ void isis_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(pa
       return;
     }
 
-    switch (packet->pkt[21]) {
+    // different ethernet encap types will change location for msg type field
+    switch (packet->pkt[packet->payloadOffset+3]) {
       case 15:
         moloch_field_string_add(typeField, session, "lan-l1-hello", -1, TRUE);
         break;
@@ -74,7 +75,7 @@ void isis_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(pa
         moloch_field_string_add(typeField, session, "l2-psnp", -1, TRUE);
         break;
       default:
-        sprintf (msg, "unk-%d", packet->pkt[21]);
+        sprintf (msg, "unk-%d", packet->pkt[packet->payloadOffset+3]);
         LOG("isis %s\n", msg);
         moloch_field_string_add(typeField, session, msg, -1, TRUE);
     }
