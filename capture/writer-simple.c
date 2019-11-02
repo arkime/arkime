@@ -389,7 +389,6 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
         case MOLOCH_SIMPLE_XOR2048:
         case MOLOCH_SIMPLE_NORMAL:
             break;
-        }
         case MOLOCH_SIMPLE_AES256CTR: {
             int outl;
             if (!EVP_EncryptUpdate(info->file->cipher_ctx, (uint8_t *)info->buf, &outl, (uint8_t *)info->buf, total))
