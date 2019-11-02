@@ -296,19 +296,9 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
 
         MolochSimple_t *info = currentInfo[thread] = writer_simple_alloc(thread, NULL);
         switch(simpleMode) {
+        case MOLOCH_SIMPLE_XOR2048:
         case MOLOCH_SIMPLE_NORMAL:
             name = moloch_db_create_file(packet->ts.tv_sec, NULL, 0, 0, &info->file->id);
-            break;
-        case MOLOCH_SIMPLE_XOR2048:
-            kekId = writer_simple_get_kekId();
-            RAND_bytes(info->file->dek, 256);
-            writer_simple_encrypt_key(kekId, info->file->dek, 256, dekhex);
-            name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
-                                              "encoding", "xor-2048",
-                                              "dek", dekhex,
-                                              "kekId", kekId,
-                                              (char *)NULL);
-
             break;
         case MOLOCH_SIMPLE_AES256CTR: {
             uint8_t dek[32];
@@ -396,12 +386,8 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
         }
 
         switch(simpleMode) {
+        case MOLOCH_SIMPLE_XOR2048:
         case MOLOCH_SIMPLE_NORMAL:
-            break;
-        case MOLOCH_SIMPLE_XOR2048: {
-            uint32_t i;
-            for (i = 0; i < total; i++)
-                info->buf[i] ^= info->file->dek[i % 256];
             break;
         }
         case MOLOCH_SIMPLE_AES256CTR: {
@@ -514,7 +500,7 @@ void writer_simple_init(char *name)
             config.maxFileSizeB = 64LL*1024LL*1024LL*1024LL;
         }
     } else if (strcmp(mode, "xor-2048") == 0) {
-        LOG("WARNING - simpleEncoding of xor-2048 is not actually secure");
+        LOG("WARNING - simpleEncoding of xor-2048 is deprecated and does not encrypt files. Use aes-256-ctr instead.");
         simpleMode = MOLOCH_SIMPLE_XOR2048;
     } else {
         LOGEXIT("Unknown simpleEncoding '%s'", mode);
