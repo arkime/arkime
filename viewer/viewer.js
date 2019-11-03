@@ -6572,36 +6572,80 @@ function removeTagsList(res, allTagNames, sessionList) {
   });
 }
 
+
+
+
+
+
 app.post('/addTags', [noCacheJson, logAction()], function(req, res) {
-  var tags = [];
-  if (req.body.tags) {
-    tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
-  }
+  var tags = [];
+  if (req.body.tags) {
+    tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
+  }
 
-  if (tags.length === 0) { return res.molochError(200, "No tags specified"); }
+  if (tags.length === 0) { return res.molochError(200, "No tags specified"); }
 
-  if (req.body.ids) {
-    var ids = queryValueToArray(req.body.ids);
+  if (req.body.ids) {
+    var ids = queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, ids, ["tags", "node"], function(err, list) {
-      if (!list.length) {
-        return res.molochError(200, 'No sessions to add tags to');
-      }
-      addTagsList(tags, list, function () {
-        return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
-      });
-    });
-  } else {
-    sessionsListFromQuery(req, res, ["tags", "node"], function(err, list) {
-      if (!list.length) {
-        return res.molochError(200, 'No sessions to add tags to');
-      }
-      addTagsList(tags, list, function () {
-        return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
-      });
-    });
-  }
+    sessionsListFromIds(req, ids, ["tags", "node"], function(err, list) {
+      if (!list.length) {
+        return res.molochError(200, 'No sessions to add tags to');
+      }
+
+
+  for (var i = list.length - 1; i >= 0; i--) {
+
+    Db.getWithOptions(Db.sid2Index(list[i]), 'session', Db.sid2Id(list[i]), {}, function(err, session) {
+    if (err || !session.found) {
+      return res.molochError(403, `Error: Unauthorized! this is not your session! `);
+    }
+
+   });
+    
+  }
+
+
+      addTagsList(tags, list, function () {
+        return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
+      });
+
+
+
+    });
+  } else {
+    sessionsListFromQuery(req, res, ["tags", "node"], function(err, list) {
+      if (!list.length) {
+        return res.molochError(200, 'No sessions to add tags to');
+      }
+
+   for (var i = list.length - 1; i >= 0; i--) {
+
+    Db.getWithOptions(Db.sid2Index(list[i]), 'session', Db.sid2Id(list[i]), {}, function(err, session) {
+    if (err || !session.found) {
+      return res.molochError(403, `Error: Unauthorized! this is not your session! `);
+    }
+
+   });
+    
+  }
+
+
+
+      addTagsList(tags, list, function () {
+        return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
+      });
+
+
+
+    });
+  }
 });
+
+
+
+
+
 
 app.post('/removeTags', [noCacheJson, logAction()], function(req, res) {
   if (!req.user.removeEnabled) { return res.molochError(403, "Need remove data privileges"); }
