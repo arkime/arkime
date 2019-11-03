@@ -148,6 +148,11 @@ exports.get = function (index, type, id, cb) {
   return internals.elasticSearchClient.get({index: fixIndex(index), type: type, id: id}, cb);
 };
 
+exports.getQuery = function (id, cb) {
+  return internals.usersElasticSearchClient.get({index:fixIndex('queries'), type: 'query', id: id}, cb);
+};
+
+
 exports.getWithOptions = function (index, type, id, options, cb) {
   var params = {index: fixIndex(index), type:type, id: id};
   exports.merge(params, options);
