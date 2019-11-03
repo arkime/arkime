@@ -7711,9 +7711,9 @@ app.post('/delete', [noCacheJson, checkCookieToken, logAction()], function (req,
 
 
       
-  Db.getWithOptions(Db.sid2Index(whatToRemove), 'session', Db.sid2Id(whatToRemove), {}, function(err, session) {
+  Db.getWithOptions(Db.sid2Index(list), 'session', Db.sid2Id(list), {}, function(err, session) {
     if (err || !session.found) {
-      return res.end("Unauthorized! Couldn't look up SPI data, error for session " + safeStr(whatToRemove) + " Error: " +  err);
+      return res.end("Unauthorized! Couldn't look up SPI data, error for session " + safeStr(list) + " Error: " +  err);
     }
 
       scrubList(req, res, whatToRemove, list);
@@ -7726,9 +7726,9 @@ app.post('/delete', [noCacheJson, checkCookieToken, logAction()], function (req,
     sessionsListFromQuery(req, res, ['node'], function (err, list) {
 
 
-  Db.getWithOptions(Db.sid2Index(whatToRemove), 'session', Db.sid2Id(whatToRemove), {}, function(err, session) {
+  Db.getWithOptions(Db.sid2Index(list), 'session', Db.sid2Id(list), {}, function(err, session) {
     if (err || !session.found) {
-      return res.end("Unauthorized! Couldn't look up SPI data, error for session " + safeStr(whatToRemove) + " Error: " +  err);
+      return res.end("Unauthorized! Couldn't look up SPI data, error for session " + safeStr(list) + " Error: " +  err);
     }
 
 
