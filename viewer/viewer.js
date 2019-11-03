@@ -7705,38 +7705,66 @@ app.post('/delete', [noCacheJson, checkCookieToken, logAction()], function (req,
     whatToRemove = 'pcap';
   }
 
+
+
+
+
   if (req.body.ids) {
     const ids = queryValueToArray(req.body.ids);
     sessionsListFromIds(req, ids, ['node'], function (err, list) {
 
+  var unauthd = 'x';
+  
+  for (var i = list.length - 1; i >= 0; i--) {
 
-      
-  Db.getWithOptions(Db.sid2Index(list), 'session', Db.sid2Id(list), {}, function(err, session) {
+    Db.getWithOptions(Db.sid2Index(list[i]), 'session', Db.sid2Id(list[i]), {}, function(err, session) {
     if (err || !session.found) {
-      return res.end("Unauthorized! Couldn't look up SPI data, error for session " + safeStr(list) + " Error: " +  err);
+      unauthd = 'y';
+      return res.molochError(403, `Error: Unauthorized! this is not your session! `);
     }
 
-      scrubList(req, res, whatToRemove, list);
+   });
+    
+  }
+      
+  
 
-    });
+  
+
+    
+      if(unauthd =='x')
+      {
+        scrubList(req, res, whatToRemove, list);
 
 
+      }
+
+      
+      
     });
   } else if (req.query.expression) {
     sessionsListFromQuery(req, res, ['node'], function (err, list) {
 
+   var unauthd = 'x';
 
-  Db.getWithOptions(Db.sid2Index(list), 'session', Db.sid2Id(list), {}, function(err, session) {
+  for (var i = list.length - 1; i >= 0; i--) {
+
+    Db.getWithOptions(Db.sid2Index(list[i]), 'session', Db.sid2Id(list[i]), {}, function(err, session) {
     if (err || !session.found) {
-      return res.end("Unauthorized! Couldn't look up SPI data, error for session " + safeStr(list) + " Error: " +  err);
+      unauthd = 'y';
+      return res.molochError(403, `Error: Unauthorized! this is not your session! `);
     }
 
+   });
+    
+  }
 
-      scrubList(req, res, whatToRemove, list);
+      if(unauthd =='x')
+      {
+        scrubList(req, res, whatToRemove, list);
 
-     });
 
-
+      }
 
     });
   } else {
