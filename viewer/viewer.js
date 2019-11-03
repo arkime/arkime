@@ -2061,7 +2061,7 @@ app.post('/user/cron/delete', [noCacheJson, checkCookieToken, logAction(), postS
 });
 
 // updates a user's specified cron query
-app.post('/user/cron/update', [noCacheJson, checkCookieToken, logAction(), postSettingUser], function(req, res) {
+app.post('/user/cron/update', [checkCookieToken, logAction(), postSettingUser], function(req, res) {
   if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
 
   if (!req.body.key)    { return res.molochError(403, 'Missing cron query key'); }
@@ -2092,10 +2092,9 @@ app.post('/user/cron/update', [noCacheJson, checkCookieToken, logAction(), postS
     }
       
       
-     Db.getQuery(req.body.key, function(err, query) {
-
+  Db.getQuery(req.body.key, function(err, query) {
     if (err || !query.found || req.settingUser.userId !== query._source.creator ) {
-      console.log('cron query delete failed', err, query);
+      console.log('cron query update failed', err, query);
       return res.molochError(403, 'Cron query does not belong to you! Unauthorized!');
     }
       
