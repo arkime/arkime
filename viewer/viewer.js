@@ -2090,6 +2090,16 @@ app.post('/user/cron/update', [noCacheJson, checkCookieToken, logAction(), postS
       console.log('/user/cron/update failed', err, sq);
       return res.molochError(403, 'Unknown query');
     }
+      
+      
+     Db.getQuery(req.body.key, function(err, query) {
+
+    if (err || !query.found || req.settingUser.userId !== query._source.creator ) {
+      console.log('cron query delete failed', err, query);
+      return res.molochError(403, 'Cron query does not belong to you! Unauthorized!');
+    }
+      
+      
 
     Db.update('queries', 'query', req.body.key, document, {refresh: true}, function(err, data) {
       if (err) {
@@ -2103,9 +2113,11 @@ app.post('/user/cron/update', [noCacheJson, checkCookieToken, logAction(), postS
         success : true,
         text    : 'Updated cron query successfully'
       }));
+        });
     });
   });
 });
+   
 
 // changes a user's password
 app.post('/user/password/change', [noCacheJson, checkCookieToken, logAction(), postSettingUser], function(req, res) {
