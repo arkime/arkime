@@ -7686,35 +7686,64 @@ function scrubList(req, res, whatToRemove, list) {
   });
 }
 
+
+
 app.post('/delete', [noCacheJson, checkCookieToken, logAction()], function (req, res) {
-  if (!req.user.removeEnabled) { return res.molochError(403, 'Need remove data privileges'); }
+  if (!req.user.removeEnabled) { return res.molochError(403, 'Need remove data privileges'); }
 
-  if (req.query.removeSpi !== 'true' && req.query.removePcap !== 'true') {
-    return res.molochError(403, `You can't delete nothing`);
-  }
+  if (req.query.removeSpi !== 'true' && req.query.removePcap !== 'true') {
+    """"""""""""""""""""""''""
+    checkCookieToken     return res.molochError(403, `You can't delete nothing`);
+  }
 
-  let whatToRemove;
-  if (req.query.removeSpi === 'true' && req.query.removePcap === 'true') {
-    whatToRemove = 'all';
-  } else if (req.query.removeSpi === 'true') {
-    whatToRemove = 'spi';
-  } else {
-    whatToRemove = 'pcap';
-  }
+  let whatToRemove;
+  if (req.query.removeSpi === 'true' && req.query.removePcap === 'true') {
+    whatToRemove = 'all';
+  } else if (req.query.removeSpi === 'true') {
+    whatToRemove = 'spi';
+  } else {
+    whatToRemove = 'pcap';
+  }
 
-  if (req.body.ids) {
-    const ids = queryValueToArray(req.body.ids);
-    sessionsListFromIds(req, ids, ['node'], function (err, list) {
-      scrubList(req, res, whatToRemove, list);
-    });
-  } else if (req.query.expression) {
-    sessionsListFromQuery(req, res, ['node'], function (err, list) {
-      scrubList(req, res, whatToRemove, list);
-    });
-  } else {
-    return res.molochError(403, `Error: Missing expression. An expression is required so you don't delete everything.`);
-  }
+  if (req.body.ids) {
+    const ids = queryValueToArray(req.body.ids);
+    sessionsListFromIds(req, ids, ['node'], function (err, list) {
+
+
+      
+  Db.getWithOptions(Db.sid2Index(whatToRemove), 'session', Db.sid2Id(whatToRemove), {}, function(err, session) {
+    if (err || !session.found) {
+      return res.end("Unauthorized! Couldn't look up SPI data, error for session " + safeStr(whatToRemove) + " Error: " +  err);
+    }
+
+      scrubList(req, res, whatToRemove, list);
+
+    });
+
+
+    });
+  } else if (req.query.expression) {
+    sessionsListFromQuery(req, res, ['node'], function (err, list) {
+
+
+  Db.getWithOptions(Db.sid2Index(whatToRemove), 'session', Db.sid2Id(whatToRemove), {}, function(err, session) {
+    if (err || !session.found) {
+      return res.end("Unauthorized! Couldn't look up SPI data, error for session " + safeStr(whatToRemove) + " Error: " +  err);
+    }
+
+
+      scrubList(req, res, whatToRemove, list);
+
+     });
+
+
+
+    });
+  } else {
+    return res.molochError(403, `Error: Missing expression. An expression is required so you don't delete everything.`);
+  }
 });
+
 
 //////////////////////////////////////////////////////////////////////////////////
 //// Sending/Receive sessions
