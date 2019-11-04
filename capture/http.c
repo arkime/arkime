@@ -235,6 +235,10 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
     if (key_len == -1)
         key_len = strlen(key);
 
+    if (key_len > 1000) {
+        LOGEXIT("Url too long %.*s", key_len, key);
+    }
+
     memcpy(server->syncRequest.key, key, key_len);
     server->syncRequest.key[key_len] = 0;
     server->syncRequest.retries = server->maxRetries;
