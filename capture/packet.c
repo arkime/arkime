@@ -1023,8 +1023,9 @@ LOCAL int moloch_packet_ieee802(MolochPacketBatch_t *batch, MolochPacket_t * con
     LOG("enter %p %p %d", packet, data, len);
 #endif
 
-    if (len < 6 || memcmp(data+2, "\xfe\xfe\x03", 3) != 0)
+    if (len < 6 || memcmp(data+2, "\xfe\xfe\x03", 3) != 0) {
         return MOLOCH_PACKET_CORRUPT;
+		}
 
     int etherlen = data[0] << 8 | data[+1];
     int ethertype = data[5];
@@ -1080,9 +1081,11 @@ LOCAL int moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const 
             return moloch_packet_ip6(batch, packet, data+20, len - 20);
         else
             return moloch_packet_ip4(batch, packet, data+20, len - 20);
-    default:
-			printf ("sll ethertype=%x\n", ethertype);
+		case 4:
       return moloch_packet_ieee802(batch, packet, &(packet->pkt[14]), packet->pktlen-14);
+    default:
+			return moloch_packet_run_ethernet_cb(batch, packet, data+16,len-16, ethertype, "SLL");
+			break;
     } // switch
     return MOLOCH_PACKET_CORRUPT;
 }
