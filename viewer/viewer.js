@@ -6391,6 +6391,10 @@ app.post('/user/update', [noCacheJson, logAction(), checkCookieToken, postSettin
     return res.molochError(403, 'Missing userId');
   }
 
+  if (req.body.userId === "_moloch_shared") {
+    return res.molochError(403, '_moloch_shared is a shared user. This users settings cannot be updated');
+  }
+
   /*if (req.params.userId === req.user.userId && req.query.createEnabled !== undefined && req.query.createEnabled !== "true") {
     return res.send(JSON.stringify({success: false, text: "Can not turn off your own admin privileges"}));
   }*/
