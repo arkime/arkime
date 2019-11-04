@@ -6568,26 +6568,63 @@ app.post('/addTags', [noCacheJson, logAction()], function(req, res) {
   }
 });
 
-app.post('/removeTags', [noCacheJson, logAction(), checkPermissions(['removeEnabled'])], (req, res) => {
-  var tags = [];
-  if (req.body.tags) {
-    tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
-  }
 
-  if (tags.length === 0) { return res.molochError(200, "No tags specified"); }
 
-  if (req.body.ids) {
-    var ids = queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, ids, ["tags"], function(err, list) {
-      removeTagsList(res, tags, list);
-    });
-  } else {
-    sessionsListFromQuery(req, res, ["tags"], function(err, list) {
-      removeTagsList(res, tags, list);
-    });
-  }
+app.post('/removeTags', [noCacheJson, logAction()], function(req, res) {
+  if (!req.user.removeEnabled) { return res.molochError(403, "Need remove data privileges"); }
+
+  var tags = [];
+  if (req.body.tags) {
+    tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
+  }
+
+  if (tags.length === 0) { return res.molochError(200, "No tags specified"); }
+
+  if (req.body.ids) {
+    var ids = queryValueToArray(req.body.ids);
+
+    sessionsListFromIds(req, ids, ["tags"], function(err, list) {
+
+  for (var i = list.length - 1; i >= 0; i--) {
+
+    Db.getWithOptions(Db.sid2Index(list[i]), 'session', Db.sid2Id(list[i]), {}, function(err, session) {
+    if (err || !session.found) {
+      return res.molochError(403, `Error: Unauthorized! this is not your session! `);
+    }
+
+   });
+    
+  }
+
+
+      removeTagsList(res, tags, list);
+    });
+  } else {
+    sessionsListFromQuery(req, res, ["tags"], function(err, list) {
+
+
+  for (var i = list.length - 1; i >= 0; i--) {
+
+    Db.getWithOptions(Db.sid2Index(list[i]), 'session', Db.sid2Id(list[i]), {}, function(err, session) {
+    if (err || !session.found) {
+      return res.molochError(403, `Error: Unauthorized! this is not your session! `);
+    }
+
+   });
+    
+}
+
+
+
+      removeTagsList(res, tags, list);
+    });
+  }
 });
+
+
+
+
 
 //////////////////////////////////////////////////////////////////////////////////
 //// Packet Search
