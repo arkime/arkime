@@ -114,6 +114,10 @@ if (internals.elasticBase[0].lastIndexOf('http', 0) !== 0) {
   internals.elasticBase[0] = "http://" + internals.elasticBase[0];
 }
 
+function isProduction() {
+  return app.get('env') === 'production';
+}
+
 function userCleanup(suser) {
   suser.settings = suser.settings || {};
   if (suser.emailSearch === undefined) { suser.emailSearch = false; }
@@ -5475,6 +5479,8 @@ function localSessionDetailReturnFull(req, res, session, incoming) {
   if (req.packetsOnly) { // only return packets
     res.render('sessionPackets.pug', {
       filename: 'sessionPackets',
+      cache: isProduction(),
+      compileDebug: !isProduction(),
       user: req.user,
       session: session,
       data: incoming,
@@ -5701,6 +5707,8 @@ app.get('/:nodeName/session/:id/detail', cspHeader, logAction(), (req, res) => {
     fixFields(session, () => {
       pug.render(internals.sessionDetailNew, {
         filename    : "sessionDetail",
+        cache       : isProduction(),
+        compileDebug: !isProduction(),
         user        : req.user,
         session     : session,
         Db          : Db,
