@@ -868,12 +868,24 @@ function checkCookieToken(req, res, next) {
   return next();
 }
 
-function checkWebEnabled(req, res, next) {
-  if (!req.user.webEnabled) {
-    return res.send("Moloch Permision Denied");
-  }
+function checkPermissions (permissions) {
+  const inversePermissions = {
+    hidePcap: true,
+    hideFiles: true,
+    hideStats: true,
+    disablePcapDownload: true
+  };
 
-  return next();
+  return (req, res, next) => {
+    for (let permission of permissions) {
+      if ((!req.user[permission] && !inversePermissions[permission]) ||
+        (req.user[permission] && inversePermissions[permission])) {
+        console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using permission ${permission}`);
+        return res.molochError(403, 'You do not have permission to access this resource');
+      }
+    }
+    next();
+  };
 }
 
 function checkHuntAccess (req, res, next) {
@@ -1022,8 +1034,8 @@ app.get(['/', '/app'], function(req, res) {
   }
 });
 
-app.get('/about', checkWebEnabled, function(req, res) {
-  res.redirect("help");
+app.get('/about', checkPermissions(['webEnabled']), (req, res) => {
+  res.redirect('help');
 });
 
 app.get('/molochclusters', function(req, res) {
@@ -1060,7 +1072,7 @@ app.get('/molochclusters', function(req, res) {
 });
 
 // custom user css
-app.get('/user.css', function(req, res) {
+app.get('/user.css', checkPermissions(['webEnabled']), (req, res) => {
   fs.readFile("./views/user.styl", 'utf8', function(err, str) {
     function error(msg) {
       console.log('ERROR - user.css -', msg);
@@ -1136,7 +1148,7 @@ let settingDefaults = {
 };
 
 // gets the current user
-app.get('/user/current', function(req, res) {
+app.get('/user/current', checkPermissions(['webEnabled']), (req, res) => {
   let userProps = [ 'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
     'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled', 'packetSearch',
     'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum',
@@ -1572,7 +1584,7 @@ app.post('/notifiers/:name/test', [noCacheJson, getSettingUser, checkCookieToken
 });
 
 // gets a user's settings
-app.get('/user/settings', [noCacheJson, getSettingUser, recordResponseTime], function(req, res) {
+app.get('/user/settings', [noCacheJson, getSettingUser, recordResponseTime, checkPermissions(['webEnabled'])], (req, res) => {
   if (!req.settingUser) {
     res.status(404);
     return res.send(JSON.stringify({success:false, text:'User not found'}));
@@ -2142,7 +2154,7 @@ function oldDB2newDB(x) {
 }
 
 // gets custom column configurations for a user
-app.get('/user/columns', [noCacheJson, getSettingUser], function(req, res) {
+app.get('/user/columns', [noCacheJson, getSettingUser, checkPermissions(['webEnabled'])], (req, res) => {
   if (!req.settingUser) {return res.send([]);}
 
   // Fix for new names
@@ -2269,7 +2281,7 @@ app.post('/user/columns/delete', [noCacheJson, checkCookieToken, logAction(), po
 });
 
 // gets custom spiview fields configurations for a user
-app.get('/user/spiview/fields', [noCacheJson, getSettingUser], function(req, res) {
+app.get('/user/spiview/fields', [noCacheJson, getSettingUser, checkPermissions(['webEnabled'])], (req, res) => {
   if (!req.settingUser) {return res.send([]);}
 
   return res.send(req.settingUser.spiviewFieldConfigs || []);
@@ -3159,10 +3171,8 @@ app.get('/history/list', [noCacheJson, recordResponseTime], function (req, res) 
   });
 });
 
-app.delete('/history/list/:id', [noCacheJson], function (req, res) {
-  if (!req.user.createEnabled)  { return res.molochError(403, 'Need admin privileges'); }
-  if (!req.user.removeEnabled)  { return res.molochError(403, 'Need remove data privileges'); }
-  if (!req.query.index)         { return res.molochError(403, 'Missing history index'); }
+app.delete('/history/list/:id', [noCacheJson, checkPermissions(['createEnabled', 'removeEnabled'])], function (req, res) {
+  if (!req.query.index) { return res.molochError(403, 'Missing history index'); }
 
   Db.deleteHistoryItem(req.params.id, req.query.index, function(err, result) {
     if (err || result.error) {
@@ -3188,9 +3198,7 @@ app.get('/fields', function(req, res) {
   }
 });
 
-app.get('/file/list', [noCacheJson, logAction('files'), recordResponseTime], function(req, res) {
-  if (req.user.hideFiles) { return res.molochError(403, 'Need permission to view files'); }
-
+app.get('/file/list', [noCacheJson, logAction('files'), checkPermissions(['hideFiles']), recordResponseTime], (req, res) => {
   var columns = ["num", "node", "name", "locked", "first", "filesize"];
 
   var query = {_source: columns,
@@ -3233,7 +3241,7 @@ app.get('/file/list', [noCacheJson, logAction('files'), recordResponseTime], fun
   });
 });
 
-app.get('/titleconfig', checkWebEnabled, function(req, res) {
+app.get('/titleconfig', checkPermissions(['webEnabled']), (req, res) => {
   var titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_');
 
   titleConfig = titleConfig.replace(/_cluster_/g, internals.clusterName)
@@ -3243,7 +3251,7 @@ app.get('/titleconfig', checkWebEnabled, function(req, res) {
   res.send(titleConfig);
 });
 
-app.get('/molochRightClick', [noCacheJson, checkWebEnabled], function(req, res) {
+app.get('/molochRightClick', [noCacheJson, checkPermissions(['webEnabled'])], (req, res) => {
   if(!app.locals.molochRightClick) {
     res.status(404);
     res.send('Cannot locate right clicks');
@@ -3251,15 +3259,14 @@ app.get('/molochRightClick', [noCacheJson, checkWebEnabled], function(req, res) 
   res.send(app.locals.molochRightClick);
 });
 
-app.get('/eshealth.json', [noCacheJson], function(req, res) {
+// No auth necessary for eshealth.json
+app.get('/eshealth.json', [noCacheJson], (req, res) => {
   Db.healthCache(function(err, health) {
     res.send(health);
   });
 });
 
-app.get('/esindices/list', [noCacheJson, recordResponseTime], function(req, res) {
-  if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
-
+app.get('/esindices/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats'])], (req, res) => {
   async.parallel({
     indices: Db.indicesCache,
     indicesSettings: Db.indicesSettingsCache
@@ -3330,9 +3337,7 @@ app.get('/esindices/list', [noCacheJson, recordResponseTime], function(req, res)
   });
 });
 
-app.delete('/esindices/:index', [noCacheJson, logAction(), checkCookieToken], function(req, res) {
-  if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
-
+app.delete('/esindices/:index', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
   if (!req.params.index) {
     return res.molochError(403, 'Missing index to delete');
   }
@@ -3346,9 +3351,7 @@ app.delete('/esindices/:index', [noCacheJson, logAction(), checkCookieToken], fu
   });
 });
 
-app.post('/esindices/:index/optimize', [noCacheJson, logAction(), checkCookieToken], function(req, res) {
-  if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
-
+app.post('/esindices/:index/optimize', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
   if (!req.params.index) {
     return res.molochError(403, 'Missing index to optimize');
   }
@@ -3363,9 +3366,7 @@ app.post('/esindices/:index/optimize', [noCacheJson, logAction(), checkCookieTok
   return res.send(JSON.stringify({ success: true, text: {} }));
 });
 
-app.post('/esindices/:index/close', [noCacheJson, logAction(), checkCookieToken], function(req, res) {
-  if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
-
+app.post('/esindices/:index/close', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
   if (!req.params.index) {
     return res.molochError(403, 'Missing index to close');
   }
@@ -3379,9 +3380,7 @@ app.post('/esindices/:index/close', [noCacheJson, logAction(), checkCookieToken]
   });
 });
 
-app.post('/esindices/:index/open', [noCacheJson, logAction(), checkCookieToken], function(req, res) {
-  if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
-
+app.post('/esindices/:index/open', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
   if (!req.params.index) {
     return res.molochError(403, 'Missing index to open');
   }
@@ -3396,8 +3395,7 @@ app.post('/esindices/:index/open', [noCacheJson, logAction(), checkCookieToken],
   return res.send(JSON.stringify({ success: true, text: {} }));
 });
 
-app.post('/esindices/:index/shrink', [noCacheJson, logAction(), checkCookieToken], (req, res) => {
-  if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
+app.post('/esindices/:index/shrink', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
   if (!req.body || !req.body.target) {
     return res.molochError(403, 'Missing target');
   }
@@ -3449,9 +3447,7 @@ app.post('/esindices/:index/shrink', [noCacheJson, logAction(), checkCookieToken
   });
 });
 
-app.get('/estask/list', [noCacheJson, recordResponseTime], function(req, res) {
-  if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
-
+app.get('/estask/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats'])], (req, res) => {
   Db.tasks(function (err, tasks) {
     if (err) {
       console.log ('ERROR -  /estask/list', err);
@@ -3525,9 +3521,7 @@ app.get('/estask/list', [noCacheJson, recordResponseTime], function(req, res) {
   });
 });
 
-app.post('/estask/cancel', [noCacheJson, logAction()], function(req, res) {
-  if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
-
+app.post('/estask/cancel', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
   if (!req.body || !req.body.taskId) {
     return res.molochError(403, 'Missing/Empty required fields');
   }
@@ -3537,7 +3531,7 @@ app.post('/estask/cancel', [noCacheJson, logAction()], function(req, res) {
   });
 });
 
-app.post('/estask/cancelById', [noCacheJson, logAction()], function(req, res) {
+app.post('/estask/cancelById', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
   if (!req.body || !req.body.cancelId) {
     return res.molochError(403, 'Missing cancel ID');
   }
@@ -3547,13 +3541,11 @@ app.post('/estask/cancelById', [noCacheJson, logAction()], function(req, res) {
   });
 });
 
-app.get('/esshard/list', [noCacheJson, recordResponseTime], function(req, res) {
-  if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
-
-  Promise.all([Db.shards(),
-               Db.getClusterSettings({flatSettings: true})
-              ]).then(([shards, settings]) => {
-
+app.get('/esshard/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats'])], (req, res) => {
+  Promise.all([
+    Db.shards(),
+    Db.getClusterSettings({flatSettings: true})
+  ]).then(([shards, settings]) => {
     let ipExcludes = [];
     if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
       ipExcludes = settings.persistent['cluster.routing.allocation.exclude._ip'].split(',');
@@ -3615,8 +3607,7 @@ app.get('/esshard/list', [noCacheJson, recordResponseTime], function(req, res) {
   });
 });
 
-app.post('/esshard/exclude/:type/:value', [noCacheJson, logAction(), checkCookieToken], function(req, res) {
-  if (!req.user.createEnabled) { return res.molochError(403, "Need admin privileges"); }
+app.post('/esshard/exclude/:type/:value', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
   if (Config.get("multiES", false)) { return res.molochError(401, "Not supported in multies"); }
 
   Db.getClusterSettings({flatSettings: true}, function(err, settings) {
@@ -3648,8 +3639,7 @@ app.post('/esshard/exclude/:type/:value', [noCacheJson, logAction(), checkCookie
   });
 });
 
-app.post('/esshard/include/:type/:value', [noCacheJson, logAction(), checkCookieToken], function(req, res) {
-  if (!req.user.createEnabled) { return res.molochError(403, "Need admin privileges"); }
+app.post('/esshard/include/:type/:value', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
   if (Config.get("multiES", false)) { return res.molochError(401, "Not supported in multies"); }
 
   Db.getClusterSettings({flatSettings: true}, function(err, settings) {
@@ -3682,9 +3672,7 @@ app.post('/esshard/include/:type/:value', [noCacheJson, logAction(), checkCookie
   });
 });
 
-app.get('/esrecovery/list', [noCacheJson, recordResponseTime], function(req, res) {
-  if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
-
+app.get('/esrecovery/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats'])], (req, res) => {
   const sortField = (req.query.sortField || 'index') + (req.query.desc === 'true' ? ':desc' : '');
 
   Promise.all([Db.recovery(sortField)]).then(([recoveries]) => {
@@ -3727,9 +3715,7 @@ app.get('/esrecovery/list', [noCacheJson, recordResponseTime], function(req, res
   });
 });
 
-app.get('/esstats.json', [noCacheJson, recordResponseTime], function(req, res) {
-  if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
-
+app.get('/esstats.json', [noCacheJson, recordResponseTime, checkPermissions(['hideStats'])], (req, res) => {
   let stats = [];
   let r;
 
@@ -3877,7 +3863,8 @@ function mergeUnarray(to, from) {
   }
 }
 
-app.get('/parliament.json', [noCacheJson], function (req, res) {
+// No auth necessary for parliament.json
+app.get('/parliament.json', [noCacheJson], (req, res) => {
   let query = {
     size: 500,
     _source: [
@@ -3925,9 +3912,7 @@ app.get('/parliament.json', [noCacheJson], function (req, res) {
     });
 });
 
-app.get('/stats.json', [noCacheJson, recordResponseTime], function(req, res) {
-  if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
-
+app.get('/stats.json', [noCacheJson, recordResponseTime, checkPermissions(['hideStats'])], (req, res) => {
   let query = {
     from: 0,
     size: 10000,
@@ -4057,25 +4042,23 @@ app.get('/stats.json', [noCacheJson, recordResponseTime], function(req, res) {
   });
 });
 
-app.get('/dstats.json', [noCacheJson], function(req, res) {
-  if (req.user.hideStats) { return res.molochError(403, 'Need permission to view stats'); }
-
+app.get('/dstats.json', [noCacheJson, checkPermissions(['hideStats'])], (req, res) => {
   var nodeName = req.query.nodeName;
 
   var query = {
-               query: {
-                 bool: {
-                   filter: [
-                     {
-                       range: { currentTime: { from: req.query.start, to: req.query.stop } }
-                     },
-                     {
-                       term: { interval: req.query.interval || 60}
-                     }
-                   ]
-                 }
-               }
-              };
+    query: {
+      bool: {
+        filter: [
+          {
+            range: { currentTime: { from: req.query.start, to: req.query.stop } }
+          },
+          {
+            term: { interval: req.query.interval || 60}
+          }
+        ]
+      }
+    }
+  };
 
   if (nodeName !== undefined && nodeName !== 'Total' && nodeName !== 'Average') {
     query.sort = {currentTime: {order: 'desc' }};
@@ -4164,13 +4147,13 @@ app.get('/dstats.json', [noCacheJson], function(req, res) {
   });
 });
 
-app.get('/:nodeName/:fileNum/filesize.json', [noCacheJson], function(req, res) {
-  Db.fileIdToFile(req.params.nodeName, req.params.fileNum, function(file) {
+app.get('/:nodeName/:fileNum/filesize.json', [noCacheJson, checkPermissions(['hideFiles'])], (req, res) => {
+  Db.fileIdToFile(req.params.nodeName, req.params.fileNum, (file) => {
     if (!file) {
       return res.send({filesize: -1});
     }
 
-    fs.stat(file.name, function (err, stats) {
+    fs.stat(file.name, (err, stats) => {
       if (err || !stats) {
         return res.send({filesize: -1});
       } else {
@@ -5744,9 +5727,7 @@ app.get('/:nodeName/session/:id/detail', cspHeader, logAction(), (req, res) => {
 /**
  * Get Session Packets
  */
-app.get('/:nodeName/session/:id/packets', logAction(), function(req, res) {
-  if (req.user.hidePcap) { return res.molochError(403, 'Need permission to view packets'); }
-
+app.get('/:nodeName/session/:id/packets', [logAction(), checkPermissions(['hidePcap'])], (req, res) => {
   isLocalView(req.params.nodeName, function () {
     noCache(req, res);
     req.packetsOnly = true;
@@ -6078,18 +6059,14 @@ function writePcapNg(res, id, options, doneCb) {
   });
 }
 
-app.get('/:nodeName/pcapng/:id.pcapng', checkProxyRequest, function(req, res) {
-  if (req.user.disablePcapDownload) { return res.molochError(403, 'Need permission to download pcap'); }
-
+app.get('/:nodeName/pcapng/:id.pcapng', [checkProxyRequest, checkPermissions(['disablePcapDownload'])], (req, res) => {
   noCache(req, res, "application/vnd.tcpdump.pcap");
   writePcapNg(res, req.params.id, {writeHeader: !req.query || !req.query.noHeader || req.query.noHeader !== "true"}, function () {
     res.end();
   });
 });
 
-app.get('/:nodeName/pcap/:id.pcap', checkProxyRequest, function(req, res) {
-  if (req.user.disablePcapDownload) { return res.molochError(403, 'Need permission to download pcap'); }
-
+app.get('/:nodeName/pcap/:id.pcap', [checkProxyRequest, checkPermissions(['disablePcapDownload'])], (req, res) => {
   noCache(req, res, "application/vnd.tcpdump.pcap");
 
   writePcap(res, req.params.id, {writeHeader: !req.query || !req.query.noHeader || req.query.noHeader !== "true"}, function () {
@@ -6142,9 +6119,7 @@ app.get('/:nodeName/raw/:id', checkProxyRequest, function(req, res) {
   });
 });
 
-app.get('/:nodeName/entirePcap/:id.pcap', checkProxyRequest, function(req, res) {
-  if (req.user.disablePcapDownload) { return res.molochError(403, 'Need permission to download pcap'); }
-
+app.get('/:nodeName/entirePcap/:id.pcap', [checkProxyRequest, checkPermissions(['disablePcapDownload'])], (req, res) => {
   noCache(req, res, "application/vnd.tcpdump.pcap");
 
   var options = {writeHeader: true};
@@ -6242,13 +6217,11 @@ function sessionsPcap(req, res, pcapWriter, extension) {
   }
 }
 
-app.get(/\/sessions.pcapng.*/, logAction(), function(req, res) {
-  if (req.user.disablePcapDownload) { return res.molochError(403, 'Need permission to download pcap'); }
+app.get(/\/sessions.pcapng.*/, [logAction(), checkPermissions(['disablePcapDownload'])], (req, res) => {
   return sessionsPcap(req, res, writePcapNg, "pcapng");
 });
 
-app.get(/\/sessions.pcap.*/, logAction(), function(req, res) {
-  if (req.user.disablePcapDownload) { return res.molochError(403, 'Need permission to download pcap'); }
+app.get(/\/sessions.pcap.*/, [logAction(), checkPermissions(['disablePcapDownload'])], (req, res) => {
   return sessionsPcap(req, res, writePcap, "pcap");
 });
 
@@ -6265,9 +6238,7 @@ internals.usersMissing = {
   lastUsed: 0
 };
 
-app.post('/user/list', [noCacheJson, logAction('users'), recordResponseTime], function (req, res) {
-  if (!req.user.createEnabled) {return res.molochError(404, 'Need admin privileges');}
-
+app.post('/user/list', [noCacheJson, logAction('users'), recordResponseTime, checkPermissions(['createEnabled'])], (req, res) => {
   let columns = [ 'userId', 'userName', 'expression', 'enabled', 'createEnabled',
     'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch',
     'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum',
@@ -6326,9 +6297,7 @@ app.post('/user/list', [noCacheJson, logAction('users'), recordResponseTime], fu
   });
 });
 
-app.post('/user/create', [noCacheJson, logAction(), checkCookieToken], function(req, res) {
-  if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
-
+app.post('/user/create', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
   if (!req.body || !req.body.userId || !req.body.userName || !req.body.password) {
     return res.molochError(403, 'Missing/Empty required fields');
   }
@@ -6405,11 +6374,7 @@ app.put('/user/:userId/acknowledgeMsg', [noCacheJson, logAction(), checkCookieTo
   });
 });
 
-app.post('/user/delete', [noCacheJson, logAction(), checkCookieToken], function(req, res) {
-  if (!req.user.createEnabled) {
-    return res.molochError(403, 'Need admin privileges');
-  }
-
+app.post('/user/delete', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
   if (req.body.userId === req.user.userId) {
     return res.molochError(403, 'Can not delete yourself');
   }
@@ -6421,11 +6386,7 @@ app.post('/user/delete', [noCacheJson, logAction(), checkCookieToken], function(
   });
 });
 
-app.post('/user/update', [noCacheJson, logAction(), checkCookieToken, postSettingUser], function(req, res) {
-  if (!req.user.createEnabled) {
-    return res.molochError(403, 'Need admin privileges');
-  }
-
+app.post('/user/update', [noCacheJson, logAction(), checkCookieToken, postSettingUser, checkPermissions(['createEnabled'])], (req, res) => {
   if (req.body.userId === undefined) {
     return res.molochError(403, 'Missing userId');
   }
@@ -6603,9 +6564,7 @@ app.post('/addTags', [noCacheJson, logAction()], function(req, res) {
   }
 });
 
-app.post('/removeTags', [noCacheJson, logAction()], function(req, res) {
-  if (!req.user.removeEnabled) { return res.molochError(403, "Need remove data privileges"); }
-
+app.post('/removeTags', [noCacheJson, logAction(), checkPermissions(['removeEnabled'])], (req, res) => {
   var tags = [];
   if (req.body.tags) {
     tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
@@ -7105,10 +7064,9 @@ function updateHuntStatus (req, res, status, successText, errorText) {
   });
 }
 
-app.post('/hunt', [noCacheJson, logAction('hunt'), checkCookieToken], function (req, res) {
-  // make sure viewer is not multi and user has permission
+app.post('/hunt', [noCacheJson, logAction('hunt'), checkCookieToken, checkPermissions(['packetSearch'])], (req, res) => {
+  // make sure viewer is not multi
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-  if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
   // make sure all the necessary data is included in the post body
   if (!req.body.hunt) { return res.molochError(403, 'You must provide a hunt object'); }
   if (!req.body.hunt.totalSessions) { return res.molochError(403, 'This hunt does not apply to any sessions'); }
@@ -7164,9 +7122,8 @@ app.post('/hunt', [noCacheJson, logAction('hunt'), checkCookieToken], function (
   });
 });
 
-app.get('/hunt/list', [noCacheJson, recordResponseTime], function (req, res) {
+app.get('/hunt/list', [noCacheJson, recordResponseTime, checkPermissions(['packetSearch'])], (req, res) => {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-  if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
 
   let query = {
     sort: {},
@@ -7232,9 +7189,8 @@ app.get('/hunt/list', [noCacheJson, recordResponseTime], function (req, res) {
     });
 });
 
-app.delete('/hunt/:id', [noCacheJson, logAction('hunt/:id'), checkCookieToken, checkHuntAccess], function (req, res) {
+app.delete('/hunt/:id', [noCacheJson, logAction('hunt/:id'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-  if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
 
   Db.deleteHuntItem(req.params.id, function (err, result) {
     if (err || result.error) {
@@ -7246,15 +7202,13 @@ app.delete('/hunt/:id', [noCacheJson, logAction('hunt/:id'), checkCookieToken, c
   });
 });
 
-app.put('/hunt/:id/pause', [noCacheJson, logAction('hunt/:id/pause'), checkCookieToken, checkHuntAccess], function (req, res) {
+app.put('/hunt/:id/pause', [noCacheJson, logAction('hunt/:id/pause'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-  if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
   updateHuntStatus(req, res, 'paused', 'Paused hunt item successfully', 'Error pausing hunt job');
 });
 
-app.put('/hunt/:id/play', [noCacheJson, logAction('hunt/:id/play'), checkCookieToken, checkHuntAccess], function (req, res) {
+app.put('/hunt/:id/play', [noCacheJson, logAction('hunt/:id/play'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-  if (!req.user.packetSearch) { return res.molochError(403, 'Need packet search privileges'); }
   updateHuntStatus(req, res, 'queued', 'Queued hunt item successfully', 'Error starting hunt job');
 });
 
@@ -7645,13 +7599,12 @@ function pcapScrub(req, res, sid, whatToRemove, endCb) {
   });
 }
 
-app.get('/:nodeName/delete/:whatToRemove/:sid', [checkProxyRequest], function (req, res) {
+app.get('/:nodeName/delete/:whatToRemove/:sid', [checkProxyRequest, checkPermissions(['removeEnabled'])], (req, res) => {
   noCache(req, res);
-  if (!req.user.removeEnabled) { return res.molochError(200, 'Need remove data privileges'); }
 
   res.statusCode = 200;
 
-  pcapScrub(req, res, req.params.sid, req.params.whatToRemove, function (err) {
+  pcapScrub(req, res, req.params.sid, req.params.whatToRemove, (err) => {
     res.end();
   });
 });
@@ -7686,9 +7639,7 @@ function scrubList(req, res, whatToRemove, list) {
   });
 }
 
-app.post('/delete', [noCacheJson, checkCookieToken, logAction()], function (req, res) {
-  if (!req.user.removeEnabled) { return res.molochError(403, 'Need remove data privileges'); }
-
+app.post('/delete', [noCacheJson, checkCookieToken, logAction(), checkPermissions(['removeEnabled'])], (req, res) => {
   if (req.query.removeSpi !== 'true' && req.query.removePcap !== 'true') {
     return res.molochError(403, `You can't delete nothing`);
   }
@@ -8234,7 +8185,7 @@ app.use('/cyberchef/', unsafeInlineCspHeader, (req, res) => {
 
 /* cyberchef endpoint - loads the src or dst packets for a session and
  * sends them to cyberchef */
-app.get("/:nodeName/session/:id/cyberchef", checkWebEnabled, checkProxyRequest, unsafeInlineCspHeader, (req, res) => {
+app.get('/:nodeName/session/:id/cyberchef', checkPermissions(['webEnabled']), checkProxyRequest, unsafeInlineCspHeader, (req, res) => {
   processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
     if (err) {
       console.log(`ERROR - /${req.params.nodeName}/session/${req.params.id}/cyberchef`, err);
@@ -8269,14 +8220,6 @@ app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
 app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
 
 app.use(cspHeader, (req, res) => {
-  if (req.path === '/users' && !req.user.createEnabled) {
-    return res.status(403).send('Permission denied');
-  }
-
-  if (req.path === '/settings' && Config.get('demoMode', false)) {
-    return res.status(403).send('Permission denied');
-  }
-
   let cookieOptions = { path: app.locals.basePath, sameSite: 'Strict' };
   if (Config.isHTTPS()) { cookieOptions.secure = true; }
 
@@ -8286,6 +8229,18 @@ app.use(cspHeader, (req, res) => {
      Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}, true),
      cookieOptions
   );
+
+  if (!req.user.webEnabled) {
+    return res.status(403).send('Permission denied');
+  }
+
+  if (req.path === '/users' && !req.user.createEnabled) {
+    return res.status(403).send('Permission denied');
+  }
+
+  if (req.path === '/settings' && Config.get('demoMode', false)) {
+    return res.status(403).send('Permission denied');
+  }
 
   const renderer = vueServerRenderer.createRenderer({
     template: fs.readFileSync('./vueapp/dist/index.html', 'utf-8')
