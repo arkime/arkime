@@ -1072,7 +1072,7 @@ app.get('/molochclusters', function(req, res) {
 });
 
 // custom user css
-app.get('/user.css', function(req, res) {
+app.get('/user.css', checkPermissions(['webEnabled']), (req, res) => {
   fs.readFile("./views/user.styl", 'utf8', function(err, str) {
     function error(msg) {
       console.log('ERROR - user.css -', msg);
@@ -1148,7 +1148,7 @@ let settingDefaults = {
 };
 
 // gets the current user
-app.get('/user/current', function(req, res) {
+app.get('/user/current', checkPermissions(['webEnabled']), (req, res) => {
   let userProps = [ 'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
     'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled', 'packetSearch',
     'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum',
@@ -1584,7 +1584,7 @@ app.post('/notifiers/:name/test', [noCacheJson, getSettingUser, checkCookieToken
 });
 
 // gets a user's settings
-app.get('/user/settings', [noCacheJson, getSettingUser, recordResponseTime], function(req, res) {
+app.get('/user/settings', [noCacheJson, getSettingUser, recordResponseTime, checkPermissions(['webEnabled'])], (req, res) => {
   if (!req.settingUser) {
     res.status(404);
     return res.send(JSON.stringify({success:false, text:'User not found'}));
@@ -2154,7 +2154,7 @@ function oldDB2newDB(x) {
 }
 
 // gets custom column configurations for a user
-app.get('/user/columns', [noCacheJson, getSettingUser], function(req, res) {
+app.get('/user/columns', [noCacheJson, getSettingUser, checkPermissions(['webEnabled'])], (req, res) => {
   if (!req.settingUser) {return res.send([]);}
 
   // Fix for new names
@@ -2281,7 +2281,7 @@ app.post('/user/columns/delete', [noCacheJson, checkCookieToken, logAction(), po
 });
 
 // gets custom spiview fields configurations for a user
-app.get('/user/spiview/fields', [noCacheJson, getSettingUser], function(req, res) {
+app.get('/user/spiview/fields', [noCacheJson, getSettingUser, checkPermissions(['webEnabled'])], (req, res) => {
   if (!req.settingUser) {return res.send([]);}
 
   return res.send(req.settingUser.spiviewFieldConfigs || []);
@@ -3259,7 +3259,8 @@ app.get('/molochRightClick', [noCacheJson, checkPermissions(['webEnabled'])], (r
   res.send(app.locals.molochRightClick);
 });
 
-app.get('/eshealth.json', [noCacheJson], function(req, res) {
+// No auth necessary for eshealth.json
+app.get('/eshealth.json', [noCacheJson], (req, res) => {
   Db.healthCache(function(err, health) {
     res.send(health);
   });
@@ -3862,7 +3863,8 @@ function mergeUnarray(to, from) {
   }
 }
 
-app.get('/parliament.json', [noCacheJson], function (req, res) {
+// No auth necessary for parliament.json
+app.get('/parliament.json', [noCacheJson], (req, res) => {
   let query = {
     size: 500,
     _source: [
