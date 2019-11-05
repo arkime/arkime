@@ -3725,10 +3725,11 @@ app.get('/esstats.json', [noCacheJson, recordResponseTime, checkPermissions(['hi
 
   Promise.all([Db.nodesStatsCache(),
                Db.nodesInfoCache(),
+               Db.masterCache(),
                Db.healthCachePromise(),
                Db.getClusterSettings({flatSettings: true})
              ])
-  .then(([nodesStats, nodesInfo, health, settings]) => {
+  .then(([nodesStats, nodesInfo, master, health, settings]) => {
 
     let ipExcludes = [];
     if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
@@ -3813,7 +3814,8 @@ app.get('/esstats.json', [noCacheJson, recordResponseTime, checkPermissions(['hi
         load: node.os.load_average !== undefined ? /* ES 2*/ node.os.load_average : /*ES 5*/ node.os.cpu.load_average["5m"],
         version: version,
         molochtype: molochtype,
-        roles: node.roles
+        roles: node.roles,
+        isMaster: (master.length > 0 && node.name === master[0].node)
       });
     }
 

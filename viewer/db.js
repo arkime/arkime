@@ -34,6 +34,7 @@ var internals = {fileId2File: {},
                  lookupsCache: {},
                  nodesStatsCache: {},
                  nodesInfoCache: {},
+                 masterCache: {},
                  qInProgress: 0,
                  apiVersion: "6.7",
                  q: []};
@@ -443,6 +444,10 @@ exports.recovery = function(sortField, cb) {
   return internals.elasticSearchClient.cat.recovery({format: "json", bytes: "b", s: sortField}, cb);
 };
 
+exports.master = function(cb) {
+  return internals.elasticSearchClient.cat.master({format: "json"}, cb);
+};
+
 exports.getClusterSettings = function(options, cb) {
   return internals.elasticSearchClient.cluster.getSettings(options, cb);
 };
@@ -831,6 +836,24 @@ exports.nodesInfoCache = function () {
       } else {
         internals.nodesInfoCache = data;
         internals.nodesInfoCache._timeStamp = Date.now();
+        resolve(data);
+      }
+    });
+  });
+};
+
+exports.masterCache = function () {
+  if (internals.masterCache._timeStamp !== undefined && internals.masterCache._timeStamp > Date.now() - 60000) {
+    return new Promise((resolve, reject) => {resolve(internals.masterCache);});
+  }
+
+  return new Promise((resolve, reject) => {
+    exports.master((err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        internals.masterCache = data;
+        internals.masterCache._timeStamp = Date.now();
         resolve(data);
       }
     });
