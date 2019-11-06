@@ -349,23 +349,41 @@ app.post("/users/user/:user", (req, res) => {
 });
 
 app.get("/:index/:type/_search", (req, res) => {
-  simpleGather(req, res, null, (err, results) => {
-    var obj = results[0];
-    for (var i = 1; i < results.length; i++) {
-      if (results[i].error) {
-        console.log("ERROR - GET _search", req.query.index, req.query.type,  results[i].error);
-      }
-      obj.hits.total += results[i].hits.total;
-      obj.hits.hits = obj.hits.hits.concat(results[i].hits.hits);
+
+   if (crossClusterSearchEnabled) { // cross cluster search
+    // req.params.index -> index ; req.params.type -> type ; req.query -> options -> everything after _search?
+    var index = req.params.index.replace(/MULTIPREFIX_/g, "");
+    index = index.split(",");
+    var type = req.params.type;
+    var query = null;
+    var options = req.query;
+    var cluster = Object.keys(esCrossClusters); // all cluster
+    if(options._cluster) {
+      cluster = options._cluster;
+      delete options._cluster;
     }
-    res.send(obj);
-  });
+    crossClusterSearch(index, type, query, options, cluster, (err, results) => {
+      //console.log(util.inspect(results, false, 50));
+      res.send(results);
+    });
+  } else {
+    simpleGather(req, res, null, (err, results) => {
+      var obj = results[0];
+      for (var i = 1; i < results.length; i++) {
+        if (results[i].error) {
+          console.log("ERROR - GET _search", req.query.index, req.query.type,  results[i].error);
+        }
+        obj.hits.total += results[i].hits.total;
+        obj.hits.hits = obj.hits.hits.concat(results[i].hits.hits);
+      }
+      res.send(obj);
+    });
+  }
 });
 
 app.get("/:index/:type/:id", function(req, res) {
   if (crossClusterSearchEnabled) { // use cross cluster search
     // req.params.index -> index ; req.params.type -> type ; req.params.id -> document id
-
     var index = req.params.index.replace(/MULTIPREFIX_/g, "");
     index = index.split(",");
     var type = req.params.type;
