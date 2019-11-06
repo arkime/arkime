@@ -6,9 +6,18 @@
 node_modules
 viewer/version.js
 Makefile
+Makefile.in
+aclocal.m4
+config.guess
+config.sub
 config.log
 config.status
-molochconfig.h
+missing
+install-sh
+compile
+configure
+capture/molochconfig.h
+capture/molochconfig.h.in
 GeoIP.dat
 GeoIPASNum.dat
 GeoIPASNumv6.dat
@@ -22,6 +31,7 @@ config.dev.ini
 .DS_Store
 bundle/
 .idea
+.vscode
 parliament/issues.json
 tests/GeoLite2*
 tests/oui.txt
