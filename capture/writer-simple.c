@@ -263,9 +263,17 @@ LOCAL char *writer_simple_get_kekId ()
             j += 2;
             break;
         case 'N':
-            memcpy(okek+j, config.nodeName, strlen(config.nodeName));
-            j += strlen(config.nodeName);
+        {
+            int namelen = strlen(config.nodeName);
+            int bufboundary = j + namelen;
+            
+            if(bufboundary >= (int) sizeof(okek)) {
+                LOGEXIT("ERROR - node name '%s' is too long", config.nodeName);
+            }
+            memcpy(okek+j, config.nodeName, namelen);
+            j = bufboundary;
             break;
+        }
         }
     }
     g_free(kek);
