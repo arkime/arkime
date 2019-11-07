@@ -723,6 +723,7 @@ function noCache(req, res, ct) {
   res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
   if (ct) {
     res.setHeader("Content-Type", ct);
+    res.header('X-Content-Type-Options', 'nosniff');
   }
 }
 
@@ -5108,7 +5109,6 @@ app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
 });
 
 app.get('/multiunique.txt', logAction(), function(req, res) {
-  res.header('X-Content-Type-Options', 'nosniff');
   noCache(req, res, 'text/plain; charset=utf-8');
 
   if (req.query.exp === undefined) {
@@ -5890,8 +5890,7 @@ app.get('/bodyHash/:hash', logAction('bodyhash'), function(req, res) {
                   res.status(400);
                   return res.end(err);
                 } else if (item) {
-                  noCache(req, res);
-                  res.setHeader("content-type", "application/force-download");
+                  noCache(req, res, 'application/force-download');
                   res.setHeader("content-disposition", "attachment; filename="+ item.bodyName+".pellet");
                   return res.end(item.data);
                 } else {
@@ -5924,8 +5923,7 @@ app.get('/:nodeName/:id/bodyHash/:hash', checkProxyRequest, function(req, res) {
        res.status(400);
        return res.end(err);
     } else if (item) {
-      noCache(req, res);
-      res.setHeader("content-type", "application/force-download");
+      noCache(req, res, 'application/force-download');
       res.setHeader("content-disposition", "attachment; filename="+ item.bodyName+".pellet");
       return res.end(item.data);
     } else {
