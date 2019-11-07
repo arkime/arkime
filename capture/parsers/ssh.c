@@ -47,6 +47,7 @@ LOCAL void ssh_parse_keyinit(MolochSession_t *session, const unsigned char *data
 
     BSB_IMPORT_u32(bsb, len);
     BSB_IMPORT_ptr(bsb, value, len);
+    if (BSB_IS_ERROR(bsb)) return;
     BSB_EXPORT_ptr(hbsb, value, len);
     BSB_EXPORT_u08(hbsb, ';');
 
