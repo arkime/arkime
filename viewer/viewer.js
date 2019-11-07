@@ -7203,6 +7203,15 @@ app.get('/hunt/list', [noCacheJson, recordResponseTime, checkPermissions(['packe
           runningJob = hunt;
           continue;
         }
+
+        // Since hunt isn't cached we can just modify
+        if (!req.user.createEnabled && req.user.userId !== hunt.userId) {
+          hunt.search = '';
+          hunt.searchType = '';
+          hunt.id = '';
+          hunt.userId = '';
+          delete hunt.query;
+        }
         results.results.push(hunt);
       }
 
