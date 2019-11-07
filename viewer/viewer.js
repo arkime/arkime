@@ -912,6 +912,23 @@ function checkHuntAccess (req, res, next) {
   }
 }
 
+function checkCronAccess (req, res, next) {
+  if (req.user.createEnabled) {
+    // an admin can do anything to any query
+    return next();
+  } else {
+    Db.get('queries', 'query', req.body.key, (err, query) => {
+      if (err || !query.found) {
+        return res.molochError(403, 'Unknown cron query');
+      }
+      if (query._source.creator === req.user.userId) {
+        return next();
+      }
+      return res.molochError(403, `You cannot change another user's cron query unless you have admin privileges`);
+    });
+  }
+}
+
 function noCacheJson(req, res, next) {
   res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
   res.setHeader("Content-Type", 'application/json');
@@ -2059,7 +2076,7 @@ app.post('/user/cron/create', [noCacheJson, checkCookieToken, logAction(), postS
 });
 
 // deletes a user's specified cron query
-app.post('/user/cron/delete', [noCacheJson, checkCookieToken, logAction(), postSettingUser], function(req, res) {
+app.post('/user/cron/delete', [noCacheJson, checkCookieToken, logAction(), postSettingUser, checkCronAccess], function(req, res) {
   if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
 
   if (!req.body.key) { return res.molochError(403, 'Missing cron query key'); }
@@ -2077,7 +2094,7 @@ app.post('/user/cron/delete', [noCacheJson, checkCookieToken, logAction(), postS
 });
 
 // updates a user's specified cron query
-app.post('/user/cron/update', [noCacheJson, checkCookieToken, logAction(), postSettingUser], function(req, res) {
+app.post('/user/cron/update', [noCacheJson, checkCookieToken, logAction(), postSettingUser, checkCronAccess], function(req, res) {
   if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
 
   if (!req.body.key)    { return res.molochError(403, 'Missing cron query key'); }
