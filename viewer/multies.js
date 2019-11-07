@@ -349,7 +349,6 @@ app.post("/users/user/:user", (req, res) => {
 });
 
 app.get("/:index/:type/_search", (req, res) => {
-
    if (crossClusterSearchEnabled) { // cross cluster search
     // req.params.index -> index ; req.params.type -> type ; req.query -> options -> everything after _search?
     var index = req.params.index.replace(/MULTIPREFIX_/g, "");
@@ -359,7 +358,7 @@ app.get("/:index/:type/_search", (req, res) => {
     var options = req.query;
     var cluster = Object.keys(esCrossClusters); // all cluster
     if(options._cluster) {
-      cluster = options._cluster;
+      cluster = Array.isArray(options._cluster) ? options._cluster : options._cluster.split(",");
       delete options._cluster;
     }
     crossClusterSearch(index, type, query, options, cluster, (err, results) => {
@@ -388,12 +387,14 @@ app.get("/:index/:type/:id", function(req, res) {
     index = index.split(",");
     var type = req.params.type;
     var query = { query: { terms: { "_id": [req.params.id] } } };
-    var options = req.query || undefined;
-    var cluster = req.query._cluster ? req.query._cluster.split(",") : Object.keys(esCrossClusters);
-
-    if(req.query._cluster) { delete req.query._cluster; }
-    console.log(cluster);
-
+    var options = req.query;
+    var cluster = Object.keys(esCrossClusters); // all cluster
+    if(options._cluster) {
+      console.log("[/:index/:type/:id] [query]: ", options._cluster);
+      cluster = Array.isArray(options._cluster) ? options._cluster : options._cluster.split(",");
+      delete options._cluster;
+    }
+    console.log("[/:index/:type/:id] [parsed]: ", cluster);
     crossClusterSearch(index, type, query, options, cluster, (err, results) => {
       //console.log(util.inspect(results, false, 50));
       if (err || results.hits.total === 0) {
@@ -776,9 +777,11 @@ app.post("/:index/:type/_search", function(req, res) {
     var options = req.query;
     var cluster = Object.keys(esCrossClusters); // all cluster
     if(options._cluster) {
-      cluster = options._cluster;
+      console.log("[/:index/:type/_search] [query] ", options._cluster);
+      cluster = Array.isArray(options._cluster) ? options._cluster : options._cluster.split(",");
       delete options._cluster;
     }
+    console.log("[/:index/:type/_search] [parsed] ", cluster);
     crossClusterSearch(index, type, query, options, cluster, (err, results) => {
       //console.log(util.inspect(results, false, 50));
       res.send(results);
