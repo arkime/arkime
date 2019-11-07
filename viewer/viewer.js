@@ -5823,11 +5823,9 @@ app.get('/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', checkProxyRequest, f
       console.trace(err);
       return res.end("Error");
     }
-
-    if (req.params.bodyType === "file") {
-      res.setHeader("Content-Type", "application/force-download");
-    }
-    res.end(data);
+    res.setHeader("Content-Type", "application/force-download");
+    res.setHeader("Content-Disposition", "attachment; filename="+req.params.bodyName);
+    return res.end(data);
   });
 });
 
