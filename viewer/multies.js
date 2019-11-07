@@ -283,6 +283,12 @@ app.post("/users/user/:user", (req, res) => {
   });
 });
 
+app.get("/_cat/master", (req, res) => {
+  clients[nodes[0]].cat.master({format: "json"}, (err, result) => {
+    res.send(result);
+  });
+});
+
 app.get("/:index/:type/_search", (req, res) => {
   simpleGather(req, res, null, (err, results) => {
     var obj = results[0];
