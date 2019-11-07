@@ -5108,6 +5108,7 @@ app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
 });
 
 app.get('/multiunique.txt', logAction(), function(req, res) {
+  res.header('X-Content-Type-Options', 'nosniff');
   noCache(req, res, 'text/plain; charset=utf-8');
 
   if (req.query.exp === undefined) {
