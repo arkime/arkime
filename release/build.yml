@@ -44,7 +44,7 @@
           - name: install new kernel headers
             yum: state=present name={{item}}
             with_items:
-              - "http://files.molo.ch/kernel-ml-headers-4.4.0-1.el6.elrepo.x86_64.rpm"
+              - "https://files.molo.ch/kernel-ml-headers-4.4.0-1.el6.elrepo.x86_64.rpm"
               - centos-release-scl
 
           - name: install devtoolset centos 6
