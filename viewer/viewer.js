@@ -6592,7 +6592,7 @@ app.post('/addTags', [noCacheJson, logAction()], function(req, res) {
   }
 });
 
-app.post('/removeTags', [noCacheJson, logAction(), checkPermissions(['removeEnabled'])], (req, res) => {
+app.post('/removeTags', [checkCookieToken, noCacheJson, logAction(), checkPermissions(['removeEnabled'])], (req, res) => {
   var tags = [];
   if (req.body.tags) {
     tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
