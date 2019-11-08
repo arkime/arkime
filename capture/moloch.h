@@ -499,6 +499,7 @@ struct moloch_pcap_sf_pkthdr {
 #define MOLOCH_PACKET_TUNNEL_PPP    0x08
 #define MOLOCH_PACKET_TUNNEL_GTP    0x10
 #define MOLOCH_PACKET_TUNNEL_VXLAN  0x20
+#define MOLOCH_PACKET_TUNNEL_EIP    0x40
 
 typedef struct molochpacket_t
 {

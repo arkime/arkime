@@ -818,6 +818,10 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         if (packet->tunnel & MOLOCH_PACKET_TUNNEL_VXLAN) {
             moloch_session_add_protocol(session, "vxlan");
         }
+
+        if (packet->tunnel & MOLOCH_PACKET_TUNNEL_EIP) {
+            moloch_session_add_protocol(session, "encapsulated_ip");
+        }
     }
 
 
@@ -1376,6 +1380,7 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
 
     switch (ip4->ip_p) {
     case IPPROTO_IPV4:
+        packet->tunnel |= MOLOCH_PACKET_TUNNEL_EIP;
         return moloch_packet_ip4(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
         break;
     case IPPROTO_TCP:
@@ -1467,6 +1472,7 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
         packet->vpnIpOffset = packet->ipOffset; // ipOffset will get reset
         return moloch_packet_gre4(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
     case IPPROTO_IPV6:
+        packet->tunnel |= MOLOCH_PACKET_TUNNEL_EIP;
         return moloch_packet_ip6(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
     default:
         if (config.logUnknownProtocols)
@@ -1617,8 +1623,10 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
             done = 1;
             break;
         case IPPROTO_IPV4:
+            packet->tunnel |= MOLOCH_PACKET_TUNNEL_EIP;
             return moloch_packet_ip4(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
         case IPPROTO_IPV6:
+            packet->tunnel |= MOLOCH_PACKET_TUNNEL_EIP;
             return moloch_packet_ip6(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
         default:
             if (config.logUnknownProtocols)
