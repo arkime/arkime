@@ -6561,7 +6561,7 @@ function removeTagsList(res, allTagNames, sessionList) {
   });
 }
 
-app.post('/addTags', [noCacheJson, logAction()], function(req, res) {
+app.post('/addTags', [checkCookieToken, noCacheJson, logAction()], function(req, res) {
   var tags = [];
   if (req.body.tags) {
     tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
