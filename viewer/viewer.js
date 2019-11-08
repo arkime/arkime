@@ -3220,7 +3220,7 @@ app.get('/history/list', [noCacheJson, setCookie, recordResponseTime], (req, res
   });
 });
 
-app.delete('/history/list/:id', [noCacheJson, checkPermissions(['createEnabled', 'removeEnabled'])], function (req, res) {
+app.delete('/history/list/:id', [noCacheJson, checkCookieToken, checkPermissions(['createEnabled', 'removeEnabled'])], (req, res) => {
   if (!req.query.index) { return res.molochError(403, 'Missing history index'); }
 
   Db.deleteHistoryItem(req.params.id, req.query.index, function(err, result) {
