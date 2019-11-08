@@ -312,36 +312,38 @@
                 </template> <!-- /single field column -->
                 <!-- multiple field column -->
                 <template v-else-if="header.children && header.type !== 'seconds'">
-                  <span v-for="child in header.children"
-                    :key="child.dbField">
-                    <b-dropdown-divider>
-                    </b-dropdown-divider>
-                    <b-dropdown-item
-                      @click="exportUnique(child.rawField || child.exp, 0)">
-                      Export Unique {{ child.friendlyName }}
-                    </b-dropdown-item>
-                    <b-dropdown-item
-                      @click="exportUnique(child.rawField || child.exp, 1)">
-                      Export Unique {{ child.friendlyName }} with counts
-                    </b-dropdown-item>
-                    <template v-if="child.portField">
+                  <span v-for="(child, key) in header.children"
+                    :key="`child${key}`">
+                    <template v-if="child">
+                      <b-dropdown-divider>
+                      </b-dropdown-divider>
                       <b-dropdown-item
-                        @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 0)">
-                        Export Unique {{ child.friendlyName }}:Ports
+                        @click="exportUnique(child.rawField || child.exp, 0)">
+                        Export Unique {{ child.friendlyName }}
                       </b-dropdown-item>
                       <b-dropdown-item
-                        @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 1)">
-                        Export Unique {{ child.friendlyName }}:Ports with counts
+                        @click="exportUnique(child.rawField || child.exp, 1)">
+                        Export Unique {{ child.friendlyName }} with counts
+                      </b-dropdown-item>
+                      <template v-if="child.portField">
+                        <b-dropdown-item
+                          @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 0)">
+                          Export Unique {{ child.friendlyName }}:Ports
+                        </b-dropdown-item>
+                        <b-dropdown-item
+                          @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 1)">
+                          Export Unique {{ child.friendlyName }}:Ports with counts
+                        </b-dropdown-item>
+                      </template>
+                      <b-dropdown-item
+                        @click="openSpiGraph(child.dbField)">
+                        Open {{ child.friendlyName }} in SPI Graph
+                      </b-dropdown-item>
+                      <b-dropdown-item
+                        @click="fieldExists(child.exp, '==')">
+                        Add {{ child.friendlyName }} EXISTS! to query
                       </b-dropdown-item>
                     </template>
-                    <b-dropdown-item
-                      @click="openSpiGraph(child.dbField)">
-                      Open {{ child.friendlyName }} in SPI Graph
-                    </b-dropdown-item>
-                    <b-dropdown-item
-                      @click="fieldExists(child.exp, '==')">
-                      Add {{ child.friendlyName }} EXISTS! to query
-                    </b-dropdown-item>
                   </span>
                 </template> <!-- /multiple field column -->
               </b-dropdown> <!-- /column dropdown menu -->

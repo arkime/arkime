@@ -1374,7 +1374,7 @@ router.put('/parliament', verifyToken, (req, res, next) => {
     }
   }
 
-  parliament = req.body.reorderedParliament;
+  parliament.groups = req.body.reorderedParliament.groups;
   updateParliament();
 
   let successObj  = { success: true, text: 'Successfully reordered items in your parliament.' };

@@ -17,6 +17,8 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 2.1.0 2019/10/xx
+  - NOTE: All viewers must be 2.1 or later for them to communicate.  If not
+          upgradeing at once set s2sSignedAuth=false in default section of config.ini
   - release - node 10.16.3, curl 7.66.0, glib 2.59.0
   - release - remove ubuntu 14 builds
   - viewer - default max aggregation size is 10000 to work with ES 7.x OOTB,
@@ -29,6 +31,9 @@ NOTICE: Restart wiseService before capture when upgrading
   - db - new shrink command
   - capture - support named pipes better (issue #1169)
   - wise - switch to ioredis implementation so clusters/sentinel works
+  - viewer - Fix some XSS/rXSS by setting correct content type
+  - viewer - Improve permission checking
+  - capture - New email.smtpHello field
 
 
 2.0.1 2019/09/09

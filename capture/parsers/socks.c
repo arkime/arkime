@@ -153,18 +153,30 @@ LOCAL int socks5_parser(MolochSession_t *session, void *uw, const unsigned char 
 
         socks->state5[which] = SOCKS5_STATE_CONN_DATA;
         if (data[3] == 1) { // IPV4
+            if (remaining < 10) {
+                moloch_parsers_unregister(session, uw);
+                return 0;
+            }
             socks->port = (data[8]&0xff) << 8 | (data[9]&0xff);
             memcpy(&socks->ip, data+4, 4);
             moloch_field_ip4_add(ipField, session, socks->ip);
             moloch_field_int_add(portField, session, socks->port);
             consumed = 4 + 4 + 2;
         } else if (data[3] == 3) { // Domain Name
+            if (remaining < data[4] + 7) {
+                moloch_parsers_unregister(session, uw);
+                return 0;
+            }
             socks->port = (data[5+data[4]]&0xff) << 8 | (data[6+data[4]]&0xff);
 
             moloch_field_string_add_lower(hostField, session, (char *)data+5, data[4]);
             moloch_field_int_add(portField, session, socks->port);
             consumed = 4 + 1 + data[4] + 2;
         } else if (data[3] == 4) { // IPV6
+            if (remaining < 22) {
+                moloch_parsers_unregister(session, uw);
+                return 0;
+            }
             consumed = 4 + 16 + 2;
         } else {
             break;
@@ -188,6 +200,12 @@ LOCAL int socks5_parser(MolochSession_t *session, void *uw, const unsigned char 
         } else {
             break;
         }
+
+        if (remaining < consumed) {
+            moloch_parsers_unregister(session, uw);
+            return 0;
+        }
+
         moloch_parsers_classify_tcp(session, data+consumed, remaining-consumed, which);
         return consumed;
     }

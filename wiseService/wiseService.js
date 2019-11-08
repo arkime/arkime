@@ -576,27 +576,32 @@ app.post("/get", function(req, res) {
     buffers.push(chunk);
   }).once('end', (err) => {
     var queries = [];
-    for (var buf = Buffer.concat(buffers); offset < buf.length; ) {
-      var type = buf[offset];
-      offset++;
+    try { 
+      for (var buf = Buffer.concat(buffers); offset < buf.length; ) {
+        var type = buf[offset];
+        offset++;
 
-      var typeName;
-      if (type & 0x80) {
-        typeName = buf.toString('utf8', offset, offset + (type & ~0x80));
-        offset += (type & ~0x80);
-      } else {
-        typeName = internals.type2Name[type];
+        var typeName;
+        if (type & 0x80) {
+          typeName = buf.toString('utf8', offset, offset + (type & ~0x80));
+          offset += (type & ~0x80);
+        } else {
+          typeName = internals.type2Name[type];
+        }
+
+        var len  = buf.readUInt16BE(offset);
+        offset += 2;
+
+        var value = buf.toString('utf8', offset, offset+len);
+        if (internals.debug > 1) {
+          console.log(typeName, value);
+        }
+        offset += len;
+        queries.push({typeName: typeName, value: value});
       }
-
-      var len  = buf.readUInt16BE(offset);
-      offset += 2;
-
-      var value = buf.toString('utf8', offset, offset+len);
-      if (internals.debug > 1) {
-        console.log(typeName, value);
-      }
-      offset += len;
-      queries.push({typeName: typeName, value: value});
+    } 
+    catch (err) {
+      return res.end("Received malformed packet");
     }
 
     async.map(queries, (query, cb) => {

@@ -65,6 +65,7 @@ use LWP::UserAgent;
 use JSON;
 use Data::Dumper;
 use POSIX;
+use IO::Compress::Gzip qw(gzip $GzipError);
 use strict;
 
 my $VERSION = 64;
@@ -91,6 +92,7 @@ my $TYPE = "string";
 my $SHARED = 0;
 my $DESCRIPTION = "";
 my $LOCKED = 0;
+my $GZ = 0;
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -170,7 +172,8 @@ sub showHelp($)
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default 1\n";
     print "\n";
     print "Backup and Restore Commands:\n";
-    print "  backup <basename>            - Backup everything but sessions; filenames created start with <basename>\n";
+    print "  backup <basename> <opts>     - Backup everything but sessions; filenames created start with <basename>\n";
+    print "    --gz                       - GZip the files\n";
     print "  restore <basename> [<opts>]  - Restore everything but sessions; filenames restored from start with <basename>\n";
     print "    --skipupgradeall           - Do not upgrade Sessions\n";
     print "  export <index> <basename>    - Save a single index into a file, filename starts with <basename>\n";
@@ -2930,6 +2933,8 @@ sub parseArgs {
             $SHARED = 1;
         } elsif ($ARGV[$pos] eq "--locked") {
             $LOCKED = 1;
+        } elsif ($ARGV[$pos] eq "--gz") {
+            $GZ = 1;
         } elsif ($ARGV[$pos] eq "--type") {
             $pos++;
             $TYPE = $ARGV[$pos];
@@ -3028,6 +3033,18 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     close($fh);
     exit 0;
 } elsif ($ARGV[1] =~ /^backup$/) {
+    parseArgs(3);
+
+    sub bopen {
+        my ($index) = @_;
+        if ($GZ) {
+            return new IO::Compress::Gzip "$ARGV[2].${PREFIX}${index}.json.gz" or die "cannot open $ARGV[2].${PREFIX}${index}.json.gz: $GzipError\n";
+        } else {
+            open(my $fh, ">", "$ARGV[2].${PREFIX}${index}.json") or die "cannot open > $ARGV[2].${PREFIX}${index}.json: $!";
+            return $fh;
+        }
+    }
+
     my @indexes = ("users", "sequence", "stats", "queries", "files", "fields", "dstats");
     push(@indexes, "hunts") if ($main::versionNumber > 51);
     push(@indexes, "lookups") if ($main::versionNumber > 60);
@@ -3035,7 +3052,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     foreach my $index (@indexes) {
         my $data = esScroll($index, "", '{"version": true}');
         next if (scalar(@{$data}) == 0);
-        open(my $fh, ">", "$ARGV[2].${PREFIX}${index}.json") or die "cannot open > $ARGV[2].${PREFIX}${index}.json: $!";
+        my $fh = bopen($index);
         foreach my $hit (@{$data}) {
             print $fh "{\"index\": {\"_index\": \"${PREFIX}${index}\", \"_type\": \"$hit->{_type}\", \"_id\": \"$hit->{_id}\", \"_version\": $hit->{_version}, \"_version_type\": \"external\"}}\n";
             if (exists $hit->{_source}) {
@@ -3051,21 +3068,21 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     foreach my $template (@templates) {
         my $data = esGet("/_template/${PREFIX}${template}");
         my @name = split(/_/, $template);
-        open(my $fh, ">", "$ARGV[2].${PREFIX}$name[0].template.json") or die "cannot open > $ARGV[2].${PREFIX}$name[0].template.json: $!";
+        my $fh = bopen("template");
         print $fh to_json($data);
         close($fh);
     }
     logmsg "Exporting settings...\n";
     foreach my $index (@indexes) {
         my $data = esGet("/${PREFIX}${index}/_settings");
-        open(my $fh, ">", "$ARGV[2].${PREFIX}${index}.settings.json") or die "cannot open > $ARGV[2].${PREFIX}${index}.settings.json: $!";
+        my $fh = bopen("${index}.settings");
         print $fh to_json($data);
         close($fh);
     }
     logmsg "Exporting mappings...\n";
     foreach my $index (@indexes) {
         my $data = esGet("/${PREFIX}${index}/_mappings");
-        open(my $fh, ">", "$ARGV[2].${PREFIX}${index}.mappings.json") or die "cannot open > $ARGV[2].${PREFIX}${index}.mappings.json: $!";
+        my $fh = bopen("${index}.mappings");
         print $fh to_json($data);
         close($fh);
     }
@@ -3078,7 +3095,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $aliases = join(',', @indexes_prefixed);
     $aliases = "/_cat/aliases/${aliases}?format=json";
     my $data = esGet($aliases), "\n";
-    open(my $fh, ">", "$ARGV[2].${PREFIX}aliases.json") or die "cannot open > $ARGV[2].${PREFIX}aliases.json: $!";
+    my $fh = bopen("aliases");
     print $fh to_json($data);
     close($fh);
     logmsg "Finished\n";
