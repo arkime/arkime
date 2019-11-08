@@ -250,7 +250,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
     int i;
     for (i = 0; BSB_NOT_ERROR(bsb) && i < qd_count; i++) {
         unsigned char  namebuf[8000];
-        int namelen = sizeof(namebuf);
+	int namelen = sizeof(namebuf)-1;
         unsigned char *name = dns_name(data, len, &bsb, namebuf, &namelen);
 
         if (BSB_IS_ERROR(bsb) || !name)
