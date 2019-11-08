@@ -289,6 +289,7 @@ if (Config.get("passwordSecret")) {
         return res.send("Unauthorized based on timestamp - check that all moloch viewer machines have accurate clocks");
       }
 
+      // Don't look up user for receiveSession
       if (req.url.match(/^\/receiveSession/)) {
         return next();
       }
@@ -302,6 +303,10 @@ if (Config.get("passwordSecret")) {
         return next();
       });
       return;
+    }
+
+    if (req.url.match(/^\/receiveSession/)) {
+      return res.send('receiveSession only allowed s2s');
     }
 
     // Header auth
