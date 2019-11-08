@@ -212,7 +212,7 @@ LOCAL int reader_libpcapfile_process(char *filename)
     // check to see if viewer might have access issues to non-copied pcap file
     if (config.copyPcap == 0) {
 
-      if (strlen (filename) > PATH_MAX) {
+      if (strlen (filename) >= PATH_MAX) {
         // filename bigger than path buffer, skip check
       } else if ((config.dropUser == NULL) && (config.dropGroup == NULL)) {
         // drop.User,Group not defined -- skip check
