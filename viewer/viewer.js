@@ -7991,6 +7991,13 @@ app.post('/receiveSession', [noCacheJson], function receiveSession(req, res) {
     saveId = receiveSession.saveIds[req.query.saveId] = {start: 0};
   }
 
+  while (req.query.saveId.includes("/")) {
+    req.query.saveId = req.query.saveId.replace("/","")
+    while(req.query.saveId.includes("..")) {
+        req.query.saveId = req.query.saveId.replace("..","")
+    }  
+  }
+    
   var sessionlen = -1;
   var filelen = -1;
   var written = 0;
