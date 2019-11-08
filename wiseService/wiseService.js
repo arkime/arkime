@@ -619,7 +619,7 @@ app.post("/get", function(req, res) {
 app.get("/:source/:typeName/:value", function(req, res) {
   var source = internals.sources[req.params.source];
   if (!source) {
-    return res.end("Unknown source " + req.params.source);
+    return res.end("Unknown source " + escape(req.params.source));
   }
 
   var query = {typeName: req.params.typeName,
@@ -637,7 +637,7 @@ app.get("/:source/:typeName/:value", function(req, res) {
 app.get("/dump/:source", function(req, res) {
   var source = internals.sources[req.params.source];
   if (!source) {
-    return res.end("Unknown source " + req.params.source);
+    return res.end("Unknown source " + escape(req.params.source));
   }
 
   if (!source.dump) {
