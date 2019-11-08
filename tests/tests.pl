@@ -277,7 +277,7 @@ my ($cmd) = @_;
 
         print ("Loading PCAP\n");
 
-        my $mcmd = "../capture/moloch-capture $main::copy -c config.test.ini -n test -R pcap --flush --host localhost";
+        my $mcmd = "../capture/moloch-capture $main::copy -c config.test.ini -n test -R pcap --flush";
         if (!$main::debug) {
             $mcmd .= " 2>&1 1>/dev/null";
         } else {
