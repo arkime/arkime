@@ -741,6 +741,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     MolochPacket_t       *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
     static uint64_t       ts = 10000;
 
+    pcapFileHeader.linktype = 1;
+
     packet->pktlen        = size;
     packet->pkt           = (u_char *)data;
     packet->ts.tv_sec     = ts >> 4;
