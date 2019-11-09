@@ -54,11 +54,17 @@ typedef struct {
 
 LOCAL MolochSesCmdHead_t   sessionCmds[MOLOCH_MAX_PACKET_THREADS];
 
+#ifdef FUZZLOCH
+extern uint64_t fuzzloch_sessionid;
+#endif
 
 /******************************************************************************/
 void moloch_session_id (char *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2)
 {
     buf[0] = 13;
+#ifdef FUZZLOCH
+    memcpy(buf+1, &fuzzloch_sessionid, sizeof(fuzzloch_sessionid));
+#else
     if (addr1 < addr2) {
         memcpy(buf+1, &addr1, 4);
         memcpy(buf+5, &port1, 2);
@@ -80,11 +86,15 @@ void moloch_session_id (char *buf, uint32_t addr1, uint16_t port1, uint32_t addr
         memcpy(buf+7, &addr1, 4);
         memcpy(buf+11, &port1, 2);
     }
+#endif
 }
 /******************************************************************************/
 void moloch_session_id6 (char *buf, uint8_t *addr1, uint16_t port1, uint8_t *addr2, uint16_t port2)
 {
     buf[0] = 37;
+#ifdef FUZZLOCH
+    memcpy(buf+1, &fuzzloch_sessionid, sizeof(fuzzloch_sessionid));
+#else
     int cmp = memcmp(addr1, addr2, 16);
     if (cmp < 0) {
         memcpy(buf+1, addr1, 16);
@@ -107,6 +117,7 @@ void moloch_session_id6 (char *buf, uint8_t *addr1, uint16_t port1, uint8_t *add
         memcpy(buf+19, addr1, 16);
         memcpy(buf+35, &port1, 2);
     }
+#endif
 }
 /******************************************************************************/
 char *moloch_session_id_string (char *sessionId, char *buf)

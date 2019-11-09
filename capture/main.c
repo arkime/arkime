@@ -700,6 +700,7 @@ void moloch_mlockall_init()
  */
 
 MolochPacketBatch_t   batch;
+uint64_t fuzzloch_sessionid = 0;
 
 int
 LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
@@ -729,6 +730,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     moloch_plugins_load(config.plugins);
     moloch_rules_init();
     moloch_packet_batch_init(&batch);
+
     return 0;
 }
 
@@ -738,20 +740,59 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
  * process the packet.  The current time just increases for each packet.
  */
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    MolochPacket_t       *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
+    MolochPacket_t       *packet;
     static uint64_t       ts = 10000;
 
-    packet->pktlen        = size;
-    packet->pkt           = (u_char *)data;
-    packet->ts.tv_sec     = ts >> 4;
-    packet->ts.tv_usec    = ts & 0x8;
-    ts++;
-    packet->readerFilePos = 0;
-    packet->readerPos     = 0;
+    uint8_t *buf = malloc(size);
+    int i, j = 0;
 
-    // In FUZZ mode batch will actually process it
-    moloch_packet_batch(&batch, packet);
+    size = MIN(512, size);
 
+    /* Packet separator is \xff\x00. \xff\xff is a literal \xff. \xff followed by any other byte is passthrough */
+    int escape = 0;
+    for (i = 0; i < size; i++) {
+      uint8_t c = data[i];
+      if (escape) {
+        if (c == 0x00) {
+          packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
+          packet->readerFilePos = 0;
+          packet->readerPos = 0;
+          packet->pktlen = j;
+          packet->pkt = buf;
+          packet->ts.tv_sec = ts >> 4;
+          packet->ts.tv_usec = ts & 0x8;
+          ts++;
+          moloch_packet_batch(&batch, packet);
+          j = 0;
+        } else if (c == 0xff) {
+          buf[j++] = 0xff;
+        } else {
+          buf[j++] = 0xff;
+          buf[j++] = c;
+        }
+        escape = 0;
+      } else if (c == 0xff) {
+        escape = 1;
+      } else {
+        buf[j++] = c;
+      }
+    }
+
+    if (j != 0) {
+      packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
+      packet->readerFilePos = 0;
+      packet->readerPos = 0;
+      packet->pktlen = j;
+      packet->pkt = buf;
+      packet->ts.tv_sec = ts >> 4;
+      packet->ts.tv_usec = ts & 0x8;
+      ts++;
+      moloch_packet_batch(&batch, packet);
+    }
+
+    fuzzloch_sessionid++;
+
+    free(buf);
     return 0;
 }
 

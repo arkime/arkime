@@ -34,7 +34,7 @@ bindir          = @prefix@/bin
 installinclude  = @prefix@/include
 
 SANITIZE_FLAGS  = -DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=integer -fsanitize=nullability
-FUZZ_FLAGS      = -DMOLOCH_USE_MALLOC -DFUZZLOCH -fno-common -fsanitize=fuzzer,address -fstack-protector-all -fsanitize-address-use-after-scope
+FUZZ_FLAGS      = -DMOLOCH_USE_MALLOC -DFUZZLOCH -O2 -g -fno-common -fsanitize=fuzzer,address -fstack-protector-all -fsanitize-address-use-after-scope
 
 all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	$(CC) -fno-strict-aliasing -pthread -fPIC @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -c $(C_FILES) \
@@ -64,7 +64,7 @@ sanitize:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	(cd plugins; $(MAKE) SANITIZE_FLAGS="$(SANITIZE_FLAGS)")
 
 fuzzloch:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
-	$(CC) $(FUZZ_FLAGS) -fno-strict-aliasing -pthread -fPIC -g -O0 -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -c $(C_FILES) \
+	$(CC) $(FUZZ_FLAGS) -fno-strict-aliasing -pthread -fPIC -g -O2 -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -c $(C_FILES) \
 	    $(INCLUDE_PCAP) \
 	    $(INCLUDE_OTHER) \
 	    -DBUILD_VERSION='"$(BUILD_VERSION)"'
