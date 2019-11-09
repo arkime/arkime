@@ -26,7 +26,7 @@ extern time_t                lastPacketSecs[MOLOCH_MAX_PACKET_THREADS];
 /******************************************************************************/
 
 LOCAL int                   protocolField;
-extern uint32_t              hashSalt;
+extern uint32_t             hashSalt;
 
 LOCAL MolochSessionHead_t   closingQ[MOLOCH_MAX_PACKET_THREADS];
 MolochSessionHead_t         tcpWriteQ[MOLOCH_MAX_PACKET_THREADS];

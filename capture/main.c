@@ -414,6 +414,9 @@ uint32_t moloch_string_hash(const void *key)
         n = (n << 5) - n + *p;
         p++;
     }
+
+    n ^= hashSalt;
+
     return n;
 }
 /******************************************************************************/
@@ -427,6 +430,9 @@ uint32_t moloch_string_hash_len(const void *key, int len)
         p++;
         len--;
     }
+
+    n ^= hashSalt;
+
     return n;
 }
 
