@@ -1870,7 +1870,7 @@ router.put('/removeSelectedAcknowledgedIssues', verifyToken, (req, res, next) =>
 });
 
 // issue a test alert to a specified notifier
-router.post('/testAlert', (req, res, next) => {
+router.post('/testAlert', verifyToken, (req, res, next) => {
   if (!req.body.notifier) {
     const error = new Error('Must specify the notifier.');
     error.httpStatusCode = 422;
