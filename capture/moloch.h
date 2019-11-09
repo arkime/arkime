@@ -615,6 +615,7 @@ typedef struct moloch_session {
     uint32_t               packets[2];
     uint32_t               synTime;
     uint32_t               ackTime;
+    uint32_t               tunnel;
 
     uint16_t               port1;
     uint16_t               port2;

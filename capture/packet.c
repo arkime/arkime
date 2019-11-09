@@ -194,12 +194,6 @@ LOCAL void moloch_packet_tcp_finish(MolochSession_t *session)
     }
 #endif
 
-    int session_tunnelled = 0;
-    ftd = DLL_PEEK_HEAD(td_, tcpData);
-    if (ftd != NULL) {
-        session_tunnelled = ftd->packet->tunnel?1:0;
-    }
-
     DLL_FOREACH_REMOVABLE(td_, tcpData, ftd, next) {
         const int which = ftd->packet->direction;
         const uint32_t tcpSeq = session->tcpSeq[which];
@@ -216,7 +210,7 @@ LOCAL void moloch_packet_tcp_finish(MolochSession_t *session)
             }
 
             /* If the packet tunnel status is not consistent with the rest of the session, free it */
-            if (ftd->packet->tunnel != session_tunnelled) {
+            if (ftd->packet->tunnel != session->tunnel) {
 #ifdef DEBUG_PACKET
                 LOG("Dropping packet for tunnel state discrepency");
 #endif
@@ -788,6 +782,9 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
             }
 
         }
+
+        if (isNew)
+          session->tunnel = packet->tunnel;
 
         if (packet->vlan)
             moloch_field_int_add(vlanField, session, packet->vlan);
