@@ -1,4 +1,4 @@
-use Test::More tests => 245;
+use Test::More tests => 250;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -92,8 +92,16 @@ my $hToken = getTokenCookie('huntuser');
 # Hunt should finish
   viewerGet("/processHuntJobs");
 
-  $hunts = viewerGet("/hunt/list");
+  $hunts = viewerGet("/hunt/list?molochRegressionUser=user2");
   is (@{$hunts->{data}}, 1, "Add hunt 1");
+
+# user2 shouldn't see is, query, search, searchType, userId
+  my $item = $hunts->{data}->[0];
+  is($item->{id}, '');
+  is($item->{search}, '');
+  is($item->{searchType}, '');
+  is($item->{userId}, '');
+  ok(! exists $item->{query});
 
 # If the user is not an admin they can only delete their own hunts
   my $id1 = $json->{hunt}->{id};

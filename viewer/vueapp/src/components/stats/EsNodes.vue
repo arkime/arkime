@@ -58,7 +58,7 @@
             </b-dropdown>
             <span class="ml-1">
               <span class="node-badge badge badge-primary badge-pill"
-                :class="{'show-badge cursor-help': item.roles.indexOf('master') > -1}">
+                :class="{'show-badge cursor-help': item.roles.indexOf('master') > -1, 'badge-master':item.isMaster}">
                 <span v-if="item.roles.indexOf('master') > -1"
                   title="Master Node"
                   v-b-tooltip.hover>
@@ -282,5 +282,8 @@ table.table tr.border-top-bold > td {
 }
 .node-badge.show-badge {
   opacity: 1;
+}
+.badge-master {
+  background-color: var(--color-primary-darker);
 }
 </style>

@@ -45,6 +45,7 @@ LOCAL  int fctField;
 LOCAL  int magicField;
 LOCAL  int headerField;
 LOCAL  int headerValue;
+LOCAL  int helloField;
 
 typedef struct {
     MolochStringHead_t boundaries;
@@ -460,6 +461,10 @@ LOCAL int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *d
                 *state = EMAIL_IGNORE;
                 email->state[(which+1)%2] = EMAIL_TLS_OK;
                 return 0;
+            } else if (strncasecmp(line->str, "HELO ", 5) == 0 ||
+                       strncasecmp(line->str, "EHLO ", 5) == 0) {
+                moloch_field_string_add_lower(helloField, session, line->str+5, -1);
+                *state = EMAIL_CMD;
             } else {
                 *state = EMAIL_CMD;
             }
@@ -920,14 +925,12 @@ void moloch_parser_init()
         "email.content-type", "Content-Type", "email.contentType",
         "Email content-type header",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        "requiredRight", "emailSearch",
         (char *)NULL);
 
     mvField = moloch_field_define("email", "termfield",
         "email.mime-version", "Mime-Version", "email.mimeVersion",
         "Email Mime-Header header",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        "requiredRight", "emailSearch",
         (char *)NULL);
 
     fnField = moloch_field_define("email", "termfield",
@@ -992,6 +995,12 @@ void moloch_parser_init()
     magicField = moloch_field_define("email", "termfield",
         "email.bodymagic", "Body Magic", "email.bodyMagic",
         "The content type of body determined by libfile/magic",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        (char *)NULL);
+
+    helloField = moloch_field_define("email", "lotermfield",
+        "email.smtp-hello", "SMTP Hello", "email.smtpHello",
+        "SMTP HELO/EHLO",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 

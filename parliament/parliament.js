@@ -49,6 +49,9 @@ const settingsDefault = {
 const parliamentReadError = `\nYou must fix this before you can run Parliament.
   Try using parliament.example.json as a starting point`;
 
+// keep a map of invalid tokens for when a user logs out before jwt expires
+let invalidTokens = {};
+
 (function () { // parse arguments
   let appArgs = process.argv.slice(2);
   let file, port;
@@ -309,6 +312,11 @@ function verifyToken (req, res, next) {
 
   if (!token) {
     return tokenError(req, res, 'No token provided.');
+  }
+
+  // check for invalid token
+  if (invalidTokens[token]) {
+    return tokenError(req, res, 'You\'ve been logged out. Please login again.');
   }
 
   // verifies token and expiration
@@ -1006,6 +1014,16 @@ router.post('/auth', (req, res, next) => {
   });
 });
 
+// logout a "session" by invalidating the token
+router.post('/logout', (req, res, next) => {
+  // check for token in header, url parameters, or post parameters
+  let token = req.body.token || req.query.token || req.headers['x-access-token'];
+  // add token to invalid token map
+  if (token) { invalidTokens[token] = true; }
+
+  return res.json({ loggedin: false });
+});
+
 // Get whether authentication or dashboardOnly mode is set
 router.get('/auth', (req, res, next) => {
   let hasAuth = !!app.get('password');
@@ -1019,7 +1037,7 @@ router.get('/auth', (req, res, next) => {
 // Get whether the user is logged in
 // If it passes the verifyToken middleware, the user is logged in
 router.get('/auth/loggedin', verifyToken, (req, res, next) => {
-  return res.json({ loggedin:true });
+  return res.json({ loggedin: true });
 });
 
 // Update (or create) a password for the parliament
@@ -1374,7 +1392,7 @@ router.put('/parliament', verifyToken, (req, res, next) => {
     }
   }
 
-  parliament = req.body.reorderedParliament;
+  parliament.groups = req.body.reorderedParliament.groups;
   updateParliament();
 
   let successObj  = { success: true, text: 'Successfully reordered items in your parliament.' };
@@ -1870,7 +1888,7 @@ router.put('/removeSelectedAcknowledgedIssues', verifyToken, (req, res, next) =>
 });
 
 // issue a test alert to a specified notifier
-router.post('/testAlert', (req, res, next) => {
+router.post('/testAlert', verifyToken, (req, res, next) => {
   if (!req.body.notifier) {
     const error = new Error('Must specify the notifier.');
     error.httpStatusCode = 422;

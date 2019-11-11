@@ -45,17 +45,31 @@ sub doGeo {
     }
 }
 ################################################################################
+sub sortObj {
+    my ($parentkey,$obj) = @_;
+    for my $key (keys %{$obj}) {
+        my $r = ref $obj->{$key};
+        if ($r eq "HASH") {
+            sortObj($key, $obj->{$key});
+        } elsif ($r eq "ARRAY") {
+            next if (scalar (@{$obj->{$key}}) < 2);
+            next if ($key =~ /(packetPos|packetLen|cert)/);
+            if ("$parentkey.$key" =~ /.vlan|http.statuscode|icmp.type|icmp.code/) {
+                my @tmp = sort { $a <=> $b } (@{$obj->{$key}});
+                $obj->{$key} = \@tmp;
+            } else {
+                my @tmp = sort (@{$obj->{$key}});
+                $obj->{$key} = \@tmp;
+            }
+        }
+    }
+}
+################################################################################
 sub sortJson {
     my ($json) = @_;
 
     foreach my $session (@{$json->{sessions2}}) {
-        my $body = $session->{body};
-        foreach my $i ("tags", "srcMac", "dstMac", "srcOui", "dstOui") {
-            if (exists $body->{$i}) {
-                my @tmp = sort (@{$body->{$i}});
-                $body->{$i} = \@tmp;
-            }
-        }
+        sortObj("", $session->{body});
     }
     return $json;
 }
@@ -173,7 +187,10 @@ my ($json) = @_;
         }
     }
 
-    @{$json->{sessions2}} = sort {$a->{body}->{firstPacket} <=> $b->{body}->{firstPacket}} @{$json->{sessions2}};
+    @{$json->{sessions2}} = sort {
+        return $a->{body}->{firstPacket} <=> $b->{body}->{firstPacket} if ($a->{body}->{firstPacket} != $b->{body}->{firstPacket});
+        return $a->{body}->{srcIp} <=> $b->{body}->{srcIp};
+    } @{$json->{sessions2}};
 }
 
 ################################################################################

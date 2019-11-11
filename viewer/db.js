@@ -34,6 +34,7 @@ var internals = {fileId2File: {},
                  lookupsCache: {},
                  nodesStatsCache: {},
                  nodesInfoCache: {},
+                 masterCache: {},
                  qInProgress: 0,
                  apiVersion: "6.7",
                  q: []};
@@ -443,6 +444,10 @@ exports.recovery = function(sortField, cb) {
   return internals.elasticSearchClient.cat.recovery({format: "json", bytes: "b", s: sortField}, cb);
 };
 
+exports.master = function(cb) {
+  return internals.elasticSearchClient.cat.master({format: "json"}, cb);
+};
+
 exports.getClusterSettings = function(options, cb) {
   return internals.elasticSearchClient.cluster.getSettings(options, cb);
 };
@@ -837,6 +842,24 @@ exports.nodesInfoCache = function () {
   });
 };
 
+exports.masterCache = function () {
+  if (internals.masterCache._timeStamp !== undefined && internals.masterCache._timeStamp > Date.now() - 60000) {
+    return new Promise((resolve, reject) => {resolve(internals.masterCache);});
+  }
+
+  return new Promise((resolve, reject) => {
+    exports.master((err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        internals.masterCache = data;
+        internals.masterCache._timeStamp = Date.now();
+        resolve(data);
+      }
+    });
+  });
+};
+
 exports.nodesStatsCache = function () {
   if (internals.nodesStatsCache._timeStamp !== undefined && internals.nodesStatsCache._timeStamp > Date.now() - 2500) {
     return new Promise((resolve, reject) => {resolve(internals.nodesStatsCache);});
@@ -1147,6 +1170,7 @@ exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
         day = (+index[3]*10 + (+index[4]))*7;
       } else if (index[2] === 'm') {
         month = (+index[3])*10 + (+index[4]);
+        day = 1;
         length = 31*24*60*60;
       } else if (index.length === 6) {
         month = (+index[2])*10 + (+index[3]);

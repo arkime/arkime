@@ -89,6 +89,10 @@
                   "1.0 (Apple Message framework v1283)"
                ],
                "mimeVersionCnt" : 1,
+               "smtpHello" : [
+                  "xxxxxxxxxxxxxxxxxxxx.xxxxxxxxx.net"
+               ],
+               "smtpHelloCnt" : 1,
                "src" : [
                   "xxxxxxxx@xxxxxxxxx.net"
                ],
