@@ -40,10 +40,10 @@ GMainLoop             *mainLoop;
 char                  *moloch_char_to_hex = "0123456789abcdef"; /* don't change case */
 unsigned char          moloch_char_to_hexstr[256][3];
 unsigned char          moloch_hex_to_char[256][256];
+uint32_t               hashSalt;
 
 extern MolochWriterQueueLength moloch_writer_queue_length;
 extern MolochPcapFileHdr_t     pcapFileHeader;
-uint32_t                hashSalt;
 
 MOLOCH_LOCK_DEFINE(LOG);
 
