@@ -41,7 +41,7 @@ LOCAL va_list empty_va_list;
 void moloch_field_by_exp_add_special(char *exp, int pos)
 {
     MolochFieldInfo_t *info = MOLOCH_TYPE_ALLOC0(MolochFieldInfo_t);
-    info->expression = exp;
+    info->expression = g_strdup(exp);
     info->pos = pos;
     HASH_ADD(e_, fieldsByExp, info->expression, info);
 }
@@ -49,7 +49,7 @@ void moloch_field_by_exp_add_special(char *exp, int pos)
 void moloch_field_by_exp_add_special_type(char *exp, int pos, int type)
 {
     MolochFieldInfo_t *info = MOLOCH_TYPE_ALLOC0(MolochFieldInfo_t);
-    info->expression   = exp;
+    info->expression   = g_strdup(exp);
     info->pos          = pos;
     info->type         = type;
     config.fields[pos] = info;
@@ -347,7 +347,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
             snprintf(friendlyName2, sizeof(friendlyName2), "%s Cnt", friendlyName);
             snprintf(help2, sizeof(help2), "Unique number of %s", help);
             moloch_db_add_field(group, "integer", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
-            moloch_field_by_exp_add_special_type(g_strdup(expression2), minfo->pos + MOLOCH_FIELDS_CNT_MIN, MOLOCH_FIELD_TYPE_INT);
+            moloch_field_by_exp_add_special_type(expression2, minfo->pos + MOLOCH_FIELDS_CNT_MIN, MOLOCH_FIELD_TYPE_INT);
         }
     }
 
@@ -1476,7 +1476,9 @@ void moloch_field_exit()
 {
     MolochFieldInfo_t *info;
 
+    // Remove those are in both db & exp hash
     HASH_FORALL_POP_HEAD(d_, fieldsByDb, info,
+        HASH_REMOVE(e_, fieldsByExp, info);
         g_free(info->dbFieldFull);
         g_free(info->expression);
         g_free(info->group);
@@ -1484,6 +1486,11 @@ void moloch_field_exit()
         g_free(info->category);
         g_free(info->transform);
         MOLOCH_TYPE_FREE(MolochFieldInfo_t, info);
+    );
+
+    // Remove those are only in exp
+    HASH_FORALL_POP_HEAD(d_, fieldsByExp, info,
+        g_free(info->expression);
     );
 }
 /******************************************************************************/
