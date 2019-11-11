@@ -113,6 +113,7 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
 int moloch_field_define_text_full(char *field, char *text, int *shortcut)
 {
     int count = 0;
+    int nolinked = 0;
     char *kind = 0;
     char *help = 0;
     char *db = 0;
@@ -139,6 +140,8 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
             group = colon;
         else if (strcmp(elements[e], "count") == 0)
             count = strcmp(colon, "true") == 0;
+        else if (strcmp(elements[e], "nolinked") == 0)
+            nolinked = strcmp(colon, "true") == 0;
         else if (strcmp(elements[e], "friendly") == 0)
             friendly = colon;
         else if (strcmp(elements[e], "db") == 0)
@@ -215,6 +218,9 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
 
     if (count)
         flags |= MOLOCH_FIELD_FLAG_CNT;
+
+    if (!nolinked)
+        flags |= MOLOCH_FIELD_FLAG_LINKED_SESSIONS;
 
     int pos =  moloch_field_define(group, kind, field, friendly, db, help, type, flags, "category", category, "transform", transform, (char *)NULL);
     g_strfreev(elements);
