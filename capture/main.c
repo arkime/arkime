@@ -43,6 +43,7 @@ unsigned char          moloch_hex_to_char[256][256];
 
 extern MolochWriterQueueLength moloch_writer_queue_length;
 extern MolochPcapFileHdr_t     pcapFileHeader;
+uint32_t                hashSalt;
 
 MOLOCH_LOCK_DEFINE(LOG);
 
@@ -413,6 +414,9 @@ uint32_t moloch_string_hash(const void *key)
         n = (n << 5) - n + *p;
         p++;
     }
+
+    n ^= hashSalt;
+
     return n;
 }
 /******************************************************************************/
@@ -426,6 +430,9 @@ uint32_t moloch_string_hash_len(const void *key, int len)
         p++;
         len--;
     }
+
+    n ^= hashSalt;
+
     return n;
 }
 
@@ -709,6 +716,9 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     config.pcapReadOffline = 1;
     config.hostName = strdup("fuzz.example.com");
     config.nodeName = strdup("fuzz");
+
+    hashSalt = 0;
+
     moloch_free_later_init();
     moloch_hex_init();
     moloch_config_init();
@@ -764,6 +774,8 @@ int main(int argc, char **argv)
     signal(SIGCHLD, SIG_IGN);
 
     mainLoop = g_main_loop_new(NULL, FALSE);
+
+    hashSalt = (uint32_t)time(NULL);
 
     parse_args(argc, argv);
     if (config.debug)
