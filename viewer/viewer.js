@@ -6103,7 +6103,7 @@ app.get('/:nodeName/pcap/:id.pcap', [checkProxyRequest, checkPermissions(['disab
   });
 });
 
-app.get('/:nodeName/raw/:id.png', checkProxyRequest, function(req, res) {
+app.get('/:nodeName/raw/:id.png', [checkProxyRequest, checkPermissions(['disablePcapDownload'])], function(req, res) {
   noCache(req, res, "image/png");
 
   processSessionIdAndDecode(req.params.id, 1000, function(err, session, results) {
@@ -6134,7 +6134,7 @@ app.get('/:nodeName/raw/:id.png', checkProxyRequest, function(req, res) {
   });
 });
 
-app.get('/:nodeName/raw/:id', checkProxyRequest, function(req, res) {
+app.get('/:nodeName/raw/:id', [checkProxyRequest, checkPermissions(['disablePcapDownload'])], function(req, res) {
   noCache(req, res, "application/vnd.tcpdump.pcap");
 
   processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
