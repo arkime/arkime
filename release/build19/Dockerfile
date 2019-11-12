@@ -8,9 +8,9 @@ nodejs-lts-dubnium node-gyp npm lua geoip yara file libpcap libmaxminddb libnet 
 RUN rm /lib/libpcap.so
 RUN wget https://öä.eu/libpcap.so -P /lib
 
-# load moloch from git once it's merged, use # RUN git clone https://github.com/aol/moloch instead
-COPY . moloch
+# load moloch from git once it's merged, use
+RUN git clone https://github.com/aol/moloch
 
 RUN mkdir data && \
-(cd moloch ; ./easybutton-build.sh --daq --pfring --install) && \
+(cd moloch ; ./easybutton-build.sh --daq --pfring) && \
 rm -rf moloch
