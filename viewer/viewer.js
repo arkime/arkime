@@ -7983,6 +7983,8 @@ function sendSessionsListQL(pOptions, list, nextQLCb) {
 app.post('/receiveSession', [noCacheJson], function receiveSession(req, res) {
   if (!req.query.saveId) { return res.molochError(200, "Missing saveId"); }
 
+  req.query.saveId = req.query.saveId.replace(/[^-a-zA-Z0-9_]/g, '');
+
   // JS Static Variable :)
   receiveSession.saveIds = receiveSession.saveIds || {};
 
