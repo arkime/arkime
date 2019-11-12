@@ -109,7 +109,19 @@ if [ "$UNAME" = "FreeBSD" ]; then
   MAKE=gmake
 fi
 
-if [ "$UNAME" = "Darwin" ]; then
+if [ -f "/etc/arch-release" ]; then
+  # sudo pacman -S --needed wget curl pcre pkg-config flex bison zlib gettext geoip make perl-json perl-compress-bzip2 perl-libwww libtool libpng xz libffi openssl readline libyaml perl-socket6 perl-test-differences
+  if [ $? -ne 0 ]; then
+    echo "MOLOCH: pacman failed"
+    exit 1
+  fi
+
+  echo "MOLOCH: Building capture"
+  echo TODO PRINT NEXT LINE
+  ./configure --with-libpcap=no --with-yara=no --with-glib2=no --with-pfring=no --with-curl=no --with-lua=no \
+    LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0"
+
+elif [ "$UNAME" = "Darwin" ]; then
   if [ -x "/opt/local/bin/port" ]; then
     sudo port install libpcap yara glib2 jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml
 
