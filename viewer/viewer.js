@@ -131,9 +131,9 @@ function userCleanup(suser) {
   // update user lastUsed time if not mutiES and it hasn't been udpated in more than a minute
   if (!Config.get('multiES', false) && (!suser.lastUsed || (now - suser.lastUsed) > timespan)) {
     suser.lastUsed = now;
-    Db.setUser(suser.userId, suser, function (err, info) {
-      if (err) {
-        console.log('user lastUsed update error', err, info);
+    Db.setLastUsed(suser.userId, now, function (err, info) {
+      if (Config.debug && err) {
+        console.log('DEBUG - user lastUsed update error', err, info);
       }
     });
   }
@@ -655,6 +655,34 @@ function arrayZeroFill(n) {
     n--;
   }
   return a;
+}
+
+// https://stackoverflow.com/a/48569020
+class Mutex {
+    constructor () {
+        this.queue = [];
+        this.locked = false;
+    }
+
+    lock () {
+        return new Promise((resolve, reject) => {
+            if (this.locked) {
+                this.queue.push([resolve, reject]);
+            } else {
+                this.locked = true;
+                resolve();
+            }
+        });
+    }
+
+    unlock () {
+        if (this.queue.length > 0) {
+            const [resolve, reject] = this.queue.shift();
+            resolve();
+        } else {
+            this.locked = false;
+        }
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -1228,7 +1256,8 @@ app.get('/user/current', checkPermissions(['webEnabled']), (req, res) => {
 });
 
 // express middleware to set req.settingUser to who to work on, depending if admin or not
-function getSettingUser (req, res, next) {
+// This returns the cached user
+function getSettingUserCache (req, res, next) {
   // If no userId parameter, or userId is ourself then req.user already has our info
   if (req.query.userId === undefined || req.query.userId === req.user.userId) {
     req.settingUser = req.user;
@@ -1254,10 +1283,16 @@ function getSettingUser (req, res, next) {
 }
 
 // express middleware to set req.settingUser to who to work on, depending if admin or not
-function postSettingUser (req, res, next) {
+// This returns fresh from db
+function getSettingUserDb (req, res, next) {
   let userId;
 
   if (req.query.userId === undefined || req.query.userId === req.user.userId) {
+    if (Config.get('regressionTests', false)) {
+      req.settingUser = req.user;
+      return next();
+    }
+
     userId = req.user.userId;
   } else if (!req.user.createEnabled) {
     // user is trying to get another user's settings without admin privilege
@@ -1272,7 +1307,7 @@ function postSettingUser (req, res, next) {
         // TODO: send anonymous user's settings
         req.settingUser = {};
       } else {
-        req.settingUser = null;
+        return res.molochError(403, 'Unknown user');
       }
       return next();
     }
@@ -1392,7 +1427,7 @@ app.get('/notifiers', checkCookieToken, function (req, res) {
 });
 
 // create a new notifier
-app.post('/notifiers', [noCacheJson, getSettingUser, checkCookieToken], function (req, res) {
+app.post('/notifiers', [noCacheJson, getSettingUserDb, checkCookieToken], function (req, res) {
   let user = req.settingUser;
   if (!user.createEnabled) {
     return res.molochError(401, 'Need admin privelages to create a notifier');
@@ -1488,7 +1523,7 @@ app.post('/notifiers', [noCacheJson, getSettingUser, checkCookieToken], function
 });
 
 // update a notifier
-app.put('/notifiers/:name', [noCacheJson, getSettingUser, checkCookieToken], function (req, res) {
+app.put('/notifiers/:name', [noCacheJson, getSettingUserDb, checkCookieToken], function (req, res) {
   let user = req.settingUser;
   if (!user.createEnabled) {
     return res.molochError(401, 'Need admin privelages to update a notifier');
@@ -1580,7 +1615,7 @@ app.put('/notifiers/:name', [noCacheJson, getSettingUser, checkCookieToken], fun
 });
 
 // delete a notifier
-app.delete('/notifiers/:name', [noCacheJson, getSettingUser, checkCookieToken], function (req, res) {
+app.delete('/notifiers/:name', [noCacheJson, getSettingUserDb, checkCookieToken], function (req, res) {
   let user = req.settingUser;
   if (!user.createEnabled) {
     return res.molochError(401, 'Need admin privelages to delete a notifier');
@@ -1616,7 +1651,7 @@ app.delete('/notifiers/:name', [noCacheJson, getSettingUser, checkCookieToken], 
 });
 
 // test a notifier
-app.post('/notifiers/:name/test', [noCacheJson, getSettingUser, checkCookieToken], function (req, res) {
+app.post('/notifiers/:name/test', [noCacheJson, getSettingUserCache, checkCookieToken], function (req, res) {
   let user = req.settingUser;
   if (!user.createEnabled) {
     return res.molochError(401, 'Need admin privelages to test a notifier');
@@ -1633,12 +1668,7 @@ app.post('/notifiers/:name/test', [noCacheJson, getSettingUser, checkCookieToken
 });
 
 // gets a user's settings
-app.get('/user/settings', [noCacheJson, recordResponseTime, getSettingUser, checkPermissions(['webEnabled']), setCookie], (req, res) => {
-  if (!req.settingUser) {
-    res.status(404);
-    return res.send(JSON.stringify({success:false, text:'User not found'}));
-  }
-
+app.get('/user/settings', [noCacheJson, recordResponseTime, getSettingUserDb, checkPermissions(['webEnabled']), setCookie], (req, res) => {
   let settings = req.settingUser.settings || settingDefaults;
 
   let cookieOptions = { path: app.locals.basePath, sameSite: 'Strict' };
@@ -1654,9 +1684,7 @@ app.get('/user/settings', [noCacheJson, recordResponseTime, getSettingUser, chec
 });
 
 // updates a user's settings
-app.post('/user/settings/update', [noCacheJson, checkCookieToken, logAction(), postSettingUser], function(req, res) {
-  if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
-
+app.post('/user/settings/update', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function(req, res) {
   req.settingUser.settings = req.body;
   delete req.settingUser.settings.token;
 
@@ -1776,34 +1804,31 @@ function unshareView (req, res, user, sharedUser, endpoint, successMessage, erro
 }
 
 // gets a user's views
-app.get('/user/views', [noCacheJson, getSettingUser], function(req, res) {
+app.get('/user/views', [noCacheJson, getSettingUserCache], function(req, res) {
   if (!req.settingUser) { return res.send({}); }
+
+  // Clone the views so we don't modify that cached user
+  let views = JSON.parse(JSON.stringify(req.settingUser.views || {}));
 
   Db.getUser('_moloch_shared', (err, sharedUser) => {
     if (sharedUser && sharedUser.found) {
       sharedUser = sharedUser._source;
-      if (!req.settingUser.views) { req.settingUser.views = {}; }
       for (let viewName in sharedUser.views) {
         // check for views with the same name as a shared view so user specific views don't get overwritten
         let sharedViewName = viewName;
-        if (req.settingUser.views[sharedViewName] && !req.settingUser.views[sharedViewName].shared) {
+        if (views[sharedViewName] && !views[sharedViewName].shared) {
           sharedViewName = `shared:${sharedViewName}`;
         }
-        req.settingUser.views[sharedViewName] = sharedUser.views[viewName];
+        views[sharedViewName] = sharedUser.views[viewName];
       }
     }
 
-    return res.send(req.settingUser.views || {});
+    return res.send(views);
   });
 });
 
 // creates a new view for a user
-app.post('/user/views/create', [noCacheJson, checkCookieToken, logAction(), postSettingUser, sanitizeViewName], function (req, res) {
-  if (!req.settingUser) {
-    console.log('/user/views/create unknown user');
-    return res.molochError(403, 'Unknown user');
-  }
-
+app.post('/user/views/create', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName], function (req, res) {
   if (!req.body.name)   { return res.molochError(403, 'Missing view name'); }
   if (!req.body.expression) { return res.molochError(403, 'Missing view expression'); }
 
@@ -1849,12 +1874,7 @@ app.post('/user/views/create', [noCacheJson, checkCookieToken, logAction(), post
 });
 
 // deletes a user's specified view
-app.post('/user/views/delete', [noCacheJson, checkCookieToken, logAction(), postSettingUser, sanitizeViewName], function(req, res) {
-  if (!req.settingUser) {
-    console.log('/user/views/delete unknown user');
-    return res.molochError(403, 'Unknown user');
-  }
-
+app.post('/user/views/delete', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName], function(req, res) {
   if (!req.body.name) { return res.molochError(403, 'Missing view name'); }
 
   let user = req.settingUser;
@@ -1902,7 +1922,7 @@ app.post('/user/views/delete', [noCacheJson, checkCookieToken, logAction(), post
 });
 
 // shares/unshares a view
-app.post('/user/views/toggleShare', [noCacheJson, checkCookieToken, logAction(), postSettingUser, sanitizeViewName], function (req, res) {
+app.post('/user/views/toggleShare', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName], function (req, res) {
   if (!req.body.name)       { return res.molochError(403, 'Missing view name'); }
   if (!req.body.expression) { return res.molochError(403, 'Missing view expression'); }
 
@@ -1948,7 +1968,7 @@ app.post('/user/views/toggleShare', [noCacheJson, checkCookieToken, logAction(),
 });
 
 // updates a user's specified view
-app.post('/user/views/update', [noCacheJson, checkCookieToken, logAction(), postSettingUser, sanitizeViewName], function (req, res) {
+app.post('/user/views/update', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName], function (req, res) {
   if (!req.body.name)       { return res.molochError(403, 'Missing view name'); }
   if (!req.body.expression) { return res.molochError(403, 'Missing view expression'); }
   if (!req.body.key)        { return res.molochError(403, 'Missing view key'); }
@@ -2022,7 +2042,7 @@ app.post('/user/views/update', [noCacheJson, checkCookieToken, logAction(), post
 });
 
 // gets a user's cron queries
-app.get('/user/cron', [noCacheJson, getSettingUser], function(req, res) {
+app.get('/user/cron', [noCacheJson, getSettingUserCache], function(req, res) {
   if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
 
   var user = req.settingUser;
@@ -2046,9 +2066,7 @@ app.get('/user/cron', [noCacheJson, getSettingUser], function(req, res) {
 });
 
 // creates a new cron query for a user
-app.post('/user/cron/create', [noCacheJson, checkCookieToken, logAction(), postSettingUser], function(req, res) {
-  if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
-
+app.post('/user/cron/create', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function(req, res) {
   if (!req.body.name)   { return res.molochError(403, 'Missing cron query name'); }
   if (!req.body.query)  { return res.molochError(403, 'Missing cron query expression'); }
   if (!req.body.action) { return res.molochError(403, 'Missing cron query action'); }
@@ -2104,9 +2122,7 @@ app.post('/user/cron/create', [noCacheJson, checkCookieToken, logAction(), postS
 });
 
 // deletes a user's specified cron query
-app.post('/user/cron/delete', [noCacheJson, checkCookieToken, logAction(), postSettingUser, checkCronAccess], function(req, res) {
-  if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
-
+app.post('/user/cron/delete', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess], function(req, res) {
   if (!req.body.key) { return res.molochError(403, 'Missing cron query key'); }
 
   Db.deleteDocument('queries', 'query', req.body.key, {refresh: true}, function(err, sq) {
@@ -2122,9 +2138,7 @@ app.post('/user/cron/delete', [noCacheJson, checkCookieToken, logAction(), postS
 });
 
 // updates a user's specified cron query
-app.post('/user/cron/update', [noCacheJson, checkCookieToken, logAction(), postSettingUser, checkCronAccess], function(req, res) {
-  if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
-
+app.post('/user/cron/update', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess], function(req, res) {
   if (!req.body.key)    { return res.molochError(403, 'Missing cron query key'); }
   if (!req.body.name)   { return res.molochError(403, 'Missing cron query name'); }
   if (!req.body.query)  { return res.molochError(403, 'Missing cron query expression'); }
@@ -2169,9 +2183,7 @@ app.post('/user/cron/update', [noCacheJson, checkCookieToken, logAction(), postS
 });
 
 // changes a user's password
-app.post('/user/password/change', [noCacheJson, checkCookieToken, logAction(), postSettingUser], function(req, res) {
-  if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
-
+app.post('/user/password/change', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function(req, res) {
   if (!req.body.newPassword || req.body.newPassword.length < 3) {
     return res.molochError(403, 'New password needs to be at least 3 characters');
   }
@@ -2203,7 +2215,7 @@ function oldDB2newDB(x) {
 }
 
 // gets custom column configurations for a user
-app.get('/user/columns', [noCacheJson, getSettingUser, checkPermissions(['webEnabled'])], (req, res) => {
+app.get('/user/columns', [noCacheJson, getSettingUserCache, checkPermissions(['webEnabled'])], (req, res) => {
   if (!req.settingUser) {return res.send([]);}
 
   // Fix for new names
@@ -2221,9 +2233,7 @@ app.get('/user/columns', [noCacheJson, getSettingUser, checkPermissions(['webEna
 });
 
 // udpates custom column configurations for a user
-app.put('/user/columns/:name', [noCacheJson, checkCookieToken, logAction(), postSettingUser], function(req, res) {
-  if (!req.settingUser)   { return res.molochError(403, 'Unknown user'); }
-
+app.put('/user/columns/:name', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function(req, res) {
   if (!req.body.name)     { return res.molochError(403, 'Missing custom column configuration name'); }
   if (!req.body.columns)  { return res.molochError(403, 'Missing columns'); }
   if (!req.body.order)    { return res.molochError(403, 'Missing sort order'); }
@@ -2256,9 +2266,7 @@ app.put('/user/columns/:name', [noCacheJson, checkCookieToken, logAction(), post
 });
 
 // creates a new custom column configuration for a user
-app.post('/user/columns/create', [noCacheJson, checkCookieToken, logAction(), postSettingUser], function(req, res) {
-  if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
-
+app.post('/user/columns/create', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function(req, res) {
   if (!req.body.name)     { return res.molochError(403, 'Missing custom column configuration name'); }
   if (!req.body.columns)  { return res.molochError(403, 'Missing columns'); }
   if (!req.body.order)    { return res.molochError(403, 'Missing sort order'); }
@@ -2298,9 +2306,7 @@ app.post('/user/columns/create', [noCacheJson, checkCookieToken, logAction(), po
 });
 
 // deletes a user's specified custom column configuration
-app.post('/user/columns/delete', [noCacheJson, checkCookieToken, logAction(), postSettingUser], function(req, res) {
-  if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
-
+app.post('/user/columns/delete', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function(req, res) {
   if (!req.body.name) { return res.molochError(403, 'Missing custom column configuration name'); }
 
   var user = req.settingUser;
@@ -2330,16 +2336,14 @@ app.post('/user/columns/delete', [noCacheJson, checkCookieToken, logAction(), po
 });
 
 // gets custom spiview fields configurations for a user
-app.get('/user/spiview/fields', [noCacheJson, getSettingUser, checkPermissions(['webEnabled'])], (req, res) => {
+app.get('/user/spiview/fields', [noCacheJson, getSettingUserCache, checkPermissions(['webEnabled'])], (req, res) => {
   if (!req.settingUser) {return res.send([]);}
 
   return res.send(req.settingUser.spiviewFieldConfigs || []);
 });
 
 // udpates custom spiview field configuration for a user
-app.put('/user/spiview/fields/:name', [noCacheJson, checkCookieToken, logAction(), postSettingUser], function(req, res) {
-  if (!req.settingUser) { return res.molochError(403, 'Unknown user'); }
-
+app.put('/user/spiview/fields/:name', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function(req, res) {
   if (!req.body.name)   { return res.molochError(403, 'Missing custom spiview field configuration name'); }
   if (!req.body.fields) { return res.molochError(403, 'Missing fields'); }
 
@@ -2371,9 +2375,7 @@ app.put('/user/spiview/fields/:name', [noCacheJson, checkCookieToken, logAction(
 });
 
 // creates a new custom spiview fields configuration for a user
-app.post('/user/spiview/fields/create', [noCacheJson, checkCookieToken, logAction(), postSettingUser], function(req, res) {
-  if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
-
+app.post('/user/spiview/fields/create', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function(req, res) {
   if (!req.body.name)   { return res.molochError(403, 'Missing custom spiview field configuration name'); }
   if (!req.body.fields) { return res.molochError(403, 'Missing fields'); }
 
@@ -2412,9 +2414,7 @@ app.post('/user/spiview/fields/create', [noCacheJson, checkCookieToken, logActio
 });
 
 // deletes a user's specified custom spiview fields configuration
-app.post('/user/spiview/fields/delete', [noCacheJson, checkCookieToken, logAction(), postSettingUser], function(req, res) {
-  if (!req.settingUser) {return res.molochError(403, 'Unknown user');}
-
+app.post('/user/spiview/fields/delete', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function(req, res) {
   if (!req.body.name) { return res.molochError(403, 'Missing custom spiview fields configuration name'); }
 
   var user = req.settingUser;
@@ -6437,7 +6437,7 @@ app.post('/user/delete', [noCacheJson, logAction(), checkCookieToken, checkPermi
   });
 });
 
-app.post('/user/update', [noCacheJson, logAction(), checkCookieToken, postSettingUser, checkPermissions(['createEnabled'])], (req, res) => {
+app.post('/user/update', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
   if (req.body.userId === undefined) {
     return res.molochError(403, 'Missing userId');
   }
@@ -7312,7 +7312,9 @@ app.get('/:nodeName/hunt/:huntId/remote/:sessionId', [noCacheJson], function (re
 //////////////////////////////////////////////////////////////////////////////////
 //// Lookups
 //////////////////////////////////////////////////////////////////////////////////
-app.get('/lookups', [noCacheJson, recordResponseTime, getSettingUser], function (req, res) {
+let lookupMutex = new Mutex();
+
+app.get('/lookups', [noCacheJson, getSettingUserCache, recordResponseTime], function (req, res) {
   // return nothing if we can't find the user
   const user = req.settingUser;
   if (!user) { return res.send({}); }
@@ -7427,7 +7429,7 @@ function createLookupsArray (lookupsString) {
   return values;
 }
 
-app.post('/lookups', [noCacheJson, getSettingUser, logAction('lookups'), checkCookieToken], function (req, res) {
+app.post('/lookups', [noCacheJson, getSettingUserDb, logAction('lookups'), checkCookieToken], function (req, res) {
   // make sure all the necessary data is included in the post body
   if (!req.body.var) { return res.molochError(403, 'Missing shortcut'); }
   if (!req.body.var.name) { return res.molochError(403, 'Missing shortcut name'); }
@@ -7450,47 +7452,53 @@ app.post('/lookups', [noCacheJson, getSettingUser, logAction('lookups'), checkCo
     }
   };
 
-  Db.searchLookups(query)
-    .then((lookups) => {
-      // search for lookup name collision
-      for (const hit of lookups.hits.hits) {
-        let lookup = hit._source;
-        if (lookup.name === req.body.var.name) {
-          return res.molochError(403, `A shortcut with the name, ${req.body.var.name}, already exists`);
+  lookupMutex.lock().then(() => {
+    Db.searchLookups(query)
+      .then((lookups) => {
+        // search for lookup name collision
+        for (const hit of lookups.hits.hits) {
+          let lookup = hit._source;
+          if (lookup.name === req.body.var.name) {
+            lookupMutex.unlock();
+            return res.molochError(403, `A shortcut with the name, ${req.body.var.name}, already exists`);
+          }
         }
-      }
 
-      let variable = req.body.var;
-      variable.userId = user.userId;
+        let variable = req.body.var;
+        variable.userId = user.userId;
 
-      // comma/newline separated value -> array of values
-      const values = createLookupsArray(variable.value);
-      variable[variable.type] = values;
+        // comma/newline separated value -> array of values
+        const values = createLookupsArray(variable.value);
+        variable[variable.type] = values;
 
-      const type = variable.type;
-      delete variable.type;
-      delete variable.value;
+        const type = variable.type;
+        delete variable.type;
+        delete variable.value;
 
-      Db.createLookup(variable, user.userId, function (err, result) {
-        if (err) {
-          console.log('shortcut create failed', err, result);
-          return res.molochError(500, 'Creating shortcut failed');
-        }
-        variable.id = result._id;
-        variable.type = type;
-        variable.value = values.join('\n');
-        delete variable.ip;
-        delete variable.string;
-        delete variable.number;
-        return res.send(JSON.stringify({ success: true, var: variable }));
+        Db.createLookup(variable, user.userId, function (err, result) {
+          if (err) {
+            console.log('shortcut create failed', err, result);
+            lookupMutex.unlock();
+            return res.molochError(500, 'Creating shortcut failed');
+          }
+          variable.id = result._id;
+          variable.type = type;
+          variable.value = values.join('\n');
+          delete variable.ip;
+          delete variable.string;
+          delete variable.number;
+          lookupMutex.unlock();
+          return res.send(JSON.stringify({ success: true, var: variable }));
+        });
+      }).catch((err) => {
+        console.log('ERROR - /lookups', err);
+        lookupMutex.unlock();
+        return res.molochError(500, 'Error creating lookup - ' + err);
       });
-    }).catch((err) => {
-      console.log('ERROR - /lookups', err);
-      return res.molochError(500, 'Error creating lookup - ' + err);
-    });
+  });
 });
 
-app.put('/lookups/:id', [noCacheJson, getSettingUser, logAction('lookups/:id'), checkCookieToken], function (req, res) {
+app.put('/lookups/:id', [noCacheJson, getSettingUserDb, logAction('lookups/:id'), checkCookieToken], function (req, res) {
   // make sure all the necessary data is included in the post body
   if (!req.body.var) { return res.molochError(403, 'Missing shortcut'); }
   if (!req.body.var.name) { return res.molochError(403, 'Missing shortcut name'); }
@@ -7539,7 +7547,7 @@ app.put('/lookups/:id', [noCacheJson, getSettingUser, logAction('lookups/:id'), 
   });
 });
 
-app.delete('/lookups/:id', [noCacheJson, getSettingUser, logAction('lookups/:id'), checkCookieToken], function (req, res) {
+app.delete('/lookups/:id', [noCacheJson, getSettingUserDb, logAction('lookups/:id'), checkCookieToken], function (req, res) {
   Db.getLookup(req.params.id, (err, variable) => { // fetch variable
     if (err) {
       console.log('fetching shortcut to delete failed', err, variable);
