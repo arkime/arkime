@@ -6384,7 +6384,7 @@ app.put('/user/:userId/acknowledgeMsg', [noCacheJson, logAction(), checkCookieTo
     return res.molochError(403, 'Message number required');
   }
 
-  if (req.params.userId != req.user.userId) {
+  if (req.params.userId !== req.user.userId) {
     return res.molochError(403, 'Can not change other users msg');
   }
 
