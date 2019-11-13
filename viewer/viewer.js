@@ -659,30 +659,30 @@ function arrayZeroFill(n) {
 
 // https://stackoverflow.com/a/48569020
 class Mutex {
-    constructor () {
-        this.queue = [];
-        this.locked = false;
-    }
+  constructor () {
+    this.queue = [];
+    this.locked = false;
+  }
 
-    lock () {
-        return new Promise((resolve, reject) => {
-            if (this.locked) {
-                this.queue.push([resolve, reject]);
-            } else {
-                this.locked = true;
-                resolve();
-            }
-        });
-    }
+  lock () {
+    return new Promise((resolve, reject) => {
+      if (this.locked) {
+        this.queue.push(resolve);
+      } else {
+        this.locked = true;
+        resolve();
+      }
+    });
+  }
 
-    unlock () {
-        if (this.queue.length > 0) {
-            const [resolve, reject] = this.queue.shift();
-            resolve();
-        } else {
-            this.locked = false;
-        }
+  unlock () {
+    if (this.queue.length > 0) {
+      const resolve = this.queue.shift();
+      resolve();
+    } else {
+      this.locked = false;
     }
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////////
