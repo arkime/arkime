@@ -46,7 +46,8 @@ var Config         = require('./config.js'),
     glob           = require('glob'),
     unzip          = require('unzip'),
     helmet         = require('helmet'),
-    uuid           = require('uuidv4').default;
+    uuid           = require('uuidv4').default,
+    RE2            = require('re2');
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -77,7 +78,7 @@ var internals = {
   pluginEmitter: new EventEmitter(),
   writers: {},
   oldDBFields: {},
-  isLocalViewRegExp: Config.get("isLocalViewRegExp")?new RegExp(Config.get("isLocalViewRegExp")):undefined,
+  isLocalViewRegExp: Config.get("isLocalViewRegExp")?new RE2(Config.get("isLocalViewRegExp")):undefined,
   uploadLimits: {
   },
 
@@ -3345,10 +3346,14 @@ app.get('/esindices/list', [noCacheJson, recordResponseTime, checkPermissions(['
 
     // filtering
     if (req.query.filter !== undefined) {
-      const regex = new RegExp(req.query.filter);
-      for (const index of indices) {
-        if (!index.index.match(regex)) { continue; }
-        findices.push(index);
+      try {
+        const regex = new RE2(req.query.filter);
+        for (const index of indices) {
+          if (!index.index.match(regex)) { continue; }
+          findices.push(index);
+        }
+      } catch (e) {
+        return res.molochError(500, `Regex Error: ${e}`);
       }
     } else {
       findices = indices;
@@ -3520,7 +3525,11 @@ app.get('/estask/list', [noCacheJson, recordResponseTime, checkPermissions(['hid
 
     let regex;
     if (req.query.filter !== undefined) {
-      regex = new RegExp(req.query.filter);
+      try {
+        regex = new RE2(req.query.filter);
+      } catch (e) {
+        return res.molochError(500, `Regex Error: ${e}`);
+      }
     }
 
     let rtasks = [];
@@ -3616,7 +3625,11 @@ app.get('/esshard/list', [noCacheJson, recordResponseTime, checkPermissions(['hi
 
     var regex;
     if (req.query.filter !== undefined) {
-      regex = new RegExp(req.query.filter.toLowerCase());
+      try {
+        regex = new RE2(req.query.filter.toLowerCase());
+      } catch (e) {
+        return res.molochError(500, `Regex Error: ${e}`);
+      }
     }
 
     let result = {};
@@ -3736,7 +3749,11 @@ app.get('/esrecovery/list', [noCacheJson, recordResponseTime, checkPermissions([
   Promise.all([Db.recovery(sortField)]).then(([recoveries]) => {
     let regex;
     if (req.query.filter !== undefined) {
-      regex = new RegExp(req.query.filter);
+      try {
+        regex = new RE2(req.query.filter);
+      } catch (e) {
+        return res.molochError(500, `Regex Error: ${e}`);
+      }
     }
 
     let result = [];
@@ -3802,7 +3819,11 @@ app.get('/esstats.json', [noCacheJson, recordResponseTime, checkPermissions(['hi
 
     let regex;
     if (req.query.filter !== undefined) {
-      regex = new RegExp(req.query.filter);
+      try {
+        regex = new RE2(req.query.filter);
+      } catch (e) {
+        return res.molochError(500, `Regex Error: ${e}`);
+      }
     }
 
     const nodeKeys = Object.keys(nodesStats.nodes);
@@ -6842,7 +6863,7 @@ function buildHuntOptions (hunt) {
 
   if (hunt.searchType === 'regex' || hunt.searchType === 'hexregex') {
     try {
-      options.regex = new RegExp(hunt.search);
+      options.regex = new RE2(hunt.search);
     } catch (e) {
       pauseHuntJobWithError(hunt.huntId, hunt, { value: `Hunt error with regex: ${e}` });
     }
