@@ -900,6 +900,15 @@ function checkCookieToken(req, res, next) {
   return next();
 }
 
+// use for APIs that can be used from places other than just the UI
+function checkHeaderToken (req, res, next) {
+  if (req.headers.cookie) { // if there's a cookie, check header
+    return checkCookieToken(req, res, next);
+  } else { // if there's no cookie, just continue so the API still works
+    return next();
+  }
+}
+
 function checkPermissions (permissions) {
   const inversePermissions = {
     hidePcap: true,
@@ -6588,7 +6597,7 @@ function removeTagsList(res, allTagNames, sessionList) {
   });
 }
 
-app.post('/addTags', [noCacheJson, logAction()], function(req, res) {
+app.post('/addTags', [noCacheJson, checkHeaderToken, logAction()], function(req, res) {
   var tags = [];
   if (req.body.tags) {
     tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
@@ -6619,7 +6628,7 @@ app.post('/addTags', [noCacheJson, logAction()], function(req, res) {
   }
 });
 
-app.post('/removeTags', [noCacheJson, logAction(), checkPermissions(['removeEnabled'])], (req, res) => {
+app.post('/removeTags', [noCacheJson, checkHeaderToken, logAction(), checkPermissions(['removeEnabled'])], (req, res) => {
   var tags = [];
   if (req.body.tags) {
     tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
