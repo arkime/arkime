@@ -861,6 +861,28 @@ function checkProxyRequest(req, res, next) {
   });
 }
 
+function setCookie (req, res, next) {
+  let cookieOptions = {
+    path: app.locals.basePath,
+    sameSite: 'Strict',
+    overwrite: true
+  };
+
+  if (Config.isHTTPS()) { cookieOptions.secure = true; }
+
+  res.cookie( // send cookie for basic, non admin functions
+     'MOLOCH-COOKIE',
+     Config.obj2auth({
+       date: Date.now(),
+       pid: process.pid,
+       userId: req.user.userId
+     }, true),
+     cookieOptions
+  );
+
+  return next();
+}
+
 function checkCookieToken(req, res, next) {
   if (!req.headers['x-moloch-cookie']) {
     return res.molochError(500, 'Missing token');
@@ -1611,7 +1633,7 @@ app.post('/notifiers/:name/test', [noCacheJson, getSettingUser, checkCookieToken
 });
 
 // gets a user's settings
-app.get('/user/settings', [noCacheJson, getSettingUser, recordResponseTime, checkPermissions(['webEnabled'])], (req, res) => {
+app.get('/user/settings', [noCacheJson, recordResponseTime, getSettingUser, checkPermissions(['webEnabled']), setCookie], (req, res) => {
   if (!req.settingUser) {
     res.status(404);
     return res.send(JSON.stringify({success:false, text:'User not found'}));
@@ -3091,7 +3113,7 @@ function sessionsListFromIds(req, ids, fields, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 //// APIs
 //////////////////////////////////////////////////////////////////////////////////
-app.get('/history/list', [noCacheJson, recordResponseTime], function (req, res) {
+app.get('/history/list', [noCacheJson, recordResponseTime, setCookie], (req, res) => {
   let userId;
   if (req.user.createEnabled) { // user is an admin, they can view all logs
     // if the admin has requested a specific user
@@ -3198,7 +3220,7 @@ app.get('/history/list', [noCacheJson, recordResponseTime], function (req, res) 
   });
 });
 
-app.delete('/history/list/:id', [noCacheJson, checkPermissions(['createEnabled', 'removeEnabled'])], function (req, res) {
+app.delete('/history/list/:id', [noCacheJson, checkCookieToken, checkPermissions(['createEnabled', 'removeEnabled'])], (req, res) => {
   if (!req.query.index) { return res.molochError(403, 'Missing history index'); }
 
   Db.deleteHistoryItem(req.params.id, req.query.index, function(err, result) {
@@ -3225,7 +3247,7 @@ app.get('/fields', function(req, res) {
   }
 });
 
-app.get('/file/list', [noCacheJson, logAction('files'), checkPermissions(['hideFiles']), recordResponseTime], (req, res) => {
+app.get('/file/list', [noCacheJson, recordResponseTime, logAction('files'), checkPermissions(['hideFiles']), setCookie], (req, res) => {
   var columns = ["num", "node", "name", "locked", "first", "filesize"];
 
   var query = {_source: columns,
@@ -3293,7 +3315,7 @@ app.get('/eshealth.json', [noCacheJson], (req, res) => {
   });
 });
 
-app.get('/esindices/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats'])], (req, res) => {
+app.get('/esindices/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie], (req, res) => {
   async.parallel({
     indices: Db.indicesCache,
     indicesSettings: Db.indicesSettingsCache
@@ -3474,7 +3496,7 @@ app.post('/esindices/:index/shrink', [noCacheJson, logAction(), checkCookieToken
   });
 });
 
-app.get('/estask/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats'])], (req, res) => {
+app.get('/estask/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie], (req, res) => {
   Db.tasks(function (err, tasks) {
     if (err) {
       console.log ('ERROR -  /estask/list', err);
@@ -3568,7 +3590,7 @@ app.post('/estask/cancelById', [noCacheJson, logAction(), checkCookieToken, chec
   });
 });
 
-app.get('/esshard/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats'])], (req, res) => {
+app.get('/esshard/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie], (req, res) => {
   Promise.all([
     Db.shards(),
     Db.getClusterSettings({flatSettings: true})
@@ -3699,7 +3721,7 @@ app.post('/esshard/include/:type/:value', [noCacheJson, logAction(), checkCookie
   });
 });
 
-app.get('/esrecovery/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats'])], (req, res) => {
+app.get('/esrecovery/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie], (req, res) => {
   const sortField = (req.query.sortField || 'index') + (req.query.desc === 'true' ? ':desc' : '');
 
   Promise.all([Db.recovery(sortField)]).then(([recoveries]) => {
@@ -3742,7 +3764,7 @@ app.get('/esrecovery/list', [noCacheJson, recordResponseTime, checkPermissions([
   });
 });
 
-app.get('/esstats.json', [noCacheJson, recordResponseTime, checkPermissions(['hideStats'])], (req, res) => {
+app.get('/esstats.json', [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie], (req, res) => {
   let stats = [];
   let r;
 
@@ -3941,7 +3963,7 @@ app.get('/parliament.json', [noCacheJson], (req, res) => {
     });
 });
 
-app.get('/stats.json', [noCacheJson, recordResponseTime, checkPermissions(['hideStats'])], (req, res) => {
+app.get('/stats.json', [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie], (req, res) => {
   let query = {
     from: 0,
     size: 10000,
@@ -4354,7 +4376,7 @@ app.use('/buildQuery.json', [noCacheJson, logAction('query')], function(req, res
   });
 });
 
-app.get('/sessions.json', [noCacheJson, logAction('sessions'), recordResponseTime], function (req, res) {
+app.get('/sessions.json', [noCacheJson, recordResponseTime, logAction('sessions'), setCookie], (req, res) => {
   var graph = {};
   var map = {};
 
@@ -4469,7 +4491,7 @@ app.get('/sessions.json', [noCacheJson, logAction('sessions'), recordResponseTim
   });
 });
 
-app.get('/spigraph.json', [noCacheJson, logAction('spigraph'), fieldToExp, recordResponseTime], function(req, res) {
+app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'), fieldToExp, setCookie], (req, res) => {
   req.query.facets = 1;
 
   buildSessionQuery(req, function(bsqErr, query, indices) {
@@ -4622,7 +4644,7 @@ app.get('/spigraph.json', [noCacheJson, logAction('spigraph'), fieldToExp, recor
   });
 });
 
-app.get('/spiview.json', [noCacheJson, logAction('spiview'), recordResponseTime], function(req, res) {
+app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'), setCookie], (req, res) => {
 
   if (req.query.spi === undefined) {
     return res.send({spi:{}, recordsTotal: 0, recordsFiltered: 0});
@@ -4981,7 +5003,7 @@ function buildConnections(req, res, cb) {
   });
 }
 
-app.get('/connections.json', [noCacheJson, logAction('connections'), recordResponseTime], function (req, res) {
+app.get('/connections.json', [noCacheJson, recordResponseTime, logAction('connections'), setCookie], (req, res) => {
   let health;
   Db.healthCache(function (err, h) { health = h; });
   buildConnections(req, res, function (err, nodes, links, total) {
@@ -6267,7 +6289,7 @@ internals.usersMissing = {
   lastUsed: 0
 };
 
-app.post('/user/list', [noCacheJson, logAction('users'), recordResponseTime, checkPermissions(['createEnabled'])], (req, res) => {
+app.post('/user/list', [noCacheJson, recordResponseTime, logAction('users'), checkPermissions(['createEnabled'])], (req, res) => {
   let columns = [ 'userId', 'userName', 'expression', 'enabled', 'createEnabled',
     'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch',
     'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum',
@@ -6479,7 +6501,7 @@ app.post('/user/update', [noCacheJson, logAction(), checkCookieToken, postSettin
   });
 });
 
-app.post('/state/:name', [noCacheJson, logAction()], function(req, res) {
+app.post('/state/:name', [noCacheJson, checkCookieToken, logAction()], (req, res) => {
   Db.getUser(req.user.userId, function(err, user) {
     if (err || !user.found) {
       console.log("save state failed", err, user);
@@ -7155,7 +7177,7 @@ app.post('/hunt', [noCacheJson, logAction('hunt'), checkCookieToken, checkPermis
   });
 });
 
-app.get('/hunt/list', [noCacheJson, recordResponseTime, checkPermissions(['packetSearch'])], (req, res) => {
+app.get('/hunt/list', [noCacheJson, recordResponseTime, checkPermissions(['packetSearch']), setCookie], (req, res) => {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
 
   let query = {
@@ -7290,7 +7312,7 @@ app.get('/:nodeName/hunt/:huntId/remote/:sessionId', [noCacheJson], function (re
 //////////////////////////////////////////////////////////////////////////////////
 //// Lookups
 //////////////////////////////////////////////////////////////////////////////////
-app.get('/lookups', [noCacheJson, getSettingUser, recordResponseTime], function (req, res) {
+app.get('/lookups', [noCacheJson, recordResponseTime, getSettingUser], function (req, res) {
   // return nothing if we can't find the user
   const user = req.settingUser;
   if (!user) { return res.send({}); }
@@ -8263,17 +8285,7 @@ app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
 // expose vue bundle (dev)
 app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
 
-app.use(cspHeader, (req, res) => {
-  let cookieOptions = { path: app.locals.basePath, sameSite: 'Strict' };
-  if (Config.isHTTPS()) { cookieOptions.secure = true; }
-
-  // send cookie for basic, non admin functions
-  res.cookie(
-     'MOLOCH-COOKIE',
-     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}, true),
-     cookieOptions
-  );
-
+app.use(cspHeader, setCookie, (req, res) => {
   if (!req.user.webEnabled) {
     return res.status(403).send('Permission denied');
   }
