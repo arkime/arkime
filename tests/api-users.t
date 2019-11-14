@@ -1,4 +1,4 @@
-use Test::More tests => 91;
+use Test::More tests => 92;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -11,6 +11,7 @@ my $pwd = "*/pcap";
 
     my $token = getTokenCookie();
     my $token2 = getTokenCookie2();
+    my $token3 = getTokenCookie('test1');
 
 # users
     my $users = viewerPost("/user/list", "");
@@ -258,6 +259,8 @@ my $pwd = "*/pcap";
 
 # Messages
     $info = viewerPutToken("/user/test1/acknowledgeMsg", '{"msgNum":2}', $token2);
+    ok(!$info->{success}, "can't update welcome message number for another user");
+    $info = viewerPutToken("/user/test1/acknowledgeMsg?molochRegressionUser=test1", '{"msgNum":2}', $token3);
     ok($info->{success}, "update welcome message number");
     $info = viewerGet("/user/current?molochRegressionUser=test1");
     eq_or_diff($info->{welcomeMsgNum}, 2, "welcome message number is correct");
