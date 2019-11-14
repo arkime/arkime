@@ -1,4 +1,4 @@
-use Test::More tests => 274;
+use Test::More tests => 254;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -198,10 +198,12 @@ my $hToken = getTokenCookie('huntuser');
   createHunts("asciicase", "GET");
 
   createHunts("regex", "G..89");
-  createHunts("regex", "(.*a){25}x");
 
   createHunts("hex", "766d663d");
   createHunts("hexregex", "766..63d");
+
+  # create a hunt for regex dos
+  $HUNTS{"raw-regex-both-(.*a){25}x"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":67,"name":"' . "raw-regex-both-(.*a){25}x-$$" . '", "size":"50","search":"(.*a){25}x","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":1430916462,"stopTime":1569170858}}}', $hToken);
 
   # Actually process the hunts
   viewerGet("/processHuntJobs");
@@ -258,13 +260,6 @@ my $hToken = getTokenCookie('huntuser');
   checkHunt("reassembled-regex-src-G..89", 0);
   checkHunt("reassembled-regex-dst-G..89", 1);
 
-  checkHunt("raw-regex-both-(.*a){25}x", 0);
-  checkHunt("raw-regex-src-(.*a){25}x", 0);
-  checkHunt("raw-regex-dst-(.*a){25}x", 0);
-  checkHunt("reassembled-regex-both-(.*a){25}x", 0);
-  checkHunt("reassembled-regex-src-(.*a){25}x", 0);
-  checkHunt("reassembled-regex-dst-(.*a){25}x", 0);
-
   checkHunt("raw-hex-both-766d663d", 1);
   checkHunt("raw-hex-src-766d663d", 1);
   checkHunt("raw-hex-dst-766d663d", 0);
@@ -279,6 +274,13 @@ my $hToken = getTokenCookie('huntuser');
   checkHunt("reassembled-hexregex-src-766..63d", 1);
   checkHunt("reassembled-hexregex-dst-766..63d", 0);
 
+  # check results for regex dos
+  my $id = $HUNTS{"raw-regex-both-(.*a){25}x"}->{hunt}->{id};
+  my $result = $RESULTS{$id};
+  is ($result->{status}, 'finished', "raw-regex-both-(.*a){25}x finished check");
+  is ($result->{searchedSessions}, 67, "raw-regex-both-(.*a){25}x searchedSessions check");
+  is ($result->{totalSessions}, 67, "raw-regex-both-(.*a){25}x totalSessions check");
+  is ($result->{matchedSessions}, 0, "raw-regex-both-(.*a){25}x match check");
 
 # cleanup
   $json = viewerPostToken("/user/delete", "userId=huntuser", $token);
