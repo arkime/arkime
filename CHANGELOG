@@ -16,11 +16,19 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.1.0 2019/10/xx
+2.1.0 2019/11/xx
   - NOTE: All viewers must be 2.1 or later for them to communicate.  If not
           upgradeing at once set s2sSignedAuth=false in default section of config.ini
-  - release - node 10.16.3, curl 7.66.0, glib 2.59.0
+  - release - node 10.16.3, curl 7.66.0, glib 2.59.0, libpcap 1.9.1
   - release - remove ubuntu 14 builds
+  - db - new shrink command
+  - db - new --gz option to compress backups
+  - capture - support named pipes better (issue #1169)
+  - capture - New email.smtpHello field
+  - capture - fields created with wise/custom-fields are now set across
+              linked sessions by default now
+  - capture - deal with extra long config values in more places
+  - capture - snf improvements
   - viewer - default max aggregation size is 10000 to work with ES 7.x OOTB,
              new maxAggSize setting
   - viewer - added right-click replacer for %DBFIELD% (thanks tlacuache)
@@ -28,13 +36,14 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - support file expresssion in more places (issue #1172)
   - viewer - fix files date display (issue #1164)
   - viewer - csp header support
-  - db - new shrink command
-  - capture - support named pipes better (issue #1169)
-  - wise - switch to ioredis implementation so clusters/sentinel works
   - viewer - Fix some XSS/rXSS by setting correct content type
   - viewer - Improve permission checking
-  - capture - New email.smtpHello field
-
+  - viewer - Use RE2 for regex
+  - viewer - shortcuts can be locked from changes
+  - wise - switch to ioredis implementation so clusters/sentinel works
+  - s3 - many fixes (thanks pjsg)
+  - s3 - support compressing pcap when s3WriteGzip is set to true (thanks pjsg)
+  - s3 - can fetch data from metadata service (thanks pjsg)
 
 2.0.1 2019/09/09
   - release - cyberchef 9.4.0
