@@ -986,7 +986,7 @@ export default {
             let imgs = this.$refs.packetContainer.getElementsByClassName('imagetag');
             for (let i = 0; i < imgs.length; ++i) {
               let img = imgs[i];
-              let href = img.getAttribute('href');
+              let href = img.href;
               href = href.replace('body', 'bodypng');
 
               let tooltip = document.createElement('span');

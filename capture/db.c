@@ -405,7 +405,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
 
     /* jsonSize is an estimate of how much space it will take to encode the session */
-    jsonSize = 1100 + session->filePosArray->len*12 + 10*session->fileNumArray->len;
+    jsonSize = 1100 + session->filePosArray->len*17 + 10*session->fileNumArray->len;
     if (config.enablePacketLen) {
         jsonSize += 10*session->fileLenArray->len;
     }
@@ -1030,7 +1030,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
 
     if (jsonSize < (uint32_t)(BSB_WORK_PTR(jbsb) - startPtr)) {
-        LOG("WARNING - %s BIGGER then expected json %u %d\n", id, jsonSize,  (int)(BSB_WORK_PTR(jbsb) - startPtr));
+        LOG("WARNING - %s BIGGER than expected json %u %d\n", id, jsonSize,  (int)(BSB_WORK_PTR(jbsb) - startPtr));
         if (config.debug)
             LOG("Data:\n%.*s\n", (int)(BSB_WORK_PTR(jbsb) - startPtr), startPtr);
     }
@@ -1571,7 +1571,7 @@ LOCAL void moloch_db_load_file_num()
 
 
     /* Don't have new style numbers, go create them */
-    key_len = snprintf(key, sizeof(key), "/%sfiles/file/_search?include_type_name=true&size=1&sort=num:desc&q=node:%s", config.prefix, config.nodeName);
+    key_len = snprintf(key, sizeof(key), "/%sfiles/file/_search?size=1&sort=num:desc&q=node:%s", config.prefix, config.nodeName);
 
     data = moloch_http_get(esServer, key, key_len, &data_len);
 
@@ -2202,7 +2202,7 @@ gboolean moloch_db_file_exists(const char *filename, uint32_t *outputId)
     char                   key[2000];
     int                    key_len;
 
-    key_len = snprintf(key, sizeof(key), "/%sfiles/file/_search?include_type_name=true&size=1&sort=num:desc&q=node:%s+AND+name:\"%s\"", config.prefix, config.nodeName, filename);
+    key_len = snprintf(key, sizeof(key), "/%sfiles/file/_search?size=1&sort=num:desc&q=node:%s+AND+name:\"%s\"", config.prefix, config.nodeName, filename);
 
     unsigned char *data = moloch_http_get(esServer, key, key_len, &data_len);
 

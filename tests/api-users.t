@@ -20,7 +20,7 @@ my $pwd = "*/pcap";
     my $json = viewerPostToken("/user/create", '{"userId": "test1", "userName": "UserName", "enabled":true, "password":"password"}', $token);
 
     $users = viewerPost("/user/list?molochRegressionUser=notadmin", "");
-    eq_or_diff($users, from_json('{"text": "Need admin privileges", "success": false}'));
+    eq_or_diff($users, from_json('{"text": "You do not have permission to access this resource", "success": false}'));
 
     $users = viewerPost("/user/list", "");
     is (@{$users->{data}}, 1, "Check add #1");

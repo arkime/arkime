@@ -88,7 +88,7 @@ my $test1Token = getTokenCookie("test1");
     eq_or_diff($result, from_json('{"success": false, "text": "Unknown exclude type"}'), "esshard: exclude foobar");
 
     $result = viewerPostToken("/esshard/exclude/foobar/1.2.3.4?molochRegressionUser=test1", "", $test1Token);
-    eq_or_diff($result, from_json('{"success": false, "text": "Need admin privileges"}'), "esshard: exclude not admin");
+    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: exclude not admin");
 
     $shards = viewerGet("/esshard/list");
     eq_or_diff($shards->{nodeExcludes}, ["thenode"], "esshard: nodeExcludes empty");
@@ -107,7 +107,7 @@ my $test1Token = getTokenCookie("test1");
     eq_or_diff($result, from_json('{"success": false, "text": "Unknown include type"}'), "esshard: include foodbar");
 
     $result = viewerPostToken("/esshard/include/foobar/1.2.3.4?molochRegressionUser=test1", "", $test1Token);
-    eq_or_diff($result, from_json('{"success": false, "text": "Need admin privileges"}'), "esshard: include not admin");
+    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: include not admin");
 
     $shards = viewerGet("/esshard/list");
     eq_or_diff($shards->{nodeExcludes}, [], "esshard: nodeExcludes empty");

@@ -41,7 +41,7 @@ LOCAL va_list empty_va_list;
 void moloch_field_by_exp_add_special(char *exp, int pos)
 {
     MolochFieldInfo_t *info = MOLOCH_TYPE_ALLOC0(MolochFieldInfo_t);
-    info->expression = exp;
+    info->expression = g_strdup(exp);
     info->pos = pos;
     HASH_ADD(e_, fieldsByExp, info->expression, info);
 }
@@ -49,7 +49,7 @@ void moloch_field_by_exp_add_special(char *exp, int pos)
 void moloch_field_by_exp_add_special_type(char *exp, int pos, int type)
 {
     MolochFieldInfo_t *info = MOLOCH_TYPE_ALLOC0(MolochFieldInfo_t);
-    info->expression   = exp;
+    info->expression   = g_strdup(exp);
     info->pos          = pos;
     info->type         = type;
     config.fields[pos] = info;
@@ -113,6 +113,7 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
 int moloch_field_define_text_full(char *field, char *text, int *shortcut)
 {
     int count = 0;
+    int nolinked = 0;
     char *kind = 0;
     char *help = 0;
     char *db = 0;
@@ -139,6 +140,8 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
             group = colon;
         else if (strcmp(elements[e], "count") == 0)
             count = strcmp(colon, "true") == 0;
+        else if (strcmp(elements[e], "nolinked") == 0)
+            nolinked = strcmp(colon, "true") == 0;
         else if (strcmp(elements[e], "friendly") == 0)
             friendly = colon;
         else if (strcmp(elements[e], "db") == 0)
@@ -186,7 +189,9 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
     if (!group) {
         char *dot = strchr(field, '.');
         if (dot) {
-            memcpy(groupbuf, field, MIN(100, dot-field));
+            if (dot-field >= (int)sizeof(groupbuf) - 1)
+                LOGEXIT("ERROR - field '%s' too long", field);
+            memcpy(groupbuf, field, dot-field);
             groupbuf[dot-field] = 0;
             group = groupbuf;
         } else {
@@ -213,6 +218,9 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
 
     if (count)
         flags |= MOLOCH_FIELD_FLAG_CNT;
+
+    if (!nolinked)
+        flags |= MOLOCH_FIELD_FLAG_LINKED_SESSIONS;
 
     int pos =  moloch_field_define(group, kind, field, friendly, db, help, type, flags, "category", category, "transform", transform, (char *)NULL);
     g_strfreev(elements);
@@ -310,6 +318,10 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
         if (firstdot) {
             static char lastGroup[100] = "";
             static int groupNum = 0;
+
+            if (firstdot-minfo->dbField+1 >= (int)sizeof(lastGroup) - 1)
+                LOGEXIT("ERROR - field '%s' too long", minfo->dbField);
+
             if (memcmp(minfo->dbField, lastGroup, (firstdot-minfo->dbField)+1) == 0) {
                 minfo->dbGroupNum = groupNum;
             } else {
@@ -335,7 +347,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
             snprintf(friendlyName2, sizeof(friendlyName2), "%s Cnt", friendlyName);
             snprintf(help2, sizeof(help2), "Unique number of %s", help);
             moloch_db_add_field(group, "integer", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
-            moloch_field_by_exp_add_special_type(g_strdup(expression2), minfo->pos + MOLOCH_FIELDS_CNT_MIN, MOLOCH_FIELD_TYPE_INT);
+            moloch_field_by_exp_add_special_type(expression2, minfo->pos + MOLOCH_FIELDS_CNT_MIN, MOLOCH_FIELD_TYPE_INT);
         }
     }
 
@@ -1467,7 +1479,9 @@ void moloch_field_exit()
 {
     MolochFieldInfo_t *info;
 
+    // Remove those are in both db & exp hash
     HASH_FORALL_POP_HEAD(d_, fieldsByDb, info,
+        HASH_REMOVE(e_, fieldsByExp, info);
         g_free(info->dbFieldFull);
         g_free(info->expression);
         g_free(info->group);
@@ -1475,6 +1489,11 @@ void moloch_field_exit()
         g_free(info->category);
         g_free(info->transform);
         MOLOCH_TYPE_FREE(MolochFieldInfo_t, info);
+    );
+
+    // Remove those are only in exp
+    HASH_FORALL_POP_HEAD(d_, fieldsByExp, info,
+        g_free(info->expression);
     );
 }
 /******************************************************************************/

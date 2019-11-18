@@ -14,7 +14,7 @@
 GLIB=2.56.2
 YARA=3.10.0
 MAXMIND=1.3.2
-PCAP=1.9.0
+PCAP=1.9.1
 CURL=7.66.0
 LUA=5.3.5
 DAQ=2.0.6
@@ -144,7 +144,7 @@ else
     WITHGLIB="--with-glib2=thirdparty/glib-$GLIB"
     if [ ! -f "glib-$GLIB.tar.xz" ]; then
       GLIBDIR=$(echo $GLIB | cut -d. -f 1-2)
-      wget "http://ftp.gnome.org/pub/gnome/sources/glib/$GLIBDIR/glib-$GLIB.tar.xz"
+      wget "https://ftp.gnome.org/pub/gnome/sources/glib/$GLIBDIR/glib-$GLIB.tar.xz"
     fi
 
     if [ ! -f "glib-$GLIB/gio/.libs/libgio-2.0.a" ] || [ ! -f "glib-$GLIB/glib/.libs/libglib-2.0.a" ]; then
@@ -195,7 +195,7 @@ else
 
   # libpcap
   if [ ! -f "libpcap-$PCAP.tar.gz" ]; then
-    wget http://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
+    wget https://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
   fi
   if [ ! -f "libpcap-$PCAP/libpcap.a" ]; then
     tar zxf libpcap-$PCAP.tar.gz
@@ -213,7 +213,7 @@ else
 
   # curl
   if [ ! -f "curl-$CURL.tar.gz" ]; then
-    wget http://curl.haxx.se/download/curl-$CURL.tar.gz
+    wget https://curl.haxx.se/download/curl-$CURL.tar.gz
   fi
 
   if [ ! -f "curl-$CURL/lib/.libs/libcurl.a" ]; then
