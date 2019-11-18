@@ -542,7 +542,7 @@
                     <input type="checkbox"
                       v-model="newuser[columns[8].sort]"
                     />
-                    Packet Search
+                    Can Create Hunts
                   </label>
                 </div>
               </div>
@@ -639,6 +639,7 @@ export default {
       createError: '',
       newuser: {
         enabled: true,
+        webEnabled: true,
         packetSearch: true
       },
       msg: '',
@@ -659,7 +660,7 @@ export default {
         { name: 'Web Auth Header', sort: 'headerAuthEnabled', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled' },
         { name: 'Email Search', sort: 'emailSearch', help: 'Can perform email searches' },
         { name: 'Can Remove Data', sort: 'removeEnabled', help: 'Can delete tags or delete/scrub pcap data' },
-        { name: 'Can Search Packets', sort: 'packetSearch', help: 'Can create a packet search job (hunt)' },
+        { name: 'Can Create Hunts', sort: 'packetSearch', help: 'Can create a packet search job (hunt)' },
         { name: 'Last Used', sort: 'lastUsed', help: 'The last time this user used Moloch' },
         { additional: true, name: 'Forced Expression', sort: 'expression', help: 'A Moloch search expression that is silently added to all queries. Useful to limit what data a user can access (e.g. which nodes or IPs)' },
         { additional: true, name: 'Query Time Limit', sort: 'timeLimit', help: 'Restrict the maximum time window of a user\'s query' },

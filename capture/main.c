@@ -718,6 +718,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     config.nodeName = strdup("fuzz");
 
     hashSalt = 0;
+    pcapFileHeader.linktype = 1;
 
     moloch_free_later_init();
     moloch_hex_init();
