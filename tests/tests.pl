@@ -52,6 +52,10 @@ sub sortObj {
         if ($r eq "HASH") {
             sortObj($key, $obj->{$key});
         } elsif ($r eq "ARRAY") {
+            if (substr($key, -3) eq "ASN") {
+                $obj->{$key} = [map {s/ .+$//g; $_} @{$obj->{$key}}];
+            }
+
             next if (scalar (@{$obj->{$key}}) < 2);
             next if ($key =~ /(packetPos|packetLen|cert)/);
             if ("$parentkey.$key" =~ /.vlan|http.statuscode|icmp.type|icmp.code/) {
@@ -60,6 +64,10 @@ sub sortObj {
             } else {
                 my @tmp = sort (@{$obj->{$key}});
                 $obj->{$key} = \@tmp;
+            }
+        } else {
+            if (substr($key, -3) eq "ASN") {
+                $obj->{$key} =~ s/ .+$//g;
             }
         }
     }
@@ -155,6 +163,7 @@ my ($json) = @_;
         if ($body->{dstIp} =~ /:/) {
             $body->{dstIp} = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{dstIp})) =~ m/(....)/g );
         }
+
         if (exists $body->{dns} && exists $body->{dns}->{ip}) {
             for (my $i = 0; $i < @{$body->{dns}->{ip}}; $i++) {
                 if ($body->{dns}->{ip}[$i] =~ /:/) {
