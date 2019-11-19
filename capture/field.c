@@ -113,6 +113,7 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
 int moloch_field_define_text_full(char *field, char *text, int *shortcut)
 {
     int count = 0;
+    int utf8 = 0;
     int nolinked = 0;
     char *kind = 0;
     char *help = 0;
@@ -138,6 +139,8 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
             kind = colon;
         else if (strcmp(elements[e], "group") == 0)
             group = colon;
+        else if (strcmp(elements[e], "utf8") == 0)
+            utf8 = strcmp(colon, "true") == 0;
         else if (strcmp(elements[e], "count") == 0)
             count = strcmp(colon, "true") == 0;
         else if (strcmp(elements[e], "nolinked") == 0)
@@ -215,6 +218,9 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
             category = "ip";
     } else
         type = MOLOCH_FIELD_TYPE_STR_HASH;
+
+    if (utf8)
+        flags |= MOLOCH_FIELD_FLAG_FORCE_UTF8;
 
     if (count)
         flags |= MOLOCH_FIELD_FLAG_CNT;
