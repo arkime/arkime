@@ -30,7 +30,7 @@ comp_with_mask(void *addr, const void *dest, u_int mask)
 }
 
 /*
- * this allows imcomplete prefix 
+ * this allows incomplete prefix
  */
 int
 my_inet_pton(int af, const char *src, void *dst)
