@@ -1,7 +1,7 @@
 NOTICE: Please see https://molo.ch/faq#upgrading-moloch for upgrading info
 
 ES Versions:
-  * Moloch >= 2.0.0  supports ES >= 6.7.0, 7.x is experimental
+  * Moloch >= 2.0.0  supports ES >= 6.7.0 or >= 7.1.0
   * Moloch >= 1.5.0  supports ES >= 5.5.0, 6.x, not 7.x or later
   * Moloch >= 1.0.0  supports ES >= 5.5.0, 6.x (not prod tested, only for new installs), not 7.x or later
   * Moloch >= 0.50.0 supports ES >= 5.5.0, not 6.x or later
@@ -16,11 +16,12 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.1.0 2019/11/xx
+2.1.0 2019/11/19
   - NOTE: All viewers must be 2.1 or later for them to communicate.  If not
-          upgradeing at once set s2sSignedAuth=false in default section of config.ini
+          upgrading at once set s2sSignedAuth=false in default section of config.ini
   - release - node 10.16.3, curl 7.66.0, glib 2.59.0, libpcap 1.9.1
   - release - remove ubuntu 14 builds
+  - release - initial centos8 build
   - db - new shrink command
   - db - new --gz option to compress backups
   - capture - support named pipes better (issue #1169)
