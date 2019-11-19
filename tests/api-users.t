@@ -1,4 +1,4 @@
-use Test::More tests => 91;
+use Test::More tests => 92;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -11,6 +11,7 @@ my $pwd = "*/pcap";
 
     my $token = getTokenCookie();
     my $token2 = getTokenCookie2();
+    my $token3 = getTokenCookie('test1');
 
 # users
     my $users = viewerPost("/user/list", "");
@@ -48,6 +49,9 @@ my $pwd = "*/pcap";
     $users = viewerPost("/user/list?molochRegressionUser=test1", "");
     is (@{$users->{data}}, 1, "Check Update #1");
 
+    # Force last used to be increased
+    esGet("/_flush");
+    esGet("/_refresh");
     sleep(2);
 
     $users = viewerPost("/user/list", "");
@@ -149,20 +153,11 @@ my $pwd = "*/pcap";
     $info = viewerGet("/user/columns?molochRegressionUser=test1");
     eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item");
 
-    sleep 2;
-    esGet("/_flush");
-    esGet("/_refresh");
-
     $info = viewerPostToken("/user/columns/delete?molochRegressionUser=test1", 'name=column1', $test1Token);
     ok($info->{success}, "column: delete found");
 
-    sleep 2;
-    esGet("/_flush");
-    esGet("/_refresh");
-
     $info = viewerGet("/user/columns?molochRegressionUser=test1");
     eq_or_diff($info, from_json("[]"), "column: empty");
-
 
 # Current
     $info = viewerGet("/user/current?molochRegressionUser=test1");
@@ -188,60 +183,69 @@ my $pwd = "*/pcap";
     $info = viewerGet("/user/spiview/fields?molochRegressionUser=test1");
     eq_or_diff($info, from_json('[{"name":"sfields1","fields":["srcIp","dstIp"]}]'), "spiview fields: 1 item");
 
-    sleep(1);
-    esGet("/_refresh");
-
     $info = viewerPostToken("/user/spiview/fields/delete?molochRegressionUser=test1", 'name=sfields1', $test1Token);
     ok($info->{success}, "spiview fields: delete found");
-
-    sleep(1);
-    esGet("/_refresh");
 
     $info = viewerGet("/user/spiview/fields?molochRegressionUser=test1");
     eq_or_diff($info, from_json("[]"), "spiview fields: empty");
 
-
 # views
+
+    # No views
     $info = viewerGet("/user/views?molochRegressionUser=test1");
     eq_or_diff($info, from_json("{}"), "view: empty");
 
+    # Create view and make sure we get it
     $info = viewerPostToken("/user/views/create?molochRegressionUser=test1", '{"name": "view1", "expression": "ip == 1.2.3.4"}', $test1Token);
     ok($info->{success}, "view: create success");
     is($info->{viewName}, "view1", "view: create name");
     eq_or_diff($info->{view}, from_json('{"expression":"ip == 1.2.3.4","user":"test1","shared":false}'), "view: 1 item");
 
-    $info = viewerPostToken("/user/views/create?molochRegressionUser=test1", '{"name": "view1", "expression": "ip == 1.2.3.4"}', $test1Token);
-    ok(!$info->{success}, "view: create failure with same view name");
-
     $info = viewerGet("/user/views?molochRegressionUser=test1");
     eq_or_diff($info, from_json('{"view1":{"expression":"ip == 1.2.3.4","user":"test1","shared":false}}'), "view: 1 item");
 
+
+    # Fail duplicate create
+    $info = viewerPostToken("/user/views/create?molochRegressionUser=test1", '{"name": "view1", "expression": "ip == 1.2.3.5"}', $test1Token);
+    ok(!$info->{success}, "view: create failure with same view name");
+
+
+    # As admin see test1 views
     $info = viewerGet("/user/views?molochRegressionUser=anonymous&userId=test1");
     eq_or_diff($info, from_json('{"view1":{"expression":"ip == 1.2.3.4","user":"test1","shared":false}}'), "view: 1 item admin");
 
-    $info = viewerPostToken("/user/views/delete?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.4","user":"test1","shared":false,"name":"fred"}', $test1Token);
+
+    # Fail delete wrong name
+    $info = viewerPostToken("/user/views/delete?molochRegressionUser=test1", '{"name":"fred"}', $test1Token);
     ok(!$info->{success}, "view: delete not found");
 
+
+    # As see test1 views again
     $info = viewerGet("/user/views?molochRegressionUser=test1");
     eq_or_diff($info, from_json('{"view1":{"expression":"ip == 1.2.3.4","user":"test1","shared":false}}'), "view: 1 item");
 
-    $info = viewerPostToken("/user/views/toggleShare?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.4","user":"test1","shared":true,"name":"view1"}', $test1Token);
+
+
+    # Share the test1 view
+    $info = viewerPostToken("/user/views/toggleShare?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.7","user":"test1","shared":true,"name":"view1"}', $test1Token);
     ok($info->{success}, "view: share");
 
+    # Make sure test1 view is shared
     $info = viewerGet("/user/views?molochRegressionUser=test1");
     eq_or_diff($info, from_json('{"view1":{"expression":"ip == 1.2.3.4","user":"test1","shared":true}}'), "view: 1 shared item");
 
-    $info = viewerPostToken("/user/views/toggleShare?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.4","user":"test1","shared":false,"name":"view1"}', $test1Token);
+    # Unshare the test1 view
+    $info = viewerPostToken("/user/views/toggleShare?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.8","user":"test1","shared":false,"name":"view1"}', $test1Token);
     ok($info->{success}, "view: unshare");
 
     $info = viewerPostToken("/user/views/delete?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.4","user":"test1","shared":false,"name":"view1"}', $test1Token);
     ok($info->{success}, "view: delete found");
 
-    $info = viewerPostToken("/user/views/create?molochRegressionUser=test1", '{"name": "view2", "expression": "ip == 1.2.3.4", "shared": true}', $test1Token);
+    $info = viewerPostToken("/user/views/create?molochRegressionUser=test1", '{"name": "view2", "expression": "ip == 1.2.3.10", "shared": true}', $test1Token);
     ok($info->{success}, "view2: create success");
     is($info->{viewName}, "view2", "view2: create name");
     ok($info->{view}->{shared}, "view2: create shared");
-    eq_or_diff($info->{view}, from_json('{"expression":"ip == 1.2.3.4","user":"test1","shared":true}'), "view: 2 item");
+    eq_or_diff($info->{view}, from_json('{"expression":"ip == 1.2.3.10","user":"test1","shared":true}'), "view: 2 item");
 
     $info = viewerPostToken("/user/views/create?molochRegressionUser=test1", '{"name": "view2", "expression": "ip == 1.2.3.4", "shared": true}', $test1Token);
     ok(!$info->{success}, "view2: create failure with same shared view name");
@@ -255,6 +259,8 @@ my $pwd = "*/pcap";
 
 # Messages
     $info = viewerPutToken("/user/test1/acknowledgeMsg", '{"msgNum":2}', $token2);
+    ok(!$info->{success}, "can't update welcome message number for another user");
+    $info = viewerPutToken("/user/test1/acknowledgeMsg?molochRegressionUser=test1", '{"msgNum":2}', $token3);
     ok($info->{success}, "update welcome message number");
     $info = viewerGet("/user/current?molochRegressionUser=test1");
     eq_or_diff($info->{welcomeMsgNum}, 2, "welcome message number is correct");

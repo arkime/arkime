@@ -664,6 +664,12 @@ exports.setUser = function(name, doc, cb) {
   });
 };
 
+exports.setLastUsed = function(name, now, cb) {
+  var params = {index: internals.usersPrefix + 'users', type: 'user', body: {doc: {lastUsed: now}}, id: name};
+
+  return internals.usersElasticSearchClient.update(params, cb);
+};
+
 function twoDigitString(value) {
   return (value < 10) ? ("0" + value) : value.toString();
 }

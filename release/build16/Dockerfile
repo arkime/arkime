@@ -3,7 +3,7 @@ MAINTAINER Andy Wick <andy.wick@oath.com>
 
 RUN apt-get update && \
 apt-get install -y ruby-dev make python-pip git libtest-differences-perl sudo openjdk-8-jre-headless wget libjson-pp-perl tzdata wget lsb-release && \
-(cd /tmp; wget http://apt-stable.ntop.org/16.04/all/apt-ntop-stable.deb; dpkg -i apt-ntop-stable.deb) && \
+(cd /tmp; wget https://packages.ntop.org/apt-stable/16.04/all/apt-ntop-stable.deb; dpkg -i apt-ntop-stable.deb) && \
 apt-get update && \
 apt-get install -y pfring && \
 apt-get -f install && \
