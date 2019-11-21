@@ -51,6 +51,8 @@ if(esClientKey) {
 
 var clients = {};
 var nodes = [];
+var clusters = {};
+var activeESNodes = [];
 var httpAgent  =  new http.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 100});
 var httpsAgent =  new https.Agent(Object.assign({keepAlive: true, keepAliveMsecs:5000, maxSockets: 100}, esSSLOptions));
 
@@ -117,14 +119,57 @@ function node2Prefix(node) {
   return "";
 }
 
-var activeESNodes = [];
+function removeClusterFromQueryUrl(url) {
+  var base = url.split("?")[0];
+  var query = url.split("?")[1];
+  if(query) {
+    var query_array = query.split("&");
+    var newQuery = [];
+    for (var i = 0; i < query_array.length; i++) {
+      if(query_array[i].indexOf('_cluster') == -1) {
+        newQuery.push(query_array[i]);
+      }
+    }
+   newQuery = newQuery.join('&');
+   newQuery = newQuery.length > 0 ? '?' + newQuery : newQuery;
+   query = newQuery;
+  }
+  url = base + query;
+  return url;
+}
 
-function getActiveNodes(){
-  return activeESNodes.slice();
+
+function getActiveNodes(clusterin){
+  if(clusterin) {
+    if(!Array.isArray(clusterin)) {
+      clusterin = [clusterin];
+    }
+    var tmp_nodes = [];
+    for(var i = 0; i < clusterin.length; i++) {
+      if(clusters[clusterin[i]]) { // cluster -> node
+        tmp_nodes.push(clusters[clusterin[i]]);
+      }
+    }
+    var active_nodes = [];
+    activeESNodes.slice().forEach((node) => {
+      if(tmp_nodes.includes(node)) {
+        active_nodes.push(node);
+      }
+    });
+    return active_nodes;
+  } else {
+    return activeESNodes.slice();
+  }
 }
 
 function simpleGather(req, res, bodies, doneCb) {
-  var nodes = getActiveNodes();
+  var cluster = null;
+  if(req.query._cluster) {
+    cluster = Array.isArray(req.query._cluster) ? req.query._cluster : req.query._cluster.split(",");
+    req.url = removeClusterFromQueryUrl(req.url);
+    delete req.query._cluster;
+  }
+  var nodes = getActiveNodes(cluster);
   async.map(nodes, (node, asyncCb) => {
     var result = "";
     var url = node2Url(node) + req.url;
@@ -154,6 +199,7 @@ function simpleGather(req, res, bodies, doneCb) {
           result = {};
         }
         result._node = node;
+        result.clusterName = clusters[node];
         asyncCb(null, result);
       });
     });
@@ -545,6 +591,7 @@ function combineResults(obj, result) {
   if (result.hits.hits) {
     for (var i = 0; i < result.hits.hits.length; i++) {
       result.hits.hits[i]._node = result._node;
+      result.hits.hits[i]._source.clusterName = result.clusterName;
     }
     obj.hits.hits = obj.hits.hits.concat(result.hits.hits);
   }
@@ -797,6 +844,12 @@ nodes.forEach((node) => {
     }
   });
 });
+
+// Maintain a mapping of node to cluster and cluster to node
+for (var i = 0; i < nodes.length; i++) {
+  clusters[nodes[i]] = Config.get("multiESClusters", "").split(";")[i]; // node -> cluster
+  clusters[Config.get("multiESClusters", "").split(";")[i]] = nodes[i]; // cluster -> node
+}
 
 activeESNodes = nodes.slice();
 

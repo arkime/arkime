@@ -82,14 +82,16 @@ export default {
 
   /**
    * Gets details about the session
-   * @param {string} id         The unique id of the session
-   * @param {string} node       The node that the session belongs to
+   * @param {string} id             The unique id of the session
+   * @param {string} node           The node that the session belongs to
+   * @param {string} cluster        The ES cluster that the session belongs to
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getDetail: function (id, node) {
+  getDetail: function (id, node, cluster) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`${node}/session/${id}/detail`)
+      let url = cluster ? `${node}/session/${id}/detail?cluster=${cluster}` : `${node}/session/${id}/detail`;
+      Vue.axios.get(url)
         .then((response) => {
           resolve(response);
         }, (error) => {
