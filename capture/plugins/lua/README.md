@@ -173,6 +173,21 @@ Used usually inside a classify callback this function registers that the entire 
 Return a table that can be used to set/get lua variables to share state across all callbacks for session
 * returns = a lua table
 
+### session.protocol
+Returns a string containing the protocol. Since this is HTTP is is always (?) "tcp"
+
+### session.addr1
+Returns a string containing the source IP address.
+
+### session.addr2
+Returns a string containing the destination IP address.
+
+### session.port
+Returns the source port as a number.
+
+### session.port
+Returns the destination port as a number.
+
 
 ## MolochHttpService
 

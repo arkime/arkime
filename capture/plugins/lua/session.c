@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 #include "molua.h"
+#include <arpa/inet.h>
 /******************************************************************************/
 
 extern lua_State *Ls[MOLOCH_MAX_PACKET_THREADS];
@@ -503,7 +504,74 @@ LOCAL int MS_table(lua_State *L)
     return 1;
 }
 /******************************************************************************/
-void luaopen_molochsession(lua_State *L)
+LOCAL int MSP_get_addr1(lua_State *L)
+{
+    MolochSession_t *session = checkMolochSession(L, 1);
+
+    char addrbuf[INET6_ADDRSTRLEN];
+    const char *result;
+    if (MOLOCH_SESSION_v6(session)) {
+        result = inet_ntop(AF_INET6, &session->addr1, addrbuf, INET6_ADDRSTRLEN);
+    } else {
+        result = inet_ntop(AF_INET, &MOLOCH_V6_TO_V4(session->addr1), addrbuf, INET6_ADDRSTRLEN);
+    }
+    if (!result) {
+        return luaL_error(L, "Failed to convert IP address to text");
+    }
+    lua_pushstring(L, result);
+    return 1;
+}
+/******************************************************************************/
+LOCAL int MSP_get_port1(lua_State *L)
+{
+    MolochSession_t *session = checkMolochSession(L, 1);
+    lua_pushnumber(L, session->port1);
+    return 1;
+}
+/******************************************************************************/
+LOCAL int MSP_get_addr2(lua_State *L)
+{
+    MolochSession_t *session = checkMolochSession(L, 1);
+
+    char addrbuf[INET6_ADDRSTRLEN];
+    const char *result;
+    if (MOLOCH_SESSION_v6(session)) {
+        result = inet_ntop(AF_INET6, &session->addr2, addrbuf, INET6_ADDRSTRLEN);
+    } else {
+        result = inet_ntop(AF_INET, &MOLOCH_V6_TO_V4(session->addr2), addrbuf, INET6_ADDRSTRLEN);
+    }
+    if (!result) {
+        return luaL_error(L, "Failed to convert IP address to text");
+    }
+    lua_pushstring(L, result);
+    return 1;
+}
+/******************************************************************************/
+LOCAL int MSP_get_port2(lua_State *L)
+{
+    MolochSession_t *session = checkMolochSession(L, 1);
+    lua_pushnumber(L, session->port2);
+    return 1;
+}
+/******************************************************************************/
+LOCAL int MSP_get_protocol(lua_State *L)
+{
+    MolochSession_t *session = checkMolochSession(L, 1);
+    char pnum[16];
+    const char *protocol = pnum;
+    switch (session->protocol) {
+        case 6:
+            protocol = "tcp";
+            break;
+        default:
+            sprintf(pnum, "%d", session->protocol);
+            break;
+    }
+    lua_pushstring(L, protocol);
+    return 1;
+}
+/******************************************************************************/
+LOCAL int MSP__index(lua_State *L)
 {
     static const struct luaL_Reg methods[] = {
         {"__tostring", MS_tostring},
@@ -516,6 +584,39 @@ void luaopen_molochsession(lua_State *L)
         {"incr_outstanding", MS_incr_outstanding},
         {"decr_outstanding", MS_decr_outstanding},
         {"table", MS_table},
+        { NULL, NULL }
+    };
+
+    static const struct luaL_Reg fields[] = {
+        {"addr1", MSP_get_addr1},
+        {"addr2", MSP_get_addr2},
+        {"port1", MSP_get_port1},
+        {"port2", MSP_get_port2},
+        {"protocol", MSP_get_protocol},
+        { NULL, NULL }
+    };
+    const char *field = lua_tostring(L, 2);
+
+    for (int i = 0; fields[i].name; i++) {
+        if (strcmp(fields[i].name, field) == 0) {
+            return fields[i].func(L);
+        }
+    }
+
+    for (int i = 0; methods[i].name; i++) {
+        if (strcmp(methods[i].name, field) == 0) {
+            lua_pushcfunction(L, methods[i].func);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+/******************************************************************************/
+void luaopen_molochsession(lua_State *L)
+{
+    static const struct luaL_Reg methods[] = {
+        {"__index", MSP__index},
         { NULL, NULL }
     };
     static const struct luaL_Reg functions[] = {
