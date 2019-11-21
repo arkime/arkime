@@ -4412,7 +4412,7 @@ app.get('/sessions.json', [noCacheJson, recordResponseTime, logAction('sessions'
 
   let options = {};
   if (req.query.cancelId) { options = { cancelId: `${req.user.userId}::${req.query.cancelId}` }; }
-  if (req.query.cluster) { options._cluster = req.query.cluster; }
+  if (req.query.cluster && Config.get('multiES', false)) { options._cluster = req.query.cluster; }
 
   buildSessionQuery(req, function (bsqErr, query, indices) {
     if (bsqErr) {
@@ -5770,7 +5770,8 @@ function localSessionDetail(req, res) {
  * Get SPI data for a session
  */
 app.get('/:nodeName/session/:id/detail', cspHeader, logAction(), (req, res) => {
-  var options = req.query.cluster ? {_cluster: req.query.cluster} : {};
+  var options = {};
+  if (req.query.cluster && Config.get('multiES', false)) { options._cluster = req.query.cluster; }
   Db.getWithOptions(Db.sid2Index(req.params.id), 'session', Db.sid2Id(req.params.id), {}, function(err, session) {
     if (err || !session.found) {
       return res.end("Couldn't look up SPI data, error for session " + safeStr(req.params.id) + " Error: " +  err);
