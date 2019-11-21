@@ -8314,22 +8314,22 @@ app.get('/:nodeName/session/:id/cyberchef', checkPermissions(['webEnabled']), ch
 
 app.get("/ccsenabled", (req, res) => {
   var crossClusterSearchEnabled = false;
-  if (Config.get("crossClusterES", false)) {
+  if (Config.get("multiES", false)) {
     crossClusterSearchEnabled = true;
   }
   res.send(crossClusterSearchEnabled);
-})
+});
 
 app.get("/esclusters", (req, res) => {
-  const clusters = [];
-  if (Config.get("crossClusterES", false) && Config.get("esCrossClusters", undefined) !== undefined) {
-    const esCrossClusters = Config.get("esCrossClusters");
-    for (var i = 0; i < esCrossClusters.split(";").length; i++) {
-      clusters.push(esCrossClusters.split(";")[i].split(",")[0]);
+  var clusters = [];
+  if (Config.get("multiES", false)) {
+    var esClusters = Config.get("multiESClusters").split(";");
+    for (var i = 0; i < esClusters.length; i++) {
+      clusters.push(esClusters[i]);
     }
   }
   res.send(clusters);
-})
+});
 
 //////////////////////////////////////////////////////////////////////////////////
 // Vue app

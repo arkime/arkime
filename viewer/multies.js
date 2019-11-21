@@ -126,7 +126,7 @@ function removeClusterFromQueryUrl(url) {
     var query_array = query.split("&");
     var newQuery = [];
     for (var i = 0; i < query_array.length; i++) {
-      if(query_array[i].indexOf('_cluster') == -1) {
+      if(query_array[i].indexOf('_cluster') === -1) {
         newQuery.push(query_array[i]);
       }
     }
