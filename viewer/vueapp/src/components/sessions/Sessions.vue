@@ -593,7 +593,8 @@ export default {
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         view: this.$route.query.view || undefined,
-        expression: this.$store.state.expression || undefined
+        expression: this.$store.state.expression || undefined,
+        cluster: this.$route.query.cluster || []
       };
     },
     sorts: {
@@ -1299,7 +1300,6 @@ export default {
       // create unique cancel id to make canel req for corresponding es task
       const cancelId = Utils.createRandomString();
       this.query.cancelId = cancelId;
-
       const source = Vue.axios.CancelToken.source();
       const cancellablePromise = SessionsService.get(this.query, source.token);
 
