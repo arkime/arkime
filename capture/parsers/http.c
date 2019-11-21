@@ -346,7 +346,9 @@ LOCAL int moloch_hp_cb_on_header_value (http_parser *parser, const char *at, siz
     if ((http->inValue & (1 << http->which)) == 0) {
         http->inValue |= (1 << http->which);
 
-        char *lower = g_ascii_strdown(http->header[http->which], -1);
+        const char *header = http->header[http->which];
+        moloch_plugins_cb_hp_ohfr(session, parser, header, strlen(header));
+        char *lower = g_ascii_strdown(header, -1);
         moloch_plugins_cb_hp_ohf(session, parser, lower, strlen(lower));
 
         if (http->which == http->urlWhich)

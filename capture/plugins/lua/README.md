@@ -41,6 +41,12 @@ Generic body feed function
 * session = A MolochSession object
 * data = A MolochData object with the next chunk of binary data
 
+### httpCallbackFunction(session, data, direction)
+Generic http callback function
+* session = A MolochSession object
+* data = A MolochData object with the next chunk of data (or nil if not applicable)
+* direction = 0 if this is a Request, 1 if this is a Response
+
 ## Moloch
 Moloch.expression_to_fieldId(fieldExpression)
 Look up a field expression and return the fieldId
@@ -110,7 +116,20 @@ Add a UDP classifier to match initial session packets against.
 ### MolochSession.register_body_feed(type, bodyFeedFunctionName)
 Register to receive a feed of chunks of data from payload bodies
 * type = The type of body feed to receive ("http", "smtp")
-* bodyFeedFunctionName = the string name of the lua function to call.  Function should implmenet that bodyFeedFunction signature above.
+* bodyFeedFunctionName = the string name of the lua function to call.  Function should implement the bodyFeedFunction signature above.
+
+### MolochSession.http_on(type, httpCallbackFunctionName)
+Register to receive a feed of data from the http parser. There are eight different types of callback.
+* type = the type of callback to register. This should be one of the constants:
+        * MolochSession.HTTP.MESSAGE_BEGIN
+        * MolochSession.HTTP.URL
+        * MolochSession.HTTP.HEADER_FIELD
+        * MolochSession.HTTP.HEADER_FIELD_RAW -- this is just like HEADER_FIELD except that the string is not lower-cased.
+        * MolochSession.HTTP.HEADER_VALUE
+        * MolochSession.HTTP.HEADERS_COMPLETE
+        * MolochSession.HTTP.BODY
+        * MolochSession.HTTP.MESSAGE_COMPLETE
+* httpCallbackFunctionName = the string name of the lua function to call.  Function should implement the httpCallbackFunction signature above. If there is no data (HEADERS_COMPLETE, MESSAGE_COMPLETE) then the data argument will be nil and can be ignored. The method string is passed into the MESSAGE_BEGIN callback on the request side.
 
 
 

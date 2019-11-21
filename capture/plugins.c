@@ -48,6 +48,7 @@ typedef struct moloch_plugin {
     MolochPluginHttpFunc         on_message_begin;
     MolochPluginHttpDataFunc     on_url;
     MolochPluginHttpDataFunc     on_header_field;
+    MolochPluginHttpDataFunc     on_header_field_raw;
     MolochPluginHttpDataFunc     on_header_value;
     MolochPluginHttpFunc         on_headers_complete;
     MolochPluginHttpDataFunc     on_body;
@@ -214,6 +215,27 @@ void moloch_plugins_set_http_cb(const char *             name,
                                 MolochPluginHttpDataFunc on_body,
                                 MolochPluginHttpFunc     on_message_complete)
 {
+    moloch_plugins_set_http_ext_cb(name,
+                                   on_message_begin,
+                                   on_url,
+                                   on_header_field,
+                                   NULL,
+                                   on_header_value,
+                                   on_headers_complete,
+                                   on_body,
+                                   on_message_complete);
+}
+/******************************************************************************/
+void moloch_plugins_set_http_ext_cb(const char *             name,
+                                    MolochPluginHttpFunc     on_message_begin,
+                                    MolochPluginHttpDataFunc on_url,
+                                    MolochPluginHttpDataFunc on_header_field,
+                                    MolochPluginHttpDataFunc on_header_field_raw,
+                                    MolochPluginHttpDataFunc on_header_value,
+                                    MolochPluginHttpFunc     on_headers_complete,
+                                    MolochPluginHttpDataFunc on_body,
+                                    MolochPluginHttpFunc     on_message_complete)
+{
     MolochPlugin_t *plugin;
 
     HASH_FIND(p_, plugins, name, plugin);
@@ -233,6 +255,10 @@ void moloch_plugins_set_http_cb(const char *             name,
     plugin->on_header_field = on_header_field;
     if (on_header_field)
         pluginsCbs |= MOLOCH_PLUGIN_HP_OHF;
+
+    plugin->on_header_field_raw = on_header_field_raw;
+    if (on_header_field)
+        pluginsCbs |= MOLOCH_PLUGIN_HP_OHFR;
 
     plugin->on_header_value = on_header_value;
     if (on_header_value)
@@ -364,6 +390,16 @@ void moloch_plugins_cb_hp_ohf(MolochSession_t *session, http_parser *parser, con
     HASH_FORALL(p_, plugins, plugin,
         if (plugin->on_header_field)
             plugin->on_header_field(session, parser, at, length);
+    );
+}
+/******************************************************************************/
+void moloch_plugins_cb_hp_ohfr(MolochSession_t *session, http_parser *parser, const char *at, size_t length)
+{
+    MolochPlugin_t *plugin;
+
+    HASH_FORALL(p_, plugins, plugin,
+        if (plugin->on_header_field_raw)
+            plugin->on_header_field_raw(session, parser, at, length);
     );
 }
 /******************************************************************************/
