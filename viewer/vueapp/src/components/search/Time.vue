@@ -243,6 +243,16 @@
       </strong>
     </div> <!-- /human readable time range or error -->
 
+    <!-- cluster select-->
+    <div v-if="crossClusterSearchEnabled">
+      <b-dropdown id="cross-cluster" text="Clusters" class="m-md-2" size="sm">
+        <!-- .bg-white and .text-body suppress .dropdown-item.active and .dropdown-item:active styles -->
+        <div class="dropdown-item bg-white text-body">
+          <b-form-checkbox-group stacked v-model="currentNode" name="nodes" :options="crossClusters" @change="changeNode"/>
+        </div>
+      </b-dropdown>
+    </div><!-- /cluster select-->
+
   </div>
 
 </template>
@@ -253,6 +263,7 @@ import FocusInput from '../utils/FocusInput';
 import datePicker from 'vue-bootstrap-datetimepicker';
 import 'pc-bootstrap4-datetimepicker/build/css/bootstrap-datetimepicker.css';
 import moment from 'moment-timezone';
+import SessionService from '../sessions/SessionsService';
 
 const hourSec = 3600;
 let currentTimeSec;
@@ -276,6 +287,9 @@ export default {
       timeError: '',
       timeBounding: this.$route.query.bounding || 'last',
       timeInterval: this.$route.query.interval || 'auto',
+      crossClusters: [],
+      currentNode: this.$route.query.cluster,
+      crossClusterSearchEnabled: false,
       // use start/stop time localized to this component so that the time
       // watcher can compare time values to local (unaffected) start/stop times
       localStopTime: undefined,
@@ -367,6 +381,8 @@ export default {
   },
   created: function () {
     this.setCurrentTime();
+    this.getClusterInformation();
+    this.getCrossClusterSearchEnabled();
 
     let date = this.$route.query.date;
     // if no time params exist, default to last hour
@@ -724,6 +740,11 @@ export default {
         this.timeInterval = newParams.interval || 'auto';
       }
 
+      if (newParams.cluster !== oldParams.cluster) {
+        change = true;
+        this.cluster = newParams.cluster || 'all';
+      }
+
       if (newParams.date !== oldParams.date) {
         change = true;
         if (newParams.date !== this.timeRange) {
@@ -770,6 +791,35 @@ export default {
       }
 
       if (change) { this.$emit('timeChange'); }
+    },
+    getClusterInformation: function () {
+      SessionService.getClusters()
+        .then((response) => {
+          this.crossClusters = response;
+          this.currentNode = this.$route.query.cluster || this.crossClusters;
+        });
+    },
+    updateClustersSelected: function () {
+      SessionService.getClusters()
+        .then((response) => {
+          this.currentNode = response;
+        });
+    },
+    changeNode: function () {
+      setTimeout(() => {
+        this.$router.push({
+          query: {
+            ...this.$route.query,
+            cluster: this.currentNode !== this.crossClusters ? this.currentNode : this.crossClusters
+          }
+        });
+      }, 100);
+    },
+    getCrossClusterSearchEnabled: function () {
+      SessionService.crossClusterEnabled()
+        .then((response) => {
+          this.crossClusterSearchEnabled = response;
+        });
     }
   },
   beforeDestroy: function () {

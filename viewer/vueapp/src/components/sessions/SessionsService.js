@@ -26,7 +26,8 @@ export default {
         bounding: true,
         interval: true,
         cancelId: true,
-        expression: true
+        expression: true,
+        cluster: true
       };
 
       if (query) {
@@ -52,6 +53,15 @@ export default {
             const item = query.fields[i];
             params.fields += item;
             if (i < len - 1) { params.fields += ','; }
+          }
+        }
+
+        if (query.cluster && query.cluster.length) {
+          params.cluster = '';
+          for (let i = 0, len = query.cluster.length; i < len; ++i) {
+            const item = query.cluster[i];
+            params.cluster += item;
+            if (i < len - 1) { params.cluster += ','; }
           }
         }
       }
@@ -424,6 +434,27 @@ export default {
       method: method,
       params: params
     };
+  },
+  getClusters: function () {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get('esclusters')
+        .then((response) => {
+          resolve(response.data);
+        }, (error) => {
+          reject(error);
+        });
+    });
+  },
+
+  crossClusterEnabled: function () {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get('ccsenabled')
+        .then((response) => {
+          resolve(response.data);
+        }, (error) => {
+          reject(error);
+        });
+    });
   }
 
 };
