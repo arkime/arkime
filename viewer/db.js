@@ -1006,13 +1006,26 @@ exports.getSequenceNumber = function (name, cb) {
   });
 };
 
-exports.numberOfDocuments = function (index, cb) {
+exports.numberOfDocuments = function (index, options, cb) {
+
+  if (!cb && typeof options === 'function') {
+    cb = options;
+    options = undefined;
+  }
+
+  let params = {
+    index: fixIndex(index),
+    ignoreUnavailable: true
+  };
+
+  exports.merge(params, options);
+
   if (cb === undefined) {
     // Promise version
-    return internals.elasticSearchClient.count({index: fixIndex(index), ignoreUnavailable:true});
+    return internals.elasticSearchClient.count(params);
   } else {
     // cb version - remove in future
-    internals.elasticSearchClient.count({index: fixIndex(index), ignoreUnavailable:true}, (err, result) => {
+    internals.elasticSearchClient.count(params, (err, result) => {
       if (err || result.error) {
         return cb(null, 0);
       }

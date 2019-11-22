@@ -4457,7 +4457,7 @@ app.get('/sessions.json', [noCacheJson, recordResponseTime, logAction('sessions'
     }
 
     Promise.all([Db.searchPrimary(indices, 'session', query, options),
-                 Db.numberOfDocuments('sessions2-*'),
+                 Db.numberOfDocuments('sessions2-*', options._cluster ? {_cluster: options._cluster} : {}),
                  Db.healthCachePromise()
     ]).then(([sessions, total, health]) => {
       if (Config.debug) {
