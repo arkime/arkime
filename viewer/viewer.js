@@ -65,7 +65,7 @@ var app = express();
 //// Config
 //////////////////////////////////////////////////////////////////////////////////
 var internals = {
-  CYBERCHEFVERSION: '9.4.0',
+  CYBERCHEFVERSION: '9.11.7',
   elasticBase: Config.get("elasticsearch", "http://localhost:9200").split(","),
   esQueryTimeout: Config.get("elasticsearchTimeout", 300) + 's',
   userNameHeader: Config.get("userNameHeader"),
@@ -8309,6 +8309,24 @@ if (Config.get("regressionTests")) {
 //////////////////////////////////////////////////////////////////////////////////
 // Cyberchef
 //////////////////////////////////////////////////////////////////////////////////
+/* cyberchef endpoint - loads the src or dst packets for a session and
+ * sends them to cyberchef */
+app.get('/cyberchef/:nodeName/session/:id', checkPermissions(['webEnabled']), checkProxyRequest, unsafeInlineCspHeader, (req, res) => {
+  processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
+    if (err) {
+      console.log(`ERROR - /${req.params.nodeName}/session/${req.params.id}/cyberchef`, err);
+      return res.end("Error - " + err);
+    }
+
+    let data = '';
+    for (let i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
+      data += results[i].data.toString('hex');
+    }
+
+    res.send({ data: data });
+  });
+});
+
 app.use('/cyberchef/', unsafeInlineCspHeader, (req, res) => {
   let found = false;
   let path = req.path.substring(1);
@@ -8331,24 +8349,6 @@ app.use('/cyberchef/', unsafeInlineCspHeader, (req, res) => {
         res.status(404).end('Page not found');
       }
     });
-});
-
-/* cyberchef endpoint - loads the src or dst packets for a session and
- * sends them to cyberchef */
-app.get('/:nodeName/session/:id/cyberchef', checkPermissions(['webEnabled']), checkProxyRequest, unsafeInlineCspHeader, (req, res) => {
-  processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
-    if (err) {
-      console.log(`ERROR - /${req.params.nodeName}/session/${req.params.id}/cyberchef`, err);
-      return res.end("Error - " + err);
-    }
-
-    let data = '';
-    for (let i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
-      data += results[i].data.toString('hex');
-    }
-
-    res.render('cyberchef.pug', { value: data });
-  });
 });
 
 //////////////////////////////////////////////////////////////////////////////////
