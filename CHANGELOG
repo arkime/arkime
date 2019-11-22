@@ -16,11 +16,16 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.1.0 2019/11/xx
+2.1.1 2019/12/XX
+  - wise - fix view duplication when reload tagger file (#1315)
+  - capture - string fields created with wise/custom-fields are now assumed utf8
+
+2.1.0 2019/11/19
   - NOTE: All viewers must be 2.1 or later for them to communicate.  If not
           upgrading at once set s2sSignedAuth=false in default section of config.ini
   - release - node 10.16.3, curl 7.66.0, glib 2.59.0, libpcap 1.9.1
   - release - remove ubuntu 14 builds
+  - release - initial centos8 build
   - db - new shrink command
   - db - new --gz option to compress backups
   - capture - support named pipes better (issue #1169)

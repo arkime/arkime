@@ -87,6 +87,7 @@ my $ESTIMEOUT=60;
 my $UPGRADEALLSESSIONS = 1;
 my $DOHOTWARM = 0;
 my $WARMAFTER = -1;
+my $WARMKIND = "daily";
 my $OPTIMIZEWARM = 0;
 my $TYPE = "string";
 my $SHARED = 0;
@@ -2924,6 +2925,12 @@ sub parseArgs {
         } elsif ($ARGV[$pos] eq "--warmafter") {
             $pos++;
             $WARMAFTER = int($ARGV[$pos]);
+            $WARMKIND = $ARGV[2];
+            if (substr($ARGV[$pos], -6) eq "hourly") {
+                $WARMKIND = "hourly";
+            } elsif (substr($ARGV[$pos], -5) eq "daily") {
+                $WARMKIND = "daily";
+            }
         } elsif ($ARGV[$pos] eq "--optimizewarm") {
             $OPTIMIZEWARM = 1;
         } elsif ($ARGV[$pos] eq "--shared") {
@@ -3122,7 +3129,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     parseArgs(4);
 
     my $startTime = mktimegm(@startTime);
-    my @warmTime = kind2time($ARGV[2], $WARMAFTER);
+    my @warmTime = kind2time($WARMKIND, $WARMAFTER);
     my $warmTime = mktimegm(@warmTime);
     my $optimizecnt = 0;
     my $warmcnt = 0;

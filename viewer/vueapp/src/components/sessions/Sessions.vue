@@ -309,6 +309,10 @@
                     @click="fieldExists(header.exp, '==')">
                     Add {{ header.friendlyName }} EXISTS! to query
                   </b-dropdown-item>
+                  <b-dropdown-item
+                    @click="pivot(header.dbField, header.exp)">
+                    Pivot on {{ header.friendlyName }}
+                  </b-dropdown-item>
                 </template> <!-- /single field column -->
                 <!-- multiple field column -->
                 <template v-else-if="header.children && header.type !== 'seconds'">
@@ -342,6 +346,10 @@
                       <b-dropdown-item
                         @click="fieldExists(child.exp, '==')">
                         Add {{ child.friendlyName }} EXISTS! to query
+                      </b-dropdown-item>
+                      <b-dropdown-item
+                        @click="pivot(child.dbField, child.exp)">
+                        Pivot on {{ child.friendlyName }}
                       </b-dropdown-item>
                     </template>
                   </span>
@@ -1124,6 +1132,36 @@ export default {
      */
     exportUnique: function (exp, counts) {
       SessionsService.exportUniqueValues(exp, counts, this.$route.query);
+    },
+    /**
+     * Opens a new sessions page with a list of values as the search expression
+     * @param {string} dbField  The key to access the data from sessions
+     * @param {string} exp      The field to add to the search expression
+     */
+    pivot: function (dbField, exp) {
+      let values = [];
+      let existingVals = {}; // save map of existing values for deduping
+      for (let session of this.sessions.data) {
+        if (session[dbField]) {
+          let value = session[dbField];
+          if (existingVals[value]) { continue; }
+          values.push(value);
+          existingVals[value] = true;
+        }
+      }
+
+      const valueStr = `[${values.join(',')}]`;
+      const expression = this.$options.filters.buildExpression(exp, valueStr, '==');
+
+      const routeData = this.$router.resolve({
+        path: '/sessions',
+        query: {
+          ...this.$route.query,
+          expression: expression
+        }
+      });
+
+      window.open(routeData.href, '_blank');
     },
     /**
      * Adds field == EXISTS! to the search expression
