@@ -461,7 +461,9 @@ exports.tasks = function(cb) {
 };
 
 exports.taskCancel = function(taskId, cb) {
-  return internals.elasticSearchClient.tasks.cancel({taskId: taskId}, cb);
+  let params = {};
+  if (taskId) { params.taskId = taskId; }
+  return internals.elasticSearchClient.tasks.cancel(params, cb);
 };
 
 exports.nodesStats = function (options, cb) {

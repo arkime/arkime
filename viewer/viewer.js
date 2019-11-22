@@ -3652,6 +3652,12 @@ app.post('/estask/cancelById', [noCacheJson, logAction(), checkCookieToken, chec
   });
 });
 
+app.post('/estask/cancelAll', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
+  Db.taskCancel(undefined, (err, result) => {
+    return res.send(JSON.stringify({ success: true, text: result }));
+  });
+});
+
 app.get('/esshard/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie], (req, res) => {
   Promise.all([
     Db.shards(),
