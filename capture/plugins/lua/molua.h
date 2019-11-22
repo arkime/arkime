@@ -17,6 +17,7 @@ typedef struct {
     const char   *str;
     int           len;
     uint8_t       needFree;
+    uint8_t       invalid;              // True if the pointer is no longer valid
 } MD_t;
 
 #define MOLUA_REF_MAX_CNT 32
@@ -43,6 +44,7 @@ typedef struct {
 
 MD_t *molua_pushMolochData (lua_State *L, const char *str, int len);
 void *molua_pushMolochSession (lua_State *L, const MolochSession_t *session);
+void MD_markInvalid(lua_State *L, int index);
 
 extern int molua_pluginIndex;
 

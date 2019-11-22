@@ -54,7 +54,7 @@ Look up a field expression and return the fieldId
 * returns = the fieldId
 
 ## MolochData
-A MolochData object is a wrapper for a C string that has access to pcre and other commands.  The main purpose is so we don't have to copy strings back and forth from lua and C.  The object can NOT be saved in a table or used in a closure directly, however a :copy version can be.
+A MolochData object is a wrapper for a C string that has access to pcre and other commands.  The main purpose is so we don't have to copy strings back and forth from lua and C.  The object can NOT be saved in a table or used in a closure directly, however a :copy version can be. It will throw an error if this rule is violated.
 ### MolochData.pcre_create(str)
 Create a PCRE pattern to use for matching
 * str = the expression
@@ -121,14 +121,14 @@ Register to receive a feed of chunks of data from payload bodies
 ### MolochSession.http_on(type, httpCallbackFunctionName)
 Register to receive a feed of data from the http parser. There are eight different types of callback.
 * type = the type of callback to register. This should be one of the constants:
-        * MolochSession.HTTP.MESSAGE_BEGIN
-        * MolochSession.HTTP.URL
-        * MolochSession.HTTP.HEADER_FIELD
-        * MolochSession.HTTP.HEADER_FIELD_RAW -- this is just like HEADER_FIELD except that the string is not lower-cased.
-        * MolochSession.HTTP.HEADER_VALUE
-        * MolochSession.HTTP.HEADERS_COMPLETE
-        * MolochSession.HTTP.BODY
-        * MolochSession.HTTP.MESSAGE_COMPLETE
+  - MolochSession.HTTP.MESSAGE_BEGIN
+  - MolochSession.HTTP.URL
+  - MolochSession.HTTP.HEADER_FIELD
+  - MolochSession.HTTP.HEADER_FIELD_RAW -- this is just like HEADER_FIELD except that the string is not lower-cased.
+  - MolochSession.HTTP.HEADER_VALUE
+  - MolochSession.HTTP.HEADERS_COMPLETE
+  - MolochSession.HTTP.BODY
+  - MolochSession.HTTP.MESSAGE_COMPLETE
 * httpCallbackFunctionName = the string name of the lua function to call.  Function should implement the httpCallbackFunction signature above. If there is no data (HEADERS_COMPLETE, MESSAGE_COMPLETE) then the data argument will be nil and can be ignored. The method string is passed into the MESSAGE_BEGIN callback on the request side.
 
 

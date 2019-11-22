@@ -172,13 +172,18 @@ void molua_http_cb (int callback_type, MolochSession_t *session, http_parser *hp
         if (mp && mp->callbackOff[callback_type] & (1 << i))
             continue;
 
-        lua_getglobal(L, callbackRefs[callback_type][i]);
-        molua_pushMolochSession(L, session);
+        uint8_t isMolochData;
+
         if (at) {
             molua_pushMolochData(L, at, length);
+            isMolochData = 1;
         } else {
             lua_pushnil(L);
+            isMolochData = 0;
         }
+        lua_getglobal(L, callbackRefs[callback_type][i]);
+        molua_pushMolochSession(L, session);
+        lua_pushvalue(L, -3);
         lua_pushnumber(L, hp->type == HTTP_REQUEST ? 0 : 1);
 
         if (lua_pcall(L, 3, 1, 0) != 0) {
@@ -193,7 +198,10 @@ void molua_http_cb (int callback_type, MolochSession_t *session, http_parser *hp
             }
             mp->callbackOff[callback_type] |= (1 << i);
         }
-        lua_pop(L, 1);
+        if (isMolochData) {
+            MD_markInvalid(L, -2);
+        }
+        lua_pop(L, 2);
     }
 }
 /******************************************************************************/
@@ -206,9 +214,10 @@ void molua_http_on_body_cb (MolochSession_t *session, http_parser *hp, const cha
         if (mp && mp->callbackOff[MOLUA_REF_HTTP] & (1 << i))
             continue;
 
+        molua_pushMolochData(L, at, length);
         lua_getglobal(L, callbackRefs[MOLUA_REF_HTTP][i]);
         molua_pushMolochSession(L, session);
-        molua_pushMolochData(L, at, length);
+        lua_pushvalue(L, -3);
 
         if (lua_pcall(L, 2, 1, 0) != 0) {
             molua_stackDump(L);
@@ -222,7 +231,8 @@ void molua_http_on_body_cb (MolochSession_t *session, http_parser *hp, const cha
             }
             mp->callbackOff[MOLUA_REF_HTTP] |= (1 << i);
         }
-        lua_pop(L, 1);
+        MD_markInvalid(L, -2);
+        lua_pop(L, 2);
     }
 
     // We have two ways of doing this callback
