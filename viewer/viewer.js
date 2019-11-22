@@ -66,7 +66,7 @@ var app = express();
 //////////////////////////////////////////////////////////////////////////////////
 var internals = {
   CYBERCHEFVERSION: '9.11.7',
-  elasticBase: Config.get("elasticsearch", "http://localhost:9200").split(","),
+  elasticBase: Config.get("elasticsearch", "http://localhost:9200").split(",").map(s=>s.trim()).filter(s=>s.match(/^\S+$/)),
   esQueryTimeout: Config.get("elasticsearchTimeout", 300) + 's',
   userNameHeader: Config.get("userNameHeader"),
   requiredAuthHeader: Config.get("requiredAuthHeader"),
@@ -8750,7 +8750,7 @@ processArgs(process.argv);
 //////////////////////////////////////////////////////////////////////////////////
 Db.initialize({host: internals.elasticBase,
                prefix: Config.get("prefix", ""),
-               usersHost: Config.get("usersElasticsearch")?Config.get("usersElasticsearch").split(","):undefined,
+               usersHost: Config.get("usersElasticsearch")?Config.get("usersElasticsearch").split(",").map(s => s.trim()).filter(s => s.match(/^\S+$/)):undefined,
                usersPrefix: Config.get("usersPrefix"),
                nodeName: Config.nodeName(),
                esClientKey: Config.get("esClientKey", null),
