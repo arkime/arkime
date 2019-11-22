@@ -135,13 +135,13 @@ Register to receive a feed of data from the http parser. There are eight differe
 
 ### session:add_string(fieldExpressionOrFieldId, value)
 Add a string value to a session
-* fieldExpressionOrFieldId = the field expression or a fieldId
+* fieldExpressionOrFieldId = the field expression or a fieldId. This should not contain dots.
 * value = the string to add
 * returns = true if added, false if already there
 
 ### session:add_int(fieldexpressionOrFieldId, value)
 Add a integer value to a session
-* fieldExpressionOrFieldId = the field expression or a fieldId
+* fieldExpressionOrFieldId = the field expression or a fieldId. This should not contain dots.
 * value = the string to add
 * returns = true if added, false if already there
 
