@@ -313,61 +313,63 @@ if (Config.get("passwordSecret")) {
       return res.send('receiveSession only allowed s2s');
     }
 
+    function ucb (err, suser, userName) {
+      if (err) { return res.send(`ERROR - getUser - user: ${userName} err: ${err}`); }
+      if (!suser || !suser.found) { return res.send(`${userName} doesn't exist`); }
+      if (!suser._source.enabled) { return res.send(`${userName} not enabled`); }
+      if (!suser._source.headerAuthEnabled) { return res.send(`${userName} header auth not enabled`); }
+
+      userCleanup(suser._source);
+      req.user = suser._source;
+      return next();
+    }
+
     // Header auth
     if (internals.userNameHeader !== undefined) {
       if (req.headers[internals.userNameHeader] !== undefined) {
         // Check if we require a certain header+value to be present
         // as in the case of an apache plugin that sends AD groups
         if (internals.requiredAuthHeader !== undefined && internals.requiredAuthHeaderVal !== undefined) {
-          var authHeader = req.headers[internals.requiredAuthHeader];
+          let authHeader = req.headers[internals.requiredAuthHeader];
           if (authHeader === undefined) {
-             return res.send("Missing authorization header");
+             return res.send('Missing authorization header');
           }
-          var authorized = false;
-          authHeader.split(",").forEach(headerVal => {
-             if (headerVal.trim() == internals.requiredAuthHeaderVal) {
+          let authorized = false;
+          authHeader.split(',').forEach(headerVal => {
+             if (headerVal.trim() === internals.requiredAuthHeaderVal) {
                 authorized = true;
              }
           });
           if (!authorized) {
-              return res.send("Not authorized");
+              return res.send('Not authorized');
           }
         }
-        var userName = req.headers[internals.userNameHeader];
 
-        function ucb(err, suser) {
-          if (err) {return res.send("ERROR - getUser - user: " + userName + " err:" + err);}
-          if (!suser || !suser.found) {return res.send(userName + " doesn't exist");}
-          if (!suser._source.enabled) {return res.send(userName + " not enabled");}
-          if (!suser._source.headerAuthEnabled) {return res.send(userName + " header auth not enabled");}
+        const userName = req.headers[internals.userNameHeader];
 
-          userCleanup(suser._source);
-          req.user = suser._source;
-          return next();
-        };
-
-        Db.getUserCache(userName, function(err, suser) {
+        Db.getUserCache(userName, (err, suser) => {
           if (internals.userAutoCreateTmpl === undefined) {
-             return ucb(err, suser);
-          } else if ((err && err.toString().includes("Not Found")) ||
-                     (!suser || !suser.found)) { // Try dynamic creation
-             var nuser = JSON.parse(new Function("return `" +
-                   internals.userAutoCreateTmpl + "`;").call(req.headers));
+             return ucb(err, suser, userName);
+          } else if ((err && err.toString().includes('Not Found')) ||
+             (!suser || !suser.found)) { // Try dynamic creation
+             /* jslint evil: true */
+             let nuser = JSON.parse(new Function('return `' +
+                   internals.userAutoCreateTmpl + '`;').call(req.headers));
              Db.setUser(userName, nuser, (err, info) => {
                if (err) {
-                 console.log("Elastic search error adding user: (" +  userName + "):(" + JSON.stringify(nuser) + "):" + err);
+                 console.log('Elastic search error adding user: (' +  userName + '):(' + JSON.stringify(nuser) + '):' + err);
                } else {
-                 console.log("Added user:" + userName + ":" + JSON.stringify(nuser));
+                 console.log('Added user:' + userName + ':' + JSON.stringify(nuser));
                }
                return Db.getUserCache(userName, ucb);
              });
           } else {
-             return ucb(err, suser);
+             return ucb(err, suser, userName);
           }
         });
         return;
       } else if (Config.debug) {
-        console.log("DEBUG - Couldn't find userNameHeader of", internals.userNameHeader, "in", req.headers, "for", req.url);
+        console.log('DEBUG - Couldn\'t find userNameHeader of', internals.userNameHeader, 'in', req.headers, 'for', req.url);
       }
     }
 
