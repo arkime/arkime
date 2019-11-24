@@ -1159,6 +1159,8 @@ LOCAL void moloch_packet_log(int ses)
         stats.total = totalPackets;
     }
 
+    uint32_t wql = moloch_writer_queue_length();
+
     LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %" PRIu64 " drop: %" PRIu64 " (%0.2f) queue: %d disk: %d packet: %d close: %d ns: %d frags: %d/%d pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64,
       totalPackets,
       moloch_session_watch_count(ses),
@@ -1168,7 +1170,7 @@ LOCAL void moloch_packet_log(int ses)
       stats.dropped - initialDropped,
       (stats.total?(stats.dropped - initialDropped)*(double)100.0/stats.total:0),
       moloch_http_queue_length(esServer),
-      moloch_writer_queue_length(),
+      wql,
       moloch_packet_outstanding(),
       moloch_session_close_outstanding(),
       moloch_session_need_save_outstanding(),
