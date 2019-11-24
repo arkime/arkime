@@ -310,6 +310,12 @@ void controlc(int UNUSED(sig))
     moloch_quit();
 }
 /******************************************************************************/
+void terminate(int UNUSED(sig))
+{
+    LOG("Terminate");
+    moloch_quit();
+}
+/******************************************************************************/
 void reload(int UNUSED(sig))
 {
     moloch_plugins_reload();
@@ -771,6 +777,7 @@ int main(int argc, char **argv)
 {
     signal(SIGHUP, reload);
     signal(SIGINT, controlc);
+    signal(SIGTERM, terminate);
     signal(SIGUSR1, exit);
     signal(SIGCHLD, SIG_IGN);
 
