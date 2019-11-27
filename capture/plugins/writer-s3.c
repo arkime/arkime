@@ -263,7 +263,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     strcpy(bodyHash, g_checksum_get_string(checksum));
     snprintf(canonicalRequest, sizeof(canonicalRequest),
              "%s\n"       // HTTPRequestMethod
-             "/%s%s\n"    // CanonicalURI
+             "%s\n"    // CanonicalURI
              "%s\n"       // CanonicalQueryString
              //CanonicalHeaders
              "host:%s\n"
@@ -277,7 +277,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
              "%s"     // HexEncode(Hash(RequestPayload))
              ,
              method,
-             s3Bucket, path,
+             path,
              qs,
              s3Host,
              bodyHash,
@@ -344,7 +344,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
 
     //LOG("signature: %s", signature);
 
-    snprintf(fullpath, sizeof(fullpath), "/%s%s?%s", s3Bucket, path, qs);
+    snprintf(fullpath, sizeof(fullpath), "%s?%s", path, qs);
 
     char strs[3][1000];
     char *headers[8];
@@ -678,9 +678,9 @@ void writer_s3_init(char *UNUSED(name))
     }
 
     if (strcmp(s3Region, "us-east-1") == 0) {
-        strcpy(s3Host, "s3.amazonaws.com");
+        snprintf(s3Host, sizeof(s3Host), "%s.s3.amazonaws.com", s3Bucket);
     } else {
-        snprintf(s3Host, sizeof(s3Host), "s3-%s.amazonaws.com", s3Region);
+        snprintf(s3Host, sizeof(s3Host), "%s.s3-%s.amazonaws.com", s3Bucket, s3Region);
     }
 
     config.maxFileSizeB = MIN(config.maxFileSizeB, config.pcapWriteSize*2000);
