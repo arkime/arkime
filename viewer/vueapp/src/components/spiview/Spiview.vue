@@ -820,8 +820,6 @@ export default {
         query.map = true;
       }
 
-      if (!query.cluster) { delete query.cluster; }
-
       let promise = new Promise((resolve, reject) => {
         let options = {
           method: 'GET',

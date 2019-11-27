@@ -542,7 +542,8 @@ export default {
         minConn: this.$route.query.minConn || 1,
         nodeDist: this.$route.query.nodeDist || 40,
         view: this.$route.query.view || undefined,
-        expression: this.$store.state.expression || undefined
+        expression: this.$store.state.expression || undefined,
+        cluster: this.$route.query.cluster || undefined
       };
     },
     user: function () {
