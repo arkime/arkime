@@ -26,7 +26,7 @@
   background-color: var(--color-background, #EEE) !important;
 }
 
-#cross-cluster > .dropdown-toggle {
+#es-cluster > .dropdown-toggle {
   border-color: var(--color-gray) !important;
   color: var(--color-foreground, #555) !important;
   background-color: var(--color-background, #EEE) !important;

@@ -245,7 +245,7 @@
 
     <!-- cluster select-->
     <div v-if="showEsClusters">
-      <b-dropdown id="cross-cluster" text="Clusters" class="m-md-2" size="sm">
+      <b-dropdown id="es-cluster" text="Clusters" class="m-md-2" size="sm">
         <!-- .bg-white and .text-body suppress .dropdown-item.active and .dropdown-item:active styles -->
         <div class="dropdown-item bg-white text-body">
           <b-form-checkbox-group stacked
@@ -349,7 +349,7 @@ export default {
     },
     availableEsCluster: {
       get: function () {
-        return this.$store.state.esClusterAvailable;
+        return this.$store.state.esCluster.availableCluster;
       },
       set: function (newValue) {
         this.$store.commit('setAvailableEsCluster', newValue);
@@ -357,7 +357,7 @@ export default {
     },
     selectedEsCluster: {
       get: function () {
-        return this.$store.state.esClusterSelected;
+        return this.$store.state.esCluster.selectedCluster;
       },
       set: function (newValue) {
         this.$store.commit('setSelectedEsCluster', newValue);
@@ -841,7 +841,7 @@ export default {
       }
     },
     getMultiESEnabled: function () {
-      SessionService.crossClusterEnabled()
+      SessionService.multiESEnabled()
         .then((response) => {
           this.showEsClusters = response;
         });

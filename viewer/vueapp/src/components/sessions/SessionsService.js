@@ -441,7 +441,7 @@ export default {
     });
   },
 
-  crossClusterEnabled: function () {
+  multiESEnabled: function () {
     return new Promise((resolve, reject) => {
       Vue.axios.get('ccsenabled')
         .then((response) => {

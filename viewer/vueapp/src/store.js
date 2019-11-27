@@ -31,8 +31,10 @@ const store = new Vuex.Store({
     loadingData: false,
     sorts: [['firstPacket', 'desc']],
     sortsParam: 'firstPacket:desc',
-    esClusterAvailable: undefined,
-    esClusterSelected: undefined,
+    esCluster: {
+      availableCluster: undefined,
+      selectedCluster: undefined
+    },
     multiEsEnabled: false
   },
   getters: {
@@ -153,10 +155,10 @@ const store = new Vuex.Store({
       }
     },
     setAvailableEsCluster (state, value) {
-      state.esClusterAvailable = value;
+      state.esCluster.availableCluster = value;
     },
     setSelectedEsCluster (state, value) {
-      state.esClusterSelected = value;
+      state.esCluster.selectedCluster = value;
     },
     setMultiEsStatus (state, value) {
       state.multiEsEnabled = value;
