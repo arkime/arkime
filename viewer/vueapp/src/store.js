@@ -30,7 +30,10 @@ const store = new Vuex.Store({
     views: undefined,
     loadingData: false,
     sorts: [['firstPacket', 'desc']],
-    sortsParam: 'firstPacket:desc'
+    sortsParam: 'firstPacket:desc',
+    esClusterAvailable: undefined,
+    esClusterSelected: undefined,
+    multiEsEnabled: false
   },
   getters: {
     sessionsTableState (state) {
@@ -148,6 +151,15 @@ const store = new Vuex.Store({
         state.sortsParam += item[0] + ':' + item[1];
         if (i < len - 1) { state.sortsParam += ','; }
       }
+    },
+    setAvailableEsCluster (state, value) {
+      state.esClusterAvailable = value;
+    },
+    setSelectedEsCluster (state, value) {
+      state.esClusterSelected = value;
+    },
+    setMultiEsStatus (state, value) {
+      state.multiEsEnabled = value;
     }
   }
 });

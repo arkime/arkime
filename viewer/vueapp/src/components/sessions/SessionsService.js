@@ -56,13 +56,8 @@ export default {
           }
         }
 
-        if (query.cluster && query.cluster.length) {
-          params.cluster = '';
-          for (let i = 0, len = query.cluster.length; i < len; ++i) {
-            const item = query.cluster[i];
-            params.cluster += item;
-            if (i < len - 1) { params.cluster += ','; }
-          }
+        if (query.cluster) {
+          params.cluster = query.cluster;
         }
       }
 

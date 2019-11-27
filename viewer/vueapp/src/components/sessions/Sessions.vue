@@ -604,7 +604,7 @@ export default {
         interval: this.$route.query.interval || 'auto',
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined,
-        cluster: this.$route.query.cluster || []
+        cluster: this.$route.query.cluster || undefined
       };
     },
     sorts: {

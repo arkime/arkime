@@ -430,7 +430,8 @@ export default {
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         view: this.$route.query.view || undefined,
-        expression: this.$store.state.expression || undefined
+        expression: this.$store.state.expression || undefined,
+        cluster: this.$route.query.cluster || undefined
       };
     },
     user: function () {
@@ -807,7 +808,8 @@ export default {
         expression: this.query.expression,
         bounding: this.query.bounding,
         interval: this.query.interval,
-        view: this.query.view
+        view: this.query.view,
+        cluster: this.query.cluster
       };
     },
     get: function (query) {
@@ -817,6 +819,8 @@ export default {
       if (localStorage.getItem('spiview-open-map') === 'true') {
         query.map = true;
       }
+
+      if (!query.cluster) { delete query.cluster; }
 
       let promise = new Promise((resolve, reject) => {
         let options = {

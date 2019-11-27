@@ -4413,7 +4413,7 @@ app.get('/sessions.json', [noCacheJson, recordResponseTime, logAction('sessions'
   let options = {};
   if (req.query.cancelId) { options = { cancelId: `${req.user.userId}::${req.query.cancelId}` }; }
   if (req.query.cluster && Config.get('multiES', false)) { options._cluster = req.query.cluster; }
-
+  
   buildSessionQuery(req, function (bsqErr, query, indices) {
     if (bsqErr) {
       const r = {
@@ -4735,9 +4735,12 @@ app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'),
     var recordsFiltered = 0;
     var protocols;
 
+    let options = {};
+    if (req.query.cluster && Config.get('multiES', false)) { options._cluster = req.query.cluster; }
+
     async.parallel({
       spi: function (sessionsCb) {
-        Db.searchPrimary(indices, 'session', query, null, function (err, result) {
+        Db.searchPrimary(indices, 'session', query, options, function (err, result) {
           if (Config.debug) {
             console.log("spiview.json result", util.inspect(result, false, 50));
           }
@@ -4783,7 +4786,7 @@ app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'),
         });
       },
       total: function (totalCb) {
-        Db.numberOfDocuments('sessions2-*', totalCb);
+        Db.numberOfDocuments('sessions2-*', options, totalCb);
       },
       health: Db.healthCache
     },

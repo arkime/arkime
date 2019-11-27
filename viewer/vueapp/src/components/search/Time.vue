@@ -244,11 +244,15 @@
     </div> <!-- /human readable time range or error -->
 
     <!-- cluster select-->
-    <div v-if="crossClusterSearchEnabled">
+    <div v-if="showEsClusters">
       <b-dropdown id="cross-cluster" text="Clusters" class="m-md-2" size="sm">
         <!-- .bg-white and .text-body suppress .dropdown-item.active and .dropdown-item:active styles -->
         <div class="dropdown-item bg-white text-body">
-          <b-form-checkbox-group stacked v-model="currentNode" name="nodes" :options="crossClusters" @change="changeNode"/>
+          <b-form-checkbox-group stacked
+          v-model="selectedEsCluster"
+          name="escluster"
+          :options="availableEsCluster"
+          @change="changeEsClusterSelection"/>
         </div>
       </b-dropdown>
     </div><!-- /cluster select-->
@@ -287,9 +291,6 @@ export default {
       timeError: '',
       timeBounding: this.$route.query.bounding || 'last',
       timeInterval: this.$route.query.interval || 'auto',
-      crossClusters: [],
-      currentNode: this.$route.query.cluster,
-      crossClusterSearchEnabled: false,
       // use start/stop time localized to this component so that the time
       // watcher can compare time values to local (unaffected) start/stop times
       localStopTime: undefined,
@@ -345,6 +346,30 @@ export default {
       set: function (newValue) {
         this.$store.commit('setExpression', newValue);
       }
+    },
+    availableEsCluster: {
+      get: function () {
+        return this.$store.state.esClusterAvailable;
+      },
+      set: function (newValue) {
+        this.$store.commit('setAvailableEsCluster', newValue);
+      }
+    },
+    selectedEsCluster: {
+      get: function () {
+        return this.$store.state.esClusterSelected;
+      },
+      set: function (newValue) {
+        this.$store.commit('setSelectedEsCluster', newValue);
+      }
+    },
+    showEsClusters: {
+      get: function () {
+        return this.$store.state.multiEsEnabled;
+      },
+      set: function (newValue) {
+        this.$store.commit('setMultiEsStatus', newValue);
+      }
     }
   },
   watch: {
@@ -381,8 +406,8 @@ export default {
   },
   created: function () {
     this.setCurrentTime();
+    this.getMultiESEnabled();
     this.getClusterInformation();
-    this.getCrossClusterSearchEnabled();
 
     let date = this.$route.query.date;
     // if no time params exist, default to last hour
@@ -427,7 +452,6 @@ export default {
 
       let routeQuery = this.$route.query;
       routeQuery.expression = this.expression;
-
       this.$router.push({
         query: {
           ...routeQuery,
@@ -742,7 +766,7 @@ export default {
 
       if (newParams.cluster !== oldParams.cluster) {
         change = true;
-        this.cluster = newParams.cluster || 'all';
+        // this.selectedEsCluster = newParams.cluster.split(',');
       }
 
       if (newParams.date !== oldParams.date) {
@@ -793,32 +817,33 @@ export default {
       if (change) { this.$emit('timeChange'); }
     },
     getClusterInformation: function () {
-      SessionService.getClusters()
-        .then((response) => {
-          this.crossClusters = response;
-          this.currentNode = this.$route.query.cluster || this.crossClusters;
-        });
+      if (!this.availableEsCluster) {
+        SessionService.getClusters()
+          .then((response) => {
+            this.availableEsCluster = response;
+            this.selectedEsCluster = response;
+          });
+      }
     },
-    updateClustersSelected: function () {
-      SessionService.getClusters()
-        .then((response) => {
-          this.currentNode = response;
-        });
-    },
-    changeNode: function () {
-      setTimeout(() => {
+    changeEsClusterSelection: function (clusters) {
+      let routeQuery = this.$route.query;
+      if (routeQuery.cluster && clusters.length === 0) { // no selection, remove cluster param from url
+        let query = Object.assign({}, this.$route.query);
+        delete query.cluster;
+        this.$router.replace({ query });
+      } else {
         this.$router.push({
           query: {
-            ...this.$route.query,
-            cluster: this.currentNode !== this.crossClusters ? this.currentNode : this.crossClusters
+            ...routeQuery,
+            cluster: clusters.join(',')
           }
         });
-      }, 100);
+      }
     },
-    getCrossClusterSearchEnabled: function () {
+    getMultiESEnabled: function () {
       SessionService.crossClusterEnabled()
         .then((response) => {
-          this.crossClusterSearchEnabled = response;
+          this.showEsClusters = response;
         });
     }
   },
