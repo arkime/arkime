@@ -686,7 +686,7 @@ typedef struct {
 	int32_t  thiszone;	/* gmt to local correction */
 	uint32_t sigfigs;	/* accuracy of timestamps */
 	uint32_t snaplen;	/* max length saved portion of each pkt */
-	uint32_t linktype;	/* data link type (LINKTYPE_*) */
+	uint32_t dlt;	/* data link type (DLT_*) */
 } MolochPcapFileHdr_t;
 
 #ifndef likely
@@ -1002,11 +1002,11 @@ void     moloch_packet_batch_init(MolochPacketBatch_t *batch);
 void     moloch_packet_batch_flush(MolochPacketBatch_t *batch);
 void     moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const packet);
 
-void     moloch_packet_set_linksnap(int linktype, int snaplen);
+void     moloch_packet_set_linksnap(int dlt, int snaplen);
 void     moloch_packet_drophash_add(MolochSession_t *session, int which, int min);
 
 void     moloch_packet_add_ethernet_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb);
-
+void     moloch_packet_dlt_to_linktype(MolochPcapFileHdr_t *pcapFileHeader_dlt);
 
 /******************************************************************************/
 /*
