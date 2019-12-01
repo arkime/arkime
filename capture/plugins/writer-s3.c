@@ -233,12 +233,12 @@ void writer_s3_header_cb (char *url, const char *field, const char *value, int v
 GChecksum *checksum;
 void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, int len, gboolean specifyStorageClass, MolochHttpResponse_cb cb, gpointer uw)
 {
-    char           canonicalRequest[2000];
+    char           canonicalRequest[20000];
     char           datetime[17];
     char           fullpath[1000];
     char           bodyHash[1000];
     char           storageClassHeader[1000];
-    char           tokenHeader[1000];
+    char           tokenHeader[4200];
     struct timeval outputFileTime;
 
     gettimeofday(&outputFileTime, 0);
@@ -356,7 +356,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
 
     int nextHeader = 5;
 
-    snprintf(strs[0], 1000,
+    snprintf(strs[0], sizeof(strs[0]),
             "Authorization: AWS4-HMAC-SHA256 Credential=%s/%8.8s/%s/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date%s%s,Signature=%s"
             ,
             s3AccessKeyId, datetime, s3Region,
@@ -365,8 +365,8 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
             signature
             );
 
-    snprintf(strs[1], 1000, "x-amz-content-sha256: %s" , bodyHash);
-    snprintf(strs[2], 1000, "x-amz-date: %s", datetime);
+    snprintf(strs[1], sizeof(strs[1]), "x-amz-content-sha256: %s" , bodyHash);
+    snprintf(strs[2], sizeof(strs[2]), "x-amz-date: %s", datetime);
 
     if (s3Token) {
         snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token: %s", s3Token);

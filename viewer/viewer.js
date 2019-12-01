@@ -65,10 +65,13 @@ var app = express();
 //// Config
 //////////////////////////////////////////////////////////////////////////////////
 var internals = {
-  CYBERCHEFVERSION: '9.4.0',
-  elasticBase: Config.get("elasticsearch", "http://localhost:9200").split(","),
+  CYBERCHEFVERSION: '9.11.7',
+  elasticBase: Config.get("elasticsearch", "http://localhost:9200").split(",").map(s=>s.trim()).filter(s=>s.match(/^\S+$/)),
   esQueryTimeout: Config.get("elasticsearchTimeout", 300) + 's',
   userNameHeader: Config.get("userNameHeader"),
+  requiredAuthHeader: Config.get("requiredAuthHeader"),
+  requiredAuthHeaderVal: Config.get("requiredAuthHeaderVal"),
+  userAutoCreateTmpl: Config.get("userAutoCreateTmpl"),
   httpAgent:   new http.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40}),
   httpsAgent:  new https.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40, rejectUnauthorized: !Config.insecure}),
   previousNodesStats: [],
@@ -310,25 +313,66 @@ if (Config.get("passwordSecret")) {
       return res.send('receiveSession only allowed s2s');
     }
 
+    function ucb (err, suser, userName) {
+      if (err) { return res.send(`ERROR - getUser - user: ${userName} err: ${err}`); }
+      if (!suser || !suser.found) { return res.send(`${userName} doesn't exist`); }
+      if (!suser._source.enabled) { return res.send(`${userName} not enabled`); }
+      if (!suser._source.headerAuthEnabled) { return res.send(`${userName} header auth not enabled`); }
+
+      userCleanup(suser._source);
+      req.user = suser._source;
+      return next();
+    }
+
     // Header auth
     if (internals.userNameHeader !== undefined) {
       if (req.headers[internals.userNameHeader] !== undefined) {
-        var userName = req.headers[internals.userNameHeader];
-        Db.getUserCache(userName, function(err, suser) {
-          if (err) {return res.send("ERROR - getUser - user: " + userName + " err:" + err);}
-          if (!suser || !suser.found) {return res.send(userName + " doesn't exist");}
-          if (!suser._source.enabled) {return res.send(userName + " not enabled");}
-          if (!suser._source.headerAuthEnabled) {return res.send(userName + " header auth not enabled");}
+        // Check if we require a certain header+value to be present
+        // as in the case of an apache plugin that sends AD groups
+        if (internals.requiredAuthHeader !== undefined && internals.requiredAuthHeaderVal !== undefined) {
+          let authHeader = req.headers[internals.requiredAuthHeader];
+          if (authHeader === undefined) {
+             return res.send('Missing authorization header');
+          }
+          let authorized = false;
+          authHeader.split(',').forEach(headerVal => {
+             if (headerVal.trim() === internals.requiredAuthHeaderVal) {
+                authorized = true;
+             }
+          });
+          if (!authorized) {
+              return res.send('Not authorized');
+          }
+        }
 
-          userCleanup(suser._source);
-          req.user = suser._source;
-          return next();
+        const userName = req.headers[internals.userNameHeader];
+
+        Db.getUserCache(userName, (err, suser) => {
+          if (internals.userAutoCreateTmpl === undefined) {
+             return ucb(err, suser, userName);
+          } else if ((err && err.toString().includes('Not Found')) ||
+             (!suser || !suser.found)) { // Try dynamic creation
+             /* jslint evil: true */
+             let nuser = JSON.parse(new Function('return `' +
+                   internals.userAutoCreateTmpl + '`;').call(req.headers));
+             Db.setUser(userName, nuser, (err, info) => {
+               if (err) {
+                 console.log('Elastic search error adding user: (' +  userName + '):(' + JSON.stringify(nuser) + '):' + err);
+               } else {
+                 console.log('Added user:' + userName + ':' + JSON.stringify(nuser));
+               }
+               return Db.getUserCache(userName, ucb);
+             });
+          } else {
+             return ucb(err, suser, userName);
+          }
         });
         return;
       } else if (Config.debug) {
-        console.log("DEBUG - Couldn't find userNameHeader of", internals.userNameHeader, "in", req.headers, "for", req.url);
+        console.log('DEBUG - Couldn\'t find userNameHeader of', internals.userNameHeader, 'in', req.headers, 'for', req.url);
       }
     }
+
 
     // Browser auth
     req.url = req.url.replace("/", Config.basePath());
@@ -3604,6 +3648,12 @@ app.post('/estask/cancelById', [noCacheJson, logAction(), checkCookieToken, chec
   }
 
   Db.cancelByOpaqueId(`${req.user.userId}::${req.body.cancelId}`, (err, result) => {
+    return res.send(JSON.stringify({ success: true, text: result }));
+  });
+});
+
+app.post('/estask/cancelAll', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
+  Db.taskCancel(undefined, (err, result) => {
     return res.send(JSON.stringify({ success: true, text: result }));
   });
 });
@@ -8275,6 +8325,24 @@ if (Config.get("regressionTests")) {
 //////////////////////////////////////////////////////////////////////////////////
 // Cyberchef
 //////////////////////////////////////////////////////////////////////////////////
+/* cyberchef endpoint - loads the src or dst packets for a session and
+ * sends them to cyberchef */
+app.get('/cyberchef/:nodeName/session/:id', checkPermissions(['webEnabled']), checkProxyRequest, unsafeInlineCspHeader, (req, res) => {
+  processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
+    if (err) {
+      console.log(`ERROR - /${req.params.nodeName}/session/${req.params.id}/cyberchef`, err);
+      return res.end("Error - " + err);
+    }
+
+    let data = '';
+    for (let i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
+      data += results[i].data.toString('hex');
+    }
+
+    res.send({ data: data });
+  });
+});
+
 app.use('/cyberchef/', unsafeInlineCspHeader, (req, res) => {
   let found = false;
   let path = req.path.substring(1);
@@ -8335,6 +8403,7 @@ app.get("/esclusters", (req, res) => {
   }
   res.send(clusters);
 });
+
 
 //////////////////////////////////////////////////////////////////////////////////
 // Vue app
@@ -8733,7 +8802,7 @@ processArgs(process.argv);
 //////////////////////////////////////////////////////////////////////////////////
 Db.initialize({host: internals.elasticBase,
                prefix: Config.get("prefix", ""),
-               usersHost: Config.get("usersElasticsearch")?Config.get("usersElasticsearch").split(","):undefined,
+               usersHost: Config.get("usersElasticsearch")?Config.get("usersElasticsearch").split(",").map(s => s.trim()).filter(s => s.match(/^\S+$/)):undefined,
                usersPrefix: Config.get("usersPrefix"),
                nodeName: Config.nodeName(),
                esClientKey: Config.get("esClientKey", null),
