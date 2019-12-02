@@ -20,7 +20,7 @@
 #include <inttypes.h>
 #include <arpa/inet.h>
 #include <errno.h>
-#include <pcap/dlt.h>
+#include <net/bpf.h>
 
 //#define DEBUG_PACKET
 
