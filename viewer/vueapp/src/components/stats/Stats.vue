@@ -451,7 +451,7 @@ import EsNodes from './EsNodes';
 import EsTasks from './EsTasks';
 import EsRecovery from './EsRecovery';
 import EsIndices from './EsIndices';
-import EsSettings from './EsSettings';
+import EsAdmin from './EsAdmin';
 import CaptureGraphs from './CaptureGraphs';
 import CaptureStats from './CaptureStats';
 import FocusInput from '../utils/FocusInput';

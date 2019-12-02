@@ -72,6 +72,7 @@ var internals = {
   requiredAuthHeader: Config.get("requiredAuthHeader"),
   requiredAuthHeaderVal: Config.get("requiredAuthHeaderVal"),
   userAutoCreateTmpl: Config.get("userAutoCreateTmpl"),
+  esAdminUsers: Config.get("esAdminUsers", "").split(",").map(s=>s.trim()).filter(s=>s.match(/^\S+$/)),
   httpAgent:   new http.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40}),
   httpsAgent:  new https.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40, rejectUnauthorized: !Config.insecure}),
   previousNodesStats: [],
@@ -1295,6 +1296,8 @@ app.get('/user/current', checkPermissions(['webEnabled']), (req, res) => {
   }
 
   clone.canUpload = app.locals.allowUploads;
+  clone.esAdminUser = internals.esAdminUsers.includes(req.user.userId);
+
 
   // If no settings, use defaults
   if (clone.settings === undefined) { clone.settings = settingDefaults; }
@@ -3658,9 +3661,15 @@ app.post('/estask/cancelAll', [noCacheJson, logAction(), checkCookieToken, check
   });
 });
 
-app.get('/essetting/list', [noCacheJson, recordResponseTime], function(req, res) {
-  if (!req.user.createEnabled) { return res.molochError(403, "Need admin privileges"); }
+//////////////////////////////////////////////////////////////////////////////////
+function checkEsAdminUser(req, res, next) {
+  if (internals.esSettingsUsers.includes(req.user.userId)) {
+    return next();
+  }
+  return res.molochError(403, 'You do not have permission to access this resource');
+}
 
+app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser], function(req, res) {
   Promise.all([Db.getClusterSettings({flatSettings: true, include_defaults: true})
               ]).then(([settings]) => {
 
@@ -3691,6 +3700,18 @@ app.get('/essetting/list', [noCacheJson, recordResponseTime], function(req, res)
 
     return res.send(rsettings);
   });
+});
+
+app.post('/esadmin/set', [noCacheJson, recordResponseTime, checkEsAdminUser], function(req, res) {
+      return res.send(JSON.stringify({ success: true, text: 'Set'}));
+});
+
+app.post('/esadmin/reroute', [noCacheJson, recordResponseTime, checkEsAdminUser], function(req, res) {
+      return res.send(JSON.stringify({ success: true, text: 'Rerouted'}));
+});
+
+app.post('/esadmin/flush', [noCacheJson, recordResponseTime, checkEsAdminUser], function(req, res) {
+      return res.send(JSON.stringify({ success: true, text: 'Flushed'}));
 });
 
 app.get('/esshard/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie], (req, res) => {

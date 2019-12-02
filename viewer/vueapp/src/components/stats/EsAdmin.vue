@@ -1,0 +1,333 @@
+<template>
+
+  <div class="container-fluid mt-3">
+
+    <moloch-loading v-if="initialLoading && !error">
+    </moloch-loading>
+
+    <moloch-error v-if="error"
+      :message="error">
+    </moloch-error>
+
+    <div v-if="!error">
+
+      0) Only show this tab when esAdminUser is set 
+
+      1) Some warning: "This stuff is dangerous and you can destroy your ES cluster, be very careful.  You can control which users see this page by setting esAdminUsers= in your config.ini"
+
+      2) Then a couple of action buttons: 
+      * "Retry Failed" call /esadmin/reroute
+      * "Flush" call /esadmin/flush
+
+      3) Then a list of settings that come from /esadmin/list.  Not sure how to display
+      - key = needs to be shown since all docs use, and should be sent back to /esadmin/set
+      - current = current value
+      - default = default value
+      - url = where to get info from es about it
+      - help = english
+      - type = what kind of values are allowed.  All values allow blank or the string null
+        - disk = int followed by b,kb,mb,gb,tb,p
+        - percent = int followed by %
+        - integer
+        - diskorpercent = can be a percent or disk
+        - nodestring = [,a-z0-9_-]
+
+      when changing a value maybe show the save/cancel icons so user has to click.  up to you.
+         
+
+    </div>
+
+  </div>
+
+</template>
+
+<script>
+import MolochError from '../utils/Error';
+import MolochLoading from '../utils/Loading';
+
+let reqPromise; // promise returned from setInterval for recurring requests
+let respondedAt; // the time that the last data load succesfully responded
+
+export default {
+  name: 'EsAdmin',
+  components: { MolochError, MolochLoading },
+  props: [
+    'dataInterval',
+    'shardsShow',
+    'refreshData',
+    'searchTerm'
+  ],
+  data: function () {
+    return {
+      initialLoading: true,
+      error: '',
+      stats: {},
+      nodes: {},
+      query: {
+        filter: this.searchTerm || undefined,
+        sortField: 'index',
+        desc: false,
+        show: this.shardsShow || 'notstarted'
+      },
+      columns: [
+        { name: 'Index', sort: 'index', doClick: false, hasDropdown: false, width: '200px' }
+      ]
+    };
+  },
+  computed: {
+    loading: {
+      get: function () {
+        return this.$store.state.loadingData;
+      },
+      set: function (newValue) {
+        this.$store.commit('setLoadingData', newValue);
+      }
+    }
+  },
+  watch: {
+    dataInterval: function () {
+      if (reqPromise) { // cancel the interval and reset it if necessary
+        clearInterval(reqPromise);
+        reqPromise = null;
+
+        if (this.dataInterval === '0') { return; }
+
+        this.setRequestInterval();
+      } else if (this.dataInterval !== '0') {
+        this.loadData();
+        this.setRequestInterval();
+      }
+    },
+    shardsShow: function () {
+      this.query.show = this.shardsShow;
+      this.loadData();
+    },
+    refreshData: function () {
+      if (this.refreshData) {
+        this.loadData();
+      }
+    }
+  },
+  created: function () {
+    this.loadData();
+    if (this.dataInterval !== '0') {
+      this.setRequestInterval();
+    }
+  },
+  methods: {
+    /* exposed page functions ------------------------------------ */
+    columnClick (name) {
+      if (!name) { return; }
+
+      this.query.sortField = name;
+      this.query.desc = !this.query.desc;
+      this.loadData();
+    },
+    exclude: function (type, column) {
+      this.$http.post(`esshard/exclude/${type}/${column[type]}`)
+        .then((response) => {
+          if (type === 'name') {
+            column.nodeExcluded = true;
+          } else {
+            column.ipExcluded = true;
+          }
+        }, (error) => {
+          this.error = error.text || error;
+        });
+    },
+    include: function (type, column) {
+      this.$http.post(`esshard/include/${type}/${column[type]}`)
+        .then((response) => {
+          if (type === 'name') {
+            column.nodeExcluded = false;
+          } else {
+            column.ipExcluded = false;
+          }
+        }, (error) => {
+          this.error = error.text || error;
+        });
+    },
+    showDetails: function (item) {
+      this.$set(item, 'showDetails', true);
+    },
+    hideDetails: function (item) {
+      this.$set(item, 'showDetails', false);
+    },
+    /* helper functions ------------------------------------------ */
+    setRequestInterval: function () {
+      reqPromise = setInterval(() => {
+        if (respondedAt && Date.now() - respondedAt >= parseInt(this.dataInterval)) {
+          this.loadData();
+        }
+      }, 500);
+    },
+    loadData: function () {
+      this.loading = true;
+      respondedAt = undefined;
+
+      this.query.filter = this.searchTerm;
+
+      this.$http.get('esadmin/list', { params: this.query })
+        .then((response) => {
+          respondedAt = Date.now();
+          this.error = '';
+          this.loading = false;
+          this.initialLoading = false;
+          this.stats = response.data;
+
+          this.columns.splice(1);
+
+          this.nodes = Object.keys(response.data.nodes).sort(function (a, b) {
+            return a.localeCompare(b);
+          });
+
+          for (var node of this.nodes) {
+            if (node === 'Unassigned') {
+              this.columns.push({ name: node, doClick: false, hasDropdown: false });
+            } else {
+              this.columns.push({
+                name: node,
+                doClick: (node.indexOf('->') === -1),
+                ip: response.data.nodes[node].ip,
+                ipExcluded: response.data.nodes[node].ipExcluded,
+                nodeExcluded: response.data.nodes[node].nodeExcluded,
+                hasDropdown: true
+              });
+            }
+          }
+        }, (error) => {
+          respondedAt = undefined;
+          this.error = error.text || error;
+          this.loading = false;
+          this.initialLoading = false;
+        });
+    }
+  },
+  beforeDestroy: function () {
+    if (reqPromise) {
+      clearInterval(reqPromise);
+      reqPromise = null;
+    }
+  }
+};
+</script>
+
+<style>
+table .hover-menu > div > .btn-group.column-actions-btn > .btn-sm {
+  padding: 1px 4px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+</style>
+
+<style scoped>
+table.table.block-table {
+  display: block;
+}
+
+table > thead > tr > th {
+  border-top: none;
+}
+
+table.table .hover-menu {
+  vertical-align: top;
+  min-width: 100px;
+}
+table.table .hover-menu:hover .btn-group {
+  visibility: visible;
+}
+
+table.table .hover-menu .btn-group {
+  visibility: hidden;
+  margin-left: -20px !important;
+  position: relative;
+  top: 2px;
+  right: 2px;
+  margin-top: -2px;
+}
+
+table.table .hover-menu .header-text {
+  display: inline-block;
+  word-break: break-word;
+}
+
+table.table tbody > tr > td:first-child {
+  width:1px;
+  white-space:nowrap;
+  padding-right: .5rem;
+}
+
+.badge {
+  padding: .1em .4em;
+  font-weight: 500;
+  font-size: 14px;
+  white-space: normal;
+}
+.badge.badge-primary {
+  font-weight: bold;
+  background-color: var(--color-primary);
+}
+.badge:hover {
+  position: relative;
+}
+.badge > span {
+  display: none;
+}
+.badge:hover > span.shard-detail {
+  z-index: 2;
+  display: block;
+}
+.badge > span:before {
+  content: '';
+  display: block;
+  width: 0;
+  height: 0;
+  position: absolute;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 8px solid black;
+  right: -8px;
+  bottom: 7px;
+}
+.badge > span.shard-detail {
+  font-weight: normal;
+  position: absolute;
+  margin: 10px;
+  bottom: -14px;
+  right: 20px;
+  padding: 4px 6px;
+  color: white;
+  background-color: black;
+  border-radius: 5px;
+  font-size: 85%;
+  line-height: 1.2;
+  max-width: 210px;
+}
+.badge > span.shard-detail dl {
+  margin-bottom: 0;
+}
+.badge > span.shard-detail dt {
+  width: 85px;
+}
+.badge > span.shard-detail dd {
+  margin-left: 90px;
+  text-align: left;
+  overflow-wrap: break-word;
+}
+
+.badge.render-tooltip-bottom:hover > span {
+  bottom: -120px;
+}
+.badge.render-tooltip-bottom:hover > span:before {
+  bottom: 113px;
+}
+.badge.badge-secondary:not(.badge-notstarted):not(.badge-primary) {
+  border: 2px dotted #6c757d;
+}
+.badge.badge-primary {
+  border: 2px dotted var(--color-primary);
+}
+.badge-notstarted {
+  border: 2px dotted var(--color-quaternary);
+}
+</style>
