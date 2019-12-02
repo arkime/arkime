@@ -496,10 +496,10 @@ export default {
       return this.$store.state.user;
     },
     cyberChefSrcUrl: function () {
-      return `${this.session.node}/session/${this.session.id}/cyberchef?type=src&recipe=[{"op":"From Hex","args":["None"]}]`;
+      return `cyberchef.html?nodeId=${this.session.node}&sessionId=${this.session.id}&type=src`;
     },
     cyberChefDstUrl: function () {
-      return `${this.session.node}/session/${this.session.id}/cyberchef?type=dst&recipe=[{"op":"From Hex","args":["None"]}]`;
+      return `cyberchef.html?nodeId=${this.session.node}&sessionId=${this.session.id}&type=dst`;
     }
   },
   created: function () {
@@ -986,7 +986,7 @@ export default {
             let imgs = this.$refs.packetContainer.getElementsByClassName('imagetag');
             for (let i = 0; i < imgs.length; ++i) {
               let img = imgs[i];
-              let href = img.getAttribute('href');
+              let href = img.href;
               href = href.replace('body', 'bodypng');
 
               let tooltip = document.createElement('span');

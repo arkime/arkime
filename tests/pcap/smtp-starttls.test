@@ -106,10 +106,10 @@
             "dstPort" : 25,
             "dstRIR" : "ARIN",
             "email" : {
-               "smtpHelloDomain" : [
+               "smtpHello" : [
                   "xxxxxxxxxxxxx.xxx.com"
                ],
-               "smtpHelloDomainCnt" : 1
+               "smtpHelloCnt" : 1
             },
             "fileId" : [],
             "firstPacket" : 1388017124762,

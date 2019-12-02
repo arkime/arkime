@@ -34,6 +34,7 @@ var internals = {fileId2File: {},
                  lookupsCache: {},
                  nodesStatsCache: {},
                  nodesInfoCache: {},
+                 masterCache: {},
                  qInProgress: 0,
                  apiVersion: "6.7",
                  q: []};
@@ -443,6 +444,10 @@ exports.recovery = function(sortField, cb) {
   return internals.elasticSearchClient.cat.recovery({format: "json", bytes: "b", s: sortField}, cb);
 };
 
+exports.master = function(cb) {
+  return internals.elasticSearchClient.cat.master({format: "json"}, cb);
+};
+
 exports.getClusterSettings = function(options, cb) {
   return internals.elasticSearchClient.cluster.getSettings(options, cb);
 };
@@ -456,7 +461,9 @@ exports.tasks = function(cb) {
 };
 
 exports.taskCancel = function(taskId, cb) {
-  return internals.elasticSearchClient.tasks.cancel({taskId: taskId}, cb);
+  let params = {};
+  if (taskId) { params.taskId = taskId; }
+  return internals.elasticSearchClient.tasks.cancel(params, cb);
 };
 
 exports.nodesStats = function (options, cb) {
@@ -659,6 +666,12 @@ exports.setUser = function(name, doc, cb) {
   });
 };
 
+exports.setLastUsed = function(name, now, cb) {
+  var params = {index: internals.usersPrefix + 'users', type: 'user', body: {doc: {lastUsed: now}}, id: name};
+
+  return internals.usersElasticSearchClient.update(params, cb);
+};
+
 function twoDigitString(value) {
   return (value < 10) ? ("0" + value) : value.toString();
 }
@@ -831,6 +844,24 @@ exports.nodesInfoCache = function () {
       } else {
         internals.nodesInfoCache = data;
         internals.nodesInfoCache._timeStamp = Date.now();
+        resolve(data);
+      }
+    });
+  });
+};
+
+exports.masterCache = function () {
+  if (internals.masterCache._timeStamp !== undefined && internals.masterCache._timeStamp > Date.now() - 60000) {
+    return new Promise((resolve, reject) => {resolve(internals.masterCache);});
+  }
+
+  return new Promise((resolve, reject) => {
+    exports.master((err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        internals.masterCache = data;
+        internals.masterCache._timeStamp = Date.now();
         resolve(data);
       }
     });
@@ -1147,6 +1178,7 @@ exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
         day = (+index[3]*10 + (+index[4]))*7;
       } else if (index[2] === 'm') {
         month = (+index[3])*10 + (+index[4]);
+        day = 1;
         length = 31*24*60*60;
       } else if (index.length === 6) {
         month = (+index[2])*10 + (+index[3]);

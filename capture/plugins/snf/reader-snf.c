@@ -23,6 +23,7 @@
 #include "snf.h"
 #include "pcap.h"
 
+
 extern MolochConfig_t        config;
 
 #define MAX_RINGS 10
@@ -34,6 +35,7 @@ LOCAL int                    portnums[MAX_INTERFACES];
 LOCAL int                    snfNumRings;
 LOCAL int                    snfNumProcs;
 LOCAL int                    snfProcNum;
+LOCAL uint64_t               totalPktsRead[MAX_INTERFACES][MAX_RINGS];
 
 /******************************************************************************/
 int reader_snf_stats(MolochReaderStats_t *stats)
@@ -44,14 +46,33 @@ int reader_snf_stats(MolochReaderStats_t *stats)
     stats->total = 0;
 
     int i, r;
+    int ringStartOffset = (snfProcNum-1)*snfNumRings;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
-        for (r = 0; r < snfNumRings; r++) {
+        for (r = ringStartOffset; r < (ringStartOffset+snfNumRings); r++) {
+
+            // Use the packets read stats accumulated in moloch
+            stats->total += totalPktsRead[i][r];
+
             int err = snf_ring_getstats(rings[i][r], &ss);
 
             if (err) 
                 continue;
-            stats->dropped += ss.ring_pkt_overflow;
-            stats->total += ss.ring_pkt_recv;
+            //
+            // Miricom reports drops at the NIC level
+            // not by ring, so we need to distribute
+            // the drops across all rings so we don't overstate.
+            // Unfortunately, in multi-process mode you can't tell
+            // which process is responsible for the drops, but the
+            // inability to tie overrun drops to a particular ring
+            // is not possible in the current SNF implementation
+            //
+            if(r == ringStartOffset) { // Overflows are not reported per ring...
+                stats->dropped += (ss.ring_pkt_overflow/snfNumProcs);
+            }
+            // The previous implementation read this statistic
+            // from Myricom, but this is documented to be an estimate.
+            // We instead use actual/observed packet counts
+            // stats->total += ss.ring_pkt_recv;
         }
     }
     return 0;
@@ -59,11 +80,12 @@ int reader_snf_stats(MolochReaderStats_t *stats)
 /******************************************************************************/
 LOCAL void *reader_snf_thread(gpointer posv)
 {
+
     long full = (long)posv;
     long pos = full & 0xff;
-    gpointer ring = rings[pos][(full >> 8) & 0xff];
+    long offset = (full >> 8) & 0xff;
+    gpointer ring = rings[pos][offset];
     struct snf_recv_req req;
-
 
     MolochPacketBatch_t batch;
     moloch_packet_batch_init(&batch);
@@ -85,6 +107,10 @@ LOCAL void *reader_snf_thread(gpointer posv)
         packet->pktlen        = req.length;
         packet->readerPos     = pos;
 
+        //
+        // Add a packet read to the stats accumulator for this ring.
+        totalPktsRead[pos][offset] += 1;
+
         moloch_packet_batch(&batch, packet);
 
         if (batch.count > 10000)
@@ -101,6 +127,9 @@ void reader_snf_start() {
     int i, r;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         for (r = ringStartOffset; r < (ringStartOffset+snfNumRings); r++) {
+
+            totalPktsRead[i][r] = 0;
+
             char name[100];
             snprintf(name, sizeof(name), "moloch-snf%d-%d", i, r);
             g_thread_unref(g_thread_new(name, &reader_snf_thread, (gpointer)(long)(i | r << 8)));

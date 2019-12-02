@@ -40,6 +40,7 @@ GMainLoop             *mainLoop;
 char                  *moloch_char_to_hex = "0123456789abcdef"; /* don't change case */
 unsigned char          moloch_char_to_hexstr[256][3];
 unsigned char          moloch_hex_to_char[256][256];
+uint32_t               hashSalt;
 
 extern MolochWriterQueueLength moloch_writer_queue_length;
 extern MolochPcapFileHdr_t     pcapFileHeader;
@@ -309,6 +310,12 @@ void controlc(int UNUSED(sig))
     moloch_quit();
 }
 /******************************************************************************/
+void terminate(int UNUSED(sig))
+{
+    LOG("Terminate");
+    moloch_quit();
+}
+/******************************************************************************/
 void reload(int UNUSED(sig))
 {
     moloch_plugins_reload();
@@ -413,6 +420,9 @@ uint32_t moloch_string_hash(const void *key)
         n = (n << 5) - n + *p;
         p++;
     }
+
+    n ^= hashSalt;
+
     return n;
 }
 /******************************************************************************/
@@ -426,6 +436,9 @@ uint32_t moloch_string_hash_len(const void *key, int len)
         p++;
         len--;
     }
+
+    n ^= hashSalt;
+
     return n;
 }
 
@@ -593,8 +606,12 @@ LOCAL gboolean writerExit   = TRUE;
 /******************************************************************************/
 void moloch_quit()
 {
+    if (config.quitting)
+        return;
+
     if (config.debug)
         LOG("Quitting");
+
     config.quitting = TRUE;
     g_timeout_add(100, moloch_quit_gfunc, 0);
 }
@@ -709,6 +726,10 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     config.pcapReadOffline = 1;
     config.hostName = strdup("fuzz.example.com");
     config.nodeName = strdup("fuzz");
+
+    hashSalt = 0;
+    pcapFileHeader.linktype = 1;
+
     moloch_free_later_init();
     moloch_hex_init();
     moloch_config_init();
@@ -760,10 +781,13 @@ int main(int argc, char **argv)
 {
     signal(SIGHUP, reload);
     signal(SIGINT, controlc);
+    signal(SIGTERM, terminate);
     signal(SIGUSR1, exit);
     signal(SIGCHLD, SIG_IGN);
 
     mainLoop = g_main_loop_new(NULL, FALSE);
+
+    hashSalt = (uint32_t)time(NULL);
 
     parse_args(argc, argv);
     if (config.debug)

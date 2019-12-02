@@ -25,4 +25,4 @@ bundle/
 parliament/issues.json
 tests/GeoLite2*
 tests/oui.txt
-viewer/public/CyberChef*
+viewer/public/CyberChef*.zip

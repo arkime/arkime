@@ -10,6 +10,7 @@ use strict;
 my $pwd = "*/pcap";
 
     my $token = getTokenCookie();
+    my $otherToken = getTokenCookie('historytest1');
 
 # Clear all history
     esDelete("/tests*_history_v1*");
@@ -92,15 +93,15 @@ my $pwd = "*/pcap";
     is ($json->{recordsFiltered}, 0, "Test5: recordsFiltered");
 
 # Can't delete items when not admin
-    $json = viewerDelete("/history/list/$item->{id}?molochRegressionUser=historytest1");
-    eq_or_diff($json, from_json('{"success": false, "text": "Need admin privileges"}', {relaxed => 1}), "Test Delete Not Admin", { context => 3 });
+    $json = viewerDeleteToken("/history/list/$item->{id}?molochRegressionUser=historytest1", $otherToken);
+    eq_or_diff($json, from_json('{"success": false, "text": "You do not have permission to access this resource"}', {relaxed => 1}), "Test Delete Not Admin", { context => 3 });
 
 # Delete item no index
-    $json = viewerDelete("/history/list/$item->{id}");
+    $json = viewerDeleteToken("/history/list/$item->{id}", $token);
     eq_or_diff($json, from_json('{"success": false, "text": "Missing history index"}', {relaxed => 1}), "Test Delete No Index", { context => 3 });
 
 # Delete item
-    $json = viewerDelete("/history/list/$item->{id}?index=$item->{index}");
+    $json = viewerDeleteToken("/history/list/$item->{id}?index=$item->{index}", $token);
     eq_or_diff($json, from_json('{"success": true, "text": "Deleted history item successfully"}', {relaxed => 1}), "Test Delete", { context => 3 });
     esGet("/_refresh");
 
@@ -128,7 +129,7 @@ my $pwd = "*/pcap";
     # find and delete the user/create history item
     $json = viewerGet("/history/list?molochRegressionUser=anonymous");
     $item = $json->{data}->[0];
-    $json = viewerDelete("/history/list/$item->{id}?index=$item->{index}");
+    $json = viewerDeleteToken("/history/list/$item->{id}?index=$item->{index}", $token);
 
     # confirm that the forced expression is visible to admin
     $json = viewerGet("/history/list");
@@ -155,7 +156,7 @@ my $pwd = "*/pcap";
 
   # delete the history item with the forced expression
   $item = $json->{data}->[0];
-  $json = viewerDelete("/history/list/$item->{id}?index=$item->{index}");
+  $json = viewerDeleteToken("/history/list/$item->{id}?index=$item->{index}", $token);
 
 # Delete Users
     $json = viewerPostToken("/user/delete", "userId=historytest1&password=a&newPassword=b&currentPassword=c&test=1", $token);

@@ -11,6 +11,16 @@
 
     <div v-show="!error">
 
+      <button type="button"
+        v-b-tooltip.hover
+        @click="cancelTasks"
+        v-has-permission="'createEnabled'"
+        title="Cancel ALL cancelable tasks"
+        class="pull-right btn btn-sm btn-warning">
+        <span class="fa fa-ban"></span>&nbsp;
+        Cancel ALL Tasks
+      </button>
+
       <moloch-paging v-if="stats"
         class="mt-1 ml-2"
         :info-only="true"
@@ -152,6 +162,9 @@ export default {
     /* exposed page functions ------------------------------------ */
     cancelTask (taskId) {
       this.$http.post('estask/cancel', { taskId: taskId });
+    },
+    cancelTasks () {
+      this.$http.post('estask/cancelAll');
     },
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {

@@ -1,4 +1,4 @@
-use Test::More tests => 245;
+use Test::More tests => 254;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -92,8 +92,16 @@ my $hToken = getTokenCookie('huntuser');
 # Hunt should finish
   viewerGet("/processHuntJobs");
 
-  $hunts = viewerGet("/hunt/list");
+  $hunts = viewerGet("/hunt/list?molochRegressionUser=user2");
   is (@{$hunts->{data}}, 1, "Add hunt 1");
+
+# user2 shouldn't see is, query, search, searchType, userId
+  my $item = $hunts->{data}->[0];
+  is($item->{id}, '');
+  is($item->{search}, '');
+  is($item->{searchType}, '');
+  is($item->{userId}, '');
+  ok(! exists $item->{query});
 
 # If the user is not an admin they can only delete their own hunts
   my $id1 = $json->{hunt}->{id};
@@ -194,6 +202,9 @@ my $hToken = getTokenCookie('huntuser');
   createHunts("hex", "766d663d");
   createHunts("hexregex", "766..63d");
 
+  # create a hunt for regex dos
+  $HUNTS{"raw-regex-both-(.*a){25}x"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":67,"name":"' . "raw-regex-both-(.*a){25}x-$$" . '", "size":"50","search":"(.*a){25}x","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":1430916462,"stopTime":1569170858}}}', $hToken);
+
   # Actually process the hunts
   viewerGet("/processHuntJobs");
 
@@ -263,6 +274,13 @@ my $hToken = getTokenCookie('huntuser');
   checkHunt("reassembled-hexregex-src-766..63d", 1);
   checkHunt("reassembled-hexregex-dst-766..63d", 0);
 
+  # check results for regex dos
+  my $id = $HUNTS{"raw-regex-both-(.*a){25}x"}->{hunt}->{id};
+  my $result = $RESULTS{$id};
+  is ($result->{status}, 'finished', "raw-regex-both-(.*a){25}x finished check");
+  is ($result->{searchedSessions}, 67, "raw-regex-both-(.*a){25}x searchedSessions check");
+  is ($result->{totalSessions}, 67, "raw-regex-both-(.*a){25}x totalSessions check");
+  is ($result->{matchedSessions}, 0, "raw-regex-both-(.*a){25}x match check");
 
 # cleanup
   $json = viewerPostToken("/user/delete", "userId=huntuser", $token);
