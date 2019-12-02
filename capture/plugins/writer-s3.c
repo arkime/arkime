@@ -538,7 +538,7 @@ void writer_s3_exit()
     writer_s3_flush(TRUE);
 }
 /******************************************************************************/
-extern MolochPcapFileHdr_t pcapFileHeader;
+extern MolochPcapFileHdr_t pcapFileHeader   ;
 void writer_s3_create(const MolochPacket_t *packet)
 {
     char               filename[1000];

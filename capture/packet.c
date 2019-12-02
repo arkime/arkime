@@ -20,6 +20,7 @@
 #include <inttypes.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <pcap/dlt.h>
 
 //#define DEBUG_PACKET
 
@@ -65,16 +66,9 @@ extern MolochFieldOps_t      readerFieldOps[256];
 LOCAL MolochPacketEnqueue_cb ethernetCbs[0x10000];
 
 /******************************************************************************/
-
 // lookup table https://godoc.org/github.com/0intro/pcap
-#define DLT_FR 11
-#define DLT_C_HDLC 12
-#define DLT_RAW 12
-#define DLT_ATM_RFC1483 13
-#define DLT_SLIP_BSDOS 13
-#define DLT_PPP_BSDOS 14
-#define DLT_ATM_CLIP 19
-
+#define LINKTYPE_PPP_HDLC 50
+#define LINKTYPE_PPP_ETHER 51
 #define LINKTYPE_ATM_RFC1483 100
 #define LINKTYPE_RAW 101
 #define LINKTYPE_SLIP_BSDOS 102
@@ -82,6 +76,8 @@ LOCAL MolochPacketEnqueue_cb ethernetCbs[0x10000];
 #define LINKTYPE_C_HDLC 104
 #define LINKTYPE_ATM_CLIP 106
 #define LINKTYPE_FRELAY 107
+#define LINKTYPE_PFSYNC 246
+#define LINKTYPE_PKTAP 258
 
 #define MOLOCH_PACKET_SUCCESS          0
 #define MOLOCH_PACKET_IP_DROPPED       1
@@ -2293,7 +2289,7 @@ void moloch_packet_dlt_to_linktype(MolochPcapFileHdr_t *pcapFileHeader_dlt)
     int dlt = pcapFileHeader_dlt->dlt;
     if(dlt <= 10 || dlt >= 104) {
         return;
-    } else if(dlt == DLT_FR) {
+    } else if(dlt == DLT_FRELAY) {
         pcapFileHeader_dlt->dlt =LINKTYPE_FRELAY;
     } else if(dlt == DLT_ATM_RFC1483) {
         pcapFileHeader_dlt->dlt =LINKTYPE_ATM_RFC1483;
@@ -2307,10 +2303,14 @@ void moloch_packet_dlt_to_linktype(MolochPcapFileHdr_t *pcapFileHeader_dlt)
         pcapFileHeader_dlt->dlt =LINKTYPE_FRELAY;
     } else if(dlt == DLT_ATM_CLIP) {
         pcapFileHeader_dlt->dlt =LINKTYPE_ATM_CLIP;
-    // } else if(dlt == DLT_PPP_SERIAL) {        pcapFileHeader_dlt->dlt =LINKTYPE_PPP_HDLC;  // both 50
-    //} else if(dlt == DLT_PPP_ETHER) {        pcapFileHeader_dlt->dlt =LINKTYPE_PPP_ETHER; // both 51
-    //} else if(dlt == DLT_PFSYNC) {     pcapFileHeader_dlt->dlt =LINKTYPE_PFSYNC; // both 246
-    //} else if(dlt == DLT_PKTAP) {    pcapFileHeader_dlt->dlt =LINKTYPE_PKTAP; // both 258
+    } else if(dlt == DLT_PPP_SERIAL) {
+        pcapFileHeader_dlt->dlt =LINKTYPE_PPP_HDLC;  // both 50
+    } else if(dlt == DLT_PPP_ETHER) {
+        pcapFileHeader_dlt->dlt =LINKTYPE_PPP_ETHER; // both 51
+    } else if(dlt == DLT_PFSYNC) {
+        pcapFileHeader_dlt->dlt =LINKTYPE_PFSYNC; // both 246
+    } else if(dlt == DLT_PKTAP) {
+        pcapFileHeader_dlt->dlt =LINKTYPE_PKTAP; // both 258
     } // error handling?
     return;
 }
