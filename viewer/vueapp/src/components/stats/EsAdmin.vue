@@ -2,7 +2,7 @@
 
   <div class="container-fluid mt-3">
 
-    <moloch-loading v-if="initialLoading && !error">
+    <moloch-loading v-if="loading && !error">
     </moloch-loading>
 
     <moloch-error v-if="error"
@@ -11,29 +11,113 @@
 
     <div v-if="!error">
 
-      0) Only show this tab when esAdminUser is set 
+      <h5 class="alert alert-warning">
+        <span class="fa fa-exclamation-triangle mr-1">
+        </span>
+        <strong>Warning!</strong>
+        This stuff is dangerous and you can destroy your ES cluster.
+        <strong>Be very careful.</strong>
+      </h5>
 
-      1) Some warning: "This stuff is dangerous and you can destroy your ES cluster, be very careful.  You can control which users see this page by setting esAdminUsers= in your config.ini"
+      <div class="alert alert-info">
+        <span class="fa fa-info-circle mr-1">
+        </span>
+        You can control which users see this page by setting
+        <code>esAdminUsers=</code> in your <code>config.ini</code>.
+      </div>
 
-      2) Then a couple of action buttons: 
-      * "Retry Failed" call /esadmin/reroute
-      * "Flush" call /esadmin/flush
+      <div class="alert alert-danger"
+        v-if="interactionError">
+        <span class="fa fa-exclamation-triangle mr-1">
+        </span>
+        <strong>Error:</strong>
+        {{ interactionError }}
+        <button type="button"
+          class="close"
+          @click="interactionError = ''"
+          data-dismiss="alert">
+          <span>&times;</span>
+        </button>
+      </div>
 
-      3) Then a list of settings that come from /esadmin/list.  Not sure how to display
-      - key = needs to be shown since all docs use, and should be sent back to /esadmin/set
-      - current = current value
-      - default = default value
-      - url = where to get info from es about it
-      - help = english
-      - type = what kind of values are allowed.  All values allow blank or the string null
-        - disk = int followed by b,kb,mb,gb,tb,p
-        - percent = int followed by %
-        - integer
-        - diskorpercent = can be a percent or disk
-        - nodestring = [,a-z0-9_-]
+      <div class="alert alert-success"
+        v-if="interactionSuccess">
+        <span class="fa fa-check mr-1">
+        </span>
+        <strong>Success:</strong>
+        {{ interactionSuccess }}
+        <button type="button"
+          class="close"
+          @click="interactionSuccess = ''"
+          data-dismiss="alert">
+          <span class="fa fa-check">
+          </span>
+        </button>
+      </div>
 
-      when changing a value maybe show the save/cancel icons so user has to click.  up to you.
-         
+      <h3>
+        ES Settings
+        <span class="pull-right">
+          <button type="button"
+            @click="cancel"
+            class="btn btn-warning">
+            Cancel
+          </button>
+          <button type="button"
+            @click="save"
+            class="btn btn-theme-primary">
+            Save
+          </button>
+          <button type="button"
+            @click="retryFailed"
+            class="btn btn-theme-tertiary">
+            Retry Failed
+          </button>
+          <button type="button"
+            @click="flush"
+            class="btn btn-theme-secondary">
+            Flush
+          </button>
+        </span>
+      </h3>
+
+      <hr>
+
+      <div v-for="setting in settings"
+        :key="setting.key"
+        class="form-group row">
+        <div class="col">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">
+                {{ setting.name }}
+              </span>
+            </div>
+            <input type="text"
+              class="form-control"
+              v-model="setting.current"
+            />
+            <div class="input-group-append">
+              <span class="input-group-text">
+                Default =&nbsp;
+                {{ setting.default }}
+              </span>
+            </div>
+          </div>
+          <small class="form-text text-muted">
+            <span class="fa fa-info-circle">
+            </span>
+            <strong>
+              {{ setting.key }}:
+            </strong>
+            <a :href="setting.url"
+              class="no-decoration"
+              target="_blank">
+              Learn more
+            </a>
+          </small>
+        </div>
+      </div>
 
     </div>
 
@@ -45,289 +129,61 @@
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 
-let reqPromise; // promise returned from setInterval for recurring requests
-let respondedAt; // the time that the last data load succesfully responded
-
 export default {
   name: 'EsAdmin',
   components: { MolochError, MolochLoading },
-  props: [
-    'dataInterval',
-    'shardsShow',
-    'refreshData',
-    'searchTerm'
-  ],
   data: function () {
     return {
-      initialLoading: true,
+      loading: true,
       error: '',
-      stats: {},
-      nodes: {},
-      query: {
-        filter: this.searchTerm || undefined,
-        sortField: 'index',
-        desc: false,
-        show: this.shardsShow || 'notstarted'
-      },
-      columns: [
-        { name: 'Index', sort: 'index', doClick: false, hasDropdown: false, width: '200px' }
-      ]
+      interactionError: '',
+      interactionSuccess: '',
+      settings: {}
     };
-  },
-  computed: {
-    loading: {
-      get: function () {
-        return this.$store.state.loadingData;
-      },
-      set: function (newValue) {
-        this.$store.commit('setLoadingData', newValue);
-      }
-    }
-  },
-  watch: {
-    dataInterval: function () {
-      if (reqPromise) { // cancel the interval and reset it if necessary
-        clearInterval(reqPromise);
-        reqPromise = null;
-
-        if (this.dataInterval === '0') { return; }
-
-        this.setRequestInterval();
-      } else if (this.dataInterval !== '0') {
-        this.loadData();
-        this.setRequestInterval();
-      }
-    },
-    shardsShow: function () {
-      this.query.show = this.shardsShow;
-      this.loadData();
-    },
-    refreshData: function () {
-      if (this.refreshData) {
-        this.loadData();
-      }
-    }
   },
   created: function () {
     this.loadData();
-    if (this.dataInterval !== '0') {
-      this.setRequestInterval();
-    }
   },
   methods: {
     /* exposed page functions ------------------------------------ */
-    columnClick (name) {
-      if (!name) { return; }
-
-      this.query.sortField = name;
-      this.query.desc = !this.query.desc;
-      this.loadData();
+    save: function () {
+      // TODO
     },
-    exclude: function (type, column) {
-      this.$http.post(`esshard/exclude/${type}/${column[type]}`)
+    cancel: function () {
+      // TODO
+    },
+    flush: function () {
+      this.$http.post('esadmin/flush')
         .then((response) => {
-          if (type === 'name') {
-            column.nodeExcluded = true;
-          } else {
-            column.ipExcluded = true;
-          }
-        }, (error) => {
-          this.error = error.text || error;
+          this.interactionSuccess = response.data.text;
+        })
+        .catch((error) => {
+          this.interactionError = error;
         });
     },
-    include: function (type, column) {
-      this.$http.post(`esshard/include/${type}/${column[type]}`)
+    retryFailed: function () {
+      this.$http.post('esadmin/reroute')
         .then((response) => {
-          if (type === 'name') {
-            column.nodeExcluded = false;
-          } else {
-            column.ipExcluded = false;
-          }
-        }, (error) => {
-          this.error = error.text || error;
+          this.interactionSuccess = response.data.text;
+        })
+        .catch((error) => {
+          this.interactionError = error;
         });
-    },
-    showDetails: function (item) {
-      this.$set(item, 'showDetails', true);
-    },
-    hideDetails: function (item) {
-      this.$set(item, 'showDetails', false);
     },
     /* helper functions ------------------------------------------ */
-    setRequestInterval: function () {
-      reqPromise = setInterval(() => {
-        if (respondedAt && Date.now() - respondedAt >= parseInt(this.dataInterval)) {
-          this.loadData();
-        }
-      }, 500);
-    },
     loadData: function () {
       this.loading = true;
-      respondedAt = undefined;
 
-      this.query.filter = this.searchTerm;
-
-      this.$http.get('esadmin/list', { params: this.query })
+      this.$http.get('esadmin/list')
         .then((response) => {
-          respondedAt = Date.now();
           this.error = '';
           this.loading = false;
-          this.initialLoading = false;
-          this.stats = response.data;
-
-          this.columns.splice(1);
-
-          this.nodes = Object.keys(response.data.nodes).sort(function (a, b) {
-            return a.localeCompare(b);
-          });
-
-          for (var node of this.nodes) {
-            if (node === 'Unassigned') {
-              this.columns.push({ name: node, doClick: false, hasDropdown: false });
-            } else {
-              this.columns.push({
-                name: node,
-                doClick: (node.indexOf('->') === -1),
-                ip: response.data.nodes[node].ip,
-                ipExcluded: response.data.nodes[node].ipExcluded,
-                nodeExcluded: response.data.nodes[node].nodeExcluded,
-                hasDropdown: true
-              });
-            }
-          }
+          this.settings = response.data;
         }, (error) => {
-          respondedAt = undefined;
           this.error = error.text || error;
           this.loading = false;
-          this.initialLoading = false;
         });
-    }
-  },
-  beforeDestroy: function () {
-    if (reqPromise) {
-      clearInterval(reqPromise);
-      reqPromise = null;
     }
   }
 };
 </script>
-
-<style>
-table .hover-menu > div > .btn-group.column-actions-btn > .btn-sm {
-  padding: 1px 4px;
-  font-size: 13px;
-  line-height: 1.2;
-}
-</style>
-
-<style scoped>
-table.table.block-table {
-  display: block;
-}
-
-table > thead > tr > th {
-  border-top: none;
-}
-
-table.table .hover-menu {
-  vertical-align: top;
-  min-width: 100px;
-}
-table.table .hover-menu:hover .btn-group {
-  visibility: visible;
-}
-
-table.table .hover-menu .btn-group {
-  visibility: hidden;
-  margin-left: -20px !important;
-  position: relative;
-  top: 2px;
-  right: 2px;
-  margin-top: -2px;
-}
-
-table.table .hover-menu .header-text {
-  display: inline-block;
-  word-break: break-word;
-}
-
-table.table tbody > tr > td:first-child {
-  width:1px;
-  white-space:nowrap;
-  padding-right: .5rem;
-}
-
-.badge {
-  padding: .1em .4em;
-  font-weight: 500;
-  font-size: 14px;
-  white-space: normal;
-}
-.badge.badge-primary {
-  font-weight: bold;
-  background-color: var(--color-primary);
-}
-.badge:hover {
-  position: relative;
-}
-.badge > span {
-  display: none;
-}
-.badge:hover > span.shard-detail {
-  z-index: 2;
-  display: block;
-}
-.badge > span:before {
-  content: '';
-  display: block;
-  width: 0;
-  height: 0;
-  position: absolute;
-  border-top: 8px solid transparent;
-  border-bottom: 8px solid transparent;
-  border-left: 8px solid black;
-  right: -8px;
-  bottom: 7px;
-}
-.badge > span.shard-detail {
-  font-weight: normal;
-  position: absolute;
-  margin: 10px;
-  bottom: -14px;
-  right: 20px;
-  padding: 4px 6px;
-  color: white;
-  background-color: black;
-  border-radius: 5px;
-  font-size: 85%;
-  line-height: 1.2;
-  max-width: 210px;
-}
-.badge > span.shard-detail dl {
-  margin-bottom: 0;
-}
-.badge > span.shard-detail dt {
-  width: 85px;
-}
-.badge > span.shard-detail dd {
-  margin-left: 90px;
-  text-align: left;
-  overflow-wrap: break-word;
-}
-
-.badge.render-tooltip-bottom:hover > span {
-  bottom: -120px;
-}
-.badge.render-tooltip-bottom:hover > span:before {
-  bottom: 113px;
-}
-.badge.badge-secondary:not(.badge-notstarted):not(.badge-primary) {
-  border: 2px dotted #6c757d;
-}
-.badge.badge-primary {
-  border: 2px dotted var(--color-primary);
-}
-.badge-notstarted {
-  border: 2px dotted var(--color-quaternary);
-}
-</style>
