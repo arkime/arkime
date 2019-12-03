@@ -431,7 +431,7 @@ exports.setIndexSettings = (index, options, cb) => {
     },
     () => {
       internals.healthCache = {};
-      cb();
+      if (cb) { cb(); }
     }
   );
 };
@@ -489,12 +489,24 @@ exports.close = function () {
   return internals.elasticSearchClient.close();
 };
 
+exports.reroute = function (cb) {
+  return internals.elasticSearchClient.cluster.reroute({retryFailed: true}, cb);
+};
+
 exports.flush = function (index, cb) {
-  return internals.usersElasticSearchClient.indices.flush({index: fixIndex(index)}, cb);
+  if (index === 'users') {
+    return internals.usersElasticSearchClient.indices.flush({index: fixIndex(index)}, cb);
+  } else {
+    return internals.elasticSearchClient.indices.flush({index: fixIndex(index)}, cb);
+  }
 };
 
 exports.refresh = function (index, cb) {
-  return internals.usersElasticSearchClient.indices.refresh({index: fixIndex(index)}, cb);
+  if (index === 'users') {
+    return internals.usersElasticSearchClient.indices.refresh({index: fixIndex(index)}, cb);
+  } else {
+    return internals.elasticSearchClient.indices.refresh({index: fixIndex(index)}, cb);
+  }
 };
 
 exports.addTagsToSession = function (index, id, tags, node, cb) {

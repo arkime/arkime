@@ -66,13 +66,13 @@ var app = express();
 //////////////////////////////////////////////////////////////////////////////////
 var internals = {
   CYBERCHEFVERSION: '9.11.7',
-  elasticBase: Config.get("elasticsearch", "http://localhost:9200").split(",").map(s=>s.trim()).filter(s=>s.match(/^\S+$/)),
+  elasticBase: Config.getArray('elasticsearch', ',', 'http://localhost:9200'),
   esQueryTimeout: Config.get("elasticsearchTimeout", 300) + 's',
   userNameHeader: Config.get("userNameHeader"),
   requiredAuthHeader: Config.get("requiredAuthHeader"),
   requiredAuthHeaderVal: Config.get("requiredAuthHeaderVal"),
   userAutoCreateTmpl: Config.get("userAutoCreateTmpl"),
-  esAdminUsers: Config.get("esAdminUsers", "").split(",").map(s=>s.trim()).filter(s=>s.match(/^\S+$/)),
+  esAdminUsers: Config.get('multiES', false)?[]:Config.getArray('esAdminUsers', ',', ''),
   httpAgent:   new http.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40}),
   httpsAgent:  new https.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40, rejectUnauthorized: !Config.insecure}),
   previousNodesStats: [],
@@ -488,8 +488,8 @@ function loadPlugins() {
     getDb: function() { return Db; },
     getPcap: function() { return Pcap; },
   };
-  var plugins = Config.get("viewerPlugins", "").split(";");
-  var dirs = Config.get("pluginsDir", "/data/moloch/plugins").split(";");
+  var plugins = Config.getArray('viewerPlugins', ';', '');
+  var dirs = Config.getArray('pluginsDir', ';', '/data/moloch/plugins');
   plugins.forEach(function (plugin) {
     plugin = plugin.trim();
     if (plugin === "") {
@@ -601,8 +601,8 @@ function createSessionDetail() {
   var found = {};
   var dirs = [];
 
-  dirs = dirs.concat(Config.get("pluginsDir", "/data/moloch/plugins").split(';'));
-  dirs = dirs.concat(Config.get("parsersDir", "/data/moloch/parsers").split(';'));
+  dirs = dirs.concat(Config.getArray('pluginsDir', ';', '/data/moloch/plugins'));
+  dirs = dirs.concat(Config.getArray('parsersDir', ';', '/data/moloch/parsers'));
 
   dirs.forEach(function(dir) {
     try {
@@ -3663,13 +3663,13 @@ app.post('/estask/cancelAll', [noCacheJson, logAction(), checkCookieToken, check
 
 //////////////////////////////////////////////////////////////////////////////////
 function checkEsAdminUser(req, res, next) {
-  if (internals.esSettingsUsers.includes(req.user.userId)) {
+  if (internals.esAdminUsers.includes(req.user.userId)) {
     return next();
   }
   return res.molochError(403, 'You do not have permission to access this resource');
 }
 
-app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser], function(req, res) {
+app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser, setCookie], function(req, res) {
   Promise.all([Db.getClusterSettings({flatSettings: true, include_defaults: true})
               ]).then(([settings]) => {
 
@@ -3697,21 +3697,54 @@ app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser], fu
     addSetting('cluster.routing.allocation.cluster_concurrent_rebalance', 'integer',
                'Concurrent Rebalances',
                'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html');
+    addSetting('cluster.routing.allocation.node_concurrent_recoveries', 'integer',
+               'Concurrent Recoveries',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html');
+    addSetting('cluster.max_shards_per_node', 'integer',
+               'Max Shards per Node',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/master/misc-cluster.html');
+    addSetting('indices.recovery.max_bytes_per_sec', 'disk',
+               'Max Bytes per Second',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/recovery.html');
+    addSetting('cluster.routing.allocation.awareness.attributes', 'nodestring',
+               'Shard allocation awareness',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/allocation-awareness.html');
 
     return res.send(rsettings);
   });
 });
 
-app.post('/esadmin/set', [noCacheJson, recordResponseTime, checkEsAdminUser], function(req, res) {
-      return res.send(JSON.stringify({ success: true, text: 'Set'}));
+app.post('/esadmin/set', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], function(req, res) {
+
+  if (req.body.key === undefined) { return res.molochError(500, 'Missing key'); }
+  if (req.body.value === undefined) { return res.molochError(500, 'Missing value'); }
+
+  let query = {body: {persistent: {}}};
+  query.body.persistent[req.body.key] = req.body.value || null;
+
+  Db.putClusterSettings(query, function(err, result) {
+    if (err) {
+      console.log("putSettings failed", result);
+      return res.molochError(500, 'Set failed');
+    }
+    return res.send(JSON.stringify({ success: true, text: 'Set'}));
+  });
 });
 
-app.post('/esadmin/reroute', [noCacheJson, recordResponseTime, checkEsAdminUser], function(req, res) {
-      return res.send(JSON.stringify({ success: true, text: 'Rerouted'}));
+app.post('/esadmin/reroute', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], function(req, res) {
+  Db.reroute();
+  return res.send(JSON.stringify({ success: true, text: 'Rerouted'}));
 });
 
-app.post('/esadmin/flush', [noCacheJson, recordResponseTime, checkEsAdminUser], function(req, res) {
-      return res.send(JSON.stringify({ success: true, text: 'Flushed'}));
+app.post('/esadmin/flush', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], function(req, res) {
+  Db.refresh('*');
+  Db.flush('*');
+  return res.send(JSON.stringify({ success: true, text: 'Flushed'}));
+});
+
+app.post('/esadmin/unflood', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], function(req, res) {
+  Db.setIndexSettings('*', {'index.blocks.read_only_allow_delete': null});
+  return res.send(JSON.stringify({ success: true, text: 'Unflood'}));
 });
 
 app.get('/esshard/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie], (req, res) => {
@@ -8812,13 +8845,13 @@ processArgs(process.argv);
 //////////////////////////////////////////////////////////////////////////////////
 Db.initialize({host: internals.elasticBase,
                prefix: Config.get("prefix", ""),
-               usersHost: Config.get("usersElasticsearch")?Config.get("usersElasticsearch").split(",").map(s => s.trim()).filter(s => s.match(/^\S+$/)):undefined,
+               usersHost: Config.get('usersElasticsearch')?Config.getArray('usersElasticsearch', ',', ''):undefined,
                usersPrefix: Config.get("usersPrefix"),
                nodeName: Config.nodeName(),
                esClientKey: Config.get("esClientKey", null),
                esClientCert: Config.get("esClientCert", null),
                esClientKeyPass: Config.get("esClientKeyPass", null),
-               dontMapTags: Config.get("multiES", false),
+               dontMapTags: Config.get('multiES', false),
                insecure: Config.insecure,
                ca: loadCaTrust(internals.nodeName),
                requestTimeout: Config.get("elasticsearchTimeout", 300),
