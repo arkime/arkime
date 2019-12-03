@@ -3672,14 +3672,12 @@ function checkEsAdminUser(req, res, next) {
 app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser, setCookie], function(req, res) {
   Promise.all([Db.getClusterSettings({flatSettings: true, include_defaults: true})
               ]).then(([settings]) => {
-
     let rsettings = [];
 
     function addSetting(key, type, name, url, regex) {
-      let current = settings.transient[key] || settings.persistent[key] || '';
-      let defaultValue = settings.defaults[key];
-      if (!defaultValue) { return; }
-      rsettings.push({key: key, current: current, default: defaultValue, name: name, type: type, url: url, regex: regex});
+      let current = settings.transient[key] || settings.persistent[key] || settings.defaults[key];
+      if (current === undefined) { return; }
+      rsettings.push({key: key, current: current, name: name, type: type, url: url, regex: regex});
     }
 
     addSetting('search.max_buckets', 'Integer',
