@@ -3662,14 +3662,14 @@ app.post('/estask/cancelAll', [noCacheJson, logAction(), checkCookieToken, check
 });
 
 //////////////////////////////////////////////////////////////////////////////////
-function checkEsAdminUser(req, res, next) {
+function checkEsAdminUser (req, res, next) {
   if (internals.esAdminUsers.includes(req.user.userId)) {
     return next();
   }
   return res.molochError(403, 'You do not have permission to access this resource');
 }
 
-app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser, setCookie], function(req, res) {
+app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser, setCookie], (req, res) => {
   Promise.all([Db.getClusterSettings({flatSettings: true, include_defaults: true})
               ]).then(([settings]) => {
     let rsettings = [];
@@ -3730,7 +3730,7 @@ app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser, set
   });
 });
 
-app.post('/esadmin/set', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], function(req, res) {
+app.post('/esadmin/set', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], (req, res) => {
 
   if (req.body.key === undefined) { return res.molochError(500, 'Missing key'); }
   if (req.body.value === undefined) { return res.molochError(500, 'Missing value'); }
@@ -3747,18 +3747,18 @@ app.post('/esadmin/set', [noCacheJson, recordResponseTime, checkEsAdminUser, che
   });
 });
 
-app.post('/esadmin/reroute', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], function(req, res) {
+app.post('/esadmin/reroute', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], (req, res) => {
   Db.reroute();
   return res.send(JSON.stringify({ success: true, text: 'Rerouted'}));
 });
 
-app.post('/esadmin/flush', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], function(req, res) {
+app.post('/esadmin/flush', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], (req, res) => {
   Db.refresh('*');
   Db.flush('*');
   return res.send(JSON.stringify({ success: true, text: 'Flushed'}));
 });
 
-app.post('/esadmin/unflood', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], function(req, res) {
+app.post('/esadmin/unflood', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], (req, res) => {
   Db.setIndexSettings('*', {'index.blocks.read_only_allow_delete': null});
   return res.send(JSON.stringify({ success: true, text: 'Unflood'}));
 });

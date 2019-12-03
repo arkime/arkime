@@ -60,13 +60,18 @@
         <span class="pull-right">
           <button type="button"
             @click="retryFailed"
-            class="btn btn-theme-tertiary">
+            class="btn btn-theme-primary">
             Retry Failed
           </button>
           <button type="button"
             @click="flush"
             class="btn btn-theme-secondary">
             Flush
+          </button>
+          <button type="button"
+            @click="unflood"
+            class="btn btn-theme-tertiary">
+            Unflood
           </button>
         </span>
       </h3>
@@ -78,8 +83,10 @@
         class="form-group row">
         <div class="col">
           <div class="input-group">
-            <div class="input-group-prepend">
-              <span class="input-group-text">
+            <div class="input-group-prepend cursor-help">
+              <span class="input-group-text"
+                v-b-tooltip.hover
+                :title="setting.key">
                 {{ setting.name }}
               </span>
             </div>
@@ -91,12 +98,18 @@
             />
             <div class="input-group-append">
               <span class="input-group-text">
-                Default =&nbsp;
-                {{ setting.default }}
+                {{ setting.type }}
+                <small class="ml-2">
+                  (<a :href="setting.url"
+                    class="no-decoration"
+                    target="_blank">
+                    Learn more
+                  </a>)
+                </small>
               </span>
               <button type="button"
                 :disabled="!setting.changed"
-                @click="cancel(setting.key)"
+                @click="cancel(setting)"
                 class="btn btn-warning">
                 Cancel
               </button>
@@ -108,19 +121,6 @@
               </button>
             </div>
           </div>
-          <small class="form-text text-muted">
-            <span class="fa fa-info-circle">
-            </span>
-            <strong>
-              {{ setting.key }}:
-            </strong>
-            {{ setting.type }}.
-            <a :href="setting.url"
-              class="no-decoration"
-              target="_blank">
-              Learn more.
-            </a>
-          </small>
           <div v-if="setting.error"
             class="form-text text-danger">
             <span class="fa fa-exclamation-triangle">
@@ -159,7 +159,7 @@ export default {
     /* exposed page functions ------------------------------------ */
     save: function (setting) {
       if (!setting.current.match(setting.regex)) {
-        this.$set(setting, 'error', `Invalid format, this setting must be: ${setting.type}`); // TODO better error?
+        this.$set(setting, 'error', `Invalid format, this setting must be: ${setting.type}`);
         return;
       }
 
@@ -175,21 +175,28 @@ export default {
           this.$set(setting, 'error', error.text || error);
         });
     },
-    cancel: function (key) {
+    cancel: function (setting) {
       // update the changed value with the one that's saved
       this.$http.get('esadmin/list')
         .then((response) => {
-          this.error = '';
-          // assumes the settings are in the same array order
-          for (let i = 0, len = response.data.length; i < len; i++) {
-            let setting = response.data[i];
-            if (setting.key === key) {
-              this.$set(this.settings[i], 'current', setting.current);
-              this.$set(this.settings[i], 'changed', false);
+          this.$set(setting, 'error', '');
+          for (let resSetting of response.data) {
+            if (resSetting.key === setting.key) {
+              this.$set(setting, 'current', resSetting.current);
+              this.$set(setting, 'changed', false);
             }
           }
         }, (error) => {
-          this.error = error.text || error;
+          this.$set(setting, 'error', error.text || error);
+        });
+    },
+    unflood: function () {
+      this.$http.post('esadmin/unflood')
+        .then((response) => {
+          this.interactionSuccess = response.data.text;
+        })
+        .catch((error) => {
+          this.interactionError = error;
         });
     },
     flush: function () {
