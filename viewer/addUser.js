@@ -26,7 +26,7 @@ var Config = require("./config.js");
 var Db = require ("./db.js");
 var crypto = require('crypto');
 
-var escInfo = Config.get("elasticsearch", "http://localhost:9200").split(",");
+var escInfo = Config.getArray("elasticsearch", ',', "http://localhost:9200");
 function help() {
   console.log("addUser.js [<config options>] <user id> <user friendly name> <password> [<options>]");
   console.log("");

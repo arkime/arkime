@@ -206,6 +206,11 @@ exports.get = function(key, defaultValue) {
   return exports.getFull(internals.nodeName, key, defaultValue);
 };
 
+// Return an array split on separator, remove leading/trailing spaces, remove empty elements
+exports.getArray = function(key, separator, defaultValue) {
+  return exports.get(key, defaultValue).split(separator).map(s=>s.trim()).filter(s=>s.match(/^\S+$/));
+};
+
 exports.getObj = function(key, defaultValue) {
   var full = exports.getFull(internals.nodeName, key, defaultValue);
   if (!full) {
