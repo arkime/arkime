@@ -845,10 +845,16 @@ nodes.forEach((node) => {
   });
 });
 
+var clusterList = Config.get("multiESClusters", "").split(";");
+if (clusterList.length === 0 || clusterList[0] === "") {
+  console.log("ERROR - Empty multiESClusters");
+  process.exit(1);
+}
+
 // Maintain a mapping of node to cluster and cluster to node
 for (var i = 0; i < nodes.length; i++) {
-  clusters[nodes[i]] = Config.get("multiESClusters", "").split(";")[i]; // node -> cluster
-  clusters[Config.get("multiESClusters", "").split(";")[i]] = nodes[i]; // cluster -> node
+  clusters[nodes[i]] = clusterList[i]; // node -> cluster
+  clusters[clusterList[i]] = nodes[i]; // cluster -> node
 }
 
 activeESNodes = nodes.slice();

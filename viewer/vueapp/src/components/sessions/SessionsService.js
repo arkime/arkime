@@ -443,7 +443,7 @@ export default {
 
   multiESEnabled: function () {
     return new Promise((resolve, reject) => {
-      Vue.axios.get('ccsenabled')
+      Vue.axios.get('multienabled')
         .then((response) => {
           resolve(response.data);
         }, (error) => {

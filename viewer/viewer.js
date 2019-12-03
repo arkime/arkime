@@ -8385,7 +8385,7 @@ app.get('/:nodeName/session/:id/cyberchef', checkPermissions(['webEnabled']), ch
   });
 });
 
-app.get("/ccsenabled", (req, res) => {
+app.get("/multienabled", (req, res) => {
   var crossClusterSearchEnabled = false;
   if (Config.get("multiES", false)) {
     crossClusterSearchEnabled = true;
