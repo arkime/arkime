@@ -3675,40 +3675,58 @@ app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser, set
 
     let rsettings = [];
 
-    function addSetting(key, type, name, url, help) {
+    function addSetting(key, type, name, url, regex) {
       let current = settings.transient[key] || settings.persistent[key] || '';
       let defaultValue = settings.defaults[key];
       if (!defaultValue) { return; }
-      rsettings.push({key: key, current: current, default: defaultValue, name: name, type: type, url: url, help: help});
+      rsettings.push({key: key, current: current, default: defaultValue, name: name, type: type, url: url, regex: regex});
     }
 
-    addSetting('search.max_buckets', 'integer',
+    addSetting('search.max_buckets', 'Integer',
                'Max Aggregation Size',
-               'https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket.html');
-    addSetting('cluster.routing.allocation.disk.watermark.flood_stage', 'diskorpercent',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket.html',
+               '^(|null|\\d+)$');
+
+    addSetting('cluster.routing.allocation.disk.watermark.flood_stage', 'Percent or Byte Value',
                'Disk Watermark Flood',
-               'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html');
-    addSetting('cluster.routing.allocation.disk.watermark.high', 'diskorpercent',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html',
+               '^(|null|\\d+(%|b|kb|mb|gb|tb|pb))$');
+
+    addSetting('cluster.routing.allocation.disk.watermark.high', 'Percent or Byte Value',
                'Disk Watermark High',
-               'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html');
-    addSetting('cluster.routing.allocation.disk.watermark.low', 'diskorpercent',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html',
+               '^(|null|\\d+(%|b|kb|mb|gb|tb|pb))$');
+
+    addSetting('cluster.routing.allocation.disk.watermark.low', 'Percent or Byte Value',
                'Disk Watermark Low',
-               'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html');
-    addSetting('cluster.routing.allocation.cluster_concurrent_rebalance', 'integer',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html',
+               '^(|null|\\d+(%|b|kb|mb|gb|tb|pb))$');
+
+    addSetting('cluster.routing.allocation.cluster_concurrent_rebalance', 'Integer',
                'Concurrent Rebalances',
-               'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html');
-    addSetting('cluster.routing.allocation.node_concurrent_recoveries', 'integer',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html',
+               '^(|null|\\d+)$');
+
+    addSetting('cluster.routing.allocation.node_concurrent_recoveries', 'Integer',
                'Concurrent Recoveries',
-               'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html');
-    addSetting('cluster.max_shards_per_node', 'integer',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html',
+               '^(|null|\\d+)$');
+
+    addSetting('cluster.max_shards_per_node', 'Integer',
                'Max Shards per Node',
-               'https://www.elastic.co/guide/en/elasticsearch/reference/master/misc-cluster.html');
-    addSetting('indices.recovery.max_bytes_per_sec', 'disk',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/master/misc-cluster.html',
+               '^(|null|\\d+)$');
+
+    addSetting('indices.recovery.max_bytes_per_sec', 'Byte Value',
                'Max Bytes per Second',
-               'https://www.elastic.co/guide/en/elasticsearch/reference/current/recovery.html');
-    addSetting('cluster.routing.allocation.awareness.attributes', 'nodestring',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/recovery.html',
+               '^(|null|\\d+(b|kb|mb|gb|tb|pb))$');
+
+    addSetting('cluster.routing.allocation.awareness.attributes', 'List of Nodes',
                'Shard allocation awareness',
-               'https://www.elastic.co/guide/en/elasticsearch/reference/current/allocation-awareness.html');
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/allocation-awareness.html',
+               '^(|null|[a-z0-9_, -)$');
+
 
     return res.send(rsettings);
   });
