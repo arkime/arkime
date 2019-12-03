@@ -17,6 +17,8 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 2.1.1 2019/12/XX
+  - wise - fix view duplication when reload tagger file (#1315)
+  - capture - string fields created with wise/custom-fields are now assumed utf8
 
 2.1.0 2019/11/19
   - NOTE: All viewers must be 2.1 or later for them to communicate.  If not
