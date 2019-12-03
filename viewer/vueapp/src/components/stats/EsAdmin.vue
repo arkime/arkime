@@ -59,16 +59,6 @@
         ES Settings
         <span class="pull-right">
           <button type="button"
-            @click="cancel"
-            class="btn btn-warning">
-            Cancel
-          </button>
-          <button type="button"
-            @click="save"
-            class="btn btn-theme-primary">
-            Save
-          </button>
-          <button type="button"
             @click="retryFailed"
             class="btn btn-theme-tertiary">
             Retry Failed
@@ -94,14 +84,28 @@
               </span>
             </div>
             <input type="text"
+              @input="setting.changed = true"
               class="form-control"
               v-model="setting.current"
+              :class="{'is-invalid':setting.error}"
             />
             <div class="input-group-append">
               <span class="input-group-text">
                 Default =&nbsp;
                 {{ setting.default }}
               </span>
+              <button type="button"
+                :disabled="!setting.changed"
+                @click="cancel(setting.key)"
+                class="btn btn-warning">
+                Cancel
+              </button>
+              <button type="button"
+                :disabled="!setting.changed"
+                @click="save(setting)"
+                class="btn btn-theme-primary">
+                Save
+              </button>
             </div>
           </div>
           <small class="form-text text-muted">
@@ -110,12 +114,19 @@
             <strong>
               {{ setting.key }}:
             </strong>
+            {{ setting.type }}.
             <a :href="setting.url"
               class="no-decoration"
               target="_blank">
-              Learn more
+              Learn more.
             </a>
           </small>
+          <div v-if="setting.error"
+            class="form-text text-danger">
+            <span class="fa fa-exclamation-triangle">
+            </span>
+            {{ setting.error }}
+          </div>
         </div>
       </div>
 
@@ -146,11 +157,40 @@ export default {
   },
   methods: {
     /* exposed page functions ------------------------------------ */
-    save: function () {
-      // TODO
+    save: function (setting) {
+      if (!setting.current.match(setting.regex)) {
+        this.$set(setting, 'error', `Invalid format, this setting must be: ${setting.type}`); // TODO better error?
+        return;
+      }
+
+      let body = {
+        key: setting.key,
+        value: setting.current
+      };
+
+      this.$http.post('esadmin/set', body)
+        .then((response) => {
+          this.$set(setting, 'error', '');
+        }, (error) => {
+          this.$set(setting, 'error', error.text || error);
+        });
     },
-    cancel: function () {
-      // TODO
+    cancel: function (key) {
+      // update the changed value with the one that's saved
+      this.$http.get('esadmin/list')
+        .then((response) => {
+          this.error = '';
+          // assumes the settings are in the same array order
+          for (let i = 0, len = response.data.length; i < len; i++) {
+            let setting = response.data[i];
+            if (setting.key === key) {
+              this.$set(this.settings[i], 'current', setting.current);
+              this.$set(this.settings[i], 'changed', false);
+            }
+          }
+        }, (error) => {
+          this.error = error.text || error;
+        });
     },
     flush: function () {
       this.$http.post('esadmin/flush')
