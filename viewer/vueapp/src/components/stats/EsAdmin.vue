@@ -171,6 +171,7 @@ export default {
       this.$http.post('esadmin/set', body)
         .then((response) => {
           this.$set(setting, 'error', '');
+          this.$set(setting, 'changed', false);
         }, (error) => {
           this.$set(setting, 'error', error.text || error);
         });
