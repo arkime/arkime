@@ -199,7 +199,7 @@ function simpleGather(req, res, bodies, doneCb) {
           result = {};
         }
         result._node = node;
-        result.clusterName = clusters[node];
+        result.escluster = clusters[node];
         asyncCb(null, result);
       });
     });
@@ -591,7 +591,7 @@ function combineResults(obj, result) {
   if (result.hits.hits) {
     for (var i = 0; i < result.hits.hits.length; i++) {
       result.hits.hits[i]._node = result._node;
-      result.hits.hits[i]._source.clusterName = result.clusterName;
+      result.hits.hits[i]._source.escluster = result.escluster;
     }
     obj.hits.hits = obj.hits.hits.concat(result.hits.hits);
   }

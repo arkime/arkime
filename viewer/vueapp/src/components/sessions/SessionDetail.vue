@@ -622,7 +622,7 @@ export default {
 
       let p1 = FieldService.get();
       let p2 = ConfigService.getMolochClusters();
-      let p3 = SessionsService.getDetail(this.session.id, this.session.node, this.session.clusterName);
+      let p3 = SessionsService.getDetail(this.session.id, this.session.node, this.session.escluster);
 
       if (this.component) {
         this.component.$destroy(true);
