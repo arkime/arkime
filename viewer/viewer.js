@@ -3732,7 +3732,7 @@ app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser, set
                'https://www.elastic.co/guide/en/elasticsearch/reference/current/recovery.html',
                '^(|null|\\d+(b|kb|mb|gb|tb|pb))$');
 
-    addSetting('cluster.routing.allocation.awareness.attributes', 'List of Nodes',
+    addSetting('cluster.routing.allocation.awareness.attributes', 'List of Attributes',
                'Shard Allocation Awareness',
                'https://www.elastic.co/guide/en/elasticsearch/reference/current/allocation-awareness.html',
                '^(|null|[a-z0-9_, -)$');
