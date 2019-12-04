@@ -430,7 +430,7 @@
             :user="user">
           </es-recovery>
         </b-tab>
-        <b-tab title="ES Settings"
+        <b-tab title="ES Admin"
           @click="tabIndexChange(7)"
           v-if="user.esAdminUser && !multiviewer">
           <es-admin v-if="user && tabIndex === 7"

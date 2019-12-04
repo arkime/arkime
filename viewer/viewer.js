@@ -3675,7 +3675,9 @@ app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser, set
     let rsettings = [];
 
     function addSetting(key, type, name, url, regex) {
-      let current = settings.transient[key] || settings.persistent[key] || settings.defaults[key];
+      let current = settings.transient[key];
+      if (current === undefined) { current = settings.persistent[key]; }
+      if (current === undefined) { current = settings.defaults[key]; }
       if (current === undefined) { return; }
       rsettings.push({key: key, current: current, name: name, type: type, url: url, regex: regex});
     }
@@ -3700,6 +3702,11 @@ app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser, set
                'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html',
                '^(|null|\\d+(%|b|kb|mb|gb|tb|pb))$');
 
+    addSetting('cluster.routing.allocation.enable', 'Mode',
+               'Allocation Mode',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html',
+               '^(all|primaries|new_primaries|none)$');
+
     addSetting('cluster.routing.allocation.cluster_concurrent_rebalance', 'Integer',
                'Concurrent Rebalances',
                'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html',
@@ -3710,20 +3717,35 @@ app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser, set
                'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html',
                '^(|null|\\d+)$');
 
+    addSetting('cluster.routing.allocation.node_initial_primaries_recoveries', 'Integer',
+               'Initial Primaries Recoveries',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html',
+               '^(|null|\\d+)$');
+
     addSetting('cluster.max_shards_per_node', 'Integer',
                'Max Shards per Node',
                'https://www.elastic.co/guide/en/elasticsearch/reference/master/misc-cluster.html',
                '^(|null|\\d+)$');
 
     addSetting('indices.recovery.max_bytes_per_sec', 'Byte Value',
-               'Max Bytes per Second',
+               'Recovery Max Bytes per Second',
                'https://www.elastic.co/guide/en/elasticsearch/reference/current/recovery.html',
                '^(|null|\\d+(b|kb|mb|gb|tb|pb))$');
 
     addSetting('cluster.routing.allocation.awareness.attributes', 'List of Nodes',
-               'Shard allocation awareness',
+               'Shard Allocation Awareness',
                'https://www.elastic.co/guide/en/elasticsearch/reference/current/allocation-awareness.html',
                '^(|null|[a-z0-9_, -)$');
+
+    addSetting('indices.breaker.total.limit', 'Percent',
+               'Breaker - Total Limit',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/circuit-breaker.html',
+               '^(|null|\\d+%)$');
+
+    addSetting('indices.breaker.fielddata.limit', 'Percent',
+               'Breaker - Field data',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/circuit-breaker.html',
+               '^(|null|\\d+%)$');
 
 
     return res.send(rsettings);

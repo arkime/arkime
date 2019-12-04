@@ -19,13 +19,6 @@
         <strong>Be very careful.</strong>
       </h5>
 
-      <div class="alert alert-info">
-        <span class="fa fa-info-circle mr-1">
-        </span>
-        You can control which users see this page by setting
-        <code>esAdminUsers=</code> in your <code>config.ini</code>.
-      </div>
-
       <div class="alert alert-danger"
         v-if="interactionError">
         <span class="fa fa-exclamation-triangle mr-1">
@@ -56,7 +49,7 @@
       </div>
 
       <h3>
-        ES Settings
+        ES Cluster Settings
         <span class="pull-right">
           <button type="button"
             @click="retryFailed"
@@ -128,6 +121,13 @@
             {{ setting.error }}
           </div>
         </div>
+      </div>
+
+      <div class="alert alert-info">
+        <span class="fa fa-info-circle mr-1">
+        </span>
+        You can control which users see this page by setting
+        <code>esAdminUsers=</code> in your <code>config.ini</code>.
       </div>
 
     </div>
