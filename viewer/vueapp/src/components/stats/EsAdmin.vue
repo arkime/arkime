@@ -53,16 +53,22 @@
         <span class="pull-right">
           <button type="button"
             @click="retryFailed"
+            v-b-tooltip.hover
+            title="Try to restart any shard migrations that have failed or paused"
             class="btn btn-theme-primary">
             Retry Failed
           </button>
           <button type="button"
             @click="flush"
+            v-b-tooltip.hover
+            title="Flush and refresh and data waiting in Elasticsearch to disk"
             class="btn btn-theme-secondary">
             Flush
           </button>
           <button type="button"
             @click="unflood"
+            v-b-tooltip.hover
+            title="Try and clear any indices marked as flooded"
             class="btn btn-theme-tertiary">
             Unflood
           </button>

@@ -3735,7 +3735,7 @@ app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser, set
     addSetting('cluster.routing.allocation.awareness.attributes', 'List of Attributes',
                'Shard Allocation Awareness',
                'https://www.elastic.co/guide/en/elasticsearch/reference/current/allocation-awareness.html',
-               '^(|null|[a-z0-9_, -)$');
+               '^(|null|[a-z0-9_,-]+)$');
 
     addSetting('indices.breaker.total.limit', 'Percent',
                'Breaker - Total Limit',
@@ -3756,6 +3756,9 @@ app.post('/esadmin/set', [noCacheJson, recordResponseTime, checkEsAdminUser, che
 
   if (req.body.key === undefined) { return res.molochError(500, 'Missing key'); }
   if (req.body.value === undefined) { return res.molochError(500, 'Missing value'); }
+
+  // Convert null string to null
+  if (req.body.value === 'null') { req.body.value = null; }
 
   let query = {body: {persistent: {}}};
   query.body.persistent[req.body.key] = req.body.value || null;
