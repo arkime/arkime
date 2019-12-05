@@ -417,7 +417,7 @@ if (Config.get("passwordSecret")) {
   app.locals.noPasswordSecret   = true;
   app.use(function(req, res, next) {
     req.user = internals.anonymousUser;
-    Db.getUserCache("anonymous", function(err, suser) {
+    Db.getUserCache('anonymous', (err, suser) => {
       if (!err && suser && suser.found) {
         req.user.settings = suser._source.settings || {};
         req.user.views = suser._source.views;
@@ -431,17 +431,25 @@ if (Config.get("passwordSecret")) {
 // user or the user requested by the userId
 function getUserCacheIncAnon (userId, cb) {
   if (app.locals.noPasswordSecret) { // user is anonymous
-    let anon = internals.anonymousUser;
-    anon.found = true;
-    return cb(null, anon);
-  }
+    Db.getUserCache('anonymous', (err, anonUser) => {
+      let anon = internals.anonymousUser;
+      anon.found = true;
 
-  Db.getUserCache(userId, (err, user) => {
-    let found = user.found;
-    user = user._source;
-    user.found = found;
-    return cb(err, user);
-  });
+      if (!err && anonUser && anonUser.found) {
+        anon.settings = anonUser._source.settings || {};
+        anon.views = anonUser._source.views;
+      }
+
+      return cb(null, anon);
+    });
+  } else {
+    Db.getUserCache(userId, (err, user) => {
+      let found = user.found;
+      user = user._source;
+      if (user) { user.found = found; }
+      return cb(err, user);
+    });
+  }
 }
 
 // add lookups for queries
@@ -8728,11 +8736,18 @@ function processCronQueries() {
           cluster = cq.action.substring(8);
         }
 
-        Db.getUserCache(cq.creator, function (err, user) {
-          if (err && !user) {return forQueriesCb();}
-          if (!user || !user.found) {console.log("User", cq.creator, "doesn't exist"); return forQueriesCb(null);}
-          if (!user._source.enabled) {console.log("User", cq.creator, "not enabled"); return forQueriesCb();}
-          user = user._source;
+        getUserCacheIncAnon(cq.creator, (err, user) => {
+          if (err && !user) {
+            return forQueriesCb();
+          }
+          if (!user || !user.found) {
+            console.log(`User ${cq.creator} doesn't exist`);
+            return forQueriesCb(null);
+          }
+          if (!user.enabled) {
+            console.log(`User ${cq.creator} not enabled`);
+            return forQueriesCb();
+          }
 
           let options = {
             user: user,
