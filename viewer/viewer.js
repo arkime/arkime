@@ -103,6 +103,19 @@ var internals = {
     termfield: 'string',
     uptermfield: 'string',
     lotermfield: 'string'
+  },
+  anonymousUser: {
+    userId: 'anonymous',
+    enabled: true,
+    createEnabled: false,
+    webEnabled: true,
+    headerAuthEnabled: false,
+    emailSearch: true,
+    removeEnabled: true,
+    packetSearch: true,
+    settings: {},
+    welcomeMsgNum: 1,
+    found: true
   }
 };
 
@@ -404,15 +417,39 @@ if (Config.get("passwordSecret")) {
   app.locals.alwaysShowESStatus = true;
   app.locals.noPasswordSecret   = true;
   app.use(function(req, res, next) {
-    req.user = {userId: "anonymous", enabled: true, createEnabled: false, webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}, welcomeMsgNum: 1};
-    Db.getUserCache("anonymous", function(err, suser) {
-        if (!err && suser && suser.found) {
-          req.user.settings = suser._source.settings || {};
-          req.user.views = suser._source.views;
-        }
+    req.user = internals.anonymousUser;
+    Db.getUserCache('anonymous', (err, suser) => {
+      if (!err && suser && suser.found) {
+        req.user.settings = suser._source.settings || {};
+        req.user.views = suser._source.views;
+      }
       next();
     });
   });
+}
+
+// check for anonymous mode before fetching user cache and return anonymous
+// user or the user requested by the userId
+function getUserCacheIncAnon (userId, cb) {
+  if (app.locals.noPasswordSecret) { // user is anonymous
+    Db.getUserCache('anonymous', (err, anonUser) => {
+      let anon = internals.anonymousUser;
+
+      if (!err && anonUser && anonUser.found) {
+        anon.settings = anonUser._source.settings || {};
+        anon.views = anonUser._source.views;
+      }
+
+      return cb(null, anon);
+    });
+  } else {
+    Db.getUserCache(userId, (err, user) => {
+      let found = user.found;
+      user = user._source;
+      if (user) { user.found = found; }
+      return cb(err, user);
+    });
+  }
 }
 
 // add lookups for queries
@@ -7150,6 +7187,7 @@ function runHuntJob (huntId, hunt, query, user) {
   });
 }
 
+
 // Do the house keeping before actually running the hunt job
 function processHuntJob (huntId, hunt) {
   let now = Math.floor(Date.now() / 1000);
@@ -7164,8 +7202,7 @@ function processHuntJob (huntId, hunt) {
     }
   });
 
-  // find the user that created the hunt
-  Db.getUserCache(hunt.userId, function(err, user) {
+  getUserCacheIncAnon(hunt.userId, (err, user) => {
     if (err && !user) {
       pauseHuntJobWithError(huntId, hunt, { value: err });
       return;
@@ -7174,12 +7211,10 @@ function processHuntJob (huntId, hunt) {
       pauseHuntJobWithError(huntId, hunt, { value: `User ${hunt.userId} doesn't exist` });
       return;
     }
-    if (!user._source.enabled) {
+    if (!user.enabled) {
       pauseHuntJobWithError(huntId, hunt, { value: `User ${hunt.userId} is not enabled` });
       return;
     }
-
-    user = user._source;
 
     Db.getLookupsCache(hunt.userId, (err, lookups) => {
       molochparser.parser.yy = {
@@ -8701,11 +8736,18 @@ function processCronQueries() {
           cluster = cq.action.substring(8);
         }
 
-        Db.getUserCache(cq.creator, function (err, user) {
-          if (err && !user) {return forQueriesCb();}
-          if (!user || !user.found) {console.log("User", cq.creator, "doesn't exist"); return forQueriesCb(null);}
-          if (!user._source.enabled) {console.log("User", cq.creator, "not enabled"); return forQueriesCb();}
-          user = user._source;
+        getUserCacheIncAnon(cq.creator, (err, user) => {
+          if (err && !user) {
+            return forQueriesCb();
+          }
+          if (!user || !user.found) {
+            console.log(`User ${cq.creator} doesn't exist`);
+            return forQueriesCb(null);
+          }
+          if (!user.enabled) {
+            console.log(`User ${cq.creator} not enabled`);
+            return forQueriesCb();
+          }
 
           let options = {
             user: user,
