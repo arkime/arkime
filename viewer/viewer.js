@@ -103,6 +103,18 @@ var internals = {
     termfield: 'string',
     uptermfield: 'string',
     lotermfield: 'string'
+  },
+  anonymousUser: {
+    userId: 'anonymous',
+    enabled: true,
+    createEnabled: false,
+    webEnabled: true,
+    headerAuthEnabled: false,
+    emailSearch: true,
+    removeEnabled: true,
+    packetSearch: true,
+    settings: {},
+    welcomeMsgNum: 1
   }
 };
 
@@ -404,14 +416,31 @@ if (Config.get("passwordSecret")) {
   app.locals.alwaysShowESStatus = true;
   app.locals.noPasswordSecret   = true;
   app.use(function(req, res, next) {
-    req.user = {userId: "anonymous", enabled: true, createEnabled: false, webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}, welcomeMsgNum: 1};
+    req.user = internals.anonymousUser;
     Db.getUserCache("anonymous", function(err, suser) {
-        if (!err && suser && suser.found) {
-          req.user.settings = suser._source.settings || {};
-          req.user.views = suser._source.views;
-        }
+      if (!err && suser && suser.found) {
+        req.user.settings = suser._source.settings || {};
+        req.user.views = suser._source.views;
+      }
       next();
     });
+  });
+}
+
+// check for anonymous mode before fetching user cache and return anonymous
+// user or the user requested by the userId
+function getUserCacheIncAnon (userId, cb) {
+  if (app.locals.noPasswordSecret) { // user is anonymous
+    let anon = internals.anonymousUser;
+    anon.found = true;
+    return cb(null, anon);
+  }
+
+  Db.getUserCache(userId, (err, user) => {
+    let found = user.found;
+    user = user._source;
+    user.found = found;
+    return cb(err, user);
   });
 }
 
@@ -7150,6 +7179,7 @@ function runHuntJob (huntId, hunt, query, user) {
   });
 }
 
+
 // Do the house keeping before actually running the hunt job
 function processHuntJob (huntId, hunt) {
   let now = Math.floor(Date.now() / 1000);
@@ -7164,8 +7194,7 @@ function processHuntJob (huntId, hunt) {
     }
   });
 
-  // find the user that created the hunt
-  Db.getUserCache(hunt.userId, function(err, user) {
+  getUserCacheIncAnon(hunt.userId, (err, user) => {
     if (err && !user) {
       pauseHuntJobWithError(huntId, hunt, { value: err });
       return;
@@ -7174,12 +7203,10 @@ function processHuntJob (huntId, hunt) {
       pauseHuntJobWithError(huntId, hunt, { value: `User ${hunt.userId} doesn't exist` });
       return;
     }
-    if (!user._source.enabled) {
+    if (!user.enabled) {
       pauseHuntJobWithError(huntId, hunt, { value: `User ${hunt.userId} is not enabled` });
       return;
     }
-
-    user = user._source;
 
     Db.getLookupsCache(hunt.userId, (err, lookups) => {
       molochparser.parser.yy = {
