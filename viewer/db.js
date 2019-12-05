@@ -112,6 +112,12 @@ exports.initialize = function (info, cb) {
     exports.isLocalView = function(node, yesCB, noCB) {return noCB(); };
     internals.prefix = "MULTIPREFIX_";
   }
+
+  // Update aliases cache so -shrink works
+  if (internals.nodeName !== undefined) {
+    exports.getAliasesCache('sessions2-*', () => {});
+    setInterval(() => {exports.getAliasesCache('sessions2-*', () => {});}, 2*60*1000);
+  }
 };
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -132,11 +138,17 @@ function fixIndex(index) {
     });
   }
 
-  if (index.lastIndexOf(internals.prefix, 0) === 0) {
-    return index;
-  } else {
-    return internals.prefix + index;
+  // If prefix isn't there, add it
+  if (index.lastIndexOf(internals.prefix, 0) !== 0) {
+    index = internals.prefix + index;
   }
+
+  // If the index doesn't exist but the shrink version does exist, add -shrink
+  if (internals.aliasesCache && !internals.aliasesCache[index] && internals.aliasesCache[index + '-shrink']) {
+    index += '-shrink';
+  }
+
+  return index;
 }
 
 exports.merge = function(to, from) {
