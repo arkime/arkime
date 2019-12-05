@@ -61,7 +61,7 @@
           <button type="button"
             @click="flush"
             v-b-tooltip.hover
-            title="Flush and refresh and data waiting in Elasticsearch to disk"
+            title="Flush and refresh any data waiting in Elasticsearch to disk"
             class="btn btn-theme-secondary">
             Flush
           </button>
