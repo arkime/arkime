@@ -114,7 +114,8 @@ var internals = {
     removeEnabled: true,
     packetSearch: true,
     settings: {},
-    welcomeMsgNum: 1
+    welcomeMsgNum: 1,
+    found: true
   }
 };
 
@@ -433,7 +434,6 @@ function getUserCacheIncAnon (userId, cb) {
   if (app.locals.noPasswordSecret) { // user is anonymous
     Db.getUserCache('anonymous', (err, anonUser) => {
       let anon = internals.anonymousUser;
-      anon.found = true;
 
       if (!err && anonUser && anonUser.found) {
         anon.settings = anonUser._source.settings || {};
