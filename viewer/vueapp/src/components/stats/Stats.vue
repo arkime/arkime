@@ -6,6 +6,8 @@
     <form class="stats-form">
       <div class="form-inline mr-1 ml-1 mt-1 mb-1">
 
+        <div v-if="tabIndex === 7">&nbsp;</div>
+
         <!-- graph type select -->
         <div class="input-group input-group-sm"
           v-if="tabIndex === 0">
@@ -132,7 +134,7 @@
 
         <!-- table data interval select -->
         <div class="input-group input-group-sm ml-1"
-          v-if="tabIndex !== 0">
+          v-if="tabIndex !== 0 && tabIndex !== 7">
           <div class="input-group-prepend help-cursor"
             v-b-tooltip.hover
             title="Data refresh interval for Node and Elasticsearch stats">
@@ -193,7 +195,7 @@
 
         <!-- refresh button -->
         <div class="input-group input-group-sm ml-1"
-          v-if="tabIndex !== 0">
+          v-if="tabIndex !== 0 && tabIndex !== 7">
           <button type="button"
             class="btn btn-theme-tertiary btn-sm refresh-btn"
             @click="loadData">
@@ -316,7 +318,8 @@
 
     <!-- stats content -->
     <div class="stats-tabs">
-      <div class="input-group input-group-sm pull-right mr-1 pt-1">
+      <div class="input-group input-group-sm pull-right mr-1 pt-1"
+        v-if="tabIndex !== 7">
         <div class="input-group-prepend">
           <span class="input-group-text input-group-text-fw">
             <span v-if="loadingData"
@@ -427,6 +430,15 @@
             :user="user">
           </es-recovery>
         </b-tab>
+        <b-tab title="ES Admin"
+          @click="tabIndexChange(7)"
+          v-if="user.esAdminUser && !multiviewer">
+          <es-admin v-if="user && tabIndex === 7"
+            :data-interval="dataInterval"
+            :refreshData="refreshData"
+            :user="user">
+          </es-admin>
+        </b-tab>
       </b-tabs>
     </div> <!-- /stats content -->
 
@@ -440,6 +452,7 @@ import EsNodes from './EsNodes';
 import EsTasks from './EsTasks';
 import EsRecovery from './EsRecovery';
 import EsIndices from './EsIndices';
+import EsAdmin from './EsAdmin';
 import CaptureGraphs from './CaptureGraphs';
 import CaptureStats from './CaptureStats';
 import FocusInput from '../utils/FocusInput';
@@ -450,7 +463,14 @@ let searchInputTimeout;
 export default {
   name: 'Stats',
   components: {
-    CaptureGraphs, CaptureStats, EsShards, EsNodes, EsIndices, EsTasks, EsRecovery
+    CaptureGraphs,
+    CaptureStats,
+    EsShards,
+    EsNodes,
+    EsIndices,
+    EsTasks,
+    EsRecovery,
+    EsAdmin
   },
   directives: { FocusInput },
   data: function () {
