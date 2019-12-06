@@ -7217,67 +7217,56 @@ function processHuntJob (huntId, hunt) {
     }
 
     Db.getLookupsCache(hunt.userId, (err, lookups) => {
-      molochparser.parser.yy = {
-        emailSearch: user.emailSearch === true,
-        fieldsMap: Config.getFieldsMap(),
-        prefix: internals.prefix,
-        lookups: lookups || {},
-        lookupTypeMap: internals.lookupTypeMap
+      let fakeReq = {
+        user: user,
+        query: {
+          from: 0,
+          size: 100, // only fetch 100 items at a time
+          _source: ['_id', 'node'],
+          sort: 'lastPacket:asc'
+        }
       };
-
-      // build session query
-      let query = {
-        from: 0,
-        size: 100, // Only fetch 100 items at a time
-        query: { bool: { must: [{ exists: { field: 'fileId' } }], filter: [{}] } },
-        _source: ['_id', 'node'],
-        sort: { lastPacket: { order: 'asc' } }
-      };
-
-      // get the size of the query if it is being restarted
-      if (hunt.lastPacketTime) {
-        query.size = hunt.totalSessions - hunt.searchedSessions;
-      }
 
       if (hunt.query.expression) {
-        try {
-          query.query.bool.filter.push(molochparser.parse(hunt.query.expression));
-        } catch (e) {
-          pauseHuntJobWithError(huntId, hunt, { value: `Couldn't compile hunt query expression: ${e}` });
-          return;
-        }
+        fakeReq.query.expression = hunt.query.expression;
       }
 
-      if (user.expression && user.expression.length > 0) {
-        try {
-          // Expression was set by admin, so assume email search ok
-          molochparser.parser.yy.emailSearch = true;
-          var userExpression = molochparser.parse(user.expression);
-          query.query.bool.filter.push(userExpression);
-        } catch (e) {
-          pauseHuntJobWithError(huntId, hunt, { value: `Couldn't compile user forced expression (${user.expression}): ${e}` });
-          return;
-        }
+      if (hunt.query.view) {
+        fakeReq.query.view = hunt.query.view;
       }
 
-      lookupQueryItems(query.query.bool.filter, function (lerr) {
-        query.query.bool.filter[0] = {
-          range: {
-            lastPacket: {
-              gte: hunt.lastPacketTime || hunt.query.startTime * 1000,
-              lt: hunt.query.stopTime * 1000
+      buildSessionQuery(fakeReq, (err, query, indices) => {
+        if (err) {
+          pauseHuntJobWithError(huntId, hunt, {
+            value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.'
+          });
+          return;
+        }
+
+        // get the size of the query if it is being restarted
+        if (hunt.lastPacketTime) {
+          query.size = hunt.totalSessions - hunt.searchedSessions;
+        }
+
+        lookupQueryItems(query.query.bool.filter, (lerr) => {
+          query.query.bool.filter[0] = {
+            range: {
+              lastPacket: {
+                gte: hunt.lastPacketTime || hunt.query.startTime * 1000,
+                lt: hunt.query.stopTime * 1000
+              }
             }
+          };
+
+          query._source = ['lastPacket', 'node', 'huntId', 'huntName'];
+
+          if (Config.debug > 2) {
+            console.log('HUNT', hunt.name, hunt.userId, '- start:', new Date(hunt.lastPacketTime || hunt.query.startTime * 1000), 'stop:', new Date(hunt.query.stopTime * 1000));
           }
-        };
 
-        query._source = ['lastPacket', 'node', 'huntId', 'huntName'];
-
-        if (Config.debug > 2) {
-          console.log('HUNT', hunt.name, hunt.userId, '- start:', new Date(hunt.lastPacketTime || hunt.query.startTime * 1000), 'stop:', new Date(hunt.query.stopTime * 1000));
-        }
-
-        // do sessions query
-        runHuntJob(huntId, hunt, query, user);
+          // do sessions query
+          runHuntJob(huntId, hunt, query, user);
+        });
       });
     });
   });
@@ -7414,7 +7403,8 @@ app.post('/hunt', [noCacheJson, logAction('hunt'), checkCookieToken, checkPermis
   hunt.query = { // only use the necessary query items
     expression: req.body.hunt.query.expression,
     startTime: req.body.hunt.query.startTime,
-    stopTime: req.body.hunt.query.stopTime
+    stopTime: req.body.hunt.query.stopTime,
+    view: req.body.hunt.query.view
   };
 
   Db.createHunt(hunt, function (err, result) {

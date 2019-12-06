@@ -1,4 +1,4 @@
-use Test::More tests => 254;
+use Test::More tests => 256;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -156,6 +156,28 @@ my $hToken = getTokenCookie('huntuser');
     }
   }
   is ($found, 0, "Admin can remove any hunt");
+
+# should be able to run a hunt with a view
+  viewerPostToken("/user/views/create?molochRegressionUser=anonymous", '{"name": "tls", "expression": "protocols == tls"}', $token);
+  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"hunt":{"totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"view":"tls"}}}', $token);
+  is ($json->{success}, 1, "can run a hunt with a view");
+  my $id5 = $json->{hunt}->{id};
+
+  sleep(2); # Wait for it to finish processing
+
+  $hunts = viewerGet("/hunt/list?history=true");
+  my $viewHunt;
+  foreach my $item (@{$hunts->{data}}) {
+    if ($item->{id} eq $id5) {
+      $viewHunt = $item;
+      last;
+    }
+  }
+  is($viewHunt->{query}->{view}, "tls", "hunt has a view applied");
+
+  # cleanup
+  viewerDeleteToken("/hunt/$id5?molochRegressionUser=anonymous", $token);
+
 
 # multiget should return an error
   my $mjson = multiGet("/hunt/list");
