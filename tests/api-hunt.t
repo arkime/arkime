@@ -163,7 +163,7 @@ my $hToken = getTokenCookie('huntuser');
   is ($json->{success}, 1, "can run a hunt with a view");
   my $id5 = $json->{hunt}->{id};
 
-  sleep(2); # Wait for it to finish processing
+  viewerGet("/processHuntJobs");
 
   $hunts = viewerGet("/hunt/list?history=true");
   my $viewHunt;
