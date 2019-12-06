@@ -1397,6 +1397,15 @@ sub sessions2Update
       },
       "email" : {
         "properties" : {
+	  "ASN" : {
+	    "type" : "keyword"
+	  },
+	  "GEO" : {
+	    "type" : "keyword"
+	  },
+	  "RIR" : {
+	    "type" : "keyword"
+	  },
           "bodyMagic" : {
             "type" : "keyword"
           },
@@ -1453,6 +1462,12 @@ sub sessions2Update
           "idCnt" : {
             "type" : "long"
           },
+	  "ip" : {
+	    "type" : "ip"
+	  },
+	  "ipCnt" : {
+	    "type" : "long"
+	  },
           "md5" : {
             "type" : "keyword"
           },
@@ -1465,6 +1480,12 @@ sub sessions2Update
           "mimeVersionCnt" : {
             "type" : "long"
           },
+	  "smtpHello" : {
+	    "type" : "keyword"
+	  },
+	  "smtpHelloCnt" : {
+	    "type" : "long"
+	  },
           "src" : {
             "type" : "keyword"
           },
