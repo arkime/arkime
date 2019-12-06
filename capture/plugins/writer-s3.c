@@ -236,6 +236,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
 {
     char           canonicalRequest[20000];
     char           datetime[17];
+    char           objectkey[1000];
     char           fullpath[1000];
     char           bodyHash[1000];
     char           storageClassHeader[1000];
@@ -262,62 +263,38 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     g_checksum_reset(checksum);
     g_checksum_update(checksum, data, len);
     strcpy(bodyHash, g_checksum_get_string(checksum));
-    if (s3PathAccessStyle) {
-        snprintf(canonicalRequest, sizeof(canonicalRequest),
-                "%s\n"       // HTTPRequestMethod
-                "/%s%s\n"    // CanonicalURI
-                "%s\n"       // CanonicalQueryString
-                //CanonicalHeaders
-                "host:%s\n"
-                "x-amz-content-sha256:%s\n"
-                "x-amz-date:%s\n"
-                "%s"
-                "%s"
-                "\n"
-                // SignedHeaders
-                "host;x-amz-content-sha256;x-amz-date%s%s\n"
-                "%s"     // HexEncode(Hash(RequestPayload))
-                ,
-                method,
-                s3Bucket, path,
-                qs,
-                s3Host,
-                bodyHash,
-                datetime,
-                (s3Token?tokenHeader:""),
-                (specifyStorageClass?storageClassHeader:""),
-                (s3Token?";x-amz-security-token":""),
-                (specifyStorageClass?";x-amz-storage-class":""),
-                bodyHash);
-    }
-    else {
-        snprintf(canonicalRequest, sizeof(canonicalRequest),
-             "%s\n"       // HTTPRequestMethod
-             "%s\n"       // CanonicalURI
-             "%s\n"       // CanonicalQueryString
-             //CanonicalHeaders
-             "host:%s\n"
-             "x-amz-content-sha256:%s\n"
-             "x-amz-date:%s\n"
-             "%s"
-             "%s"
-             "\n"
-             // SignedHeaders
-             "host;x-amz-content-sha256;x-amz-date%s%s\n"
-             "%s"     // HexEncode(Hash(RequestPayload))
-             ,
-             method,
-             path,
-             qs,
-             s3Host,
-             bodyHash,
-             datetime,
-             (s3Token?tokenHeader:""),
-             (specifyStorageClass?storageClassHeader:""),
-             (s3Token?";x-amz-security-token":""),
-             (specifyStorageClass?";x-amz-storage-class":""),
-             bodyHash);
-    } 
+
+    if (s3PathAccessStyle)
+        snprintf(objectkey, sizeof(objectkey), "/%s%s", s3Bucket, path);
+    else
+        snprintf(objectkey, sizeof(objectkey), "%s", path);
+
+    snprintf(canonicalRequest, sizeof(canonicalRequest),
+            "%s\n"       // HTTPRequestMethod
+            "%s\n"       // CanonicalURI
+            "%s\n"       // CanonicalQueryString
+            //CanonicalHeaders
+            "host:%s\n"
+            "x-amz-content-sha256:%s\n"
+            "x-amz-date:%s\n"
+            "%s"
+            "%s"
+            "\n"
+            // SignedHeaders
+            "host;x-amz-content-sha256;x-amz-date%s%s\n"
+            "%s"     // HexEncode(Hash(RequestPayload))
+            ,
+            method,
+            objectkey,
+            qs,
+            s3Host,
+            bodyHash,
+            datetime,
+            (s3Token?tokenHeader:""),
+            (specifyStorageClass?storageClassHeader:""),
+            (s3Token?";x-amz-security-token":""),
+            (specifyStorageClass?";x-amz-storage-class":""),
+            bodyHash);
     //LOG("canonicalRequest: %s", canonicalRequest);
 
     g_checksum_reset(checksum);
@@ -374,10 +351,8 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     g_hmac_unref(hmac);
 
     //LOG("signature: %s", signature);
-    if (s3PathAccessStyle)
-        snprintf(fullpath, sizeof(fullpath), "/%s%s?%s", s3Bucket, path, qs);
-    else
-        snprintf(fullpath, sizeof(fullpath), "%s?%s", path, qs);
+
+    snprintf(fullpath, sizeof(fullpath), "%s?%s", objectkey, qs);
 
     char strs[3][1000];
     char *headers[8];
@@ -649,7 +624,7 @@ void writer_s3_init(char *UNUSED(name))
 
     s3Region              = moloch_config_str(NULL, "s3Region", "us-east-1");
     s3Bucket              = moloch_config_str(NULL, "s3Bucket", NULL);
-    s3PathAccessStyle     = moloch_config_boolean(NULL, "s3PathAccessStyle", FALSE);
+    s3PathAccessStyle     = moloch_config_boolean(NULL, "s3PathAccessStyle", strchr(s3Bucket, '.') != NULL);
     s3AccessKeyId         = moloch_config_str(NULL, "s3AccessKeyId", NULL);
     s3SecretAccessKey     = moloch_config_str(NULL, "s3SecretAccessKey", NULL);
     s3Compress            = moloch_config_boolean(NULL, "s3Compress", FALSE);
