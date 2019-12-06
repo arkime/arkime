@@ -1,4 +1,4 @@
-use Test::More tests => 254;
+use Test::More tests => 256;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -156,6 +156,30 @@ my $hToken = getTokenCookie('huntuser');
     }
   }
   is ($found, 0, "Admin can remove any hunt");
+
+# should be able to run a hunt with a view
+  viewerPostToken("/user/views/create?molochRegressionUser=user2", '{"name": "tls", "expression": "protocols == tls", "shared": true}', $otherToken);
+  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"view":"tls"}}}', $otherToken);
+  is ($json->{success}, 1, "can run a hunt with a view");
+  my $id5 = $json->{hunt}->{id};
+
+  viewerGet("/processHuntJobs");
+
+  $hunts = viewerGet("/hunt/list?history=true");
+  my $viewHunt;
+  foreach my $item (@{$hunts->{data}}) {
+    if ($item->{id} eq $id5) {
+      $viewHunt = $item;
+      last;
+    }
+  }
+  is($viewHunt->{query}->{view}, "tls", "hunt has a view applied");
+
+  # cleanup
+  viewerDeleteToken("/hunt/$id5?molochRegressionUser=anonymous", $token);
+  viewerPostToken("/user/views/delete?molochRegressionUser=user2", '{"expression":"protocols == tls","user":"user2","shared":true,"name":"tls"}', $otherToken);
+  viewerPostToken("/user/delete", "userId=_moloch_shared", $token);
+
 
 # multiget should return an error
   my $mjson = multiGet("/hunt/list");
