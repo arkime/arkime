@@ -67,6 +67,7 @@ LOCAL  void *                s3Server = 0;
 LOCAL  char                  *s3Region;
 LOCAL  char                   s3Host[100];
 LOCAL  char                  *s3Bucket;
+LOCAL  char                  s3PathAccessStyle;
 LOCAL  char                  *s3AccessKeyId;
 LOCAL  char                  *s3SecretAccessKey;
 LOCAL  char                  *s3Token;
@@ -261,9 +262,38 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     g_checksum_reset(checksum);
     g_checksum_update(checksum, data, len);
     strcpy(bodyHash, g_checksum_get_string(checksum));
-    snprintf(canonicalRequest, sizeof(canonicalRequest),
+    if (s3PathAccessStyle) {
+        snprintf(canonicalRequest, sizeof(canonicalRequest),
+                "%s\n"       // HTTPRequestMethod
+                "/%s%s\n"    // CanonicalURI
+                "%s\n"       // CanonicalQueryString
+                //CanonicalHeaders
+                "host:%s\n"
+                "x-amz-content-sha256:%s\n"
+                "x-amz-date:%s\n"
+                "%s"
+                "%s"
+                "\n"
+                // SignedHeaders
+                "host;x-amz-content-sha256;x-amz-date%s%s\n"
+                "%s"     // HexEncode(Hash(RequestPayload))
+                ,
+                method,
+                s3Bucket, path,
+                qs,
+                s3Host,
+                bodyHash,
+                datetime,
+                (s3Token?tokenHeader:""),
+                (specifyStorageClass?storageClassHeader:""),
+                (s3Token?";x-amz-security-token":""),
+                (specifyStorageClass?";x-amz-storage-class":""),
+                bodyHash);
+    }
+    else {
+        snprintf(canonicalRequest, sizeof(canonicalRequest),
              "%s\n"       // HTTPRequestMethod
-             "%s\n"    // CanonicalURI
+             "%s\n"       // CanonicalURI
              "%s\n"       // CanonicalQueryString
              //CanonicalHeaders
              "host:%s\n"
@@ -287,6 +317,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
              (s3Token?";x-amz-security-token":""),
              (specifyStorageClass?";x-amz-storage-class":""),
              bodyHash);
+    } 
     //LOG("canonicalRequest: %s", canonicalRequest);
 
     g_checksum_reset(checksum);
@@ -343,8 +374,10 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     g_hmac_unref(hmac);
 
     //LOG("signature: %s", signature);
-
-    snprintf(fullpath, sizeof(fullpath), "%s?%s", path, qs);
+    if (s3PathAccessStyle)
+        snprintf(fullpath, sizeof(fullpath), "/%s%s?%s", s3Bucket, path, qs);
+    else
+        snprintf(fullpath, sizeof(fullpath), "%s?%s", path, qs);
 
     char strs[3][1000];
     char *headers[8];
@@ -616,6 +649,7 @@ void writer_s3_init(char *UNUSED(name))
 
     s3Region              = moloch_config_str(NULL, "s3Region", "us-east-1");
     s3Bucket              = moloch_config_str(NULL, "s3Bucket", NULL);
+    s3PathAccessStyle     = moloch_config_boolean(NULL, "s3PathAccessStyle", FALSE);
     s3AccessKeyId         = moloch_config_str(NULL, "s3AccessKeyId", NULL);
     s3SecretAccessKey     = moloch_config_str(NULL, "s3SecretAccessKey", NULL);
     s3Compress            = moloch_config_boolean(NULL, "s3Compress", FALSE);
@@ -677,10 +711,18 @@ void writer_s3_init(char *UNUSED(name))
         config.pcapWriteSize = 5242880;
     }
 
-    if (strcmp(s3Region, "us-east-1") == 0) {
-        snprintf(s3Host, sizeof(s3Host), "%s.s3.amazonaws.com", s3Bucket);
+    if (s3PathAccessStyle) {
+        if (strcmp(s3Region, "us-east-1") == 0) {
+            strcpy(s3Host, "s3.amazonaws.com");
+        } else {
+            snprintf(s3Host, sizeof(s3Host), "s3-%s.amazonaws.com", s3Region);
+        }
     } else {
-        snprintf(s3Host, sizeof(s3Host), "%s.s3-%s.amazonaws.com", s3Bucket, s3Region);
+        if (strcmp(s3Region, "us-east-1") == 0) {
+            snprintf(s3Host, sizeof(s3Host), "%s.s3.amazonaws.com", s3Bucket);
+        } else {
+            snprintf(s3Host, sizeof(s3Host), "%s.s3-%s.amazonaws.com", s3Bucket, s3Region);
+        }
     }
 
     config.maxFileSizeB = MIN(config.maxFileSizeB, config.pcapWriteSize*2000);
