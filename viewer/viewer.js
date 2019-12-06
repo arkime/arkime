@@ -8916,6 +8916,7 @@ function processArgs(argv) {
       console.log("  -host <host name>     Host name to use, default os hostname");
       console.log("  -n <node name>        Node name section to use in config file, default first part of hostname");
       console.log("  --debug               Increase debug level, multiple are supported");
+      console.log("  --esprofile           Turn on profiling to es search queries");
       console.log("  --insecure            Disable cert verification");
 
       process.exit(0);
@@ -8938,5 +8939,6 @@ Db.initialize({host: internals.elasticBase,
                insecure: Config.insecure,
                ca: loadCaTrust(internals.nodeName),
                requestTimeout: Config.get("elasticsearchTimeout", 300),
+               esProfile: Config.esProfile,
                debug: Config.debug
               }, main);

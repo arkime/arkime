@@ -62,6 +62,9 @@ exports.initialize = function (info, cb) {
   internals.nodeName = info.nodeName;
   delete info.nodeName;
 
+  internals.esProfile = info.esProfile || false;
+  delete info.esProfile;
+
   var esSSLOptions =  {rejectUnauthorized: !internals.info.insecure, ca: internals.info.ca};
   if(info.esClientKey) {
     esSSLOptions.key = fs.readFileSync(info.esClientKey);
@@ -180,6 +183,7 @@ exports.search = function (index, type, query, options, cb) {
     cb = options;
     options = undefined;
   }
+  query.profile = internals.esProfile;
 
   let params = {
     index: fixIndex(index),
@@ -228,6 +232,7 @@ function searchScrollInternal(index, type, query, options, cb) {
   var params = {scroll: '5m'};
   exports.merge(params, options);
   query.size = 1000; // Get 1000 items per scroll call
+  query.profile = internals.esProfile;
   exports.search(index, type, query, params,
     function getMoreUntilDone(error, response) {
       if (error) {

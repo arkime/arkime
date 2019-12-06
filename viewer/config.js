@@ -31,6 +31,7 @@ var ini    = require('iniparser'),
 
 exports.debug = 0;
 exports.insecure = false;
+exports.esProfile = false;
 var internals = {
     configFile: "/data/moloch/etc/config.ini",
     hostName: os.hostname(),
@@ -65,6 +66,8 @@ function processArgs() {
       exports.debug++;
     } else if (process.argv[i] === "--insecure") {
       exports.insecure = true;
+    } else if (process.argv[i] === "--esprofile") {
+      exports.esProfile = true;
     } else {
       args.push(process.argv[i]);
     }
