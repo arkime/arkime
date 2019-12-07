@@ -40,9 +40,9 @@ var internals = {fileId2File: {},
                  q: []};
 
 exports.initialize = function (info, cb) {
-  internals.dontMapTags = info.dontMapTags === 'true' || info.dontMapTags === true || false;
+  internals.multiES = info.multiES === 'true' || info.multiES === true || false;
   internals.debug = info.debug || 0;
-  delete info.dontMapTags;
+  delete info.multiES;
   delete info.debug;
 
   internals.info = info;
@@ -111,7 +111,7 @@ exports.initialize = function (info, cb) {
   });
 
   // Replace tag implementation
-  if (internals.dontMapTags) {
+  if (internals.multiES) {
     exports.isLocalView = function(node, yesCB, noCB) {return noCB(); };
     internals.prefix = "MULTIPREFIX_";
   }
@@ -1038,15 +1038,17 @@ exports.getSequenceNumber = function (name, cb) {
 };
 
 exports.numberOfDocuments = function (index, cb) {
-  if (index !== "sessions2-*") {
+  // count interface is slow for larget data sets, don't use for sessions unless multiES
+  if (index !== "sessions2-*" || internals.multiES) {
     return internals.elasticSearchClient.count({index: fixIndex(index), ignoreUnavailable:true});
   }
 
   return new Promise((resolve, reject) => {
     let count = 0;
+    let str = internals.prefix + 'sessions2-';
     exports.indicesCache((err, indices) => {
       for (let i = 0; i < indices.length; i++) {
-        if (indices[i].index.includes('sessions2-')) {
+        if (indices[i].index.includes(str)) {
           count += parseInt(indices[i]['docs.count']);
         }
       }
