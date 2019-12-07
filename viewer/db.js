@@ -1038,19 +1038,21 @@ exports.getSequenceNumber = function (name, cb) {
 };
 
 exports.numberOfDocuments = function (index, cb) {
-  if (cb === undefined) {
-    // Promise version
+  if (index !== "sessions2-*") {
     return internals.elasticSearchClient.count({index: fixIndex(index), ignoreUnavailable:true});
-  } else {
-    // cb version - remove in future
-    internals.elasticSearchClient.count({index: fixIndex(index), ignoreUnavailable:true}, (err, result) => {
-      if (err || result.error) {
-        return cb(null, 0);
-      }
-
-      return cb(null, result.count);
-    });
   }
+
+  return new Promise((resolve, reject) => {
+    let count = 0;
+    exports.indicesCache((err, indices) => {
+      for (let i = 0; i < indices.length; i++) {
+        if (indices[i].index.includes('sessions2-')) {
+          count += parseInt(indices[i]['docs.count']);
+        }
+      }
+      resolve({count: count});
+    });
+  });
 };
 
 exports.updateFileSize = function (item, filesize) {
