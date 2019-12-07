@@ -923,7 +923,7 @@ void moloch_http_free_server(void *serverV)
     curl_multi_cleanup(server->multi);
 
 
-    for (i = 0; i < server->snamesCnt; i++){
+    for (int i = 0; i < server->snamesCnt; i++){
         g_free(server->snames[i].name);
     }
     free(server->snames);
