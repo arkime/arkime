@@ -1397,6 +1397,15 @@ sub sessions2Update
       },
       "email" : {
         "properties" : {
+	  "ASN" : {
+	    "type" : "keyword"
+	  },
+	  "GEO" : {
+	    "type" : "keyword"
+	  },
+	  "RIR" : {
+	    "type" : "keyword"
+	  },
           "bodyMagic" : {
             "type" : "keyword"
           },
@@ -1453,6 +1462,12 @@ sub sessions2Update
           "idCnt" : {
             "type" : "long"
           },
+	  "ip" : {
+	    "type" : "ip"
+	  },
+	  "ipCnt" : {
+	    "type" : "long"
+	  },
           "md5" : {
             "type" : "keyword"
           },
@@ -1465,6 +1480,12 @@ sub sessions2Update
           "mimeVersionCnt" : {
             "type" : "long"
           },
+	  "smtpHello" : {
+	    "type" : "keyword"
+	  },
+	  "smtpHelloCnt" : {
+	    "type" : "long"
+	  },
           "src" : {
             "type" : "keyword"
           },
@@ -3929,7 +3950,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
 # For really old versions don't support upgradenoprompt
     if ($main::versionNumber < 57) {
-        logmsg "Can not upgrade directly, please upgrade to Moloch 1.7.x or 1.8.x first. (Db version $main::VersionNumber)\n\n";
+        logmsg "Can not upgrade directly, please upgrade to Moloch 1.7.x or 1.8.x first. (Db version $main::versionNumber)\n\n";
         exit 1;
     }
 
@@ -3960,6 +3981,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
         if ($main::versionNumber <= 60) {
             lookupsCreate();
+        } else {
+            lookupsUpdate();
         }
 
         historyUpdate();

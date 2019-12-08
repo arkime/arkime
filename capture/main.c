@@ -310,6 +310,12 @@ void controlc(int UNUSED(sig))
     moloch_quit();
 }
 /******************************************************************************/
+void terminate(int UNUSED(sig))
+{
+    LOG("Terminate");
+    moloch_quit();
+}
+/******************************************************************************/
 void reload(int UNUSED(sig))
 {
     moloch_plugins_reload();
@@ -600,8 +606,12 @@ LOCAL gboolean writerExit   = TRUE;
 /******************************************************************************/
 void moloch_quit()
 {
+    if (config.quitting)
+        return;
+
     if (config.debug)
         LOG("Quitting");
+
     config.quitting = TRUE;
     g_timeout_add(100, moloch_quit_gfunc, 0);
 }
@@ -771,6 +781,7 @@ int main(int argc, char **argv)
 {
     signal(SIGHUP, reload);
     signal(SIGINT, controlc);
+    signal(SIGTERM, terminate);
     signal(SIGUSR1, exit);
     signal(SIGCHLD, SIG_IGN);
 

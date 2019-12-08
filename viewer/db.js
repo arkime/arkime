@@ -40,9 +40,9 @@ var internals = {fileId2File: {},
                  q: []};
 
 exports.initialize = function (info, cb) {
-  internals.dontMapTags = info.dontMapTags === 'true' || info.dontMapTags === true || false;
+  internals.multiES = info.multiES === 'true' || info.multiES === true || false;
   internals.debug = info.debug || 0;
-  delete info.dontMapTags;
+  delete info.multiES;
   delete info.debug;
 
   internals.info = info;
@@ -61,6 +61,9 @@ exports.initialize = function (info, cb) {
 
   internals.nodeName = info.nodeName;
   delete info.nodeName;
+
+  internals.esProfile = info.esProfile || false;
+  delete info.esProfile;
 
   var esSSLOptions =  {rejectUnauthorized: !internals.info.insecure, ca: internals.info.ca};
   if(info.esClientKey) {
@@ -108,9 +111,15 @@ exports.initialize = function (info, cb) {
   });
 
   // Replace tag implementation
-  if (internals.dontMapTags) {
+  if (internals.multiES) {
     exports.isLocalView = function(node, yesCB, noCB) {return noCB(); };
     internals.prefix = "MULTIPREFIX_";
+  }
+
+  // Update aliases cache so -shrink works
+  if (internals.nodeName !== undefined) {
+    exports.getAliasesCache('sessions2-*', () => {});
+    setInterval(() => {exports.getAliasesCache('sessions2-*', () => {});}, 2*60*1000);
   }
 };
 
@@ -132,11 +141,17 @@ function fixIndex(index) {
     });
   }
 
-  if (index.lastIndexOf(internals.prefix, 0) === 0) {
-    return index;
-  } else {
-    return internals.prefix + index;
+  // If prefix isn't there, add it
+  if (index.lastIndexOf(internals.prefix, 0) !== 0) {
+    index = internals.prefix + index;
   }
+
+  // If the index doesn't exist but the shrink version does exist, add -shrink
+  if (internals.aliasesCache && !internals.aliasesCache[index] && internals.aliasesCache[index + '-shrink']) {
+    index += '-shrink';
+  }
+
+  return index;
 }
 
 exports.merge = function(to, from) {
@@ -168,6 +183,7 @@ exports.search = function (index, type, query, options, cb) {
     cb = options;
     options = undefined;
   }
+  query.profile = internals.esProfile;
 
   let params = {
     index: fixIndex(index),
@@ -216,6 +232,7 @@ function searchScrollInternal(index, type, query, options, cb) {
   var params = {scroll: '5m'};
   exports.merge(params, options);
   query.size = 1000; // Get 1000 items per scroll call
+  query.profile = internals.esProfile;
   exports.search(index, type, query, params,
     function getMoreUntilDone(error, response) {
       if (error) {
@@ -431,7 +448,7 @@ exports.setIndexSettings = (index, options, cb) => {
     },
     () => {
       internals.healthCache = {};
-      cb();
+      if (cb) { cb(); }
     }
   );
 };
@@ -461,7 +478,9 @@ exports.tasks = function(cb) {
 };
 
 exports.taskCancel = function(taskId, cb) {
-  return internals.elasticSearchClient.tasks.cancel({taskId: taskId}, cb);
+  let params = {};
+  if (taskId) { params.taskId = taskId; }
+  return internals.elasticSearchClient.tasks.cancel(params, cb);
 };
 
 exports.nodesStats = function (options, cb) {
@@ -487,12 +506,24 @@ exports.close = function () {
   return internals.elasticSearchClient.close();
 };
 
+exports.reroute = function (cb) {
+  return internals.elasticSearchClient.cluster.reroute({retryFailed: true}, cb);
+};
+
 exports.flush = function (index, cb) {
-  return internals.usersElasticSearchClient.indices.flush({index: fixIndex(index)}, cb);
+  if (index === 'users') {
+    return internals.usersElasticSearchClient.indices.flush({index: fixIndex(index)}, cb);
+  } else {
+    return internals.elasticSearchClient.indices.flush({index: fixIndex(index)}, cb);
+  }
 };
 
 exports.refresh = function (index, cb) {
-  return internals.usersElasticSearchClient.indices.refresh({index: fixIndex(index)}, cb);
+  if (index === 'users') {
+    return internals.usersElasticSearchClient.indices.refresh({index: fixIndex(index)}, cb);
+  } else {
+    return internals.elasticSearchClient.indices.refresh({index: fixIndex(index)}, cb);
+  }
 };
 
 exports.addTagsToSession = function (index, id, tags, node, cb) {
@@ -1007,19 +1038,23 @@ exports.getSequenceNumber = function (name, cb) {
 };
 
 exports.numberOfDocuments = function (index, cb) {
-  if (cb === undefined) {
-    // Promise version
+  // count interface is slow for larget data sets, don't use for sessions unless multiES
+  if (index !== "sessions2-*" || internals.multiES) {
     return internals.elasticSearchClient.count({index: fixIndex(index), ignoreUnavailable:true});
-  } else {
-    // cb version - remove in future
-    internals.elasticSearchClient.count({index: fixIndex(index), ignoreUnavailable:true}, (err, result) => {
-      if (err || result.error) {
-        return cb(null, 0);
-      }
-
-      return cb(null, result.count);
-    });
   }
+
+  return new Promise((resolve, reject) => {
+    let count = 0;
+    let str = internals.prefix + 'sessions2-';
+    exports.indicesCache((err, indices) => {
+      for (let i = 0; i < indices.length; i++) {
+        if (indices[i].index.includes(str)) {
+          count += parseInt(indices[i]['docs.count']);
+        }
+      }
+      resolve({count: count});
+    });
+  });
 };
 
 exports.updateFileSize = function (item, filesize) {

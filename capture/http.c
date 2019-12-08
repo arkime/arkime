@@ -923,6 +923,9 @@ void moloch_http_free_server(void *serverV)
     curl_multi_cleanup(server->multi);
 
 
+    for (int i = 0; i < server->snamesCnt; i++){
+        g_free(server->snames[i].name);
+    }
     free(server->snames);
 
     g_hash_table_destroy(server->fd2ev);
