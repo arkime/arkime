@@ -46,7 +46,7 @@ use strict;
 
 # good
     $json = viewerPostToken("/esadmin/reroute?molochRegressionUser=adminuser1", "", $token);
-    eq_or_diff($json, from_json('{"text": "Rerouted", "success": true}'));
+    eq_or_diff($json, from_json('{"text": "Reroute successful", "success": true}'));
 
     $json = viewerPostToken("/esadmin/flush?molochRegressionUser=adminuser1", "", $token);
     eq_or_diff($json, from_json('{"text": "Flushed", "success": true}'));
