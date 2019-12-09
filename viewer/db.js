@@ -444,7 +444,9 @@ exports.setIndexSettings = (index, options, cb) => {
   return internals.elasticSearchClient.indices.putSettings(
     {
       index: index,
-      body: options.body
+      body: options.body,
+      timeout: '10m',
+      masterTimeout: '10m'
     },
     () => {
       internals.healthCache = {};
@@ -470,6 +472,8 @@ exports.getClusterSettings = function(options, cb) {
 };
 
 exports.putClusterSettings = function(options, cb) {
+  options.timeout = '10m';
+  options.masterTimeout = '10m';
   return internals.elasticSearchClient.cluster.putSettings(options, cb);
 };
 
@@ -507,7 +511,11 @@ exports.close = function () {
 };
 
 exports.reroute = function (cb) {
-  return internals.elasticSearchClient.cluster.reroute({retryFailed: true}, cb);
+  return internals.elasticSearchClient.cluster.reroute({
+    timeout: '10m',
+    masterTimeout: '10m',
+    retryFailed: true
+  }, cb);
 };
 
 exports.flush = function (index, cb) {

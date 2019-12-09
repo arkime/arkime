@@ -94,14 +94,19 @@ exports.md5 = function (str, encoding){
     .digest(encoding || 'hex');
 };
 
+// Hash and Encrypt the password before storing
 exports.pass2store = function(userid, password) {
+  // md5 is required because of http digest
   var m = exports.md5(userid + ":" + exports.getFull("default", "httpRealm", "Moloch") + ":" + password);
+
+  // Now encrypt the md5 before putting in ES since ES by default is wide open. This is NOT encrypting the password, it was hashed above
   var c = crypto.createCipher('aes192', exports.getFull("default", "passwordSecret", "password"));
   var e = c.update(m, "binary", "hex");
   e += c.final("hex");
   return e;
 };
 
+// Decrypt the encrypted hashed password, it is still hashed
 exports.store2ha1 = function(passstore) {
   try {
     var c = crypto.createDecipher('aes192', exports.getFull("default", "passwordSecret", "password"));
