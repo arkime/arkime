@@ -115,6 +115,7 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
     int count = 0;
     int utf8 = 0;
     int nolinked = 0;
+    int noutf8 = 0;
     char *kind = 0;
     char *help = 0;
     char *db = 0;
@@ -145,6 +146,8 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
             count = strcmp(colon, "true") == 0;
         else if (strcmp(elements[e], "nolinked") == 0)
             nolinked = strcmp(colon, "true") == 0;
+        else if (strcmp(elements[e], "noutf8") == 0)
+            noutf8 = strcmp(colon, "true") == 0;
         else if (strcmp(elements[e], "friendly") == 0)
             friendly = colon;
         else if (strcmp(elements[e], "db") == 0)
@@ -227,6 +230,9 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
 
     if (!nolinked)
         flags |= MOLOCH_FIELD_FLAG_LINKED_SESSIONS;
+
+    if (!noutf8 && type == MOLOCH_FIELD_TYPE_STR_HASH)
+        flags |= MOLOCH_FIELD_FLAG_FORCE_UTF8;
 
     int pos =  moloch_field_define(group, kind, field, friendly, db, help, type, flags, "category", category, "transform", transform, (char *)NULL);
     g_strfreev(elements);

@@ -501,6 +501,15 @@
                       <strong>{{ runningJob.query.expression }}</strong>
                     </div>
                   </div>
+                  <div v-if="runningJob.query.view"
+                    class="row">
+                    <div class="col-12">
+                      <span class="fa fa-search fa-fw">
+                      </span>&nbsp;
+                      The sessions query view was:
+                      <strong>{{ runningJob.query.view }}</strong>
+                    </div>
+                  </div>
                   <div class="row">
                     <div class="col-12">
                       <span class="fa fa-clock-o fa-fw">
@@ -758,6 +767,13 @@
                   <div class="col-12">
                     The sessions query expression was:
                     <strong>{{ job.query.expression }}</strong>
+                  </div>
+                </div>
+                <div v-if="job.query.view"
+                  class="row">
+                  <div class="col-12">
+                    The sessions query view was:
+                    <strong>{{ job.query.view }}</strong>
                   </div>
                 </div>
                 <div class="row">
@@ -1056,6 +1072,13 @@
                   <div class="col-12">
                     The sessions query expression was:
                     <strong>{{ job.query.expression }}</strong>
+                  </div>
+                </div>
+                <div v-if="job.query.view"
+                  class="row">
+                  <div class="col-12">
+                    The sessions query view was:
+                    <strong>{{ job.query.view }}</strong>
                   </div>
                 </div>
                 <div class="row">

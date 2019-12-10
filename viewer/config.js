@@ -31,12 +31,14 @@ var ini    = require('iniparser'),
 
 exports.debug = 0;
 exports.insecure = false;
+exports.esProfile = false;
 var internals = {
     configFile: "/data/moloch/etc/config.ini",
     hostName: os.hostname(),
     fields: [],
     fieldsMap: {},
-    categories: {}
+    categories: {},
+    options: {}
   };
 
 function processArgs() {
@@ -51,10 +53,21 @@ function processArgs() {
     } else if (process.argv[i] === "-n") {
       i++;
       internals.nodeName = process.argv[i];
+    } else if (process.argv[i] === "-o" || process.argv[i] === "--option") {
+      i++;
+      let equal = process.argv[i].indexOf('=');
+      if (equal === -1) {
+        console.log('Missing equal sign in', process.argv[i]);
+        process.exit(1);
+      }
+
+      internals.options[process.argv[i].slice(0,equal)] = process.argv[i].slice(equal+1);
     } else if (process.argv[i] === "--debug") {
       exports.debug++;
     } else if (process.argv[i] === "--insecure") {
       exports.insecure = true;
+    } else if (process.argv[i] === "--esprofile") {
+      exports.esProfile = true;
     } else {
       args.push(process.argv[i]);
     }
@@ -81,14 +94,19 @@ exports.md5 = function (str, encoding){
     .digest(encoding || 'hex');
 };
 
+// Hash and Encrypt the password before storing
 exports.pass2store = function(userid, password) {
+  // md5 is required because of http digest
   var m = exports.md5(userid + ":" + exports.getFull("default", "httpRealm", "Moloch") + ":" + password);
+
+  // Now encrypt the md5 before putting in ES since ES by default is wide open. This is NOT encrypting the password, it was hashed above
   var c = crypto.createCipher('aes192', exports.getFull("default", "passwordSecret", "password"));
   var e = c.update(m, "binary", "hex");
   e += c.final("hex");
   return e;
 };
 
+// Decrypt the encrypted hashed password, it is still hashed
 exports.store2ha1 = function(passstore) {
   try {
     var c = crypto.createDecipher('aes192', exports.getFull("default", "passwordSecret", "password"));
@@ -186,8 +204,12 @@ exports.sectionGet = function(section, key, defaultValue) {
 };
 
 exports.getFull = function(node, key, defaultValue) {
+
+
   var value;
-  if (internals.config[node] && internals.config[node][key] !== undefined ) {
+  if (internals.options[key] !== undefined && (node === 'default' || node === internals.nodeName)) {
+    value = internals.options[key];
+  } else if (internals.config[node] && internals.config[node][key] !== undefined ) {
     value = internals.config[node][key];
   } else if (internals.config[node] && internals.config[node].nodeClass && internals.config[internals.config[node].nodeClass] && internals.config[internals.config[node].nodeClass][key]) {
     value = internals.config[internals.config[node].nodeClass][key];
@@ -196,6 +218,7 @@ exports.getFull = function(node, key, defaultValue) {
   } else {
     value = defaultValue;
   }
+
   if (value === "false") {
     return false;
   }
@@ -204,6 +227,11 @@ exports.getFull = function(node, key, defaultValue) {
 
 exports.get = function(key, defaultValue) {
   return exports.getFull(internals.nodeName, key, defaultValue);
+};
+
+// Return an array split on separator, remove leading/trailing spaces, remove empty elements
+exports.getArray = function(key, separator, defaultValue) {
+  return exports.get(key, defaultValue).split(separator).map(s=>s.trim()).filter(s=>s.match(/^\S+$/));
 };
 
 exports.getObj = function(key, defaultValue) {

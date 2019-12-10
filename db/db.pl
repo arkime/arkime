@@ -87,6 +87,7 @@ my $ESTIMEOUT=60;
 my $UPGRADEALLSESSIONS = 1;
 my $DOHOTWARM = 0;
 my $WARMAFTER = -1;
+my $WARMKIND = "daily";
 my $OPTIMIZEWARM = 0;
 my $TYPE = "string";
 my $SHARED = 0;
@@ -1396,6 +1397,15 @@ sub sessions2Update
       },
       "email" : {
         "properties" : {
+	  "ASN" : {
+	    "type" : "keyword"
+	  },
+	  "GEO" : {
+	    "type" : "keyword"
+	  },
+	  "RIR" : {
+	    "type" : "keyword"
+	  },
           "bodyMagic" : {
             "type" : "keyword"
           },
@@ -1452,6 +1462,12 @@ sub sessions2Update
           "idCnt" : {
             "type" : "long"
           },
+	  "ip" : {
+	    "type" : "ip"
+	  },
+	  "ipCnt" : {
+	    "type" : "long"
+	  },
           "md5" : {
             "type" : "keyword"
           },
@@ -1464,6 +1480,12 @@ sub sessions2Update
           "mimeVersionCnt" : {
             "type" : "long"
           },
+	  "smtpHello" : {
+	    "type" : "keyword"
+	  },
+	  "smtpHelloCnt" : {
+	    "type" : "long"
+	  },
           "src" : {
             "type" : "keyword"
           },
@@ -2924,6 +2946,12 @@ sub parseArgs {
         } elsif ($ARGV[$pos] eq "--warmafter") {
             $pos++;
             $WARMAFTER = int($ARGV[$pos]);
+            $WARMKIND = $ARGV[2];
+            if (substr($ARGV[$pos], -6) eq "hourly") {
+                $WARMKIND = "hourly";
+            } elsif (substr($ARGV[$pos], -5) eq "daily") {
+                $WARMKIND = "daily";
+            }
         } elsif ($ARGV[$pos] eq "--optimizewarm") {
             $OPTIMIZEWARM = 1;
         } elsif ($ARGV[$pos] eq "--shared") {
@@ -3122,7 +3150,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     parseArgs(4);
 
     my $startTime = mktimegm(@startTime);
-    my @warmTime = kind2time($ARGV[2], $WARMAFTER);
+    my @warmTime = kind2time($WARMKIND, $WARMAFTER);
     my $warmTime = mktimegm(@warmTime);
     my $optimizecnt = 0;
     my $warmcnt = 0;
@@ -3922,7 +3950,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
 # For really old versions don't support upgradenoprompt
     if ($main::versionNumber < 57) {
-        logmsg "Can not upgrade directly, please upgrade to Moloch 1.7.x or 1.8.x first. (Db version $main::VersionNumber)\n\n";
+        logmsg "Can not upgrade directly, please upgrade to Moloch 1.7.x or 1.8.x first. (Db version $main::versionNumber)\n\n";
         exit 1;
     }
 
@@ -3953,6 +3981,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
         if ($main::versionNumber <= 60) {
             lookupsCreate();
+        } else {
+            lookupsUpdate();
         }
 
         historyUpdate();

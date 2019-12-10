@@ -311,6 +311,8 @@ export default {
     fieldClick: function (field, value, op, andor) {
       this.isOpen = false; // close the dropdown
 
+      value = value.toString();
+
       const fullExpression = this.$options.filters.buildExpression(field, value, op);
 
       this.$store.commit('addToExpression', { expression: fullExpression, op: andor });
@@ -344,6 +346,8 @@ export default {
      */
     newTabSessions: function (field, value, op, root) {
       this.isOpen = false; // close the dropdown
+
+      value = value.toString();
 
       const appendExpression = this.$options.filters.buildExpression(field, value, op);
 

@@ -54,7 +54,7 @@ typedef struct molochhttprequest_t {
     struct curl_slist    *headerList;
     char                 *dataOut;
     uint32_t              dataOutLen;
-    uint16_t              namePos;
+    uint16_t              snamePos;
     int16_t               retries;
 } MolochHttpRequest_t;
 
@@ -101,12 +101,11 @@ typedef struct {
 struct molochhttpserver_t {
     uint64_t                 dropped;
     GHashTable              *fd2ev;
-    char                   **names;
     MolochHttpServerName_t  *snames;
     MolochClientAuth_t      *clientAuth;
     char                   **defaultHeaders;
-    int                      namesCnt;
-    int                      namesPos;
+    int                      snamesCnt;
+    int                      snamesPos;
     char                     compress;
     char                     printErrors;
     uint16_t                 maxConns;
@@ -255,7 +254,7 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
             if (server->syncRequest.retries >= 0) {
                 struct timeval now;
                 gettimeofday(&now, NULL);
-                server->snames[server->syncRequest.namePos].allowedAtSeconds = now.tv_sec + 30;
+                server->snames[server->syncRequest.snamePos].allowedAtSeconds = now.tv_sec + 30;
                 LOG("Retry %s error '%s'", server->syncRequest.url, curl_easy_strerror(res));
                 server->syncRequest.retries--;
                 continue;
@@ -317,27 +316,27 @@ LOCAL void moloch_http_add_request(MolochHttpServer_t *server, MolochHttpRequest
     struct timeval now;
     gettimeofday(&now, NULL);
 
-    int startPos = server->namesPos;
+    int startPos = server->snamesPos;
     int offset = 0;
 
-    while (server->snames[server->namesPos].allowedAtSeconds > now.tv_sec) {
-        server->snames[server->namesPos].allowedAtSeconds -= offset;
-        server->namesPos = (server->namesPos + 1) % server->namesCnt;
-        if (startPos == server->namesPos)
+    while (server->snames[server->snamesPos].allowedAtSeconds > now.tv_sec) {
+        server->snames[server->snamesPos].allowedAtSeconds -= offset;
+        server->snamesPos = (server->snamesPos + 1) % server->snamesCnt;
+        if (startPos == server->snamesPos)
             offset = 1;
     }
 
-    request->namePos = server->namesPos;
-    server->namesPos = (server->namesPos + 1) % server->namesCnt;
+    request->snamePos = server->snamesPos;
+    server->snamesPos = (server->snamesPos + 1) % server->snamesCnt;
 
-    char *host = server->names[request->namePos];
+    char *host = server->snames[request->snamePos].name;
     snprintf(request->url, sizeof(request->url), "%s%s", host, request->key);
 
     curl_easy_setopt(request->easy, CURLOPT_URL, request->url);
 
     if (async) {
-        curl_easy_setopt(request->easy, CURLOPT_OPENSOCKETDATA, &server->snames[request->namePos]);
-        curl_easy_setopt(request->easy, CURLOPT_CLOSESOCKETDATA, &server->snames[request->namePos]);
+        curl_easy_setopt(request->easy, CURLOPT_OPENSOCKETDATA, &server->snames[request->snamePos]);
+        curl_easy_setopt(request->easy, CURLOPT_CLOSESOCKETDATA, &server->snames[request->snamePos]);
 
 #ifdef MOLOCH_HTTP_DEBUG
         LOG("HTTPDEBUG INCR %p %d %s", request, server->outstanding, request->url);
@@ -402,7 +401,7 @@ LOCAL void moloch_http_curlm_check_multi_info(MolochHttpServer_t *server)
                 struct timeval now;
                 gettimeofday(&now, NULL);
                 MOLOCH_LOCK(requests);
-                server->snames[request->namePos].allowedAtSeconds = now.tv_sec + 30;
+                server->snames[request->snamePos].allowedAtSeconds = now.tv_sec + 30;
                 server->outstanding--;
                 moloch_http_add_request(server, request, TRUE);
                 MOLOCH_UNLOCK(requests);
@@ -924,7 +923,9 @@ void moloch_http_free_server(void *serverV)
     curl_multi_cleanup(server->multi);
 
 
-    g_strfreev(server->names);
+    for (int i = 0; i < server->snamesCnt; i++){
+        g_free(server->snames[i].name);
+    }
     free(server->snames);
 
     g_hash_table_destroy(server->fd2ev);
@@ -983,23 +984,31 @@ void *moloch_http_create_server(const char *hostnames, int maxConns, int maxOuts
 {
     MolochHttpServer_t *server = MOLOCH_TYPE_ALLOC0(MolochHttpServer_t);
 
-    server->names = g_strsplit(hostnames, ",", 0);
-    uint32_t i;
-    for (i = 0; server->names[i]; i++) {
+    int i;
+    char **names = g_strsplit(hostnames, ",", 0);
+    for (i = 0; names[i]; i++) {
         // Count entries
     }
-    server->namesCnt = i;
+    server->snames = malloc(i * sizeof(MolochHttpServerName_t));
     server->maxConns = maxConns;
     server->maxOutstandingRequests = maxOutstandingRequests;
     server->compress = compress;
-    server->snames = malloc(server->namesCnt * sizeof(MolochHttpServerName_t));
     server->maxRetries = 3;
     server->clientAuth = NULL;
 
-    for (i = 0; server->names[i]; i++) {
-        server->snames[i].server            = server;
-        server->snames[i].name              = server->names[i];
-        server->snames[i].allowedAtSeconds  = 0;
+    for (i = 0; names[i]; i++) {
+        g_strstrip(names[i]);
+        if (!names[i][0])
+            continue;
+        server->snames[server->snamesCnt].server            = server;
+        server->snames[server->snamesCnt].name              = g_strdup(names[i]);
+        server->snames[server->snamesCnt].allowedAtSeconds  = 0;
+        server->snamesCnt++;
+    }
+    g_strfreev(names);
+
+    if (server->snamesCnt == 0) {
+        LOGEXIT("ERROR - No valid endpoints in string '%s'", hostnames);
     }
 
     server->multi = curl_multi_init();
