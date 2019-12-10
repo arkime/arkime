@@ -239,17 +239,17 @@ void molua_http_on_body_cb (MolochSession_t *session, http_parser *hp, const cha
     molua_http_cb(MOLUA_REF_HTTP_BODY, session, hp, at, length);
 }
 /******************************************************************************/
-LOCAL void molua_http_on_message_begin(MolochSession_t *session, http_parser *hp) 
+LOCAL void molua_http_on_message_begin(MolochSession_t *session, http_parser *hp)
 {
     if (hp->type == HTTP_REQUEST) {
-        molua_http_cb(MOLUA_REF_HTTP_MESSAGE_BEGIN, session, hp, 
+        molua_http_cb(MOLUA_REF_HTTP_MESSAGE_BEGIN, session, hp,
                       http_method_strings[hp->method], strlen(http_method_strings[hp->method]));
     } else {
         molua_http_cb(MOLUA_REF_HTTP_MESSAGE_BEGIN, session, hp, NULL, 0);
     }
 }
 /******************************************************************************/
-LOCAL void handle_missing_message_begin(MolochSession_t *session, http_parser *hp) 
+LOCAL void handle_missing_message_begin(MolochSession_t *session, http_parser *hp)
 {
     MoluaPlugin_t *mp = session->pluginData[molua_pluginIndex];
     if (!mp || !mp->done_message_begin[hp->type]) {
@@ -261,36 +261,36 @@ LOCAL void handle_missing_message_begin(MolochSession_t *session, http_parser *h
     }
 }
 /******************************************************************************/
-LOCAL void molua_http_on_url(MolochSession_t *session, http_parser *hp, const char *at, size_t length) 
+LOCAL void molua_http_on_url(MolochSession_t *session, http_parser *hp, const char *at, size_t length)
 {
     handle_missing_message_begin(session, hp);
     molua_http_cb(MOLUA_REF_HTTP_URL, session, hp, at, length);
 }
 /******************************************************************************/
-LOCAL void molua_http_on_header_field_raw(MolochSession_t *session, http_parser *hp, const char *at, size_t length) 
+LOCAL void molua_http_on_header_field_raw(MolochSession_t *session, http_parser *hp, const char *at, size_t length)
 {
     handle_missing_message_begin(session, hp);
     molua_http_cb(MOLUA_REF_HTTP_HEADER_FIELD_RAW, session, hp, at, length);
 }
 /******************************************************************************/
-LOCAL void molua_http_on_header_field(MolochSession_t *session, http_parser *hp, const char *at, size_t length) 
+LOCAL void molua_http_on_header_field(MolochSession_t *session, http_parser *hp, const char *at, size_t length)
 {
     handle_missing_message_begin(session, hp);
     molua_http_cb(MOLUA_REF_HTTP_HEADER_FIELD, session, hp, at, length);
 }
 /******************************************************************************/
-LOCAL void molua_http_on_header_value(MolochSession_t *session, http_parser *hp, const char *at, size_t length) 
+LOCAL void molua_http_on_header_value(MolochSession_t *session, http_parser *hp, const char *at, size_t length)
 {
     molua_http_cb(MOLUA_REF_HTTP_HEADER_VALUE, session, hp, at, length);
 }
 /******************************************************************************/
-LOCAL void molua_http_on_headers_complete(MolochSession_t *session, http_parser *hp) 
+LOCAL void molua_http_on_headers_complete(MolochSession_t *session, http_parser *hp)
 {
     handle_missing_message_begin(session, hp);
     molua_http_cb(MOLUA_REF_HTTP_HEADERS_COMPLETE, session, hp, NULL, 0);
 }
 /******************************************************************************/
-LOCAL void molua_http_on_message_complete(MolochSession_t *session, http_parser *hp) 
+LOCAL void molua_http_on_message_complete(MolochSession_t *session, http_parser *hp)
 {
     handle_missing_message_begin(session, hp);
     molua_http_cb(MOLUA_REF_HTTP_MESSAGE_COMPLETE, session, hp, NULL, 0);
@@ -302,14 +302,14 @@ LOCAL void MS_register_all_http_cbs()
 
     if (!http_cbs_registered) {
         http_cbs_registered = 1;
-        moloch_plugins_set_http_ext_cb("lua", 
-            NULL, 
-            molua_http_on_url, 
-            molua_http_on_header_field, 
-            molua_http_on_header_field_raw, 
-            molua_http_on_header_value, 
-            molua_http_on_headers_complete, 
-            molua_http_on_body_cb, 
+        moloch_plugins_set_http_ext_cb("lua",
+            NULL,
+            molua_http_on_url,
+            molua_http_on_header_field,
+            molua_http_on_header_field_raw,
+            molua_http_on_header_value,
+            molua_http_on_headers_complete,
+            molua_http_on_body_cb,
             molua_http_on_message_complete);
     }
 }

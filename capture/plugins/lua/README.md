@@ -182,10 +182,10 @@ Returns a string containing the source IP address.
 ### session.addr2
 Returns a string containing the destination IP address.
 
-### session.port
+### session.port1
 Returns the source port as a number.
 
-### session.port
+### session.port2
 Returns the destination port as a number.
 
 
