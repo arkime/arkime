@@ -16,6 +16,8 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
+2.2.0 2019/01/xx
+
 2.1.1 2019/12/09
   - release - cyberchef 9.11.7
   - wise - fix view duplication when reload tagger file (#1315)
