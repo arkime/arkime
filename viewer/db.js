@@ -497,7 +497,7 @@ exports.refresh = function (index, cb) {
   return internals.usersElasticSearchClient.indices.refresh({index: fixIndex(index)}, cb);
 };
 
-exports.addTagsToSession = function (index, id, tags, node, cb) {
+exports.addTagsToSession = function (index, id, tags, escluster, cb) {
   let params = {
     retry_on_conflict: 3,
     index: fixIndex(index),
@@ -530,12 +530,12 @@ exports.addTagsToSession = function (index, id, tags, node, cb) {
     }
   };
 
-  if (node) { params.body._node = node; }
+  if (escluster) { params.body._cluster = escluster; }
 
   return internals.elasticSearchClient.update(params, cb);
 };
 
-exports.removeTagsFromSession = function (index, id, tags, node, cb) {
+exports.removeTagsFromSession = function (index, id, tags, escluster, cb) {
   let params = {
     retry_on_conflict: 3,
     index: fixIndex(index),
@@ -568,7 +568,7 @@ exports.removeTagsFromSession = function (index, id, tags, node, cb) {
     }
   };
 
-  if (node) { params.body._node = node; }
+  if (escluster) { params.body._cluster = escluster; }
 
   return internals.elasticSearchClient.update(params, cb);
 };

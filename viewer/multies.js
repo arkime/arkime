@@ -198,7 +198,6 @@ function simpleGather(req, res, bodies, doneCb) {
         } else {
           result = {};
         }
-        result._node = node;
         result.escluster = clusters[node];
         asyncCb(null, result);
       });
@@ -353,6 +352,9 @@ app.get("/:index/:type/:id", function(req, res) {
   simpleGather(req, res, null, (err, results) => {
     for (var i = 0; i < results.length; i++) {
       if (results[i].found) {
+        if (results[i]._source) {
+          results[i]._source.escluster = results[i].escluster;
+        }
         return res.send(results[i]);
       }
     }
@@ -590,7 +592,6 @@ function combineResults(obj, result) {
   obj.hits.other += result.hits.other;
   if (result.hits.hits) {
     for (var i = 0; i < result.hits.hits.length; i++) {
-      result.hits.hits[i]._node = result._node;
       result.hits.hits[i]._source.escluster = result.escluster;
     }
     obj.hits.hits = obj.hits.hits.concat(result.hits.hits);
@@ -772,10 +773,10 @@ function msearch(req, res) {
 
 app.post("/:index/:type/:id/_update", function(req, res) {
   var body = JSON.parse(req.body);
-  if (body._node && clients[body._node]) {
+  if (body._cluster && clusters[body._cluster]) {
 
-    var node = body._node;
-    delete body._node;
+    var node = clusters[body._cluster];
+    delete body._cluster;
 
     var prefix = node2Prefix(node);
     var index = req.params.index.replace(/MULTIPREFIX_/g, prefix);
@@ -784,7 +785,7 @@ app.post("/:index/:type/:id/_update", function(req, res) {
       return res.send(result);
     });
   } else {
-    console.log ('ERROR - body of the request does not contain _node field', req.method, req.url, req.body);
+    console.log ('ERROR - body of the request does not contain escluster field', req.method, req.url, req.body);
     return res.end();
   }
 });

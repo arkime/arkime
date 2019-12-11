@@ -3106,7 +3106,12 @@ function sessionsListFromQuery(req, res, fields, cb) {
     if (Config.debug) {
       console.log("sessionsListFromQuery query", JSON.stringify(query, null, 1));
     }
-    Db.searchPrimary(indices, 'session', query, null, function (err, result) {
+
+    let options = {};
+
+    if (req.query.cluster && Config.get('multiES', false)) { options._cluster = req.query.cluster; }
+
+    Db.searchPrimary(indices, 'session', query, options, function (err, result) {
       if (err || result.error) {
           console.log("ERROR - Could not fetch list of sessions.  Err: ", err,  " Result: ", result, "query:", query);
           return res.send("Could not fetch list of sessions.  Err: " + err + " Result: " + result);
@@ -3135,7 +3140,12 @@ function sessionsListFromIds(req, ids, fields, cb) {
   let fixFields = nonArrayFields.filter(function(x) {return fields.indexOf(x) !== -1;});
 
   async.eachLimit(ids, 10, function(id, nextCb) {
-    Db.getWithOptions(Db.sid2Index(id), 'session', Db.sid2Id(id), {_source: fields.join(",")}, function(err, session) {
+
+    let options = { _source: fields.join(",") };
+
+    if (req.query.cluster && Config.get('multiES', false)) { options._cluster = req.query.cluster; }
+
+    Db.getWithOptions(Db.sid2Index(id), 'session', Db.sid2Id(id), options, function(err, session) {
       if (err) {
         return nextCb(null);
       }
@@ -6649,9 +6659,9 @@ function addTagsList (allTagNames, sessionList, doneCb) {
       return nextCb(null);
     }
 
-    let node = (Config.get('multiES', false) && session._node) ? session._node : undefined;
+    let escluster = (Config.get('multiES', false) && session._source.escluster) ? session._source.escluster : undefined;
 
-    Db.addTagsToSession(session._index, session._id, allTagNames, node, function (err, data) {
+    Db.addTagsToSession(session._index, session._id, allTagNames, escluster, function (err, data) {
       if (err) { console.log('addTagsList error', session, err, data); }
       nextCb(null);
     });
@@ -6669,9 +6679,9 @@ function removeTagsList(res, allTagNames, sessionList) {
       return nextCb(null);
     }
 
-    let node = (Config.get('multiES', false) && session._node) ? session._node : undefined;
+    let escluster = (Config.get('multiES', false) && session._source.escluster) ? session._source.escluster : undefined;
 
-    Db.removeTagsFromSession(session._index, session._id, allTagNames, node, function (err, data) {
+    Db.removeTagsFromSession(session._index, session._id, allTagNames, escluster, function (err, data) {
       if (err) { console.log('removeTagsList error', session, err, data); }
       nextCb(null);
     });
