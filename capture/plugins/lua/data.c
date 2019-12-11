@@ -39,6 +39,7 @@ MD_t *molua_pushMolochData (lua_State *L, const char *str, int len)
     md->str = str;
     md->len = len;
     md->needFree = 0;
+    md->invalid = 0;
     luaL_getmetatable(L, "MolochData");
     lua_setmetatable(L, -2);
     return md;
