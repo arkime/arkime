@@ -56,19 +56,6 @@ void molua_stackDump (lua_State *L)
   }
   printf("\n");  /* end the listing */
 }
-long refs[1];
-/******************************************************************************/
-void lua_http_on_body_cb (MolochSession_t *session, http_parser *UNUSED(hp), const char *at, size_t length)
-{
-    lua_State *L = Ls[session->thread];
-    lua_rawgeti(L, LUA_REGISTRYINDEX, refs[0]);
-    molua_pushMolochSession(L, session);
-    molua_pushMolochData(L, at, length);
-
-    if (lua_pcall(L, 2, 0, 0) != 0) {
-       LOGEXIT("error running http callback function %s", lua_tostring(L, -1));
-    }
-}
 /******************************************************************************/
 LOCAL int M_expression_to_fieldId(lua_State *L)
 {

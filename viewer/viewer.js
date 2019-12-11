@@ -3810,8 +3810,13 @@ app.post('/esadmin/set', [noCacheJson, recordResponseTime, checkEsAdminUser, che
 });
 
 app.post('/esadmin/reroute', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], (req, res) => {
-  Db.reroute();
-  return res.send(JSON.stringify({ success: true, text: 'Rerouted'}));
+  Db.reroute((err) => {
+    if (err) {
+      return res.send(JSON.stringify({ success: true, text: 'Reroute failed'}));
+    } else {
+      return res.send(JSON.stringify({ success: true, text: 'Reroute successful'}));
+    }
+  });
 });
 
 app.post('/esadmin/flush', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], (req, res) => {

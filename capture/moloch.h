@@ -1101,6 +1101,7 @@ typedef uint32_t (* MolochPluginOutstandingFunc) ();
 #define MOLOCH_PLUGIN_HP_OHC       0x00010000
 #define MOLOCH_PLUGIN_HP_OB        0x00020000
 #define MOLOCH_PLUGIN_HP_OMC       0x00040000
+#define MOLOCH_PLUGIN_HP_OHFR      0x00080000
 
 #define MOLOCH_PLUGIN_SMTP_OH      0x00100000
 #define MOLOCH_PLUGIN_SMTP_OHC     0x00200000
@@ -1131,6 +1132,16 @@ void moloch_plugins_set_http_cb(const char *             name,
                                 MolochPluginHttpDataFunc on_body,
                                 MolochPluginHttpFunc     on_message_complete);
 
+void moloch_plugins_set_http_ext_cb(const char *             name,
+                                    MolochPluginHttpFunc     on_message_begin,
+                                    MolochPluginHttpDataFunc on_url,
+                                    MolochPluginHttpDataFunc on_header_field,
+                                    MolochPluginHttpDataFunc on_header_field_raw,
+                                    MolochPluginHttpDataFunc on_header_value,
+                                    MolochPluginHttpFunc     on_headers_complete,
+                                    MolochPluginHttpDataFunc on_body,
+                                    MolochPluginHttpFunc     on_message_complete);
+
 void moloch_plugins_set_smtp_cb(const char *                name,
                                 MolochPluginSMTPHeaderFunc  on_header,
                                 MolochPluginSMTPFunc        on_header_complete);
@@ -1150,6 +1161,7 @@ void moloch_plugins_cb_udp(MolochSession_t *session, struct udphdr *udphdr, unsi
 void moloch_plugins_cb_hp_omb(MolochSession_t *session, http_parser *parser);
 void moloch_plugins_cb_hp_ou(MolochSession_t *session, http_parser *parser, const char *at, size_t length);
 void moloch_plugins_cb_hp_ohf(MolochSession_t *session, http_parser *parser, const char *at, size_t length);
+void moloch_plugins_cb_hp_ohfr(MolochSession_t *session, http_parser *parser, const char *at, size_t length);
 void moloch_plugins_cb_hp_ohv(MolochSession_t *session, http_parser *parser, const char *at, size_t length);
 void moloch_plugins_cb_hp_ohc(MolochSession_t *session, http_parser *parser);
 void moloch_plugins_cb_hp_ob(MolochSession_t *session, http_parser *parser, const char *at, size_t length);

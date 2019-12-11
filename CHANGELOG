@@ -16,14 +16,23 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.1.1 2019/12/XX
+2.2.0 2019/01/xx
+
+2.1.1 2019/12/09
   - release - cyberchef 9.11.7
   - wise - fix view duplication when reload tagger file (#1315)
   - capture - string fields created with wise/custom-fields are now assumed utf8
-  - s3 - handle longer tokens
+  - capture - term signal handled better
+  - s3 - handle longer tokens and path vs host access
   - viewer - support -o option to override config file like capture has
   - viewer - new "ES Admin" tab, enable with esAdminUsers= in config.ini
   - viewer - Hopefully fix cyberchef integration on all browsers
+  - viewer - better shrink index support for viewing pcap
+  - viewer - anonymous should work better for more features
+  - viewer - work around ES slow _count API in 7.x
+  - viewer - hunts support views better
+  - db - new warmkind option for specifying what units the warm number is in
+  - db - fix versionNumber printing
 
 2.1.0 2019/11/19
   - NOTE: All viewers must be 2.1 or later for them to communicate.  If not
