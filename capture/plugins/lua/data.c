@@ -26,6 +26,10 @@ LOCAL MD_t *checkMolochData (lua_State *L, int index)
         luaL_argerror(L, index, lua_pushfstring(L, "MolochData expected, got %s", luaL_typename(L, index)));
         return NULL;
     }
+    if (md->invalid) {
+        luaL_error(L, "MolochData does not contain valid data");
+        return NULL;
+    }
     return md;
 }
 /******************************************************************************/
@@ -35,6 +39,7 @@ MD_t *molua_pushMolochData (lua_State *L, const char *str, int len)
     md->str = str;
     md->len = len;
     md->needFree = 0;
+    md->invalid = 0;
     luaL_getmetatable(L, "MolochData");
     lua_setmetatable(L, -2);
     return md;
@@ -47,9 +52,16 @@ int MD_tostring(lua_State *L)
     return 1;
 }
 /******************************************************************************/
+void MD_markInvalid(lua_State *L, int index)
+{
+    MD_t *md = checkMolochData(L, index);
+    md->invalid = 1;
+}
+/******************************************************************************/
 int MD_gc(lua_State *L)
 {
-    MD_t *md = checkMolochData(L, 1);
+    // Do this directly as we don't want the 'invalid' check
+    MD_t *md = (MD_t*)luaL_checkudata(L, 1, "MolochData");
     if (md->needFree) {
         g_free((gpointer)md->str);
     }
