@@ -527,35 +527,45 @@
                   </span>
                 </td>
                 <td>
-                  <div v-if="user.createEnabled || item.user === user.userId || !item.user">
-                    <div class="btn-group btn-group-sm pull-right"
-                      v-if="item.changed">
-                      <button type="button"
-                        v-b-tooltip.hover
-                        @click="updateView(key)"
-                        title="Save changes to this view"
-                        class="btn btn-theme-tertiary">
-                        <span class="fa fa-save">
-                        </span>
-                      </button>
-                      <button type="button"
-                        v-b-tooltip.hover
-                        class="btn btn-warning"
-                        @click="cancelViewChange(key)"
-                        title="Undo changes to this view">
-                        <span class="fa fa-ban">
-                        </span>
-                      </button>
-                    </div>
-                    <button v-else
-                      type="button"
-                      class="btn btn-sm btn-danger pull-right"
-                      @click="deleteView(item, key)">
-                      <span class="fa fa-trash-o">
-                      </span>&nbsp;
-                      Delete
+                  <span class="pull-right">
+                    <button type="button"
+                      v-b-tooltip.hover
+                      title="Copy this views's expression"
+                      class="btn btn-sm btn-theme-secondary"
+                      v-clipboard:copy="item.expression">
+                      <span class="fa fa-clipboard fa-fw">
+                      </span>
                     </button>
-                  </div>
+                    <span v-if="user.createEnabled || item.user === user.userId || !item.user">
+                      <span v-if="item.changed">
+                        <button type="button"
+                          v-b-tooltip.hover
+                          @click="updateView(key)"
+                          title="Save changes to this view"
+                          class="btn btn-sm btn-theme-tertiary">
+                          <span class="fa fa-save fa-fw">
+                          </span>
+                        </button>
+                        <button type="button"
+                          v-b-tooltip.hover
+                          class="btn btn-sm btn-warning"
+                          @click="cancelViewChange(key)"
+                          title="Undo changes to this view">
+                          <span class="fa fa-ban fa-fw">
+                          </span>
+                        </button>
+                      </span>
+                      <button v-else
+                        type="button"
+                        v-b-tooltip.hover
+                        title="Delete this view"
+                        class="btn btn-sm btn-danger"
+                        @click="deleteView(item, key)">
+                        <span class="fa fa-trash-o fa-fw">
+                        </span>
+                      </button>
+                    </span>
+                  </span>
                 </td>
               </tr> <!-- /views -->
               <!-- view list error -->
@@ -1938,55 +1948,64 @@
                     {{ item.type }}
                   </td>
                   <td class="shortcut-btns">
-                    <span v-if="user.createEnabled || item.userId === user.userId">
-                      <span v-if="!item.newValue">
-                        <button type="button"
-                          v-b-tooltip.hover
-                          v-if="!item.locked"
-                          @click="toggleEditShortcut(item)"
-                          title="Make changes to this shortcut's value"
-                          class="btn btn-sm btn-theme-tertiary pull-right ml-1">
-                          <span class="fa fa-pencil fa-fw">
-                          </span>
-                        </button>
-                        <div v-else
-                          v-b-tooltip.hover
-                          class="pull-right ml-1"
-                          style="display:inline-block"
-                          title="Locked shortcut. Ask your admin to use db.pl to update this shortcut.">
-                          <button :disabled="true"
-                            type="button"
-                            class="btn btn-sm btn-warning disabled cursor-help">
-                            <span class="fa fa-lock fa-fw">
-                            </span>
-                          </button>
-                        </div>
+                    <span class="pull-right">
+                      <button type="button"
+                        v-b-tooltip.hover
+                        title="Copy this shortcut's value"
+                        class="btn btn-sm btn-theme-secondary"
+                        v-clipboard:copy="item.value">
+                        <span class="fa fa-clipboard fa-fw">
+                        </span>
+                      </button>
+                      <span v-if="user.createEnabled || item.userId === user.userId">
                         <button type="button"
                           v-b-tooltip.hover
                           title="Delete this shortcut"
-                          class="btn btn-sm btn-danger pull-right"
+                          class="btn btn-sm btn-danger"
                           @click="deleteShortcut(item, index)">
-                          <span class="fa fa-trash-o">
+                          <span class="fa fa-trash-o fa-fw">
                           </span>
                         </button>
-                      </span>
-                      <span v-else>
-                        <button type="button"
-                          v-b-tooltip.hover
-                          @click="updateShortcut(item)"
-                          title="Save changes to this shortcut's value"
-                          class="btn btn-sm btn-theme-tertiary pull-right ml-1">
-                          <span class="fa fa-save">
-                          </span>
-                        </button>
-                        <button type="button"
-                          v-b-tooltip.hover
-                          title="Cancel changes to this shortcut's value"
-                          class="btn btn-sm btn-warning pull-right"
-                          @click="toggleEditShortcut(item)">
-                          <span class="fa fa-ban">
-                          </span>
-                        </button>
+                        <span v-if="!item.newValue">
+                          <div v-if="item.locked"
+                            v-b-tooltip.hover
+                            style="display:inline-block"
+                            title="Locked shortcut. Ask your admin to use db.pl to update this shortcut.">
+                            <button :disabled="true"
+                              type="button"
+                              class="btn btn-sm btn-warning disabled cursor-help">
+                              <span class="fa fa-lock fa-fw">
+                              </span>
+                            </button>
+                          </div>
+                          <button type="button"
+                            v-b-tooltip.hover
+                            v-else
+                            @click="toggleEditShortcut(item)"
+                            title="Make changes to this shortcut's value"
+                            class="btn btn-sm btn-theme-tertiary">
+                            <span class="fa fa-pencil fa-fw">
+                            </span>
+                          </button>
+                        </span>
+                        <span v-else>
+                          <button type="button"
+                            v-b-tooltip.hover
+                            title="Cancel changes to this shortcut's value"
+                            class="btn btn-sm btn-warning"
+                            @click="toggleEditShortcut(item)">
+                            <span class="fa fa-ban fa-fw">
+                            </span>
+                          </button>
+                          <button type="button"
+                            v-b-tooltip.hover
+                            @click="updateShortcut(item)"
+                            title="Save changes to this shortcut's value"
+                            class="btn btn-sm btn-theme-tertiary">
+                            <span class="fa fa-save fa-fw">
+                            </span>
+                          </button>
+                        </span>
                       </span>
                     </span>
                   </td>
