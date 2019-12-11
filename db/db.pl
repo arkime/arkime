@@ -3091,7 +3091,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     logmsg "Exporting templates...\n";
     my @templates = ("sessions2_template", "history_v1_template");
     foreach my $template (@templates) {
-        my $data = esGet("/_template/${PREFIX}${template}");
+        my $data = esGet("/_template/${PREFIX}${template}?include_type_name=true");
         my @name = split(/_/, $template);
         my $fh = bopen("template");
         print $fh to_json($data);
@@ -3911,7 +3911,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
             my $data = do { local $/; <$fh> };
             $data = from_json($data);
             my @template_name = keys %{$data};
-            esPut("/_template/$template_name[0]?master_timeout=${ESTIMEOUT}s", to_json($data->{$template_name[0]}));
+            esPut("/_template/$template_name[0]?master_timeout=${ESTIMEOUT}s&include_type_name=true", to_json($data->{$template_name[0]}));
             close($fh);
         }
     }
