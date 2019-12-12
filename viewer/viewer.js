@@ -4799,63 +4799,56 @@ app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'),
     let options = {};
     if (req.query.cluster && Config.get('multiES', false)) { options._cluster = req.query.cluster; }
 
-    async.parallel({
-      spi: function (sessionsCb) {
-        Db.searchPrimary(indices, 'session', query, options, function (err, result) {
-          if (Config.debug) {
-            console.log("spiview.json result", util.inspect(result, false, 50));
-          }
-          if (err || result.error) {
-            bsqErr = errorString(err, result);
-            console.log("spiview.json ERROR", err, (result?result.error:null));
-            sessionsCb(null, {});
-            return;
-          }
+    Promise.all([Db.searchPrimary(indices, 'session', query, options, null),
+                 Db.numberOfDocuments('sessions2-*', options),
+                 Db.healthCachePromise()
+    ]).then(([sessions, total, health]) => {
+      if (Config.debug) {
+        console.log("spiview.json result", util.inspect(sessions, false, 50));
+      }
 
-          recordsFiltered = result.hits.total;
+      if (sessions.error) {
+        bsqErr = errorString(null, sessions);
+        console.log("spiview.json ERROR", (sessions?sessions.error:null));
+        sendResult();
+        return;
+      }
 
-          if (!result.aggregations) {
-            result.aggregations = {};
-            for (var spi in query.aggregations) {
-              result.aggregations[spi] = {sum_other_doc_count: 0, buckets: []};
-            }
-          }
+      recordsFiltered = sessions.hits.total;
 
-          if (result.aggregations.ipProtocol) {
-            result.aggregations.ipProtocol.buckets.forEach(function (item) {
-              item.key = Pcap.protocol2Name(item.key);
-            });
-          }
+      if (!sessions.aggregations) {
+        sessions.aggregations = {};
+        for (var spi in query.aggregations) {
+          sessions.aggregations[spi] = {sum_other_doc_count: 0, buckets: []};
+        }
+      }
 
-          if (req.query.facets) {
-            graph = graphMerge(req, query, result.aggregations);
-            map = mapMerge(result.aggregations);
-            protocols = {};
-            result.aggregations.protocols.buckets.forEach(function (item) {
-              protocols[item.key] = item.doc_count;
-            });
-
-            delete result.aggregations.dbHisto;
-            delete result.aggregations.byHisto;
-            delete result.aggregations.mapG1;
-            delete result.aggregations.mapG2;
-            delete result.aggregations.mapG3;
-            delete result.aggregations.protocols;
-          }
-
-          sessionsCb(null, result.aggregations);
+      if (sessions.aggregations.ipProtocol) {
+        sessions.aggregations.ipProtocol.buckets.forEach(function (item) {
+          item.key = Pcap.protocol2Name(item.key);
         });
-      },
-      total: function (totalCb) {
-        Db.numberOfDocuments('sessions2-*', options, totalCb);
-      },
-      health: Db.healthCache
-    },
-    function(err, results) {
+      }
+
+      if (req.query.facets) {
+        graph = graphMerge(req, query, sessions.aggregations);
+        map = mapMerge(sessions.aggregations);
+        protocols = {};
+        sessions.aggregations.protocols.buckets.forEach(function (item) {
+          protocols[item.key] = item.doc_count;
+        });
+
+        delete sessions.aggregations.dbHisto;
+        delete sessions.aggregations.byHisto;
+        delete sessions.aggregations.mapG1;
+        delete sessions.aggregations.mapG2;
+        delete sessions.aggregations.mapG3;
+        delete sessions.aggregations.protocols;
+      }
+
       function sendResult() {
-        r = {health: results.health,
-             recordsTotal: results.total,
-             spi: results.spi,
+        r = {health: health,
+             recordsTotal: total.count,
+             spi: sessions.aggregations,
              recordsFiltered: recordsFiltered,
              graph: graph,
              map: map,
@@ -4869,13 +4862,13 @@ app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'),
         }
       }
 
-      if (!results.spi.fileand) {
+      if (!sessions.aggregations.fileand) {
         return sendResult();
       }
 
       var nresults = [];
       var sodc = 0;
-      async.each(results.spi.fileand.buckets, function(nobucket, cb) {
+      async.each(sessions.aggregations.fileand.buckets, function(nobucket, cb) {
         sodc += nobucket.fileId.sum_other_doc_count;
         async.each(nobucket.fileId.buckets, function (fsitem, cb) {
           Db.fileIdToFile(nobucket.key, fsitem.key, function(file) {
@@ -4894,7 +4887,7 @@ app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'),
           }
           return b.doc_count - a.doc_count;
         });
-        results.spi.fileand = {doc_count_error_upper_bound: 0, sum_other_doc_count: sodc, buckets: nresults};
+        sessions.aggregations.fileand = {doc_count_error_upper_bound: 0, sum_other_doc_count: sodc, buckets: nresults};
         return sendResult();
       });
     });

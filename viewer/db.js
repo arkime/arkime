@@ -1008,34 +1008,29 @@ exports.getSequenceNumber = function (name, cb) {
   });
 };
 
-exports.numberOfDocuments = function (index, options, cb) {
 
-  if (!cb && typeof options === 'function') {
-    cb = options;
-    options = undefined;
-  }
-
-  let params = {
-    index: fixIndex(index),
-    ignoreUnavailable: true
-  };
-
-  exports.merge(params, options);
-
-  if (cb === undefined) {
-    // Promise version
+exports.numberOfDocuments = function (index, options) {
+  // count interface is slow for larget data sets, don't use for sessions unless multiES
+  if (index !== "sessions2-*" || internals.multiES) {
+    let params = { index: fixIndex(index), ignoreUnavailable: true };
+    exports.merge(params, options);
     return internals.elasticSearchClient.count(params);
-  } else {
-    // cb version - remove in future
-    internals.elasticSearchClient.count(params, (err, result) => {
-      if (err || result.error) {
-        return cb(null, 0);
-      }
-
-      return cb(null, result.count);
-    });
   }
+
+  return new Promise((resolve, reject) => {
+    let count = 0;
+    let str = internals.prefix + 'sessions2-';
+    exports.indicesCache((err, indices) => {
+      for (let i = 0; i < indices.length; i++) {
+        if (indices[i].index.includes(str)) {
+          count += parseInt(indices[i]['docs.count']);
+        }
+      }
+      resolve({count: count});
+    });
+  });
 };
+
 
 exports.updateFileSize = function (item, filesize) {
   exports.update("files", "file", item.id, {doc: {filesize: filesize}});
