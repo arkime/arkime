@@ -5,10 +5,10 @@
             "communityId" : "1:PIDOtGFIHUsiDppmnIxS0PK/t7Y=",
             "dns" : {
                "ASN" : [
-                  "AS1280 Internet Systems Consortium, Inc.",
-                  "AS1280 Internet Systems Consortium, Inc.",
-                  "AS1280 Internet Systems Consortium, Inc.",
-                  "AS1280 Internet Systems Consortium, Inc."
+                  "AS1280",
+                  "AS1280",
+                  "AS1280",
+                  "AS1280"
                ],
                "GEO" : [
                   "US",
@@ -17,40 +17,40 @@
                   "US"
                ],
                "RIR" : [
+                  "",
+                  "",
                   "ARIN",
-                  "",
-                  "",
                   "ARIN"
                ],
                "host" : [
-                  "www.isc.org",
+                  "104.9.192.66.in-addr.arpa",
+                  "google.com",
+                  "www.example.com",
                   "www.example.notginh",
                   "www.google.com",
-                  "www.netbsd.org",
-                  "google.com",
-                  "104.9.192.66.in-addr.arpa",
-                  "www.example.com",
-                  "www.l.google.com"
+                  "www.isc.org",
+                  "www.l.google.com",
+                  "www.netbsd.org"
                ],
                "hostCnt" : 8,
                "ip" : [
-                  "204.152.190.12",
-                  "2001:04f8:0004:0007:02e0:81ff:fe52:9a6b",
                   "2001:04f8:0000:0002:0000:0000:0000:000d",
-                  "204.152.184.88"
+                  "2001:04f8:0004:0007:02e0:81ff:fe52:9a6b",
+                  "204.152.184.88",
+                  "204.152.190.12"
                ],
                "ipCnt" : 4,
                "mailserverASN" : [
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC"
+                  "AS15169",
+                  "AS15169",
+                  "AS15169",
+                  "AS15169",
+                  "AS15169",
+                  "AS15169"
                ],
                "mailserverGEO" : [
-                  "US",
-                  "US",
+                  "MX",
+                  "MX",
                   "US",
                   "US",
                   "US",
@@ -58,20 +58,20 @@
                ],
                "mailserverHost" : [
                   "smtp1.google.com",
-                  "smtp6.google.com",
-                  "smtp5.google.com",
-                  "smtp4.google.com",
+                  "smtp2.google.com",
                   "smtp3.google.com",
-                  "smtp2.google.com"
+                  "smtp4.google.com",
+                  "smtp5.google.com",
+                  "smtp6.google.com"
                ],
                "mailserverHostCnt" : 6,
                "mailserverIp" : [
-                  "216.239.57.26",
-                  "64.233.167.25",
-                  "66.102.9.25",
                   "216.239.37.25",
                   "216.239.37.26",
-                  "216.239.57.25"
+                  "216.239.57.25",
+                  "216.239.57.26",
+                  "64.233.167.25",
+                  "66.102.9.25"
                ],
                "mailserverIpCnt" : 6,
                "mailserverRIR" : [
@@ -91,18 +91,18 @@
                ],
                "qcCnt" : 1,
                "qt" : [
-                  "AAAA",
                   "A",
+                  "AAAA",
+                  "ANY",
+                  "LOC",
                   "MX",
                   "PTR",
-                  "LOC",
-                  "TXT",
-                  "ANY"
+                  "TXT"
                ],
                "qtCnt" : 7,
                "status" : [
-                  "NXDOMAIN",
-                  "NOERROR"
+                  "NOERROR",
+                  "NXDOMAIN"
                ],
                "statusCnt" : 2
             },
@@ -180,8 +180,8 @@
                2497
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
@@ -267,8 +267,8 @@
                2726
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
@@ -308,9 +308,9 @@
                ],
                "hostCnt" : 1,
                "nameserverHost" : [
-                  "ns-ext.nrt1.isc.org",
                   "ns-ext.isc.org",
                   "ns-ext.lga1.isc.org",
+                  "ns-ext.nrt1.isc.org",
                   "ns-ext.sth1.isc.org"
                ],
                "nameserverHostCnt" : 4,
@@ -361,8 +361,8 @@
                3075
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
@@ -418,7 +418,7 @@
                ],
                "statusCnt" : 1
             },
-            "dstASN" : "AS15659 NextGenTel AS",
+            "dstASN" : "AS15659",
             "dstBytes" : 129,
             "dstDataBytes" : 87,
             "dstGEO" : "NO",
@@ -450,8 +450,8 @@
                3257
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
@@ -507,7 +507,7 @@
                ],
                "statusCnt" : 1
             },
-            "dstASN" : "AS15659 NextGenTel AS",
+            "dstASN" : "AS15659",
             "dstBytes" : 98,
             "dstDataBytes" : 56,
             "dstGEO" : "NO",
@@ -539,8 +539,8 @@
                3516
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
@@ -596,7 +596,7 @@
                ],
                "statusCnt" : 1
             },
-            "dstASN" : "AS15659 NextGenTel AS",
+            "dstASN" : "AS15659",
             "dstBytes" : 140,
             "dstDataBytes" : 98,
             "dstGEO" : "NO",
@@ -628,8 +628,8 @@
                3786
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
@@ -685,7 +685,7 @@
                ],
                "statusCnt" : 1
             },
-            "dstASN" : "AS15659 NextGenTel AS",
+            "dstASN" : "AS15659",
             "dstBytes" : 83,
             "dstDataBytes" : 41,
             "dstGEO" : "NO",
@@ -717,8 +717,8 @@
                4041
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
@@ -774,7 +774,7 @@
                ],
                "statusCnt" : 1
             },
-            "dstASN" : "AS15659 NextGenTel AS",
+            "dstASN" : "AS15659",
             "dstBytes" : 83,
             "dstDataBytes" : 41,
             "dstGEO" : "NO",
@@ -806,8 +806,8 @@
                4239
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,

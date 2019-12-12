@@ -1,4 +1,4 @@
-use Test::More tests => 254;
+use Test::More tests => 256;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -92,7 +92,7 @@ my $hToken = getTokenCookie('huntuser');
 # Hunt should finish
   viewerGet("/processHuntJobs");
 
-  $hunts = viewerGet("/hunt/list?molochRegressionUser=user2");
+  $hunts = viewerGet("/hunt/list?molochRegressionUser=user2&history=true");
   is (@{$hunts->{data}}, 1, "Add hunt 1");
 
 # user2 shouldn't see is, query, search, searchType, userId
@@ -108,21 +108,21 @@ my $hToken = getTokenCookie('huntuser');
   $json = viewerDeleteToken("/hunt/$id1?molochRegressionUser=user2", $otherToken);
   is ($json->{text}, "You cannot change another user's hunt unless you have admin privileges");
 
-  $hunts = viewerGet("/hunt/list");
+  $hunts = viewerGet("/hunt/list?history=true");
   is (@{$hunts->{data}}, 1, "Non admin user cannot delete another user's hunt");
 
   $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt 14","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $otherToken);
 
   viewerGet("/processHuntJobs");
 
-  $hunts = viewerGet("/hunt/list");
+  $hunts = viewerGet("/hunt/list?history=true");
   is (@{$hunts->{data}}, 2, "Add hunt 2");
 
   my $id2 = $json->{hunt}->{id};
   $json = viewerDeleteToken("/hunt/$id2?molochRegressionUser=user2", $otherToken);
   is ($json->{text}, "Deleted hunt item successfully");
 
-  $hunts = viewerGet("/hunt/list");
+  $hunts = viewerGet("/hunt/list?history=true");
   is (@{$hunts->{data}}, 1, "User can remove their own hunt");
 
 # If the user is not an admin they can only pause their own hunts
@@ -147,8 +147,39 @@ my $hToken = getTokenCookie('huntuser');
   $json = viewerDeleteToken("/hunt/$id4?molochRegressionUser=anonymous", $token);
   is ($json->{text}, "Deleted hunt item successfully");
 
-  $hunts = viewerGet("/hunt/list");
-  is (@{$hunts->{data}}, 1, "Admin can remove any hunt");
+  $hunts = viewerGet("/hunt/list?history=true");
+  my $found = 0;
+  foreach my $item (@{$hunts->{data}}) {
+    if ($item->{id} eq $id4) {
+      $found = 1;
+      last;
+    }
+  }
+  is ($found, 0, "Admin can remove any hunt");
+
+# should be able to run a hunt with a view
+  viewerPostToken("/user/views/create?molochRegressionUser=user2", '{"name": "tls", "expression": "protocols == tls", "shared": true}', $otherToken);
+  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"view":"tls"}}}', $otherToken);
+  is ($json->{success}, 1, "can run a hunt with a view");
+  my $id5 = $json->{hunt}->{id};
+
+  viewerGet("/processHuntJobs");
+
+  $hunts = viewerGet("/hunt/list?history=true");
+  my $viewHunt;
+  foreach my $item (@{$hunts->{data}}) {
+    if ($item->{id} eq $id5) {
+      $viewHunt = $item;
+      last;
+    }
+  }
+  is($viewHunt->{query}->{view}, "tls", "hunt has a view applied");
+
+  # cleanup
+  viewerDeleteToken("/hunt/$id5?molochRegressionUser=anonymous", $token);
+  viewerPostToken("/user/views/delete?molochRegressionUser=user2", '{"expression":"protocols == tls","user":"user2","shared":true,"name":"tls"}', $otherToken);
+  viewerPostToken("/user/delete", "userId=_moloch_shared", $token);
+
 
 # multiget should return an error
   my $mjson = multiGet("/hunt/list");

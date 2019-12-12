@@ -69,7 +69,6 @@ export default {
           resolve(response.data);
         })
         .catch((error) => {
-          this.saveToken('');
           reject(error.response.data);
         });
     });

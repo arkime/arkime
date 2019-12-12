@@ -66,12 +66,13 @@ var app = express();
 //////////////////////////////////////////////////////////////////////////////////
 var internals = {
   CYBERCHEFVERSION: '9.11.7',
-  elasticBase: Config.get("elasticsearch", "http://localhost:9200").split(",").map(s=>s.trim()).filter(s=>s.match(/^\S+$/)),
+  elasticBase: Config.getArray('elasticsearch', ',', 'http://localhost:9200'),
   esQueryTimeout: Config.get("elasticsearchTimeout", 300) + 's',
   userNameHeader: Config.get("userNameHeader"),
   requiredAuthHeader: Config.get("requiredAuthHeader"),
   requiredAuthHeaderVal: Config.get("requiredAuthHeaderVal"),
   userAutoCreateTmpl: Config.get("userAutoCreateTmpl"),
+  esAdminUsers: Config.get('multiES', false)?[]:Config.getArray('esAdminUsers', ',', ''),
   httpAgent:   new http.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40}),
   httpsAgent:  new https.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40, rejectUnauthorized: !Config.insecure}),
   previousNodesStats: [],
@@ -102,6 +103,19 @@ var internals = {
     termfield: 'string',
     uptermfield: 'string',
     lotermfield: 'string'
+  },
+  anonymousUser: {
+    userId: 'anonymous',
+    enabled: true,
+    createEnabled: false,
+    webEnabled: true,
+    headerAuthEnabled: false,
+    emailSearch: true,
+    removeEnabled: true,
+    packetSearch: true,
+    settings: {},
+    welcomeMsgNum: 1,
+    found: true
   }
 };
 
@@ -403,15 +417,39 @@ if (Config.get("passwordSecret")) {
   app.locals.alwaysShowESStatus = true;
   app.locals.noPasswordSecret   = true;
   app.use(function(req, res, next) {
-    req.user = {userId: "anonymous", enabled: true, createEnabled: false, webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}, welcomeMsgNum: 1};
-    Db.getUserCache("anonymous", function(err, suser) {
-        if (!err && suser && suser.found) {
-          req.user.settings = suser._source.settings || {};
-          req.user.views = suser._source.views;
-        }
+    req.user = internals.anonymousUser;
+    Db.getUserCache('anonymous', (err, suser) => {
+      if (!err && suser && suser.found) {
+        req.user.settings = suser._source.settings || {};
+        req.user.views = suser._source.views;
+      }
       next();
     });
   });
+}
+
+// check for anonymous mode before fetching user cache and return anonymous
+// user or the user requested by the userId
+function getUserCacheIncAnon (userId, cb) {
+  if (app.locals.noPasswordSecret) { // user is anonymous
+    Db.getUserCache('anonymous', (err, anonUser) => {
+      let anon = internals.anonymousUser;
+
+      if (!err && anonUser && anonUser.found) {
+        anon.settings = anonUser._source.settings || {};
+        anon.views = anonUser._source.views;
+      }
+
+      return cb(null, anon);
+    });
+  } else {
+    Db.getUserCache(userId, (err, user) => {
+      let found = user.found;
+      user = user._source;
+      if (user) { user.found = found; }
+      return cb(err, user);
+    });
+  }
 }
 
 // add lookups for queries
@@ -487,8 +525,8 @@ function loadPlugins() {
     getDb: function() { return Db; },
     getPcap: function() { return Pcap; },
   };
-  var plugins = Config.get("viewerPlugins", "").split(";");
-  var dirs = Config.get("pluginsDir", "/data/moloch/plugins").split(";");
+  var plugins = Config.getArray('viewerPlugins', ';', '');
+  var dirs = Config.getArray('pluginsDir', ';', '/data/moloch/plugins');
   plugins.forEach(function (plugin) {
     plugin = plugin.trim();
     if (plugin === "") {
@@ -600,8 +638,8 @@ function createSessionDetail() {
   var found = {};
   var dirs = [];
 
-  dirs = dirs.concat(Config.get("pluginsDir", "/data/moloch/plugins").split(';'));
-  dirs = dirs.concat(Config.get("parsersDir", "/data/moloch/parsers").split(';'));
+  dirs = dirs.concat(Config.getArray('pluginsDir', ';', '/data/moloch/plugins'));
+  dirs = dirs.concat(Config.getArray('parsersDir', ';', '/data/moloch/parsers'));
 
   dirs.forEach(function(dir) {
     try {
@@ -1295,6 +1333,8 @@ app.get('/user/current', checkPermissions(['webEnabled']), (req, res) => {
   }
 
   clone.canUpload = app.locals.allowUploads;
+  clone.esAdminUser = internals.esAdminUsers.includes(req.user.userId);
+
 
   // If no settings, use defaults
   if (clone.settings === undefined) { clone.settings = settingDefaults; }
@@ -3668,6 +3708,138 @@ app.post('/estask/cancelAll', [noCacheJson, logAction(), checkCookieToken, check
   });
 });
 
+//////////////////////////////////////////////////////////////////////////////////
+function checkEsAdminUser (req, res, next) {
+  if (internals.esAdminUsers.includes(req.user.userId)) {
+    return next();
+  }
+  return res.molochError(403, 'You do not have permission to access this resource');
+}
+
+app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser, setCookie], (req, res) => {
+  Promise.all([Db.getClusterSettings({flatSettings: true, include_defaults: true})
+              ]).then(([settings]) => {
+    let rsettings = [];
+
+    function addSetting(key, type, name, url, regex) {
+      let current = settings.transient[key];
+      if (current === undefined) { current = settings.persistent[key]; }
+      if (current === undefined) { current = settings.defaults[key]; }
+      if (current === undefined) { return; }
+      rsettings.push({key: key, current: current, name: name, type: type, url: url, regex: regex});
+    }
+
+    addSetting('search.max_buckets', 'Integer',
+               'Max Aggregation Size',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket.html',
+               '^(|null|\\d+)$');
+
+    addSetting('cluster.routing.allocation.disk.watermark.flood_stage', 'Percent or Byte Value',
+               'Disk Watermark Flood',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html',
+               '^(|null|\\d+(%|b|kb|mb|gb|tb|pb))$');
+
+    addSetting('cluster.routing.allocation.disk.watermark.high', 'Percent or Byte Value',
+               'Disk Watermark High',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html',
+               '^(|null|\\d+(%|b|kb|mb|gb|tb|pb))$');
+
+    addSetting('cluster.routing.allocation.disk.watermark.low', 'Percent or Byte Value',
+               'Disk Watermark Low',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html',
+               '^(|null|\\d+(%|b|kb|mb|gb|tb|pb))$');
+
+    addSetting('cluster.routing.allocation.enable', 'Mode',
+               'Allocation Mode',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html',
+               '^(all|primaries|new_primaries|none)$');
+
+    addSetting('cluster.routing.allocation.cluster_concurrent_rebalance', 'Integer',
+               'Concurrent Rebalances',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html',
+               '^(|null|\\d+)$');
+
+    addSetting('cluster.routing.allocation.node_concurrent_recoveries', 'Integer',
+               'Concurrent Recoveries',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html',
+               '^(|null|\\d+)$');
+
+    addSetting('cluster.routing.allocation.node_initial_primaries_recoveries', 'Integer',
+               'Initial Primaries Recoveries',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html',
+               '^(|null|\\d+)$');
+
+    addSetting('cluster.max_shards_per_node', 'Integer',
+               'Max Shards per Node',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/master/misc-cluster.html',
+               '^(|null|\\d+)$');
+
+    addSetting('indices.recovery.max_bytes_per_sec', 'Byte Value',
+               'Recovery Max Bytes per Second',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/recovery.html',
+               '^(|null|\\d+(b|kb|mb|gb|tb|pb))$');
+
+    addSetting('cluster.routing.allocation.awareness.attributes', 'List of Attributes',
+               'Shard Allocation Awareness',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/allocation-awareness.html',
+               '^(|null|[a-z0-9_,-]+)$');
+
+    addSetting('indices.breaker.total.limit', 'Percent',
+               'Breaker - Total Limit',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/circuit-breaker.html',
+               '^(|null|\\d+%)$');
+
+    addSetting('indices.breaker.fielddata.limit', 'Percent',
+               'Breaker - Field data',
+               'https://www.elastic.co/guide/en/elasticsearch/reference/current/circuit-breaker.html',
+               '^(|null|\\d+%)$');
+
+
+    return res.send(rsettings);
+  });
+});
+
+app.post('/esadmin/set', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], (req, res) => {
+
+  if (req.body.key === undefined) { return res.molochError(500, 'Missing key'); }
+  if (req.body.value === undefined) { return res.molochError(500, 'Missing value'); }
+
+  // Convert null string to null
+  if (req.body.value === 'null') { req.body.value = null; }
+
+  let query = {body: {persistent: {}}};
+  query.body.persistent[req.body.key] = req.body.value || null;
+
+  Db.putClusterSettings(query, function(err, result) {
+    if (err) {
+      console.log("putSettings failed", result);
+      return res.molochError(500, 'Set failed');
+    }
+    return res.send(JSON.stringify({ success: true, text: 'Set'}));
+  });
+});
+
+app.post('/esadmin/reroute', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], (req, res) => {
+  Db.reroute((err) => {
+    if (err) {
+      return res.send(JSON.stringify({ success: true, text: 'Reroute failed'}));
+    } else {
+      return res.send(JSON.stringify({ success: true, text: 'Reroute successful'}));
+    }
+  });
+});
+
+app.post('/esadmin/flush', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], (req, res) => {
+  Db.refresh('*');
+  Db.flush('*');
+  return res.send(JSON.stringify({ success: true, text: 'Flushed'}));
+});
+
+app.post('/esadmin/unflood', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], (req, res) => {
+  Db.setIndexSettings('*', {'index.blocks.read_only_allow_delete': null});
+  return res.send(JSON.stringify({ success: true, text: 'Unflood'}));
+});
+
 app.get('/esshard/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie], (req, res) => {
   Promise.all([
     Db.shards(),
@@ -4801,6 +4973,7 @@ app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'),
 
     Promise.all([Db.searchPrimary(indices, 'session', query, options, null),
                  Db.numberOfDocuments('sessions2-*', options),
+
                  Db.healthCachePromise()
     ]).then(([sessions, total, health]) => {
       if (Config.debug) {
@@ -7031,6 +7204,7 @@ function runHuntJob (huntId, hunt, query, user) {
   });
 }
 
+
 // Do the house keeping before actually running the hunt job
 function processHuntJob (huntId, hunt) {
   let now = Math.floor(Date.now() / 1000);
@@ -7045,8 +7219,7 @@ function processHuntJob (huntId, hunt) {
     }
   });
 
-  // find the user that created the hunt
-  Db.getUserCache(hunt.userId, function(err, user) {
+  getUserCacheIncAnon(hunt.userId, (err, user) => {
     if (err && !user) {
       pauseHuntJobWithError(huntId, hunt, { value: err });
       return;
@@ -7055,75 +7228,62 @@ function processHuntJob (huntId, hunt) {
       pauseHuntJobWithError(huntId, hunt, { value: `User ${hunt.userId} doesn't exist` });
       return;
     }
-    if (!user._source.enabled) {
+    if (!user.enabled) {
       pauseHuntJobWithError(huntId, hunt, { value: `User ${hunt.userId} is not enabled` });
       return;
     }
 
-    user = user._source;
-
     Db.getLookupsCache(hunt.userId, (err, lookups) => {
-      molochparser.parser.yy = {
-        emailSearch: user.emailSearch === true,
-        fieldsMap: Config.getFieldsMap(),
-        prefix: internals.prefix,
-        lookups: lookups || {},
-        lookupTypeMap: internals.lookupTypeMap
+      let fakeReq = {
+        user: user,
+        query: {
+          from: 0,
+          size: 100, // only fetch 100 items at a time
+          _source: ['_id', 'node'],
+          sort: 'lastPacket:asc'
+        }
       };
-
-      // build session query
-      let query = {
-        from: 0,
-        size: 100, // Only fetch 100 items at a time
-        query: { bool: { must: [{ exists: { field: 'fileId' } }], filter: [{}] } },
-        _source: ['_id', 'node'],
-        sort: { lastPacket: { order: 'asc' } }
-      };
-
-      // get the size of the query if it is being restarted
-      if (hunt.lastPacketTime) {
-        query.size = hunt.totalSessions - hunt.searchedSessions;
-      }
 
       if (hunt.query.expression) {
-        try {
-          query.query.bool.filter.push(molochparser.parse(hunt.query.expression));
-        } catch (e) {
-          pauseHuntJobWithError(huntId, hunt, { value: `Couldn't compile hunt query expression: ${e}` });
-          return;
-        }
+        fakeReq.query.expression = hunt.query.expression;
       }
 
-      if (user.expression && user.expression.length > 0) {
-        try {
-          // Expression was set by admin, so assume email search ok
-          molochparser.parser.yy.emailSearch = true;
-          var userExpression = molochparser.parse(user.expression);
-          query.query.bool.filter.push(userExpression);
-        } catch (e) {
-          pauseHuntJobWithError(huntId, hunt, { value: `Couldn't compile user forced expression (${user.expression}): ${e}` });
-          return;
-        }
+      if (hunt.query.view) {
+        fakeReq.query.view = hunt.query.view;
       }
 
-      lookupQueryItems(query.query.bool.filter, function (lerr) {
-        query.query.bool.filter[0] = {
-          range: {
-            lastPacket: {
-              gte: hunt.lastPacketTime || hunt.query.startTime * 1000,
-              lt: hunt.query.stopTime * 1000
+      buildSessionQuery(fakeReq, (err, query, indices) => {
+        if (err) {
+          pauseHuntJobWithError(huntId, hunt, {
+            value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.'
+          });
+          return;
+        }
+
+        // get the size of the query if it is being restarted
+        if (hunt.lastPacketTime) {
+          query.size = hunt.totalSessions - hunt.searchedSessions;
+        }
+
+        lookupQueryItems(query.query.bool.filter, (lerr) => {
+          query.query.bool.filter[0] = {
+            range: {
+              lastPacket: {
+                gte: hunt.lastPacketTime || hunt.query.startTime * 1000,
+                lt: hunt.query.stopTime * 1000
+              }
             }
+          };
+
+          query._source = ['lastPacket', 'node', 'huntId', 'huntName'];
+
+          if (Config.debug > 2) {
+            console.log('HUNT', hunt.name, hunt.userId, '- start:', new Date(hunt.lastPacketTime || hunt.query.startTime * 1000), 'stop:', new Date(hunt.query.stopTime * 1000));
           }
-        };
 
-        query._source = ['lastPacket', 'node', 'huntId', 'huntName'];
-
-        if (Config.debug > 2) {
-          console.log('HUNT', hunt.name, hunt.userId, '- start:', new Date(hunt.lastPacketTime || hunt.query.startTime * 1000), 'stop:', new Date(hunt.query.stopTime * 1000));
-        }
-
-        // do sessions query
-        runHuntJob(huntId, hunt, query, user);
+          // do sessions query
+          runHuntJob(huntId, hunt, query, user);
+        });
       });
     });
   });
@@ -7260,7 +7420,8 @@ app.post('/hunt', [noCacheJson, logAction('hunt'), checkCookieToken, checkPermis
   hunt.query = { // only use the necessary query items
     expression: req.body.hunt.query.expression,
     startTime: req.body.hunt.query.startTime,
-    stopTime: req.body.hunt.query.stopTime
+    stopTime: req.body.hunt.query.stopTime,
+    view: req.body.hunt.query.view
   };
 
   Db.createHunt(hunt, function (err, result) {
@@ -8620,11 +8781,18 @@ function processCronQueries() {
           cluster = cq.action.substring(8);
         }
 
-        Db.getUserCache(cq.creator, function (err, user) {
-          if (err && !user) {return forQueriesCb();}
-          if (!user || !user.found) {console.log("User", cq.creator, "doesn't exist"); return forQueriesCb(null);}
-          if (!user._source.enabled) {console.log("User", cq.creator, "not enabled"); return forQueriesCb();}
-          user = user._source;
+        getUserCacheIncAnon(cq.creator, (err, user) => {
+          if (err && !user) {
+            return forQueriesCb();
+          }
+          if (!user || !user.found) {
+            console.log(`User ${cq.creator} doesn't exist`);
+            return forQueriesCb(null);
+          }
+          if (!user.enabled) {
+            console.log(`User ${cq.creator} not enabled`);
+            return forQueriesCb();
+          }
 
           let options = {
             user: user,
@@ -8793,6 +8961,7 @@ function processArgs(argv) {
       console.log("  -host <host name>     Host name to use, default os hostname");
       console.log("  -n <node name>        Node name section to use in config file, default first part of hostname");
       console.log("  --debug               Increase debug level, multiple are supported");
+      console.log("  --esprofile           Turn on profiling to es search queries");
       console.log("  --insecure            Disable cert verification");
 
       process.exit(0);
@@ -8805,15 +8974,16 @@ processArgs(process.argv);
 //////////////////////////////////////////////////////////////////////////////////
 Db.initialize({host: internals.elasticBase,
                prefix: Config.get("prefix", ""),
-               usersHost: Config.get("usersElasticsearch")?Config.get("usersElasticsearch").split(",").map(s => s.trim()).filter(s => s.match(/^\S+$/)):undefined,
+               usersHost: Config.get('usersElasticsearch')?Config.getArray('usersElasticsearch', ',', ''):undefined,
                usersPrefix: Config.get("usersPrefix"),
                nodeName: Config.nodeName(),
                esClientKey: Config.get("esClientKey", null),
                esClientCert: Config.get("esClientCert", null),
                esClientKeyPass: Config.get("esClientKeyPass", null),
-               dontMapTags: Config.get("multiES", false),
+               multiES: Config.get('multiES', false),
                insecure: Config.insecure,
                ca: loadCaTrust(internals.nodeName),
                requestTimeout: Config.get("elasticsearchTimeout", 300),
+               esProfile: Config.esProfile,
                debug: Config.debug
               }, main);
