@@ -6003,7 +6003,7 @@ function localSessionDetail(req, res) {
 app.get('/:nodeName/session/:id/detail', cspHeader, logAction(), (req, res) => {
   var options = {};
   if (req.query.cluster && Config.get('multiES', false)) { options._cluster = req.query.cluster; }
-  Db.getWithOptions(Db.sid2Index(req.params.id), 'session', Db.sid2Id(req.params.id), {}, function(err, session) {
+  Db.getWithOptions(Db.sid2Index(req.params.id), 'session', Db.sid2Id(req.params.id), options, function(err, session) {
     if (err || !session.found) {
       return res.end("Couldn't look up SPI data, error for session " + safeStr(req.params.id) + " Error: " +  err);
     }
@@ -8549,12 +8549,16 @@ app.get('/:nodeName/session/:id/cyberchef', checkPermissions(['webEnabled']), ch
   });
 });
 
+
+//////////////////////////////////////////////////////////////////////////////////
+// MultiES
+//////////////////////////////////////////////////////////////////////////////////
 app.get("/multienabled", (req, res) => {
-  var crossClusterSearchEnabled = false;
+  var isMultiESEnabled = false;
   if (Config.get("multiES", false)) {
-    crossClusterSearchEnabled = true;
+    isMultiESEnabled = true;
   }
-  res.send(crossClusterSearchEnabled);
+  res.send(isMultiESEnabled);
 });
 
 app.get("/esclusters", (req, res) => {
