@@ -16,7 +16,15 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.2.0 2019/01/xx
+2.1.2 2019/12/16
+  - capture - no longer check in configure scripts, use autoreconf (thanks martinpaljak)
+  - capture - new http header raw callback for plugins (thanks pjsg)
+  - lua - Improvements and new sample script (thanks pjsg)
+  - viewer - more cyberchef fixes
+  - viewer - increased timeout on indexing
+  - viewer - show menu/protocol column on sessions page even if there are no
+             visible columns (issue #1337)
+  - parliament - make sure good config before writing (issue #1181)
 
 2.1.1 2019/12/09
   - release - cyberchef 9.11.7
