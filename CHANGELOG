@@ -16,6 +16,8 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
+2.2.0 2020/01/xx
+
 2.1.2 2019/12/16
   - capture - no longer check in configure scripts, use autoreconf (thanks martinpaljak)
   - capture - new http header raw callback for plugins (thanks pjsg)
