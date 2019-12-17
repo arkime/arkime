@@ -1,0 +1,2272 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Hash Tables: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-data-types.html" title="GLib Data Types">
+<link rel="prev" href="glib-Trash-Stacks.html" title="Trash Stacks">
+<link rel="next" href="glib-Strings.html" title="Strings">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-Hash-Tables.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-data-types.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Trash-Stacks.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-Strings.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Hash-Tables"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Hash-Tables.top_of_page"></a>Hash Tables</span></h2>
+<p>Hash Tables — associations between keys and values so that
+    given a key the value can be found quickly</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-Hash-Tables.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="returnvalue">GHashTable</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-new" title="g_hash_table_new ()">g_hash_table_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="returnvalue">GHashTable</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-new-full" title="g_hash_table_new_full ()">g_hash_table_new_full</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="glib-Hash-Tables.html#GHashFunc" title="GHashFunc ()">*GHashFunc</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="glib-Hash-Tables.html#GEqualFunc" title="GEqualFunc ()">*GEqualFunc</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-insert" title="g_hash_table_insert ()">g_hash_table_insert</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-replace" title="g_hash_table_replace ()">g_hash_table_replace</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-add" title="g_hash_table_add ()">g_hash_table_add</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-contains" title="g_hash_table_contains ()">g_hash_table_contains</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-size" title="g_hash_table_size ()">g_hash_table_size</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-lookup" title="g_hash_table_lookup ()">g_hash_table_lookup</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-lookup-extended" title="g_hash_table_lookup_extended ()">g_hash_table_lookup_extended</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-foreach" title="g_hash_table_foreach ()">g_hash_table_foreach</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-find" title="g_hash_table_find ()">g_hash_table_find</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="glib-Hash-Tables.html#GHFunc" title="GHFunc ()">*GHFunc</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-remove" title="g_hash_table_remove ()">g_hash_table_remove</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-steal" title="g_hash_table_steal ()">g_hash_table_steal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-foreach-remove" title="g_hash_table_foreach_remove ()">g_hash_table_foreach_remove</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-foreach-steal" title="g_hash_table_foreach_steal ()">g_hash_table_foreach_steal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-remove-all" title="g_hash_table_remove_all ()">g_hash_table_remove_all</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-steal-all" title="g_hash_table_steal_all ()">g_hash_table_steal_all</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Doubly-Linked-Lists.html#GList" title="struct GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-get-keys" title="g_hash_table_get_keys ()">g_hash_table_get_keys</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Doubly-Linked-Lists.html#GList" title="struct GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-get-values" title="g_hash_table_get_values ()">g_hash_table_get_values</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-get-keys-as-array" title="g_hash_table_get_keys_as_array ()">g_hash_table_get_keys_as_array</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="glib-Hash-Tables.html#GHRFunc" title="GHRFunc ()">*GHRFunc</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-freeze" title="g_hash_table_freeze()">g_hash_table_freeze</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-thaw" title="g_hash_table_thaw()">g_hash_table_thaw</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-destroy" title="g_hash_table_destroy ()">g_hash_table_destroy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="returnvalue">GHashTable</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-ref" title="g_hash_table_ref ()">g_hash_table_ref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-unref" title="g_hash_table_unref ()">g_hash_table_unref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-iter-init" title="g_hash_table_iter_init ()">g_hash_table_iter_init</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-iter-next" title="g_hash_table_iter_next ()">g_hash_table_iter_next</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="returnvalue">GHashTable</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-iter-get-hash-table" title="g_hash_table_iter_get_hash_table ()">g_hash_table_iter_get_hash_table</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-iter-replace" title="g_hash_table_iter_replace ()">g_hash_table_iter_replace</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-iter-remove" title="g_hash_table_iter_remove ()">g_hash_table_iter_remove</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-iter-steal" title="g_hash_table_iter_steal ()">g_hash_table_iter_steal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-direct-equal" title="g_direct_equal ()">g_direct_equal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-direct-hash" title="g_direct_hash ()">g_direct_hash</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-int-equal" title="g_int_equal ()">g_int_equal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-int-hash" title="g_int_hash ()">g_int_hash</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-int64-equal" title="g_int64_equal ()">g_int64_equal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-int64-hash" title="g_int64_hash ()">g_int64_hash</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-double-equal" title="g_double_equal ()">g_double_equal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-double-hash" title="g_double_hash ()">g_double_hash</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-str-equal" title="g_str_equal ()">g_str_equal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hash-Tables.html#g-str-hash" title="g_str_hash ()">g_str_hash</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Hash-Tables.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable">GHashTable</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="glib-Hash-Tables.html#GHashTableIter" title="struct GHashTableIter">GHashTableIter</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Hash-Tables.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gmodule.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Hash-Tables.description"></a><h2>Description</h2>
+<p>A <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> provides associations between keys and values which is
+optimized so that given a key, the associated value can be found
+very quickly.</p>
+<p>Note that neither keys nor values are copied when inserted into the
+<a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>, so they must exist for the lifetime of the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.
+This means that the use of static strings is OK, but temporary
+strings (i.e. those created in buffers and those returned by GTK+
+widgets) should be copied with <a class="link" href="glib-String-Utility-Functions.html#g-strdup" title="g_strdup ()"><code class="function">g_strdup()</code></a> before being inserted.</p>
+<p>If keys or values are dynamically allocated, you must be careful to
+ensure that they are freed when they are removed from the
+<a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>, and also when they are overwritten by new insertions
+into the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>. It is also not advisable to mix static strings
+and dynamically-allocated strings in a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>, because it then
+becomes difficult to determine whether the string should be freed.</p>
+<p>To create a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>, use <a class="link" href="glib-Hash-Tables.html#g-hash-table-new" title="g_hash_table_new ()"><code class="function">g_hash_table_new()</code></a>.</p>
+<p>To insert a key and value into a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>, use
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-insert" title="g_hash_table_insert ()"><code class="function">g_hash_table_insert()</code></a>.</p>
+<p>To lookup a value corresponding to a given key, use
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-lookup" title="g_hash_table_lookup ()"><code class="function">g_hash_table_lookup()</code></a> and <a class="link" href="glib-Hash-Tables.html#g-hash-table-lookup-extended" title="g_hash_table_lookup_extended ()"><code class="function">g_hash_table_lookup_extended()</code></a>.</p>
+<p>g_hash_table_lookup_extended() can also be used to simply
+check if a key is present in the hash table.</p>
+<p>To remove a key and value, use <a class="link" href="glib-Hash-Tables.html#g-hash-table-remove" title="g_hash_table_remove ()"><code class="function">g_hash_table_remove()</code></a>.</p>
+<p>To call a function for each key and value pair use
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-foreach" title="g_hash_table_foreach ()"><code class="function">g_hash_table_foreach()</code></a> or use a iterator to iterate over the
+key/value pairs in the hash table, see <a class="link" href="glib-Hash-Tables.html#GHashTableIter" title="struct GHashTableIter"><span class="type">GHashTableIter</span></a>.</p>
+<p>To destroy a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> use <a class="link" href="glib-Hash-Tables.html#g-hash-table-destroy" title="g_hash_table_destroy ()"><code class="function">g_hash_table_destroy()</code></a>.</p>
+<p>A common use-case for hash tables is to store information about a
+set of keys, without associating any particular value with each
+key. GHashTable optimizes one way of doing so: If you store only
+key-value pairs where key == value, then GHashTable does not
+allocate memory to store the values, which can be a considerable
+space saving, if your set is large. The functions
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-add" title="g_hash_table_add ()"><code class="function">g_hash_table_add()</code></a> and <a class="link" href="glib-Hash-Tables.html#g-hash-table-contains" title="g_hash_table_contains ()"><code class="function">g_hash_table_contains()</code></a> are designed to be
+used when using <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> this way.</p>
+<p><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> is not designed to be statically initialised with keys and
+values known at compile time. To build a static hash table, use a tool such
+as <a class="ulink" href="https://www.gnu.org/software/gperf/" target="_top">gperf</a>.</p>
+</div>
+<div class="refsect1">
+<a name="glib-Hash-Tables.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-hash-table-new"></a><h3>g_hash_table_new ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="returnvalue">GHashTable</span></a> *
+g_hash_table_new (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashFunc" title="GHashFunc ()"><span class="type">GHashFunc</span></a> hash_func</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GEqualFunc" title="GEqualFunc ()"><span class="type">GEqualFunc</span></a> key_equal_func</code></em>);</pre>
+<p>Creates a new <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> with a reference count of 1.</p>
+<p>Hash values returned by <em class="parameter"><code>hash_func</code></em>
+ are used to determine where keys
+are stored within the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> data structure. The <a class="link" href="glib-Hash-Tables.html#g-direct-hash" title="g_direct_hash ()"><code class="function">g_direct_hash()</code></a>,
+<a class="link" href="glib-Hash-Tables.html#g-int-hash" title="g_int_hash ()"><code class="function">g_int_hash()</code></a>, <a class="link" href="glib-Hash-Tables.html#g-int64-hash" title="g_int64_hash ()"><code class="function">g_int64_hash()</code></a>, <a class="link" href="glib-Hash-Tables.html#g-double-hash" title="g_double_hash ()"><code class="function">g_double_hash()</code></a> and <a class="link" href="glib-Hash-Tables.html#g-str-hash" title="g_str_hash ()"><code class="function">g_str_hash()</code></a>
+functions are provided for some common types of keys.
+If <em class="parameter"><code>hash_func</code></em>
+ is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>, <a class="link" href="glib-Hash-Tables.html#g-direct-hash" title="g_direct_hash ()"><code class="function">g_direct_hash()</code></a> is used.</p>
+<p><em class="parameter"><code>key_equal_func</code></em>
+ is used when looking up keys in the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.
+The <a class="link" href="glib-Hash-Tables.html#g-direct-equal" title="g_direct_equal ()"><code class="function">g_direct_equal()</code></a>, <a class="link" href="glib-Hash-Tables.html#g-int-equal" title="g_int_equal ()"><code class="function">g_int_equal()</code></a>, <a class="link" href="glib-Hash-Tables.html#g-int64-equal" title="g_int64_equal ()"><code class="function">g_int64_equal()</code></a>, <a class="link" href="glib-Hash-Tables.html#g-double-equal" title="g_double_equal ()"><code class="function">g_double_equal()</code></a>
+and <a class="link" href="glib-Hash-Tables.html#g-str-equal" title="g_str_equal ()"><code class="function">g_str_equal()</code></a> functions are provided for the most common types
+of keys. If <em class="parameter"><code>key_equal_func</code></em>
+ is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>, keys are compared directly in
+a similar fashion to <a class="link" href="glib-Hash-Tables.html#g-direct-equal" title="g_direct_equal ()"><code class="function">g_direct_equal()</code></a>, but without the overhead of
+a function call. <em class="parameter"><code>key_equal_func</code></em>
+ is called with the key from the hash table
+as its first parameter, and the user-provided key to check against as
+its second.</p>
+<div class="refsect3">
+<a name="g-hash-table-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>hash_func</p></td>
+<td class="parameter_description"><p>a function to create a hash value from a key</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key_equal_func</p></td>
+<td class="parameter_description"><p>a function to check two keys for equality</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-new.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-new-full"></a><h3>g_hash_table_new_full ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="returnvalue">GHashTable</span></a> *
+g_hash_table_new_full (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashFunc" title="GHashFunc ()"><span class="type">GHashFunc</span></a> hash_func</code></em>,
+                       <em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GEqualFunc" title="GEqualFunc ()"><span class="type">GEqualFunc</span></a> key_equal_func</code></em>,
+                       <em class="parameter"><code><a class="link" href="glib-Datasets.html#GDestroyNotify" title="GDestroyNotify ()"><span class="type">GDestroyNotify</span></a> key_destroy_func</code></em>,
+                       <em class="parameter"><code><a class="link" href="glib-Datasets.html#GDestroyNotify" title="GDestroyNotify ()"><span class="type">GDestroyNotify</span></a> value_destroy_func</code></em>);</pre>
+<p>Creates a new <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> like <a class="link" href="glib-Hash-Tables.html#g-hash-table-new" title="g_hash_table_new ()"><code class="function">g_hash_table_new()</code></a> with a reference
+count of 1 and allows to specify functions to free the memory
+allocated for the key and value that get called when removing the
+entry from the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.</p>
+<p>Since version 2.42 it is permissible for destroy notify functions to
+recursively remove further items from the hash table. This is only
+permissible if the application still holds a reference to the hash table.
+This means that you may need to ensure that the hash table is empty by
+calling <a class="link" href="glib-Hash-Tables.html#g-hash-table-remove-all" title="g_hash_table_remove_all ()"><code class="function">g_hash_table_remove_all()</code></a> before releasing the last reference using
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-unref" title="g_hash_table_unref ()"><code class="function">g_hash_table_unref()</code></a>.</p>
+<div class="refsect3">
+<a name="g-hash-table-new-full.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>hash_func</p></td>
+<td class="parameter_description"><p>a function to create a hash value from a key</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key_equal_func</p></td>
+<td class="parameter_description"><p>a function to check two keys for equality</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key_destroy_func</p></td>
+<td class="parameter_description"><p>a function to free the memory allocated for the key
+used when removing the entry from the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>
+if you don't want to supply such a function. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value_destroy_func</p></td>
+<td class="parameter_description"><p>a function to free the memory allocated for the
+value used when removing the entry from the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>
+if you don't want to supply such a function. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-new-full.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GHashFunc"></a><h3>GHashFunc ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+<span class="c_punctuation">(</span>*GHashFunc<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> key</code></em>);</pre>
+<p>Specifies the type of the hash function which is passed to
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-new" title="g_hash_table_new ()"><code class="function">g_hash_table_new()</code></a> when a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> is created.</p>
+<p>The function is passed a key and should return a <a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> hash value.
+The functions <a class="link" href="glib-Hash-Tables.html#g-direct-hash" title="g_direct_hash ()"><code class="function">g_direct_hash()</code></a>, <a class="link" href="glib-Hash-Tables.html#g-int-hash" title="g_int_hash ()"><code class="function">g_int_hash()</code></a> and <a class="link" href="glib-Hash-Tables.html#g-str-hash" title="g_str_hash ()"><code class="function">g_str_hash()</code></a> provide
+hash functions which can be used when the key is a <a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a>, <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a>*,
+and <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a>* respectively.</p>
+<p>g_direct_hash() is also the appropriate hash function for keys
+of the form <code class="literal">GINT_TO_POINTER (n)</code> (or similar macros).</p>
+<p>A good hash functions should produce
+hash values that are evenly distributed over a fairly large range.
+The modulus is taken with the hash table size (a prime number) to
+find the 'bucket' to place each key into. The function should also
+be very fast, since it is called for each key lookup.</p>
+<p>Note that the hash functions provided by GLib have these qualities,
+but are not particularly robust against manufactured keys that
+cause hash collisions. Therefore, you should consider choosing
+a more secure hash function when using a GHashTable with keys
+that originate in untrusted data (such as HTTP requests).
+Using <a class="link" href="glib-Hash-Tables.html#g-str-hash" title="g_str_hash ()"><code class="function">g_str_hash()</code></a> in that situation might make your application
+vulerable to
+<a class="ulink" href="https://lwn.net/Articles/474912/" target="_top">Algorithmic Complexity Attacks</a>.</p>
+<p>The key to choosing a good hash is unpredictability.  Even
+cryptographic hashes are very easy to find collisions for when the
+remainder is taken modulo a somewhat predictable prime number.  There
+must be an element of randomness that an attacker is unable to guess.</p>
+<div class="refsect3">
+<a name="GHashFunc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a key</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="GHashFunc.returns"></a><h4>Returns</h4>
+<p> the hash value corresponding to the key</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GEqualFunc"></a><h3>GEqualFunc ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+<span class="c_punctuation">(</span>*GEqualFunc<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> a</code></em>,
+               <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> b</code></em>);</pre>
+<p>Specifies the type of a function used to test two values for
+equality. The function should return <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if both values are equal
+and <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> otherwise.</p>
+<div class="refsect3">
+<a name="GEqualFunc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>a</p></td>
+<td class="parameter_description"><p>a value</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>b</p></td>
+<td class="parameter_description"><p>a value to compare with</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="GEqualFunc.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>a</code></em>
+= <em class="parameter"><code>b</code></em>
+; <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> otherwise</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-insert"></a><h3>g_hash_table_insert ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_hash_table_insert (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>,
+                     <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> key</code></em>,
+                     <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> value</code></em>);</pre>
+<p>Inserts a new key and value into a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.</p>
+<p>If the key already exists in the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> its current
+value is replaced with the new value. If you supplied a
+<em class="parameter"><code>value_destroy_func</code></em>
+ when creating the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>, the old
+value is freed using that function. If you supplied a
+<em class="parameter"><code>key_destroy_func</code></em>
+ when creating the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>, the passed
+key is freed using that function.</p>
+<p>Starting from GLib 2.40, this function returns a boolean value to
+indicate whether the newly added value was already in the hash table
+or not.</p>
+<div class="refsect3">
+<a name="g-hash-table-insert.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a key to insert</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>the value to associate with the key</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-insert.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the key did not exist yet</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-replace"></a><h3>g_hash_table_replace ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_hash_table_replace (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> key</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> value</code></em>);</pre>
+<p>Inserts a new key and value into a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> similar to
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-insert" title="g_hash_table_insert ()"><code class="function">g_hash_table_insert()</code></a>. The difference is that if the key
+already exists in the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>, it gets replaced by the
+new key. If you supplied a <em class="parameter"><code>value_destroy_func</code></em>
+ when creating
+the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>, the old value is freed using that function.
+If you supplied a <em class="parameter"><code>key_destroy_func</code></em>
+ when creating the
+<a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>, the old key is freed using that function.</p>
+<p>Starting from GLib 2.40, this function returns a boolean value to
+indicate whether the newly added value was already in the hash table
+or not.</p>
+<div class="refsect3">
+<a name="g-hash-table-replace.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a key to insert</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>the value to associate with the key</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-replace.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the key did not exist yet</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-add"></a><h3>g_hash_table_add ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_hash_table_add (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> key</code></em>);</pre>
+<p>This is a convenience function for using a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> as a set.  It
+is equivalent to calling <a class="link" href="glib-Hash-Tables.html#g-hash-table-replace" title="g_hash_table_replace ()"><code class="function">g_hash_table_replace()</code></a> with <em class="parameter"><code>key</code></em>
+ as both the
+key and the value.</p>
+<p>When a hash table only ever contains keys that have themselves as the
+corresponding value it is able to be stored more efficiently.  See
+the discussion in the section description.</p>
+<p>Starting from GLib 2.40, this function returns a boolean value to
+indicate whether the newly added value was already in the hash table
+or not.</p>
+<div class="refsect3">
+<a name="g-hash-table-add.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a key to insert</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-add.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the key did not exist yet</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-contains"></a><h3>g_hash_table_contains ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_hash_table_contains (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>,
+                       <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> key</code></em>);</pre>
+<p>Checks if <em class="parameter"><code>key</code></em>
+ is in <em class="parameter"><code>hash_table</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-hash-table-contains.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a key to check</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-contains.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>key</code></em>
+is in <em class="parameter"><code>hash_table</code></em>
+, <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-size"></a><h3>g_hash_table_size ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_hash_table_size (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>);</pre>
+<p>Returns the number of elements contained in the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.</p>
+<div class="refsect3">
+<a name="g-hash-table-size.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-size.returns"></a><h4>Returns</h4>
+<p> the number of key/value pairs in the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-lookup"></a><h3>g_hash_table_lookup ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+g_hash_table_lookup (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>,
+                     <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> key</code></em>);</pre>
+<p>Looks up a key in a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>. Note that this function cannot
+distinguish between a key that is not present and one which is present
+and has the value <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>. If you need this distinction, use
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-lookup-extended" title="g_hash_table_lookup_extended ()"><code class="function">g_hash_table_lookup_extended()</code></a>.</p>
+<div class="refsect3">
+<a name="g-hash-table-lookup.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>the key to look up</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-lookup.returns"></a><h4>Returns</h4>
+<p>the associated value, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if the key is not found. </p>
+<p><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-lookup-extended"></a><h3>g_hash_table_lookup_extended ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_hash_table_lookup_extended (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>,
+                              <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> lookup_key</code></em>,
+                              <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> *orig_key</code></em>,
+                              <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> *value</code></em>);</pre>
+<p>Looks up a key in the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>, returning the original key and the
+associated value and a <a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="type">gboolean</span></a> which is <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the key was found. This
+is useful if you need to free the memory allocated for the original key,
+for example before calling <a class="link" href="glib-Hash-Tables.html#g-hash-table-remove" title="g_hash_table_remove ()"><code class="function">g_hash_table_remove()</code></a>.</p>
+<p>You can actually pass <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> for <em class="parameter"><code>lookup_key</code></em>
+ to test
+whether the <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> key exists, provided the hash and equal functions
+of <em class="parameter"><code>hash_table</code></em>
+ are <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>-safe.</p>
+<div class="refsect3">
+<a name="g-hash-table-lookup-extended.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>lookup_key</p></td>
+<td class="parameter_description"><p>the key to look up</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>orig_key</p></td>
+<td class="parameter_description"><p>return location for the original key. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>return location for the value associated
+with the key. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-lookup-extended.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the key was found in the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-foreach"></a><h3>g_hash_table_foreach ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_hash_table_foreach (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHFunc" title="GHFunc ()"><span class="type">GHFunc</span></a> func</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Calls the given function for each of the key/value pairs in the
+<a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.  The function is passed the key and value of each
+pair, and the given <em class="parameter"><code>user_data</code></em>
+ parameter.  The hash table may not
+be modified while iterating over it (you can't add/remove
+items). To remove all items matching a predicate, use
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-foreach-remove" title="g_hash_table_foreach_remove ()"><code class="function">g_hash_table_foreach_remove()</code></a>.</p>
+<p>See <a class="link" href="glib-Hash-Tables.html#g-hash-table-find" title="g_hash_table_find ()"><code class="function">g_hash_table_find()</code></a> for performance caveats for linear
+order searches in contrast to <a class="link" href="glib-Hash-Tables.html#g-hash-table-lookup" title="g_hash_table_lookup ()"><code class="function">g_hash_table_lookup()</code></a>.</p>
+<div class="refsect3">
+<a name="g-hash-table-foreach.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>func</p></td>
+<td class="parameter_description"><p>the function to call for each key/value pair</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data to pass to the function</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-find"></a><h3>g_hash_table_find ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+g_hash_table_find (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHRFunc" title="GHRFunc ()"><span class="type">GHRFunc</span></a> predicate</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Calls the given function for key/value pairs in the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>
+until <em class="parameter"><code>predicate</code></em>
+ returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>. The function is passed the key
+and value of each pair, and the given <em class="parameter"><code>user_data</code></em>
+ parameter. The
+hash table may not be modified while iterating over it (you can't
+add/remove items).</p>
+<p>Note, that hash tables are really only optimized for forward
+lookups, i.e. <a class="link" href="glib-Hash-Tables.html#g-hash-table-lookup" title="g_hash_table_lookup ()"><code class="function">g_hash_table_lookup()</code></a>. So code that frequently issues
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-find" title="g_hash_table_find ()"><code class="function">g_hash_table_find()</code></a> or <a class="link" href="glib-Hash-Tables.html#g-hash-table-foreach" title="g_hash_table_foreach ()"><code class="function">g_hash_table_foreach()</code></a> (e.g. in the order of
+once per every entry in a hash table) should probably be reworked
+to use additional or different data structures for reverse lookups
+(keep in mind that an O(n) find/foreach operation issued for all n
+values in a hash table ends up needing O(n*n) operations).</p>
+<div class="refsect3">
+<a name="g-hash-table-find.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>predicate</p></td>
+<td class="parameter_description"><p>function to test the key/value pairs for a certain property</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data to pass to the function</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-find.returns"></a><h4>Returns</h4>
+<p>The value of the first key/value pair is returned,
+for which <em class="parameter"><code>predicate</code></em>
+evaluates to <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>. If no pair with the
+requested property is found, <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> is returned. </p>
+<p><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GHFunc"></a><h3>GHFunc ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+<span class="c_punctuation">(</span>*GHFunc<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> key</code></em>,
+           <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> value</code></em>,
+           <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Specifies the type of the function passed to <a class="link" href="glib-Hash-Tables.html#g-hash-table-foreach" title="g_hash_table_foreach ()"><code class="function">g_hash_table_foreach()</code></a>.
+It is called with each key/value pair, together with the <em class="parameter"><code>user_data</code></em>
+
+parameter which is passed to <a class="link" href="glib-Hash-Tables.html#g-hash-table-foreach" title="g_hash_table_foreach ()"><code class="function">g_hash_table_foreach()</code></a>.</p>
+<div class="refsect3">
+<a name="GHFunc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a key</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>the value corresponding to the key</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data passed to <a class="link" href="glib-Hash-Tables.html#g-hash-table-foreach" title="g_hash_table_foreach ()"><code class="function">g_hash_table_foreach()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-remove"></a><h3>g_hash_table_remove ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_hash_table_remove (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>,
+                     <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> key</code></em>);</pre>
+<p>Removes a key and its associated value from a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.</p>
+<p>If the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> was created using <a class="link" href="glib-Hash-Tables.html#g-hash-table-new-full" title="g_hash_table_new_full ()"><code class="function">g_hash_table_new_full()</code></a>, the
+key and value are freed using the supplied destroy functions, otherwise
+you have to make sure that any dynamically allocated values are freed
+yourself.</p>
+<div class="refsect3">
+<a name="g-hash-table-remove.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>the key to remove</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-remove.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the key was found and removed from the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-steal"></a><h3>g_hash_table_steal ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_hash_table_steal (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> key</code></em>);</pre>
+<p>Removes a key and its associated value from a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> without
+calling the key and value destroy functions.</p>
+<div class="refsect3">
+<a name="g-hash-table-steal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>the key to remove</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-steal.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the key was found and removed from the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-foreach-remove"></a><h3>g_hash_table_foreach_remove ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_hash_table_foreach_remove (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>,
+                             <em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHRFunc" title="GHRFunc ()"><span class="type">GHRFunc</span></a> func</code></em>,
+                             <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Calls the given function for each key/value pair in the
+<a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>. If the function returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>, then the key/value
+pair is removed from the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>. If you supplied key or
+value destroy functions when creating the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>, they are
+used to free the memory allocated for the removed keys and values.</p>
+<p>See <a class="link" href="glib-Hash-Tables.html#GHashTableIter" title="struct GHashTableIter"><span class="type">GHashTableIter</span></a> for an alternative way to loop over the
+key/value pairs in the hash table.</p>
+<div class="refsect3">
+<a name="g-hash-table-foreach-remove.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>func</p></td>
+<td class="parameter_description"><p>the function to call for each key/value pair</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data to pass to the function</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-foreach-remove.returns"></a><h4>Returns</h4>
+<p> the number of key/value pairs removed</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-foreach-steal"></a><h3>g_hash_table_foreach_steal ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_hash_table_foreach_steal (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>,
+                            <em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHRFunc" title="GHRFunc ()"><span class="type">GHRFunc</span></a> func</code></em>,
+                            <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Calls the given function for each key/value pair in the
+<a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>. If the function returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>, then the key/value
+pair is removed from the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>, but no key or value
+destroy functions are called.</p>
+<p>See <a class="link" href="glib-Hash-Tables.html#GHashTableIter" title="struct GHashTableIter"><span class="type">GHashTableIter</span></a> for an alternative way to loop over the
+key/value pairs in the hash table.</p>
+<div class="refsect3">
+<a name="g-hash-table-foreach-steal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>func</p></td>
+<td class="parameter_description"><p>the function to call for each key/value pair</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data to pass to the function</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-foreach-steal.returns"></a><h4>Returns</h4>
+<p> the number of key/value pairs removed.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-remove-all"></a><h3>g_hash_table_remove_all ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_hash_table_remove_all (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>);</pre>
+<p>Removes all keys and their associated values from a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.</p>
+<p>If the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> was created using <a class="link" href="glib-Hash-Tables.html#g-hash-table-new-full" title="g_hash_table_new_full ()"><code class="function">g_hash_table_new_full()</code></a>,
+the keys and values are freed using the supplied destroy functions,
+otherwise you have to make sure that any dynamically allocated
+values are freed yourself.</p>
+<div class="refsect3">
+<a name="g-hash-table-remove-all.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-12.html#api-index-2.12">2.12</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-steal-all"></a><h3>g_hash_table_steal_all ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_hash_table_steal_all (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>);</pre>
+<p>Removes all keys and their associated values from a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>
+without calling the key and value destroy functions.</p>
+<div class="refsect3">
+<a name="g-hash-table-steal-all.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-12.html#api-index-2.12">2.12</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-get-keys"></a><h3>g_hash_table_get_keys ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Doubly-Linked-Lists.html#GList" title="struct GList"><span class="returnvalue">GList</span></a> *
+g_hash_table_get_keys (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>);</pre>
+<p>Retrieves every key inside <em class="parameter"><code>hash_table</code></em>
+. The returned data is valid
+until changes to the hash release those keys.</p>
+<p>This iterates over every entry in the hash table to build its return value.
+To iterate over the entries in a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> more efficiently, use a
+<a class="link" href="glib-Hash-Tables.html#GHashTableIter" title="struct GHashTableIter"><span class="type">GHashTableIter</span></a>.</p>
+<div class="refsect3">
+<a name="g-hash-table-get-keys.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-get-keys.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="glib-Doubly-Linked-Lists.html#GList" title="struct GList"><span class="type">GList</span></a> containing all the keys
+inside the hash table. The content of the list is owned by the
+hash table and should not be modified or freed. Use <a class="link" href="glib-Doubly-Linked-Lists.html#g-list-free" title="g_list_free ()"><code class="function">g_list_free()</code></a>
+when done using the list. </p>
+<p><span class="annotation">[<acronym title="Free data container after the code is done."><span class="acronym">transfer container</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-14.html#api-index-2.14">2.14</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-get-values"></a><h3>g_hash_table_get_values ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Doubly-Linked-Lists.html#GList" title="struct GList"><span class="returnvalue">GList</span></a> *
+g_hash_table_get_values (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>);</pre>
+<p>Retrieves every value inside <em class="parameter"><code>hash_table</code></em>
+. The returned data
+is valid until <em class="parameter"><code>hash_table</code></em>
+ is modified.</p>
+<p>This iterates over every entry in the hash table to build its return value.
+To iterate over the entries in a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> more efficiently, use a
+<a class="link" href="glib-Hash-Tables.html#GHashTableIter" title="struct GHashTableIter"><span class="type">GHashTableIter</span></a>.</p>
+<div class="refsect3">
+<a name="g-hash-table-get-values.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-get-values.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="glib-Doubly-Linked-Lists.html#GList" title="struct GList"><span class="type">GList</span></a> containing all the values
+inside the hash table. The content of the list is owned by the
+hash table and should not be modified or freed. Use <a class="link" href="glib-Doubly-Linked-Lists.html#g-list-free" title="g_list_free ()"><code class="function">g_list_free()</code></a>
+when done using the list. </p>
+<p><span class="annotation">[<acronym title="Free data container after the code is done."><span class="acronym">transfer container</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-14.html#api-index-2.14">2.14</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-get-keys-as-array"></a><h3>g_hash_table_get_keys_as_array ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a> *
+g_hash_table_get_keys_as_array (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>,
+                                <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> *length</code></em>);</pre>
+<p>Retrieves every key inside <em class="parameter"><code>hash_table</code></em>
+, as an array.</p>
+<p>The returned array is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>-terminated but may contain <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> as a
+key.  Use <em class="parameter"><code>length</code></em>
+ to determine the true length if it's possible that
+<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> was used as the value for a key.</p>
+<p>Note: in the common case of a string-keyed <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>, the return
+value of this function can be conveniently cast to (const gchar **).</p>
+<p>This iterates over every entry in the hash table to build its return value.
+To iterate over the entries in a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> more efficiently, use a
+<a class="link" href="glib-Hash-Tables.html#GHashTableIter" title="struct GHashTableIter"><span class="type">GHashTableIter</span></a>.</p>
+<p>You should always free the return result with <a class="link" href="glib-Memory-Allocation.html#g-free" title="g_free ()"><code class="function">g_free()</code></a>.  In the
+above-mentioned case of a string-keyed hash table, it may be
+appropriate to use <a class="link" href="glib-String-Utility-Functions.html#g-strfreev" title="g_strfreev ()"><code class="function">g_strfreev()</code></a> if you call <a class="link" href="glib-Hash-Tables.html#g-hash-table-steal-all" title="g_hash_table_steal_all ()"><code class="function">g_hash_table_steal_all()</code></a>
+first to transfer ownership of the keys.</p>
+<div class="refsect3">
+<a name="g-hash-table-get-keys-as-array.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>length</p></td>
+<td class="parameter_description"><p>the length of the returned array. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-get-keys-as-array.returns"></a><h4>Returns</h4>
+<p>a
+<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>-terminated array containing each key from the table. </p>
+<p><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=length][<acronym title="Free data container after the code is done."><span class="acronym">transfer container</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GHRFunc"></a><h3>GHRFunc ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+<span class="c_punctuation">(</span>*GHRFunc<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> key</code></em>,
+            <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> value</code></em>,
+            <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Specifies the type of the function passed to
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-foreach-remove" title="g_hash_table_foreach_remove ()"><code class="function">g_hash_table_foreach_remove()</code></a>. It is called with each key/value
+pair, together with the <em class="parameter"><code>user_data</code></em>
+ parameter passed to
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-foreach-remove" title="g_hash_table_foreach_remove ()"><code class="function">g_hash_table_foreach_remove()</code></a>. It should return <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the
+key/value pair should be removed from the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.</p>
+<div class="refsect3">
+<a name="GHRFunc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a key</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>the value associated with the key</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data passed to <a class="link" href="glib-Hash-Tables.html#g-hash-table-remove" title="g_hash_table_remove ()"><code class="function">g_hash_table_remove()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="GHRFunc.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the key/value pair should be removed from the
+<a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-freeze"></a><h3>g_hash_table_freeze()</h3>
+<pre class="programlisting">#define             g_hash_table_freeze(hash_table)</pre>
+<div class="warning"><p><code class="literal">g_hash_table_freeze</code> is deprecated and should not be used in newly-written code.</p></div>
+<p>This function is deprecated and will be removed in the next major
+release of GLib. It does nothing.</p>
+<div class="refsect3">
+<a name="g-hash-table-freeze.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-thaw"></a><h3>g_hash_table_thaw()</h3>
+<pre class="programlisting">#define             g_hash_table_thaw(hash_table)</pre>
+<div class="warning"><p><code class="literal">g_hash_table_thaw</code> is deprecated and should not be used in newly-written code.</p></div>
+<p>This function is deprecated and will be removed in the next major
+release of GLib. It does nothing.</p>
+<div class="refsect3">
+<a name="g-hash-table-thaw.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-destroy"></a><h3>g_hash_table_destroy ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_hash_table_destroy (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>);</pre>
+<p>Destroys all keys and values in the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> and decrements its
+reference count by 1. If keys and/or values are dynamically allocated,
+you should either free them first or create the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> with destroy
+notifiers using <a class="link" href="glib-Hash-Tables.html#g-hash-table-new-full" title="g_hash_table_new_full ()"><code class="function">g_hash_table_new_full()</code></a>. In the latter case the destroy
+functions you supplied will be called on all keys and values during the
+destruction phase.</p>
+<div class="refsect3">
+<a name="g-hash-table-destroy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-ref"></a><h3>g_hash_table_ref ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="returnvalue">GHashTable</span></a> *
+g_hash_table_ref (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>);</pre>
+<p>Atomically increments the reference count of <em class="parameter"><code>hash_table</code></em>
+ by one.
+This function is MT-safe and may be called from any thread.</p>
+<div class="refsect3">
+<a name="g-hash-table-ref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a valid <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-ref.returns"></a><h4>Returns</h4>
+<p> the passed in <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-10.html#api-index-2.10">2.10</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-unref"></a><h3>g_hash_table_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_hash_table_unref (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>);</pre>
+<p>Atomically decrements the reference count of <em class="parameter"><code>hash_table</code></em>
+ by one.
+If the reference count drops to 0, all keys and values will be
+destroyed, and all memory allocated by the hash table is released.
+This function is MT-safe and may be called from any thread.</p>
+<div class="refsect3">
+<a name="g-hash-table-unref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a valid <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-10.html#api-index-2.10">2.10</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-iter-init"></a><h3>g_hash_table_iter_init ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_hash_table_iter_init (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTableIter" title="struct GHashTableIter"><span class="type">GHashTableIter</span></a> *iter</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> *hash_table</code></em>);</pre>
+<p>Initializes a key/value pair iterator and associates it with
+<em class="parameter"><code>hash_table</code></em>
+. Modifying the hash table after calling this function
+invalidates the returned iterator.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">GHashTableIter</span><span class="normal"> iter</span><span class="symbol">;</span>
+<span class="usertype">gpointer</span><span class="normal"> key</span><span class="symbol">,</span><span class="normal"> value</span><span class="symbol">;</span>
+
+<span class="function"><a href="glib-Hash-Tables.html#g-hash-table-iter-init">g_hash_table_iter_init</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">iter</span><span class="symbol">,</span><span class="normal"> hash_table</span><span class="symbol">);</span>
+<span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="glib-Hash-Tables.html#g-hash-table-iter-next">g_hash_table_iter_next</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">iter</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">key</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">value</span><span class="symbol">))</span>
+<span class="normal">  </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="comment">// do something with key and value</span>
+<span class="normal">  </span><span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="g-hash-table-iter-init.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>an uninitialized <a class="link" href="glib-Hash-Tables.html#GHashTableIter" title="struct GHashTableIter"><span class="type">GHashTableIter</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>hash_table</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-16.html#api-index-2.16">2.16</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-iter-next"></a><h3>g_hash_table_iter_next ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_hash_table_iter_next (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTableIter" title="struct GHashTableIter"><span class="type">GHashTableIter</span></a> *iter</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> *key</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> *value</code></em>);</pre>
+<p>Advances <em class="parameter"><code>iter</code></em>
+ and retrieves the key and/or value that are now
+pointed to as a result of this advancement. If <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> is returned,
+<em class="parameter"><code>key</code></em>
+ and <em class="parameter"><code>value</code></em>
+ are not set, and the iterator becomes invalid.</p>
+<div class="refsect3">
+<a name="g-hash-table-iter-next.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>an initialized <a class="link" href="glib-Hash-Tables.html#GHashTableIter" title="struct GHashTableIter"><span class="type">GHashTableIter</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a location to store the key. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>a location to store the value. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-iter-next.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> if the end of the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> has been reached.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-16.html#api-index-2.16">2.16</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-iter-get-hash-table"></a><h3>g_hash_table_iter_get_hash_table ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="returnvalue">GHashTable</span></a> *
+g_hash_table_iter_get_hash_table (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTableIter" title="struct GHashTableIter"><span class="type">GHashTableIter</span></a> *iter</code></em>);</pre>
+<p>Returns the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> associated with <em class="parameter"><code>iter</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-hash-table-iter-get-hash-table.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>an initialized <a class="link" href="glib-Hash-Tables.html#GHashTableIter" title="struct GHashTableIter"><span class="type">GHashTableIter</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hash-table-iter-get-hash-table.returns"></a><h4>Returns</h4>
+<p> the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> associated with <em class="parameter"><code>iter</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-16.html#api-index-2.16">2.16</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-iter-replace"></a><h3>g_hash_table_iter_replace ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_hash_table_iter_replace (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTableIter" title="struct GHashTableIter"><span class="type">GHashTableIter</span></a> *iter</code></em>,
+                           <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> value</code></em>);</pre>
+<p>Replaces the value currently pointed to by the iterator
+from its associated <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>. Can only be called after
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-iter-next" title="g_hash_table_iter_next ()"><code class="function">g_hash_table_iter_next()</code></a> returned <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>.</p>
+<p>If you supplied a <em class="parameter"><code>value_destroy_func</code></em>
+ when creating the
+<a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>, the old value is freed using that function.</p>
+<div class="refsect3">
+<a name="g-hash-table-iter-replace.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>an initialized <a class="link" href="glib-Hash-Tables.html#GHashTableIter" title="struct GHashTableIter"><span class="type">GHashTableIter</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>the value to replace with</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-iter-remove"></a><h3>g_hash_table_iter_remove ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_hash_table_iter_remove (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTableIter" title="struct GHashTableIter"><span class="type">GHashTableIter</span></a> *iter</code></em>);</pre>
+<p>Removes the key/value pair currently pointed to by the iterator
+from its associated <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>. Can only be called after
+<a class="link" href="glib-Hash-Tables.html#g-hash-table-iter-next" title="g_hash_table_iter_next ()"><code class="function">g_hash_table_iter_next()</code></a> returned <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>, and cannot be called
+more than once for the same key/value pair.</p>
+<p>If the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> was created using <a class="link" href="glib-Hash-Tables.html#g-hash-table-new-full" title="g_hash_table_new_full ()"><code class="function">g_hash_table_new_full()</code></a>,
+the key and value are freed using the supplied destroy functions,
+otherwise you have to make sure that any dynamically allocated
+values are freed yourself.</p>
+<p>It is safe to continue iterating the <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> afterward:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="glib-Hash-Tables.html#g-hash-table-iter-next">g_hash_table_iter_next</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">iter</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">key</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">value</span><span class="symbol">))</span>
+<span class="normal">  </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">condition</span><span class="symbol">)</span>
+<span class="normal">      </span><span class="function"><a href="glib-Hash-Tables.html#g-hash-table-iter-remove">g_hash_table_iter_remove</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">iter</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="g-hash-table-iter-remove.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>an initialized <a class="link" href="glib-Hash-Tables.html#GHashTableIter" title="struct GHashTableIter"><span class="type">GHashTableIter</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-16.html#api-index-2.16">2.16</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hash-table-iter-steal"></a><h3>g_hash_table_iter_steal ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_hash_table_iter_steal (<em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashTableIter" title="struct GHashTableIter"><span class="type">GHashTableIter</span></a> *iter</code></em>);</pre>
+<p>Removes the key/value pair currently pointed to by the
+iterator from its associated <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>, without calling
+the key and value destroy functions. Can only be called
+after <a class="link" href="glib-Hash-Tables.html#g-hash-table-iter-next" title="g_hash_table_iter_next ()"><code class="function">g_hash_table_iter_next()</code></a> returned <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>, and cannot
+be called more than once for the same key/value pair.</p>
+<div class="refsect3">
+<a name="g-hash-table-iter-steal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>an initialized <a class="link" href="glib-Hash-Tables.html#GHashTableIter" title="struct GHashTableIter"><span class="type">GHashTableIter</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-16.html#api-index-2.16">2.16</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-direct-equal"></a><h3>g_direct_equal ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_direct_equal (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> v1</code></em>,
+                <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> v2</code></em>);</pre>
+<p>Compares two <a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> arguments and returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if they are equal.
+It can be passed to <a class="link" href="glib-Hash-Tables.html#g-hash-table-new" title="g_hash_table_new ()"><code class="function">g_hash_table_new()</code></a> as the <em class="parameter"><code>key_equal_func</code></em>
+
+parameter, when using opaque pointers compared by pointer value as
+keys in a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.</p>
+<p>This equality function is also appropriate for keys that are integers
+stored in pointers, such as <code class="literal">GINT_TO_POINTER (n)</code>.</p>
+<div class="refsect3">
+<a name="g-direct-equal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>v1</p></td>
+<td class="parameter_description"><p>a key. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>v2</p></td>
+<td class="parameter_description"><p>a key to compare with <em class="parameter"><code>v1</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-direct-equal.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the two keys match.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-direct-hash"></a><h3>g_direct_hash ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_direct_hash (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> v</code></em>);</pre>
+<p>Converts a gpointer to a hash value.
+It can be passed to <a class="link" href="glib-Hash-Tables.html#g-hash-table-new" title="g_hash_table_new ()"><code class="function">g_hash_table_new()</code></a> as the <em class="parameter"><code>hash_func</code></em>
+ parameter,
+when using opaque pointers compared by pointer value as keys in a
+<a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.</p>
+<p>This hash function is also appropriate for keys that are integers
+stored in pointers, such as <code class="literal">GINT_TO_POINTER (n)</code>.</p>
+<div class="refsect3">
+<a name="g-direct-hash.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>v</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> key. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-direct-hash.returns"></a><h4>Returns</h4>
+<p> a hash value corresponding to the key.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-int-equal"></a><h3>g_int_equal ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_int_equal (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> v1</code></em>,
+             <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> v2</code></em>);</pre>
+<p>Compares the two <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> values being pointed to and returns
+<a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if they are equal.
+It can be passed to <a class="link" href="glib-Hash-Tables.html#g-hash-table-new" title="g_hash_table_new ()"><code class="function">g_hash_table_new()</code></a> as the <em class="parameter"><code>key_equal_func</code></em>
+
+parameter, when using non-<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> pointers to integers as keys in a
+<a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.</p>
+<p>Note that this function acts on pointers to <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a>, not on <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a>
+directly: if your hash table's keys are of the form
+<code class="literal">GINT_TO_POINTER (n)</code>, use <a class="link" href="glib-Hash-Tables.html#g-direct-equal" title="g_direct_equal ()"><code class="function">g_direct_equal()</code></a> instead.</p>
+<div class="refsect3">
+<a name="g-int-equal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>v1</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> key. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>v2</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> key to compare with <em class="parameter"><code>v1</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-int-equal.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the two keys match.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-int-hash"></a><h3>g_int_hash ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_int_hash (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> v</code></em>);</pre>
+<p>Converts a pointer to a <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> to a hash value.
+It can be passed to <a class="link" href="glib-Hash-Tables.html#g-hash-table-new" title="g_hash_table_new ()"><code class="function">g_hash_table_new()</code></a> as the <em class="parameter"><code>hash_func</code></em>
+ parameter,
+when using non-<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> pointers to integer values as keys in a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.</p>
+<p>Note that this function acts on pointers to <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a>, not on <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a>
+directly: if your hash table's keys are of the form
+<code class="literal">GINT_TO_POINTER (n)</code>, use <a class="link" href="glib-Hash-Tables.html#g-direct-hash" title="g_direct_hash ()"><code class="function">g_direct_hash()</code></a> instead.</p>
+<div class="refsect3">
+<a name="g-int-hash.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>v</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> key. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-int-hash.returns"></a><h4>Returns</h4>
+<p> a hash value corresponding to the key.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-int64-equal"></a><h3>g_int64_equal ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_int64_equal (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> v1</code></em>,
+               <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> v2</code></em>);</pre>
+<p>Compares the two <a class="link" href="glib-Basic-Types.html#gint64" title="gint64"><span class="type">gint64</span></a> values being pointed to and returns
+<a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if they are equal.
+It can be passed to <a class="link" href="glib-Hash-Tables.html#g-hash-table-new" title="g_hash_table_new ()"><code class="function">g_hash_table_new()</code></a> as the <em class="parameter"><code>key_equal_func</code></em>
+
+parameter, when using non-<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> pointers to 64-bit integers as keys in a
+<a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.</p>
+<div class="refsect3">
+<a name="g-int64-equal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>v1</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Basic-Types.html#gint64" title="gint64"><span class="type">gint64</span></a> key. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>v2</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Basic-Types.html#gint64" title="gint64"><span class="type">gint64</span></a> key to compare with <em class="parameter"><code>v1</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-int64-equal.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the two keys match.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-int64-hash"></a><h3>g_int64_hash ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_int64_hash (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> v</code></em>);</pre>
+<p>Converts a pointer to a <a class="link" href="glib-Basic-Types.html#gint64" title="gint64"><span class="type">gint64</span></a> to a hash value.</p>
+<p>It can be passed to <a class="link" href="glib-Hash-Tables.html#g-hash-table-new" title="g_hash_table_new ()"><code class="function">g_hash_table_new()</code></a> as the <em class="parameter"><code>hash_func</code></em>
+ parameter,
+when using non-<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> pointers to 64-bit integer values as keys in a
+<a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.</p>
+<div class="refsect3">
+<a name="g-int64-hash.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>v</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Basic-Types.html#gint64" title="gint64"><span class="type">gint64</span></a> key. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-int64-hash.returns"></a><h4>Returns</h4>
+<p> a hash value corresponding to the key.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-double-equal"></a><h3>g_double_equal ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_double_equal (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> v1</code></em>,
+                <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> v2</code></em>);</pre>
+<p>Compares the two <a class="link" href="glib-Basic-Types.html#gdouble" title="gdouble"><span class="type">gdouble</span></a> values being pointed to and returns
+<a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if they are equal.
+It can be passed to <a class="link" href="glib-Hash-Tables.html#g-hash-table-new" title="g_hash_table_new ()"><code class="function">g_hash_table_new()</code></a> as the <em class="parameter"><code>key_equal_func</code></em>
+
+parameter, when using non-<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> pointers to doubles as keys in a
+<a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.</p>
+<div class="refsect3">
+<a name="g-double-equal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>v1</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Basic-Types.html#gdouble" title="gdouble"><span class="type">gdouble</span></a> key. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>v2</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Basic-Types.html#gdouble" title="gdouble"><span class="type">gdouble</span></a> key to compare with <em class="parameter"><code>v1</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-double-equal.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the two keys match.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-double-hash"></a><h3>g_double_hash ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_double_hash (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> v</code></em>);</pre>
+<p>Converts a pointer to a <a class="link" href="glib-Basic-Types.html#gdouble" title="gdouble"><span class="type">gdouble</span></a> to a hash value.
+It can be passed to <a class="link" href="glib-Hash-Tables.html#g-hash-table-new" title="g_hash_table_new ()"><code class="function">g_hash_table_new()</code></a> as the <em class="parameter"><code>hash_func</code></em>
+ parameter,
+It can be passed to <a class="link" href="glib-Hash-Tables.html#g-hash-table-new" title="g_hash_table_new ()"><code class="function">g_hash_table_new()</code></a> as the <em class="parameter"><code>hash_func</code></em>
+ parameter,
+when using non-<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> pointers to doubles as keys in a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.</p>
+<div class="refsect3">
+<a name="g-double-hash.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>v</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Basic-Types.html#gdouble" title="gdouble"><span class="type">gdouble</span></a> key. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-double-hash.returns"></a><h4>Returns</h4>
+<p> a hash value corresponding to the key.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-str-equal"></a><h3>g_str_equal ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_str_equal (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> v1</code></em>,
+             <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> v2</code></em>);</pre>
+<p>Compares two strings for byte-by-byte equality and returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>
+if they are equal. It can be passed to <a class="link" href="glib-Hash-Tables.html#g-hash-table-new" title="g_hash_table_new ()"><code class="function">g_hash_table_new()</code></a> as the
+<em class="parameter"><code>key_equal_func</code></em>
+ parameter, when using non-<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> strings as keys in a
+<a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.</p>
+<p>Note that this function is primarily meant as a hash table comparison
+function. For a general-purpose, <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>-safe string comparison function,
+see <a class="link" href="glib-String-Utility-Functions.html#g-strcmp0" title="g_strcmp0 ()"><code class="function">g_strcmp0()</code></a>.</p>
+<div class="refsect3">
+<a name="g-str-equal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>v1</p></td>
+<td class="parameter_description"><p>a key. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>v2</p></td>
+<td class="parameter_description"><p>a key to compare with <em class="parameter"><code>v1</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-str-equal.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the two keys match</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-str-hash"></a><h3>g_str_hash ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_str_hash (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> v</code></em>);</pre>
+<p>Converts a string to a hash value.</p>
+<p>This function implements the widely used "djb" hash apparently
+posted by Daniel Bernstein to comp.lang.c some time ago.  The 32
+bit unsigned hash value starts at 5381 and for each byte 'c' in
+the string, is updated: <code class="literal">hash = hash * 33 + c</code>. This function
+uses the signed value of each byte.</p>
+<p>It can be passed to <a class="link" href="glib-Hash-Tables.html#g-hash-table-new" title="g_hash_table_new ()"><code class="function">g_hash_table_new()</code></a> as the <em class="parameter"><code>hash_func</code></em>
+ parameter,
+when using non-<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> strings as keys in a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.</p>
+<p>Note that this function may not be a perfect fit for all use cases.
+For example, it produces some hash collisions with strings as short
+as 2.</p>
+<div class="refsect3">
+<a name="g-str-hash.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>v</p></td>
+<td class="parameter_description"><p>a string key. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-str-hash.returns"></a><h4>Returns</h4>
+<p> a hash value corresponding to the key</p>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Hash-Tables.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GHashTable"></a><h3>GHashTable</h3>
+<pre class="programlisting">typedef struct _GHashTable GHashTable;</pre>
+<p>The <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> struct is an opaque data structure to represent a
+<a class="link" href="glib-Hash-Tables.html" title="Hash Tables">Hash Table</a>. It should only be accessed via the
+following functions.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GHashTableIter"></a><h3>struct GHashTableIter</h3>
+<pre class="programlisting">struct GHashTableIter {
+};
+</pre>
+<p>A GHashTableIter structure represents an iterator that can be used
+to iterate over the elements of a <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>. GHashTableIter
+structures are typically allocated on the stack and then initialized
+with <a class="link" href="glib-Hash-Tables.html#g-hash-table-iter-init" title="g_hash_table_iter_init ()"><code class="function">g_hash_table_iter_init()</code></a>.</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

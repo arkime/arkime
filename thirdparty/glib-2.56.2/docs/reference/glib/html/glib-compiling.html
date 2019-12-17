@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Compiling GLib Applications: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib.html" title="GLib Overview">
+<link rel="prev" href="glib-programming.html" title="Writing GLib Applications">
+<link rel="next" href="glib-running.html" title="Running GLib Applications">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-programming.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-running.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-compiling"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle">Compiling GLib Applications</span></h2>
+<p>Compiling GLib Applications — 
+How to compile your GLib application
+</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="id-1.2.6.3"></a><h2>Compiling GLib Applications on UNIX</h2>
+<p>
+To compile a GLib application, you need to tell the compiler where to
+find the GLib header files and libraries. This is done with the
+<span class="application">pkg-config</span> utility.
+</p>
+<p>
+The following interactive shell session demonstrates how
+<span class="application">pkg-config</span> is used (the actual output on
+your system may be different):
+</p>
+<pre class="programlisting">
+$ pkg-config --cflags glib-2.0
+ -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include
+$ pkg-config --libs glib-2.0
+ -L/usr/lib -lm -lglib-2.0
+</pre>
+<p>
+</p>
+<p>
+See the <a class="ulink" href="http://www.freedesktop.org/wiki/Software/pkg-config" target="_top">pkg-config website</a>
+for more information about <span class="application">pkg-config</span>.
+</p>
+<p>
+If your application uses or <span class="structname">GObject</span>
+features, it must be compiled and linked with the options returned
+by the following <span class="application">pkg-config</span> invocation:
+</p>
+<pre class="programlisting">
+$ pkg-config --cflags --libs gobject-2.0
+</pre>
+<p>
+</p>
+<p>
+If your application uses modules, it must be compiled and linked
+with the options returned by one of the following
+<span class="application">pkg-config</span> invocations:
+</p>
+<pre class="programlisting">
+$ pkg-config --cflags --libs gmodule-no-export-2.0
+$ pkg-config --cflags --libs gmodule-2.0
+</pre>
+<p>
+The difference between the two is that gmodule-2.0 adds
+<code class="option">--export-dynamic</code> to the linker flags,
+which is often not needed.
+</p>
+<p>
+The simplest way to compile a program is to use the "backticks"
+feature of the shell. If you enclose a command in backticks
+(<span class="emphasis"><em>not single quotes</em></span>), then its output will
+be substituted into the command line before execution. So to
+compile a GLib Hello, World, you would type the following:
+</p>
+<pre class="programlisting">
+$ cc hello.c `pkg-config --cflags --libs glib-2.0` -o hello
+</pre>
+<p>
+</p>
+<div class="note"><p>
+Note that the name of the file must come before the other options
+(such as <span class="emphasis"><em>pkg-config</em></span>), or else you may get an
+error from the linker.
+</p></div>
+<p>
+Deprecated GLib functions are annotated to make the compiler
+emit warnings when they are used (e.g. with gcc, you need to use
+the -Wdeprecated-declarations option). If these warnings are
+problematic, they can be turned off by defining the preprocessor
+symbol <a class="link" href="glib-Version-Information.html#GLIB-DISABLE-DEPRECATION-WARNINGS:CAPS" title="GLIB_DISABLE_DEPRECATION_WARNINGS"><code class="literal">GLIB_DISABLE_DEPRECATION_WARNINGS</code></a> by using the commandline
+option <code class="literal">-DGLIB_DISABLE_DEPRECATION_WARNINGS</code>
+</p>
+<p>
+GLib deprecation annotations are versioned; by defining the
+macros <a class="link" href="glib-Version-Information.html#GLIB-VERSION-MIN-REQUIRED:CAPS" title="GLIB_VERSION_MIN_REQUIRED"><code class="literal">GLIB_VERSION_MIN_REQUIRED</code></a> and <a class="link" href="glib-Version-Information.html#GLIB-VERSION-MAX-ALLOWED:CAPS" title="GLIB_VERSION_MAX_ALLOWED"><code class="literal">GLIB_VERSION_MAX_ALLOWED</code></a>,
+you can specify the range of GLib versions whose API you want
+to use. APIs that were deprecated before or introduced after
+this range will trigger compiler warnings.
+</p>
+<p>
+The older deprecation mechanism of hiding deprecated interfaces
+entirely from the compiler by using the preprocessor symbol
+G_DISABLE_DEPRECATED is still used for deprecated macros,
+enumeration values, etc. To detect uses of these in your code,
+use the commandline option <code class="literal">-DG_DISABLE_DEPRECATED</code>.
+</p>
+<p>
+The recommended way of using GLib has always been to only include the
+toplevel headers <code class="filename">glib.h</code>,
+<code class="filename">glib-object.h</code>, <code class="filename">gio.h</code>.
+Starting with 2.32, GLib enforces this by generating an error
+when individual headers are directly included.
+</p>
+<p>
+Still, there are some exceptions; these headers have to be included
+separately:
+<code class="filename">gmodule.h</code>,
+<code class="filename">glib-unix.h</code>,
+<code class="filename">glib/gi18n-lib.h</code> or
+<code class="filename">glib/gi18n.h</code> (see
+the <a class="link" href="glib-I18N.html" title="Internationalization">Internationalization section</a>),
+<code class="filename">glib/gprintf.h</code> and
+<code class="filename">glib/gstdio.h</code>
+(we don't want to pull in all of stdio).
+</p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

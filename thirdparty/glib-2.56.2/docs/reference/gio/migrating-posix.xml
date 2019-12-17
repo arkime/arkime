@@ -1,0 +1,27 @@
+<part id="migrating">
+  <title>Migrating to GIO</title>
+
+  <chapter>
+    <title>Migrating from POSIX to GIO</title>
+  
+    <table id="posix-vs-gio">
+      <title>Comparison of POSIX and GIO concepts</title>
+      <tgroup cols="2">
+        <thead>
+          <row><entry>POSIX</entry><entry>GIO</entry></row>
+        </thead>
+        <tbody>
+          <row><entry>char *path</entry><entry>GFile *file</entry></row>
+          <row><entry>struct stat *buf</entry><entry>GFileInfo *info</entry></row>
+          <row><entry>struct statvfs *buf</entry><entry>GFileInfo *info</entry></row>
+          <row><entry morerows="1">int fd</entry><entry>GInputStream *in</entry></row>
+          <row><entry>GOutputStream *out</entry></row>
+          <row><entry>DIR *</entry><entry>GFileEnumerator *enum</entry></row>
+          <row><entry>fstab entry</entry><entry>GUnixMountPoint *mount_point</entry></row>
+          <row><entry>mtab entry</entry><entry>GUnixMountEntry *mount_entry</entry></row>
+        </tbody>
+      </tgroup>
+    </table>  
+
+  </chapter>
+</part>

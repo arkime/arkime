@@ -1,0 +1,2824 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Date and Time Functions: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-utilities.html" title="GLib Utilities">
+<link rel="prev" href="glib-I18N.html" title="Internationalization">
+<link rel="next" href="glib-GTimeZone.html" title="GTimeZone">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-Date-and-Time-Functions.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-utilities.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-I18N.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-GTimeZone.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Date-and-Time-Functions"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Date-and-Time-Functions.top_of_page"></a>Date and Time Functions</span></h2>
+<p>Date and Time Functions — calendrical calculations and miscellaneous time stuff</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-Date-and-Time-Functions.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-get-current-time" title="g_get_current_time ()">g_get_current_time</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-usleep" title="g_usleep ()">g_usleep</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-time-val-add" title="g_time_val_add ()">g_time_val_add</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-time-val-from-iso8601" title="g_time_val_from_iso8601 ()">g_time_val_from_iso8601</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-time-val-to-iso8601" title="g_time_val_to_iso8601 ()">g_time_val_to_iso8601</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gint64" title="gint64"><span class="returnvalue">gint64</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-get-monotonic-time" title="g_get_monotonic_time ()">g_get_monotonic_time</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gint64" title="gint64"><span class="returnvalue">gint64</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-get-real-time" title="g_get_real_time ()">g_get_real_time</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="returnvalue">GDate</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-new" title="g_date_new ()">g_date_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="returnvalue">GDate</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-new-dmy" title="g_date_new_dmy ()">g_date_new_dmy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="returnvalue">GDate</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-new-julian" title="g_date_new_julian ()">g_date_new_julian</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-clear" title="g_date_clear ()">g_date_clear</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-free" title="g_date_free ()">g_date_free</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="returnvalue">GDate</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-copy" title="g_date_copy ()">g_date_copy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-set-day" title="g_date_set_day ()">g_date_set_day</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-set-month" title="g_date_set_month ()">g_date_set_month</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-set-year" title="g_date_set_year ()">g_date_set_year</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-set-dmy" title="g_date_set_dmy ()">g_date_set_dmy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-set-julian" title="g_date_set_julian ()">g_date_set_julian</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-set-time" title="g_date_set_time ()">g_date_set_time</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-set-time-t" title="g_date_set_time_t ()">g_date_set_time_t</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-set-time-val" title="g_date_set_time_val ()">g_date_set_time_val</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-set-parse" title="g_date_set_parse ()">g_date_set_parse</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-add-days" title="g_date_add_days ()">g_date_add_days</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-subtract-days" title="g_date_subtract_days ()">g_date_subtract_days</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-add-months" title="g_date_add_months ()">g_date_add_months</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-subtract-months" title="g_date_subtract_months ()">g_date_subtract_months</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-add-years" title="g_date_add_years ()">g_date_add_years</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-subtract-years" title="g_date_subtract_years ()">g_date_subtract_years</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-days-between" title="g_date_days_between ()">g_date_days_between</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-compare" title="g_date_compare ()">g_date_compare</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-clamp" title="g_date_clamp ()">g_date_clamp</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-order" title="g_date_order ()">g_date_order</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Date-and-Time-Functions.html#GDateDay" title="GDateDay"><span class="returnvalue">GDateDay</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-get-day" title="g_date_get_day ()">g_date_get_day</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Date-and-Time-Functions.html#GDateMonth" title="enum GDateMonth"><span class="returnvalue">GDateMonth</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-get-month" title="g_date_get_month ()">g_date_get_month</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Date-and-Time-Functions.html#GDateYear" title="GDateYear"><span class="returnvalue">GDateYear</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-get-year" title="g_date_get_year ()">g_date_get_year</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint32" title="guint32"><span class="returnvalue">guint32</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-get-julian" title="g_date_get_julian ()">g_date_get_julian</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Date-and-Time-Functions.html#GDateWeekday" title="enum GDateWeekday"><span class="returnvalue">GDateWeekday</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-get-weekday" title="g_date_get_weekday ()">g_date_get_weekday</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-get-day-of-year" title="g_date_get_day_of_year ()">g_date_get_day_of_year</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint8" title="guint8"><span class="returnvalue">guint8</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-get-days-in-month" title="g_date_get_days_in_month ()">g_date_get_days_in_month</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-is-first-of-month" title="g_date_is_first_of_month ()">g_date_is_first_of_month</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-is-last-of-month" title="g_date_is_last_of_month ()">g_date_is_last_of_month</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-is-leap-year" title="g_date_is_leap_year ()">g_date_is_leap_year</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-get-monday-week-of-year" title="g_date_get_monday_week_of_year ()">g_date_get_monday_week_of_year</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint8" title="guint8"><span class="returnvalue">guint8</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-get-monday-weeks-in-year" title="g_date_get_monday_weeks_in_year ()">g_date_get_monday_weeks_in_year</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-get-sunday-week-of-year" title="g_date_get_sunday_week_of_year ()">g_date_get_sunday_week_of_year</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint8" title="guint8"><span class="returnvalue">guint8</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-get-sunday-weeks-in-year" title="g_date_get_sunday_weeks_in_year ()">g_date_get_sunday_weeks_in_year</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-get-iso8601-week-of-year" title="g_date_get_iso8601_week_of_year ()">g_date_get_iso8601_week_of_year</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-strftime" title="g_date_strftime ()">g_date_strftime</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-to-struct-tm" title="g_date_to_struct_tm ()">g_date_to_struct_tm</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-valid" title="g_date_valid ()">g_date_valid</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-valid-day" title="g_date_valid_day ()">g_date_valid_day</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-valid-month" title="g_date_valid_month ()">g_date_valid_month</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-valid-year" title="g_date_valid_year ()">g_date_valid_year</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-valid-dmy" title="g_date_valid_dmy ()">g_date_valid_dmy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-valid-julian" title="g_date_valid_julian ()">g_date_valid_julian</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-valid-weekday" title="g_date_valid_weekday ()">g_date_valid_weekday</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Date-and-Time-Functions.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Date-and-Time-Functions.html#G-USEC-PER-SEC:CAPS" title="G_USEC_PER_SEC">G_USEC_PER_SEC</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="glib-Date-and-Time-Functions.html#GTimeVal" title="struct GTimeVal">GTimeVal</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate">GDate</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Date-and-Time-Functions.html#GTime" title="GTime">GTime</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="glib-Date-and-Time-Functions.html#GDateDMY" title="enum GDateDMY">GDateDMY</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Date-and-Time-Functions.html#GDateDay" title="GDateDay">GDateDay</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="glib-Date-and-Time-Functions.html#GDateMonth" title="enum GDateMonth">GDateMonth</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Date-and-Time-Functions.html#GDateYear" title="GDateYear">GDateYear</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="glib-Date-and-Time-Functions.html#GDateWeekday" title="enum GDateWeekday">GDateWeekday</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Date-and-Time-Functions.html#G-DATE-BAD-DAY:CAPS" title="G_DATE_BAD_DAY">G_DATE_BAD_DAY</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Date-and-Time-Functions.html#G-DATE-BAD-JULIAN:CAPS" title="G_DATE_BAD_JULIAN">G_DATE_BAD_JULIAN</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Date-and-Time-Functions.html#G-DATE-BAD-YEAR:CAPS" title="G_DATE_BAD_YEAR">G_DATE_BAD_YEAR</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Date-and-Time-Functions.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib.h&gt;
+#include &lt;glib/gprintf.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Date-and-Time-Functions.description"></a><h2>Description</h2>
+<p>The <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> data structure represents a day between January 1, Year 1,
+and sometime a few thousand years in the future (right now it will go
+to the year 65535 or so, but <a class="link" href="glib-Date-and-Time-Functions.html#g-date-set-parse" title="g_date_set_parse ()"><code class="function">g_date_set_parse()</code></a> only parses up to the
+year 8000 or so - just count on "a few thousand"). <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> is meant to
+represent everyday dates, not astronomical dates or historical dates
+or ISO timestamps or the like. It extrapolates the current Gregorian
+calendar forward and backward in time; there is no attempt to change
+the calendar to match time periods or locations. <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> does not store
+time information; it represents a day.</p>
+<p>The <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> implementation has several nice features; it is only a
+64-bit struct, so storing large numbers of dates is very efficient. It
+can keep both a Julian and day-month-year representation of the date,
+since some calculations are much easier with one representation or the
+other. A Julian representation is simply a count of days since some
+fixed day in the past; for <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> the fixed day is January 1, 1 AD.
+("Julian" dates in the <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> API aren't really Julian dates in the
+technical sense; technically, Julian dates count from the start of the
+Julian period, Jan 1, 4713 BC).</p>
+<p><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> is simple to use. First you need a "blank" date; you can get a
+dynamically allocated date from <a class="link" href="glib-Date-and-Time-Functions.html#g-date-new" title="g_date_new ()"><code class="function">g_date_new()</code></a>, or you can declare an
+automatic variable or array and initialize it to a sane state by
+calling <a class="link" href="glib-Date-and-Time-Functions.html#g-date-clear" title="g_date_clear ()"><code class="function">g_date_clear()</code></a>. A cleared date is sane; it's safe to call
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-set-dmy" title="g_date_set_dmy ()"><code class="function">g_date_set_dmy()</code></a> and the other mutator functions to initialize the
+value of a cleared date. However, a cleared date is initially
+invalid, meaning that it doesn't represent a day that exists.
+It is undefined to call any of the date calculation routines on an
+invalid date. If you obtain a date from a user or other
+unpredictable source, you should check its validity with the
+<a class="link" href="glib-Date-and-Time-Functions.html#g-date-valid" title="g_date_valid ()"><code class="function">g_date_valid()</code></a> predicate. <a class="link" href="glib-Date-and-Time-Functions.html#g-date-valid" title="g_date_valid ()"><code class="function">g_date_valid()</code></a> is also used to check for
+errors with <a class="link" href="glib-Date-and-Time-Functions.html#g-date-set-parse" title="g_date_set_parse ()"><code class="function">g_date_set_parse()</code></a> and other functions that can
+fail. Dates can be invalidated by calling <a class="link" href="glib-Date-and-Time-Functions.html#g-date-clear" title="g_date_clear ()"><code class="function">g_date_clear()</code></a> again.</p>
+<p>It is very important to use the API to access the <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a>
+struct. Often only the day-month-year or only the Julian
+representation is valid. Sometimes neither is valid. Use the API.</p>
+<p>GLib also features <a class="link" href="glib-GDateTime.html#GDateTime" title="GDateTime"><span class="type">GDateTime</span></a> which represents a precise time.</p>
+</div>
+<div class="refsect1">
+<a name="glib-Date-and-Time-Functions.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-get-current-time"></a><h3>g_get_current_time ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_get_current_time (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GTimeVal" title="struct GTimeVal"><span class="type">GTimeVal</span></a> *result</code></em>);</pre>
+<p>Equivalent to the UNIX <code class="function">gettimeofday()</code> function, but portable.</p>
+<p>You may find <a class="link" href="glib-Date-and-Time-Functions.html#g-get-real-time" title="g_get_real_time ()"><code class="function">g_get_real_time()</code></a> to be more convenient.</p>
+<div class="refsect3">
+<a name="g-get-current-time.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p><a class="link" href="glib-Date-and-Time-Functions.html#GTimeVal" title="struct GTimeVal"><span class="type">GTimeVal</span></a> structure in which to store current time.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-usleep"></a><h3>g_usleep ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_usleep (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gulong" title="gulong"><span class="type">gulong</span></a> microseconds</code></em>);</pre>
+<p>Pauses the current thread for the given number of microseconds.</p>
+<p>There are 1 million microseconds per second (represented by the
+<a class="link" href="glib-Date-and-Time-Functions.html#G-USEC-PER-SEC:CAPS" title="G_USEC_PER_SEC"><span class="type">G_USEC_PER_SEC</span></a> macro). <a class="link" href="glib-Date-and-Time-Functions.html#g-usleep" title="g_usleep ()"><code class="function">g_usleep()</code></a> may have limited precision,
+depending on hardware and operating system; don't rely on the exact
+length of the sleep.</p>
+<div class="refsect3">
+<a name="g-usleep.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>microseconds</p></td>
+<td class="parameter_description"><p>number of microseconds to pause</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-time-val-add"></a><h3>g_time_val_add ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_time_val_add (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GTimeVal" title="struct GTimeVal"><span class="type">GTimeVal</span></a> *time_</code></em>,
+                <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#glong" title="glong"><span class="type">glong</span></a> microseconds</code></em>);</pre>
+<p>Adds the given number of microseconds to <em class="parameter"><code>time_</code></em>
+. <em class="parameter"><code>microseconds</code></em>
+ can
+also be negative to decrease the value of <em class="parameter"><code>time_</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-time-val-add.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>time_</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GTimeVal" title="struct GTimeVal"><span class="type">GTimeVal</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>microseconds</p></td>
+<td class="parameter_description"><p>number of microseconds to add to <em class="parameter"><code>time</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-time-val-from-iso8601"></a><h3>g_time_val_from_iso8601 ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_time_val_from_iso8601 (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *iso_date</code></em>,
+                         <em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GTimeVal" title="struct GTimeVal"><span class="type">GTimeVal</span></a> *time_</code></em>);</pre>
+<p>Converts a string containing an ISO 8601 encoded date and time
+to a <a class="link" href="glib-Date-and-Time-Functions.html#GTimeVal" title="struct GTimeVal"><span class="type">GTimeVal</span></a> and puts it into <em class="parameter"><code>time_</code></em>
+.</p>
+<p><em class="parameter"><code>iso_date</code></em>
+ must include year, month, day, hours, minutes, and
+seconds. It can optionally include fractions of a second and a time
+zone indicator. (In the absence of any time zone indication, the
+timestamp is assumed to be in local time.)</p>
+<div class="refsect3">
+<a name="g-time-val-from-iso8601.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>iso_date</p></td>
+<td class="parameter_description"><p>an ISO 8601 encoded date string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>time_</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GTimeVal" title="struct GTimeVal"><span class="type">GTimeVal</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-time-val-from-iso8601.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the conversion was successful.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-12.html#api-index-2.12">2.12</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-time-val-to-iso8601"></a><h3>g_time_val_to_iso8601 ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_time_val_to_iso8601 (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GTimeVal" title="struct GTimeVal"><span class="type">GTimeVal</span></a> *time_</code></em>);</pre>
+<p>Converts <em class="parameter"><code>time_</code></em>
+ into an RFC 3339 encoded string, relative to the
+Coordinated Universal Time (UTC). This is one of the many formats
+allowed by ISO 8601.</p>
+<p>ISO 8601 allows a large number of date/time formats, with or without
+punctuation and optional elements. The format returned by this function
+is a complete date and time, with optional punctuation included, the
+UTC time zone represented as "Z", and the <em class="parameter"><code>tv_usec</code></em>
+ part included if
+and only if it is nonzero, i.e. either
+"YYYY-MM-DDTHH:MM:SSZ" or "YYYY-MM-DDTHH:MM:SS.fffffZ".</p>
+<p>This corresponds to the Internet date/time format defined by
+<a class="ulink" href="https://www.ietf.org/rfc/rfc3339.txt" target="_top">RFC 3339</a>,
+and to either of the two most-precise formats defined by
+the W3C Note
+<a class="ulink" href="http://www.w3.org/TR/NOTE-datetime-19980827" target="_top">Date and Time Formats</a>.
+Both of these documents are profiles of ISO 8601.</p>
+<p>Use <a class="link" href="glib-GDateTime.html#g-date-time-format" title="g_date_time_format ()"><code class="function">g_date_time_format()</code></a> or <a class="link" href="glib-String-Utility-Functions.html#g-strdup-printf" title="g_strdup_printf ()"><code class="function">g_strdup_printf()</code></a> if a different
+variation of ISO 8601 format is required.</p>
+<p>If <em class="parameter"><code>time_</code></em>
+ represents a date which is too large to fit into a <code class="literal">struct tm</code>,
+<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> will be returned. This is platform dependent, but it is safe to assume
+years up to 3000 are supported. The return value of <a class="link" href="glib-Date-and-Time-Functions.html#g-time-val-to-iso8601" title="g_time_val_to_iso8601 ()"><code class="function">g_time_val_to_iso8601()</code></a>
+has been nullable since GLib 2.54; before then, GLib would crash under the
+same conditions.</p>
+<div class="refsect3">
+<a name="g-time-val-to-iso8601.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>time_</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GTimeVal" title="struct GTimeVal"><span class="type">GTimeVal</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-time-val-to-iso8601.returns"></a><h4>Returns</h4>
+<p>a newly allocated string containing an ISO 8601 date,
+or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if <em class="parameter"><code>time_</code></em>
+was too large. </p>
+<p><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-12.html#api-index-2.12">2.12</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-get-monotonic-time"></a><h3>g_get_monotonic_time ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gint64" title="gint64"><span class="returnvalue">gint64</span></a>
+g_get_monotonic_time (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Queries the system monotonic time.</p>
+<p>The monotonic clock will always increase and doesn't suffer
+discontinuities when the user (or NTP) changes the system time.  It
+may or may not continue to tick during times where the machine is
+suspended.</p>
+<p>We try to use the clock that corresponds as closely as possible to
+the passage of time as measured by system calls such as <code class="function">poll()</code> but it
+may not always be possible to do this.</p>
+<div class="refsect3">
+<a name="g-get-monotonic-time.returns"></a><h4>Returns</h4>
+<p> the monotonic time, in microseconds</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-get-real-time"></a><h3>g_get_real_time ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gint64" title="gint64"><span class="returnvalue">gint64</span></a>
+g_get_real_time (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Queries the system wall-clock time.</p>
+<p>This call is functionally equivalent to <a class="link" href="glib-Date-and-Time-Functions.html#g-get-current-time" title="g_get_current_time ()"><code class="function">g_get_current_time()</code></a> except
+that the return value is often more convenient than dealing with a
+<a class="link" href="glib-Date-and-Time-Functions.html#GTimeVal" title="struct GTimeVal"><span class="type">GTimeVal</span></a>.</p>
+<p>You should only use this call if you are actually interested in the real
+wall-clock time.  <a class="link" href="glib-Date-and-Time-Functions.html#g-get-monotonic-time" title="g_get_monotonic_time ()"><code class="function">g_get_monotonic_time()</code></a> is probably more useful for
+measuring intervals.</p>
+<div class="refsect3">
+<a name="g-get-real-time.returns"></a><h4>Returns</h4>
+<p> the number of microseconds since January 1, 1970 UTC.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-new"></a><h3>g_date_new ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="returnvalue">GDate</span></a> *
+g_date_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Allocates a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> and initializes
+it to a sane state. The new date will
+be cleared (as if you'd called <a class="link" href="glib-Date-and-Time-Functions.html#g-date-clear" title="g_date_clear ()"><code class="function">g_date_clear()</code></a>) but invalid (it won't
+represent an existing day). Free the return value with <a class="link" href="glib-Date-and-Time-Functions.html#g-date-free" title="g_date_free ()"><code class="function">g_date_free()</code></a>.</p>
+<div class="refsect3">
+<a name="g-date-new.returns"></a><h4>Returns</h4>
+<p> a newly-allocated <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-new-dmy"></a><h3>g_date_new_dmy ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="returnvalue">GDate</span></a> *
+g_date_new_dmy (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateDay" title="GDateDay"><span class="type">GDateDay</span></a> day</code></em>,
+                <em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateMonth" title="enum GDateMonth"><span class="type">GDateMonth</span></a> month</code></em>,
+                <em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateYear" title="GDateYear"><span class="type">GDateYear</span></a> year</code></em>);</pre>
+<p>Like <a class="link" href="glib-Date-and-Time-Functions.html#g-date-new" title="g_date_new ()"><code class="function">g_date_new()</code></a>, but also sets the value of the date. Assuming the
+day-month-year triplet you pass in represents an existing day, the
+returned date will be valid.</p>
+<div class="refsect3">
+<a name="g-date-new-dmy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>day</p></td>
+<td class="parameter_description"><p>day of the month</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>month</p></td>
+<td class="parameter_description"><p>month of the year</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>year</p></td>
+<td class="parameter_description"><p>year</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-new-dmy.returns"></a><h4>Returns</h4>
+<p> a newly-allocated <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> initialized with <em class="parameter"><code>day</code></em>
+, <em class="parameter"><code>month</code></em>
+, and <em class="parameter"><code>year</code></em>
+</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-new-julian"></a><h3>g_date_new_julian ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="returnvalue">GDate</span></a> *
+g_date_new_julian (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint32" title="guint32"><span class="type">guint32</span></a> julian_day</code></em>);</pre>
+<p>Like <a class="link" href="glib-Date-and-Time-Functions.html#g-date-new" title="g_date_new ()"><code class="function">g_date_new()</code></a>, but also sets the value of the date. Assuming the
+Julian day number you pass in is valid (greater than 0, less than an
+unreasonably large number), the returned date will be valid.</p>
+<div class="refsect3">
+<a name="g-date-new-julian.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>julian_day</p></td>
+<td class="parameter_description"><p>days since January 1, Year 1</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-new-julian.returns"></a><h4>Returns</h4>
+<p> a newly-allocated <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> initialized with <em class="parameter"><code>julian_day</code></em>
+</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-clear"></a><h3>g_date_clear ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_clear (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>,
+              <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> n_dates</code></em>);</pre>
+<p>Initializes one or more <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> structs to a sane but invalid
+state. The cleared dates will not represent an existing date, but will
+not contain garbage. Useful to init a date declared on the stack.
+Validity can be tested with <a class="link" href="glib-Date-and-Time-Functions.html#g-date-valid" title="g_date_valid ()"><code class="function">g_date_valid()</code></a>.</p>
+<div class="refsect3">
+<a name="g-date-clear.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>pointer to one or more dates to clear</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n_dates</p></td>
+<td class="parameter_description"><p>number of dates to clear</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-free"></a><h3>g_date_free ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_free (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>);</pre>
+<p>Frees a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> returned from <a class="link" href="glib-Date-and-Time-Functions.html#g-date-new" title="g_date_new ()"><code class="function">g_date_new()</code></a>.</p>
+<div class="refsect3">
+<a name="g-date-free.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> to free</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-copy"></a><h3>g_date_copy ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="returnvalue">GDate</span></a> *
+g_date_copy (<em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>);</pre>
+<p>Copies a GDate to a newly-allocated GDate. If the input was invalid
+(as determined by <a class="link" href="glib-Date-and-Time-Functions.html#g-date-valid" title="g_date_valid ()"><code class="function">g_date_valid()</code></a>), the invalid state will be copied
+as is into the new object.</p>
+<div class="refsect3">
+<a name="g-date-copy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> to copy</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-copy.returns"></a><h4>Returns</h4>
+<p>a newly-allocated <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> initialized from <em class="parameter"><code>date</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-56.html#api-index-2.56">2.56</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-set-day"></a><h3>g_date_set_day ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_set_day (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>,
+                <em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateDay" title="GDateDay"><span class="type">GDateDay</span></a> day</code></em>);</pre>
+<p>Sets the day of the month for a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a>. If the resulting
+day-month-year triplet is invalid, the date will be invalid.</p>
+<div class="refsect3">
+<a name="g-date-set-day.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>day</p></td>
+<td class="parameter_description"><p>day to set</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-set-month"></a><h3>g_date_set_month ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_set_month (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateMonth" title="enum GDateMonth"><span class="type">GDateMonth</span></a> month</code></em>);</pre>
+<p>Sets the month of the year for a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a>.  If the resulting
+day-month-year triplet is invalid, the date will be invalid.</p>
+<div class="refsect3">
+<a name="g-date-set-month.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>month</p></td>
+<td class="parameter_description"><p>month to set</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-set-year"></a><h3>g_date_set_year ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_set_year (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>,
+                 <em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateYear" title="GDateYear"><span class="type">GDateYear</span></a> year</code></em>);</pre>
+<p>Sets the year for a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a>. If the resulting day-month-year
+triplet is invalid, the date will be invalid.</p>
+<div class="refsect3">
+<a name="g-date-set-year.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>year</p></td>
+<td class="parameter_description"><p>year to set</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-set-dmy"></a><h3>g_date_set_dmy ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_set_dmy (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>,
+                <em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateDay" title="GDateDay"><span class="type">GDateDay</span></a> day</code></em>,
+                <em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateMonth" title="enum GDateMonth"><span class="type">GDateMonth</span></a> month</code></em>,
+                <em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateYear" title="GDateYear"><span class="type">GDateYear</span></a> y</code></em>);</pre>
+<p>Sets the value of a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> from a day, month, and year.
+The day-month-year triplet must be valid; if you aren't
+sure it is, call <a class="link" href="glib-Date-and-Time-Functions.html#g-date-valid-dmy" title="g_date_valid_dmy ()"><code class="function">g_date_valid_dmy()</code></a> to check before you
+set it.</p>
+<div class="refsect3">
+<a name="g-date-set-dmy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>day</p></td>
+<td class="parameter_description"><p>day</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>month</p></td>
+<td class="parameter_description"><p>month</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>y</p></td>
+<td class="parameter_description"><p>year</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-set-julian"></a><h3>g_date_set_julian ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_set_julian (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint32" title="guint32"><span class="type">guint32</span></a> julian_date</code></em>);</pre>
+<p>Sets the value of a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> from a Julian day number.</p>
+<div class="refsect3">
+<a name="g-date-set-julian.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>julian_date</p></td>
+<td class="parameter_description"><p>Julian day number (days since January 1, Year 1)</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-set-time"></a><h3>g_date_set_time ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_set_time (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>,
+                 <em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GTime" title="GTime"><span class="type">GTime</span></a> time_</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_date_set_time</code> has been deprecated since version 2.10 and should not be used in newly-written code.</p>
+<p>Use <a class="link" href="glib-Date-and-Time-Functions.html#g-date-set-time-t" title="g_date_set_time_t ()"><code class="function">g_date_set_time_t()</code></a> instead.</p>
+</div>
+<p>Sets the value of a date from a <a class="link" href="glib-Date-and-Time-Functions.html#GTime" title="GTime"><span class="type">GTime</span></a> value.
+The time to date conversion is done using the user's current timezone.</p>
+<div class="refsect3">
+<a name="g-date-set-time.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>time_</p></td>
+<td class="parameter_description"><p><a class="link" href="glib-Date-and-Time-Functions.html#GTime" title="GTime"><span class="type">GTime</span></a> value to set.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-set-time-t"></a><h3>g_date_set_time_t ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_set_time_t (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>,
+                   <em class="parameter"><code><span class="type">time_t</span> timet</code></em>);</pre>
+<p>Sets the value of a date to the date corresponding to a time 
+specified as a time_t. The time to date conversion is done using 
+the user's current timezone.</p>
+<p>To set the value of a date to the current day, you could write:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="function"><a href="glib-Date-and-Time-Functions.html#g-date-set-time-t">g_date_set_time_t</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">date</span><span class="symbol">,</span><span class="normal"> </span><span class="function">time</span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">));</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="g-date-set-time-t.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> </p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>timet</p></td>
+<td class="parameter_description"><p>time_t value to set</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-10.html#api-index-2.10">2.10</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-set-time-val"></a><h3>g_date_set_time_val ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_set_time_val (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>,
+                     <em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GTimeVal" title="struct GTimeVal"><span class="type">GTimeVal</span></a> *timeval</code></em>);</pre>
+<p>Sets the value of a date from a <a class="link" href="glib-Date-and-Time-Functions.html#GTimeVal" title="struct GTimeVal"><span class="type">GTimeVal</span></a> value.  Note that the
+<em class="parameter"><code>tv_usec</code></em>
+ member is ignored, because <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> can't make use of the
+additional precision.</p>
+<p>The time to date conversion is done using the user's current timezone.</p>
+<div class="refsect3">
+<a name="g-date-set-time-val.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> </p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>timeval</p></td>
+<td class="parameter_description"><p><a class="link" href="glib-Date-and-Time-Functions.html#GTimeVal" title="struct GTimeVal"><span class="type">GTimeVal</span></a> value to set</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-10.html#api-index-2.10">2.10</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-set-parse"></a><h3>g_date_set_parse ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_set_parse (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>,
+                  <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *str</code></em>);</pre>
+<p>Parses a user-inputted string <em class="parameter"><code>str</code></em>
+, and try to figure out what date it
+represents, taking the <a class="link" href="glib-running.html#setlocale" title="Locale">current locale</a> into account. If the
+string is successfully parsed, the date will be valid after the call.
+Otherwise, it will be invalid. You should check using <a class="link" href="glib-Date-and-Time-Functions.html#g-date-valid" title="g_date_valid ()"><code class="function">g_date_valid()</code></a>
+to see whether the parsing succeeded.</p>
+<p>This function is not appropriate for file formats and the like; it
+isn't very precise, and its exact behavior varies with the locale.
+It's intended to be a heuristic routine that guesses what the user
+means by a given string (and it does work pretty well in that
+capacity).</p>
+<div class="refsect3">
+<a name="g-date-set-parse.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> to fill in</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>str</p></td>
+<td class="parameter_description"><p>string to parse</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-add-days"></a><h3>g_date_add_days ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_add_days (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>,
+                 <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> n_days</code></em>);</pre>
+<p>Increments a date some number of days.
+To move forward by weeks, add weeks*7 days.
+The date must be valid.</p>
+<div class="refsect3">
+<a name="g-date-add-days.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> to increment</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n_days</p></td>
+<td class="parameter_description"><p>number of days to move the date forward</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-subtract-days"></a><h3>g_date_subtract_days ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_subtract_days (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> n_days</code></em>);</pre>
+<p>Moves a date some number of days into the past.
+To move by weeks, just move by weeks*7 days.
+The date must be valid.</p>
+<div class="refsect3">
+<a name="g-date-subtract-days.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> to decrement</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n_days</p></td>
+<td class="parameter_description"><p>number of days to move</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-add-months"></a><h3>g_date_add_months ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_add_months (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> n_months</code></em>);</pre>
+<p>Increments a date by some number of months.
+If the day of the month is greater than 28,
+this routine may change the day of the month
+(because the destination month may not have
+the current day in it). The date must be valid.</p>
+<div class="refsect3">
+<a name="g-date-add-months.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> to increment</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n_months</p></td>
+<td class="parameter_description"><p>number of months to move forward</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-subtract-months"></a><h3>g_date_subtract_months ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_subtract_months (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> n_months</code></em>);</pre>
+<p>Moves a date some number of months into the past.
+If the current day of the month doesn't exist in
+the destination month, the day of the month
+may change. The date must be valid.</p>
+<div class="refsect3">
+<a name="g-date-subtract-months.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> to decrement</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n_months</p></td>
+<td class="parameter_description"><p>number of months to move</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-add-years"></a><h3>g_date_add_years ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_add_years (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> n_years</code></em>);</pre>
+<p>Increments a date by some number of years.
+If the date is February 29, and the destination
+year is not a leap year, the date will be changed
+to February 28. The date must be valid.</p>
+<div class="refsect3">
+<a name="g-date-add-years.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> to increment</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n_years</p></td>
+<td class="parameter_description"><p>number of years to move forward</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-subtract-years"></a><h3>g_date_subtract_years ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_subtract_years (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>,
+                       <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> n_years</code></em>);</pre>
+<p>Moves a date some number of years into the past.
+If the current day doesn't exist in the destination
+year (i.e. it's February 29 and you move to a non-leap-year)
+then the day is changed to February 29. The date
+must be valid.</p>
+<div class="refsect3">
+<a name="g-date-subtract-years.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> to decrement</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n_years</p></td>
+<td class="parameter_description"><p>number of years to move</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-days-between"></a><h3>g_date_days_between ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+g_date_days_between (<em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date1</code></em>,
+                     <em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date2</code></em>);</pre>
+<p>Computes the number of days between two dates.
+If <em class="parameter"><code>date2</code></em>
+ is prior to <em class="parameter"><code>date1</code></em>
+, the returned value is negative.
+Both dates must be valid.</p>
+<div class="refsect3">
+<a name="g-date-days-between.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date1</p></td>
+<td class="parameter_description"><p>the first date</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>date2</p></td>
+<td class="parameter_description"><p>the second date</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-days-between.returns"></a><h4>Returns</h4>
+<p> the number of days between <em class="parameter"><code>date1</code></em>
+and <em class="parameter"><code>date2</code></em>
+</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-compare"></a><h3>g_date_compare ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+g_date_compare (<em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *lhs</code></em>,
+                <em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *rhs</code></em>);</pre>
+<p>qsort()-style comparison function for dates.
+Both dates must be valid.</p>
+<div class="refsect3">
+<a name="g-date-compare.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>lhs</p></td>
+<td class="parameter_description"><p>first date to compare</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>rhs</p></td>
+<td class="parameter_description"><p>second date to compare</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-compare.returns"></a><h4>Returns</h4>
+<p> 0 for equal, less than zero if <em class="parameter"><code>lhs</code></em>
+is less than <em class="parameter"><code>rhs</code></em>
+,
+greater than zero if <em class="parameter"><code>lhs</code></em>
+is greater than <em class="parameter"><code>rhs</code></em>
+</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-clamp"></a><h3>g_date_clamp ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_clamp (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>,
+              <em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *min_date</code></em>,
+              <em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *max_date</code></em>);</pre>
+<p>If <em class="parameter"><code>date</code></em>
+ is prior to <em class="parameter"><code>min_date</code></em>
+, sets <em class="parameter"><code>date</code></em>
+ equal to <em class="parameter"><code>min_date</code></em>
+.
+If <em class="parameter"><code>date</code></em>
+ falls after <em class="parameter"><code>max_date</code></em>
+, sets <em class="parameter"><code>date</code></em>
+ equal to <em class="parameter"><code>max_date</code></em>
+.
+Otherwise, <em class="parameter"><code>date</code></em>
+ is unchanged.
+Either of <em class="parameter"><code>min_date</code></em>
+ and <em class="parameter"><code>max_date</code></em>
+ may be <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>.
+All non-<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> dates must be valid.</p>
+<div class="refsect3">
+<a name="g-date-clamp.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> to clamp</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>min_date</p></td>
+<td class="parameter_description"><p>minimum accepted value for <em class="parameter"><code>date</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>max_date</p></td>
+<td class="parameter_description"><p>maximum accepted value for <em class="parameter"><code>date</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-order"></a><h3>g_date_order ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_order (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date1</code></em>,
+              <em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date2</code></em>);</pre>
+<p>Checks if <em class="parameter"><code>date1</code></em>
+ is less than or equal to <em class="parameter"><code>date2</code></em>
+,
+and swap the values if this is not the case.</p>
+<div class="refsect3">
+<a name="g-date-order.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date1</p></td>
+<td class="parameter_description"><p>the first date</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>date2</p></td>
+<td class="parameter_description"><p>the second date</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-get-day"></a><h3>g_date_get_day ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Date-and-Time-Functions.html#GDateDay" title="GDateDay"><span class="returnvalue">GDateDay</span></a>
+g_date_get_day (<em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>);</pre>
+<p>Returns the day of the month. The date must be valid.</p>
+<div class="refsect3">
+<a name="g-date-get-day.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> to extract the day of the month from</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-get-day.returns"></a><h4>Returns</h4>
+<p> day of the month</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-get-month"></a><h3>g_date_get_month ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Date-and-Time-Functions.html#GDateMonth" title="enum GDateMonth"><span class="returnvalue">GDateMonth</span></a>
+g_date_get_month (<em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>);</pre>
+<p>Returns the month of the year. The date must be valid.</p>
+<div class="refsect3">
+<a name="g-date-get-month.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> to get the month from</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-get-month.returns"></a><h4>Returns</h4>
+<p> month of the year as a <a class="link" href="glib-Date-and-Time-Functions.html#GDateMonth" title="enum GDateMonth"><span class="type">GDateMonth</span></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-get-year"></a><h3>g_date_get_year ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Date-and-Time-Functions.html#GDateYear" title="GDateYear"><span class="returnvalue">GDateYear</span></a>
+g_date_get_year (<em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>);</pre>
+<p>Returns the year of a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a>. The date must be valid.</p>
+<div class="refsect3">
+<a name="g-date-get-year.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-get-year.returns"></a><h4>Returns</h4>
+<p> year in which the date falls</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-get-julian"></a><h3>g_date_get_julian ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint32" title="guint32"><span class="returnvalue">guint32</span></a>
+g_date_get_julian (<em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>);</pre>
+<p>Returns the Julian day or "serial number" of the <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a>. The
+Julian day is simply the number of days since January 1, Year 1; i.e.,
+January 1, Year 1 is Julian day 1; January 2, Year 1 is Julian day 2,
+etc. The date must be valid.</p>
+<div class="refsect3">
+<a name="g-date-get-julian.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> to extract the Julian day from</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-get-julian.returns"></a><h4>Returns</h4>
+<p> Julian day</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-get-weekday"></a><h3>g_date_get_weekday ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Date-and-Time-Functions.html#GDateWeekday" title="enum GDateWeekday"><span class="returnvalue">GDateWeekday</span></a>
+g_date_get_weekday (<em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>);</pre>
+<p>Returns the day of the week for a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a>. The date must be valid.</p>
+<div class="refsect3">
+<a name="g-date-get-weekday.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-get-weekday.returns"></a><h4>Returns</h4>
+<p> day of the week as a <a class="link" href="glib-Date-and-Time-Functions.html#GDateWeekday" title="enum GDateWeekday"><span class="type">GDateWeekday</span></a>.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-get-day-of-year"></a><h3>g_date_get_day_of_year ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_date_get_day_of_year (<em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>);</pre>
+<p>Returns the day of the year, where Jan 1 is the first day of the
+year. The date must be valid.</p>
+<div class="refsect3">
+<a name="g-date-get-day-of-year.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> to extract day of year from</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-get-day-of-year.returns"></a><h4>Returns</h4>
+<p> day of the year</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-get-days-in-month"></a><h3>g_date_get_days_in_month ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint8" title="guint8"><span class="returnvalue">guint8</span></a>
+g_date_get_days_in_month (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateMonth" title="enum GDateMonth"><span class="type">GDateMonth</span></a> month</code></em>,
+                          <em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateYear" title="GDateYear"><span class="type">GDateYear</span></a> year</code></em>);</pre>
+<p>Returns the number of days in a month, taking leap
+years into account.</p>
+<div class="refsect3">
+<a name="g-date-get-days-in-month.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>month</p></td>
+<td class="parameter_description"><p>month</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>year</p></td>
+<td class="parameter_description"><p>year</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-get-days-in-month.returns"></a><h4>Returns</h4>
+<p> number of days in <em class="parameter"><code>month</code></em>
+during the <em class="parameter"><code>year</code></em>
+</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-is-first-of-month"></a><h3>g_date_is_first_of_month ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_date_is_first_of_month (<em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>);</pre>
+<p>Returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the date is on the first of a month.
+The date must be valid.</p>
+<div class="refsect3">
+<a name="g-date-is-first-of-month.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> to check</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-is-first-of-month.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the date is the first of the month</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-is-last-of-month"></a><h3>g_date_is_last_of_month ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_date_is_last_of_month (<em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>);</pre>
+<p>Returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the date is the last day of the month.
+The date must be valid.</p>
+<div class="refsect3">
+<a name="g-date-is-last-of-month.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> to check</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-is-last-of-month.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the date is the last day of the month</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-is-leap-year"></a><h3>g_date_is_leap_year ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_date_is_leap_year (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateYear" title="GDateYear"><span class="type">GDateYear</span></a> year</code></em>);</pre>
+<p>Returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the year is a leap year.</p>
+<p>For the purposes of this function, leap year is every year
+divisible by 4 unless that year is divisible by 100. If it
+is divisible by 100 it would be a leap year only if that year
+is also divisible by 400.</p>
+<div class="refsect3">
+<a name="g-date-is-leap-year.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>year</p></td>
+<td class="parameter_description"><p>year to check</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-is-leap-year.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the year is a leap year</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-get-monday-week-of-year"></a><h3>g_date_get_monday_week_of_year ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_date_get_monday_week_of_year (<em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>);</pre>
+<p>Returns the week of the year, where weeks are understood to start on
+Monday. If the date is before the first Monday of the year, return 0.
+The date must be valid.</p>
+<div class="refsect3">
+<a name="g-date-get-monday-week-of-year.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-get-monday-week-of-year.returns"></a><h4>Returns</h4>
+<p> week of the year</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-get-monday-weeks-in-year"></a><h3>g_date_get_monday_weeks_in_year ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint8" title="guint8"><span class="returnvalue">guint8</span></a>
+g_date_get_monday_weeks_in_year (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateYear" title="GDateYear"><span class="type">GDateYear</span></a> year</code></em>);</pre>
+<p>Returns the number of weeks in the year, where weeks
+are taken to start on Monday. Will be 52 or 53. The
+date must be valid. (Years always have 52 7-day periods,
+plus 1 or 2 extra days depending on whether it's a leap
+year. This function is basically telling you how many
+Mondays are in the year, i.e. there are 53 Mondays if
+one of the extra days happens to be a Monday.)</p>
+<div class="refsect3">
+<a name="g-date-get-monday-weeks-in-year.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>year</p></td>
+<td class="parameter_description"><p>a year</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-get-monday-weeks-in-year.returns"></a><h4>Returns</h4>
+<p> number of Mondays in the year</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-get-sunday-week-of-year"></a><h3>g_date_get_sunday_week_of_year ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_date_get_sunday_week_of_year (<em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>);</pre>
+<p>Returns the week of the year during which this date falls, if
+weeks are understood to begin on Sunday. The date must be valid.
+Can return 0 if the day is before the first Sunday of the year.</p>
+<div class="refsect3">
+<a name="g-date-get-sunday-week-of-year.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-get-sunday-week-of-year.returns"></a><h4>Returns</h4>
+<p> week number</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-get-sunday-weeks-in-year"></a><h3>g_date_get_sunday_weeks_in_year ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint8" title="guint8"><span class="returnvalue">guint8</span></a>
+g_date_get_sunday_weeks_in_year (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateYear" title="GDateYear"><span class="type">GDateYear</span></a> year</code></em>);</pre>
+<p>Returns the number of weeks in the year, where weeks
+are taken to start on Sunday. Will be 52 or 53. The
+date must be valid. (Years always have 52 7-day periods,
+plus 1 or 2 extra days depending on whether it's a leap
+year. This function is basically telling you how many
+Sundays are in the year, i.e. there are 53 Sundays if
+one of the extra days happens to be a Sunday.)</p>
+<div class="refsect3">
+<a name="g-date-get-sunday-weeks-in-year.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>year</p></td>
+<td class="parameter_description"><p>year to count weeks in</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-get-sunday-weeks-in-year.returns"></a><h4>Returns</h4>
+<p> the number of weeks in <em class="parameter"><code>year</code></em>
+</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-get-iso8601-week-of-year"></a><h3>g_date_get_iso8601_week_of_year ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_date_get_iso8601_week_of_year (<em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>);</pre>
+<p>Returns the week of the year, where weeks are interpreted according
+to ISO 8601.</p>
+<div class="refsect3">
+<a name="g-date-get-iso8601-week-of-year.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a valid <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-get-iso8601-week-of-year.returns"></a><h4>Returns</h4>
+<p> ISO 8601 week number of the year.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-6.html#api-index-2.6">2.6</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-strftime"></a><h3>g_date_strftime ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>
+g_date_strftime (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *s</code></em>,
+                 <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> slen</code></em>,
+                 <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *format</code></em>,
+                 <em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>);</pre>
+<p>Generates a printed representation of the date, in a
+<a class="link" href="glib-running.html#setlocale" title="Locale">locale</a>-specific way.
+Works just like the platform's C library <code class="function">strftime()</code> function,
+but only accepts date-related formats; time-related formats
+give undefined results. Date must be valid. Unlike <code class="function">strftime()</code>
+(which uses the locale encoding), works on a UTF-8 format
+string and stores a UTF-8 result.</p>
+<p>This function does not provide any conversion specifiers in
+addition to those implemented by the platform's C library.
+For example, don't expect that using <a class="link" href="glib-Date-and-Time-Functions.html#g-date-strftime" title="g_date_strftime ()"><code class="function">g_date_strftime()</code></a> would
+make the %F provided by the C99 <code class="function">strftime()</code> work on Windows
+where the C library only complies to C89.</p>
+<div class="refsect3">
+<a name="g-date-strftime.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>s</p></td>
+<td class="parameter_description"><p>destination buffer</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>slen</p></td>
+<td class="parameter_description"><p>buffer size</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>format</p></td>
+<td class="parameter_description"><p>format string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>valid <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-strftime.returns"></a><h4>Returns</h4>
+<p> number of characters written to the buffer, or 0 the buffer was too small</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-to-struct-tm"></a><h3>g_date_to_struct_tm ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_date_to_struct_tm (<em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>,
+                     <em class="parameter"><code><span class="type">struct tm</span> *tm</code></em>);</pre>
+<p>Fills in the date-related bits of a struct tm using the <em class="parameter"><code>date</code></em>
+ value.
+Initializes the non-date parts with something sane but meaningless.</p>
+<div class="refsect3">
+<a name="g-date-to-struct-tm.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> to set the struct tm from</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>tm</p></td>
+<td class="parameter_description"><p>struct tm to fill. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-valid"></a><h3>g_date_valid ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_date_valid (<em class="parameter"><code>const <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> *date</code></em>);</pre>
+<p>Returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> represents an existing day. The date must not
+contain garbage; it should have been initialized with <a class="link" href="glib-Date-and-Time-Functions.html#g-date-clear" title="g_date_clear ()"><code class="function">g_date_clear()</code></a>
+if it wasn't allocated by one of the <a class="link" href="glib-Date-and-Time-Functions.html#g-date-new" title="g_date_new ()"><code class="function">g_date_new()</code></a> variants.</p>
+<div class="refsect3">
+<a name="g-date-valid.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>date</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> to check</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-valid.returns"></a><h4>Returns</h4>
+<p> Whether the date is valid</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-valid-day"></a><h3>g_date_valid_day ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_date_valid_day (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateDay" title="GDateDay"><span class="type">GDateDay</span></a> day</code></em>);</pre>
+<p>Returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the day of the month is valid (a day is valid if it's
+between 1 and 31 inclusive).</p>
+<div class="refsect3">
+<a name="g-date-valid-day.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>day</p></td>
+<td class="parameter_description"><p>day to check</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-valid-day.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the day is valid</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-valid-month"></a><h3>g_date_valid_month ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_date_valid_month (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateMonth" title="enum GDateMonth"><span class="type">GDateMonth</span></a> month</code></em>);</pre>
+<p>Returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the month value is valid. The 12 <a class="link" href="glib-Date-and-Time-Functions.html#GDateMonth" title="enum GDateMonth"><span class="type">GDateMonth</span></a>
+enumeration values are the only valid months.</p>
+<div class="refsect3">
+<a name="g-date-valid-month.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>month</p></td>
+<td class="parameter_description"><p>month</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-valid-month.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the month is valid</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-valid-year"></a><h3>g_date_valid_year ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_date_valid_year (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateYear" title="GDateYear"><span class="type">GDateYear</span></a> year</code></em>);</pre>
+<p>Returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the year is valid. Any year greater than 0 is valid,
+though there is a 16-bit limit to what <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> will understand.</p>
+<div class="refsect3">
+<a name="g-date-valid-year.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>year</p></td>
+<td class="parameter_description"><p>year</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-valid-year.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the year is valid</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-valid-dmy"></a><h3>g_date_valid_dmy ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_date_valid_dmy (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateDay" title="GDateDay"><span class="type">GDateDay</span></a> day</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateMonth" title="enum GDateMonth"><span class="type">GDateMonth</span></a> month</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateYear" title="GDateYear"><span class="type">GDateYear</span></a> year</code></em>);</pre>
+<p>Returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the day-month-year triplet forms a valid, existing day
+in the range of days <a class="link" href="glib-Date-and-Time-Functions.html#GDate" title="struct GDate"><span class="type">GDate</span></a> understands (Year 1 or later, no more than
+a few thousand years in the future).</p>
+<div class="refsect3">
+<a name="g-date-valid-dmy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>day</p></td>
+<td class="parameter_description"><p>day</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>month</p></td>
+<td class="parameter_description"><p>month</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>year</p></td>
+<td class="parameter_description"><p>year</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-valid-dmy.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the date is a valid one</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-valid-julian"></a><h3>g_date_valid_julian ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_date_valid_julian (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint32" title="guint32"><span class="type">guint32</span></a> julian_date</code></em>);</pre>
+<p>Returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the Julian day is valid. Anything greater than zero
+is basically a valid Julian, though there is a 32-bit limit.</p>
+<div class="refsect3">
+<a name="g-date-valid-julian.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>julian_date</p></td>
+<td class="parameter_description"><p>Julian day to check</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-valid-julian.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the Julian day is valid</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-date-valid-weekday"></a><h3>g_date_valid_weekday ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_date_valid_weekday (<em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GDateWeekday" title="enum GDateWeekday"><span class="type">GDateWeekday</span></a> weekday</code></em>);</pre>
+<p>Returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the weekday is valid. The seven <a class="link" href="glib-Date-and-Time-Functions.html#GDateWeekday" title="enum GDateWeekday"><span class="type">GDateWeekday</span></a> enumeration
+values are the only valid weekdays.</p>
+<div class="refsect3">
+<a name="g-date-valid-weekday.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>weekday</p></td>
+<td class="parameter_description"><p>weekday</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-date-valid-weekday.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the weekday is valid</p>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Date-and-Time-Functions.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="G-USEC-PER-SEC:CAPS"></a><h3>G_USEC_PER_SEC</h3>
+<pre class="programlisting">#define G_USEC_PER_SEC 1000000
+</pre>
+<p>Number of microseconds in one second (1 million).
+This macro is provided for code readability.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTimeVal"></a><h3>struct GTimeVal</h3>
+<pre class="programlisting">struct GTimeVal {
+  glong tv_sec;
+  glong tv_usec;
+};
+</pre>
+<p>Represents a precise time, with seconds and microseconds.
+Similar to the struct timeval returned by the <code class="function">gettimeofday()</code>
+UNIX system call.</p>
+<p>GLib is attempting to unify around the use of 64bit integers to
+represent microsecond-precision time. As such, this type will be
+removed from a future version of GLib.</p>
+<div class="refsect3">
+<a name="GTimeVal.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="glib-Basic-Types.html#glong" title="glong"><span class="type">glong</span></a> <em class="structfield"><code><a name="GTimeVal.tv-sec"></a>tv_sec</code></em>;</p></td>
+<td class="struct_member_description"><p>seconds</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="glib-Basic-Types.html#glong" title="glong"><span class="type">glong</span></a> <em class="structfield"><code><a name="GTimeVal.tv-usec"></a>tv_usec</code></em>;</p></td>
+<td class="struct_member_description"><p>microseconds</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDate"></a><h3>struct GDate</h3>
+<pre class="programlisting">struct GDate {
+  guint julian_days : 32; /* julian days representation - we use a
+                           *  bitfield hoping that 64 bit platforms
+                           *  will pack this whole struct in one big
+                           *  int
+                           */
+
+  guint julian : 1;    /* julian is valid */
+  guint dmy    : 1;    /* dmy is valid */
+
+  /* DMY representation */
+  guint day    : 6;
+  guint month  : 4;
+  guint year   : 16;
+};
+</pre>
+<p>Represents a day between January 1, Year 1 and a few thousand years in
+the future. None of its members should be accessed directly.</p>
+<p>If the <span class="type">GDate</span> is obtained from <a class="link" href="glib-Date-and-Time-Functions.html#g-date-new" title="g_date_new ()"><code class="function">g_date_new()</code></a>, it will be safe
+to mutate but invalid and thus not safe for calendrical computations.</p>
+<p>If it's declared on the stack, it will contain garbage so must be
+initialized with <a class="link" href="glib-Date-and-Time-Functions.html#g-date-clear" title="g_date_clear ()"><code class="function">g_date_clear()</code></a>. <a class="link" href="glib-Date-and-Time-Functions.html#g-date-clear" title="g_date_clear ()"><code class="function">g_date_clear()</code></a> makes the date invalid
+but sane. An invalid date doesn't represent a day, it's "empty." A date
+becomes valid after you set it to a Julian day or you set a day, month,
+and year.</p>
+<div class="refsect3">
+<a name="GDate.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> <em class="structfield"><code><a name="GDate.julian-days"></a>julian_days</code></em> : 32;</p></td>
+<td class="struct_member_description"><p>the Julian representation of the date</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> <em class="structfield"><code><a name="GDate.julian"></a>julian</code></em> : 1;</p></td>
+<td class="struct_member_description"><p>this bit is set if <em class="parameter"><code>julian_days</code></em>
+is valid</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> <em class="structfield"><code><a name="GDate.dmy"></a>dmy</code></em> : 1;</p></td>
+<td class="struct_member_description"><p>this is set if <em class="parameter"><code>day</code></em>
+, <em class="parameter"><code>month</code></em>
+and <em class="parameter"><code>year</code></em>
+are valid</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> <em class="structfield"><code><a name="GDate.day"></a>day</code></em> : 6;</p></td>
+<td class="struct_member_description"><p>the day of the day-month-year representation of the date,
+as a number between 1 and 31</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> <em class="structfield"><code><a name="GDate.month"></a>month</code></em> : 4;</p></td>
+<td class="struct_member_description"><p>the day of the day-month-year representation of the date,
+as a number between 1 and 12</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> <em class="structfield"><code><a name="GDate.year"></a>year</code></em> : 16;</p></td>
+<td class="struct_member_description"><p>the day of the day-month-year representation of the date</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTime"></a><h3>GTime</h3>
+<pre class="programlisting">typedef gint32  GTime;
+</pre>
+<p>Simply a replacement for time_t. It has been deprecated
+since it is not equivalent to time_t on 64-bit platforms
+with a 64-bit time_t. Unrelated to <a class="link" href="glib-Timers.html#GTimer" title="GTimer"><span class="type">GTimer</span></a>.</p>
+<p>Note that <a class="link" href="glib-Date-and-Time-Functions.html#GTime" title="GTime"><span class="type">GTime</span></a> is defined to always be a 32-bit integer,
+unlike time_t which may be 64-bit on some systems. Therefore,
+<a class="link" href="glib-Date-and-Time-Functions.html#GTime" title="GTime"><span class="type">GTime</span></a> will overflow in the year 2038, and you cannot use the
+address of a <a class="link" href="glib-Date-and-Time-Functions.html#GTime" title="GTime"><span class="type">GTime</span></a> variable as argument to the UNIX <code class="function">time()</code>
+function.</p>
+<p>Instead, do the following:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">time_t</span><span class="normal"> ttime</span><span class="symbol">;</span>
+<span class="usertype">GTime</span><span class="normal"> gtime</span><span class="symbol">;</span>
+
+<span class="function">time</span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">ttime</span><span class="symbol">);</span>
+<span class="normal">gtime </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="glib-Date-and-Time-Functions.html#GTime">GTime</a></span><span class="symbol">)</span><span class="normal">ttime</span><span class="symbol">;</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDateDMY"></a><h3>enum GDateDMY</h3>
+<p>This enumeration isn't used in the API, but may be useful if you need
+to mark a number as a day, month, or year.</p>
+<div class="refsect3">
+<a name="GDateDMY.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-DAY:CAPS"></a>G_DATE_DAY</p></td>
+<td class="enum_member_description">
+<p>a day</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-MONTH:CAPS"></a>G_DATE_MONTH</p></td>
+<td class="enum_member_description">
+<p>a month</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-YEAR:CAPS"></a>G_DATE_YEAR</p></td>
+<td class="enum_member_description">
+<p>a year</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDateDay"></a><h3>GDateDay</h3>
+<pre class="programlisting">typedef guint8  GDateDay;   /* day of the month */
+</pre>
+<p>Integer representing a day of the month; between 1 and 31.
+<a class="link" href="glib-Date-and-Time-Functions.html#G-DATE-BAD-DAY:CAPS" title="G_DATE_BAD_DAY"><span class="type">G_DATE_BAD_DAY</span></a> represents an invalid day of the month.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDateMonth"></a><h3>enum GDateMonth</h3>
+<p>Enumeration representing a month; values are <a class="link" href="glib-Date-and-Time-Functions.html#G-DATE-JANUARY:CAPS"><span class="type">G_DATE_JANUARY</span></a>,
+<a class="link" href="glib-Date-and-Time-Functions.html#G-DATE-FEBRUARY:CAPS"><span class="type">G_DATE_FEBRUARY</span></a>, etc. <a class="link" href="glib-Date-and-Time-Functions.html#G-DATE-BAD-MONTH:CAPS"><span class="type">G_DATE_BAD_MONTH</span></a> is the invalid value.</p>
+<div class="refsect3">
+<a name="GDateMonth.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-BAD-MONTH:CAPS"></a>G_DATE_BAD_MONTH</p></td>
+<td class="enum_member_description">
+<p>invalid value</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-JANUARY:CAPS"></a>G_DATE_JANUARY</p></td>
+<td class="enum_member_description">
+<p>January</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-FEBRUARY:CAPS"></a>G_DATE_FEBRUARY</p></td>
+<td class="enum_member_description">
+<p>February</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-MARCH:CAPS"></a>G_DATE_MARCH</p></td>
+<td class="enum_member_description">
+<p>March</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-APRIL:CAPS"></a>G_DATE_APRIL</p></td>
+<td class="enum_member_description">
+<p>April</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-MAY:CAPS"></a>G_DATE_MAY</p></td>
+<td class="enum_member_description">
+<p>May</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-JUNE:CAPS"></a>G_DATE_JUNE</p></td>
+<td class="enum_member_description">
+<p>June</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-JULY:CAPS"></a>G_DATE_JULY</p></td>
+<td class="enum_member_description">
+<p>July</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-AUGUST:CAPS"></a>G_DATE_AUGUST</p></td>
+<td class="enum_member_description">
+<p>August</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-SEPTEMBER:CAPS"></a>G_DATE_SEPTEMBER</p></td>
+<td class="enum_member_description">
+<p>September</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-OCTOBER:CAPS"></a>G_DATE_OCTOBER</p></td>
+<td class="enum_member_description">
+<p>October</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-NOVEMBER:CAPS"></a>G_DATE_NOVEMBER</p></td>
+<td class="enum_member_description">
+<p>November</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-DECEMBER:CAPS"></a>G_DATE_DECEMBER</p></td>
+<td class="enum_member_description">
+<p>December</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDateYear"></a><h3>GDateYear</h3>
+<pre class="programlisting">typedef guint16 GDateYear;
+</pre>
+<p>Integer representing a year; <a class="link" href="glib-Date-and-Time-Functions.html#G-DATE-BAD-YEAR:CAPS" title="G_DATE_BAD_YEAR"><span class="type">G_DATE_BAD_YEAR</span></a> is the invalid
+value. The year must be 1 or higher; negative (BC) years are not
+allowed. The year is represented with four digits.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDateWeekday"></a><h3>enum GDateWeekday</h3>
+<p>Enumeration representing a day of the week; <a class="link" href="glib-Date-and-Time-Functions.html#G-DATE-MONDAY:CAPS"><span class="type">G_DATE_MONDAY</span></a>,
+<a class="link" href="glib-Date-and-Time-Functions.html#G-DATE-TUESDAY:CAPS"><span class="type">G_DATE_TUESDAY</span></a>, etc. <a class="link" href="glib-Date-and-Time-Functions.html#G-DATE-BAD-WEEKDAY:CAPS"><span class="type">G_DATE_BAD_WEEKDAY</span></a> is an invalid weekday.</p>
+<div class="refsect3">
+<a name="GDateWeekday.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-BAD-WEEKDAY:CAPS"></a>G_DATE_BAD_WEEKDAY</p></td>
+<td class="enum_member_description">
+<p>invalid value</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-MONDAY:CAPS"></a>G_DATE_MONDAY</p></td>
+<td class="enum_member_description">
+<p>Monday</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-TUESDAY:CAPS"></a>G_DATE_TUESDAY</p></td>
+<td class="enum_member_description">
+<p>Tuesday</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-WEDNESDAY:CAPS"></a>G_DATE_WEDNESDAY</p></td>
+<td class="enum_member_description">
+<p>Wednesday</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-THURSDAY:CAPS"></a>G_DATE_THURSDAY</p></td>
+<td class="enum_member_description">
+<p>Thursday</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-FRIDAY:CAPS"></a>G_DATE_FRIDAY</p></td>
+<td class="enum_member_description">
+<p>Friday</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-SATURDAY:CAPS"></a>G_DATE_SATURDAY</p></td>
+<td class="enum_member_description">
+<p>Saturday</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DATE-SUNDAY:CAPS"></a>G_DATE_SUNDAY</p></td>
+<td class="enum_member_description">
+<p>Sunday</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-DATE-BAD-DAY:CAPS"></a><h3>G_DATE_BAD_DAY</h3>
+<pre class="programlisting">#define G_DATE_BAD_DAY    0U
+</pre>
+<p>Represents an invalid <a class="link" href="glib-Date-and-Time-Functions.html#GDateDay" title="GDateDay"><span class="type">GDateDay</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-DATE-BAD-JULIAN:CAPS"></a><h3>G_DATE_BAD_JULIAN</h3>
+<pre class="programlisting">#define G_DATE_BAD_JULIAN 0U
+</pre>
+<p>Represents an invalid Julian day number.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-DATE-BAD-YEAR:CAPS"></a><h3>G_DATE_BAD_YEAR</h3>
+<pre class="programlisting">#define G_DATE_BAD_YEAR   0U
+</pre>
+<p>Represents an invalid year.</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

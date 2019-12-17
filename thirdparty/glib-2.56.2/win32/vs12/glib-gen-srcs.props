@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="glib-build-defines.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros">
+    <GenConfigH>copy ..\..\config.h.win32 ..\..\config.h</GenConfigH>
+    <GenGLibConfigH>copy ..\..\glib\glibconfig.h.win32 ..\..\glib\glibconfig.h</GenGLibConfigH>
+    <GenGModuleConfH>copy ..\..\gmodule\gmoduleconf.h.win32 ..\..\gmodule\gmoduleconf.h</GenGModuleConfH>
+    <GenGNetworkingH>copy ..\..\gio\gnetworking.h.win32 ..\..\gio\gnetworking.h</GenGNetworkingH>
+  </PropertyGroup>
+  <PropertyGroup>
+    <_PropertySheetDisplayName>glibgensrcsprops</_PropertySheetDisplayName>
+  </PropertyGroup>
+  <ItemGroup>
+    <BuildMacro Include="GenConfigH">
+      <Value>$(GenConfigH)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GenGLibConfigH">
+      <Value>$(GenGLibConfigH)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GenGModuleConfH">
+      <Value>$(GenGModuleConfH)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GenGNetworkingH">
+      <Value>$(GenGNetworkingH)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

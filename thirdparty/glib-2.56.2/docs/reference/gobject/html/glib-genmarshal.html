@@ -1,0 +1,568 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>glib-genmarshal: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="rn02.html" title="Tools Reference">
+<link rel="prev" href="glib-mkenums.html" title="glib-mkenums">
+<link rel="next" href="gobject-query.html" title="gobject-query">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="rn02.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-mkenums.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gobject-query.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div lang="en" class="refentry">
+<a name="glib-genmarshal"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle">glib-genmarshal</span></h2>
+<p>glib-genmarshal — C code marshaller generation utility for GLib closures</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<h2>Synopsis</h2>
+<div class="cmdsynopsis"><p><code class="command">glib-genmarshal</code>  [OPTION...] [FILE...]</p></div>
+</div>
+<div class="refsect1">
+<a name="id-1.5.3.5"></a><h2>Description</h2>
+<p><span class="command"><strong>glib-genmarshal</strong></span> is a small utility that generates C code
+marshallers for callback functions of the GClosure mechanism in the GObject
+sublibrary of GLib. The marshaller functions have a standard signature,
+they get passed in the invoking closure, an array of value structures holding
+the callback function parameters and a value structure for the return value
+of the callback. The marshaller is then responsible to call the respective C
+code function of the closure with all the parameters on the stack and to
+collect its return value.
+</p>
+<p><span class="command"><strong>glib-genmarshal</strong></span> takes a list of marshallers to generate as
+input. The marshaller list is either read from files passed as additional arguments
+on the command line; or from standard input, by using <code class="literal">-</code> as the
+input file.
+</p>
+<div class="refsect2">
+<a name="id-1.5.3.5.4"></a><h3>Marshaller list format</h3>
+<p>
+The marshaller lists are processed line by line, a line can contain a
+comment in the form of
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="preproc"># this</span><span class="normal"> is a comment</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+or a marshaller specification of the form
+</p>
+<pre class="programlisting">
+<em class="replaceable"><code>RTYPE</code></em>:<em class="replaceable"><code>PTYPE</code></em>
+<em class="replaceable"><code>RTYPE</code></em>:<em class="replaceable"><code>PTYPE</code></em>,<em class="replaceable"><code>PTYPE</code></em>
+<em class="replaceable"><code>RTYPE</code></em>:<em class="replaceable"><code>PTYPE</code></em>,<em class="replaceable"><code>PTYPE</code></em>,<em class="replaceable"><code>PTYPE</code></em>
+</pre>
+<p>
+</p>
+<p>
+The <em class="replaceable"><code>RTYPE</code></em> part specifies the callback's return
+type and the <em class="replaceable"><code>PTYPE</code></em>s right to the colon specify
+the callback's parameter list, except for the first and the last arguments
+which are always pointers.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.5.3.5.5"></a><h3>Parameter types</h3>
+<p>
+Currently, the following types are supported:
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>VOID</code></em></span></p></td>
+<td><p>
+indicates no return type, or no extra parameters.
+If <em class="replaceable"><code>VOID</code></em> is used as the parameter list, no
+additional parameters may be present.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>BOOLEAN</code></em></span></p></td>
+<td><p>
+for boolean types (gboolean)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>CHAR</code></em></span></p></td>
+<td><p>
+for signed char types (gchar)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>UCHAR</code></em></span></p></td>
+<td><p>
+for unsigned char types (guchar)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>INT</code></em></span></p></td>
+<td><p>
+for signed integer types (gint)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>UINT</code></em></span></p></td>
+<td><p>
+for unsigned integer types (guint)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>LONG</code></em></span></p></td>
+<td><p>
+for signed long integer types (glong)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>ULONG</code></em></span></p></td>
+<td><p>
+for unsigned long integer types (gulong)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>INT64</code></em></span></p></td>
+<td><p>
+for signed 64bit integer types (gint64)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>UINT64</code></em></span></p></td>
+<td><p>
+for unsigned 64bit integer types (guint64)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>ENUM</code></em></span></p></td>
+<td><p>
+for enumeration types (gint)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>FLAGS</code></em></span></p></td>
+<td><p>
+for flag enumeration types (guint)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>FLOAT</code></em></span></p></td>
+<td><p>
+for single-precision float types (gfloat)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>DOUBLE</code></em></span></p></td>
+<td><p>
+for double-precision float types (gdouble)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>STRING</code></em></span></p></td>
+<td><p>
+for string types (gchar*)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>BOXED</code></em></span></p></td>
+<td><p>
+for boxed (anonymous but reference counted) types (GBoxed*)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>PARAM</code></em></span></p></td>
+<td><p>
+for GParamSpec or derived types (GParamSpec*)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>POINTER</code></em></span></p></td>
+<td><p>
+for anonymous pointer types (gpointer)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>OBJECT</code></em></span></p></td>
+<td><p>
+for GObject or derived types (GObject*)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>VARIANT</code></em></span></p></td>
+<td><p>
+for GVariant types (GVariant*)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>NONE</code></em></span></p></td>
+<td><p>
+deprecated alias for <em class="replaceable"><code>VOID</code></em>
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="replaceable"><code>BOOL</code></em></span></p></td>
+<td><p>
+deprecated alias for <em class="replaceable"><code>BOOLEAN</code></em>
+</p></td>
+</tr>
+</tbody>
+</table></div>
+<p>
+</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="id-1.5.3.6"></a><h2>Options</h2>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><code class="option">--header</code></span></p></td>
+<td><p>
+Generate header file contents of the marshallers. This option is mutually
+exclusive with the <code class="option">--body</code> option.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--body</code></span></p></td>
+<td><p>
+Generate C code file contents of the marshallers. This option is mutually
+exclusive with the <code class="option">--header</code> option.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--prefix=<em class="replaceable"><code>PREFIX</code></em></code></span></p></td>
+<td><p>
+Specify marshaller prefix. The default prefix is <code class="literal">`g_cclosure_user_marshal'</code>.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--skip-source</code></span></p></td>
+<td><p>
+Skip source location remarks in generated comments.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--stdinc</code></span></p></td>
+<td><p>
+Use the standard marshallers of the GObject library, and include
+<code class="filename">glib-object.h</code> in generated header files. This
+option is mutually exclusive with the <code class="option">--nostdinc</code>
+option.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--nostdinc</code></span></p></td>
+<td><p>
+Do not use the standard marshallers of the GObject library, and skip
+<code class="filename">glib-object.h</code> include directive in generated header files.
+This option is mutually exclusive with the <code class="option">--stdinc</code> option.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--internal</code></span></p></td>
+<td><p>
+Mark generated functions as internal, using <code class="literal">G_GNUC_INTERNAL</code>.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--valist-marshallers</code></span></p></td>
+<td><p>
+Generate valist marshallers, for use with <code class="function">g_signal_set_va_marshaller()</code>.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">-v</code>, <code class="option">--version</code></span></p></td>
+<td><p>
+Print version information.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--g-fatal-warnings</code></span></p></td>
+<td><p>
+Make warnings fatal, that is, exit immediately once a warning occurs.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">-h</code>, <code class="option">--help</code></span></p></td>
+<td><p>
+Print brief help and exit.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">-v</code>, <code class="option">--version</code></span></p></td>
+<td><p>
+Print version and exit.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--output=FILE</code></span></p></td>
+<td><p>
+Write output to <em class="replaceable"><code>FILE</code></em> instead of the standard output.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--prototypes</code></span></p></td>
+<td><p>
+Generate function prototypes before the function definition in the C source
+file, in order to avoid a <code class="literal">missing-prototypes</code> compiler
+warning. This option is only useful when using the <code class="option">--body</code>
+option.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--pragma-once</code></span></p></td>
+<td><p>
+Use the <code class="literal">once</code> pragma instead of an old style header guard
+when generating the C header file. This option is only useful when using the
+<code class="option">--header</code> option.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--include-header=<em class="replaceable"><code>HEADER</code></em></code></span></p></td>
+<td><p>
+Adds a <code class="literal">#include</code> directive for the given file in the C
+source file. This option is only useful when using the <code class="option">--body</code>
+option.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">-D <em class="replaceable"><code>SYMBOL[=VALUE]</code></em></code></span></p></td>
+<td><p>
+Adds a <code class="literal">#define</code> C pre-processor directive for
+<em class="replaceable"><code>SYMBOL</code></em> and its given <em class="replaceable"><code>VALUE</code></em>,
+or "1" if the value is unset. You can use this option multiple times; if you do,
+all the symbols will be defined in the same order given on the command line, before
+the symbols undefined using the <code class="option">-U</code> option. This option is only
+useful when using the <code class="option">--body</code> option.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">-U <em class="replaceable"><code>SYMBOL</code></em></code></span></p></td>
+<td><p>
+Adds a <code class="literal">#undef</code> C pre-processor directive to undefine the
+given <em class="replaceable"><code>SYMBOL</code></em>. You can use this option multiple times;
+if you do, all the symbols will be undefined in the same order given on the
+command line, after the symbols defined using the <code class="option">-D</code> option.
+This option is only useful when using the <code class="option">--body</code> option.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--quiet</code></span></p></td>
+<td><p>
+Minimizes the output of <span class="command"><strong>glib-genmarshal</strong></span>, by printing only
+warnings and errors. This option is mutually exclusive with the
+<code class="option">--verbose</code> option.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--verbose</code></span></p></td>
+<td><p>
+Increases the verbosity of <span class="command"><strong>glib-genmarshal</strong></span>, by printing
+debugging information. This option is mutually exclusive with the
+<code class="option">--quiet</code> option.
+</p></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="id-1.5.3.7"></a><h2>Using glib-genmarshal with Autotools</h2>
+<p>
+In order to use <span class="command"><strong>glib-genmarshal</strong></span> in your project when using
+Autotools as the build system, you will first need to modify your
+<code class="filename">configure.ac</code> file to ensure you find the appropriate
+command using <span class="command"><strong>pkg-config</strong></span>, similarly as to how you discover
+the compiler and linker flags for GLib.
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="function">PKG_PROG_PKG_CONFIG</span><span class="symbol">([</span><span class="number">0.28</span><span class="symbol">])</span>
+
+<span class="function">PKG_CHECK_VAR</span><span class="symbol">([</span><span class="normal">GLIB_GENMARSHAL</span><span class="symbol">],</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">glib</span><span class="symbol">-</span><span class="number">2.0</span><span class="symbol">],</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">glib_genmarshal</span><span class="symbol">])</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+In your <code class="filename">Makefile.am</code> file you will typically need very
+simple rules to generate the C files needed for the build.
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal">marshal</span><span class="symbol">.</span><span class="normal">h</span><span class="symbol">:</span><span class="normal"> marshal</span><span class="symbol">.</span><span class="normal">list</span>
+<span class="normal">        $</span><span class="symbol">(</span><span class="normal">AM_V_GEN</span><span class="symbol">)</span><span class="normal">$</span><span class="symbol">(</span><span class="normal">GLIB_GENMARSHAL</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                </span><span class="symbol">--</span><span class="normal">header </span><span class="symbol">\</span>
+<span class="normal">                </span><span class="symbol">--</span><span class="normal">output</span><span class="symbol">=</span><span class="normal">$@ </span><span class="symbol">\</span>
+<span class="normal">                $</span><span class="symbol">&lt;</span>
+
+<span class="normal">marshal</span><span class="symbol">.</span><span class="normal">c</span><span class="symbol">:</span><span class="normal"> marshal</span><span class="symbol">.</span><span class="usertype">list</span><span class="normal"> marshal</span><span class="symbol">.</span><span class="normal">h</span>
+<span class="normal">        $</span><span class="symbol">(</span><span class="normal">AM_V_GEN</span><span class="symbol">)</span><span class="normal">$</span><span class="symbol">(</span><span class="normal">GLIB_GENMARSHAL</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                </span><span class="symbol">--</span><span class="normal">include</span><span class="symbol">-</span><span class="normal">header</span><span class="symbol">=</span><span class="normal">marshal</span><span class="symbol">.</span><span class="normal">h </span><span class="symbol">\</span>
+<span class="normal">                </span><span class="symbol">--</span><span class="normal">body </span><span class="symbol">\</span>
+<span class="normal">                </span><span class="symbol">--</span><span class="normal">output</span><span class="symbol">=</span><span class="normal">$@ </span><span class="symbol">\</span>
+<span class="normal">                $</span><span class="symbol">&lt;</span>
+
+<span class="normal">BUILT_SOURCES </span><span class="symbol">+=</span><span class="normal"> marshal</span><span class="symbol">.</span><span class="usertype">h</span><span class="normal"> marshal</span><span class="symbol">.</span><span class="normal">c</span>
+<span class="normal">CLEANFILES </span><span class="symbol">+=</span><span class="normal"> marshal</span><span class="symbol">.</span><span class="usertype">h</span><span class="normal"> marshal</span><span class="symbol">.</span><span class="normal">c</span>
+<span class="normal">EXTRA_DIST </span><span class="symbol">+=</span><span class="normal"> marshal</span><span class="symbol">.</span><span class="normal">list</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+In the example above, the first rule generates the header file and depends on
+a <code class="filename">marshal.list</code> file in order to regenerate the result in
+case the marshallers list is updated. The second rule generates the source file
+for the same <code class="filename">marshal.list</code>, and includes the file generated
+by the header rule.
+</p>
+</div>
+<div class="refsect1">
+<a name="id-1.5.3.8"></a><h2>Example</h2>
+<p>
+To generate marshallers for the following callback functions:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="type">void</span><span class="normal">   </span><span class="function">foo</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">gpointer</span><span class="normal"> data1</span><span class="symbol">,</span>
+<span class="normal">            </span><span class="usertype">gpointer</span><span class="normal"> data2</span><span class="symbol">);</span>
+<span class="type">void</span><span class="normal">   </span><span class="function">bar</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">gpointer</span><span class="normal"> data1</span><span class="symbol">,</span>
+<span class="normal">            </span><span class="usertype">gint</span><span class="normal">     param1</span><span class="symbol">,</span>
+<span class="normal">            </span><span class="usertype">gpointer</span><span class="normal"> data2</span><span class="symbol">);</span>
+<span class="usertype">gfloat</span><span class="normal"> </span><span class="function">baz</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">gpointer</span><span class="normal"> data1</span><span class="symbol">,</span>
+<span class="normal">            </span><span class="usertype">gboolean</span><span class="normal"> param1</span><span class="symbol">,</span>
+<span class="normal">            </span><span class="usertype">guchar</span><span class="normal">   param2</span><span class="symbol">,</span>
+<span class="normal">            </span><span class="usertype">gpointer</span><span class="normal"> data2</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+The <code class="filename">marshaller.list</code> file has to look like this:
+</p>
+<pre class="programlisting">
+VOID:VOID
+VOID:INT
+FLOAT:BOOLEAN,UCHAR
+</pre>
+<p>
+and you call glib-genmarshal like this:
+</p>
+<pre class="programlisting">
+glib-genmarshal --header marshaller.list &gt; marshaller.h
+glib-genmarshal --body marshaller.list &gt; marshaller.c
+</pre>
+<p>
+The generated marshallers have the arguments encoded in their function name.
+For this particular list, they are
+</p>
+<pre class="programlisting">
+g_cclosure_user_marshal_VOID__VOID(...),
+g_cclosure_user_marshal_VOID__INT(...),
+g_cclosure_user_marshal_FLOAT__BOOLEAN_UCHAR(...).
+</pre>
+<p>
+They can be used directly for GClosures or be passed in as the
+GSignalCMarshaller c_marshaller; argument upon creation of signals:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">GClosure</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">cc_foo</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">cc_bar</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">cc_baz</span><span class="symbol">;</span>
+
+<span class="normal">cc_foo </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gobject-Closures.html#g-cclosure-new">g_cclosure_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> foo</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="function"><a href="gobject-Closures.html#g-closure-set-marshal">g_closure_set_marshal</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">cc_foo</span><span class="symbol">,</span><span class="normal"> g_cclosure_user_marshal_VOID__VOID</span><span class="symbol">);</span>
+<span class="normal">cc_bar </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gobject-Closures.html#g-cclosure-new">g_cclosure_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> bar</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="function"><a href="gobject-Closures.html#g-closure-set-marshal">g_closure_set_marshal</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">cc_bar</span><span class="symbol">,</span><span class="normal"> g_cclosure_user_marshal_VOID__INT</span><span class="symbol">);</span>
+<span class="normal">cc_baz </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gobject-Closures.html#g-cclosure-new">g_cclosure_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> baz</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="function"><a href="gobject-Closures.html#g-closure-set-marshal">g_closure_set_marshal</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">cc_baz</span><span class="symbol">,</span><span class="normal"> g_cclosure_user_marshal_FLOAT__BOOLEAN_UCHAR</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+<div class="refsect1">
+<a name="id-1.5.3.9"></a><h2>See also</h2>
+<p>
+<span class="citerefentry"><span class="refentrytitle">glib-mkenums</span>(1)</span>
+</p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

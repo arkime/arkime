@@ -1,0 +1,226 @@
+<!DOCTYPE node PUBLIC
+"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+
+<!--
+ Copyright (C) 2015 Red Hat, Inc.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2.1 of the License, or (at your option) any later version.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General
+ Public License along with this library; if not, write to the
+ Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+ Boston, MA 02110-1301, USA.
+
+ Author: Alexander Larsson <alexl@redhat.com>
+-->
+
+<node name="/" xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
+  <!--
+      org.freedesktop.portal.Documents:
+      @short_description: Document portal
+
+      The document portal allows to make files from the outside world
+      available to sandboxed applications in a controlled way.
+
+      Exported files will be made accessible to the application via
+      a fuse filesystem that gets mounted at /run/user/$UID/doc/. The
+      filesystem gets mounted both outside and inside the sandbox, but
+      the view inside the sandbox is restricted to just those files
+      that the application is allowed to access.
+
+      Individual files will appear at /run/user/$UID/doc/$DOC_ID/filename,
+      where $DOC_ID is the ID of the file in the document store. It is
+      returned by the org.freedesktop.portal.Documents.Add() and
+      org.freedesktop.portal.Documents.AddNamed() calls.
+
+      The permissions that the application has for a document store entry
+      (see org.freedesktop.portal.Documents.GrantPermissions()) are reflected
+      in the POSIX mode bits in the fuse filesystem.
+  -->
+  <interface name='org.freedesktop.portal.Documents'>
+    <property name="version" type="u" access="read"/>
+
+    <!--
+        GetMountPoint:
+        @path: the path at which the fuse filesystem is mounted
+
+        Returns the path at which the document store fuse filesystem
+        is mounted. This will typically be /run/user/$UID/doc/.
+    -->
+    <method name="GetMountPoint">
+      <arg type='ay' name='path' direction='out'/>
+    </method>
+
+    <!--
+        Add:
+        @o_path_fd: open file descriptor for the file to add
+        @reuse_existing: whether to reuse an existing document store entry for the file
+        @persistent: whether to add the file only for this session or permanently
+        @doc_id: the ID of the file in the document store
+
+        Adds a file to the document store. The file is passed in the
+        form of an open file descriptor to prove that the caller has
+        access to the file.
+    -->
+    <method name="Add">
+      <arg type='h' name='o_path_fd' direction='in'/>
+      <arg type='b' name='reuse_existing' direction='in'/>
+      <arg type='b' name='persistent' direction='in'/>
+      <arg type='s' name='doc_id' direction='out'/>
+    </method>
+
+    <!--
+        AddNamed:
+        @o_path_parent_fd: open file descriptor for the parent directory
+        @filename: the basename for the file
+        @reuse_existing: whether to reuse an existing document store entry for the file
+        @persistent: whether to add the file only for this session or permanently
+        @doc_id: the ID of the file in the document store
+
+        Creates an entry in the document store for writing a new file.
+    -->
+    <method name="AddNamed">
+      <arg type='h' name='o_path_parent_fd' direction='in'/>
+      <arg type='ay' name='filename' direction='in'/>
+      <arg type='b' name='reuse_existing' direction='in'/>
+      <arg type='b' name='persistent' direction='in'/>
+      <arg type='s' name='doc_id' direction='out'/>
+    </method>
+
+    <!--
+        AddFull:
+        @o_path_fds: open file descriptors for the files to export
+        @flags: flags, 1 == reuse_existing, 2 == persistent
+        @app_id: an application ID, or empty string
+        @permissions: the permissions to grant, possible values are 'read', 'write', 'grant-permissions' and 'delete'
+        @doc_ids: the IDs of the files in the document store
+        @extra_info: Extra info returned
+
+        Adds multiple files to the document store. The file is passed in the
+        form of an open file descriptor to prove that the caller has
+        access to the file.
+
+        Additionally, if app_id is specified, it will be given the permissions
+        listed in GrantPermission.
+
+        The method also returns some extra info that can be used to avoid
+        multiple roundtrips. For now it only contains as "mountpoint", the
+        fuse mountpoint of the document portal.
+
+        This method was added in version 2 of the org.freedesktop.portal.Documents interface.
+    -->
+    <method name="AddFull">
+      <arg type='ah' name='o_path_fds' direction='in'/>
+      <arg type='u' name='flags' direction='in'/>
+      <arg type='s' name='app_id' direction='in'/>
+      <arg type='as' name='permissions' direction='in'/>
+      <arg type='as' name='doc_ids' direction='out'/>
+      <arg type='a{sv}' name='extra_out' direction='out'/>
+    </method>
+
+    <!--
+        GrantPermissions:
+        @doc_id: the ID of the file in the document store
+        @app_id: the ID of the application to which permissions are granted
+        @permissions: the permissions to grant, possible values are 'read', 'write', 'grant-permissions' and 'delete'
+
+        Grants access permissions for a file in the document store
+        to an application.
+
+        This call is available inside the sandbox if the application
+        has the 'grant-permissions' permission for the document.
+    -->
+    <method name="GrantPermissions">
+      <arg type='s' name='doc_id' direction='in'/>
+      <arg type='s' name='app_id' direction='in'/>
+      <arg type='as' name='permissions' direction='in'/>
+    </method>
+
+    <!--
+        RevokePermissions:
+        @doc_id: the ID of the file in the document store
+        @app_id: the ID of the application to which permissions are granted
+        @permissions: the permissions to grant, possible values are 'read', 'write', 'grant-permissions' and 'delete'
+
+        Revokes access permissions for a file in the document store
+        from an application.
+
+        This call is available inside the sandbox if the application
+        has the 'grant-permissions' permission for the document.
+    -->
+    <method name="RevokePermissions">
+      <arg type='s' name='doc_id' direction='in'/>
+      <arg type='s' name='app_id' direction='in'/>
+      <arg type='as' name='permissions' direction='in'/>
+    </method>
+
+    <!--
+        Delete:
+        @doc_id: the ID of the file in the document store
+
+        Removes an entry from the document store. The file itself is
+        not deleted.
+
+        This call is available inside the sandbox if the application
+        has the 'delete' permission for the document.
+    -->
+    <method name="Delete">
+      <arg type='s' name='doc_id' direction='in'/>
+    </method>
+
+    <!--
+        Lookup:
+        @filename: a path in the host filesystem
+        @doc_id: the ID of the file in the document store, or '' if the file is not in the document store
+
+        Looks up the document ID for a file.
+
+        This call is no not available inside the sandbox.
+    -->
+    <method name="Lookup">
+      <arg type='ay' name='filename' direction='in'/>
+      <arg type='s' name='doc_id' direction='out'/>
+    </method>
+
+    <!--
+        Info:
+        @doc_id: the ID of the file in the document store
+        @path: the path for the file in the host filesystem
+        @apps: a dictionary mapping application IDs to the permissions for that application
+
+        Gets the filesystem path and application permissions for a document store
+        entry.
+
+        This call is not available inside the sandbox.
+    -->
+    <method name="Info">
+      <arg type='s' name='doc_id' direction='in'/>
+      <arg type='ay' name='path' direction='out'/>
+      <arg type='a{sas}' name='apps' direction='out'/>
+    </method>
+
+    <!--
+        List:
+        @app_id: an application ID, or '' to list all documents
+        @docs: a dictonary mapping document IDs to their filesystem path
+
+        Lists documents in the document store for an application (or for
+        all applications).
+
+        This call is not available inside the sandbox.
+    -->
+    <method name="List">
+      <arg type='s' name='app_id' direction='in'/>
+      <arg type='a{say}' name='docs' direction='out'/>
+    </method>
+  </interface>
+</node>

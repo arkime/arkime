@@ -1,0 +1,1791 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Strings: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-data-types.html" title="GLib Data Types">
+<link rel="prev" href="glib-Hash-Tables.html" title="Hash Tables">
+<link rel="next" href="glib-String-Chunks.html" title="String Chunks">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-Strings.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-data-types.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Hash-Tables.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-String-Chunks.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Strings"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Strings.top_of_page"></a>Strings</span></h2>
+<p>Strings — text buffers which grow automatically
+    as text is added</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-Strings.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-new" title="g_string_new ()">g_string_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-new-len" title="g_string_new_len ()">g_string_new_len</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-sized-new" title="g_string_sized_new ()">g_string_sized_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-assign" title="g_string_assign ()">g_string_assign</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-vprintf" title="g_string_vprintf ()">g_string_vprintf</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-append-vprintf" title="g_string_append_vprintf ()">g_string_append_vprintf</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-printf" title="g_string_printf ()">g_string_printf</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-append-printf" title="g_string_append_printf ()">g_string_append_printf</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-append" title="g_string_append ()">g_string_append</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-append-c" title="g_string_append_c ()">g_string_append_c</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-append-unichar" title="g_string_append_unichar ()">g_string_append_unichar</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-append-len" title="g_string_append_len ()">g_string_append_len</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-append-uri-escaped" title="g_string_append_uri_escaped ()">g_string_append_uri_escaped</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-prepend" title="g_string_prepend ()">g_string_prepend</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-prepend-c" title="g_string_prepend_c ()">g_string_prepend_c</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-prepend-unichar" title="g_string_prepend_unichar ()">g_string_prepend_unichar</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-prepend-len" title="g_string_prepend_len ()">g_string_prepend_len</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-insert" title="g_string_insert ()">g_string_insert</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-insert-c" title="g_string_insert_c ()">g_string_insert_c</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-insert-unichar" title="g_string_insert_unichar ()">g_string_insert_unichar</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-insert-len" title="g_string_insert_len ()">g_string_insert_len</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-overwrite" title="g_string_overwrite ()">g_string_overwrite</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-overwrite-len" title="g_string_overwrite_len ()">g_string_overwrite_len</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-erase" title="g_string_erase ()">g_string_erase</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-truncate" title="g_string_truncate ()">g_string_truncate</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-set-size" title="g_string_set_size ()">g_string_set_size</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-free" title="g_string_free ()">g_string_free</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Byte-Arrays.html#GBytes" title="GBytes"><span class="returnvalue">GBytes</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-free-to-bytes" title="g_string_free_to_bytes ()">g_string_free_to_bytes</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-up" title="g_string_up ()">g_string_up</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-down" title="g_string_down ()">g_string_down</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-hash" title="g_string_hash ()">g_string_hash</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Strings.html#g-string-equal" title="g_string_equal ()">g_string_equal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Strings.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="glib-Strings.html#GString" title="struct GString">GString</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Strings.html#g-string-sprintf" title="g_string_sprintf">g_string_sprintf</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Strings.html#g-string-sprintfa" title="g_string_sprintfa">g_string_sprintfa</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Strings.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gmodule.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Strings.description"></a><h2>Description</h2>
+<p>A <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> is an object that handles the memory management of a C
+string for you.  The emphasis of <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> is on text, typically
+UTF-8.  Crucially, the "str" member of a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> is guaranteed to
+have a trailing nul character, and it is therefore always safe to
+call functions such as <code class="function">strchr()</code> or <a class="link" href="glib-String-Utility-Functions.html#g-strdup" title="g_strdup ()"><code class="function">g_strdup()</code></a> on it.</p>
+<p>However, a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> can also hold arbitrary binary data, because it
+has a "len" member, which includes any possible embedded nul
+characters in the data.  Conceptually then, <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> is like a
+<a class="link" href="glib-Byte-Arrays.html#GByteArray" title="struct GByteArray"><span class="type">GByteArray</span></a> with the addition of many convenience methods for text,
+and a guaranteed nul terminator.</p>
+</div>
+<div class="refsect1">
+<a name="glib-Strings.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-string-new"></a><h3>g_string_new ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_new (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *init</code></em>);</pre>
+<p>Creates a new <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>, initialized with the given string.</p>
+<div class="refsect3">
+<a name="g-string-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>init</p></td>
+<td class="parameter_description"><p>the initial text to copy into the string, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> to
+start with an empty string. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-new.returns"></a><h4>Returns</h4>
+<p> the new <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-new-len"></a><h3>g_string_new_len ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_new_len (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *init</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> len</code></em>);</pre>
+<p>Creates a new <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> with <em class="parameter"><code>len</code></em>
+ bytes of the <em class="parameter"><code>init</code></em>
+ buffer.
+Because a length is provided, <em class="parameter"><code>init</code></em>
+ need not be nul-terminated,
+and can contain embedded nul bytes.</p>
+<p>Since this function does not stop at nul bytes, it is the caller's
+responsibility to ensure that <em class="parameter"><code>init</code></em>
+ has at least <em class="parameter"><code>len</code></em>
+ addressable
+bytes.</p>
+<div class="refsect3">
+<a name="g-string-new-len.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>init</p></td>
+<td class="parameter_description"><p>initial contents of the string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>len</p></td>
+<td class="parameter_description"><p>length of <em class="parameter"><code>init</code></em>
+to use</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-new-len.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-sized-new"></a><h3>g_string_sized_new ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_sized_new (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> dfl_size</code></em>);</pre>
+<p>Creates a new <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>, with enough space for <em class="parameter"><code>dfl_size</code></em>
+
+bytes. This is useful if you are going to add a lot of
+text to the string and don't want it to be reallocated
+too often.</p>
+<div class="refsect3">
+<a name="g-string-sized-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>dfl_size</p></td>
+<td class="parameter_description"><p>the default size of the space allocated to
+hold the string</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-sized-new.returns"></a><h4>Returns</h4>
+<p> the new <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-assign"></a><h3>g_string_assign ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_assign (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                 <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *rval</code></em>);</pre>
+<p>Copies the bytes from a string into a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>,
+destroying any previous contents. It is rather like
+the standard <code class="function">strcpy()</code> function, except that you do not
+have to worry about having enough space to copy the string.</p>
+<div class="refsect3">
+<a name="g-string-assign.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>the destination <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>. Its current contents
+are destroyed.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>rval</p></td>
+<td class="parameter_description"><p>the string to copy into <em class="parameter"><code>string</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-assign.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-vprintf"></a><h3>g_string_vprintf ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_string_vprintf (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                  <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *format</code></em>,
+                  <em class="parameter"><code><span class="type">va_list</span> args</code></em>);</pre>
+<p>Writes a formatted string into a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>.
+This function is similar to <a class="link" href="glib-Strings.html#g-string-printf" title="g_string_printf ()"><code class="function">g_string_printf()</code></a> except that
+the arguments to the format string are passed as a va_list.</p>
+<div class="refsect3">
+<a name="g-string-vprintf.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>format</p></td>
+<td class="parameter_description"><p>the string format. See the <code class="function">printf()</code> documentation</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>args</p></td>
+<td class="parameter_description"><p>the parameters to insert into the format string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-14.html#api-index-2.14">2.14</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-append-vprintf"></a><h3>g_string_append_vprintf ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_string_append_vprintf (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                         <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *format</code></em>,
+                         <em class="parameter"><code><span class="type">va_list</span> args</code></em>);</pre>
+<p>Appends a formatted string onto the end of a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>.
+This function is similar to <a class="link" href="glib-Strings.html#g-string-append-printf" title="g_string_append_printf ()"><code class="function">g_string_append_printf()</code></a>
+except that the arguments to the format string are passed
+as a va_list.</p>
+<div class="refsect3">
+<a name="g-string-append-vprintf.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>format</p></td>
+<td class="parameter_description"><p>the string format. See the <code class="function">printf()</code> documentation</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>args</p></td>
+<td class="parameter_description"><p>the list of arguments to insert in the output</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-14.html#api-index-2.14">2.14</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-printf"></a><h3>g_string_printf ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_string_printf (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                 <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *format</code></em>,
+                 <em class="parameter"><code>...</code></em>);</pre>
+<p>Writes a formatted string into a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>.
+This is similar to the standard <code class="function">sprintf()</code> function,
+except that the <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> buffer automatically expands
+to contain the results. The previous contents of the
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> are destroyed.</p>
+<div class="refsect3">
+<a name="g-string-printf.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>format</p></td>
+<td class="parameter_description"><p>the string format. See the <code class="function">printf()</code> documentation</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>the parameters to insert into the format string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-append-printf"></a><h3>g_string_append_printf ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_string_append_printf (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                        <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *format</code></em>,
+                        <em class="parameter"><code>...</code></em>);</pre>
+<p>Appends a formatted string onto the end of a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>.
+This function is similar to <a class="link" href="glib-Strings.html#g-string-printf" title="g_string_printf ()"><code class="function">g_string_printf()</code></a> except
+that the text is appended to the <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>.</p>
+<div class="refsect3">
+<a name="g-string-append-printf.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>format</p></td>
+<td class="parameter_description"><p>the string format. See the <code class="function">printf()</code> documentation</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>the parameters to insert into the format string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-append"></a><h3>g_string_append ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_append (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                 <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *val</code></em>);</pre>
+<p>Adds a string onto the end of a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>, expanding
+it if necessary.</p>
+<div class="refsect3">
+<a name="g-string-append.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>the string to append onto the end of <em class="parameter"><code>string</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-append.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-append-c"></a><h3>g_string_append_c ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_append_c (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> c</code></em>);</pre>
+<p>Adds a byte onto the end of a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>, expanding
+it if necessary.</p>
+<div class="refsect3">
+<a name="g-string-append-c.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>c</p></td>
+<td class="parameter_description"><p>the byte to append onto the end of <em class="parameter"><code>string</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-append-c.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-append-unichar"></a><h3>g_string_append_unichar ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_append_unichar (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                         <em class="parameter"><code><a class="link" href="glib-Unicode-Manipulation.html#gunichar" title="gunichar"><span class="type">gunichar</span></a> wc</code></em>);</pre>
+<p>Converts a Unicode character into UTF-8, and appends it
+to the string.</p>
+<div class="refsect3">
+<a name="g-string-append-unichar.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>wc</p></td>
+<td class="parameter_description"><p>a Unicode character</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-append-unichar.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-append-len"></a><h3>g_string_append_len ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_append_len (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                     <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *val</code></em>,
+                     <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> len</code></em>);</pre>
+<p>Appends <em class="parameter"><code>len</code></em>
+ bytes of <em class="parameter"><code>val</code></em>
+ to <em class="parameter"><code>string</code></em>
+. Because <em class="parameter"><code>len</code></em>
+ is
+provided, <em class="parameter"><code>val</code></em>
+ may contain embedded nuls and need not
+be nul-terminated.</p>
+<p>Since this function does not stop at nul bytes, it is
+the caller's responsibility to ensure that <em class="parameter"><code>val</code></em>
+ has at
+least <em class="parameter"><code>len</code></em>
+ addressable bytes.</p>
+<div class="refsect3">
+<a name="g-string-append-len.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>bytes to append</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>len</p></td>
+<td class="parameter_description"><p>number of bytes of <em class="parameter"><code>val</code></em>
+to use</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-append-len.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-append-uri-escaped"></a><h3>g_string_append_uri_escaped ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_append_uri_escaped (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                             <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *unescaped</code></em>,
+                             <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *reserved_chars_allowed</code></em>,
+                             <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="type">gboolean</span></a> allow_utf8</code></em>);</pre>
+<p>Appends <em class="parameter"><code>unescaped</code></em>
+ to <em class="parameter"><code>string</code></em>
+, escaped any characters that
+are reserved in URIs using URI-style escape sequences.</p>
+<div class="refsect3">
+<a name="g-string-append-uri-escaped.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>unescaped</p></td>
+<td class="parameter_description"><p>a string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>reserved_chars_allowed</p></td>
+<td class="parameter_description"><p>a string of reserved characters allowed
+to be used, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>allow_utf8</p></td>
+<td class="parameter_description"><p>set <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the escaped string may include UTF8 characters</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-append-uri-escaped.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-16.html#api-index-2.16">2.16</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-prepend"></a><h3>g_string_prepend ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_prepend (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                  <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *val</code></em>);</pre>
+<p>Adds a string on to the start of a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>,
+expanding it if necessary.</p>
+<div class="refsect3">
+<a name="g-string-prepend.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>the string to prepend on the start of <em class="parameter"><code>string</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-prepend.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-prepend-c"></a><h3>g_string_prepend_c ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_prepend_c (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> c</code></em>);</pre>
+<p>Adds a byte onto the start of a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>,
+expanding it if necessary.</p>
+<div class="refsect3">
+<a name="g-string-prepend-c.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>c</p></td>
+<td class="parameter_description"><p>the byte to prepend on the start of the <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-prepend-c.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-prepend-unichar"></a><h3>g_string_prepend_unichar ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_prepend_unichar (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                          <em class="parameter"><code><a class="link" href="glib-Unicode-Manipulation.html#gunichar" title="gunichar"><span class="type">gunichar</span></a> wc</code></em>);</pre>
+<p>Converts a Unicode character into UTF-8, and prepends it
+to the string.</p>
+<div class="refsect3">
+<a name="g-string-prepend-unichar.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>wc</p></td>
+<td class="parameter_description"><p>a Unicode character</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-prepend-unichar.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-prepend-len"></a><h3>g_string_prepend_len ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_prepend_len (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                      <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *val</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> len</code></em>);</pre>
+<p>Prepends <em class="parameter"><code>len</code></em>
+ bytes of <em class="parameter"><code>val</code></em>
+ to <em class="parameter"><code>string</code></em>
+.
+Because <em class="parameter"><code>len</code></em>
+ is provided, <em class="parameter"><code>val</code></em>
+ may contain
+embedded nuls and need not be nul-terminated.</p>
+<p>Since this function does not stop at nul bytes,
+it is the caller's responsibility to ensure that
+<em class="parameter"><code>val</code></em>
+ has at least <em class="parameter"><code>len</code></em>
+ addressable bytes.</p>
+<div class="refsect3">
+<a name="g-string-prepend-len.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>bytes to prepend</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>len</p></td>
+<td class="parameter_description"><p>number of bytes in <em class="parameter"><code>val</code></em>
+to prepend</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-prepend-len.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-insert"></a><h3>g_string_insert ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_insert (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                 <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> pos</code></em>,
+                 <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *val</code></em>);</pre>
+<p>Inserts a copy of a string into a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>,
+expanding it if necessary.</p>
+<div class="refsect3">
+<a name="g-string-insert.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>pos</p></td>
+<td class="parameter_description"><p>the position to insert the copy of the string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>the string to insert</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-insert.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-insert-c"></a><h3>g_string_insert_c ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_insert_c (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> pos</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> c</code></em>);</pre>
+<p>Inserts a byte into a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>, expanding it if necessary.</p>
+<div class="refsect3">
+<a name="g-string-insert-c.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>pos</p></td>
+<td class="parameter_description"><p>the position to insert the byte</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>c</p></td>
+<td class="parameter_description"><p>the byte to insert</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-insert-c.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-insert-unichar"></a><h3>g_string_insert_unichar ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_insert_unichar (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> pos</code></em>,
+                         <em class="parameter"><code><a class="link" href="glib-Unicode-Manipulation.html#gunichar" title="gunichar"><span class="type">gunichar</span></a> wc</code></em>);</pre>
+<p>Converts a Unicode character into UTF-8, and insert it
+into the string at the given position.</p>
+<div class="refsect3">
+<a name="g-string-insert-unichar.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>pos</p></td>
+<td class="parameter_description"><p>the position at which to insert character, or -1
+to append at the end of the string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>wc</p></td>
+<td class="parameter_description"><p>a Unicode character</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-insert-unichar.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-insert-len"></a><h3>g_string_insert_len ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_insert_len (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                     <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> pos</code></em>,
+                     <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *val</code></em>,
+                     <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> len</code></em>);</pre>
+<p>Inserts <em class="parameter"><code>len</code></em>
+ bytes of <em class="parameter"><code>val</code></em>
+ into <em class="parameter"><code>string</code></em>
+ at <em class="parameter"><code>pos</code></em>
+.
+Because <em class="parameter"><code>len</code></em>
+ is provided, <em class="parameter"><code>val</code></em>
+ may contain embedded
+nuls and need not be nul-terminated. If <em class="parameter"><code>pos</code></em>
+ is -1,
+bytes are inserted at the end of the string.</p>
+<p>Since this function does not stop at nul bytes, it is
+the caller's responsibility to ensure that <em class="parameter"><code>val</code></em>
+ has at
+least <em class="parameter"><code>len</code></em>
+ addressable bytes.</p>
+<div class="refsect3">
+<a name="g-string-insert-len.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>pos</p></td>
+<td class="parameter_description"><p>position in <em class="parameter"><code>string</code></em>
+where insertion should
+happen, or -1 for at the end</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>bytes to insert</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>len</p></td>
+<td class="parameter_description"><p>number of bytes of <em class="parameter"><code>val</code></em>
+to insert</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-insert-len.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-overwrite"></a><h3>g_string_overwrite ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_overwrite (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> pos</code></em>,
+                    <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *val</code></em>);</pre>
+<p>Overwrites part of a string, lengthening it if necessary.</p>
+<div class="refsect3">
+<a name="g-string-overwrite.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>pos</p></td>
+<td class="parameter_description"><p>the position at which to start overwriting</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>the string that will overwrite the <em class="parameter"><code>string</code></em>
+starting at <em class="parameter"><code>pos</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-overwrite.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-14.html#api-index-2.14">2.14</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-overwrite-len"></a><h3>g_string_overwrite_len ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_overwrite_len (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> pos</code></em>,
+                        <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *val</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> len</code></em>);</pre>
+<p>Overwrites part of a string, lengthening it if necessary.
+This function will work with embedded nuls.</p>
+<div class="refsect3">
+<a name="g-string-overwrite-len.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>pos</p></td>
+<td class="parameter_description"><p>the position at which to start overwriting</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>the string that will overwrite the <em class="parameter"><code>string</code></em>
+starting at <em class="parameter"><code>pos</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>len</p></td>
+<td class="parameter_description"><p>the number of bytes to write from <em class="parameter"><code>val</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-overwrite-len.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-14.html#api-index-2.14">2.14</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-erase"></a><h3>g_string_erase ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_erase (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> pos</code></em>,
+                <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> len</code></em>);</pre>
+<p>Removes <em class="parameter"><code>len</code></em>
+ bytes from a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>, starting at position <em class="parameter"><code>pos</code></em>
+.
+The rest of the <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> is shifted down to fill the gap.</p>
+<div class="refsect3">
+<a name="g-string-erase.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>pos</p></td>
+<td class="parameter_description"><p>the position of the content to remove</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>len</p></td>
+<td class="parameter_description"><p>the number of bytes to remove, or -1 to remove all
+following bytes</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-erase.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-truncate"></a><h3>g_string_truncate ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_truncate (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> len</code></em>);</pre>
+<p>Cuts off the end of the GString, leaving the first <em class="parameter"><code>len</code></em>
+ bytes.</p>
+<div class="refsect3">
+<a name="g-string-truncate.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>len</p></td>
+<td class="parameter_description"><p>the new size of <em class="parameter"><code>string</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-truncate.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-set-size"></a><h3>g_string_set_size ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_set_size (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> len</code></em>);</pre>
+<p>Sets the length of a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>. If the length is less than
+the current length, the string will be truncated. If the
+length is greater than the current length, the contents
+of the newly added area are undefined. (However, as
+always, string-&gt;str[string-&gt;len] will be a nul byte.)</p>
+<div class="refsect3">
+<a name="g-string-set-size.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>len</p></td>
+<td class="parameter_description"><p>the new length</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-set-size.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-free"></a><h3>g_string_free ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_string_free (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>,
+               <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="type">gboolean</span></a> free_segment</code></em>);</pre>
+<p>Frees the memory allocated for the <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>.
+If <em class="parameter"><code>free_segment</code></em>
+ is <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> it also frees the character data.  If
+it's <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a>, the caller gains ownership of the buffer and must
+free it after use with <a class="link" href="glib-Memory-Allocation.html#g-free" title="g_free ()"><code class="function">g_free()</code></a>.</p>
+<div class="refsect3">
+<a name="g-string-free.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>free_segment</p></td>
+<td class="parameter_description"><p>if <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>, the actual character data is freed as well</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-free.returns"></a><h4>Returns</h4>
+<p>the character data of <em class="parameter"><code>string</code></em>
+(i.e. <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if <em class="parameter"><code>free_segment</code></em>
+is <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>). </p>
+<p><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-free-to-bytes"></a><h3>g_string_free_to_bytes ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Byte-Arrays.html#GBytes" title="GBytes"><span class="returnvalue">GBytes</span></a> *
+g_string_free_to_bytes (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>);</pre>
+<p>Transfers ownership of the contents of <em class="parameter"><code>string</code></em>
+ to a newly allocated
+<a class="link" href="glib-Byte-Arrays.html#GBytes" title="GBytes"><span class="type">GBytes</span></a>.  The <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> structure itself is deallocated, and it is
+therefore invalid to use <em class="parameter"><code>string</code></em>
+ after invoking this function.</p>
+<p>Note that while <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> ensures that its buffer always has a
+trailing nul character (not reflected in its "len"), the returned
+<a class="link" href="glib-Byte-Arrays.html#GBytes" title="GBytes"><span class="type">GBytes</span></a> does not include this extra nul; i.e. it has length exactly
+equal to the "len" member.</p>
+<div class="refsect3">
+<a name="g-string-free-to-bytes.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-free-to-bytes.returns"></a><h4>Returns</h4>
+<p>A newly allocated <a class="link" href="glib-Byte-Arrays.html#GBytes" title="GBytes"><span class="type">GBytes</span></a> containing contents of <em class="parameter"><code>string</code></em>
+; <em class="parameter"><code>string</code></em>
+itself is freed. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-up"></a><h3>g_string_up ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_up (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_string_up</code> has been deprecated since version 2.2 and should not be used in newly-written code.</p>
+<p>This function uses the locale-specific
+    <code class="function">toupper()</code> function, which is almost never the right thing.
+    Use <a class="link" href="glib-String-Utility-Functions.html#g-string-ascii-up" title="g_string_ascii_up ()"><code class="function">g_string_ascii_up()</code></a> or <a class="link" href="glib-Unicode-Manipulation.html#g-utf8-strup" title="g_utf8_strup ()"><code class="function">g_utf8_strup()</code></a> instead.</p>
+</div>
+<p>Converts a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> to uppercase.</p>
+<div class="refsect3">
+<a name="g-string-up.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-up.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>string</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-down"></a><h3>g_string_down ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="returnvalue">GString</span></a> *
+g_string_down (<em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *string</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_string_down</code> has been deprecated since version 2.2 and should not be used in newly-written code.</p>
+<p>This function uses the locale-specific
+    <code class="function">tolower()</code> function, which is almost never the right thing.
+    Use <a class="link" href="glib-String-Utility-Functions.html#g-string-ascii-down" title="g_string_ascii_down ()"><code class="function">g_string_ascii_down()</code></a> or <a class="link" href="glib-Unicode-Manipulation.html#g-utf8-strdown" title="g_utf8_strdown ()"><code class="function">g_utf8_strdown()</code></a> instead.</p>
+</div>
+<p>Converts a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> to lowercase.</p>
+<div class="refsect3">
+<a name="g-string-down.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-down.returns"></a><h4>Returns</h4>
+<p>the <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-hash"></a><h3>g_string_hash ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_string_hash (<em class="parameter"><code>const <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *str</code></em>);</pre>
+<p>Creates a hash code for <em class="parameter"><code>str</code></em>
+; for use with <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.</p>
+<div class="refsect3">
+<a name="g-string-hash.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>str</p></td>
+<td class="parameter_description"><p>a string to hash</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-hash.returns"></a><h4>Returns</h4>
+<p> hash code for <em class="parameter"><code>str</code></em>
+</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-equal"></a><h3>g_string_equal ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_string_equal (<em class="parameter"><code>const <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *v</code></em>,
+                <em class="parameter"><code>const <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *v2</code></em>);</pre>
+<p>Compares two strings for equality, returning <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if they are equal.
+For use with <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a>.</p>
+<div class="refsect3">
+<a name="g-string-equal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>v</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>v2</p></td>
+<td class="parameter_description"><p>another <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-string-equal.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the strings are the same length and contain the
+same bytes</p>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Strings.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GString"></a><h3>struct GString</h3>
+<pre class="programlisting">struct GString {
+  gchar  *str;
+  gsize len;
+  gsize allocated_len;
+};
+</pre>
+<p>The GString struct contains the public fields of a GString.</p>
+<div class="refsect3">
+<a name="GString.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GString.str"></a>str</code></em>;</p></td>
+<td class="struct_member_description"><p>points to the character data. It may move as text is added.
+The <em class="parameter"><code>str</code></em>
+field is null-terminated and so
+can be used as an ordinary C string.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> <em class="structfield"><code><a name="GString.len"></a>len</code></em>;</p></td>
+<td class="struct_member_description"><p>contains the length of the string, not including the
+terminating nul byte.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> <em class="structfield"><code><a name="GString.allocated-len"></a>allocated_len</code></em>;</p></td>
+<td class="struct_member_description"><p>the number of bytes that can be stored in the
+string before it needs to be reallocated. May be larger than <em class="parameter"><code>len</code></em>
+.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-sprintf"></a><h3>g_string_sprintf</h3>
+<pre class="programlisting">#define             g_string_sprintf</pre>
+<div class="warning">
+<p><code class="literal">g_string_sprintf</code> is deprecated and should not be used in newly-written code.</p>
+<p>This function has been renamed to <a class="link" href="glib-Strings.html#g-string-printf" title="g_string_printf ()"><code class="function">g_string_printf()</code></a>.</p>
+</div>
+<p>Writes a formatted string into a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>.
+This is similar to the standard <code class="function">sprintf()</code> function,
+except that the <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> buffer automatically expands
+to contain the results. The previous contents of the
+<a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> are destroyed.</p>
+<div class="refsect3">
+<a name="g-string-sprintf.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>format</p></td>
+<td class="parameter_description"><p>the string format. See the <code class="function">sprintf()</code> documentation</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>the parameters to insert into the format string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-string-sprintfa"></a><h3>g_string_sprintfa</h3>
+<pre class="programlisting">#define             g_string_sprintfa</pre>
+<div class="warning">
+<p><code class="literal">g_string_sprintfa</code> is deprecated and should not be used in newly-written code.</p>
+<p>This function has been renamed to <a class="link" href="glib-Strings.html#g-string-append-printf" title="g_string_append_printf ()"><code class="function">g_string_append_printf()</code></a></p>
+</div>
+<p>Appends a formatted string onto the end of a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>.
+This function is similar to <a class="link" href="glib-Strings.html#g-string-sprintf" title="g_string_sprintf"><code class="function">g_string_sprintf()</code></a> except that
+the text is appended to the <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a>.</p>
+<div class="refsect3">
+<a name="g-string-sprintfa.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>format</p></td>
+<td class="parameter_description"><p>the string format. See the <code class="function">sprintf()</code> documentation</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>the parameters to insert into the format string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

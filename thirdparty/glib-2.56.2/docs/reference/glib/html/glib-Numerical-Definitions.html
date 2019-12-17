@@ -1,0 +1,232 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Numerical Definitions: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-fundamentals.html" title="GLib Fundamentals">
+<link rel="prev" href="glib-Bounds-checked-integer-arithmetic.html" title="Bounds-checking integer arithmetic">
+<link rel="next" href="glib-Miscellaneous-Macros.html" title="Miscellaneous Macros">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-Numerical-Definitions.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-fundamentals.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Bounds-checked-integer-arithmetic.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-Miscellaneous-Macros.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Numerical-Definitions"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Numerical-Definitions.top_of_page"></a>Numerical Definitions</span></h2>
+<p>Numerical Definitions — mathematical constants, and floating point decomposition</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-Numerical-Definitions.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Numerical-Definitions.html#G-IEEE754-FLOAT-BIAS:CAPS" title="G_IEEE754_FLOAT_BIAS">G_IEEE754_FLOAT_BIAS</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Numerical-Definitions.html#G-IEEE754-DOUBLE-BIAS:CAPS" title="G_IEEE754_DOUBLE_BIAS">G_IEEE754_DOUBLE_BIAS</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">union</td>
+<td class="function_name"><a class="link" href="glib-Numerical-Definitions.html#GFloatIEEE754" title="union GFloatIEEE754">GFloatIEEE754</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">union</td>
+<td class="function_name"><a class="link" href="glib-Numerical-Definitions.html#GDoubleIEEE754" title="union GDoubleIEEE754">GDoubleIEEE754</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Numerical-Definitions.html#G-E:CAPS" title="G_E">G_E</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Numerical-Definitions.html#G-LN2:CAPS" title="G_LN2">G_LN2</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Numerical-Definitions.html#G-LN10:CAPS" title="G_LN10">G_LN10</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Numerical-Definitions.html#G-PI:CAPS" title="G_PI">G_PI</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Numerical-Definitions.html#G-PI-2:CAPS" title="G_PI_2">G_PI_2</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Numerical-Definitions.html#G-PI-4:CAPS" title="G_PI_4">G_PI_4</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Numerical-Definitions.html#G-SQRT2:CAPS" title="G_SQRT2">G_SQRT2</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Numerical-Definitions.html#G-LOG-2-BASE-10:CAPS" title="G_LOG_2_BASE_10">G_LOG_2_BASE_10</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Numerical-Definitions.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Numerical-Definitions.description"></a><h2>Description</h2>
+<p>GLib offers mathematical constants such as <a class="link" href="glib-Numerical-Definitions.html#G-PI:CAPS" title="G_PI"><span class="type">G_PI</span></a> for the value of pi;
+many platforms have these in the C library, but some don't, the GLib
+versions always exist.</p>
+<p>The <a class="link" href="glib-Numerical-Definitions.html#GFloatIEEE754" title="union GFloatIEEE754"><span class="type">GFloatIEEE754</span></a> and <a class="link" href="glib-Numerical-Definitions.html#GDoubleIEEE754" title="union GDoubleIEEE754"><span class="type">GDoubleIEEE754</span></a> unions are used to access the
+sign, mantissa and exponent of IEEE floats and doubles. These unions are
+defined as appropriate for a given platform. IEEE floats and doubles are
+supported (used for storage) by at least Intel, PPC and Sparc. See
+<a class="ulink" href="http://en.wikipedia.org/wiki/IEEE_float" target="_top">IEEE 754-2008</a>
+for more information about IEEE number formats.</p>
+</div>
+<div class="refsect1">
+<a name="glib-Numerical-Definitions.functions_details"></a><h2>Functions</h2>
+<p></p>
+</div>
+<div class="refsect1">
+<a name="glib-Numerical-Definitions.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="G-IEEE754-FLOAT-BIAS:CAPS"></a><h3>G_IEEE754_FLOAT_BIAS</h3>
+<pre class="programlisting">#define G_IEEE754_FLOAT_BIAS (127)
+</pre>
+<p>The bias by which exponents in single-precision floats are offset.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-IEEE754-DOUBLE-BIAS:CAPS"></a><h3>G_IEEE754_DOUBLE_BIAS</h3>
+<pre class="programlisting">#define G_IEEE754_DOUBLE_BIAS (1023)
+</pre>
+<p>The bias by which exponents in double-precision floats are offset.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GFloatIEEE754"></a><h3>union GFloatIEEE754</h3>
+<p>The <a class="link" href="glib-Numerical-Definitions.html#GFloatIEEE754" title="union GFloatIEEE754"><span class="type">GFloatIEEE754</span></a> and <a class="link" href="glib-Numerical-Definitions.html#GDoubleIEEE754" title="union GDoubleIEEE754"><span class="type">GDoubleIEEE754</span></a> unions are used to access the sign,
+mantissa and exponent of IEEE floats and doubles. These unions are defined
+as appropriate for a given platform. IEEE floats and doubles are supported
+(used for storage) by at least Intel, PPC and Sparc.</p>
+<div class="refsect3">
+<a name="GFloatIEEE754.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="union_members_name">
+<col class="union_members_description">
+<col width="200px" class="union_members_annotations">
+</colgroup>
+<tbody></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDoubleIEEE754"></a><h3>union GDoubleIEEE754</h3>
+<p>The <a class="link" href="glib-Numerical-Definitions.html#GFloatIEEE754" title="union GFloatIEEE754"><span class="type">GFloatIEEE754</span></a> and <a class="link" href="glib-Numerical-Definitions.html#GDoubleIEEE754" title="union GDoubleIEEE754"><span class="type">GDoubleIEEE754</span></a> unions are used to access the sign,
+mantissa and exponent of IEEE floats and doubles. These unions are defined
+as appropriate for a given platform. IEEE floats and doubles are supported
+(used for storage) by at least Intel, PPC and Sparc.</p>
+<div class="refsect3">
+<a name="GDoubleIEEE754.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="union_members_name">
+<col class="union_members_description">
+<col width="200px" class="union_members_annotations">
+</colgroup>
+<tbody><tr>
+<td class="union_member_name"><p><a class="link" href="glib-Basic-Types.html#gdouble" title="gdouble"><span class="type">gdouble</span></a> <em class="structfield"><code><a name="GDoubleIEEE754.v-double"></a>v_double</code></em>;</p></td>
+<td class="union_member_description"><p>the double value</p></td>
+<td class="union_member_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-E:CAPS"></a><h3>G_E</h3>
+<pre class="programlisting">#define G_E     2.7182818284590452353602874713526624977572470937000
+</pre>
+<p>The base of natural logarithms.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-LN2:CAPS"></a><h3>G_LN2</h3>
+<pre class="programlisting">#define G_LN2   0.69314718055994530941723212145817656807550013436026
+</pre>
+<p>The natural logarithm of 2.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-LN10:CAPS"></a><h3>G_LN10</h3>
+<pre class="programlisting">#define G_LN10  2.3025850929940456840179914546843642076011014886288
+</pre>
+<p>The natural logarithm of 10.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-PI:CAPS"></a><h3>G_PI</h3>
+<pre class="programlisting">#define G_PI    3.1415926535897932384626433832795028841971693993751
+</pre>
+<p>The value of pi (ratio of circle's circumference to its diameter).</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-PI-2:CAPS"></a><h3>G_PI_2</h3>
+<pre class="programlisting">#define G_PI_2  1.5707963267948966192313216916397514420985846996876
+</pre>
+<p>Pi divided by 2.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-PI-4:CAPS"></a><h3>G_PI_4</h3>
+<pre class="programlisting">#define G_PI_4  0.78539816339744830961566084581987572104929234984378
+</pre>
+<p>Pi divided by 4.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-SQRT2:CAPS"></a><h3>G_SQRT2</h3>
+<pre class="programlisting">#define G_SQRT2 1.4142135623730950488016887242096980785696718753769
+</pre>
+<p>The square root of two.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-LOG-2-BASE-10:CAPS"></a><h3>G_LOG_2_BASE_10</h3>
+<pre class="programlisting">#define G_LOG_2_BASE_10		(0.30102999566398119521)
+</pre>
+<p>Multiplying the base 2 exponent by this number yields the base 10 exponent.</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

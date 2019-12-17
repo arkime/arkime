@@ -1,0 +1,194 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC '-//OASIS//DTD DocBook XML V4.5//EN'
+                      'http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd' [
+
+<!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
+<!ENTITY version SYSTEM "version.xml">
+]>
+<book id="index" xmlns:xi="http://www.w3.org/2003/XInclude">
+  <bookinfo>
+    <title>GObject Reference Manual</title>
+    <releaseinfo>
+      for GObject &version;
+      The latest version of this documentation can be found on-line at
+      <ulink role="online-location" url="https://developer.gnome.org/gobject/unstable/">https://developer.gnome.org/gobject/unstable/</ulink>.
+    </releaseinfo>
+  </bookinfo>
+
+  <preface>
+    <title>Introduction</title>
+      <para>
+			Most modern programming languages come with their own native object
+			systems and additional fundamental algorithmic language constructs.
+			Just as GLib serves as an implementation of such fundamental
+			types and algorithms (linked lists, hash tables and so forth), the
+			GLib Object System provides the required implementations of a
+			flexible, extensible, and intentionally easy to map (into other
+			languages) object-oriented framework for C.
+			The substantial elements that are provided can be summarized as:
+			<itemizedlist>
+				<listitem><para>
+					 A generic type system to register arbitrary single-inherited
+						flat and deep derived types as well as interfaces for
+						structured types.
+						It takes care of creation, initialization and memory management
+						of the assorted object and class structures, maintains
+						parent/child relationships and deals with dynamic implementations
+						of such types. That is, their type specific implementations are
+						relocatable/unloadable during runtime.
+				</para></listitem>
+				<listitem><para>
+						A collection of fundamental type implementations, such as integers,
+						doubles, enums and structured types, to name a few.
+				</para></listitem>
+				<listitem><para>
+						A sample fundamental type implementation to base object hierarchies
+						upon - the GObject fundamental type.
+				</para></listitem>
+				<listitem><para>
+						A signal system that allows very flexible user customization of
+						virtual/overridable object methods and can serve as a powerful
+						notification mechanism.
+				</para></listitem>
+				<listitem><para>
+						An extensible parameter/value system, supporting all the provided
+						fundamental types that can be used to generically handle object
+						properties or otherwise parameterized types.
+				</para></listitem>
+			</itemizedlist>
+		</para>
+  </preface>
+
+  <part label="I">
+    <title>Concepts</title>
+
+    <xi:include href="tut_intro.xml" />
+    <xi:include href="tut_gtype.xml" />
+    <xi:include href="tut_gobject.xml" />
+    <xi:include href="tut_gsignal.xml" />
+  </part>
+  <reference label="II">
+    <title>API Reference</title>
+
+      <xi:include href="xml/gtype.xml" />
+      <xi:include href="xml/gtypeplugin.xml" />
+      <xi:include href="xml/gtypemodule.xml" />
+      <xi:include href="xml/objects.xml" />
+      <xi:include href="xml/enumerations_flags.xml" />
+      <xi:include href="xml/gboxed.xml" />
+      <xi:include href="xml/generic_values.xml" />
+      <xi:include href="xml/param_value_types.xml" />
+      <xi:include href="xml/gparamspec.xml" />
+      <xi:include href="xml/value_collection.xml" />
+      <xi:include href="xml/signals.xml" />
+      <xi:include href="xml/gclosure.xml" />
+      <xi:include href="xml/value_arrays.xml" />
+      <xi:include href="xml/gbinding.xml" />
+  </reference>
+  <reference label="III">
+    <title>Tools Reference</title>
+
+    <xi:include href="glib-mkenums.xml" />
+    <xi:include href="glib-genmarshal.xml" />
+    <xi:include href="gobject-query.xml" />
+  </reference>
+
+  <xi:include href="tut_howto.xml" />
+  <xi:include href="tut_tools.xml" />
+
+  <index id="api-index-full">
+    <title>Index</title>
+    <xi:include href="xml/api-index-full.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-deprecated" role="deprecated">
+    <title>Index of deprecated symbols</title>
+    <xi:include href="xml/api-index-deprecated.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-2" role="2.2">
+    <title>Index of new symbols in 2.2</title>
+    <xi:include href="xml/api-index-2.2.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-4" role="2.4">
+    <title>Index of new symbols in 2.4</title>
+    <xi:include href="xml/api-index-2.4.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-6" role="2.6">
+    <title>Index of new symbols in 2.6</title>
+    <xi:include href="xml/api-index-2.6.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-8" role="2.8">
+    <title>Index of new symbols in 2.8</title>
+    <xi:include href="xml/api-index-2.8.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-10" role="2.10">
+    <title>Index of new symbols in 2.10</title>
+    <xi:include href="xml/api-index-2.10.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-12" role="2.12">
+    <title>Index of new symbols in 2.12</title>
+    <xi:include href="xml/api-index-2.12.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-14" role="2.14">
+    <title>Index of new symbols in 2.14</title>
+    <xi:include href="xml/api-index-2.14.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-18" role="2.18">
+    <title>Index of new symbols in 2.18</title>
+    <xi:include href="xml/api-index-2.18.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-22" role="2.22">
+    <title>Index of new symbols in 2.22</title>
+    <xi:include href="xml/api-index-2.22.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-24" role="2.24">
+    <title>Index of new symbols in 2.24</title>
+    <xi:include href="xml/api-index-2.24.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-26" role="2.26">
+    <title>Index of new symbols in 2.26</title>
+    <xi:include href="xml/api-index-2.26.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-28" role="2.28">
+    <title>Index of new symbols in 2.28</title>
+    <xi:include href="xml/api-index-2.28.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-30" role="2.30">
+    <title>Index of new symbols in 2.30</title>
+    <xi:include href="xml/api-index-2.30.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-32" role="2.32">
+    <title>Index of new symbols in 2.32</title>
+    <xi:include href="xml/api-index-2.32.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-34" role="2.34">
+    <title>Index of new symbols in 2.34</title>
+    <xi:include href="xml/api-index-2.34.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-36" role="2.36">
+    <title>Index of new symbols in 2.36</title>
+    <xi:include href="xml/api-index-2.36.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-38" role="2.38">
+    <title>Index of new symbols in 2.38</title>
+    <xi:include href="xml/api-index-2.38.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-40" role="2.40">
+    <title>Index of new symbols in 2.40</title>
+    <xi:include href="xml/api-index-2.40.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-42" role="2.42">
+    <title>Index of new symbols in 2.42</title>
+    <xi:include href="xml/api-index-2.42.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-44" role="2.44">
+    <title>Index of new symbols in 2.44</title>
+    <xi:include href="xml/api-index-2.44.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-46" role="2.46">
+    <title>Index of new symbols in 2.46</title>
+    <xi:include href="xml/api-index-2.46.xml"><xi:fallback /></xi:include>
+  </index>
+
+  <xi:include href="xml/annotation-glossary.xml"><xi:fallback /></xi:include>
+
+</book>

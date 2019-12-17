@@ -1,0 +1,248 @@
+<refentry id="gsettings-tool" lang="en">
+
+<refentryinfo>
+  <title>gsettings</title>
+  <productname>GIO</productname>
+  <authorgroup>
+    <author>
+      <contrib>Developer</contrib>
+      <firstname>Ryan</firstname>
+      <surname>Lortie</surname>
+    </author>
+  </authorgroup>
+</refentryinfo>
+
+<refmeta>
+  <refentrytitle>gsettings</refentrytitle>
+  <manvolnum>1</manvolnum>
+  <refmiscinfo class="manual">User Commands</refmiscinfo>
+</refmeta>
+
+<refnamediv>
+  <refname>gsettings</refname>
+  <refpurpose>GSettings configuration tool</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+  <cmdsynopsis>
+    <command>gsettings</command>
+    <arg choice="plain">get</arg>
+    <arg choice="plain"><replaceable>SCHEMA</replaceable><arg choice="opt">:<replaceable>PATH</replaceable></arg></arg>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </cmdsynopsis>
+  <cmdsynopsis>
+    <command>gsettings</command>
+    <arg choice="plain">monitor</arg>
+    <arg choice="plain"><replaceable>SCHEMA</replaceable><arg choice="opt">:<replaceable>PATH</replaceable></arg></arg>
+    <arg choice="opt"><replaceable>KEY</replaceable></arg>
+  </cmdsynopsis>
+  <cmdsynopsis>
+    <command>gsettings</command>
+    <arg choice="plain">writable</arg>
+    <arg choice="plain"><replaceable>SCHEMA</replaceable><arg choice="opt">:<replaceable>PATH</replaceable></arg></arg>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </cmdsynopsis>
+  <cmdsynopsis>
+    <command>gsettings</command>
+    <arg choice="plain">range</arg>
+    <arg choice="plain"><replaceable>SCHEMA</replaceable><arg choice="opt">:<replaceable>PATH</replaceable></arg></arg>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </cmdsynopsis>
+  <cmdsynopsis>
+    <command>gsettings</command>
+    <arg choice="plain">describe</arg>
+    <arg choice="plain"><replaceable>SCHEMA</replaceable><arg choice="opt">:<replaceable>PATH</replaceable></arg></arg>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </cmdsynopsis>
+  <cmdsynopsis>
+    <command>gsettings</command>
+    <arg choice="plain">set</arg>
+    <arg choice="plain"><replaceable>SCHEMA</replaceable><arg choice="opt">:<replaceable>PATH</replaceable></arg></arg>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <arg choice="plain"><replaceable>VALUE</replaceable></arg>
+  </cmdsynopsis>
+  <cmdsynopsis>
+    <command>gsettings</command>
+    <arg choice="plain">reset</arg>
+    <arg choice="plain"><replaceable>SCHEMA</replaceable><arg choice="opt">:<replaceable>PATH</replaceable></arg></arg>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </cmdsynopsis>
+  <cmdsynopsis>
+    <command>gsettings</command>
+    <arg choice="plain">reset-recursively</arg>
+    <arg choice="plain"><replaceable>SCHEMA</replaceable><arg choice="opt">:<replaceable>PATH</replaceable></arg></arg>
+  </cmdsynopsis>
+  <cmdsynopsis>
+    <command>gsettings</command>
+    <arg choice="plain">list-schemas</arg>
+    <arg choice="opt">--print-paths</arg>
+  </cmdsynopsis>
+  <cmdsynopsis>
+    <command>gsettings</command>
+    <arg choice="plain">list-relocatable-schemas</arg>
+  </cmdsynopsis>
+  <cmdsynopsis>
+    <command>gsettings</command>
+    <arg choice="plain">list-keys</arg>
+    <arg choice="plain"><replaceable>SCHEMA</replaceable><arg choice="opt">:<replaceable>PATH</replaceable></arg></arg>
+  </cmdsynopsis>
+  <cmdsynopsis>
+    <command>gsettings</command>
+    <arg choice="plain">list-children</arg>
+    <arg choice="plain"><replaceable>SCHEMA</replaceable><arg choice="opt">:<replaceable>PATH</replaceable></arg></arg>
+  </cmdsynopsis>
+  <cmdsynopsis>
+    <command>gsettings</command>
+    <arg choice="plain">list-recursively</arg>
+    <arg choice="opt"><replaceable>SCHEMA</replaceable><arg choice="opt">:<replaceable>PATH</replaceable></arg></arg>
+  </cmdsynopsis>
+  <cmdsynopsis>
+    <command>gsettings</command>
+    <arg choice="plain">help</arg>
+    <arg choice="opt"><replaceable>COMMAND</replaceable></arg>
+  </cmdsynopsis>
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+<para><command>gsettings</command> offers a simple commandline
+interface to <link linkend="GSettings"><type>GSettings</type></link>.
+It lets you get, set or monitor an individual key for changes.
+</para>
+<para>
+The <replaceable>SCHEMA</replaceable> and <replaceable>KEY</replaceable>
+arguments are required for most commands to specify the schema id and the
+name of the key to operate on. The schema id may optionally have a
+:<replaceable>PATH</replaceable> suffix. Specifying the path is only needed
+if the schema does not have a fixed path.
+</para>
+<para>
+When setting a key, you also need specify a <replaceable>VALUE</replaceable>
+The format for the value is that of a serialized
+<link linkend="GVariant"><type>GVariant</type></link>,
+so e.g. a string
+must include explicit quotes: "'foo'". This format is also used when printing
+out values.
+</para>
+<para>
+Note that gsettings needs a D-Bus session bus connection to write changes to
+the dconf database.
+</para>
+</refsect1>
+
+<refsect1><title>Commands</title>
+<variablelist>
+
+<varlistentry>
+<term><option>get</option></term>
+<listitem><para>
+Gets the value of <replaceable>KEY</replaceable>.
+The value is printed out as a serialised
+<link linkend="GVariant"><type>GVariant</type></link>.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>monitor</option></term>
+<listitem><para>
+Monitors <replaceable>KEY</replaceable> for changes and prints the changed
+values. If no <replaceable>KEY</replaceable> is specified, all keys in the
+schema are monitored. Monitoring will continue until the process is terminated.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>writable</option></term>
+<listitem><para>
+Finds out whether <replaceable>KEY</replaceable> is writable.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>range</option></term>
+<listitem><para>
+Queries the range of valid values for <replaceable>KEY</replaceable>.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>describe</option></term>
+<listitem><para>
+Queries the description of valid values for <replaceable>KEY</replaceable>.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>set</option></term>
+<listitem><para>
+Sets the value of <replaceable>KEY</replaceable> to
+<replaceable>VALUE</replaceable>. The value is specified as a serialised
+<link linkend="GVariant"><type>GVariant</type></link>.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>reset</option></term>
+<listitem><para>
+Resets <replaceable>KEY</replaceable> to its default value.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>reset-recursively</option></term>
+<listitem><para>
+Reset all keys under the given <replaceable>SCHEMA</replaceable>.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>list-schemas</option></term>
+<listitem><para>
+Lists the installed, non-relocatable schemas.
+See <option>list-relocatable-schemas</option> if you are interested in
+relocatable schemas. If <optional><option>--print-paths</option></optional>
+is given, the path where each schema is mapped is also printed.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>list-relocatable-schemas</option></term>
+<listitem><para>
+Lists the installed, relocatable schemas.
+See <option>list-schemas</option> if you are interested in
+non-relocatable schemas.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>list-keys</option></term>
+<listitem><para>
+Lists the keys in <replaceable>SCHEMA</replaceable>.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>list-children</option></term>
+<listitem><para>
+Lists the children of <replaceable>SCHEMA</replaceable>.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>list-recursively</option></term>
+<listitem><para>
+Lists keys and values, recursively. If no <replaceable>SCHEMA</replaceable>
+is given, list keys in all schemas.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>help</option></term>
+<listitem><para>
+Prints help and exits.
+</para></listitem>
+</varlistentry>
+
+</variablelist>
+
+</refsect1>
+</refentry>

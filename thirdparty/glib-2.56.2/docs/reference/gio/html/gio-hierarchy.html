@@ -1,0 +1,192 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Object Hierarchy: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="index.html" title="GIO Reference Manual">
+<link rel="prev" href="gdbus-example-gdbus-codegen.html" title="Using gdbus-codegen">
+<link rel="next" href="api-index-full.html" title="Index">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><img src="up-insensitive.png" width="16" height="16" border="0"></td>
+<td><a accesskey="p" href="gdbus-example-gdbus-codegen.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="api-index-full.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="chapter">
+<div class="titlepage"><div><div><h1 class="title">
+<a name="gio-hierarchy"></a>Object Hierarchy</h1></div></div></div>
+<pre class="screen">
+    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">├──</span> <a class="link" href="GAppInfoMonitor.html" title="GAppInfoMonitor">GAppInfoMonitor</a>
+    <span class="lineart">├──</span> <a class="link" href="GAppInfo.html#GAppLaunchContext">GAppLaunchContext</a>
+    <span class="lineart">├──</span> <a class="link" href="GApplicationCommandLine.html" title="GApplicationCommandLine">GApplicationCommandLine</a>
+    <span class="lineart">├──</span> <a class="link" href="GApplication.html" title="GApplication">GApplication</a>
+    <span class="lineart">├──</span> <a class="link" href="GInputStream.html" title="GInputStream">GInputStream</a>
+    <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="GFilterInputStream.html" title="GFilterInputStream">GFilterInputStream</a>
+    <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream">GBufferedInputStream</a>
+    <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">╰──</span> <a class="link" href="GDataInputStream.html" title="GDataInputStream">GDataInputStream</a>
+    <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">╰──</span> <a class="link" href="gio-GConverterInputstream.html#GConverterInputStream">GConverterInputStream</a>
+    <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="GFileInputStream.html" title="GFileInputStream">GFileInputStream</a>
+    <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="GMemoryInputStream.html" title="GMemoryInputStream">GMemoryInputStream</a>
+    <span class="lineart">│</span>   <span class="lineart">╰──</span> <a class="link" href="GUnixInputStream.html" title="GUnixInputStream">GUnixInputStream</a>
+    <span class="lineart">├──</span> <a class="link" href="GOutputStream.html" title="GOutputStream">GOutputStream</a>
+    <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="GFilterOutputStream.html" title="GFilterOutputStream">GFilterOutputStream</a>
+    <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="GBufferedOutputStream.html" title="GBufferedOutputStream">GBufferedOutputStream</a>
+    <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="gio-GConverterOutputstream.html#GConverterOutputStream">GConverterOutputStream</a>
+    <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">╰──</span> <a class="link" href="GDataOutputStream.html" title="GDataOutputStream">GDataOutputStream</a>
+    <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="GFileOutputStream.html" title="GFileOutputStream">GFileOutputStream</a>
+    <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="GMemoryOutputStream.html" title="GMemoryOutputStream">GMemoryOutputStream</a>
+    <span class="lineart">│</span>   <span class="lineart">╰──</span> <a class="link" href="GUnixOutputStream.html" title="GUnixOutputStream">GUnixOutputStream</a>
+    <span class="lineart">├──</span> <a class="link" href="GBytesIcon.html" title="GBytesIcon">GBytesIcon</a>
+    <span class="lineart">├──</span> <a class="link" href="GCancellable.html" title="GCancellable">GCancellable</a>
+    <span class="lineart">├──</span> <a class="link" href="GCharsetConverter.html" title="GCharsetConverter">GCharsetConverter</a>
+    <span class="lineart">├──</span> <a class="link" href="GCredentials.html" title="GCredentials">GCredentials</a>
+    <span class="lineart">├──</span> <a class="link" href="GDBusActionGroup.html" title="GDBusActionGroup">GDBusActionGroup</a>
+    <span class="lineart">├──</span> <a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver">GDBusAuthObserver</a>
+    <span class="lineart">├──</span> <a class="link" href="GDBusConnection.html" title="GDBusConnection">GDBusConnection</a>
+    <span class="lineart">├──</span> <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton">GDBusInterfaceSkeleton</a>
+    <span class="lineart">├──</span> <a class="link" href="GMenuModel.html" title="GMenuModel">GMenuModel</a>
+    <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="GDBusMenuModel.html" title="GDBusMenuModel">GDBusMenuModel</a>
+    <span class="lineart">│</span>   <span class="lineart">╰──</span> <a class="link" href="GMenu.html" title="GMenu">GMenu</a>
+    <span class="lineart">├──</span> <a class="link" href="GDBusMessage.html" title="GDBusMessage">GDBusMessage</a>
+    <span class="lineart">├──</span> <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation">GDBusMethodInvocation</a>
+    <span class="lineart">├──</span> <a class="link" href="GDBusObjectManagerClient.html" title="GDBusObjectManagerClient">GDBusObjectManagerClient</a>
+    <span class="lineart">├──</span> <a class="link" href="GDBusObjectManagerServer.html" title="GDBusObjectManagerServer">GDBusObjectManagerServer</a>
+    <span class="lineart">├──</span> <a class="link" href="GDBusObjectProxy.html" title="GDBusObjectProxy">GDBusObjectProxy</a>
+    <span class="lineart">├──</span> <a class="link" href="GDBusObjectSkeleton.html" title="GDBusObjectSkeleton">GDBusObjectSkeleton</a>
+    <span class="lineart">├──</span> <a class="link" href="GDBusProxy.html" title="GDBusProxy">GDBusProxy</a>
+    <span class="lineart">├──</span> <a class="link" href="GDBusServer.html" title="GDBusServer">GDBusServer</a>
+    <span class="lineart">├──</span> <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo">GDesktopAppInfo</a>
+    <span class="lineart">├──</span> <a class="link" href="GEmblem.html" title="GEmblem">GEmblem</a>
+    <span class="lineart">├──</span> <a class="link" href="GEmblemedIcon.html" title="GEmblemedIcon">GEmblemedIcon</a>
+    <span class="lineart">├──</span> <a class="link" href="GFileEnumerator.html" title="GFileEnumerator">GFileEnumerator</a>
+    <span class="lineart">├──</span> <a class="link" href="GFileIcon.html" title="GFileIcon">GFileIcon</a>
+    <span class="lineart">├──</span> <a class="link" href="GFileInfo.html" title="GFileInfo">GFileInfo</a>
+    <span class="lineart">├──</span> <a class="link" href="GIOStream.html" title="GIOStream">GIOStream</a>
+    <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="GFileIOStream.html" title="GFileIOStream">GFileIOStream</a>
+    <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="GSimpleIOStream.html" title="GSimpleIOStream">GSimpleIOStream</a>
+    <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="GSocketConnection.html" title="GSocketConnection">GSocketConnection</a>
+    <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="GTcpConnection.html" title="GTcpConnection">GTcpConnection</a>
+    <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">╰──</span> <a class="link" href="GTcpWrapperConnection.html" title="GTcpWrapperConnection">GTcpWrapperConnection</a>
+    <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">╰──</span> <a class="link" href="GUnixConnection.html" title="GUnixConnection">GUnixConnection</a>
+    <span class="lineart">│</span>   <span class="lineart">╰──</span> <a class="link" href="GTlsConnection.html" title="GTlsConnection">GTlsConnection</a>
+    <span class="lineart">├──</span> <a class="link" href="GFileMonitor.html" title="GFileMonitor">GFileMonitor</a>
+    <span class="lineart">├──</span> <a class="link" href="GFilenameCompleter.html" title="GFilenameCompleter">GFilenameCompleter</a>
+    <span class="lineart">├──</span> <a class="link" href="GInetAddress.html" title="GInetAddress">GInetAddress</a>
+    <span class="lineart">├──</span> <a class="link" href="GInetAddressMask.html" title="GInetAddressMask">GInetAddressMask</a>
+    <span class="lineart">├──</span> <a class="link" href="GSocketAddress.html" title="GSocketAddress">GSocketAddress</a>
+    <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress">GInetSocketAddress</a>
+    <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">╰──</span> <a class="link" href="GProxyAddress.html" title="GProxyAddress">GProxyAddress</a>
+    <span class="lineart">│</span>   <span class="lineart">╰──</span> <a class="link" href="GUnixSocketAddress.html" title="GUnixSocketAddress">GUnixSocketAddress</a>
+    <span class="lineart">├──</span> <a href="../GTypeModule.html#GTypeModule-struct">GTypeModule</a>
+    <span class="lineart">│</span>   <span class="lineart">╰──</span> <a class="link" href="GIOModule.html" title="GIOModule">GIOModule</a>
+    <span class="lineart">├──</span> <a class="link" href="GListStore.html" title="GListStore">GListStore</a>
+    <span class="lineart">├──</span> <a class="link" href="GMenuModel.html#GMenuAttributeIter">GMenuAttributeIter</a>
+    <span class="lineart">├──</span> <a class="link" href="GMenu.html#GMenuItem">GMenuItem</a>
+    <span class="lineart">├──</span> <a class="link" href="GMenuModel.html#GMenuLinkIter">GMenuLinkIter</a>
+    <span class="lineart">├──</span> <a class="link" href="GMountOperation.html" title="GMountOperation">GMountOperation</a>
+    <span class="lineart">├──</span> <a class="link" href="GNetworkAddress.html" title="GNetworkAddress">GNetworkAddress</a>
+    <span class="lineart">├──</span> <a class="link" href="GNetworkService.html" title="GNetworkService">GNetworkService</a>
+    <span class="lineart">├──</span> <a class="link" href="GNotification.html" title="GNotification">GNotification</a>
+    <span class="lineart">├──</span> <a class="link" href="GPermission.html" title="GPermission">GPermission</a>
+    <span class="lineart">│</span>   <span class="lineart">╰──</span> <a class="link" href="GSimplePermission.html" title="GSimplePermission">GSimplePermission</a>
+    <span class="lineart">├──</span> <a class="link" href="GPropertyAction.html" title="GPropertyAction">GPropertyAction</a>
+    <span class="lineart">├──</span> <a class="link" href="GSocketAddressEnumerator.html" title="GSocketAddressEnumerator">GSocketAddressEnumerator</a>
+    <span class="lineart">│</span>   <span class="lineart">╰──</span> <a class="link" href="GProxyAddressEnumerator.html" title="GProxyAddressEnumerator">GProxyAddressEnumerator</a>
+    <span class="lineart">├──</span> <a class="link" href="GResolver.html" title="GResolver">GResolver</a>
+    <span class="lineart">├──</span> <a class="link" href="GSettingsBackend.html" title="GSettingsBackend">GSettingsBackend</a>
+    <span class="lineart">├──</span> <a class="link" href="GSettings.html" title="GSettings">GSettings</a>
+    <span class="lineart">├──</span> <a class="link" href="GSimpleAction.html" title="GSimpleAction">GSimpleAction</a>
+    <span class="lineart">├──</span> <a class="link" href="GSimpleActionGroup.html" title="GSimpleActionGroup">GSimpleActionGroup</a>
+    <span class="lineart">├──</span> <a class="link" href="GSimpleAsyncResult.html" title="GSimpleAsyncResult">GSimpleAsyncResult</a>
+    <span class="lineart">├──</span> <a class="link" href="GSimpleProxyResolver.html" title="GSimpleProxyResolver">GSimpleProxyResolver</a>
+    <span class="lineart">├──</span> <a class="link" href="GSocketClient.html" title="GSocketClient">GSocketClient</a>
+    <span class="lineart">├──</span> <a class="link" href="GSocketControlMessage.html" title="GSocketControlMessage">GSocketControlMessage</a>
+    <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="GUnixCredentialsMessage.html" title="GUnixCredentialsMessage">GUnixCredentialsMessage</a>
+    <span class="lineart">│</span>   <span class="lineart">╰──</span> <a class="link" href="GUnixFDMessage.html" title="GUnixFDMessage">GUnixFDMessage</a>
+    <span class="lineart">├──</span> <a class="link" href="GSocket.html" title="GSocket">GSocket</a>
+    <span class="lineart">├──</span> <a class="link" href="GSocketListener.html" title="GSocketListener">GSocketListener</a>
+    <span class="lineart">│</span>   <span class="lineart">╰──</span> <a class="link" href="GSocketService.html" title="GSocketService">GSocketService</a>
+    <span class="lineart">│</span>       <span class="lineart">╰──</span> <a class="link" href="GThreadedSocketService.html" title="GThreadedSocketService">GThreadedSocketService</a>
+    <span class="lineart">├──</span> <a class="link" href="GSubprocess.html" title="GSubprocess">GSubprocess</a>
+    <span class="lineart">├──</span> <a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher">GSubprocessLauncher</a>
+    <span class="lineart">├──</span> <a class="link" href="GTask.html" title="GTask">GTask</a>
+    <span class="lineart">├──</span> <a class="link" href="GTestDBus.html" title="GTestDBus">GTestDBus</a>
+    <span class="lineart">├──</span> <a class="link" href="GThemedIcon.html" title="GThemedIcon">GThemedIcon</a>
+    <span class="lineart">├──</span> <a class="link" href="GTlsCertificate.html" title="GTlsCertificate">GTlsCertificate</a>
+    <span class="lineart">├──</span> <a class="link" href="GTlsDatabase.html" title="GTlsDatabase">GTlsDatabase</a>
+    <span class="lineart">├──</span> <a class="link" href="GTlsInteraction.html" title="GTlsInteraction">GTlsInteraction</a>
+    <span class="lineart">├──</span> <a class="link" href="GTlsPassword.html" title="GTlsPassword">GTlsPassword</a>
+    <span class="lineart">├──</span> <a class="link" href="GUnixFDList.html" title="GUnixFDList">GUnixFDList</a>
+    <span class="lineart">├──</span> <a class="link" href="gio-Unix-Mounts.html#GUnixMountMonitor">GUnixMountMonitor</a>
+    <span class="lineart">├──</span> <a class="link" href="GVfs.html" title="GVfs">GVfs</a>
+    <span class="lineart">├──</span> <a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor">GVolumeMonitor</a>
+    <span class="lineart">├──</span> <a class="link" href="GZlibCompressor.html" title="GZlibCompressor">GZlibCompressor</a>
+    <span class="lineart">╰──</span> <a class="link" href="GZlibDecompressor.html" title="GZlibDecompressor">GZlibDecompressor</a>
+    <a href="/usr/share/gtk-doc/html/gobject/GTypeModule.html">GInterface</a>
+    <span class="lineart">├──</span> <a class="link" href="GAction.html" title="GAction">GAction</a>
+    <span class="lineart">├──</span> <a class="link" href="GActionGroup.html" title="GActionGroup">GActionGroup</a>
+    <span class="lineart">├──</span> <a class="link" href="GActionMap.html" title="GActionMap">GActionMap</a>
+    <span class="lineart">├──</span> <a class="link" href="GAppInfo.html" title="GAppInfo">GAppInfo</a>
+    <span class="lineart">├──</span> <a class="link" href="GAsyncInitable.html" title="GAsyncInitable">GAsyncInitable</a>
+    <span class="lineart">├──</span> <a class="link" href="GAsyncResult.html" title="GAsyncResult">GAsyncResult</a>
+    <span class="lineart">├──</span> <a class="link" href="GSeekable.html" title="GSeekable">GSeekable</a>
+    <span class="lineart">├──</span> <a class="link" href="GIcon.html" title="GIcon">GIcon</a>
+    <span class="lineart">├──</span> <a class="link" href="GLoadableIcon.html" title="GLoadableIcon">GLoadableIcon</a>
+    <span class="lineart">├──</span> <a class="link" href="GConverter.html" title="GConverter">GConverter</a>
+    <span class="lineart">├──</span> <a class="link" href="GInitable.html" title="GInitable">GInitable</a>
+    <span class="lineart">├──</span> <a class="link" href="GPollableInputStream.html" title="GPollableInputStream">GPollableInputStream</a>
+    <span class="lineart">├──</span> <a class="link" href="GPollableOutputStream.html" title="GPollableOutputStream">GPollableOutputStream</a>
+    <span class="lineart">├──</span> <a class="link" href="GRemoteActionGroup.html" title="GRemoteActionGroup">GRemoteActionGroup</a>
+    <span class="lineart">├──</span> <a class="link" href="GDBusInterface.html" title="GDBusInterface">GDBusInterface</a>
+    <span class="lineart">├──</span> <a class="link" href="GDBusObject.html" title="GDBusObject">GDBusObject</a>
+    <span class="lineart">├──</span> <a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager">GDBusObjectManager</a>
+    <span class="lineart">├──</span> <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfoLookup">GDesktopAppInfoLookup</a>
+    <span class="lineart">├──</span> <a class="link" href="GDrive.html" title="GDrive">GDrive</a>
+    <span class="lineart">├──</span> <a class="link" href="GDtlsClientConnection.html" title="GDtlsClientConnection">GDtlsClientConnection</a>
+    <span class="lineart">├──</span> <a class="link" href="GDtlsConnection.html" title="GDtlsConnection">GDtlsConnection</a>
+    <span class="lineart">├──</span> <a class="link" href="GDatagramBased.html" title="GDatagramBased">GDatagramBased</a>
+    <span class="lineart">├──</span> <a class="link" href="GDtlsServerConnection.html" title="GDtlsServerConnection">GDtlsServerConnection</a>
+    <span class="lineart">├──</span> <a class="link" href="GFileDescriptorBased.html" title="GFileDescriptorBased">GFileDescriptorBased</a>
+    <span class="lineart">├──</span> <a class="link" href="GFile.html" title="GFile">GFile</a>
+    <span class="lineart">├──</span> <a class="link" href="GSocketConnectable.html" title="GSocketConnectable">GSocketConnectable</a>
+    <span class="lineart">├──</span> <a class="link" href="GListModel.html" title="GListModel">GListModel</a>
+    <span class="lineart">├──</span> <a class="link" href="GMount.html" title="GMount">GMount</a>
+    <span class="lineart">├──</span> <a class="link" href="GNetworkMonitor.html" title="GNetworkMonitor">GNetworkMonitor</a>
+    <span class="lineart">├──</span> <a class="link" href="GProxy.html" title="GProxy">GProxy</a>
+    <span class="lineart">├──</span> <a class="link" href="GProxyResolver.html" title="GProxyResolver">GProxyResolver</a>
+    <span class="lineart">├──</span> <a class="link" href="GTlsBackend.html" title="GTlsBackend">GTlsBackend</a>
+    <span class="lineart">├──</span> <a class="link" href="GTlsClientConnection.html" title="GTlsClientConnection">GTlsClientConnection</a>
+    <span class="lineart">├──</span> <a class="link" href="GTlsFileDatabase.html" title="GTlsFileDatabase">GTlsFileDatabase</a>
+    <span class="lineart">├──</span> <a class="link" href="GTlsServerConnection.html" title="GTlsServerConnection">GTlsServerConnection</a>
+    <span class="lineart">╰──</span> <a class="link" href="GVolume.html" title="GVolume">GVolume</a>
+    <a href="/usr/share/gtk-doc/html/gobject/gobject-Boxed-Types.html">GBoxed</a>
+    <span class="lineart">├──</span> <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo">GDBusAnnotationInfo</a>
+    <span class="lineart">├──</span> <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusArgInfo">GDBusArgInfo</a>
+    <span class="lineart">├──</span> <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo">GDBusInterfaceInfo</a>
+    <span class="lineart">├──</span> <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusMethodInfo">GDBusMethodInfo</a>
+    <span class="lineart">├──</span> <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo">GDBusNodeInfo</a>
+    <span class="lineart">├──</span> <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo">GDBusPropertyInfo</a>
+    <span class="lineart">├──</span> <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusSignalInfo">GDBusSignalInfo</a>
+    <span class="lineart">├──</span> <a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList">GFileAttributeInfoList</a>
+    <span class="lineart">├──</span> <a class="link" href="GFileInfo.html#GFileAttributeMatcher">GFileAttributeMatcher</a>
+    <span class="lineart">├──</span> <a class="link" href="GResource.html" title="GResource">GResource</a>
+    <span class="lineart">├──</span> <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchema">GSettingsSchema</a>
+    <span class="lineart">├──</span> <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaKey">GSettingsSchemaKey</a>
+    <span class="lineart">├──</span> <a class="link" href="gio-GSettingsSchema-GSettingsSchemaSource.html#GSettingsSchemaSource">GSettingsSchemaSource</a>
+    <span class="lineart">├──</span> <a class="link" href="GSrvTarget.html" title="GSrvTarget">GSrvTarget</a>
+    <span class="lineart">├──</span> <a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry">GUnixMountEntry</a>
+    <span class="lineart">╰──</span> <a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint">GUnixMountPoint</a>
+</pre>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

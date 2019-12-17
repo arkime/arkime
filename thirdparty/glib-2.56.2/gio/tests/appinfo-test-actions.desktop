@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Application
+Actions=frob;tweak;twiddle;broken;
+Exec=true
+
+[Desktop Action frob]
+Name=Frobnicate
+Exec=touch frob
+
+[Desktop Action tweak]
+Name=Tweak
+Exec=touch tweak
+
+[Desktop Action twiddle]
+Name=Twiddle
+Exec=touch twiddle

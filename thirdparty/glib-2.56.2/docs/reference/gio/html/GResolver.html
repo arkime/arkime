@@ -1,0 +1,1247 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GResolver: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="resolver.html" title="DNS resolution">
+<link rel="prev" href="resolver.html" title="DNS resolution">
+<link rel="next" href="GProxyResolver.html" title="GProxyResolver">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GResolver.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GResolver.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_signals">  <span class="dim">|</span> 
+                  <a href="#GResolver.signals" class="shortcut">Signals</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="resolver.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="resolver.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GProxyResolver.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GResolver"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GResolver.top_of_page"></a>GResolver</span></h2>
+<p>GResolver — Asynchronous and cancellable DNS resolver</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GResolver.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GResolver.html" title="GResolver"><span class="returnvalue">GResolver</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GResolver.html#g-resolver-get-default" title="g_resolver_get_default ()">g_resolver_get_default</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GResolver.html#g-resolver-set-default" title="g_resolver_set_default ()">g_resolver_set_default</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GResolver.html#g-resolver-lookup-by-name" title="g_resolver_lookup_by_name ()">g_resolver_lookup_by_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GResolver.html#g-resolver-lookup-by-name-async" title="g_resolver_lookup_by_name_async ()">g_resolver_lookup_by_name_async</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GResolver.html#g-resolver-lookup-by-name-finish" title="g_resolver_lookup_by_name_finish ()">g_resolver_lookup_by_name_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GResolver.html#g-resolver-free-addresses" title="g_resolver_free_addresses ()">g_resolver_free_addresses</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GResolver.html#g-resolver-lookup-by-address" title="g_resolver_lookup_by_address ()">g_resolver_lookup_by_address</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GResolver.html#g-resolver-lookup-by-address-async" title="g_resolver_lookup_by_address_async ()">g_resolver_lookup_by_address_async</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GResolver.html#g-resolver-lookup-by-address-finish" title="g_resolver_lookup_by_address_finish ()">g_resolver_lookup_by_address_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GResolver.html#g-resolver-lookup-service" title="g_resolver_lookup_service ()">g_resolver_lookup_service</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GResolver.html#g-resolver-lookup-service-async" title="g_resolver_lookup_service_async ()">g_resolver_lookup_service_async</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GResolver.html#g-resolver-lookup-service-finish" title="g_resolver_lookup_service_finish ()">g_resolver_lookup_service_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GResolver.html#g-resolver-free-targets" title="g_resolver_free_targets ()">g_resolver_free_targets</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GResolver.html#g-resolver-lookup-records" title="g_resolver_lookup_records ()">g_resolver_lookup_records</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GResolver.html#g-resolver-lookup-records-async" title="g_resolver_lookup_records_async ()">g_resolver_lookup_records_async</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GResolver.html#g-resolver-lookup-records-finish" title="g_resolver_lookup_records_finish ()">g_resolver_lookup_records_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GResolver.signals"></a><h2>Signals</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="signals_return">
+<col width="300px" class="signals_name">
+<col width="200px" class="signals_flags">
+</colgroup>
+<tbody><tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GResolver.html#GResolver-reload" title="The “reload” signal">reload</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GResolver.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GResolver.html#GResolver-struct" title="GResolver">GResolver</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="GResolver.html#GResolverRecordType" title="enum GResolverRecordType">GResolverRecordType</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="GResolver.html#G-RESOLVER-ERROR:CAPS" title="G_RESOLVER_ERROR">G_RESOLVER_ERROR</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="GResolver.html#GResolverError" title="enum GResolverError">GResolverError</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GResolver.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GResolver
+</pre>
+</div>
+<div class="refsect1">
+<a name="GResolver.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GResolver.description"></a><h2>Description</h2>
+<p><a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> provides cancellable synchronous and asynchronous DNS
+resolution, for hostnames (<a class="link" href="GResolver.html#g-resolver-lookup-by-address" title="g_resolver_lookup_by_address ()"><code class="function">g_resolver_lookup_by_address()</code></a>,
+<a class="link" href="GResolver.html#g-resolver-lookup-by-name" title="g_resolver_lookup_by_name ()"><code class="function">g_resolver_lookup_by_name()</code></a> and their async variants) and SRV
+(service) records (<a class="link" href="GResolver.html#g-resolver-lookup-service" title="g_resolver_lookup_service ()"><code class="function">g_resolver_lookup_service()</code></a>).</p>
+<p><a class="link" href="GNetworkAddress.html" title="GNetworkAddress"><span class="type">GNetworkAddress</span></a> and <a class="link" href="GNetworkService.html" title="GNetworkService"><span class="type">GNetworkService</span></a> provide wrappers around
+<a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> functionality that also implement <a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a>,
+making it easy to connect to a remote host/service.</p>
+</div>
+<div class="refsect1">
+<a name="GResolver.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-resolver-get-default"></a><h3>g_resolver_get_default ()</h3>
+<pre class="programlisting"><a class="link" href="GResolver.html" title="GResolver"><span class="returnvalue">GResolver</span></a> *
+g_resolver_get_default (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Gets the default <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a>. You should unref it when you are done
+with it. <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> may use its reference count as a hint about how
+many threads it should allocate for concurrent DNS resolutions.</p>
+<div class="refsect3">
+<a name="g-resolver-get-default.returns"></a><h4>Returns</h4>
+<p>the default <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-resolver-set-default"></a><h3>g_resolver_set_default ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_resolver_set_default (<em class="parameter"><code><a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> *resolver</code></em>);</pre>
+<p>Sets <em class="parameter"><code>resolver</code></em>
+ to be the application's default resolver (reffing
+<em class="parameter"><code>resolver</code></em>
+, and unreffing the previous default resolver, if any).
+Future calls to <a class="link" href="GResolver.html#g-resolver-get-default" title="g_resolver_get_default ()"><code class="function">g_resolver_get_default()</code></a> will return this resolver.</p>
+<p>This can be used if an application wants to perform any sort of DNS
+caching or "pinning"; it can implement its own <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> that
+calls the original default resolver for DNS operations, and
+implements its own cache policies on top of that, and then set
+itself as the default resolver for all later code to use.</p>
+<div class="refsect3">
+<a name="g-resolver-set-default.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>resolver</p></td>
+<td class="parameter_description"><p>the new default <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-resolver-lookup-by-name"></a><h3>g_resolver_lookup_by_name ()</h3>
+<pre class="programlisting"><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+g_resolver_lookup_by_name (<em class="parameter"><code><a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> *resolver</code></em>,
+                           <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *hostname</code></em>,
+                           <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                           <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Synchronously resolves <em class="parameter"><code>hostname</code></em>
+ to determine its associated IP
+address(es). <em class="parameter"><code>hostname</code></em>
+ may be an ASCII-only or UTF-8 hostname, or
+the textual form of an IP address (in which case this just becomes
+a wrapper around <a class="link" href="GInetAddress.html#g-inet-address-new-from-string" title="g_inet_address_new_from_string ()"><code class="function">g_inet_address_new_from_string()</code></a>).</p>
+<p>On success, <a class="link" href="GResolver.html#g-resolver-lookup-by-name" title="g_resolver_lookup_by_name ()"><code class="function">g_resolver_lookup_by_name()</code></a> will return a non-empty <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of
+<a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a>, sorted in order of preference and guaranteed to not
+contain duplicates. That is, if using the result to connect to
+<em class="parameter"><code>hostname</code></em>
+, you should attempt to connect to the first address
+first, then the second if the first fails, etc. If you are using
+the result to listen on a socket, it is appropriate to add each
+result using e.g. <a class="link" href="GSocketListener.html#g-socket-listener-add-address" title="g_socket_listener_add_address ()"><code class="function">g_socket_listener_add_address()</code></a>.</p>
+<p>If the DNS resolution fails, <em class="parameter"><code>error</code></em>
+ (if non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>) will be set to a
+value from <a class="link" href="GResolver.html#GResolverError" title="enum GResolverError"><span class="type">GResolverError</span></a> and <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> will be returned.</p>
+<p>If <em class="parameter"><code>cancellable</code></em>
+ is non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, it can be used to cancel the
+operation, in which case <em class="parameter"><code>error</code></em>
+ (if non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>) will be set to
+<a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a>.</p>
+<p>If you are planning to connect to a socket on the resolved IP
+address, it may be easier to create a <a class="link" href="GNetworkAddress.html" title="GNetworkAddress"><span class="type">GNetworkAddress</span></a> and use its
+<a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a> interface.</p>
+<div class="refsect3">
+<a name="g-resolver-lookup-by-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>resolver</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>hostname</p></td>
+<td class="parameter_description"><p>the hostname to look up</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-resolver-lookup-by-name.returns"></a><h4>Returns</h4>
+<p>a non-empty <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a>
+of <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. You
+must unref each of the addresses and free the list when you are
+done with it. (You can use <a class="link" href="GResolver.html#g-resolver-free-addresses" title="g_resolver_free_addresses ()"><code class="function">g_resolver_free_addresses()</code></a> to do this.). </p>
+<p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GInetAddress][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-resolver-lookup-by-name-async"></a><h3>g_resolver_lookup_by_name_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_resolver_lookup_by_name_async (<em class="parameter"><code><a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> *resolver</code></em>,
+                                 <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *hostname</code></em>,
+                                 <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                 <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Begins asynchronously resolving <em class="parameter"><code>hostname</code></em>
+ to determine its
+associated IP address(es), and eventually calls <em class="parameter"><code>callback</code></em>
+, which
+must call <a class="link" href="GResolver.html#g-resolver-lookup-by-name-finish" title="g_resolver_lookup_by_name_finish ()"><code class="function">g_resolver_lookup_by_name_finish()</code></a> to get the result.
+See <a class="link" href="GResolver.html#g-resolver-lookup-by-name" title="g_resolver_lookup_by_name ()"><code class="function">g_resolver_lookup_by_name()</code></a> for more details.</p>
+<div class="refsect3">
+<a name="g-resolver-lookup-by-name-async.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>resolver</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>hostname</p></td>
+<td class="parameter_description"><p>the hostname to look up the address of</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>callback to call after resolution completes. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>data for <em class="parameter"><code>callback</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-resolver-lookup-by-name-finish"></a><h3>g_resolver_lookup_by_name_finish ()</h3>
+<pre class="programlisting"><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+g_resolver_lookup_by_name_finish (<em class="parameter"><code><a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> *resolver</code></em>,
+                                  <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                  <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Retrieves the result of a call to
+<a class="link" href="GResolver.html#g-resolver-lookup-by-name-async" title="g_resolver_lookup_by_name_async ()"><code class="function">g_resolver_lookup_by_name_async()</code></a>.</p>
+<p>If the DNS resolution failed, <em class="parameter"><code>error</code></em>
+ (if non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>) will be set to
+a value from <a class="link" href="GResolver.html#GResolverError" title="enum GResolverError"><span class="type">GResolverError</span></a>. If the operation was cancelled,
+<em class="parameter"><code>error</code></em>
+ will be set to <a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a>.</p>
+<div class="refsect3">
+<a name="g-resolver-lookup-by-name-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>resolver</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>the result passed to your <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-resolver-lookup-by-name-finish.returns"></a><h4>Returns</h4>
+<p>a <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a>
+of <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. See <a class="link" href="GResolver.html#g-resolver-lookup-by-name" title="g_resolver_lookup_by_name ()"><code class="function">g_resolver_lookup_by_name()</code></a>
+for more details. </p>
+<p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GInetAddress][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-resolver-free-addresses"></a><h3>g_resolver_free_addresses ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_resolver_free_addresses (<em class="parameter"><code><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> *addresses</code></em>);</pre>
+<p>Frees <em class="parameter"><code>addresses</code></em>
+ (which should be the return value from
+<a class="link" href="GResolver.html#g-resolver-lookup-by-name" title="g_resolver_lookup_by_name ()"><code class="function">g_resolver_lookup_by_name()</code></a> or <a class="link" href="GResolver.html#g-resolver-lookup-by-name-finish" title="g_resolver_lookup_by_name_finish ()"><code class="function">g_resolver_lookup_by_name_finish()</code></a>).
+(This is a convenience method; you can also simply free the results
+by hand.)</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-resolver-free-addresses.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>addresses</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-resolver-lookup-by-address"></a><h3>g_resolver_lookup_by_address ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_resolver_lookup_by_address (<em class="parameter"><code><a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> *resolver</code></em>,
+                              <em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>,
+                              <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                              <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Synchronously reverse-resolves <em class="parameter"><code>address</code></em>
+ to determine its
+associated hostname.</p>
+<p>If the DNS resolution fails, <em class="parameter"><code>error</code></em>
+ (if non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>) will be set to
+a value from <a class="link" href="GResolver.html#GResolverError" title="enum GResolverError"><span class="type">GResolverError</span></a>.</p>
+<p>If <em class="parameter"><code>cancellable</code></em>
+ is non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, it can be used to cancel the
+operation, in which case <em class="parameter"><code>error</code></em>
+ (if non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>) will be set to
+<a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a>.</p>
+<div class="refsect3">
+<a name="g-resolver-lookup-by-address.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>resolver</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>the address to reverse-resolve</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-resolver-lookup-by-address.returns"></a><h4>Returns</h4>
+<p> a hostname (either ASCII-only, or in ASCII-encoded
+form), or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-resolver-lookup-by-address-async"></a><h3>g_resolver_lookup_by_address_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_resolver_lookup_by_address_async (<em class="parameter"><code><a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> *resolver</code></em>,
+                                    <em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>,
+                                    <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                    <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                    <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Begins asynchronously reverse-resolving <em class="parameter"><code>address</code></em>
+ to determine its
+associated hostname, and eventually calls <em class="parameter"><code>callback</code></em>
+, which must
+call <a class="link" href="GResolver.html#g-resolver-lookup-by-address-finish" title="g_resolver_lookup_by_address_finish ()"><code class="function">g_resolver_lookup_by_address_finish()</code></a> to get the final result.</p>
+<div class="refsect3">
+<a name="g-resolver-lookup-by-address-async.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>resolver</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>the address to reverse-resolve</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>callback to call after resolution completes. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>data for <em class="parameter"><code>callback</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-resolver-lookup-by-address-finish"></a><h3>g_resolver_lookup_by_address_finish ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_resolver_lookup_by_address_finish (<em class="parameter"><code><a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> *resolver</code></em>,
+                                     <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                     <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Retrieves the result of a previous call to
+<a class="link" href="GResolver.html#g-resolver-lookup-by-address-async" title="g_resolver_lookup_by_address_async ()"><code class="function">g_resolver_lookup_by_address_async()</code></a>.</p>
+<p>If the DNS resolution failed, <em class="parameter"><code>error</code></em>
+ (if non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>) will be set to
+a value from <a class="link" href="GResolver.html#GResolverError" title="enum GResolverError"><span class="type">GResolverError</span></a>. If the operation was cancelled,
+<em class="parameter"><code>error</code></em>
+ will be set to <a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a>.</p>
+<div class="refsect3">
+<a name="g-resolver-lookup-by-address-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>resolver</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>the result passed to your <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-resolver-lookup-by-address-finish.returns"></a><h4>Returns</h4>
+<p> a hostname (either ASCII-only, or in ASCII-encoded
+form), or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-resolver-lookup-service"></a><h3>g_resolver_lookup_service ()</h3>
+<pre class="programlisting"><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+g_resolver_lookup_service (<em class="parameter"><code><a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> *resolver</code></em>,
+                           <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *service</code></em>,
+                           <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *protocol</code></em>,
+                           <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *domain</code></em>,
+                           <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                           <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Synchronously performs a DNS SRV lookup for the given <em class="parameter"><code>service</code></em>
+ and
+<em class="parameter"><code>protocol</code></em>
+ in the given <em class="parameter"><code>domain</code></em>
+ and returns an array of <a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a>.
+<em class="parameter"><code>domain</code></em>
+ may be an ASCII-only or UTF-8 hostname. Note also that the
+<em class="parameter"><code>service</code></em>
+ and <em class="parameter"><code>protocol</code></em>
+ arguments do not include the leading underscore
+that appears in the actual DNS entry.</p>
+<p>On success, <a class="link" href="GResolver.html#g-resolver-lookup-service" title="g_resolver_lookup_service ()"><code class="function">g_resolver_lookup_service()</code></a> will return a non-empty <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of
+<a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a>, sorted in order of preference. (That is, you should
+attempt to connect to the first target first, then the second if
+the first fails, etc.)</p>
+<p>If the DNS resolution fails, <em class="parameter"><code>error</code></em>
+ (if non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>) will be set to
+a value from <a class="link" href="GResolver.html#GResolverError" title="enum GResolverError"><span class="type">GResolverError</span></a> and <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> will be returned.</p>
+<p>If <em class="parameter"><code>cancellable</code></em>
+ is non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, it can be used to cancel the
+operation, in which case <em class="parameter"><code>error</code></em>
+ (if non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>) will be set to
+<a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a>.</p>
+<p>If you are planning to connect to the service, it is usually easier
+to create a <a class="link" href="GNetworkService.html" title="GNetworkService"><span class="type">GNetworkService</span></a> and use its <a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a>
+interface.</p>
+<div class="refsect3">
+<a name="g-resolver-lookup-service.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>resolver</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>service</p></td>
+<td class="parameter_description"><p>the service type to look up (eg, "ldap")</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>protocol</p></td>
+<td class="parameter_description"><p>the networking protocol to use for <em class="parameter"><code>service</code></em>
+(eg, "tcp")</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>domain</p></td>
+<td class="parameter_description"><p>the DNS domain to look up the service in</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-resolver-lookup-service.returns"></a><h4>Returns</h4>
+<p>a non-empty <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of
+<a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. You must free each of the targets and the
+list when you are done with it. (You can use <a class="link" href="GResolver.html#g-resolver-free-targets" title="g_resolver_free_targets ()"><code class="function">g_resolver_free_targets()</code></a> to do
+this.). </p>
+<p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GSrvTarget][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-resolver-lookup-service-async"></a><h3>g_resolver_lookup_service_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_resolver_lookup_service_async (<em class="parameter"><code><a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> *resolver</code></em>,
+                                 <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *service</code></em>,
+                                 <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *protocol</code></em>,
+                                 <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *domain</code></em>,
+                                 <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                 <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Begins asynchronously performing a DNS SRV lookup for the given
+<em class="parameter"><code>service</code></em>
+ and <em class="parameter"><code>protocol</code></em>
+ in the given <em class="parameter"><code>domain</code></em>
+, and eventually calls
+<em class="parameter"><code>callback</code></em>
+, which must call <a class="link" href="GResolver.html#g-resolver-lookup-service-finish" title="g_resolver_lookup_service_finish ()"><code class="function">g_resolver_lookup_service_finish()</code></a> to
+get the final result. See <a class="link" href="GResolver.html#g-resolver-lookup-service" title="g_resolver_lookup_service ()"><code class="function">g_resolver_lookup_service()</code></a> for more
+details.</p>
+<div class="refsect3">
+<a name="g-resolver-lookup-service-async.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>resolver</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>service</p></td>
+<td class="parameter_description"><p>the service type to look up (eg, "ldap")</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>protocol</p></td>
+<td class="parameter_description"><p>the networking protocol to use for <em class="parameter"><code>service</code></em>
+(eg, "tcp")</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>domain</p></td>
+<td class="parameter_description"><p>the DNS domain to look up the service in</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>callback to call after resolution completes. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>data for <em class="parameter"><code>callback</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-resolver-lookup-service-finish"></a><h3>g_resolver_lookup_service_finish ()</h3>
+<pre class="programlisting"><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+g_resolver_lookup_service_finish (<em class="parameter"><code><a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> *resolver</code></em>,
+                                  <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                  <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Retrieves the result of a previous call to
+<a class="link" href="GResolver.html#g-resolver-lookup-service-async" title="g_resolver_lookup_service_async ()"><code class="function">g_resolver_lookup_service_async()</code></a>.</p>
+<p>If the DNS resolution failed, <em class="parameter"><code>error</code></em>
+ (if non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>) will be set to
+a value from <a class="link" href="GResolver.html#GResolverError" title="enum GResolverError"><span class="type">GResolverError</span></a>. If the operation was cancelled,
+<em class="parameter"><code>error</code></em>
+ will be set to <a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a>.</p>
+<div class="refsect3">
+<a name="g-resolver-lookup-service-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>resolver</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>the result passed to your <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-resolver-lookup-service-finish.returns"></a><h4>Returns</h4>
+<p>a non-empty <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of
+<a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. See <a class="link" href="GResolver.html#g-resolver-lookup-service" title="g_resolver_lookup_service ()"><code class="function">g_resolver_lookup_service()</code></a> for more
+details. </p>
+<p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GSrvTarget][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-resolver-free-targets"></a><h3>g_resolver_free_targets ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_resolver_free_targets (<em class="parameter"><code><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> *targets</code></em>);</pre>
+<p>Frees <em class="parameter"><code>targets</code></em>
+ (which should be the return value from
+<a class="link" href="GResolver.html#g-resolver-lookup-service" title="g_resolver_lookup_service ()"><code class="function">g_resolver_lookup_service()</code></a> or <a class="link" href="GResolver.html#g-resolver-lookup-service-finish" title="g_resolver_lookup_service_finish ()"><code class="function">g_resolver_lookup_service_finish()</code></a>).
+(This is a convenience method; you can also simply free the
+results by hand.)</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-resolver-free-targets.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>targets</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of <a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-resolver-lookup-records"></a><h3>g_resolver_lookup_records ()</h3>
+<pre class="programlisting"><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+g_resolver_lookup_records (<em class="parameter"><code><a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> *resolver</code></em>,
+                           <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *rrname</code></em>,
+                           <em class="parameter"><code><a class="link" href="GResolver.html#GResolverRecordType" title="enum GResolverRecordType"><span class="type">GResolverRecordType</span></a> record_type</code></em>,
+                           <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                           <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Synchronously performs a DNS record lookup for the given <em class="parameter"><code>rrname</code></em>
+ and returns
+a list of records as <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> tuples. See <a class="link" href="GResolver.html#GResolverRecordType" title="enum GResolverRecordType"><span class="type">GResolverRecordType</span></a> for
+information on what the records contain for each <em class="parameter"><code>record_type</code></em>
+.</p>
+<p>If the DNS resolution fails, <em class="parameter"><code>error</code></em>
+ (if non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>) will be set to
+a value from <a class="link" href="GResolver.html#GResolverError" title="enum GResolverError"><span class="type">GResolverError</span></a> and <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> will be returned.</p>
+<p>If <em class="parameter"><code>cancellable</code></em>
+ is non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, it can be used to cancel the
+operation, in which case <em class="parameter"><code>error</code></em>
+ (if non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>) will be set to
+<a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a>.</p>
+<div class="refsect3">
+<a name="g-resolver-lookup-records.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>resolver</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>rrname</p></td>
+<td class="parameter_description"><p>the DNS name to lookup the record for</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>record_type</p></td>
+<td class="parameter_description"><p>the type of DNS record to lookup</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-resolver-lookup-records.returns"></a><h4>Returns</h4>
+<p>a non-empty <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of
+<a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. You must free each of the records and the list
+when you are done with it. (You can use <a href="../glib-Doubly-Linked-Lists.html#g-list-free-full"><code class="function">g_list_free_full()</code></a> with
+<a href="../glib-GVariant.html#g-variant-unref"><code class="function">g_variant_unref()</code></a> to do this.). </p>
+<p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GVariant][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-resolver-lookup-records-async"></a><h3>g_resolver_lookup_records_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_resolver_lookup_records_async (<em class="parameter"><code><a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> *resolver</code></em>,
+                                 <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *rrname</code></em>,
+                                 <em class="parameter"><code><a class="link" href="GResolver.html#GResolverRecordType" title="enum GResolverRecordType"><span class="type">GResolverRecordType</span></a> record_type</code></em>,
+                                 <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                 <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Begins asynchronously performing a DNS lookup for the given
+<em class="parameter"><code>rrname</code></em>
+, and eventually calls <em class="parameter"><code>callback</code></em>
+, which must call
+<a class="link" href="GResolver.html#g-resolver-lookup-records-finish" title="g_resolver_lookup_records_finish ()"><code class="function">g_resolver_lookup_records_finish()</code></a> to get the final result. See
+<a class="link" href="GResolver.html#g-resolver-lookup-records" title="g_resolver_lookup_records ()"><code class="function">g_resolver_lookup_records()</code></a> for more details.</p>
+<div class="refsect3">
+<a name="g-resolver-lookup-records-async.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>resolver</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>rrname</p></td>
+<td class="parameter_description"><p>the DNS name to lookup the record for</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>record_type</p></td>
+<td class="parameter_description"><p>the type of DNS record to lookup</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>callback to call after resolution completes. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>data for <em class="parameter"><code>callback</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-resolver-lookup-records-finish"></a><h3>g_resolver_lookup_records_finish ()</h3>
+<pre class="programlisting"><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+g_resolver_lookup_records_finish (<em class="parameter"><code><a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> *resolver</code></em>,
+                                  <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                  <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Retrieves the result of a previous call to
+<a class="link" href="GResolver.html#g-resolver-lookup-records-async" title="g_resolver_lookup_records_async ()"><code class="function">g_resolver_lookup_records_async()</code></a>. Returns a non-empty list of records as
+<a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> tuples. See <a class="link" href="GResolver.html#GResolverRecordType" title="enum GResolverRecordType"><span class="type">GResolverRecordType</span></a> for information on what the
+records contain.</p>
+<p>If the DNS resolution failed, <em class="parameter"><code>error</code></em>
+ (if non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>) will be set to
+a value from <a class="link" href="GResolver.html#GResolverError" title="enum GResolverError"><span class="type">GResolverError</span></a>. If the operation was cancelled,
+<em class="parameter"><code>error</code></em>
+ will be set to <a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a>.</p>
+<div class="refsect3">
+<a name="g-resolver-lookup-records-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>resolver</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>the result passed to your <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-resolver-lookup-records-finish.returns"></a><h4>Returns</h4>
+<p>a non-empty <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of
+<a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. You must free each of the records and the list
+when you are done with it. (You can use <a href="../glib-Doubly-Linked-Lists.html#g-list-free-full"><code class="function">g_list_free_full()</code></a> with
+<a href="../glib-GVariant.html#g-variant-unref"><code class="function">g_variant_unref()</code></a> to do this.). </p>
+<p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GVariant][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GResolver.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GResolver-struct"></a><h3>GResolver</h3>
+<pre class="programlisting">typedef struct _GResolver GResolver;</pre>
+<p>The object that handles DNS resolution. Use <a class="link" href="GResolver.html#g-resolver-get-default" title="g_resolver_get_default ()"><code class="function">g_resolver_get_default()</code></a>
+to get the default resolver.</p>
+<p>This is an abstract type; subclasses of it implement different resolvers for
+different platforms and situations.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GResolverRecordType"></a><h3>enum GResolverRecordType</h3>
+<p>The type of record that <a class="link" href="GResolver.html#g-resolver-lookup-records" title="g_resolver_lookup_records ()"><code class="function">g_resolver_lookup_records()</code></a> or
+<a class="link" href="GResolver.html#g-resolver-lookup-records-async" title="g_resolver_lookup_records_async ()"><code class="function">g_resolver_lookup_records_async()</code></a> should retrieve. The records are returned
+as lists of <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> tuples. Each record type has different values in
+the variant tuples returned.</p>
+<p><a class="link" href="GResolver.html#G-RESOLVER-RECORD-SRV:CAPS"><code class="literal">G_RESOLVER_RECORD_SRV</code></a> records are returned as variants with the signature
+'(qqqs)', containing a guint16 with the priority, a guint16 with the
+weight, a guint16 with the port, and a string of the hostname.</p>
+<p><a class="link" href="GResolver.html#G-RESOLVER-RECORD-MX:CAPS"><code class="literal">G_RESOLVER_RECORD_MX</code></a> records are returned as variants with the signature
+'(qs)', representing a guint16 with the preference, and a string containing
+the mail exchanger hostname.</p>
+<p><a class="link" href="GResolver.html#G-RESOLVER-RECORD-TXT:CAPS"><code class="literal">G_RESOLVER_RECORD_TXT</code></a> records are returned as variants with the signature
+'(as)', representing an array of the strings in the text record.</p>
+<p><a class="link" href="GResolver.html#G-RESOLVER-RECORD-SOA:CAPS"><code class="literal">G_RESOLVER_RECORD_SOA</code></a> records are returned as variants with the signature
+'(ssuuuuu)', representing a string containing the primary name server, a
+string containing the administrator, the serial as a guint32, the refresh
+interval as guint32, the retry interval as a guint32, the expire timeout
+as a guint32, and the ttl as a guint32.</p>
+<p><a class="link" href="GResolver.html#G-RESOLVER-RECORD-NS:CAPS"><code class="literal">G_RESOLVER_RECORD_NS</code></a> records are returned as variants with the signature
+'(s)', representing a string of the hostname of the name server.</p>
+<div class="refsect3">
+<a name="GResolverRecordType.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-RESOLVER-RECORD-SRV:CAPS"></a>G_RESOLVER_RECORD_SRV</p></td>
+<td class="enum_member_description">
+<p>lookup DNS SRV records for a domain</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-RESOLVER-RECORD-MX:CAPS"></a>G_RESOLVER_RECORD_MX</p></td>
+<td class="enum_member_description">
+<p>lookup DNS MX records for a domain</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-RESOLVER-RECORD-TXT:CAPS"></a>G_RESOLVER_RECORD_TXT</p></td>
+<td class="enum_member_description">
+<p>lookup DNS TXT records for a name</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-RESOLVER-RECORD-SOA:CAPS"></a>G_RESOLVER_RECORD_SOA</p></td>
+<td class="enum_member_description">
+<p>lookup DNS SOA records for a zone</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-RESOLVER-RECORD-NS:CAPS"></a>G_RESOLVER_RECORD_NS</p></td>
+<td class="enum_member_description">
+<p>lookup DNS NS records for a domain</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-RESOLVER-ERROR:CAPS"></a><h3>G_RESOLVER_ERROR</h3>
+<pre class="programlisting">#define G_RESOLVER_ERROR (g_resolver_error_quark ())
+</pre>
+<p>Error domain for <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a>. Errors in this domain will be from the
+<a class="link" href="GResolver.html#GResolverError" title="enum GResolverError"><span class="type">GResolverError</span></a> enumeration. See <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for more information on
+error domains.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GResolverError"></a><h3>enum GResolverError</h3>
+<p>An error code used with <a class="link" href="GResolver.html#G-RESOLVER-ERROR:CAPS" title="G_RESOLVER_ERROR"><code class="literal">G_RESOLVER_ERROR</code></a> in a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> returned
+from a <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> routine.</p>
+<div class="refsect3">
+<a name="GResolverError.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-RESOLVER-ERROR-NOT-FOUND:CAPS"></a>G_RESOLVER_ERROR_NOT_FOUND</p></td>
+<td class="enum_member_description">
+<p>the requested name/address/service was not
+    found</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-RESOLVER-ERROR-TEMPORARY-FAILURE:CAPS"></a>G_RESOLVER_ERROR_TEMPORARY_FAILURE</p></td>
+<td class="enum_member_description">
+<p>the requested information could not
+    be looked up due to a network error or similar problem</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-RESOLVER-ERROR-INTERNAL:CAPS"></a>G_RESOLVER_ERROR_INTERNAL</p></td>
+<td class="enum_member_description">
+<p>unknown error</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GResolver.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="GResolver-reload"></a><h3>The <code class="literal">“reload”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> *resolver,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>   user_data)</pre>
+<p>Emitted when the resolver notices that the system resolver
+configuration has changed.</p>
+<div class="refsect3">
+<a name="GResolver-reload.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>resolver</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

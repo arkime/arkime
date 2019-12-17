@@ -1,0 +1,655 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GTimeZone: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-utilities.html" title="GLib Utilities">
+<link rel="prev" href="glib-Date-and-Time-Functions.html" title="Date and Time Functions">
+<link rel="next" href="glib-GDateTime.html" title="GDateTime">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-GTimeZone.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-utilities.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Date-and-Time-Functions.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-GDateTime.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-GTimeZone"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-GTimeZone.top_of_page"></a>GTimeZone</span></h2>
+<p>GTimeZone — a structure representing a time zone</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-GTimeZone.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GTimeZone.html#g-time-zone-unref" title="g_time_zone_unref ()">g_time_zone_unref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="returnvalue">GTimeZone</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-GTimeZone.html#g-time-zone-ref" title="g_time_zone_ref ()">g_time_zone_ref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="returnvalue">GTimeZone</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-GTimeZone.html#g-time-zone-new" title="g_time_zone_new ()">g_time_zone_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="returnvalue">GTimeZone</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-GTimeZone.html#g-time-zone-new-local" title="g_time_zone_new_local ()">g_time_zone_new_local</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="returnvalue">GTimeZone</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-GTimeZone.html#g-time-zone-new-utc" title="g_time_zone_new_utc ()">g_time_zone_new_utc</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GTimeZone.html#g-time-zone-find-interval" title="g_time_zone_find_interval ()">g_time_zone_find_interval</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GTimeZone.html#g-time-zone-adjust-time" title="g_time_zone_adjust_time ()">g_time_zone_adjust_time</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-GTimeZone.html#g-time-zone-get-abbreviation" title="g_time_zone_get_abbreviation ()">g_time_zone_get_abbreviation</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gint32" title="gint32"><span class="returnvalue">gint32</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GTimeZone.html#g-time-zone-get-offset" title="g_time_zone_get_offset ()">g_time_zone_get_offset</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GTimeZone.html#g-time-zone-is-dst" title="g_time_zone_is_dst ()">g_time_zone_is_dst</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-GTimeZone.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone">GTimeZone</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="glib-GTimeZone.html#GTimeType" title="enum GTimeType">GTimeType</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-GTimeZone.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib.h&gt;
+#include &lt;glib/gprintf.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-GTimeZone.description"></a><h2>Description</h2>
+<p><a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a> is a structure that represents a time zone, at no
+particular point in time.  It is refcounted and immutable.</p>
+<p>A time zone contains a number of intervals.  Each interval has
+an abbreviation to describe it, an offet to UTC and a flag indicating
+if the daylight savings time is in effect during that interval.  A
+time zone always has at least one interval -- interval 0.</p>
+<p>Every UTC time is contained within exactly one interval, but a given
+local time may be contained within zero, one or two intervals (due to
+incontinuities associated with daylight savings time).</p>
+<p>An interval may refer to a specific period of time (eg: the duration
+of daylight savings time during 2010) or it may refer to many periods
+of time that share the same properties (eg: all periods of daylight
+savings time).  It is also possible (usually for political reasons)
+that some properties (like the abbreviation) change between intervals
+without other properties changing.</p>
+<p><a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a> is available since GLib 2.26.</p>
+</div>
+<div class="refsect1">
+<a name="glib-GTimeZone.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-time-zone-unref"></a><h3>g_time_zone_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_time_zone_unref (<em class="parameter"><code><a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a> *tz</code></em>);</pre>
+<p>Decreases the reference count on <em class="parameter"><code>tz</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-time-zone-unref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>tz</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-time-zone-ref"></a><h3>g_time_zone_ref ()</h3>
+<pre class="programlisting"><a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="returnvalue">GTimeZone</span></a> *
+g_time_zone_ref (<em class="parameter"><code><a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a> *tz</code></em>);</pre>
+<p>Increases the reference count on <em class="parameter"><code>tz</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-time-zone-ref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>tz</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-time-zone-ref.returns"></a><h4>Returns</h4>
+<p> a new reference to <em class="parameter"><code>tz</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-time-zone-new"></a><h3>g_time_zone_new ()</h3>
+<pre class="programlisting"><a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="returnvalue">GTimeZone</span></a> *
+g_time_zone_new (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *identifier</code></em>);</pre>
+<p>Creates a <a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a> corresponding to <em class="parameter"><code>identifier</code></em>
+.</p>
+<p><em class="parameter"><code>identifier</code></em>
+ can either be an RFC3339/ISO 8601 time offset or
+something that would pass as a valid value for the <code class="literal">TZ</code> environment
+variable (including <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>).</p>
+<p>In Windows, <em class="parameter"><code>identifier</code></em>
+ can also be the unlocalized name of a time
+zone for standard time, for example "Pacific Standard Time".</p>
+<p>Valid RFC3339 time offsets are <code class="literal">"Z"</code> (for UTC) or
+<code class="literal">"±hh:mm"</code>.  ISO 8601 additionally specifies
+<code class="literal">"±hhmm"</code> and <code class="literal">"±hh"</code>.  Offsets are
+time values to be added to Coordinated Universal Time (UTC) to get
+the local time.</p>
+<p>In UNIX, the <code class="literal">TZ</code> environment variable typically corresponds
+to the name of a file in the zoneinfo database, or string in
+"std offset [dst [offset],start[/time],end[/time]]" (POSIX) format.
+There  are  no spaces in the specification. The name of standard
+and daylight savings time zone must be three or more alphabetic
+characters. Offsets are time values to be added to local time to
+get Coordinated Universal Time (UTC) and should be
+<code class="literal">"[±]hh[[:]mm[:ss]]"</code>.  Dates are either
+<code class="literal">"Jn"</code> (Julian day with n between 1 and 365, leap
+years not counted), <code class="literal">"n"</code> (zero-based Julian day
+with n between 0 and 365) or <code class="literal">"Mm.w.d"</code> (day d
+(0 &lt;= d &lt;= 6) of week w (1 &lt;= w &lt;= 5) of month m (1 &lt;= m &lt;= 12), day
+0 is a Sunday).  Times are in local wall clock time, the default is
+02:00:00.</p>
+<p>In Windows, the "tzn[+|–]hh[:mm[:ss]][dzn]" format is used, but also
+accepts POSIX format.  The Windows format uses US rules for all time
+zones; daylight savings time is 60 minutes behind the standard time
+with date and time of change taken from Pacific Standard Time.
+Offsets are time values to be added to the local time to get
+Coordinated Universal Time (UTC).</p>
+<p>g_time_zone_new_local() calls this function with the value of the
+<code class="literal">TZ</code> environment variable. This function itself is independent of
+the value of <code class="literal">TZ</code>, but if <em class="parameter"><code>identifier</code></em>
+ is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> then <code class="literal">/etc/localtime</code>
+will be consulted to discover the correct time zone on UNIX and the
+registry will be consulted or <code class="function">GetTimeZoneInformation()</code> will be used
+to get the local time zone on Windows.</p>
+<p>If intervals are not available, only time zone rules from <code class="literal">TZ</code>
+environment variable or other means, then they will be computed
+from year 1900 to 2037.  If the maximum year for the rules is
+available and it is greater than 2037, then it will followed
+instead.</p>
+<p>See
+<a class="ulink" href="http://tools.ietf.org/html/rfc3339#section-5.6" target="_top">RFC3339 §5.6</a>
+for a precise definition of valid RFC3339 time offsets
+(the <code class="literal">time-offset</code> expansion) and ISO 8601 for the
+full list of valid time offsets.  See
+<a class="ulink" href="http://www.gnu.org/s/libc/manual/html_node/TZ-Variable.html" target="_top">The GNU C Library manual</a>
+for an explanation of the possible
+values of the <code class="literal">TZ</code> environment variable. See
+<a class="ulink" href="http://msdn.microsoft.com/en-us/library/ms912391%28v=winembedded.11%29.aspx" target="_top">Microsoft Time Zone Index Values</a>
+for the list of time zones on Windows.</p>
+<p>You should release the return value by calling <a class="link" href="glib-GTimeZone.html#g-time-zone-unref" title="g_time_zone_unref ()"><code class="function">g_time_zone_unref()</code></a>
+when you are done with it.</p>
+<div class="refsect3">
+<a name="g-time-zone-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>identifier</p></td>
+<td class="parameter_description"><p>a timezone identifier. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-time-zone-new.returns"></a><h4>Returns</h4>
+<p> the requested timezone</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-time-zone-new-local"></a><h3>g_time_zone_new_local ()</h3>
+<pre class="programlisting"><a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="returnvalue">GTimeZone</span></a> *
+g_time_zone_new_local (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Creates a <a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a> corresponding to local time.  The local time
+zone may change between invocations to this function; for example,
+if the system administrator changes it.</p>
+<p>This is equivalent to calling <a class="link" href="glib-GTimeZone.html#g-time-zone-new" title="g_time_zone_new ()"><code class="function">g_time_zone_new()</code></a> with the value of
+the <code class="literal">TZ</code> environment variable (including the possibility of <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>).</p>
+<p>You should release the return value by calling <a class="link" href="glib-GTimeZone.html#g-time-zone-unref" title="g_time_zone_unref ()"><code class="function">g_time_zone_unref()</code></a>
+when you are done with it.</p>
+<div class="refsect3">
+<a name="g-time-zone-new-local.returns"></a><h4>Returns</h4>
+<p> the local timezone</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-time-zone-new-utc"></a><h3>g_time_zone_new_utc ()</h3>
+<pre class="programlisting"><a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="returnvalue">GTimeZone</span></a> *
+g_time_zone_new_utc (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Creates a <a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a> corresponding to UTC.</p>
+<p>This is equivalent to calling <a class="link" href="glib-GTimeZone.html#g-time-zone-new" title="g_time_zone_new ()"><code class="function">g_time_zone_new()</code></a> with a value like
+"Z", "UTC", "+00", etc.</p>
+<p>You should release the return value by calling <a class="link" href="glib-GTimeZone.html#g-time-zone-unref" title="g_time_zone_unref ()"><code class="function">g_time_zone_unref()</code></a>
+when you are done with it.</p>
+<div class="refsect3">
+<a name="g-time-zone-new-utc.returns"></a><h4>Returns</h4>
+<p> the universal timezone</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-time-zone-find-interval"></a><h3>g_time_zone_find_interval ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+g_time_zone_find_interval (<em class="parameter"><code><a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a> *tz</code></em>,
+                           <em class="parameter"><code><a class="link" href="glib-GTimeZone.html#GTimeType" title="enum GTimeType"><span class="type">GTimeType</span></a> type</code></em>,
+                           <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint64" title="gint64"><span class="type">gint64</span></a> time_</code></em>);</pre>
+<p>Finds an the interval within <em class="parameter"><code>tz</code></em>
+ that corresponds to the given <em class="parameter"><code>time_</code></em>
+.
+The meaning of <em class="parameter"><code>time_</code></em>
+ depends on <em class="parameter"><code>type</code></em>
+.</p>
+<p>If <em class="parameter"><code>type</code></em>
+ is <a class="link" href="glib-GTimeZone.html#G-TIME-TYPE-UNIVERSAL:CAPS"><code class="literal">G_TIME_TYPE_UNIVERSAL</code></a> then this function will always
+succeed (since universal time is monotonic and continuous).</p>
+<p>Otherwise <em class="parameter"><code>time_</code></em>
+ is treated as local time.  The distinction between
+<a class="link" href="glib-GTimeZone.html#G-TIME-TYPE-STANDARD:CAPS"><code class="literal">G_TIME_TYPE_STANDARD</code></a> and <a class="link" href="glib-GTimeZone.html#G-TIME-TYPE-DAYLIGHT:CAPS"><code class="literal">G_TIME_TYPE_DAYLIGHT</code></a> is ignored except in
+the case that the given <em class="parameter"><code>time_</code></em>
+ is ambiguous.  In Toronto, for example,
+01:30 on November 7th 2010 occurred twice (once inside of daylight
+savings time and the next, an hour later, outside of daylight savings
+time).  In this case, the different value of <em class="parameter"><code>type</code></em>
+ would result in a
+different interval being returned.</p>
+<p>It is still possible for this function to fail.  In Toronto, for
+example, 02:00 on March 14th 2010 does not exist (due to the leap
+forward to begin daylight savings time).  -1 is returned in that
+case.</p>
+<div class="refsect3">
+<a name="g-time-zone-find-interval.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>tz</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>the <a class="link" href="glib-GTimeZone.html#GTimeType" title="enum GTimeType"><span class="type">GTimeType</span></a> of <em class="parameter"><code>time_</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>time_</p></td>
+<td class="parameter_description"><p>a number of seconds since January 1, 1970</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-time-zone-find-interval.returns"></a><h4>Returns</h4>
+<p> the interval containing <em class="parameter"><code>time_</code></em>
+, or -1 in case of failure</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-time-zone-adjust-time"></a><h3>g_time_zone_adjust_time ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+g_time_zone_adjust_time (<em class="parameter"><code><a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a> *tz</code></em>,
+                         <em class="parameter"><code><a class="link" href="glib-GTimeZone.html#GTimeType" title="enum GTimeType"><span class="type">GTimeType</span></a> type</code></em>,
+                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint64" title="gint64"><span class="type">gint64</span></a> *time_</code></em>);</pre>
+<p>Finds an interval within <em class="parameter"><code>tz</code></em>
+ that corresponds to the given <em class="parameter"><code>time_</code></em>
+,
+possibly adjusting <em class="parameter"><code>time_</code></em>
+ if required to fit into an interval.
+The meaning of <em class="parameter"><code>time_</code></em>
+ depends on <em class="parameter"><code>type</code></em>
+.</p>
+<p>This function is similar to <a class="link" href="glib-GTimeZone.html#g-time-zone-find-interval" title="g_time_zone_find_interval ()"><code class="function">g_time_zone_find_interval()</code></a>, with the
+difference that it always succeeds (by making the adjustments
+described below).</p>
+<p>In any of the cases where <a class="link" href="glib-GTimeZone.html#g-time-zone-find-interval" title="g_time_zone_find_interval ()"><code class="function">g_time_zone_find_interval()</code></a> succeeds then
+this function returns the same value, without modifying <em class="parameter"><code>time_</code></em>
+.</p>
+<p>This function may, however, modify <em class="parameter"><code>time_</code></em>
+ in order to deal with
+non-existent times.  If the non-existent local <em class="parameter"><code>time_</code></em>
+ of 02:30 were
+requested on March 14th 2010 in Toronto then this function would
+adjust <em class="parameter"><code>time_</code></em>
+ to be 03:00 and return the interval containing the
+adjusted time.</p>
+<div class="refsect3">
+<a name="g-time-zone-adjust-time.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>tz</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>the <a class="link" href="glib-GTimeZone.html#GTimeType" title="enum GTimeType"><span class="type">GTimeType</span></a> of <em class="parameter"><code>time_</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>time_</p></td>
+<td class="parameter_description"><p>a pointer to a number of seconds since January 1, 1970</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-time-zone-adjust-time.returns"></a><h4>Returns</h4>
+<p> the interval containing <em class="parameter"><code>time_</code></em>
+, never -1</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-time-zone-get-abbreviation"></a><h3>g_time_zone_get_abbreviation ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_time_zone_get_abbreviation (<em class="parameter"><code><a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a> *tz</code></em>,
+                              <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> interval</code></em>);</pre>
+<p>Determines the time zone abbreviation to be used during a particular
+<em class="parameter"><code>interval</code></em>
+ of time in the time zone <em class="parameter"><code>tz</code></em>
+.</p>
+<p>For example, in Toronto this is currently "EST" during the winter
+months and "EDT" during the summer months when daylight savings time
+is in effect.</p>
+<div class="refsect3">
+<a name="g-time-zone-get-abbreviation.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>tz</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>interval</p></td>
+<td class="parameter_description"><p>an interval within the timezone</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-time-zone-get-abbreviation.returns"></a><h4>Returns</h4>
+<p> the time zone abbreviation, which belongs to <em class="parameter"><code>tz</code></em>
+</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-time-zone-get-offset"></a><h3>g_time_zone_get_offset ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gint32" title="gint32"><span class="returnvalue">gint32</span></a>
+g_time_zone_get_offset (<em class="parameter"><code><a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a> *tz</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> interval</code></em>);</pre>
+<p>Determines the offset to UTC in effect during a particular <em class="parameter"><code>interval</code></em>
+
+of time in the time zone <em class="parameter"><code>tz</code></em>
+.</p>
+<p>The offset is the number of seconds that you add to UTC time to
+arrive at local time for <em class="parameter"><code>tz</code></em>
+ (ie: negative numbers for time zones
+west of GMT, positive numbers for east).</p>
+<div class="refsect3">
+<a name="g-time-zone-get-offset.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>tz</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>interval</p></td>
+<td class="parameter_description"><p>an interval within the timezone</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-time-zone-get-offset.returns"></a><h4>Returns</h4>
+<p> the number of seconds that should be added to UTC to get the
+local time in <em class="parameter"><code>tz</code></em>
+</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-time-zone-is-dst"></a><h3>g_time_zone_is_dst ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_time_zone_is_dst (<em class="parameter"><code><a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a> *tz</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> interval</code></em>);</pre>
+<p>Determines if daylight savings time is in effect during a particular
+<em class="parameter"><code>interval</code></em>
+ of time in the time zone <em class="parameter"><code>tz</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-time-zone-is-dst.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>tz</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>interval</p></td>
+<td class="parameter_description"><p>an interval within the timezone</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-time-zone-is-dst.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if daylight savings time is in effect</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-GTimeZone.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GTimeZone"></a><h3>GTimeZone</h3>
+<pre class="programlisting">typedef struct _GTimeZone GTimeZone;</pre>
+<p><a class="link" href="glib-GTimeZone.html#GTimeZone" title="GTimeZone"><span class="type">GTimeZone</span></a> is an opaque structure whose members cannot be accessed
+directly.</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTimeType"></a><h3>enum GTimeType</h3>
+<p>Disambiguates a given time in two ways.</p>
+<p>First, specifies if the given time is in universal or local time.</p>
+<p>Second, if the time is in local time, specifies if it is local
+standard time or local daylight time.  This is important for the case
+where the same local time occurs twice (during daylight savings time
+transitions, for example).</p>
+<div class="refsect3">
+<a name="GTimeType.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-TIME-TYPE-STANDARD:CAPS"></a>G_TIME_TYPE_STANDARD</p></td>
+<td class="enum_member_description">
+<p>the time is in local standard time</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-TIME-TYPE-DAYLIGHT:CAPS"></a>G_TIME_TYPE_DAYLIGHT</p></td>
+<td class="enum_member_description">
+<p>the time is in local daylight time</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-TIME-TYPE-UNIVERSAL:CAPS"></a>G_TIME_TYPE_UNIVERSAL</p></td>
+<td class="enum_member_description">
+<p>the time is in UTC</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-GTimeZone.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="glib-GDateTime.html#GDateTime" title="GDateTime"><span class="type">GDateTime</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

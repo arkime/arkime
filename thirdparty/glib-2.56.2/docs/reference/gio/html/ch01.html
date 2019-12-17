@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Introduction: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="pt01.html" title="Part I. GIO Overview">
+<link rel="prev" href="pt01.html" title="Part I. GIO Overview">
+<link rel="next" href="ch02.html" title="Writing GIO applications">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="pt01.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="pt01.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="ch02.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="chapter">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="id-1.3.2"></a>Introduction</h2></div></div></div>
+<p>
+    GIO is striving to provide a modern, easy-to-use VFS API that sits
+    at the right level in the library stack, as well as other generally
+    useful APIs for desktop applications (such as networking and
+    D-Bus support). The goal is to overcome the shortcomings of GnomeVFS
+    and provide an API that is so good that developers prefer it over raw
+    POSIX calls. Among other things that means using GObject. It also means
+    not cloning the POSIX API, but providing higher-level, document-centric
+    interfaces.
+  </p>
+<p>
+    The abstract file system model of GIO consists of a number of
+    interfaces and base classes for I/O and files:
+    </p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term">GFile</span></p></td>
+<td><p>reference to a file</p></td>
+</tr>
+<tr>
+<td><p><span class="term">GFileInfo</span></p></td>
+<td><p>information about a file or filesystem</p></td>
+</tr>
+<tr>
+<td><p><span class="term">GFileEnumerator</span></p></td>
+<td><p>list files in directories</p></td>
+</tr>
+<tr>
+<td><p><span class="term">GDrive</span></p></td>
+<td><p>represents a drive</p></td>
+</tr>
+<tr>
+<td><p><span class="term">GVolume</span></p></td>
+<td><p>represents a file system in an abstract way</p></td>
+</tr>
+<tr>
+<td><p><span class="term">GMount</span></p></td>
+<td><p>represents a mounted file system</p></td>
+</tr>
+</tbody>
+</table></div>
+<p>
+    Then there is a number of stream classes, similar to the input and
+    output stream hierarchies that can be found in frameworks like Java:
+    </p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term">GInputStream</span></p></td>
+<td><p>read data</p></td>
+</tr>
+<tr>
+<td><p><span class="term">GOutputStream</span></p></td>
+<td><p>write data</p></td>
+</tr>
+<tr>
+<td><p><span class="term">GIOStream</span></p></td>
+<td><p>read and write data</p></td>
+</tr>
+<tr>
+<td><p><span class="term">GSeekable</span></p></td>
+<td><p>interface optionally implemented by streams to support seeking</p></td>
+</tr>
+</tbody>
+</table></div>
+<p>
+    There are interfaces related to applications and the types
+    of files they handle:
+    </p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term">GAppInfo</span></p></td>
+<td><p>information about an installed application</p></td>
+</tr>
+<tr>
+<td><p><span class="term">GIcon</span></p></td>
+<td><p>abstract type for file and application icons</p></td>
+</tr>
+</tbody>
+</table></div>
+<p>
+    There is a framework for storing and retrieving application settings:
+    </p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term">GSettings</span></p></td>
+<td><p>stores and retrieves application settings</p></td>
+</tr></tbody>
+</table></div>
+<p>
+    There is support for network programming, including connectivity monitoring,
+    name resolution, lowlevel socket APIs and highlevel client and server
+    helper classes:
+    </p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term">GSocket</span></p></td>
+<td><p>lowlevel platform independent socket object</p></td>
+</tr>
+<tr>
+<td><p><span class="term">GResolver</span></p></td>
+<td><p>asynchronous and cancellable DNS resolver</p></td>
+</tr>
+<tr>
+<td><p><span class="term">GSocketClient</span></p></td>
+<td><p>high-level network client helper</p></td>
+</tr>
+<tr>
+<td><p><span class="term">GSocketService</span></p></td>
+<td><p>high-level network server helper</p></td>
+</tr>
+<tr>
+<td><p><span class="term">GSocketConnection</span></p></td>
+<td><p>network connection stream</p></td>
+</tr>
+<tr>
+<td><p><span class="term">GNetworkMonitor</span></p></td>
+<td><p>network connectivity monitoring</p></td>
+</tr>
+</tbody>
+</table></div>
+<p>
+    There is support for connecting to D-Bus,
+    sending and receiving messages, owning and watching bus names,
+    and making objects available on the bus:
+    </p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term">GDBusConnection</span></p></td>
+<td><p>a D-Bus connection</p></td>
+</tr>
+<tr>
+<td><p><span class="term">GDBusMethodInvocation</span></p></td>
+<td><p>for handling remote calls</p></td>
+</tr>
+<tr>
+<td><p><span class="term">GDBusServer</span></p></td>
+<td><p>helper for accepting connections</p></td>
+</tr>
+<tr>
+<td><p><span class="term">GDBusProxy</span></p></td>
+<td><p>proxy to access D-Bus interfaces on a remote object</p></td>
+</tr>
+</tbody>
+</table></div>
+<p>
+    Beyond these, GIO provides facilities for file monitoring,
+    asynchronous I/O and filename completion. In addition to the
+    interfaces, GIO provides implementations for the local case.
+    Implementations for various network file systems are provided
+    by the GVFS package as loadable modules.
+  </p>
+<p>
+    Other design choices which consciously break with the GnomeVFS
+    design are to move backends out-of-process, which minimizes the
+    dependency bloat and makes the whole system more robust. The backends
+    are not included in GIO, but in the separate GVFS package. The GVFS
+    package also contains the GVFS daemon, which spawn further mount
+    daemons for each individual connection.
+  </p>
+<div class="figure">
+<a name="gvfs-overview"></a><p class="title"><b>Figure 1. GIO in the GTK+ library stack</b></p>
+<div class="figure-contents"><div><img src="gvfs-overview.png" alt="GIO in the GTK+ library stack"></div></div>
+</div>
+<br class="figure-break"><p>
+    The GIO model of I/O is stateful: if an application establishes e.g.
+    a SFTP connection to a server, it becomes available to all applications
+    in the session; the user does not have to enter his password over
+    and over again.
+  </p>
+<p>
+    One of the big advantages of putting the VFS in the GLib layer
+    is that GTK+ can directly use it, e.g. in the filechooser.
+  </p>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

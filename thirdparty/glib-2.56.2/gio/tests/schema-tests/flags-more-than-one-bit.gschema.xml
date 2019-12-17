@@ -1,0 +1,10 @@
+<schemalist>
+  <flags id='flags'>
+    <value nick='none' value='0'/>
+    <value nick='mourning' value='1'/>
+    <value nick='laughing' value='2'/>
+    <value nick='talking' value='4'/>
+    <value nick='walking' value='24'/>
+  </flags>
+</schemalist>
+

@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<!--
+ Copyright (C) 2016 Red Hat, Inc.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2.1 of the License, or (at your option) any later version.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library. If not, see <http://www.gnu.org/licenses/>.
+
+ Author: Matthias Clasen <mclasen@redhat.com>
+-->
+
+<node name="/" xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
+  <!--
+       org.freedesktop.portal.OpenURI:
+       @short_description: Portal for opening URIs
+
+       The OpenURI portal allows sandboxed applications to open
+       URIs (e.g. a http: link to the applications homepage)
+       under the control of the user.
+  -->
+  <interface name="org.freedesktop.portal.OpenURI">
+    <!--
+        OpenURI:
+        @parent_window: Identifier for the application window
+        @uri: The uri to open
+        @options: Vardict with optional further onformation
+        @handle: Object path for the #org.freedesktop.portal.Request object representing this call
+
+        Asks to open a uri.
+
+        The @parent_window identifier must be of the form "x11:$XID" for an X11
+        window. Support for other window systems may be added in the future.
+
+        Note that file:// uris are explicitly not supported by this method.
+        To request opening local files, use org.freedesktop.portal.OpenFile().
+
+        Supported keys in the @options vardict include:
+        <variablelist>
+          <varlistentry>
+            <term>writable b</term>
+            <listitem><para>
+              Whether to allow the chosen application to write to the file.
+            </para><para>
+              This key only takes effect the uri points to a local file that
+              is exported in the document portal, and the chosen application
+              is sandboxed itself.
+            </para></listitem>
+          </varlistentry>
+        </variablelist>
+
+    -->
+    <method name="OpenURI">
+      <arg type="s" name="parent_window" direction="in"/>
+      <arg type="s" name="uri" direction="in"/>
+      <arg type="a{sv}" name="options" direction="in"/>
+      <arg type="o" name="handle" direction="out"/>
+    </method>
+
+    <!--
+        OpenFile:
+        @parent_window: Identifier for the application window
+        @fd: File descriptor for the file to open
+        @options: Vardict with optional further onformation
+        @handle: Object path for the #org.freedesktop.portal.Request object representing this call
+
+        Asks to open a local file.
+
+        The @parent_window identifier must be of the form "x11:$XID" for an X11
+        window. Support for other window systems may be added in the future.
+
+        Supported keys in the @options vardict include:
+        <variablelist>
+          <varlistentry>
+            <term>writable b</term>
+            <listitem><para>
+              Whether to allow the chosen application to write to the file.
+            </para><para>
+              This key only takes effect the uri points to a local file that
+              is exported in the document portal, and the chosen application
+              is sandboxed itself.
+            </para></listitem>
+          </varlistentry>
+        </variablelist>
+
+        The OpenFile method was introduced in version 2 of the OpenURI portal API.
+    -->
+    <method name="OpenFile">
+      <arg type="s" name="parent_window" direction="in"/>
+      <arg type="h" name="fd" direction="in"/>
+      <arg type="a{sv}" name="options" direction="in"/>
+      <arg type="o" name="handle" direction="out"/>
+    </method>
+
+    <property name="version" type="u" access="read"/>
+  </interface>
+</node>

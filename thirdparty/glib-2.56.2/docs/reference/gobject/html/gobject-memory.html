@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Object memory management: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="chapter-gobject.html" title="The GObject base class">
+<link rel="prev" href="chapter-gobject.html" title="The GObject base class">
+<link rel="next" href="gobject-properties.html" title="Object properties">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="chapter-gobject.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="chapter-gobject.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gobject-properties.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="gobject-memory"></a>Object memory management</h2></div></div></div>
+<p>
+      The memory-management API for GObjects is a bit complicated but the idea behind it
+      is pretty simple: the goal is to provide a flexible model based on reference counting
+      which can be integrated in applications which use or require different memory management
+      models (such as garbage collection). The methods which are used to
+      manipulate this reference count are described below.
+    </p>
+<div class="sect2">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="gobject-memory-refcount"></a>Reference count</h3></div></div></div>
+<p>
+        The functions <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-ref" title="g_object_ref ()">g_object_ref</a></code>/<code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-unref" title="g_object_unref ()">g_object_unref</a></code> respectively 
+        increase and decrease the reference count. These functions are
+        thread-safe.
+        <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-clear-object" title="g_clear_object ()">g_clear_object</a></code>
+        is a convenience wrapper around <code class="function">g_object_unref</code>
+        which also clears the pointer passed to it.
+      </p>
+<p>
+        The reference count is initialized to one by 
+        <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-new" title="g_object_new ()">g_object_new</a></code> which means that the caller
+        is currently the sole owner of the newly-created reference.
+        When the reference count reaches zero, that is, 
+        when <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-unref" title="g_object_unref ()">g_object_unref</a></code> is called by the last client holding
+        a reference to the object, the <span class="emphasis"><em>dispose</em></span> and the 
+        <span class="emphasis"><em>finalize</em></span> class methods are invoked.
+      </p>
+<p>
+        Finally, after <span class="emphasis"><em>finalize</em></span> is invoked, 
+        <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-free-instance" title="g_type_free_instance ()">g_type_free_instance</a></code> is called to free the object instance.
+        Depending on the memory allocation policy decided when the type was registered (through
+        one of the <code class="function">g_type_register_*</code> functions), the object's instance 
+        memory will be freed or returned to the object pool for this type.
+        Once the object has been freed, if it was the last instance of the type, the type's class
+        will be destroyed as described in <a class="xref" href="gtype-instantiable-classed.html" title="Instantiable classed types: objects">the section called “Instantiable classed types: objects”</a> and 
+          <a class="xref" href="gtype-non-instantiable-classed.html" title="Non-instantiable classed types: interfaces">the section called “Non-instantiable classed types: interfaces”</a>.
+      </p>
+<p>
+        The table below summarizes the destruction process of a GObject:
+        </p>
+<div class="table">
+<a name="gobject-destruction-table"></a><p class="title"><b>Table 5. <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-unref" title="g_object_unref ()">g_object_unref</a></code></b></p>
+<div class="table-contents"><table class="table" summary="g_object_unref" border="1">
+<colgroup>
+<col align="left">
+<col align="left">
+<col align="left">
+</colgroup>
+<thead><tr>
+<th align="left">Invocation time</th>
+<th align="left">Function invoked</th>
+<th align="left">Function's parameters</th>
+<th>Remark</th>
+</tr></thead>
+<tbody>
+<tr>
+<td rowspan="2" align="left">Last call to <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-unref" title="g_object_unref ()">g_object_unref</a></code> for an instance
+                  of target type
+                 </td>
+<td align="left">target type's dispose class function</td>
+<td align="left">GObject instance</td>
+<td>
+                  When dispose ends, the object should not hold any reference to any other
+                  member object. The object is also expected to be able to answer client
+                  method invocations (with possibly an error code but no memory violation)
+                  until finalize is executed. dispose can be executed more than once.
+                dispose should chain up to its parent implementation just before returning
+                to the caller.
+                </td>
+</tr>
+<tr>
+<td align="left">target type's finalize class function</td>
+<td align="left">GObject instance</td>
+<td>
+                  Finalize is expected to complete the destruction process initiated by
+                  dispose. It should complete the object's destruction. finalize will be
+                  executed only once.
+                finalize should chain up to its parent implementation just before returning
+                to the caller.
+                  The reason why the destruction process is split is two different phases is
+                  explained in <a class="xref" href="gobject-memory.html#gobject-memory-cycles" title="Reference counts and cycles">the section called “Reference counts and cycles”</a>.
+                </td>
+</tr>
+<tr>
+<td rowspan="4" align="left">Last call to <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-unref" title="g_object_unref ()">g_object_unref</a></code> for the last
+                  instance of target type
+                 </td>
+<td align="left">interface's <code class="function">interface_finalize</code> function</td>
+<td align="left">On interface's vtable</td>
+<td>Never used in practice. Unlikely you will need it.</td>
+</tr>
+<tr>
+<td align="left">interface's <code class="function">base_finalize</code> function</td>
+<td align="left">On interface's vtable</td>
+<td>Never used in practice. Unlikely you will need it.</td>
+</tr>
+<tr>
+<td align="left">target type's <code class="function">class_finalize</code> function</td>
+<td align="left">On target type's class structure</td>
+<td>Never used in practice. Unlikely you will need it.</td>
+</tr>
+<tr>
+<td align="left">type's <code class="function">base_finalize</code> function</td>
+<td align="left">On the inheritance tree of classes from fundamental type to target type.
+                  <code class="function">base_init</code> is invoked once for each class structure.</td>
+<td>Never used in practice. Unlikely you will need it.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p><br class="table-break">                
+      </p>
+</div>
+<div class="sect2">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="gobject-memory-weakref"></a>Weak References</h3></div></div></div>
+<p>
+      Weak references are used to monitor object finalization:
+      <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-weak-ref" title="g_object_weak_ref ()">g_object_weak_ref</a></code> adds a monitoring callback which does
+      not hold a reference to the object but which is invoked when the object runs 
+      its dispose method. As such, each weak ref can be invoked more than once upon
+      object finalization (since dispose can run more than once during object 
+      finalization).
+      </p>
+<p>
+        <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-weak-unref" title="g_object_weak_unref ()">g_object_weak_unref</a></code> can be used to remove a monitoring
+        callback from the object. 
+      </p>
+<p>
+        Weak references are also used to implement <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-add-weak-pointer" title="g_object_add_weak_pointer ()">g_object_add_weak_pointer</a></code>
+        and <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-remove-weak-pointer" title="g_object_remove_weak_pointer ()">g_object_remove_weak_pointer</a></code>. These functions add a weak reference
+        to the object they are applied to which makes sure to nullify the pointer given by the user
+        when object is finalized.
+      </p>
+<p>
+        Similarly, <a class="link" href="gobject-The-Base-Object-Type.html#GWeakRef" title="GWeakRef"><span class="type">GWeakRef</span></a> can be
+        used to implement weak references if thread safety is required.
+      </p>
+</div>
+<div class="sect2">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="gobject-memory-cycles"></a>Reference counts and cycles</h3></div></div></div>
+<p>
+        GObject's memory management model was designed to be easily integrated in existing code
+        using garbage collection. This is why the destruction process is split in two phases:
+        the first phase, executed in the dispose handler is supposed to release all references
+        to other member objects. The second phase, executed by the finalize handler is supposed
+        to complete the object's destruction process. Object methods should be able to run
+        without program error in-between the two phases.
+      </p>
+<p>
+        This two-step destruction process is very useful to break reference counting cycles.
+        While the detection of the cycles is up to the external code, once the cycles have been
+        detected, the external code can invoke <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-run-dispose" title="g_object_run_dispose ()">g_object_run_dispose</a></code> which 
+        will indeed break any existing cycles since it will run the dispose handler associated
+        to the object and thus release all references to other objects.
+      </p>
+<p>
+        This explains one of the rules about the dispose handler stated earlier:
+        the dispose handler can be invoked multiple times. Let's say we
+        have a reference count cycle: object A references B which itself references object A.
+        Let's say we have detected the cycle and we want to destroy the two objects. One way to 
+        do this would be to invoke <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-run-dispose" title="g_object_run_dispose ()">g_object_run_dispose</a></code> on one of the 
+        objects.
+      </p>
+<p>
+        If object A releases all its references to all objects, this means it releases its
+        reference to object B. If object B was not owned by anyone else, this is its last
+        reference count which means this last unref runs B's dispose handler which, in turn,
+        releases B's reference on object A. If this is A's last reference count, this last 
+        unref runs A's dispose handler which is running for the second time before
+        A's finalize handler is invoked !
+      </p>
+<p>
+        The above example, which might seem a bit contrived, can really happen if
+        GObjects are being handled by language bindings — hence the rules for
+        object destruction should be closely followed.
+      </p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,1003 @@
+<?xml version='1.0' encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+]>
+  <chapter id="chapter-gtype">
+    <title>The GLib Dynamic Type System</title>
+
+      <para>
+        A type, as manipulated by the GLib type system, is much more generic than what
+        is usually understood as an Object type. It is best explained by looking at the 
+        structure and the functions used to register new types in the type system.
+        <informalexample><programlisting>
+typedef struct _GTypeInfo               GTypeInfo;
+struct _GTypeInfo
+{
+  /* interface types, classed types, instantiated types */
+  guint16                class_size;
+  
+  GBaseInitFunc          base_init;
+  GBaseFinalizeFunc      base_finalize;
+  
+  /* classed types, instantiated types */
+  GClassInitFunc         class_init;
+  GClassFinalizeFunc     class_finalize;
+  gconstpointer          class_data;
+  
+  /* instantiated types */
+  guint16                instance_size;
+  guint16                n_preallocs;
+  GInstanceInitFunc      instance_init;
+  
+  /* value handling */
+  const GTypeValueTable *value_table;
+};
+GType g_type_register_static (GType             parent_type,
+                              const gchar      *type_name,
+                              const GTypeInfo  *info,
+                              GTypeFlags        flags);
+GType g_type_register_fundamental (GType                       type_id,
+                                   const gchar                *type_name,
+                                   const GTypeInfo            *info,
+                                   const GTypeFundamentalInfo *finfo,
+                                   GTypeFlags                  flags);
+        </programlisting></informalexample>
+      </para>
+
+      <para>
+        <function><link linkend="g-type-register-static">g_type_register_static</link></function>,
+        <function><link linkend="g-type-register-dynamic">g_type_register_dynamic</link></function> and 
+        <function><link linkend="g-type-register-fundamental">g_type_register_fundamental</link></function>
+        are the C functions, defined in
+        <filename>gtype.h</filename> and implemented in <filename>gtype.c</filename>
+        which you should use to register a new <link linkend="GType"><type>GType</type></link> in the program's type system.
+        It is not likely you will ever need to use 
+        <function><link linkend="g-type-register-fundamental">g_type_register_fundamental</link></function>
+        but in case you want to, the last chapter explains how to create
+        new fundamental types.
+      </para>
+
+      <para>
+        Fundamental types are top-level types which do not derive from any other type 
+        while other non-fundamental types derive from other types.
+        Upon initialization, the type system not only initializes its
+        internal data structures but it also registers a number of core
+        types: some of these are fundamental types. Others are types derived from these 
+        fundamental types.
+      </para>
+
+      <para>
+        Fundamental and non-fundamental types are defined by:
+        <itemizedlist>
+          <listitem><para>
+            class size: the class_size field in <link linkend="GTypeInfo"><type>GTypeInfo</type></link>.
+          </para></listitem>
+          <listitem><para>
+            class initialization functions (C++ constructor): the <function>base_init</function> and 
+            <function>class_init</function> fields in <link linkend="GTypeInfo"><type>GTypeInfo</type></link>.
+          </para></listitem>
+          <listitem><para>
+            class destruction functions (C++ destructor): the base_finalize and 
+            class_finalize fields in <link linkend="GTypeInfo"><type>GTypeInfo</type></link>.
+          </para></listitem>
+          <listitem><para>
+            instance size (C++ parameter to new): the instance_size field in 
+            <link linkend="GTypeInfo"><type>GTypeInfo</type></link>.
+          </para></listitem>
+          <listitem><para>
+            instantiation policy (C++ type of new operator): the n_preallocs
+            field in <link linkend="GTypeInfo"><type>GTypeInfo</type></link>.
+          </para></listitem>
+          <listitem><para>
+            copy functions (C++ copy operators): the value_table field in 
+            <link linkend="GTypeInfo"><type>GTypeInfo</type></link>.
+          </para></listitem>
+          <listitem><para>
+            type characteristic flags: <link linkend="GTypeFlags"><type>GTypeFlags</type></link>.
+          </para></listitem>
+        </itemizedlist>
+        Fundamental types are also defined by a set of <link linkend="GTypeFundamentalFlags"><type>GTypeFundamentalFlags</type></link> 
+        which are stored in a <link linkend="GTypeFundamentalInfo"><type>GTypeFundamentalInfo</type></link>.
+        Non-fundamental types are furthermore defined by the type of their parent which is
+        passed as the parent_type parameter to <function><link linkend="g-type-register-static">g_type_register_static</link></function>
+        and <function><link linkend="g-type-register-dynamic">g_type_register_dynamic</link></function>.
+      </para>
+      
+      <sect1 id="gtype-copy">
+        <title>Copy functions</title>
+
+        <para>
+          The major common point between <emphasis>all</emphasis> GLib types (fundamental and 
+          non-fundamental, classed and non-classed, instantiable and non-instantiable) is that
+          they can all be manipulated through a single API to copy/assign them.
+        </para>
+
+        <para>
+          The <link linkend="GValue"><type>GValue</type></link> structure is used as an abstract container for all of these 
+          types. Its simplistic API (defined in <filename>gobject/gvalue.h</filename>) can be 
+          used to invoke the value_table functions registered
+          during type registration: for example <function><link linkend="g-value-copy">g_value_copy</link></function> copies the 
+          content of a <link linkend="GValue"><type>GValue</type></link> to another <link linkend="GValue"><type>GValue</type></link>. This is similar
+          to a C++ assignment which invokes the C++ copy operator to modify the default
+          bit-by-bit copy semantics of C++/C structures/classes.
+        </para>
+
+        <para>
+          The following code shows how you can copy around a 64 bit integer, as well as a <link linkend="GObject"><type>GObject</type></link>
+          instance pointer:
+<informalexample><programlisting>
+static void test_int (void)
+{
+  GValue a_value = G_VALUE_INIT;
+  GValue b_value = G_VALUE_INIT;
+  guint64 a, b;
+
+  a = 0xdeadbeef;
+
+  g_value_init (&amp;a_value, G_TYPE_UINT64);
+  g_value_set_uint64 (&amp;a_value, a);
+
+  g_value_init (&amp;b_value, G_TYPE_UINT64);
+  g_value_copy (&amp;a_value, &amp;b_value);
+
+  b = g_value_get_uint64 (&amp;b_value);
+
+  if (a == b) {
+    g_print ("Yay !! 10 lines of code to copy around a uint64.\n");
+  } else {
+    g_print ("Are you sure this is not a Z80 ?\n");
+  }
+}
+
+static void test_object (void)
+{
+  GObject *obj;
+  GValue obj_vala = G_VALUE_INIT;
+  GValue obj_valb = G_VALUE_INIT;
+  obj = g_object_new (VIEWER_TYPE_FILE, NULL);
+
+  g_value_init (&amp;obj_vala, VIEWER_TYPE_FILE);
+  g_value_set_object (&amp;obj_vala, obj);
+
+  g_value_init (&amp;obj_valb, G_TYPE_OBJECT);
+
+  /* g_value_copy's semantics for G_TYPE_OBJECT types is to copy the reference.
+   * This function thus calls g_object_ref.
+   * It is interesting to note that the assignment works here because
+   * VIEWER_TYPE_FILE is a G_TYPE_OBJECT.
+   */
+  g_value_copy (&amp;obj_vala, &amp;obj_valb);
+
+  g_object_unref (G_OBJECT (obj));
+  g_object_unref (G_OBJECT (obj));
+}
+</programlisting></informalexample>
+          The important point about the above code is that the exact semantics of the copy calls
+          is undefined since they depend on the implementation of the copy function. Certain 
+          copy functions might decide to allocate a new chunk of memory and then to copy the 
+          data from the source to the destination. Others might want to simply increment
+          the reference count of the instance and copy the reference to the new GValue.
+        </para>
+        
+        <para>
+          The value table used to specify these assignment functions is
+          documented in
+          <link linkend="GTypeValueTable"><type>GTypeValueTable</type></link>.
+        </para>
+        <para>
+          Interestingly, it is also very unlikely
+          you will ever need to specify a value_table during type registration
+          because these value_tables are inherited from the parent types for
+          non-fundamental types.
+        </para>
+      </sect1>
+
+      <sect1 id="gtype-conventions">
+        <title>Conventions</title>
+
+
+      <para>
+        There are a number of conventions users are expected to follow when creating new types
+        which are to be exported in a header file:
+        <itemizedlist>
+          <listitem><para>
+            Type names (including object names) must be at least three
+            characters long and start with ‘a–z’, ‘A–Z’ or ‘_’.
+          </para></listitem>
+          <listitem><para>
+            Use the <function>object_method</function> pattern for function names: to invoke
+            the method named <function>save</function> on an instance of object type <type>file</type>, call 
+            <function>file_save</function>.
+          </para></listitem>
+          <listitem><para>Use prefixing to avoid namespace conflicts with other projects.
+            If your library (or application) is named <emphasis>Viewer</emphasis>,
+            prefix all your function names with <emphasis>viewer_</emphasis>.
+            For example: <function>viewer_object_method</function>.
+          </para></listitem>
+          <listitem><para>Create a macro named <function>PREFIX_TYPE_OBJECT</function> which always 
+            returns the GType for the associated object type. For an object of type 
+            <emphasis>File</emphasis> in the <emphasis>Viewer</emphasis> namespace,
+            use: <function>VIEWER_TYPE_FILE</function>.
+            This macro is implemented using a function named
+            <function>prefix_object_get_type</function>; for example, <function>viewer_file_get_type</function>.
+          </para></listitem>
+          <listitem>
+            <para>
+              Use <link linkend="G-DECLARE-FINAL-TYPE:CAPS"><function>G_DECLARE_FINAL_TYPE</function></link>
+              or <link linkend="G-DECLARE-DERIVABLE-TYPE:CAPS"><function>G_DECLARE_DERIVABLE_TYPE</function></link>
+              to define various other conventional macros for your object:
+            </para>
+            <itemizedlist>
+              <listitem><para><function>PREFIX_OBJECT (obj)</function>, which 
+                returns a pointer of type <type>PrefixObject</type>. This macro is used to enforce
+                static type safety by doing explicit casts wherever needed. It also enforces
+                dynamic type safety by doing runtime checks. It is possible to disable the dynamic
+                type checks in production builds (see <link linkend="glib-building">building GLib</link>).
+                For example, we would create 
+                <function>VIEWER_FILE (obj)</function> to keep the previous example.
+              </para></listitem>
+              <listitem><para><function>PREFIX_OBJECT_CLASS (klass)</function>, which
+                is strictly equivalent to the previous casting macro: it does static casting with
+                dynamic type checking of class structures. It is expected to return a pointer
+                to a class structure of type <type>PrefixObjectClass</type>. An example is:
+                <function>VIEWER_FILE_CLASS</function>.
+              </para></listitem>
+              <listitem><para><function>PREFIX_IS_OBJECT (obj)</function>, which
+                returns a <type>gboolean</type> which indicates whether the input
+                object instance pointer is non-<type>NULL</type> and of type <type>OBJECT</type>.
+                For example, <function>VIEWER_IS_FILE</function>.
+              </para></listitem>
+              <listitem><para><function>PREFIX_IS_OBJECT_CLASS (klass)</function>, which returns a boolean
+                if the input class pointer is a pointer to a class of type OBJECT.
+                For example, <function>VIEWER_IS_FILE_CLASS</function>.
+              </para></listitem>
+              <listitem><para><function>PREFIX_OBJECT_GET_CLASS (obj)</function>,
+                which returns the class pointer associated to an instance of a given type. This macro
+                is used for static and dynamic type safety purposes (just like the previous casting
+                macros).
+                For example, <function>VIEWER_FILE_GET_CLASS</function>.
+              </para></listitem>
+            </itemizedlist>
+          </listitem>
+        </itemizedlist>
+        The implementation of these macros is pretty straightforward: a number of simple-to-use 
+        macros are provided in <filename>gtype.h</filename>. For the example we used above, we would 
+        write the following trivial code to declare the macros:
+<informalexample><programlisting>
+#define VIEWER_TYPE_FILE viewer_file_get_type ()
+G_DECLARE_FINAL_TYPE (ViewerFile, viewer_file, VIEWER, FILE, GObject)
+</programlisting></informalexample>
+      </para>
+
+      <para>
+        Unless your code has special requirements, you can use the
+        <function><link linkend="G-DEFINE-TYPE:CAPS">G_DEFINE_TYPE</link></function>
+	macro to define a class:
+<informalexample><programlisting>
+G_DEFINE_TYPE (ViewerFile, viewer_file, G_TYPE_OBJECT)
+</programlisting></informalexample>
+      </para>
+
+      <para>
+        Otherwise, the <function>viewer_file_get_type</function> function must be
+        implemented manually:
+<informalexample><programlisting>
+GType viewer_file_get_type (void)
+{
+  static GType type = 0;
+  if (type == 0) {
+    const GTypeInfo info = {
+      /* You fill this structure. */
+    };
+    type = g_type_register_static (G_TYPE_OBJECT,
+                                   "ViewerFile",
+                                   &amp;info, 0);
+  }
+  return type;
+}
+</programlisting></informalexample>
+      </para>
+
+      </sect1>
+
+      <sect1 id="gtype-non-instantiable">
+        <title>Non-instantiable non-classed fundamental types</title>
+
+        <para>
+          A lot of types are not instantiable by the type system and do not have
+          a class. Most of these types are fundamental trivial types such as <emphasis>gchar</emphasis>, 
+          and are already registered by GLib.
+        </para>
+
+        <para>
+          In the rare case of needing to register such a type in the type
+          system, fill a
+          <link linkend="GTypeInfo"><type>GTypeInfo</type></link> structure with zeros since these types are also most of the time
+          fundamental:
+          <informalexample><programlisting>
+  GTypeInfo info = {
+    0,                                /* class_size */
+    NULL,                        /* base_init */
+    NULL,                        /* base_destroy */
+    NULL,                        /* class_init */
+    NULL,                        /* class_destroy */
+    NULL,                        /* class_data */
+    0,                                /* instance_size */
+    0,                                /* n_preallocs */
+    NULL,                        /* instance_init */
+    NULL,                        /* value_table */
+  };
+  static const GTypeValueTable value_table = {
+    value_init_long0,                /* value_init */
+    NULL,                        /* value_free */
+    value_copy_long0,                /* value_copy */
+    NULL,                        /* value_peek_pointer */
+    "i",                        /* collect_format */
+    value_collect_int,        /* collect_value */
+    "p",                        /* lcopy_format */
+    value_lcopy_char,                /* lcopy_value */
+  };
+  info.value_table = &amp;value_table;
+  type = g_type_register_fundamental (G_TYPE_CHAR, "gchar", &amp;info, &amp;finfo, 0);
+          </programlisting></informalexample>
+        </para>
+
+
+        <para>
+          Having non-instantiable types might seem a bit useless: what good is a type
+          if you cannot instantiate an instance of that type ? Most of these types
+          are used in conjunction with <link linkend="GValue"><type>GValue</type></link>s: a GValue is initialized
+          with an integer or a string and it is passed around by using the registered 
+          type's value_table. <link linkend="GValue"><type>GValue</type></link>s (and by extension these trivial fundamental
+          types) are most useful when used in conjunction with object properties and signals.
+        </para>
+
+      </sect1>
+
+      <sect1 id="gtype-instantiable-classed">
+        <title>Instantiable classed types: objects</title>
+
+        <para>
+          This section covers the theory behind objects. See
+          <xref linkend="howto-gobject"/> for the recommended way to define a
+          GObject.
+        </para>
+
+        <para>
+          Types which are registered with a class and are declared instantiable are
+          what most closely resembles an <emphasis>object</emphasis>. 
+          Although <link linkend="GObject"><type>GObject</type></link>s (detailed in <xref linkend="chapter-gobject"/>) 
+          are the most well known type of instantiable
+          classed types, other kinds of similar objects used as the base of an inheritance 
+          hierarchy have been externally developed and they are all built on the fundamental
+          features described below.
+        </para>
+
+        <para>
+          For example, the code below shows how you could register 
+          such a fundamental object type in the type system (using none of the
+          GObject convenience API):
+<informalexample><programlisting>
+typedef struct {
+  GObject parent;
+
+  /* instance members */
+  gchar *filename;
+} ViewerFile;
+
+typedef struct {
+  GObjectClass parent;
+
+  /* class members */
+  /* the first is public, pure and virtual */
+  void (*open)  (ViewerFile  *self,
+                 GError     **error);
+
+  /* the second is public and virtual */
+  void (*close) (ViewerFile  *self,
+                 GError     **error);
+} ViewerFileClass;
+
+#define VIEWER_TYPE_FILE (viewer_file_get_type ())
+
+GType 
+viewer_file_get_type (void)
+{
+  static GType type = 0;
+  if (type == 0) {
+    const GTypeInfo info = {
+      sizeof (ViewerFileClass),
+      NULL,           /* base_init */
+      NULL,           /* base_finalize */
+      (GClassInitFunc) viewer_file_class_init,
+      NULL,           /* class_finalize */
+      NULL,           /* class_data */
+      sizeof (ViewerFile),
+      0,              /* n_preallocs */
+      (GInstanceInitFunc) NULL /* instance_init */
+    };
+    type = g_type_register_static (G_TYPE_OBJECT,
+                                   "ViewerFile",
+                                   &amp;info, 0);
+  }
+  return type;
+}
+</programlisting></informalexample>
+          Upon the first call to <function>viewer_file_get_type</function>, the type named
+          <emphasis>ViewerFile</emphasis> will be registered in the type system as inheriting
+          from the type <emphasis>G_TYPE_OBJECT</emphasis>.
+        </para>
+
+        <para>
+          Every object must define two structures: its class structure and its 
+          instance structure. All class structures must contain as first member
+          a <link linkend="GTypeClass"><type>GTypeClass</type></link> structure. All instance structures must contain as first
+          member a <link linkend="GTypeInstance"><type>GTypeInstance</type></link> structure. The declaration of these C types,
+          coming from <filename>gtype.h</filename> is shown below:
+<informalexample><programlisting>
+struct _GTypeClass
+{
+  GType g_type;
+};
+struct _GTypeInstance
+{
+  GTypeClass *g_class;
+};
+</programlisting></informalexample>
+          These constraints allow the type system to make sure that every object instance
+          (identified by a pointer to the object's instance structure) contains in its
+          first bytes a pointer to the object's class structure.
+        </para>
+        <para>
+          This relationship is best explained by an example: let's take object B which
+          inherits from object A:
+<informalexample><programlisting>
+/* A definitions */
+typedef struct {
+  GTypeInstance parent;
+  int field_a;
+  int field_b;
+} A;
+typedef struct {
+  GTypeClass parent_class;
+  void (*method_a) (void);
+  void (*method_b) (void);
+} AClass;
+
+/* B definitions. */
+typedef struct {
+  A parent;
+  int field_c;
+  int field_d;
+} B;
+typedef struct {
+  AClass parent_class;
+  void (*method_c) (void);
+  void (*method_d) (void);
+} BClass;
+</programlisting></informalexample>          
+          The C standard mandates that the first field of a C structure is stored starting
+          in the first byte of the buffer used to hold the structure's fields in memory.
+          This means that the first field of an instance of an object B is A's first field
+          which in turn is <type>GTypeInstance</type>'s first field which in
+          turn is <structfield>g_class</structfield>, a pointer
+          to B's class structure.
+        </para>
+
+        <para>
+          Thanks to these simple conditions, it is possible to detect the type of every
+          object instance by doing: 
+<informalexample><programlisting>
+B *b;
+b->parent.parent.g_class->g_type
+</programlisting></informalexample>
+          or, more quickly:
+<informalexample><programlisting>
+B *b;
+((GTypeInstance *) b)->g_class->g_type
+</programlisting></informalexample>
+        </para>
+
+        <sect2 id="gtype-instantiable-classed-init-done">
+          <title>Initialization and Destruction</title>
+
+          <para>
+            instantiation of these types can be done with 
+            <function><link linkend="g-type-create-instance">g_type_create_instance</link></function>,
+            which will look up the type information
+            structure associated with the type requested. Then, the instance size and instantiation
+            policy (if the <structfield>n_preallocs</structfield> field is set
+            to a non-zero value, the type system allocates
+            the object's instance structures in chunks rather than mallocing for every instance)
+            declared by the user are used to get a buffer to hold the object's instance
+            structure.
+          </para>
+
+          <para>
+            If this is the first instance of the object ever created, the type system must create a class structure.
+            It allocates a buffer to hold the object's class structure and initializes it. The first part of the
+            class structure (ie: the embedded parent class structure) is initialized by copying the contents from
+            the class structure of the parent class. The rest of class structure is initialized to zero.  If there
+            is no parent, the entire class structure is initialized to zero. The type system then invokes the
+            <function>base_class_initialization</function> functions
+            (<link linkend="GBaseInitFunc"><type>GBaseInitFunc</type></link>) from topmost 
+            fundamental object to bottom-most most derived object. The object's <function>class_init</function>
+            (<link linkend="GClassInitFunc"><type>GClassInitFunc</type></link>) function is invoked afterwards to complete
+            initialization of the class structure.
+            Finally, the object's interfaces are initialized (we will discuss interface initialization
+            in more detail later).
+          </para>
+
+          <para>
+            Once the type system has a pointer to an initialized class structure, it sets the object's
+            instance class pointer to the object's class structure and invokes the object's
+            <function>instance_init</function>
+            (<link linkend="GInstanceInitFunc"><type>GInstanceInitFunc</type></link>)
+            functions, from top-most fundamental 
+            type to bottom-most most-derived type.
+          </para>
+
+          <para>
+            Object instance destruction through <function><link linkend="g-type-free-instance">g_type_free_instance</link></function> is very simple:
+            the instance structure is returned to the instance pool if there is one and if this was the
+            last living instance of the object, the class is destroyed.
+          </para>
+
+
+          <para>
+            Class destruction (the concept of destruction is sometimes partly 
+            referred to as finalization in GType) is the symmetric process of 
+            the initialization: interfaces are destroyed first. 
+            Then, the most derived 
+            class_finalize (<link linkend="GClassFinalizeFunc"><type>GClassFinalizeFunc</type></link>) function is invoked. Finally, the
+            base_class_finalize (<link linkend="GBaseFinalizeFunc"><type>GBaseFinalizeFunc</type></link>) functions are 
+            invoked from bottom-most most-derived type to top-most fundamental type and
+            the class structure is freed.
+          </para>
+
+          <para>
+            The base initialization/finalization process is
+            very similar to the C++ constructor/destructor paradigm. The practical details are different
+            though and it is important not to get confused by superficial similarities. 
+            GTypes have no instance destruction mechanism. It is
+            the user's responsibility to implement correct destruction semantics on top
+            of the existing GType code. (This is what GObject does: see 
+            <xref linkend="chapter-gobject"/>.)
+           Furthermore, C++ code equivalent to the <function>base_init</function>
+           and <function>class_init</function> callbacks of GType is usually not needed because C++ cannot really create object 
+           types at runtime.
+          </para>
+
+          <para>
+            The instantiation/finalization process can be summarized as follows:
+            <table id="gtype-init-fini-table">
+              <title>GType Instantiation/Finalization</title>
+              <tgroup cols="3">
+                <colspec colwidth="*" colnum="1" align="left"/>
+                <colspec colwidth="*" colnum="2" align="left"/>
+                <colspec colwidth="8*" colnum="3" align="left"/>
+    
+                <thead>
+                  <row>
+                    <entry>Invocation time</entry>
+                    <entry>Function invoked</entry>
+                    <entry>Function's parameters</entry>
+                  </row>
+                </thead>
+                <tbody>
+                  <row>
+                    <entry morerows="2">First call to <function><link linkend="g-type-create-instance">g_type_create_instance</link></function> for target type</entry>
+                    <entry>type's <function>base_init</function> function</entry>
+                    <entry>On the inheritance tree of classes from fundamental type to target type. 
+                      <function>base_init</function> is invoked once for each class structure.</entry>
+                  </row>
+                  <row>
+                    <!--entry>First call to <function><link linkend="g-type-create-instance">g_type_create_instance</link></function> for target type</entry-->
+                    <entry>target type's <function>class_init</function> function</entry>
+                    <entry>On target type's class structure</entry>
+                  </row>
+                  <row>
+                    <!--entry>First call to <function><link linkend="g-type-create-instance">g_type_create_instance</link></function> for target type</entry-->
+                    <entry>interface initialization, see 
+                      <xref linkend="gtype-non-instantiable-classed-init"/></entry>
+                    <entry></entry>
+                  </row>
+                  <row>
+                    <entry>Each call to <function><link linkend="g-type-create-instance">g_type_create_instance</link></function> for target type</entry>
+                    <entry>target type's <function>instance_init</function> function</entry>
+                    <entry>On object's instance</entry>
+                  </row>
+                  <row>
+                    <entry morerows="2">Last call to <function><link linkend="g-type-free-instance">g_type_free_instance</link></function> for target type</entry>
+                    <entry>interface destruction, see
+                      <xref linkend="gtype-non-instantiable-classed-dest"/></entry>
+                    <entry></entry>
+                  </row>
+                  <row>
+                    <!--entry>Last call to <function><link linkend="g-type-free-instance">g_type_free_instance</link></function> for target type</entry-->
+                    <entry>target type's <function>class_finalize</function> function</entry>
+                    <entry>On target type's class structure</entry>
+                  </row>
+                  <row>
+                    <!--entry>Last call to <function><link linkend="g-type-free-instance">g_type_free_instance</link></function> for target type</entry-->
+                    <entry>type's <function>base_finalize</function> function</entry>
+                    <entry>On the inheritance tree of classes from fundamental type to target type. 
+                      <function>base_finalize</function> is invoked once for each class structure.</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </table>
+          </para>
+          
+        </sect2>
+
+      </sect1>
+
+      <sect1 id="gtype-non-instantiable-classed">
+        <title>Non-instantiable classed types: interfaces</title>
+
+        <para>
+          This section covers the theory behind interfaces. See
+          <xref linkend="howto-interface"/> for the recommended way to define an
+          interface.
+        </para>
+
+        <para>
+          GType's interfaces are very similar to Java's interfaces. They allow
+          to describe a common API that several classes will adhere to.
+          Imagine the play, pause and stop buttons on hi-fi equipment — those can
+          be seen as a playback interface. Once you know what they do, you can
+          control your CD player, MP3 player or anything that uses these symbols.
+          To declare an interface you have to register a non-instantiable
+          classed type which derives from 
+          <link linkend="GTypeInterface"><type>GTypeInterface</type></link>. The following piece of code declares such an interface.
+<informalexample><programlisting>
+#define VIEWER_TYPE_EDITABLE viewer_editable_get_type ()
+G_DECLARE_INTERFACE (ViewerEditable, viewer_editable, VIEWER, EDITABLE, GObject)
+
+struct _ViewerEditableInterface {
+  GTypeInterface parent;
+
+  void (*save) (ViewerEditable  *self,
+                GError         **error);
+};
+
+void viewer_editable_save (ViewerEditable  *self,
+                           GError         **error);
+</programlisting></informalexample>
+          The interface function, <function>viewer_editable_save</function> is implemented
+          in a pretty simple way:
+<informalexample><programlisting>
+void
+viewer_editable_save (ViewerEditable  *self,
+                      GError         **error)
+{
+  ViewerEditableinterface *iface;
+
+  g_return_if_fail (VIEWER_IS_EDITABLE (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+
+  iface = VIEWER_EDITABLE_GET_IFACE (self);
+  g_return_if_fail (iface->save != NULL);
+  iface->save (self);
+}
+</programlisting></informalexample>
+         <function>viewer_editable_get_type</function> registers a type named <emphasis>ViewerEditable</emphasis>
+         which inherits from <type>G_TYPE_INTERFACE</type>. All interfaces must
+         be children of <type>G_TYPE_INTERFACE</type> in the  inheritance tree.
+        </para>
+
+        <para>
+          An interface is defined by only one structure which must contain as first member
+          a <link linkend="GTypeInterface"><type>GTypeInterface</type></link> structure. The interface structure is expected to
+          contain the function pointers of the interface methods. It is good style to 
+          define helper functions for each of the interface methods which simply call
+          the interface's method directly: <function>viewer_editable_save</function>
+          is one of these.
+        </para>
+
+        <para>
+        If you have no special requirements you can use the
+        <link linkend="G-IMPLEMENT-INTERFACE:CAPS">G_IMPLEMENT_INTERFACE</link> macro
+        to implement an interface:
+<informalexample><programlisting>
+static void
+viewer_file_save (ViewerEditable *self)
+{
+  g_print ("File implementation of editable interface save method.\n");
+}
+
+static void
+viewer_file_editable_interface_init (ViewerEditableInterface *iface)
+{
+  iface->save = viewer_file_save;
+}
+
+G_DEFINE_TYPE_WITH_CODE (ViewerFile, viewer_file, VIEWER_TYPE_FILE,
+                         G_IMPLEMENT_INTERFACE (VIEWER_TYPE_EDITABLE,
+                                                viewer_file_editable_interface_init))
+</programlisting></informalexample>
+        </para>
+
+        <para>
+          If your code does have special requirements, you must write a custom
+          <function>get_type</function> function to register your GType which
+          inherits from some <link linkend="GObject"><type>GObject</type></link>
+          and which implements the interface <type>ViewerEditable</type>. For
+          example, this code registers a new <type>ViewerFile</type> class which
+          implements <type>ViewerEditable</type>:
+<informalexample><programlisting>
+static void
+viewer_file_save (ViewerEditable *editable)
+{
+  g_print ("File implementation of editable interface save method.\n");
+}
+
+static void
+viewer_file_editable_interface_init (gpointer g_iface,
+                                     gpointer iface_data)
+{
+  ViewerEditableInterface *iface = g_iface;
+
+  iface->save = viewer_file_save;
+}
+
+GType 
+viewer_file_get_type (void)
+{
+  static GType type = 0;
+  if (type == 0) {
+    const GTypeInfo info = {
+      sizeof (ViewerFileClass),
+      NULL,   /* base_init */
+      NULL,   /* base_finalize */
+      NULL,   /* class_init */
+      NULL,   /* class_finalize */
+      NULL,   /* class_data */
+      sizeof (ViewerFile),
+      0,      /* n_preallocs */
+      NULL    /* instance_init */
+    };
+    const GInterfaceInfo editable_info = {
+      (GInterfaceInitFunc) viewer_file_editable_interface_init,  /* interface_init */
+      NULL,   /* interface_finalize */
+      NULL    /* interface_data */
+    };
+    type = g_type_register_static (VIEWER_TYPE_FILE,
+                                   "ViewerFile",
+                                   &amp;info, 0);
+    g_type_add_interface_static (type,
+                                 VIEWER_TYPE_EDITABLE,
+                                 &amp;editable_info);
+  }
+  return type;
+}
+</programlisting></informalexample>
+        </para>
+
+        <para>
+          <function><link linkend="g-type-add-interface-static">g_type_add_interface_static</link></function> records in the type system that
+          a given type implements also <type>FooInterface</type> 
+          (<function>foo_interface_get_type</function> returns the type of 
+          <type>FooInterface</type>).
+                The <link linkend="GInterfaceInfo"><type>GInterfaceInfo</type></link> structure holds
+          information about the implementation of the interface:
+<informalexample><programlisting>
+struct _GInterfaceInfo
+{
+  GInterfaceInitFunc     interface_init;
+  GInterfaceFinalizeFunc interface_finalize;
+  gpointer               interface_data;
+};
+</programlisting></informalexample>
+        </para>
+
+        <sect2 id="gtype-non-instantiable-classed-init">
+          <title>Interface Initialization</title>
+
+          <para>
+            When an instantiable classed type which implements an interface
+            (either directly or by inheriting an implementation from a superclass)
+            is created for the first time, its class structure is initialized
+            following the process described in <xref linkend="gtype-instantiable-classed"/>.
+            After that, the interface implementations associated with
+            the type are initialized.
+          </para>
+
+          <para>
+            First a memory buffer is allocated to hold the interface structure. The parent's
+            interface structure is then copied over to the new interface structure (the parent
+            interface is already initialized at that point). If there is no parent interface,
+            the interface structure is initialized with zeros. The
+            <structfield>g_type</structfield> and the
+            <structfield>g_instance_type</structfield> fields are then
+            initialized: <structfield>g_type</structfield> is set to the type of
+            the most-derived interface and
+            <structfield>g_instance_type</structfield> is set to the type of the
+            most derived type which implements  this interface.
+          </para>
+
+          <para>
+            The interface's <function>base_init</function> function is called,
+            and then the interface's <function>default_init</function> is invoked.
+            Finally if the type has registered an implementation of the interface,
+            the implementation's <function>interface_init</function>
+            function is invoked. If there are multiple implementations of an
+            interface the <function>base_init</function> and
+            <function>interface_init</function> functions will be invoked once
+            for each implementation initialized.
+          </para>
+
+          <para>
+            It is thus recommended to use a <function>default_init</function> function to
+            initialize an interface. This function is called only once for the interface no
+            matter how many implementations there are. The
+            <function>default_init</function> function is declared by
+            <link linkend="G-DEFINE-INTERFACE:CAPS">G_DEFINE_INTERFACE</link>
+            which can be used to define the interface:
+<informalexample><programlisting>
+G_DEFINE_INTERFACE (ViewerEditable, viewer_editable, G_TYPE_OBJECT)
+
+static void
+viewer_editable_default_init (ViewerEditableInterface *iface)
+{
+  /* add properties and signals here, will only be called once */
+}
+</programlisting></informalexample>
+          </para>
+
+          <para>
+            Or you can do that yourself in a GType function for your interface:
+<informalexample><programlisting>
+GType
+viewer_editable_get_type (void)
+{
+  static volatile gsize type_id = 0;
+  if (g_once_init_enter (&amp;type_id)) {
+    const GTypeInfo info = {
+      sizeof (ViewerEditableInterface),
+      NULL,   /* base_init */
+      NULL,   /* base_finalize */
+      viewer_editable_default_init, /* class_init */
+      NULL,   /* class_finalize */
+      NULL,   /* class_data */
+      0,      /* instance_size */
+      0,      /* n_preallocs */
+      NULL    /* instance_init */
+    };
+    GType type = g_type_register_static (G_TYPE_INTERFACE,
+                                         "ViewerEditable",
+                                         &amp;info, 0);
+    g_once_init_leave (&amp;type_id, type);
+  }
+  return type_id;
+}
+
+static void
+viewer_editable_default_init (ViewerEditableInterface *iface)
+{
+  /* add properties and signals here, will only called once */
+}
+</programlisting></informalexample>
+          </para>
+
+        <para>
+          In summary, interface initialization uses the following functions:
+        </para>
+
+          <para>
+          <table id="ginterface-init-table">
+            <title>Interface Initialization</title>
+            <tgroup cols="3">
+              <colspec colwidth="*" colnum="1" align="left"/>
+              <colspec colwidth="*" colnum="2" align="left"/>
+              <colspec colwidth="8*" colnum="3" align="left"/>
+              
+              <thead>
+                <row>
+                  <entry>Invocation time</entry>
+                  <entry>Function Invoked</entry>
+                  <entry>Function's parameters</entry>
+                  <entry>Remark</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>First call to <function><link linkend="g-type-create-instance">g_type_create_instance</link></function>
+                    for <emphasis>any</emphasis> type implementing interface
+                   </entry>
+                  <entry>interface's <function>base_init</function> function</entry>
+                  <entry>On interface's vtable</entry>
+                  <entry>Rarely necessary to use this. Called once per instantiated classed type implementing the interface.</entry>
+                </row>
+                <row>
+                  <entry>First call to <function><link linkend="g-type-create-instance">g_type_create_instance</link></function>
+                    for <emphasis>each</emphasis> type implementing interface
+                   </entry>
+                  <entry>interface's <function>default_init</function> function</entry>
+                  <entry>On interface's vtable</entry>
+                  <entry>Register interface's signals, properties, etc. here. Will be called once.</entry>
+                </row>
+                <row>
+                  <entry>First call to <function><link linkend="g-type-create-instance">g_type_create_instance</link></function>
+                    for <emphasis>any</emphasis> type implementing interface
+                   </entry>
+                  <entry>implementation's <function>interface_init</function> function</entry>
+                  <entry>On interface's vtable</entry>
+                  <entry>
+                    Initialize interface implementation. Called for each class that that
+                    implements the interface. Initialize the interface method pointers
+                    in the interface structure to the implementing class's implementation.
+                  </entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </para>
+        
+        </sect2>
+        
+        <sect2 id="gtype-non-instantiable-classed-dest">
+          <title>Interface Destruction</title>
+
+          <para>
+            When the last instance of an instantiable type which registered 
+            an interface implementation is destroyed, the interface's 
+            implementations associated to the type are destroyed.
+          </para>
+
+          <para>
+            To destroy an interface implementation, GType first calls the 
+            implementation's <function>interface_finalize</function> function 
+            and then the interface's most-derived 
+            <function>base_finalize</function> function.
+          </para>
+
+          <para>
+            Again, it is important to understand, as in 
+            <xref linkend="gtype-non-instantiable-classed-init"/>,
+              that both <function>interface_finalize</function> and <function>base_finalize</function>
+              are invoked exactly once for the destruction of each implementation of an interface. Thus,
+              if you were to use one of these functions, you would need to use a static integer variable
+              which would hold the number of instances of implementations of an interface such that
+              the interface's class is destroyed only once (when the integer variable reaches zero).
+          </para>
+          
+        <para>
+          The above process can be summarized as follows:
+          <table id="ginterface-fini-table">
+            <title>Interface Finalization</title>
+            <tgroup cols="3">
+              <colspec colwidth="*" colnum="1" align="left"/>
+              <colspec colwidth="*" colnum="2" align="left"/>
+              <colspec colwidth="8*" colnum="3" align="left"/>
+              
+              <thead>
+                <row>
+                  <entry>Invocation time</entry>
+                  <entry>Function Invoked</entry>
+                  <entry>Function's parameters</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry morerows="1">Last call to <function><link linkend="g-type-free-instance">g_type_free_instance</link></function> for type
+                    implementing interface
+                   </entry>
+                  <entry>interface's <function>interface_finalize</function> function</entry>
+                  <entry>On interface's vtable</entry>
+                </row>
+                <row>
+                  <!--entry>Last call to <function><link linkend="g-type-free-instance">g_type_free_instance</link></function>for type
+                    implementing interface
+                   </entry-->
+                  <entry>interface's <function>base_finalize</function> function</entry>
+                  <entry>On interface's vtable</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </para>
+      </sect2>
+    </sect1>
+  </chapter>

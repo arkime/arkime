@@ -1,0 +1,14 @@
+<schemalist>
+  <enum id='flags'>
+    <value nick='none' value='0'/>
+    <value nick='mourning' value='1'/>
+    <value nick='laughing' value='2'/>
+    <value nick='talking' value='4'/>
+    <value nick='walking' value='8'/>
+  </enum>
+
+  <schema id='foo'>
+    <key name='xyz' flags='flags'/>
+  </schema>
+</schemalist>
+

@@ -1,0 +1,153 @@
+# Author: Fan, Chun-wei
+# Common Autotools file used to generate Visual Studio 2008+
+# Projects from their templates
+
+# This autotools file, from GLib, can be used in other projects
+# that have Visual Studio build support.
+
+# * Input variables:
+#
+#   MSVCPROJS - List of Projects that should be generated
+#
+# * Simple tutorial
+#
+# Add this to Makefile.am where your library/program is built:
+#   include <this Makefile.msvcproj>
+#   MSVCPROJS = YourProject (can be multiple projects in a single srcdir)
+#   YourProject_FILES = $(libyourlib_1_0_SOURCES)
+#   YourProject_EXCLUDES = ... # list of sources to exclude, separated by '|', wildcards allowed; use random unsed value if none
+#   (the following 3 lines if headers need to be installed)
+#   YourProject_HEADERS_DIR = $(libyourlibincludedir)
+#   YourProject_HEADERS_INST = $(libyourlib_1_0_HEADERS)
+#   YourProject_HEADERS_EXCLUDES = ... # <list of headers to exclude from installation, separated by '|', wildcards allowed; use random unsed value if none>
+#
+#   dist-hook: \ # (or add to it if it is already there, note the vs9 items will also call the vs10 items in the process)
+#   	$(top_builddir)/win32/vs9/YourProject.vcproj	\
+#   	$(top_builddir)/win32/vs9/YourProject.headers	# if headers need to be installed
+#
+#   --or, if Visual Studio 2013 or later is required--
+#   dist-hook: \ # (or add to it if it is already there, this does -not- call other vs items in the process)
+#	$(top_builddir)/win32/vs12/YourProject.vcxproj	\
+#	$(top_builddir)/win32/vs12/YourProject.vs12.headers	# if headers need to be installed
+
+# Private functions
+
+## Transform the MSVC project filename (no filename extensions) to something which can reference through a variable
+## without automake/make complaining, eg Gtk-2.0 -> Gtk_2_0
+_proj_name=$(subst /,_,$(subst -,_,$(subst .,_,$(1))))
+_proj_path_raw:=$(subst $(abs_top_srcdir),,$(abs_srcdir))
+_proj_path=$(subst /,\\,$(_proj_path_raw))
+_proj_subdir_int=$(subst \\\\,\\,\\$(_proj_path)\\)
+_proj_subdir=$(subst \\.\\,\\,$(_proj_subdir_int))
+
+_proj_files_raw=$(subst /,\\,$($(_proj_name)_FILES))
+_proj_files=$(subst $(srcdir)\\,,$(subst $(builddir)\\,,$(subst $(top_builddir)\\$(_proj_path)\\,\\,$(_proj_files_raw))))
+_proj_filters=$($(_proj_name)_EXCLUDES)
+
+_proj_headers_raw=$(subst /,\\,$($(_proj_name)_HEADERS_INST))
+_proj_headers=$(subst $(srcdir)\\,,$(subst $(builddir)\\,,$(subst $(top_builddir)\\$(_proj_path)\\,\\,$(_proj_headers_raw))))
+_proj_headers_excludes=$($(_proj_name)_HEADERS_EXCLUDES)
+
+_headers_dest_posix=$(subst $(includedir),,$($(_proj_name)_HEADERS_DIR))
+_headers_destdir=$(subst /,\\,$(_headers_dest_posix))
+
+#
+# Creates Visual Studio 2008/2010 projects from items passed in from autotools files
+# $(1) - Base Name of the MSVC project files (outputs)
+#
+
+define msvcproj-builder
+
+$(top_builddir)/win32/vs10/$(1).vcxproj: $(top_builddir)/win32/vs9/$(1).vcproj
+$(top_builddir)/win32/vs10/$(1).vcxproj.filters: $(top_builddir)/win32/vs9/$(1).vcproj
+$(1).sourcefiles: $(top_builddir)/win32/vs9/$(1).vcproj
+$(1).vs10.sourcefiles: $(top_builddir)/win32/vs9/$(1).vcproj
+$(1).vs10.sourcefiles.filters: $(top_builddir)/win32/vs9/$(1).vcproj
+
+$(top_builddir)/win32/vs9/$(1).vcproj: Makefile
+	-$(RM) $(top_builddir)/win32/vs9/$(1).vcproj
+	-$(RM) $(top_builddir)/win32/vs10/$(1).vcxproj
+	-$(RM) $(top_builddir)/win32/vs10/$(1).vcxproj.filters
+	-$(RM) $(top_builddir)/win32/vs11/$(1).vcxproj
+	-$(RM) $(top_builddir)/win32/vs11/$(1).vcxproj.filters
+	-$(RM) $(top_builddir)/win32/vs12/$(1).vcxproj
+	-$(RM) $(top_builddir)/win32/vs12/$(1).vcxproj.filters
+	-$(RM) $(top_builddir)/win32/vs14/$(1).vcxproj
+	-$(RM) $(top_builddir)/win32/vs14/$(1).vcxproj.filters
+
+
+	for F in $(_proj_files); do \
+		case $$$$F in \
+		$(_proj_filters)) \
+			;; \
+		*.c|*.cpp|*.cc|*.cxx) \
+			echo '   <File RelativePath="..\..'$(_proj_subdir)$$$$F'" />' >>$(1).sourcefiles && \
+			echo '   <ClCompile Include="..\..'$(_proj_subdir)$$$$F'" />' >>$(1).vs10.sourcefiles && \
+			echo '   <ClCompile Include="..\..'$(_proj_subdir)$$$$F'"><Filter>Source Files</Filter></ClCompile>' >>$(1).vs10.sourcefiles.filters \
+			;; \
+		esac;	\
+	done
+
+
+	$(CPP) -P - <$(top_srcdir)/win32/vs9/$(1).vcprojin >$(top_builddir)/win32/vs9/$(1).vcproj
+	$(CPP) -P - <$(top_srcdir)/win32/vs10/$(1).vcxprojin >$(top_builddir)/win32/vs10/$(1).vcxproj
+	$(CPP) -P - <$(top_srcdir)/win32/vs10/$(1).vcxproj.filtersin >$(top_builddir)/win32/vs10/$(1).vcxproj.filters
+	$(RM) $(1).sourcefiles
+	$(RM) $(1).vs10.sourcefiles
+	$(RM) $(1).vs10.sourcefiles.filters
+
+$(top_builddir)/win32/vs10/$(1).vs10.headers: $(top_builddir)/win32/vs9/$(1).headers
+
+$(top_builddir)/win32/vs9/$(1).headers: Makefile
+	-$(RM) $(top_builddir)/win32/vs9/$(1).headers
+	-$(RM) $(top_builddir)/win32/vs10/$(1).vs10.headers
+
+	for F in $(_proj_headers); do \
+		case $$$$F in \
+		$(_proj_headers_excludes)) \
+			;; \
+		*.h|*.hpp|*.hh|*.hxx) \
+			echo 'copy ..\..'$(_proj_subdir)$$$$F' $$$$(CopyDir)\include'$(_headers_destdir)'\'$$$$F'&#x0D;&#x0A;' >>$(top_builddir)/win32/vs9/$(1).headers && \
+			echo 'copy ..\..'$(_proj_subdir)$$$$F' $$$$(CopyDir)\include'$(_headers_destdir)'\'$$$$F >>$(top_builddir)/win32/vs10/$(1).vs10.headers \
+			;; \
+		esac;	\
+	done
+
+$(top_builddir)/win32/vs12/$(1).vcxproj.filters: $(top_builddir)/win32/vs12/$(1).vcxproj
+
+$(top_builddir)/win32/vs12/$(1).vcxproj: Makefile
+	-$(RM) $(top_builddir)/win32/vs14/$(1).vcxproj
+	-$(RM) $(top_builddir)/win32/vs14/$(1).vcxproj.filters
+
+	for F in $(_proj_files); do \
+		case $$$$F in \
+		$(_proj_filters)) \
+			;; \
+		*.c|*.cpp|*.cc|*.cxx) \
+			echo '   <ClCompile Include="..\..'$(_proj_subdir)$$$$F'" />' >>$(1).vs12.sourcefiles && \
+			echo '   <ClCompile Include="..\..'$(_proj_subdir)$$$$F'"><Filter>Source Files</Filter></ClCompile>' >>$(1).vs12.sourcefiles.filters \
+			;; \
+		esac;	\
+	done
+
+	$(CPP) -P - <$(top_srcdir)/win32/vs12/$(1).vcxprojin >$(top_builddir)/win32/vs12/$(1).vcxproj
+	$(CPP) -P - <$(top_srcdir)/win32/vs12/$(1).vcxproj.filtersin >$(top_builddir)/win32/vs12/$(1).vcxproj.filters
+	$(RM) $(1).vs12.sourcefiles
+	$(RM) $(1).vs12.sourcefiles.filters
+
+$(top_builddir)/win32/vs12/$(1).vs12.headers: Makefile
+	-$(RM) $(top_builddir)/win32/vs12/$(1).vs12.headers
+
+	for F in $(_proj_headers); do \
+		case $$$$F in \
+		$(_proj_headers_excludes)) \
+			;; \
+		*.h|*.hpp|*.hh|*.hxx) \
+			echo 'copy ..\..'$(_proj_subdir)$$$$F' $$$$(CopyDir)\include'$(_headers_destdir)'\'$$$$F >>$(top_builddir)/win32/vs12/$(1).vs12.headers \
+			;; \
+		esac;	\
+	done
+
+endef
+
+$(foreach proj,$(MSVCPROJS),$(eval $(call msvcproj-builder,$(proj))))

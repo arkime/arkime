@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Weather for Toronto Island
+Exec=true
+StartupNotify=true
+Terminal=false
+Type=Application
+StartupWMClass=epiphany-weather-for-toronto-island-9c6a4e022b17686306243dada811d550d25eb1fb

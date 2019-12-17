@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>API comparison: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="ch35.html" title="Migrating to GDBus">
+<link rel="prev" href="ch35.html" title="Migrating to GDBus">
+<link rel="next" href="ch35s03.html" title="Owning bus names">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch35.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="ch35.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="ch35s03.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="id-1.5.5.3"></a>API comparison</h2></div></div></div>
+<div class="table">
+<a name="dbus-glib-vs-gdbus"></a><p class="title"><b>Table 4. dbus-glib APIs and their GDBus counterparts</b></p>
+<div class="table-contents"><table class="table" summary="dbus-glib APIs and their GDBus counterparts" border="1">
+<colgroup>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>dbus-glib</th>
+<th>GDBus</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><span class="type">DBusGConnection</span></td>
+<td><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a></td>
+</tr>
+<tr>
+<td><span class="type">DBusGProxy</span></td>
+<td>
+<a class="link" href="GDBusProxy.html" title="GDBusProxy"><span class="type">GDBusProxy</span></a>, <a class="link" href="GDBusInterface.html" title="GDBusInterface"><span class="type">GDBusInterface</span></a> - also see <a class="link" href="GDBusObjectProxy.html" title="GDBusObjectProxy"><span class="type">GDBusObjectProxy</span></a>
+</td>
+</tr>
+<tr>
+<td><span class="type">DBusGObject</span></td>
+<td>
+<a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a>, <a class="link" href="GDBusInterface.html" title="GDBusInterface"><span class="type">GDBusInterface</span></a> - also see <a class="link" href="GDBusObjectSkeleton.html" title="GDBusObjectSkeleton"><span class="type">GDBusObjectSkeleton</span></a>
+</td>
+</tr>
+<tr>
+<td><span class="type">DBusGMethodInvocation</span></td>
+<td><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a></td>
+</tr>
+<tr>
+<td><code class="function">dbus_g_bus_get()</code></td>
+<td>
+<a class="link" href="GDBusConnection.html#g-bus-get-sync" title="g_bus_get_sync ()"><code class="function">g_bus_get_sync()</code></a>, also see
+               <a class="link" href="GDBusConnection.html#g-bus-get" title="g_bus_get ()"><code class="function">g_bus_get()</code></a>
+</td>
+</tr>
+<tr>
+<td><code class="function">dbus_g_proxy_new_for_name()</code></td>
+<td>
+<a class="link" href="GDBusProxy.html#g-dbus-proxy-new-sync" title="g_dbus_proxy_new_sync ()"><code class="function">g_dbus_proxy_new_sync()</code></a> and
+               <a class="link" href="GDBusProxy.html#g-dbus-proxy-new-for-bus-sync" title="g_dbus_proxy_new_for_bus_sync ()"><code class="function">g_dbus_proxy_new_for_bus_sync()</code></a>, also see <a class="link" href="GDBusProxy.html#g-dbus-proxy-new" title="g_dbus_proxy_new ()"><code class="function">g_dbus_proxy_new()</code></a>
+</td>
+</tr>
+<tr>
+<td><code class="function">dbus_g_proxy_add_signal()</code></td>
+<td>not needed, use the generic <a class="link" href="GDBusProxy.html#GDBusProxy-g-signal" title="The “g-signal” signal"><span class="type">“g-signal”</span></a>
+</td>
+</tr>
+<tr>
+<td><code class="function">dbus_g_proxy_connect_signal()</code></td>
+<td>use <a href="../gobject-Signals.html#g-signal-connect"><code class="function">g_signal_connect()</code></a> with <a class="link" href="GDBusProxy.html#GDBusProxy-g-signal" title="The “g-signal” signal"><span class="type">“g-signal”</span></a>
+</td>
+</tr>
+<tr>
+<td><code class="function">dbus_g_connection_register_g_object()</code></td>
+<td>
+<a class="link" href="GDBusConnection.html#g-dbus-connection-register-object" title="g_dbus_connection_register_object ()"><code class="function">g_dbus_connection_register_object()</code></a> - also see <a class="link" href="GDBusObjectManagerServer.html#g-dbus-object-manager-server-export" title="g_dbus_object_manager_server_export ()"><code class="function">g_dbus_object_manager_server_export()</code></a>
+</td>
+</tr>
+<tr>
+<td><code class="function">dbus_g_connection_unregister_g_object()</code></td>
+<td>
+<a class="link" href="GDBusConnection.html#g-dbus-connection-unregister-object" title="g_dbus_connection_unregister_object ()"><code class="function">g_dbus_connection_unregister_object()</code></a> - also see <a class="link" href="GDBusObjectManagerServer.html#g-dbus-object-manager-server-unexport" title="g_dbus_object_manager_server_unexport ()"><code class="function">g_dbus_object_manager_server_unexport()</code></a>
+</td>
+</tr>
+<tr>
+<td><code class="function">dbus_g_object_type_install_info()</code></td>
+<td>introspection data is installed while registering
+               an object, see <a class="link" href="GDBusConnection.html#g-dbus-connection-register-object" title="g_dbus_connection_register_object ()"><code class="function">g_dbus_connection_register_object()</code></a>
+</td>
+</tr>
+<tr>
+<td><code class="function">dbus_g_proxy_begin_call()</code></td>
+<td><a class="link" href="GDBusProxy.html#g-dbus-proxy-call" title="g_dbus_proxy_call ()"><code class="function">g_dbus_proxy_call()</code></a></td>
+</tr>
+<tr>
+<td><code class="function">dbus_g_proxy_end_call()</code></td>
+<td><a class="link" href="GDBusProxy.html#g-dbus-proxy-call-finish" title="g_dbus_proxy_call_finish ()"><code class="function">g_dbus_proxy_call_finish()</code></a></td>
+</tr>
+<tr>
+<td><code class="function">dbus_g_proxy_call()</code></td>
+<td><a class="link" href="GDBusProxy.html#g-dbus-proxy-call-sync" title="g_dbus_proxy_call_sync ()"><code class="function">g_dbus_proxy_call_sync()</code></a></td>
+</tr>
+<tr>
+<td><code class="function">dbus_g_error_domain_register()</code></td>
+<td><a class="link" href="gio-GDBusError.html#g-dbus-error-register-error-domain" title="g_dbus_error_register_error_domain ()"><code class="function">g_dbus_error_register_error_domain()</code></a></td>
+</tr>
+<tr>
+<td><code class="function">dbus_g_error_has_name()</code></td>
+<td>no direct equivalent, see <a class="link" href="gio-GDBusError.html#g-dbus-error-get-remote-error" title="g_dbus_error_get_remote_error ()"><code class="function">g_dbus_error_get_remote_error()</code></a>
+</td>
+</tr>
+<tr>
+<td><code class="function">dbus_g_method_return()</code></td>
+<td><a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-value" title="g_dbus_method_invocation_return_value ()"><code class="function">g_dbus_method_invocation_return_value()</code></a></td>
+</tr>
+<tr>
+<td><code class="function">dbus_g_method_return_error()</code></td>
+<td>
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-error" title="g_dbus_method_invocation_return_error ()"><code class="function">g_dbus_method_invocation_return_error()</code></a> and variants</td>
+</tr>
+<tr>
+<td><code class="function">dbus_g_method_get_sender()</code></td>
+<td><a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-get-sender" title="g_dbus_method_invocation_get_sender ()"><code class="function">g_dbus_method_invocation_get_sender()</code></a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<br class="table-break">
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

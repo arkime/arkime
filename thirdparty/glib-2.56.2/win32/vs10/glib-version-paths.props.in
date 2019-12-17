@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="UserMacros">
+    <VSVer>10</VSVer>
+    <GlibVersion>@GLIB_VERSION@</GlibVersion>
+    <ApiVersion>2.0</ApiVersion>
+    <GlibEtcInstallRoot>..\..\..\vs$(VSVer)\$(Platform)</GlibEtcInstallRoot>
+    <CopyDir>$(GlibEtcInstallRoot)</CopyDir>
+    <GlibDllPrefix></GlibDllPrefix>
+    <GlibDllSuffix>-2.0-0</GlibDllSuffix>
+    <PythonDir Condition="'$(VisualStudioVersion)' == '10.0'">c:\python34</PythonDir>
+    <PythonDir Condition="'$(VisualStudioVersion)' == '11.0'">c:\python34</PythonDir>
+    <PythonDir Condition="'$(VisualStudioVersion)' == '12.0'">c:\python34</PythonDir>
+    <PythonDir Condition="'$(VisualStudioVersion)' == '14.0'">c:\python36</PythonDir>
+    <PythonDir Condition="'$(VisualStudioVersion)' == '15.0'">c:\python36</PythonDir>
+  </PropertyGroup>
+  <PropertyGroup>
+    <_PropertySheetDisplayName>glibversionpathsprops</_PropertySheetDisplayName>
+  </PropertyGroup>
+  <ItemGroup>
+    <BuildMacro Include="VSVer">
+      <Value>$(VSVer)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GlibVersion">
+      <Value>$(GlibVersion)</Value>
+    </BuildMacro>
+    <BuildMacro Include="ApiVersion">
+      <Value>$(ApiVersion)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GlibEtcInstallRoot">
+      <Value>$(GlibEtcInstallRoot)</Value>
+    </BuildMacro>
+    <BuildMacro Include="CopyDir">
+      <Value>$(CopyDir)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GlibDllPrefix">
+      <Value>$(GlibDllPrefix)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GlibDllSuffix">
+      <Value>$(GlibDllSuffix)</Value>
+    </BuildMacro>
+    <BuildMacro Include="PythonDir">
+      <Value>$(PythonDir)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

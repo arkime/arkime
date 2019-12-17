@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+]>
+<refentry id="gdbus-org.project.Bar.Frobnicator">
+  <refmeta>    <refentrytitle role="top_of_page" id="gdbus-interface-org-project-Bar-Frobnicator.top_of_page">org.project.Bar.Frobnicator</refentrytitle>
+  <indexterm zone="gdbus-interface-org-project-Bar-Frobnicator.top_of_page"><primary sortas="Bar.Frobnicator">org.project.Bar.Frobnicator</primary></indexterm>
+  </refmeta>  <refnamediv>    <refname>org.project.Bar.Frobnicator</refname>    <refpurpose></refpurpose>  </refnamediv>  <refsynopsisdiv role="synopsis">
+    <title role="synopsis.title">Methods</title>
+    <synopsis>
+<link linkend="gdbus-method-org-project-Bar-Frobnicator.RandomMethod">RandomMethod</link> ();
+</synopsis>
+  </refsynopsisdiv>
+<refsect1 role="desc" id="gdbus-interface-org-project-Bar-Frobnicator">
+  <title role="desc.title">Description</title>
+  <para></para>
+</refsect1>
+<refsect1 role="details" id="gdbus-methods-org.project.Bar.Frobnicator">
+  <title role="details.title">Method Details</title>
+<refsect2 role="method" id="gdbus-method-org-project-Bar-Frobnicator.RandomMethod">
+  <title>The RandomMethod() method</title>
+  <indexterm zone="gdbus-method-org-project-Bar-Frobnicator.RandomMethod"><primary sortas="Bar.Frobnicator.RandomMethod">org.project.Bar.Frobnicator.RandomMethod()</primary></indexterm>
+<programlisting>
+RandomMethod ();
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+</refentry>
+

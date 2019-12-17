@@ -1,0 +1,186 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>gtester: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="tools.html" title="GLib Tools">
+<link rel="prev" href="glib-gettextize.html" title="glib-gettextize">
+<link rel="next" href="gtester-report.html" title="gtester-report">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="tools.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-gettextize.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gtester-report.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gtester"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle">gtester</span></h2>
+<p>gtester — test running utility</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<h2>Synopsis</h2>
+<div class="cmdsynopsis"><p><code class="command">gtester</code>  [OPTION...] [testprogram]</p></div>
+</div>
+<div class="refsect1">
+<a name="id-1.8.3.5"></a><h2>Description</h2>
+<p><span class="command"><strong>gtester</strong></span> is a utility to run unit tests that have
+been written using the GLib test framework.
+</p>
+<p>
+When called with the <code class="option">-o</code> option, <span class="command"><strong>gtester</strong></span>
+writes an XML report of the test results, which can be converted
+into HTML using the <span class="command"><strong>gtester-report</strong></span> utility.
+</p>
+</div>
+<div class="refsect1">
+<a name="id-1.8.3.6"></a><h2>Options</h2>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><code class="option">-h</code>, <code class="option">--help</code></span></p></td>
+<td><p>
+print help and exit
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">-v</code>, <code class="option">--version</code></span></p></td>
+<td><p>
+print version information and exit
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--g-fatal-warnings</code></span></p></td>
+<td><p>
+make warnings fatal
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">-k</code>, <code class="option">--keep-going</code></span></p></td>
+<td><p>
+continue running after tests failed
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">-l</code></span></p></td>
+<td><p>
+list paths of available test cases
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">-m=<em class="replaceable"><code>MODE</code></em></code></span></p></td>
+<td>
+<p>
+    run test cases in <em class="replaceable"><code>MODE</code></em>, which can be one of:
+
+    </p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><code class="option">perf</code></span></p></td>
+<td><p>
+          run performance tests
+      </p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">slow</code>, <code class="option">thorough</code></span></p></td>
+<td><p>
+          run slow tests, or repeat non-deterministic tests more often
+      </p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">quick</code></span></p></td>
+<td><p>
+          do not run slow or performance tests, or do extra repeats
+          of non-deterministic tests (default)
+      </p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">undefined</code></span></p></td>
+<td><p>
+          run test cases that deliberately provoke checks or assertion
+          failures, if implemented (default)
+      </p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">no-undefined</code></span></p></td>
+<td><p>
+          do not run test cases that deliberately provoke checks or
+          assertion failures
+      </p></td>
+</tr>
+</tbody>
+</table></div>
+<p>
+
+</p>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">-p=<em class="replaceable"><code>TESTPATH</code></em></code></span></p></td>
+<td><p>
+only run test cases matching <em class="replaceable"><code>TESTPATH</code></em>
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">-s=<em class="replaceable"><code>TESTPATH</code></em></code></span></p></td>
+<td><p>
+skip test cases matching <em class="replaceable"><code>TESTPATH</code></em>
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--seed=<em class="replaceable"><code>SEEDSTRING</code></em></code></span></p></td>
+<td><p>
+run all test cases with random number seed <em class="replaceable"><code>SEEDSTRING</code></em>
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">-o=<em class="replaceable"><code>LOGFILE</code></em></code></span></p></td>
+<td><p>
+write the test log to <em class="replaceable"><code>LOGFILE</code></em>
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">-q</code>, <code class="option">--quiet</code></span></p></td>
+<td><p>
+suppress per test binary output
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--verbose</code></span></p></td>
+<td><p>
+report success per testcase
+</p></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="id-1.8.3.7"></a><h2>See also</h2>
+<p>
+<span class="citerefentry"><span class="refentrytitle">gtester-report</span>(1)</span>
+</p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

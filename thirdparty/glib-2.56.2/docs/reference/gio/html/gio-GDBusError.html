@@ -1,0 +1,1098 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GDBusError: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="gdbus-lowlevel.html" title="Low-level D-Bus Support">
+<link rel="prev" href="gio-D-Bus-Introspection-Data.html" title="D-Bus Introspection Data">
+<link rel="next" href="GDBusMessage.html" title="GDBusMessage">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gio-GDBusError.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="gdbus-lowlevel.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gio-D-Bus-Introspection-Data.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GDBusMessage.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-GDBusError"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-GDBusError.top_of_page"></a>GDBusError</span></h2>
+<p>GDBusError — Mapping D-Bus errors to and from GError</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gio-GDBusError.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GDBusError.html#g-dbus-error-is-remote-error" title="g_dbus_error_is_remote_error ()">g_dbus_error_is_remote_error</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-GDBusError.html#g-dbus-error-get-remote-error" title="g_dbus_error_get_remote_error ()">g_dbus_error_get_remote_error</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GDBusError.html#g-dbus-error-strip-remote-error" title="g_dbus_error_strip_remote_error ()">g_dbus_error_strip_remote_error</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GDBusError.html#g-dbus-error-register-error-domain" title="g_dbus_error_register_error_domain ()">g_dbus_error_register_error_domain</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GDBusError.html#g-dbus-error-register-error" title="g_dbus_error_register_error ()">g_dbus_error_register_error</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GDBusError.html#g-dbus-error-unregister-error" title="g_dbus_error_unregister_error ()">g_dbus_error_unregister_error</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Error-Reporting.html#GError"><span class="returnvalue">GError</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-GDBusError.html#g-dbus-error-new-for-dbus-error" title="g_dbus_error_new_for_dbus_error ()">g_dbus_error_new_for_dbus_error</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GDBusError.html#g-dbus-error-set-dbus-error" title="g_dbus_error_set_dbus_error ()">g_dbus_error_set_dbus_error</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GDBusError.html#g-dbus-error-set-dbus-error-valist" title="g_dbus_error_set_dbus_error_valist ()">g_dbus_error_set_dbus_error_valist</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-GDBusError.html#g-dbus-error-encode-gerror" title="g_dbus_error_encode_gerror ()">g_dbus_error_encode_gerror</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-GDBusError.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="gio-GDBusError.html#GDBusError" title="enum GDBusError">GDBusError</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gio-GDBusError.html#G-DBUS-ERROR:CAPS" title="G_DBUS_ERROR">G_DBUS_ERROR</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gio-GDBusError.html#GDBusErrorEntry" title="GDBusErrorEntry">GDBusErrorEntry</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-GDBusError.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-GDBusError.description"></a><h2>Description</h2>
+<p>All facilities that return errors from remote methods (such as
+<a class="link" href="GDBusConnection.html#g-dbus-connection-call-sync" title="g_dbus_connection_call_sync ()"><code class="function">g_dbus_connection_call_sync()</code></a>) use <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> to represent both D-Bus
+errors (e.g. errors returned from the other peer) and locally
+in-process generated errors.</p>
+<p>To check if a returned <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> is an error from a remote peer, use
+<a class="link" href="gio-GDBusError.html#g-dbus-error-is-remote-error" title="g_dbus_error_is_remote_error ()"><code class="function">g_dbus_error_is_remote_error()</code></a>. To get the actual D-Bus error name,
+use <a class="link" href="gio-GDBusError.html#g-dbus-error-get-remote-error" title="g_dbus_error_get_remote_error ()"><code class="function">g_dbus_error_get_remote_error()</code></a>. Before presenting an error,
+always use <a class="link" href="gio-GDBusError.html#g-dbus-error-strip-remote-error" title="g_dbus_error_strip_remote_error ()"><code class="function">g_dbus_error_strip_remote_error()</code></a>.</p>
+<p>In addition, facilities used to return errors to a remote peer also
+use <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>. See <a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-error" title="g_dbus_method_invocation_return_error ()"><code class="function">g_dbus_method_invocation_return_error()</code></a> for
+discussion about how the D-Bus error name is set.</p>
+<p>Applications can associate a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> error domain with a set of D-Bus errors in order to
+automatically map from D-Bus errors to <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> and back. This
+is typically done in the function returning the <a href="../glib-Quarks.html#GQuark"><span class="type">GQuark</span></a> for the
+error domain:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="comment">// foo-bar-error.h:</span>
+
+<span class="preproc">#define</span><span class="normal"> </span><span class="function">FOO_BAR_ERROR</span><span class="normal"> </span><span class="symbol">(</span><span class="function">foo_bar_error_quark</span><span class="normal"> </span><span class="symbol">())</span>
+<span class="usertype">GQuark</span><span class="normal"> </span><span class="function">foo_bar_error_quark</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">);</span>
+
+<span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">enum</span>
+<span class="cbracket">{</span>
+<span class="normal">  FOO_BAR_ERROR_FAILED</span><span class="symbol">,</span>
+<span class="normal">  FOO_BAR_ERROR_ANOTHER_ERROR</span><span class="symbol">,</span>
+<span class="normal">  FOO_BAR_ERROR_SOME_THIRD_ERROR</span><span class="symbol">,</span>
+<span class="normal">  FOO_BAR_N_ERRORS </span><span class="symbol">/</span><span class="normal"> </span><span class="symbol">*&lt;</span><span class="normal"> skip </span><span class="symbol">&gt;*</span><span class="normal"> </span><span class="symbol">/</span>
+<span class="cbracket">}</span><span class="normal"> FooBarError</span><span class="symbol">;</span>
+
+<span class="comment">// foo-bar-error.c:</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">GDBusErrorEntry</span><span class="normal"> foo_bar_error_entries</span><span class="symbol">[]</span><span class="normal"> </span><span class="symbol">=</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="cbracket">{</span><span class="normal">FOO_BAR_ERROR_FAILED</span><span class="symbol">,</span><span class="normal">           </span><span class="string">"org.project.Foo.Bar.Error.Failed"</span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="normal">  </span><span class="cbracket">{</span><span class="normal">FOO_BAR_ERROR_ANOTHER_ERROR</span><span class="symbol">,</span><span class="normal">    </span><span class="string">"org.project.Foo.Bar.Error.AnotherError"</span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="normal">  </span><span class="cbracket">{</span><span class="normal">FOO_BAR_ERROR_SOME_THIRD_ERROR</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"org.project.Foo.Bar.Error.SomeThirdError"</span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+
+<span class="comment">// Ensure that every error code has an associated D-Bus error name</span>
+<span class="function"><a href="../glib-Miscellaneous-Macros.html#G-STATIC-ASSERT:CAPS">G_STATIC_ASSERT</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="../glib-Standard-Macros.html#G-N-ELEMENTS:CAPS">G_N_ELEMENTS</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">foo_bar_error_entries</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> FOO_BAR_N_ERRORS</span><span class="symbol">);</span>
+
+<span class="normal"><a href="../glib-Quarks.html#GQuark">GQuark</a></span>
+<span class="function">foo_bar_error_quark</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">volatile</span><span class="normal"> </span><span class="usertype">gsize</span><span class="normal"> quark_volatile </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="function"><a href="gio-GDBusError.html#g-dbus-error-register-error-domain">g_dbus_error_register_error_domain</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"foo-bar-error-quark"</span><span class="symbol">,</span>
+<span class="normal">                                      </span><span class="symbol">&amp;</span><span class="normal">quark_volatile</span><span class="symbol">,</span>
+<span class="normal">                                      foo_bar_error_entries</span><span class="symbol">,</span>
+<span class="normal">                                      </span><span class="function"><a href="../glib-Standard-Macros.html#G-N-ELEMENTS:CAPS">G_N_ELEMENTS</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">foo_bar_error_entries</span><span class="symbol">));</span>
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="../glib-Quarks.html#GQuark">GQuark</a></span><span class="symbol">)</span><span class="normal"> quark_volatile</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+With this setup, a D-Bus peer can transparently pass e.g. <code class="literal">FOO_BAR_ERROR_ANOTHER_ERROR</code> and
+other peers will see the D-Bus error name org.project.Foo.Bar.Error.AnotherError.</p>
+<p>If the other peer is using GDBus, and has registered the association with
+<a class="link" href="gio-GDBusError.html#g-dbus-error-register-error-domain" title="g_dbus_error_register_error_domain ()"><code class="function">g_dbus_error_register_error_domain()</code></a> in advance (e.g. by invoking the <code class="literal">FOO_BAR_ERROR</code> quark
+generation itself in the previous example) the peer will see also <code class="literal">FOO_BAR_ERROR_ANOTHER_ERROR</code> instead
+of <a class="link" href="gio-GIOError.html#G-IO-ERROR-DBUS-ERROR:CAPS"><code class="literal">G_IO_ERROR_DBUS_ERROR</code></a>. Note that GDBus clients can still recover
+org.project.Foo.Bar.Error.AnotherError using <a class="link" href="gio-GDBusError.html#g-dbus-error-get-remote-error" title="g_dbus_error_get_remote_error ()"><code class="function">g_dbus_error_get_remote_error()</code></a>.</p>
+<p>Note that the <a class="link" href="gio-GDBusError.html#G-DBUS-ERROR:CAPS" title="G_DBUS_ERROR"><code class="literal">G_DBUS_ERROR</code></a> error domain is intended only
+for returning errors from a remote message bus process. Errors
+generated locally in-process by e.g. <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> should use the
+<a class="link" href="gio-GIOError.html#G-IO-ERROR:CAPS" title="G_IO_ERROR"><code class="literal">G_IO_ERROR</code></a> domain.</p>
+</div>
+<div class="refsect1">
+<a name="gio-GDBusError.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-dbus-error-is-remote-error"></a><h3>g_dbus_error_is_remote_error ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_dbus_error_is_remote_error (<em class="parameter"><code>const <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> *error</code></em>);</pre>
+<p>Checks if <em class="parameter"><code>error</code></em>
+ represents an error received via D-Bus from a remote peer. If so,
+use <a class="link" href="gio-GDBusError.html#g-dbus-error-get-remote-error" title="g_dbus_error_get_remote_error ()"><code class="function">g_dbus_error_get_remote_error()</code></a> to get the name of the error.</p>
+<div class="refsect3">
+<a name="g-dbus-error-is-remote-error.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>A <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-error-is-remote-error.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>error</code></em>
+represents an error from a remote peer,
+<a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-error-get-remote-error"></a><h3>g_dbus_error_get_remote_error ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_error_get_remote_error (<em class="parameter"><code>const <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> *error</code></em>);</pre>
+<p>Gets the D-Bus error name used for <em class="parameter"><code>error</code></em>
+, if any.</p>
+<p>This function is guaranteed to return a D-Bus error name for all
+<a href="../glib-Error-Reporting.html#GError"><span class="type">GErrors</span></a> returned from functions handling remote method calls
+(e.g. <a class="link" href="GDBusConnection.html#g-dbus-connection-call-finish" title="g_dbus_connection_call_finish ()"><code class="function">g_dbus_connection_call_finish()</code></a>) unless
+<a class="link" href="gio-GDBusError.html#g-dbus-error-strip-remote-error" title="g_dbus_error_strip_remote_error ()"><code class="function">g_dbus_error_strip_remote_error()</code></a> has been used on <em class="parameter"><code>error</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-error-get-remote-error.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-error-get-remote-error.returns"></a><h4>Returns</h4>
+<p> an allocated string or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the D-Bus error name
+could not be found. Free with <a href="../glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-error-strip-remote-error"></a><h3>g_dbus_error_strip_remote_error ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_dbus_error_strip_remote_error (<em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> *error</code></em>);</pre>
+<p>Looks for extra information in the error message used to recover
+the D-Bus error name and strips it if found. If stripped, the
+message field in <em class="parameter"><code>error</code></em>
+ will correspond exactly to what was
+received on the wire.</p>
+<p>This is typically used when presenting errors to the end user.</p>
+<div class="refsect3">
+<a name="g-dbus-error-strip-remote-error.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>A <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-error-strip-remote-error.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if information was stripped, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-error-register-error-domain"></a><h3>g_dbus_error_register_error_domain ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_error_register_error_domain (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *error_domain_quark_name</code></em>,
+                                    <em class="parameter"><code>volatile <a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> *quark_volatile</code></em>,
+                                    <em class="parameter"><code>const <a class="link" href="gio-GDBusError.html#GDBusErrorEntry" title="GDBusErrorEntry"><span class="type">GDBusErrorEntry</span></a> *entries</code></em>,
+                                    <em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> num_entries</code></em>);</pre>
+<p>Helper function for associating a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> error domain with D-Bus error names.</p>
+<div class="refsect3">
+<a name="g-dbus-error-register-error-domain.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>error_domain_quark_name</p></td>
+<td class="parameter_description"><p>The error domain name.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>quark_volatile</p></td>
+<td class="parameter_description"><p>A pointer where to store the <a href="../glib-Quarks.html#GQuark"><span class="type">GQuark</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>entries</p></td>
+<td class="parameter_description"><p>A pointer to <em class="parameter"><code>num_entries</code></em>
+<a class="link" href="gio-GDBusError.html#GDBusErrorEntry" title="GDBusErrorEntry"><span class="type">GDBusErrorEntry</span></a> struct items. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=num_entries]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>num_entries</p></td>
+<td class="parameter_description"><p>Number of items to register.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-error-register-error"></a><h3>g_dbus_error_register_error ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_dbus_error_register_error (<em class="parameter"><code><a href="../glib-Quarks.html#GQuark"><span class="type">GQuark</span></a> error_domain</code></em>,
+                             <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> error_code</code></em>,
+                             <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *dbus_error_name</code></em>);</pre>
+<p>Creates an association to map between <em class="parameter"><code>dbus_error_name</code></em>
+ and
+<a href="../glib-Error-Reporting.html#GError"><span class="type">GErrors</span></a> specified by <em class="parameter"><code>error_domain</code></em>
+ and <em class="parameter"><code>error_code</code></em>
+.</p>
+<p>This is typically done in the routine that returns the <a href="../glib-Quarks.html#GQuark"><span class="type">GQuark</span></a> for
+an error domain.</p>
+<div class="refsect3">
+<a name="g-dbus-error-register-error.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>error_domain</p></td>
+<td class="parameter_description"><p>A <a href="../glib-Quarks.html#GQuark"><span class="type">GQuark</span></a> for a error domain.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error_code</p></td>
+<td class="parameter_description"><p>An error code.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>dbus_error_name</p></td>
+<td class="parameter_description"><p>A D-Bus error name.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-error-register-error.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the association was created, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if it already
+exists.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-error-unregister-error"></a><h3>g_dbus_error_unregister_error ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_dbus_error_unregister_error (<em class="parameter"><code><a href="../glib-Quarks.html#GQuark"><span class="type">GQuark</span></a> error_domain</code></em>,
+                               <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> error_code</code></em>,
+                               <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *dbus_error_name</code></em>);</pre>
+<p>Destroys an association previously set up with <a class="link" href="gio-GDBusError.html#g-dbus-error-register-error" title="g_dbus_error_register_error ()"><code class="function">g_dbus_error_register_error()</code></a>.</p>
+<div class="refsect3">
+<a name="g-dbus-error-unregister-error.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>error_domain</p></td>
+<td class="parameter_description"><p>A <a href="../glib-Quarks.html#GQuark"><span class="type">GQuark</span></a> for a error domain.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error_code</p></td>
+<td class="parameter_description"><p>An error code.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>dbus_error_name</p></td>
+<td class="parameter_description"><p>A D-Bus error name.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-error-unregister-error.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the association was destroyed, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if it wasn't found.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-error-new-for-dbus-error"></a><h3>g_dbus_error_new_for_dbus_error ()</h3>
+<pre class="programlisting"><a href="../glib-Error-Reporting.html#GError"><span class="returnvalue">GError</span></a> *
+g_dbus_error_new_for_dbus_error (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *dbus_error_name</code></em>,
+                                 <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *dbus_error_message</code></em>);</pre>
+<p>Creates a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> based on the contents of <em class="parameter"><code>dbus_error_name</code></em>
+ and
+<em class="parameter"><code>dbus_error_message</code></em>
+.</p>
+<p>Errors registered with <a class="link" href="gio-GDBusError.html#g-dbus-error-register-error" title="g_dbus_error_register_error ()"><code class="function">g_dbus_error_register_error()</code></a> will be looked
+up using <em class="parameter"><code>dbus_error_name</code></em>
+ and if a match is found, the error domain
+and code is used. Applications can use <a class="link" href="gio-GDBusError.html#g-dbus-error-get-remote-error" title="g_dbus_error_get_remote_error ()"><code class="function">g_dbus_error_get_remote_error()</code></a>
+to recover <em class="parameter"><code>dbus_error_name</code></em>
+.</p>
+<p>If a match against a registered error is not found and the D-Bus
+error name is in a form as returned by <a class="link" href="gio-GDBusError.html#g-dbus-error-encode-gerror" title="g_dbus_error_encode_gerror ()"><code class="function">g_dbus_error_encode_gerror()</code></a>
+the error domain and code encoded in the name is used to
+create the <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>. Also, <em class="parameter"><code>dbus_error_name</code></em>
+ is added to the error message
+such that it can be recovered with <a class="link" href="gio-GDBusError.html#g-dbus-error-get-remote-error" title="g_dbus_error_get_remote_error ()"><code class="function">g_dbus_error_get_remote_error()</code></a>.</p>
+<p>Otherwise, a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> with the error code <a class="link" href="gio-GIOError.html#G-IO-ERROR-DBUS-ERROR:CAPS"><code class="literal">G_IO_ERROR_DBUS_ERROR</code></a>
+in the <a class="link" href="gio-GIOError.html#G-IO-ERROR:CAPS" title="G_IO_ERROR"><span class="type">G_IO_ERROR</span></a> error domain is returned. Also, <em class="parameter"><code>dbus_error_name</code></em>
+ is
+added to the error message such that it can be recovered with
+<a class="link" href="gio-GDBusError.html#g-dbus-error-get-remote-error" title="g_dbus_error_get_remote_error ()"><code class="function">g_dbus_error_get_remote_error()</code></a>.</p>
+<p>In all three cases, <em class="parameter"><code>dbus_error_name</code></em>
+ can always be recovered from the
+returned <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> using the <a class="link" href="gio-GDBusError.html#g-dbus-error-get-remote-error" title="g_dbus_error_get_remote_error ()"><code class="function">g_dbus_error_get_remote_error()</code></a> function
+(unless <a class="link" href="gio-GDBusError.html#g-dbus-error-strip-remote-error" title="g_dbus_error_strip_remote_error ()"><code class="function">g_dbus_error_strip_remote_error()</code></a> hasn't been used on the returned error).</p>
+<p>This function is typically only used in object mappings to prepare
+<a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> instances for applications. Regular applications should not use
+it.</p>
+<div class="refsect3">
+<a name="g-dbus-error-new-for-dbus-error.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>dbus_error_name</p></td>
+<td class="parameter_description"><p>D-Bus error name.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>dbus_error_message</p></td>
+<td class="parameter_description"><p>D-Bus error message.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-error-new-for-dbus-error.returns"></a><h4>Returns</h4>
+<p> An allocated <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>. Free with <a href="../glib-Error-Reporting.html#g-error-free"><code class="function">g_error_free()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-error-set-dbus-error"></a><h3>g_dbus_error_set_dbus_error ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_error_set_dbus_error (<em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>,
+                             <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *dbus_error_name</code></em>,
+                             <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *dbus_error_message</code></em>,
+                             <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *format</code></em>,
+                             <em class="parameter"><code>...</code></em>);</pre>
+<p>Does nothing if <em class="parameter"><code>error</code></em>
+ is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. Otherwise sets *<em class="parameter"><code>error</code></em>
+ to
+a new <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> created with <a class="link" href="gio-GDBusError.html#g-dbus-error-new-for-dbus-error" title="g_dbus_error_new_for_dbus_error ()"><code class="function">g_dbus_error_new_for_dbus_error()</code></a>
+with <em class="parameter"><code>dbus_error_message</code></em>
+ prepend with <em class="parameter"><code>format</code></em>
+ (unless <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>).</p>
+<div class="refsect3">
+<a name="g-dbus-error-set-dbus-error.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>A pointer to a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>dbus_error_name</p></td>
+<td class="parameter_description"><p>D-Bus error name.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>dbus_error_message</p></td>
+<td class="parameter_description"><p>D-Bus error message.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>format</p></td>
+<td class="parameter_description"><p>printf()-style format to prepend to <em class="parameter"><code>dbus_error_message</code></em>
+or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>Arguments for <em class="parameter"><code>format</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-error-set-dbus-error-valist"></a><h3>g_dbus_error_set_dbus_error_valist ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_error_set_dbus_error_valist (<em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>,
+                                    <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *dbus_error_name</code></em>,
+                                    <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *dbus_error_message</code></em>,
+                                    <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *format</code></em>,
+                                    <em class="parameter"><code><span class="type">va_list</span> var_args</code></em>);</pre>
+<p>Like <a class="link" href="gio-GDBusError.html#g-dbus-error-set-dbus-error" title="g_dbus_error_set_dbus_error ()"><code class="function">g_dbus_error_set_dbus_error()</code></a> but intended for language bindings.</p>
+<div class="refsect3">
+<a name="g-dbus-error-set-dbus-error-valist.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>A pointer to a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>dbus_error_name</p></td>
+<td class="parameter_description"><p>D-Bus error name.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>dbus_error_message</p></td>
+<td class="parameter_description"><p>D-Bus error message.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>format</p></td>
+<td class="parameter_description"><p>printf()-style format to prepend to <em class="parameter"><code>dbus_error_message</code></em>
+or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>var_args</p></td>
+<td class="parameter_description"><p>Arguments for <em class="parameter"><code>format</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-error-encode-gerror"></a><h3>g_dbus_error_encode_gerror ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_error_encode_gerror (<em class="parameter"><code>const <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> *error</code></em>);</pre>
+<p>Creates a D-Bus error name to use for <em class="parameter"><code>error</code></em>
+. If <em class="parameter"><code>error</code></em>
+ matches
+a registered error (cf. <a class="link" href="gio-GDBusError.html#g-dbus-error-register-error" title="g_dbus_error_register_error ()"><code class="function">g_dbus_error_register_error()</code></a>), the corresponding
+D-Bus error name will be returned.</p>
+<p>Otherwise the a name of the form
+<code class="literal">org.gtk.GDBus.UnmappedGError.Quark._ESCAPED_QUARK_NAME.Code_ERROR_CODE</code>
+will be used. This allows other GDBus applications to map the error
+on the wire back to a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> using <a class="link" href="gio-GDBusError.html#g-dbus-error-new-for-dbus-error" title="g_dbus_error_new_for_dbus_error ()"><code class="function">g_dbus_error_new_for_dbus_error()</code></a>.</p>
+<p>This function is typically only used in object mappings to put a
+<a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> on the wire. Regular applications should not use it.</p>
+<div class="refsect3">
+<a name="g-dbus-error-encode-gerror.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>A <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-error-encode-gerror.returns"></a><h4>Returns</h4>
+<p> A D-Bus error name (never <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>). Free with <a href="../glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-GDBusError.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GDBusError"></a><h3>enum GDBusError</h3>
+<p>Error codes for the <a class="link" href="gio-GDBusError.html#G-DBUS-ERROR:CAPS" title="G_DBUS_ERROR"><code class="literal">G_DBUS_ERROR</code></a> error domain.</p>
+<div class="refsect3">
+<a name="GDBusError.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-FAILED:CAPS"></a>G_DBUS_ERROR_FAILED</p></td>
+<td class="enum_member_description">
+<p>A generic error; "something went wrong" - see the error message for
+more.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-NO-MEMORY:CAPS"></a>G_DBUS_ERROR_NO_MEMORY</p></td>
+<td class="enum_member_description">
+<p>There was not enough memory to complete an operation.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-SERVICE-UNKNOWN:CAPS"></a>G_DBUS_ERROR_SERVICE_UNKNOWN</p></td>
+<td class="enum_member_description">
+<p>The bus doesn't know how to launch a service to supply the bus name
+you wanted.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-NAME-HAS-NO-OWNER:CAPS"></a>G_DBUS_ERROR_NAME_HAS_NO_OWNER</p></td>
+<td class="enum_member_description">
+<p>The bus name you referenced doesn't exist (i.e. no application owns
+it).</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-NO-REPLY:CAPS"></a>G_DBUS_ERROR_NO_REPLY</p></td>
+<td class="enum_member_description">
+<p>No reply to a message expecting one, usually means a timeout occurred.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-IO-ERROR:CAPS"></a>G_DBUS_ERROR_IO_ERROR</p></td>
+<td class="enum_member_description">
+<p>Something went wrong reading or writing to a socket, for example.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-BAD-ADDRESS:CAPS"></a>G_DBUS_ERROR_BAD_ADDRESS</p></td>
+<td class="enum_member_description">
+<p>A D-Bus bus address was malformed.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-NOT-SUPPORTED:CAPS"></a>G_DBUS_ERROR_NOT_SUPPORTED</p></td>
+<td class="enum_member_description">
+<p>Requested operation isn't supported (like ENOSYS on UNIX).</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-LIMITS-EXCEEDED:CAPS"></a>G_DBUS_ERROR_LIMITS_EXCEEDED</p></td>
+<td class="enum_member_description">
+<p>Some limited resource is exhausted.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-ACCESS-DENIED:CAPS"></a>G_DBUS_ERROR_ACCESS_DENIED</p></td>
+<td class="enum_member_description">
+<p>Security restrictions don't allow doing what you're trying to do.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-AUTH-FAILED:CAPS"></a>G_DBUS_ERROR_AUTH_FAILED</p></td>
+<td class="enum_member_description">
+<p>Authentication didn't work.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-NO-SERVER:CAPS"></a>G_DBUS_ERROR_NO_SERVER</p></td>
+<td class="enum_member_description">
+<p>Unable to connect to server (probably caused by ECONNREFUSED on a
+socket).</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-TIMEOUT:CAPS"></a>G_DBUS_ERROR_TIMEOUT</p></td>
+<td class="enum_member_description">
+<p>Certain timeout errors, possibly ETIMEDOUT on a socket.  Note that
+<a class="link" href="gio-GDBusError.html#G-DBUS-ERROR-NO-REPLY:CAPS"><code class="literal">G_DBUS_ERROR_NO_REPLY</code></a> is used for message reply timeouts. Warning:
+this is confusingly-named given that <a class="link" href="gio-GDBusError.html#G-DBUS-ERROR-TIMED-OUT:CAPS"><code class="literal">G_DBUS_ERROR_TIMED_OUT</code></a> also
+exists. We can't fix it for compatibility reasons so just be
+careful.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-NO-NETWORK:CAPS"></a>G_DBUS_ERROR_NO_NETWORK</p></td>
+<td class="enum_member_description">
+<p>No network access (probably ENETUNREACH on a socket).</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-ADDRESS-IN-USE:CAPS"></a>G_DBUS_ERROR_ADDRESS_IN_USE</p></td>
+<td class="enum_member_description">
+<p>Can't bind a socket since its address is in use (i.e. EADDRINUSE).</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-DISCONNECTED:CAPS"></a>G_DBUS_ERROR_DISCONNECTED</p></td>
+<td class="enum_member_description">
+<p>The connection is disconnected and you're trying to use it.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-INVALID-ARGS:CAPS"></a>G_DBUS_ERROR_INVALID_ARGS</p></td>
+<td class="enum_member_description">
+<p>Invalid arguments passed to a method call.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-FILE-NOT-FOUND:CAPS"></a>G_DBUS_ERROR_FILE_NOT_FOUND</p></td>
+<td class="enum_member_description">
+<p>Missing file.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-FILE-EXISTS:CAPS"></a>G_DBUS_ERROR_FILE_EXISTS</p></td>
+<td class="enum_member_description">
+<p>Existing file and the operation you're using does not silently overwrite.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-UNKNOWN-METHOD:CAPS"></a>G_DBUS_ERROR_UNKNOWN_METHOD</p></td>
+<td class="enum_member_description">
+<p>Method name you invoked isn't known by the object you invoked it on.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-TIMED-OUT:CAPS"></a>G_DBUS_ERROR_TIMED_OUT</p></td>
+<td class="enum_member_description">
+<p>Certain timeout errors, e.g. while starting a service. Warning: this is
+confusingly-named given that <a class="link" href="gio-GDBusError.html#G-DBUS-ERROR-TIMEOUT:CAPS"><code class="literal">G_DBUS_ERROR_TIMEOUT</code></a> also exists. We
+can't fix it for compatibility reasons so just be careful.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-MATCH-RULE-NOT-FOUND:CAPS"></a>G_DBUS_ERROR_MATCH_RULE_NOT_FOUND</p></td>
+<td class="enum_member_description">
+<p>Tried to remove or modify a match rule that didn't exist.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-MATCH-RULE-INVALID:CAPS"></a>G_DBUS_ERROR_MATCH_RULE_INVALID</p></td>
+<td class="enum_member_description">
+<p>The match rule isn't syntactically valid.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-SPAWN-EXEC-FAILED:CAPS"></a>G_DBUS_ERROR_SPAWN_EXEC_FAILED</p></td>
+<td class="enum_member_description">
+<p>While starting a new process, the <code class="function">exec()</code> call failed.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-SPAWN-FORK-FAILED:CAPS"></a>G_DBUS_ERROR_SPAWN_FORK_FAILED</p></td>
+<td class="enum_member_description">
+<p>While starting a new process, the <code class="function">fork()</code> call failed.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-SPAWN-CHILD-EXITED:CAPS"></a>G_DBUS_ERROR_SPAWN_CHILD_EXITED</p></td>
+<td class="enum_member_description">
+<p>While starting a new process, the child exited with a status code.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-SPAWN-CHILD-SIGNALED:CAPS"></a>G_DBUS_ERROR_SPAWN_CHILD_SIGNALED</p></td>
+<td class="enum_member_description">
+<p>While starting a new process, the child exited on a signal.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-SPAWN-FAILED:CAPS"></a>G_DBUS_ERROR_SPAWN_FAILED</p></td>
+<td class="enum_member_description">
+<p>While starting a new process, something went wrong.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-SPAWN-SETUP-FAILED:CAPS"></a>G_DBUS_ERROR_SPAWN_SETUP_FAILED</p></td>
+<td class="enum_member_description">
+<p>We failed to setup the environment correctly.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-SPAWN-CONFIG-INVALID:CAPS"></a>G_DBUS_ERROR_SPAWN_CONFIG_INVALID</p></td>
+<td class="enum_member_description">
+<p>We failed to setup the config parser correctly.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-SPAWN-SERVICE-INVALID:CAPS"></a>G_DBUS_ERROR_SPAWN_SERVICE_INVALID</p></td>
+<td class="enum_member_description">
+<p>Bus name was not valid.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-SPAWN-SERVICE-NOT-FOUND:CAPS"></a>G_DBUS_ERROR_SPAWN_SERVICE_NOT_FOUND</p></td>
+<td class="enum_member_description">
+<p>Service file not found in system-services directory.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-SPAWN-PERMISSIONS-INVALID:CAPS"></a>G_DBUS_ERROR_SPAWN_PERMISSIONS_INVALID</p></td>
+<td class="enum_member_description">
+<p>Permissions are incorrect on the setuid helper.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-SPAWN-FILE-INVALID:CAPS"></a>G_DBUS_ERROR_SPAWN_FILE_INVALID</p></td>
+<td class="enum_member_description">
+<p>Service file invalid (Name, User or Exec missing).</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-SPAWN-NO-MEMORY:CAPS"></a>G_DBUS_ERROR_SPAWN_NO_MEMORY</p></td>
+<td class="enum_member_description">
+<p>Tried to get a UNIX process ID and it wasn't available.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-UNIX-PROCESS-ID-UNKNOWN:CAPS"></a>G_DBUS_ERROR_UNIX_PROCESS_ID_UNKNOWN</p></td>
+<td class="enum_member_description">
+<p>Tried to get a UNIX process ID and it wasn't available.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-INVALID-SIGNATURE:CAPS"></a>G_DBUS_ERROR_INVALID_SIGNATURE</p></td>
+<td class="enum_member_description">
+<p>A type signature is not valid.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-INVALID-FILE-CONTENT:CAPS"></a>G_DBUS_ERROR_INVALID_FILE_CONTENT</p></td>
+<td class="enum_member_description">
+<p>A file contains invalid syntax or is otherwise broken.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-SELINUX-SECURITY-CONTEXT-UNKNOWN:CAPS"></a>G_DBUS_ERROR_SELINUX_SECURITY_CONTEXT_UNKNOWN</p></td>
+<td class="enum_member_description">
+<p>Asked for SELinux security context and it wasn't available.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-ADT-AUDIT-DATA-UNKNOWN:CAPS"></a>G_DBUS_ERROR_ADT_AUDIT_DATA_UNKNOWN</p></td>
+<td class="enum_member_description">
+<p>Asked for ADT audit data and it wasn't available.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-OBJECT-PATH-IN-USE:CAPS"></a>G_DBUS_ERROR_OBJECT_PATH_IN_USE</p></td>
+<td class="enum_member_description">
+<p>There's already an object with the requested object path.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-UNKNOWN-OBJECT:CAPS"></a>G_DBUS_ERROR_UNKNOWN_OBJECT</p></td>
+<td class="enum_member_description">
+<p>Object you invoked a method on isn't known. Since 2.42</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-UNKNOWN-INTERFACE:CAPS"></a>G_DBUS_ERROR_UNKNOWN_INTERFACE</p></td>
+<td class="enum_member_description">
+<p>Interface you invoked a method on isn't known by the object. Since 2.42</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-UNKNOWN-PROPERTY:CAPS"></a>G_DBUS_ERROR_UNKNOWN_PROPERTY</p></td>
+<td class="enum_member_description">
+<p>Property you tried to access isn't known by the object. Since 2.42</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-ERROR-PROPERTY-READ-ONLY:CAPS"></a>G_DBUS_ERROR_PROPERTY_READ_ONLY</p></td>
+<td class="enum_member_description">
+<p>Property you tried to set is read-only. Since 2.42</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-DBUS-ERROR:CAPS"></a><h3>G_DBUS_ERROR</h3>
+<pre class="programlisting">#define G_DBUS_ERROR g_dbus_error_quark()
+</pre>
+<p>Error domain for errors generated by a remote message bus. Errors
+in this domain will be from the <a class="link" href="gio-GDBusError.html#GDBusError" title="enum GDBusError"><span class="type">GDBusError</span></a> enumeration.  See
+<a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for more information on error domains.</p>
+<p>Note that this error domain is intended only for
+returning errors from a remote message bus process. Errors
+generated locally in-process by e.g. <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> should use the
+<a class="link" href="gio-GIOError.html#G-IO-ERROR:CAPS" title="G_IO_ERROR"><code class="literal">G_IO_ERROR</code></a> domain.</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusErrorEntry"></a><h3>GDBusErrorEntry</h3>
+<pre class="programlisting">typedef struct {
+  gint         error_code;
+  const gchar *dbus_error_name;
+} GDBusErrorEntry;
+</pre>
+<p>Struct used in <a class="link" href="gio-GDBusError.html#g-dbus-error-register-error-domain" title="g_dbus_error_register_error_domain ()"><code class="function">g_dbus_error_register_error_domain()</code></a>.</p>
+<div class="refsect3">
+<a name="GDBusErrorEntry.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> <em class="structfield"><code><a name="GDBusErrorEntry.error-code"></a>error_code</code></em>;</p></td>
+<td class="struct_member_description"><p>An error code.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GDBusErrorEntry.dbus-error-name"></a>dbus_error_name</code></em>;</p></td>
+<td class="struct_member_description"><p>The D-Bus error name to associate with <em class="parameter"><code>error_code</code></em>
+.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

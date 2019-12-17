@@ -1,0 +1,278 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>How to define and implement interfaces: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="pt02.html" title="Part IV. Tutorial">
+<link rel="prev" href="howto-gobject-chainup.html" title="Chaining up">
+<link rel="next" href="howto-interface-implement.html" title="Implementing interfaces">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="pt02.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="howto-gobject-chainup.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="howto-interface-implement.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="chapter">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="howto-interface"></a>How to define and implement interfaces</h2></div></div></div>
+<div class="toc"><dl class="toc">
+<dt><span class="sect1"><a href="howto-interface.html#howto-interface-define">Defining interfaces</a></span></dt>
+<dt><span class="sect1"><a href="howto-interface-implement.html">Implementing interfaces</a></span></dt>
+<dt><span class="sect1"><a href="howto-interface-prerequisite.html">Interface definition prerequisites</a></span></dt>
+<dt><span class="sect1"><a href="howto-interface-properties.html">Interface properties</a></span></dt>
+<dt><span class="sect1"><a href="howto-interface-override.html">Overriding interface methods</a></span></dt>
+</dl></div>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="howto-interface-define"></a>Defining interfaces</h2></div></div></div>
+<p>
+    The theory behind how GObject interfaces work is given in
+    <a class="xref" href="gtype-non-instantiable-classed.html" title="Non-instantiable classed types: interfaces">the section called “Non-instantiable classed types: interfaces”</a>; this section covers how to
+    define and implement an interface.
+  </p>
+<p>
+    The first step is to get the header right. This interface
+    defines three methods:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="comment">/*</span>
+<span class="comment"> * Copyright/Licensing information.</span>
+<span class="comment"> */</span>
+
+<span class="preproc">#ifndef</span><span class="normal"> __VIEWER_EDITABLE_H__</span>
+<span class="preproc">#define</span><span class="normal"> __VIEWER_EDITABLE_H__</span>
+
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;glib-object.h&gt;</span>
+
+<span class="normal"><a href="../glib-Miscellaneous-Macros.html#G-BEGIN-DECLS:CAPS">G_BEGIN_DECLS</a></span>
+
+<span class="preproc">#define</span><span class="normal"> </span><span class="usertype">VIEWER_TYPE_EDITABLE</span><span class="normal"> </span><span class="function">viewer_editable_get_type</span><span class="normal"> </span><span class="symbol">()</span>
+<span class="function"><a href="gobject-Type-Information.html#G-DECLARE-INTERFACE:CAPS">G_DECLARE_INTERFACE</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ViewerEditable</span><span class="symbol">,</span><span class="normal"> viewer_editable</span><span class="symbol">,</span><span class="normal"> VIEWER</span><span class="symbol">,</span><span class="normal"> EDITABLE</span><span class="symbol">,</span><span class="normal"> <a href="gobject-The-Base-Object-Type.html#GObject-struct">GObject</a></span><span class="symbol">)</span>
+
+<span class="keyword">struct</span><span class="normal"> </span><span class="classname">_ViewerEditableInterface</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GTypeInterface</span><span class="normal"> parent_iface</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="type">void</span><span class="normal"> </span><span class="symbol">(*</span><span class="normal">save</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditable</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">,</span>
+<span class="normal">                </span><span class="usertype">GError</span><span class="normal">         </span><span class="symbol">**</span><span class="normal">error</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="type">void</span><span class="normal"> </span><span class="symbol">(*</span><span class="normal">undo</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditable</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">,</span>
+<span class="normal">                </span><span class="usertype">guint</span><span class="normal">            n_steps</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="type">void</span><span class="normal"> </span><span class="symbol">(*</span><span class="normal">redo</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditable</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">,</span>
+<span class="normal">                </span><span class="usertype">guint</span><span class="normal">            n_steps</span><span class="symbol">);</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+
+<span class="type">void</span><span class="normal"> </span><span class="function">viewer_editable_save</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditable</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">,</span>
+<span class="normal">                           </span><span class="usertype">GError</span><span class="normal">         </span><span class="symbol">**</span><span class="normal">error</span><span class="symbol">);</span>
+<span class="type">void</span><span class="normal"> </span><span class="function">viewer_editable_undo</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditable</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">,</span>
+<span class="normal">                           </span><span class="usertype">guint</span><span class="normal">            n_steps</span><span class="symbol">);</span>
+<span class="type">void</span><span class="normal"> </span><span class="function">viewer_editable_redo</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditable</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">,</span>
+<span class="normal">                           </span><span class="usertype">guint</span><span class="normal">            n_steps</span><span class="symbol">);</span>
+
+<span class="normal"><a href="../glib-Miscellaneous-Macros.html#G-END-DECLS:CAPS">G_END_DECLS</a></span>
+
+<span class="preproc">#endif</span><span class="normal"> </span><span class="comment">/* __VIEWER_EDITABLE_H__ */</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+    This code is the same as the code for a normal <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a>
+    which derives from a <a class="link" href="gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a> except for a few details:
+    </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>
+        The <code class="function">_GET_CLASS</code> function is called
+        <code class="function">_GET_IFACE</code> (and is defined by
+        <a class="link" href="gobject-Type-Information.html#G-DECLARE-INTERFACE:CAPS" title="G_DECLARE_INTERFACE()"><code class="function">G_DECLARE_INTERFACE</code></a>).
+      </p></li>
+<li class="listitem"><p>
+        The instance type, <span class="type">ViewerEditable</span>, is not fully defined: it is
+        used merely as an abstract type which represents an instance of
+        whatever object which implements the interface.
+      </p></li>
+<li class="listitem"><p>
+        The parent of the <span class="type">ViewerEditableInterface</span> is
+        <span class="type">GTypeInterface</span>, not <span class="type">GObjectClass</span>.
+      </p></li>
+</ul></div>
+<p>
+  </p>
+<p>
+    The implementation of the <span class="type">ViewerEditable</span> type itself is trivial:
+    </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p><code class="function"><a class="link" href="gobject-Type-Information.html#G-DEFINE-INTERFACE:CAPS" title="G_DEFINE_INTERFACE()">G_DEFINE_INTERFACE</a></code>
+       creates a <code class="function">viewer_editable_get_type</code> function which registers the
+       type in the type system. The third argument is used to define a
+       <a class="link" href="howto-interface-prerequisite.html" title="Interface definition prerequisites">prerequisite interface</a>
+       (which we'll talk about more later). Just pass <code class="code">0</code> for this
+       argument when an interface has no prerequisite.
+       </p></li>
+<li class="listitem"><p><code class="function">viewer_editable_default_init</code> is expected
+      to register the interface's signals if there are any (we will see a bit
+      later how to use them).</p></li>
+<li class="listitem"><p>The interface methods <code class="function">viewer_editable_save</code>,
+      <code class="function">viewer_editable_undo</code> and <code class="function">viewer_editable_redo</code> dereference the interface
+      structure to access its associated interface function and call it.
+      </p></li>
+</ul></div>
+<p>
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="function"><a href="gobject-Type-Information.html#G-DEFINE-INTERFACE:CAPS">G_DEFINE_INTERFACE</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ViewerEditable</span><span class="symbol">,</span><span class="normal"> viewer_editable</span><span class="symbol">,</span><span class="normal"> <a href="gobject-Type-Information.html#G-TYPE-OBJECT:CAPS">G_TYPE_OBJECT</a></span><span class="symbol">)</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_editable_default_init</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditableInterface</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">iface</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="comment">/* add properties and signals to the interface here */</span>
+<span class="cbracket">}</span>
+
+<span class="type">void</span>
+<span class="function">viewer_editable_save</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditable</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">,</span>
+<span class="normal">                      </span><span class="usertype">GError</span><span class="normal">         </span><span class="symbol">**</span><span class="normal">error</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">ViewerEditableInterface</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">iface</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-return-if-fail">g_return_if_fail</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">VIEWER_IS_EDITABLE</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">));</span>
+<span class="normal">  </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-return-if-fail">g_return_if_fail</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">error </span><span class="symbol">==</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a> </span><span class="symbol">||</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">error </span><span class="symbol">==</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="normal">  iface </span><span class="symbol">=</span><span class="normal"> </span><span class="function">VIEWER_EDITABLE_GET_IFACE</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-return-if-fail">g_return_if_fail</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">iface</span><span class="symbol">-&gt;</span><span class="normal">save </span><span class="symbol">!=</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">  iface</span><span class="symbol">-&gt;</span><span class="function">save</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">,</span><span class="normal"> error</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="type">void</span>
+<span class="function">viewer_editable_undo</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditable</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">,</span>
+<span class="normal">                      </span><span class="usertype">guint</span><span class="normal">           n_steps</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">ViewerEditableInterface</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">iface</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-return-if-fail">g_return_if_fail</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">VIEWER_IS_EDITABLE</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">));</span>
+
+<span class="normal">  iface </span><span class="symbol">=</span><span class="normal"> </span><span class="function">VIEWER_EDITABLE_GET_IFACE</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-return-if-fail">g_return_if_fail</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">iface</span><span class="symbol">-&gt;</span><span class="normal">undo </span><span class="symbol">!=</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">  iface</span><span class="symbol">-&gt;</span><span class="function">undo</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">,</span><span class="normal"> n_steps</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="type">void</span>
+<span class="function">viewer_editable_redo</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditable</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">,</span>
+<span class="normal">                      </span><span class="usertype">guint</span><span class="normal">           n_steps</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">ViewerEditableInterface</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">iface</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-return-if-fail">g_return_if_fail</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">VIEWER_IS_EDITABLE</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">));</span>
+
+<span class="normal">  iface </span><span class="symbol">=</span><span class="normal"> </span><span class="function">VIEWER_EDITABLE_GET_IFACE</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-return-if-fail">g_return_if_fail</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">iface</span><span class="symbol">-&gt;</span><span class="normal">redo </span><span class="symbol">!=</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">  iface</span><span class="symbol">-&gt;</span><span class="function">redo</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">,</span><span class="normal"> n_steps</span><span class="symbol">);</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+    </p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

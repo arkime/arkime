@@ -1,0 +1,1739 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Miscellaneous Macros: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-fundamentals.html" title="GLib Fundamentals">
+<link rel="prev" href="glib-Numerical-Definitions.html" title="Numerical Definitions">
+<link rel="next" href="glib-Atomic-Operations.html" title="Atomic Operations">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-Miscellaneous-Macros.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-fundamentals.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Numerical-Definitions.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-Atomic-Operations.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Miscellaneous-Macros"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Miscellaneous-Macros.top_of_page"></a>Miscellaneous Macros</span></h2>
+<p>Miscellaneous Macros — specialized macros which are not used often</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-Miscellaneous-Macros.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#g-auto" title="g_auto()">g_auto</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#g-autoptr" title="g_autoptr()">g_autoptr</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#g-autolist" title="g_autolist()">g_autolist</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#g-autoslist" title="g_autoslist()">g_autoslist</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#G-DEFINE-AUTOPTR-CLEANUP-FUNC:CAPS" title="G_DEFINE_AUTOPTR_CLEANUP_FUNC()">G_DEFINE_AUTOPTR_CLEANUP_FUNC</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#G-DEFINE-AUTO-CLEANUP-CLEAR-FUNC:CAPS" title="G_DEFINE_AUTO_CLEANUP_CLEAR_FUNC()">G_DEFINE_AUTO_CLEANUP_CLEAR_FUNC</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#G-DEFINE-AUTO-CLEANUP-FREE-FUNC:CAPS" title="G_DEFINE_AUTO_CLEANUP_FREE_FUNC()">G_DEFINE_AUTO_CLEANUP_FREE_FUNC</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#G-VA-COPY:CAPS" title="G_VA_COPY()">G_VA_COPY</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#G-STRINGIFY:CAPS" title="G_STRINGIFY()">G_STRINGIFY</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#G-PASTE:CAPS" title="G_PASTE()">G_PASTE</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#G-STATIC-ASSERT:CAPS" title="G_STATIC_ASSERT()">G_STATIC_ASSERT</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#G-STATIC-ASSERT-EXPR:CAPS" title="G_STATIC_ASSERT_EXPR()">G_STATIC_ASSERT_EXPR</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-CHECK-VERSION:CAPS" title="G_GNUC_CHECK_VERSION()">G_GNUC_CHECK_VERSION</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-ALLOC-SIZE:CAPS" title="G_GNUC_ALLOC_SIZE()">G_GNUC_ALLOC_SIZE</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-ALLOC-SIZE2:CAPS" title="G_GNUC_ALLOC_SIZE2()">G_GNUC_ALLOC_SIZE2</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-DEPRECATED-FOR:CAPS" title="G_GNUC_DEPRECATED_FOR()">G_GNUC_DEPRECATED_FOR</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-PRINTF:CAPS" title="G_GNUC_PRINTF()">G_GNUC_PRINTF</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-SCANF:CAPS" title="G_GNUC_SCANF()">G_GNUC_SCANF</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-FORMAT:CAPS" title="G_GNUC_FORMAT()">G_GNUC_FORMAT</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#G-DEPRECATED-FOR:CAPS" title="G_DEPRECATED_FOR()">G_DEPRECATED_FOR</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#G-UNAVAILABLE:CAPS" title="G_UNAVAILABLE()">G_UNAVAILABLE</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#G-LIKELY:CAPS" title="G_LIKELY()">G_LIKELY</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Miscellaneous-Macros.html#G-UNLIKELY:CAPS" title="G_UNLIKELY()">G_UNLIKELY</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Miscellaneous-Macros.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-INLINE-FUNC:CAPS" title="G_INLINE_FUNC">G_INLINE_FUNC</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#g-autofree" title="g_autofree">g_autofree</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-STMT-START:CAPS" title="G_STMT_START">G_STMT_START</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-STMT-END:CAPS" title="G_STMT_END">G_STMT_END</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-BEGIN-DECLS:CAPS" title="G_BEGIN_DECLS">G_BEGIN_DECLS</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-END-DECLS:CAPS" title="G_END_DECLS">G_END_DECLS</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-EXTENSION:CAPS" title="G_GNUC_EXTENSION">G_GNUC_EXTENSION</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-CONST:CAPS" title="G_GNUC_CONST">G_GNUC_CONST</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-PURE:CAPS" title="G_GNUC_PURE">G_GNUC_PURE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-MALLOC:CAPS" title="G_GNUC_MALLOC">G_GNUC_MALLOC</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-DEPRECATED:CAPS" title="G_GNUC_DEPRECATED">G_GNUC_DEPRECATED</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-BEGIN-IGNORE-DEPRECATIONS:CAPS" title="G_GNUC_BEGIN_IGNORE_DEPRECATIONS">G_GNUC_BEGIN_IGNORE_DEPRECATIONS</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-END-IGNORE-DEPRECATIONS:CAPS" title="G_GNUC_END_IGNORE_DEPRECATIONS">G_GNUC_END_IGNORE_DEPRECATIONS</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-NORETURN:CAPS" title="G_GNUC_NORETURN">G_GNUC_NORETURN</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-UNUSED:CAPS" title="G_GNUC_UNUSED">G_GNUC_UNUSED</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-NULL-TERMINATED:CAPS" title="G_GNUC_NULL_TERMINATED">G_GNUC_NULL_TERMINATED</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-WARN-UNUSED-RESULT:CAPS" title="G_GNUC_WARN_UNUSED_RESULT">G_GNUC_WARN_UNUSED_RESULT</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-FUNCTION:CAPS" title="G_GNUC_FUNCTION">G_GNUC_FUNCTION</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-PRETTY-FUNCTION:CAPS" title="G_GNUC_PRETTY_FUNCTION">G_GNUC_PRETTY_FUNCTION</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-NO-INSTRUMENT:CAPS" title="G_GNUC_NO_INSTRUMENT">G_GNUC_NO_INSTRUMENT</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-HAVE-GNUC-VISIBILITY:CAPS" title="G_HAVE_GNUC_VISIBILITY">G_HAVE_GNUC_VISIBILITY</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-INTERNAL:CAPS" title="G_GNUC_INTERNAL">G_GNUC_INTERNAL</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-MAY-ALIAS:CAPS" title="G_GNUC_MAY_ALIAS">G_GNUC_MAY_ALIAS</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-DEPRECATED:CAPS" title="G_DEPRECATED">G_DEPRECATED</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-STRLOC:CAPS" title="G_STRLOC">G_STRLOC</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Miscellaneous-Macros.html#G-STRFUNC:CAPS" title="G_STRFUNC">G_STRFUNC</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Miscellaneous-Macros.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Miscellaneous-Macros.description"></a><h2>Description</h2>
+<p>These macros provide more specialized features which are not
+needed so often by application programmers.</p>
+</div>
+<div class="refsect1">
+<a name="glib-Miscellaneous-Macros.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-auto"></a><h3>g_auto()</h3>
+<pre class="programlisting">#define             g_auto(TypeName)</pre>
+<p>Helper to declare a variable with automatic cleanup.</p>
+<p>The variable is cleaned up in a way appropriate to its type when the
+variable goes out of scope.  The type must support this.</p>
+<p>This feature is only supported on GCC and clang.  This macro is not
+defined on other compilers and should not be used in programs that
+are intended to be portable to those compilers.</p>
+<p>This is meant to be used with stack-allocated structures and
+non-pointer types.  For the (more commonly used) pointer version, see
+<a class="link" href="glib-Miscellaneous-Macros.html#g-autoptr" title="g_autoptr()"><code class="function">g_autoptr()</code></a>.</p>
+<p>This macro can be used to avoid having to do explicit cleanups of
+local variables when exiting functions.  It often vastly simplifies
+handling of error conditions, removing the need for various tricks
+such as 'goto out' or repeating of cleanup code.  It is also helpful
+for non-error cases.</p>
+<p>Consider the following example:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal"><a href="glib-GVariant.html#GVariant">GVariant</a> </span><span class="symbol">*</span>
+<span class="function">my_func</span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="glib-Miscellaneous-Macros.html#g-auto">g_auto</a></span><span class="symbol">(</span><span class="normal"><a href="glib-Double-ended-Queues.html#GQueue">GQueue</a></span><span class="symbol">)</span><span class="normal"> queue </span><span class="symbol">=</span><span class="normal"> <a href="glib-Double-ended-Queues.html#G-QUEUE-INIT:CAPS">G_QUEUE_INIT</a></span><span class="symbol">;</span>
+<span class="normal">  </span><span class="function"><a href="glib-Miscellaneous-Macros.html#g-auto">g_auto</a></span><span class="symbol">(</span><span class="normal"><a href="glib-GVariant.html#GVariantBuilder">GVariantBuilder</a></span><span class="symbol">)</span><span class="normal"> builder</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="function"><a href="glib-Miscellaneous-Macros.html#g-auto">g_auto</a></span><span class="symbol">(</span><span class="normal"><a href="glib-String-Utility-Functions.html#GStrv">GStrv</a></span><span class="symbol">)</span><span class="normal"> strv</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="function"><a href="glib-GVariant.html#g-variant-builder-init">g_variant_builder_init</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">builder</span><span class="symbol">,</span><span class="normal"> <a href="glib-GVariantType.html#G-VARIANT-TYPE-VARDICT:CAPS">G_VARIANT_TYPE_VARDICT</a></span><span class="symbol">);</span>
+<span class="normal">  strv </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-String-Utility-Functions.html#g-strsplit">g_strsplit</a></span><span class="symbol">(</span><span class="string">"a:b:c"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">":"</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="symbol">...</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">error_condition</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="symbol">...</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> </span><span class="function"><a href="glib-GVariant.html#g-variant-builder-end">g_variant_builder_end</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">builder</span><span class="symbol">);</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>You must initialize the variable in some way -- either by use of an
+initialiser or by ensuring that an _init function will be called on
+it unconditionally before it goes out of scope.</p>
+<div class="refsect3">
+<a name="g-auto.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>TypeName</p></td>
+<td class="parameter_description"><p>a supported variable type</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-autoptr"></a><h3>g_autoptr()</h3>
+<pre class="programlisting">#define             g_autoptr(TypeName)</pre>
+<p>Helper to declare a pointer variable with automatic cleanup.</p>
+<p>The variable is cleaned up in a way appropriate to its type when the
+variable goes out of scope.  The type must support this.</p>
+<p>This feature is only supported on GCC and clang.  This macro is not
+defined on other compilers and should not be used in programs that
+are intended to be portable to those compilers.</p>
+<p>This is meant to be used to declare pointers to types with cleanup
+functions.  The type of the variable is a pointer to <em class="parameter"><code>TypeName</code></em>
+.  You
+must not add your own '*'.</p>
+<p>This macro can be used to avoid having to do explicit cleanups of
+local variables when exiting functions.  It often vastly simplifies
+handling of error conditions, removing the need for various tricks
+such as 'goto out' or repeating of cleanup code.  It is also helpful
+for non-error cases.</p>
+<p>Consider the following example:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal"><a href="glib-Basic-Types.html#gboolean">gboolean</a></span>
+<span class="function">check_exists</span><span class="symbol">(</span><span class="usertype">GVariant</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">dict</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="glib-Miscellaneous-Macros.html#g-autoptr">g_autoptr</a></span><span class="symbol">(</span><span class="normal"><a href="glib-GVariant.html#GVariant">GVariant</a></span><span class="symbol">)</span><span class="normal"> dirname</span><span class="symbol">,</span><span class="normal"> basename </span><span class="symbol">=</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">g_autofree</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">path </span><span class="symbol">=</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+
+<span class="normal">  dirname </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-GVariant.html#g-variant-lookup-value">g_variant_lookup_value</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">dict</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"dirname"</span><span class="symbol">,</span><span class="normal"> <a href="glib-GVariantType.html#G-VARIANT-TYPE-STRING:CAPS">G_VARIANT_TYPE_STRING</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">dirname </span><span class="symbol">==</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> <a href="glib-Standard-Macros.html#FALSE:CAPS">FALSE</a></span><span class="symbol">;</span>
+
+<span class="normal">  basename </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-GVariant.html#g-variant-lookup-value">g_variant_lookup_value</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">dict</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"basename"</span><span class="symbol">,</span><span class="normal"> <a href="glib-GVariantType.html#G-VARIANT-TYPE-STRING:CAPS">G_VARIANT_TYPE_STRING</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">basename </span><span class="symbol">==</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> <a href="glib-Standard-Macros.html#FALSE:CAPS">FALSE</a></span><span class="symbol">;</span>
+
+<span class="normal">  path </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-Miscellaneous-Utility-Functions.html#g-build-filename">g_build_filename</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="glib-GVariant.html#g-variant-get-string">g_variant_get_string</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">dirname</span><span class="symbol">,</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">),</span>
+<span class="normal">                           </span><span class="function"><a href="glib-GVariant.html#g-variant-get-string">g_variant_get_string</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">basename</span><span class="symbol">,</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">),</span>
+<span class="normal">                           <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> </span><span class="function"><a href="glib-File-Utilities.html#g-access">g_access</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">path</span><span class="symbol">,</span><span class="normal"> R_OK</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>You must initialise the variable in some way -- either by use of an
+initialiser or by ensuring that it is assigned to unconditionally
+before it goes out of scope.</p>
+<p>See also <a class="link" href="glib-Miscellaneous-Macros.html#g-auto" title="g_auto()"><code class="function">g_auto()</code></a>, <a class="link" href="glib-Miscellaneous-Macros.html#g-autofree" title="g_autofree"><code class="function">g_autofree()</code></a> and <a class="link" href="glib-Memory-Allocation.html#g-steal-pointer" title="g_steal_pointer ()"><code class="function">g_steal_pointer()</code></a>.</p>
+<div class="refsect3">
+<a name="g-autoptr.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>TypeName</p></td>
+<td class="parameter_description"><p>a supported variable type</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-autolist"></a><h3>g_autolist()</h3>
+<pre class="programlisting">#define             g_autolist(TypeName)</pre>
+<p>Helper to declare a list variable with automatic deep cleanup.</p>
+<p>The list is deeply freed, in a way appropriate to the specified type, when the
+variable goes out of scope.  The type must support this.</p>
+<p>This feature is only supported on GCC and clang.  This macro is not
+defined on other compilers and should not be used in programs that
+are intended to be portable to those compilers.</p>
+<p>This is meant to be used to declare lists of a type with a cleanup
+function.  The type of the variable is a GList *.  You
+must not add your own '*'.</p>
+<p>This macro can be used to avoid having to do explicit cleanups of
+local variables when exiting functions.  It often vastly simplifies
+handling of error conditions, removing the need for various tricks
+such as 'goto out' or repeating of cleanup code.  It is also helpful
+for non-error cases.</p>
+<p>See also <a class="link" href="glib-Miscellaneous-Macros.html#g-autoslist" title="g_autoslist()"><code class="function">g_autoslist()</code></a>, <a class="link" href="glib-Miscellaneous-Macros.html#g-autoptr" title="g_autoptr()"><code class="function">g_autoptr()</code></a> and <a class="link" href="glib-Memory-Allocation.html#g-steal-pointer" title="g_steal_pointer ()"><code class="function">g_steal_pointer()</code></a>.</p>
+<div class="refsect3">
+<a name="g-autolist.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>TypeName</p></td>
+<td class="parameter_description"><p>a supported variable type</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-56.html#api-index-2.56">2.56</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-autoslist"></a><h3>g_autoslist()</h3>
+<pre class="programlisting">#define             g_autoslist(TypeName)</pre>
+<p>Helper to declare a singly linked list variable with automatic deep cleanup.</p>
+<p>The list is deeply freed, in a way appropriate to the specified type, when the
+variable goes out of scope.  The type must support this.</p>
+<p>This feature is only supported on GCC and clang.  This macro is not
+defined on other compilers and should not be used in programs that
+are intended to be portable to those compilers.</p>
+<p>This is meant to be used to declare lists of a type with a cleanup
+function.  The type of the variable is a GSList *.  You
+must not add your own '*'.</p>
+<p>This macro can be used to avoid having to do explicit cleanups of
+local variables when exiting functions.  It often vastly simplifies
+handling of error conditions, removing the need for various tricks
+such as 'goto out' or repeating of cleanup code.  It is also helpful
+for non-error cases.</p>
+<p>See also <a class="link" href="glib-Miscellaneous-Macros.html#g-autolist" title="g_autolist()"><code class="function">g_autolist()</code></a>, <a class="link" href="glib-Miscellaneous-Macros.html#g-autoptr" title="g_autoptr()"><code class="function">g_autoptr()</code></a> and <a class="link" href="glib-Memory-Allocation.html#g-steal-pointer" title="g_steal_pointer ()"><code class="function">g_steal_pointer()</code></a>.</p>
+<div class="refsect3">
+<a name="g-autoslist.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>TypeName</p></td>
+<td class="parameter_description"><p>a supported variable type</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-56.html#api-index-2.56">2.56</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-DEFINE-AUTOPTR-CLEANUP-FUNC:CAPS"></a><h3>G_DEFINE_AUTOPTR_CLEANUP_FUNC()</h3>
+<pre class="programlisting">#define             G_DEFINE_AUTOPTR_CLEANUP_FUNC(TypeName, func)</pre>
+<p>Defines the appropriate cleanup function for a pointer type.</p>
+<p>The function will not be called if the variable to be cleaned up
+contains <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>.</p>
+<p>This will typically be the <code class="function">_free()</code> or <code class="function">_unref()</code> function for the given
+type.</p>
+<p>With this definition, it will be possible to use <a class="link" href="glib-Miscellaneous-Macros.html#g-autoptr" title="g_autoptr()"><code class="function">g_autoptr()</code></a> with
+<em class="parameter"><code>TypeName</code></em>
+.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="function"><a href="glib-Miscellaneous-Macros.html#G-DEFINE-AUTOPTR-CLEANUP-FUNC:CAPS">G_DEFINE_AUTOPTR_CLEANUP_FUNC</a></span><span class="symbol">(</span><span class="normal">GObject</span><span class="symbol">,</span><span class="normal"> g_object_unref</span><span class="symbol">)</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>This macro should be used unconditionally; it is a no-op on compilers
+where cleanup is not supported.</p>
+<div class="refsect3">
+<a name="G-DEFINE-AUTOPTR-CLEANUP-FUNC.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>TypeName</p></td>
+<td class="parameter_description"><p>a type name to define a <a class="link" href="glib-Miscellaneous-Macros.html#g-autoptr" title="g_autoptr()"><code class="function">g_autoptr()</code></a> cleanup function for</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>func</p></td>
+<td class="parameter_description"><p>the cleanup function</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-DEFINE-AUTO-CLEANUP-CLEAR-FUNC:CAPS"></a><h3>G_DEFINE_AUTO_CLEANUP_CLEAR_FUNC()</h3>
+<pre class="programlisting">#define             G_DEFINE_AUTO_CLEANUP_CLEAR_FUNC(TypeName, func)</pre>
+<p>Defines the appropriate cleanup function for a type.</p>
+<p>This will typically be the <code class="function">_clear()</code> function for the given type.</p>
+<p>With this definition, it will be possible to use <a class="link" href="glib-Miscellaneous-Macros.html#g-auto" title="g_auto()"><code class="function">g_auto()</code></a> with
+<em class="parameter"><code>TypeName</code></em>
+.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="function"><a href="glib-Miscellaneous-Macros.html#G-DEFINE-AUTO-CLEANUP-CLEAR-FUNC:CAPS">G_DEFINE_AUTO_CLEANUP_CLEAR_FUNC</a></span><span class="symbol">(</span><span class="normal"><a href="glib-Double-ended-Queues.html#GQueue">GQueue</a></span><span class="symbol">,</span><span class="normal"> <a href="glib-Double-ended-Queues.html#g-queue-clear">g_queue_clear</a></span><span class="symbol">)</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>This macro should be used unconditionally; it is a no-op on compilers
+where cleanup is not supported.</p>
+<div class="refsect3">
+<a name="G-DEFINE-AUTO-CLEANUP-CLEAR-FUNC.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>TypeName</p></td>
+<td class="parameter_description"><p>a type name to define a <a class="link" href="glib-Miscellaneous-Macros.html#g-auto" title="g_auto()"><code class="function">g_auto()</code></a> cleanup function for</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>func</p></td>
+<td class="parameter_description"><p>the clear function</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-DEFINE-AUTO-CLEANUP-FREE-FUNC:CAPS"></a><h3>G_DEFINE_AUTO_CLEANUP_FREE_FUNC()</h3>
+<pre class="programlisting">#define             G_DEFINE_AUTO_CLEANUP_FREE_FUNC(TypeName, func, none)</pre>
+<p>Defines the appropriate cleanup function for a type.</p>
+<p>With this definition, it will be possible to use <a class="link" href="glib-Miscellaneous-Macros.html#g-auto" title="g_auto()"><code class="function">g_auto()</code></a> with
+<em class="parameter"><code>TypeName</code></em>
+.</p>
+<p>This function will be rarely used.  It is used with pointer-based
+typedefs and non-pointer types where the value of the variable
+represents a resource that must be freed.  Two examples are <a class="link" href="glib-String-Utility-Functions.html#GStrv" title="GStrv"><span class="type">GStrv</span></a>
+and file descriptors.</p>
+<p><em class="parameter"><code>none</code></em>
+ specifies the "none" value for the type in question.  It is
+probably something like <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> or -1.  If the variable is found to
+contain this value then the free function will not be called.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="function"><a href="glib-Miscellaneous-Macros.html#G-DEFINE-AUTO-CLEANUP-FREE-FUNC:CAPS">G_DEFINE_AUTO_CLEANUP_FREE_FUNC</a></span><span class="symbol">(</span><span class="normal"><a href="glib-String-Utility-Functions.html#GStrv">GStrv</a></span><span class="symbol">,</span><span class="normal"> <a href="glib-String-Utility-Functions.html#g-strfreev">g_strfreev</a></span><span class="symbol">,</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>This macro should be used unconditionally; it is a no-op on compilers
+where cleanup is not supported.</p>
+<div class="refsect3">
+<a name="G-DEFINE-AUTO-CLEANUP-FREE-FUNC.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>TypeName</p></td>
+<td class="parameter_description"><p>a type name to define a <a class="link" href="glib-Miscellaneous-Macros.html#g-auto" title="g_auto()"><code class="function">g_auto()</code></a> cleanup function for</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>func</p></td>
+<td class="parameter_description"><p>the free function</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>none</p></td>
+<td class="parameter_description"><p>the "none" value for the type</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VA-COPY:CAPS"></a><h3>G_VA_COPY()</h3>
+<pre class="programlisting">#define             G_VA_COPY(ap1,ap2)</pre>
+<p>Portable way to copy va_list variables.</p>
+<p>In order to use this function, you must include string.h yourself,
+because this macro may use <code class="function">memmove()</code> and GLib does not include
+string.h for you.</p>
+<div class="refsect3">
+<a name="G-VA-COPY.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>ap1</p></td>
+<td class="parameter_description"><p>the va_list variable to place a copy of <em class="parameter"><code>ap2</code></em>
+in</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>ap2</p></td>
+<td class="parameter_description"><p>a va_list</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-STRINGIFY:CAPS"></a><h3>G_STRINGIFY()</h3>
+<pre class="programlisting">#define G_STRINGIFY(macro_or_string) G_STRINGIFY_ARG (macro_or_string)
+</pre>
+<p>Accepts a macro or a string and converts it into a string after
+preprocessor argument expansion. For example, the following code:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="preproc">#define</span><span class="normal"> AGE </span><span class="number">27</span>
+<span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">greeting </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-Miscellaneous-Macros.html#G-STRINGIFY:CAPS">G_STRINGIFY</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">AGE</span><span class="symbol">)</span><span class="normal"> </span><span class="string">" today!"</span><span class="symbol">;</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>is transformed by the preprocessor into (code equivalent to):</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">greeting </span><span class="symbol">=</span><span class="normal"> </span><span class="string">"27 today!"</span><span class="symbol">;</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="G-STRINGIFY.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>macro_or_string</p></td>
+<td class="parameter_description"><p>a macro or a string</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-PASTE:CAPS"></a><h3>G_PASTE()</h3>
+<pre class="programlisting">#define G_PASTE(identifier1,identifier2)      G_PASTE_ARGS (identifier1, identifier2)
+</pre>
+<p>Yields a new preprocessor pasted identifier
+<em class="parameter"><code>identifier1identifier2</code></em>
+ from its expanded
+arguments <em class="parameter"><code>identifier1</code></em>
+ and <em class="parameter"><code>identifier2</code></em>
+. For example,
+the following code:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="preproc">#define</span><span class="normal"> </span><span class="function">GET</span><span class="symbol">(</span><span class="normal">traveller</span><span class="symbol">,</span><span class="normal">method</span><span class="symbol">)</span><span class="normal"> </span><span class="function"><a href="glib-Miscellaneous-Macros.html#G-PASTE:CAPS">G_PASTE</a></span><span class="symbol">(</span><span class="normal">traveller_get_</span><span class="symbol">,</span><span class="normal"> method</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">traveller</span><span class="symbol">)</span>
+<span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">name </span><span class="symbol">=</span><span class="normal"> </span><span class="function">GET</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">traveller</span><span class="symbol">,</span><span class="normal"> name</span><span class="symbol">);</span>
+<span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">quest </span><span class="symbol">=</span><span class="normal"> </span><span class="function">GET</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">traveller</span><span class="symbol">,</span><span class="normal"> quest</span><span class="symbol">);</span>
+<span class="usertype">GdkColor</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">favourite </span><span class="symbol">=</span><span class="normal"> </span><span class="function">GET</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">traveller</span><span class="symbol">,</span><span class="normal"> favourite_colour</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>is transformed by the preprocessor into:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">name </span><span class="symbol">=</span><span class="normal"> </span><span class="function">traveller_get_name</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">traveller</span><span class="symbol">);</span>
+<span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">quest </span><span class="symbol">=</span><span class="normal"> </span><span class="function">traveller_get_quest</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">traveller</span><span class="symbol">);</span>
+<span class="usertype">GdkColor</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">favourite </span><span class="symbol">=</span><span class="normal"> </span><span class="function">traveller_get_favourite_colour</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">traveller</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="G-PASTE.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>identifier1</p></td>
+<td class="parameter_description"><p>an identifier</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>identifier2</p></td>
+<td class="parameter_description"><p>an identifier</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-20.html#api-index-2.20">2.20</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-STATIC-ASSERT:CAPS"></a><h3>G_STATIC_ASSERT()</h3>
+<pre class="programlisting">#define G_STATIC_ASSERT(expr) typedef char G_PASTE (_GStaticAssertCompileTimeAssertion_, __COUNTER__)[(expr) ? 1 : -1] G_GNUC_UNUSED
+</pre>
+<p>The <a class="link" href="glib-Miscellaneous-Macros.html#G-STATIC-ASSERT:CAPS" title="G_STATIC_ASSERT()"><code class="function">G_STATIC_ASSERT()</code></a> macro lets the programmer check
+a condition at compile time, the condition needs to
+be compile time computable. The macro can be used in
+any place where a typedef is valid.</p>
+<p>A typedef is generally allowed in exactly the same places that
+a variable declaration is allowed. For this reason, you should
+not use <a class="link" href="glib-Miscellaneous-Macros.html#G-STATIC-ASSERT:CAPS" title="G_STATIC_ASSERT()"><code class="function">G_STATIC_ASSERT()</code></a> in the middle of blocks of code.</p>
+<p>The macro should only be used once per source code line.</p>
+<div class="refsect3">
+<a name="G-STATIC-ASSERT.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>expr</p></td>
+<td class="parameter_description"><p>a constant expression</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-20.html#api-index-2.20">2.20</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-STATIC-ASSERT-EXPR:CAPS"></a><h3>G_STATIC_ASSERT_EXPR()</h3>
+<pre class="programlisting">#define G_STATIC_ASSERT_EXPR(expr) ((void) sizeof (char[(expr) ? 1 : -1]))
+</pre>
+<p>The <a class="link" href="glib-Miscellaneous-Macros.html#G-STATIC-ASSERT-EXPR:CAPS" title="G_STATIC_ASSERT_EXPR()"><code class="function">G_STATIC_ASSERT_EXPR()</code></a> macro lets the programmer check
+a condition at compile time. The condition needs to be
+compile time computable.</p>
+<p>Unlike <a class="link" href="glib-Miscellaneous-Macros.html#G-STATIC-ASSERT:CAPS" title="G_STATIC_ASSERT()"><code class="function">G_STATIC_ASSERT()</code></a>, this macro evaluates to an expression
+and, as such, can be used in the middle of other expressions.
+Its value should be ignored. This can be accomplished by placing
+it as the first argument of a comma expression.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="preproc">#define</span><span class="normal"> </span><span class="function">ADD_ONE_TO_INT</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">  </span><span class="symbol">(</span><span class="function"><a href="glib-Miscellaneous-Macros.html#G-STATIC-ASSERT-EXPR:CAPS">G_STATIC_ASSERT_EXPR</a></span><span class="symbol">(</span><span class="keyword">sizeof</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="keyword">sizeof</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="symbol">)),</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">x</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="number">1</span><span class="symbol">))</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="G-STATIC-ASSERT-EXPR.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>expr</p></td>
+<td class="parameter_description"><p>a constant expression</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-CHECK-VERSION:CAPS"></a><h3>G_GNUC_CHECK_VERSION()</h3>
+<pre class="programlisting">#define             G_GNUC_CHECK_VERSION(major, minor)</pre>
+<p>Expands to a a check for a compiler with __GNUC__ defined and a version
+greater than or equal to the major and minor numbers provided. For example,
+the following would only match on compilers such as GCC 4.8 or newer.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="preproc">#if</span><span class="normal"> </span><span class="function"><a href="glib-Miscellaneous-Macros.html#G-GNUC-CHECK-VERSION:CAPS">G_GNUC_CHECK_VERSION</a></span><span class="symbol">(</span><span class="number">4</span><span class="symbol">,</span><span class="normal"> </span><span class="number">8</span><span class="symbol">)</span>
+<span class="preproc">#endif</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="G-GNUC-CHECK-VERSION.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>major</p></td>
+<td class="parameter_description"><p>major version to check against</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>minor</p></td>
+<td class="parameter_description"><p>minor version to check against</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-42.html#api-index-2.42">2.42</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-ALLOC-SIZE:CAPS"></a><h3>G_GNUC_ALLOC_SIZE()</h3>
+<pre class="programlisting">#define G_GNUC_ALLOC_SIZE(x) __attribute__((__alloc_size__(x)))
+</pre>
+<p>Expands to the GNU C alloc_size function attribute if the compiler
+is a new enough gcc. This attribute tells the compiler that the
+function returns a pointer to memory of a size that is specified
+by the <em class="parameter"><code>xth</code></em>
+ function parameter.</p>
+<p>Place the attribute after the function declaration, just before the
+semicolon.</p>
+<p>See the GNU C documentation for more details.</p>
+<div class="refsect3">
+<a name="G-GNUC-ALLOC-SIZE.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>x</p></td>
+<td class="parameter_description"><p>the index of the argument specifying the allocation size</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-18.html#api-index-2.18">2.18</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-ALLOC-SIZE2:CAPS"></a><h3>G_GNUC_ALLOC_SIZE2()</h3>
+<pre class="programlisting">#define G_GNUC_ALLOC_SIZE2(x,y) __attribute__((__alloc_size__(x,y)))
+</pre>
+<p>Expands to the GNU C alloc_size function attribute if the compiler is a
+new enough gcc. This attribute tells the compiler that the function returns
+a pointer to memory of a size that is specified by the product of two
+function parameters.</p>
+<p>Place the attribute after the function declaration, just before the
+semicolon.</p>
+<p>See the GNU C documentation for more details.</p>
+<div class="refsect3">
+<a name="G-GNUC-ALLOC-SIZE2.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>x</p></td>
+<td class="parameter_description"><p>the index of the argument specifying one factor of the allocation size</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>y</p></td>
+<td class="parameter_description"><p>the index of the argument specifying the second factor of the allocation size</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-18.html#api-index-2.18">2.18</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-DEPRECATED-FOR:CAPS"></a><h3>G_GNUC_DEPRECATED_FOR()</h3>
+<pre class="programlisting">#define             G_GNUC_DEPRECATED_FOR(f)</pre>
+<p>Like <a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-DEPRECATED:CAPS" title="G_GNUC_DEPRECATED"><code class="literal">G_GNUC_DEPRECATED</code></a>, but names the intended replacement for the
+deprecated symbol if the version of gcc in use is new enough to support
+custom deprecation messages.</p>
+<p>Place the attribute after the declaration, just before the semicolon.</p>
+<p>See the GNU C documentation for more details.</p>
+<p>Note that if <em class="parameter"><code>f</code></em>
+ is a macro, it will be expanded in the warning message.
+You can enclose it in quotes to prevent this. (The quotes will show up
+in the warning, but it's better than showing the macro expansion.)</p>
+<div class="refsect3">
+<a name="G-GNUC-DEPRECATED-FOR.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>f</p></td>
+<td class="parameter_description"><p>the intended replacement for the deprecated symbol,
+such as the name of a function</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-PRINTF:CAPS"></a><h3>G_GNUC_PRINTF()</h3>
+<pre class="programlisting">#define             G_GNUC_PRINTF( format_idx, arg_idx )</pre>
+<p>Expands to the GNU C format function attribute if the compiler is gcc.
+This is used for declaring functions which take a variable number of
+arguments, with the same syntax as <code class="function">printf()</code>. It allows the compiler
+to type-check the arguments passed to the function.</p>
+<p>Place the attribute after the function declaration, just before the
+semicolon.</p>
+<p>See the
+<a class="ulink" href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-Wformat-3288" target="_top">GNU C documentation</a>
+for more details.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">gint</span><span class="normal"> </span><span class="function"><a href="glib-String-Utility-Functions.html#g-snprintf">g_snprintf</a></span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">gchar</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">string</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="usertype">gulong</span><span class="normal">       n</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="usertype">gchar</span><span class="normal"> </span><span class="keyword">const</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">format</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="symbol">...)</span><span class="normal"> </span><span class="function"><a href="glib-Miscellaneous-Macros.html#G-GNUC-PRINTF:CAPS">G_GNUC_PRINTF</a></span><span class="normal"> </span><span class="symbol">(</span><span class="number">3</span><span class="symbol">,</span><span class="normal"> </span><span class="number">4</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="G-GNUC-PRINTF.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>format_idx</p></td>
+<td class="parameter_description"><p>the index of the argument corresponding to the
+format string (the arguments are numbered from 1)</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>arg_idx</p></td>
+<td class="parameter_description"><p>the index of the first of the format arguments, or 0 if
+there are no format arguments</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-SCANF:CAPS"></a><h3>G_GNUC_SCANF()</h3>
+<pre class="programlisting">#define             G_GNUC_SCANF( format_idx, arg_idx )</pre>
+<p>Expands to the GNU C format function attribute if the compiler is gcc.
+This is used for declaring functions which take a variable number of
+arguments, with the same syntax as <code class="function">scanf()</code>. It allows the compiler
+to type-check the arguments passed to the function.</p>
+<p>See the
+<a class="ulink" href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-Wformat-3288" target="_top">GNU C documentation</a>
+for details.</p>
+<div class="refsect3">
+<a name="G-GNUC-SCANF.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>format_idx</p></td>
+<td class="parameter_description"><p>the index of the argument corresponding to
+the format string (the arguments are numbered from 1)</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>arg_idx</p></td>
+<td class="parameter_description"><p>the index of the first of the format arguments, or 0 if
+there are no format arguments</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-FORMAT:CAPS"></a><h3>G_GNUC_FORMAT()</h3>
+<pre class="programlisting">#define             G_GNUC_FORMAT( arg_idx )</pre>
+<p>Expands to the GNU C format_arg function attribute if the compiler
+is gcc. This function attribute specifies that a function takes a
+format string for a <code class="function">printf()</code>, <code class="function">scanf()</code>, <code class="function">strftime()</code> or <code class="function">strfmon()</code> style
+function and modifies it, so that the result can be passed to a <code class="function">printf()</code>,
+<code class="function">scanf()</code>, <code class="function">strftime()</code> or <code class="function">strfmon()</code> style function (with the remaining
+arguments to the format function the same as they would have been
+for the unmodified string).</p>
+<p>Place the attribute after the function declaration, just before the
+semicolon.</p>
+<p>See the GNU C documentation for more details.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="function"><a href="glib-I18N.html#g-dgettext">g_dgettext</a></span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">domain_name</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">msgid</span><span class="symbol">)</span><span class="normal"> </span><span class="function"><a href="glib-Miscellaneous-Macros.html#G-GNUC-FORMAT:CAPS">G_GNUC_FORMAT</a></span><span class="normal"> </span><span class="symbol">(</span><span class="number">2</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="G-GNUC-FORMAT.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>arg_idx</p></td>
+<td class="parameter_description"><p>the index of the argument</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-DEPRECATED-FOR:CAPS"></a><h3>G_DEPRECATED_FOR()</h3>
+<pre class="programlisting">#define G_DEPRECATED_FOR(f) __attribute__((__deprecated__("Use '" #f "' instead")))
+</pre>
+<p>This macro is similar to <a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-DEPRECATED-FOR:CAPS" title="G_GNUC_DEPRECATED_FOR()"><code class="literal">G_GNUC_DEPRECATED_FOR</code></a>, and can be used to mark
+functions declarations as deprecated. Unlike <a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-DEPRECATED-FOR:CAPS" title="G_GNUC_DEPRECATED_FOR()"><code class="literal">G_GNUC_DEPRECATED_FOR</code></a>, it
+is meant to be portable across different compilers and must be placed
+before the function declaration.</p>
+<div class="refsect3">
+<a name="G-DEPRECATED-FOR.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>f</p></td>
+<td class="parameter_description"><p>the name of the function that this function was deprecated for</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-UNAVAILABLE:CAPS"></a><h3>G_UNAVAILABLE()</h3>
+<pre class="programlisting">#define G_UNAVAILABLE(maj,min) __attribute__((deprecated("Not available before " #maj "." #min)))
+</pre>
+<p>This macro can be used to mark a function declaration as unavailable.
+It must be placed before the function declaration. Use of a function
+that has been annotated with this macros will produce a compiler warning.</p>
+<div class="refsect3">
+<a name="G-UNAVAILABLE.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>maj</p></td>
+<td class="parameter_description"><p>the major version that introduced the symbol</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>min</p></td>
+<td class="parameter_description"><p>the minor version that introduced the symbol</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-LIKELY:CAPS"></a><h3>G_LIKELY()</h3>
+<pre class="programlisting">#define G_LIKELY(expr) (__builtin_expect (_G_BOOLEAN_EXPR((expr)), 1))
+</pre>
+<p>Hints the compiler that the expression is likely to evaluate to
+a true value. The compiler may use this information for optimizations.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="glib-Miscellaneous-Macros.html#G-LIKELY:CAPS">G_LIKELY</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">random</span><span class="normal"> </span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">))</span>
+<span class="normal">  </span><span class="function"><a href="glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"not one"</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="G-LIKELY.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>expr</p></td>
+<td class="parameter_description"><p>the expression</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="G-LIKELY.returns"></a><h4>Returns</h4>
+<p> the value of <em class="parameter"><code>expr</code></em>
+</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-2.html#api-index-2.2">2.2</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-UNLIKELY:CAPS"></a><h3>G_UNLIKELY()</h3>
+<pre class="programlisting">#define G_UNLIKELY(expr) (__builtin_expect (_G_BOOLEAN_EXPR((expr)), 0))
+</pre>
+<p>Hints the compiler that the expression is unlikely to evaluate to
+a true value. The compiler may use this information for optimizations.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="glib-Miscellaneous-Macros.html#G-UNLIKELY:CAPS">G_UNLIKELY</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">random</span><span class="normal"> </span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">1</span><span class="symbol">))</span>
+<span class="normal">  </span><span class="function"><a href="glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"a random one"</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="G-UNLIKELY.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>expr</p></td>
+<td class="parameter_description"><p>the expression</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="G-UNLIKELY.returns"></a><h4>Returns</h4>
+<p> the value of <em class="parameter"><code>expr</code></em>
+</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-2.html#api-index-2.2">2.2</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Miscellaneous-Macros.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="G-INLINE-FUNC:CAPS"></a><h3>G_INLINE_FUNC</h3>
+<pre class="programlisting">#  define G_INLINE_FUNC extern
+</pre>
+<div class="warning">
+<p><code class="literal">G_INLINE_FUNC</code> has been deprecated since version 2.48 and should not be used in newly-written code.</p>
+<p>Use "static inline" instead</p>
+</div>
+<p>This macro used to be used to conditionally define inline functions
+in a compatible way before this feature was supported in all
+compilers.  These days, GLib requires inlining support from the
+compiler, so your GLib-using programs can safely assume that the
+"inline" keywork works properly.</p>
+<p>Never use this macro anymore.  Just say "static inline".</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-autofree"></a><h3>g_autofree</h3>
+<pre class="programlisting">#define             g_autofree</pre>
+<p>Macro to add an attribute to pointer variable to ensure automatic
+cleanup using <a class="link" href="glib-Memory-Allocation.html#g-free" title="g_free ()"><code class="function">g_free()</code></a>.</p>
+<p>This macro differs from <a class="link" href="glib-Miscellaneous-Macros.html#g-autoptr" title="g_autoptr()"><code class="function">g_autoptr()</code></a> in that it is an attribute supplied
+before the type name, rather than wrapping the type definition.  Instead
+of using a type-specific lookup, this macro always calls <a class="link" href="glib-Memory-Allocation.html#g-free" title="g_free ()"><code class="function">g_free()</code></a> directly.</p>
+<p>This means it's useful for any type that is returned from
+<a class="link" href="glib-Memory-Allocation.html#g-malloc" title="g_malloc ()"><code class="function">g_malloc()</code></a>.</p>
+<p>Otherwise, this macro has similar constraints as <a class="link" href="glib-Miscellaneous-Macros.html#g-autoptr" title="g_autoptr()"><code class="function">g_autoptr()</code></a> - only
+supported on GCC and clang, the variable must be initialized, etc.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal"><a href="glib-Basic-Types.html#gboolean">gboolean</a></span>
+<span class="function">operate_on_malloc_buf</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">g_autofree</span><span class="normal"> <a href="glib-Basic-Types.html#guint8">guint8</a></span><span class="symbol">*</span><span class="normal"> membuf </span><span class="symbol">=</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+
+<span class="normal">  membuf </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-Memory-Allocation.html#g-malloc">g_malloc</a></span><span class="normal"> </span><span class="symbol">(</span><span class="number">8192</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">// Some computation on membuf</span>
+
+<span class="normal">  </span><span class="comment">// membuf will be automatically freed here</span>
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> <a href="glib-Standard-Macros.html#TRUE:CAPS">TRUE</a></span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-STMT-START:CAPS"></a><h3>G_STMT_START</h3>
+<pre class="programlisting">#define G_STMT_START  do
+</pre>
+<p>Used within multi-statement macros so that they can be used in places
+where only one statement is expected by the compiler.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-STMT-END:CAPS"></a><h3>G_STMT_END</h3>
+<pre class="programlisting">#define             G_STMT_END</pre>
+<p>Used within multi-statement macros so that they can be used in places
+where only one statement is expected by the compiler.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-BEGIN-DECLS:CAPS"></a><h3>G_BEGIN_DECLS</h3>
+<pre class="programlisting">#define G_BEGIN_DECLS  extern "C" {
+</pre>
+<p>Used (along with <a class="link" href="glib-Miscellaneous-Macros.html#G-END-DECLS:CAPS" title="G_END_DECLS"><span class="type">G_END_DECLS</span></a>) to bracket header files. If the
+compiler in use is a C++ compiler, adds extern "C"
+around the header.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-END-DECLS:CAPS"></a><h3>G_END_DECLS</h3>
+<pre class="programlisting">#define G_END_DECLS    }
+</pre>
+<p>Used (along with <a class="link" href="glib-Miscellaneous-Macros.html#G-BEGIN-DECLS:CAPS" title="G_BEGIN_DECLS"><span class="type">G_BEGIN_DECLS</span></a>) to bracket header files. If the
+compiler in use is a C++ compiler, adds extern "C"
+around the header.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-EXTENSION:CAPS"></a><h3>G_GNUC_EXTENSION</h3>
+<pre class="programlisting">#define G_GNUC_EXTENSION __extension__
+</pre>
+<p>Expands to __extension__ when gcc is used as the compiler. This simply
+tells gcc not to warn about the following non-standard code when compiling
+with the <code class="literal">-pedantic</code> option.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-CONST:CAPS"></a><h3>G_GNUC_CONST</h3>
+<pre class="programlisting">#define             G_GNUC_CONST</pre>
+<p>Expands to the GNU C const function attribute if the compiler is gcc.
+Declaring a function as const enables better optimization of calls to
+the function. A const function doesn't examine any values except its
+parameters, and has no effects except its return value.</p>
+<p>Place the attribute after the declaration, just before the semicolon.</p>
+<p>See the GNU C documentation for more details.</p>
+<p>A function that has pointer arguments and examines the data pointed to
+must not be declared const. Likewise, a function that calls a non-const
+function usually must not be const. It doesn't make sense for a const
+function to return void.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-PURE:CAPS"></a><h3>G_GNUC_PURE</h3>
+<pre class="programlisting">#define G_GNUC_PURE __attribute__((__pure__))
+</pre>
+<p>Expands to the GNU C pure function attribute if the compiler is gcc.
+Declaring a function as pure enables better optimization of calls to
+the function. A pure function has no effects except its return value
+and the return value depends only on the parameters and/or global
+variables.</p>
+<p>Place the attribute after the declaration, just before the semicolon.</p>
+<p>See the GNU C documentation for more details.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-MALLOC:CAPS"></a><h3>G_GNUC_MALLOC</h3>
+<pre class="programlisting">#define G_GNUC_MALLOC __attribute__((__malloc__))
+</pre>
+<p>Expands to the GNU C malloc function attribute if the compiler is gcc.
+Declaring a function as malloc enables better optimization of the function.
+A function can have the malloc attribute if it returns a pointer which is
+guaranteed to not alias with any other pointer when the function returns
+(in practice, this means newly allocated memory).</p>
+<p>Place the attribute after the declaration, just before the semicolon.</p>
+<p>See the GNU C documentation for more details.</p>
+<p class="since">Since: <a class="link" href="api-index-2-6.html#api-index-2.6">2.6</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-DEPRECATED:CAPS"></a><h3>G_GNUC_DEPRECATED</h3>
+<pre class="programlisting">#define G_GNUC_DEPRECATED __attribute__((__deprecated__))
+</pre>
+<p>Expands to the GNU C deprecated attribute if the compiler is gcc.
+It can be used to mark typedefs, variables and functions as deprecated.
+When called with the <code class="literal">-Wdeprecated-declarations</code> option,
+gcc will generate warnings when deprecated interfaces are used.</p>
+<p>Place the attribute after the declaration, just before the semicolon.</p>
+<p>See the GNU C documentation for more details.</p>
+<p class="since">Since: <a class="link" href="api-index-2-2.html#api-index-2.2">2.2</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-BEGIN-IGNORE-DEPRECATIONS:CAPS"></a><h3>G_GNUC_BEGIN_IGNORE_DEPRECATIONS</h3>
+<pre class="programlisting">#define             G_GNUC_BEGIN_IGNORE_DEPRECATIONS</pre>
+<p>Tells gcc (if it is a new enough version) to temporarily stop emitting
+warnings when functions marked with <a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-DEPRECATED:CAPS" title="G_GNUC_DEPRECATED"><code class="literal">G_GNUC_DEPRECATED</code></a> or
+<a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-DEPRECATED-FOR:CAPS" title="G_GNUC_DEPRECATED_FOR()"><code class="literal">G_GNUC_DEPRECATED_FOR</code></a> are called. This is useful for when you have
+one deprecated function calling another one, or when you still have
+regression tests for deprecated functions.</p>
+<p>Use <a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-END-IGNORE-DEPRECATIONS:CAPS" title="G_GNUC_END_IGNORE_DEPRECATIONS"><code class="literal">G_GNUC_END_IGNORE_DEPRECATIONS</code></a> to begin warning again. (If you
+are not compiling with <code class="literal">-Wdeprecated-declarations</code> then neither macro
+has any effect.)</p>
+<p>This macro can be used either inside or outside of a function body,
+but must appear on a line by itself.</p>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-END-IGNORE-DEPRECATIONS:CAPS"></a><h3>G_GNUC_END_IGNORE_DEPRECATIONS</h3>
+<pre class="programlisting">#define             G_GNUC_END_IGNORE_DEPRECATIONS</pre>
+<p>Undoes the effect of <a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-BEGIN-IGNORE-DEPRECATIONS:CAPS" title="G_GNUC_BEGIN_IGNORE_DEPRECATIONS"><code class="literal">G_GNUC_BEGIN_IGNORE_DEPRECATIONS</code></a>, telling
+gcc to begin outputting warnings again (assuming those warnings
+had been enabled to begin with).</p>
+<p>This macro can be used either inside or outside of a function body,
+but must appear on a line by itself.</p>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-NORETURN:CAPS"></a><h3>G_GNUC_NORETURN</h3>
+<pre class="programlisting">#define             G_GNUC_NORETURN</pre>
+<p>Expands to the GNU C noreturn function attribute if the compiler is gcc.
+It is used for declaring functions which never return. It enables
+optimization of the function, and avoids possible compiler warnings.</p>
+<p>Place the attribute after the declaration, just before the semicolon.</p>
+<p>See the GNU C documentation for more details.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-UNUSED:CAPS"></a><h3>G_GNUC_UNUSED</h3>
+<pre class="programlisting">#define             G_GNUC_UNUSED</pre>
+<p>Expands to the GNU C unused function attribute if the compiler is gcc.
+It is used for declaring functions and arguments which may never be used.
+It avoids possible compiler warnings.</p>
+<p>For functions, place the attribute after the declaration, just before the
+semicolon. For arguments, place the attribute at the beginning of the
+argument declaration.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="type">void</span><span class="normal"> </span><span class="function">my_unused_function</span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="glib-Miscellaneous-Macros.html#G-GNUC-UNUSED:CAPS">G_GNUC_UNUSED</a> </span><span class="usertype">gint</span><span class="normal"> unused_argument</span><span class="symbol">,</span>
+<span class="normal">                         </span><span class="usertype">gint</span><span class="normal"> other_argument</span><span class="symbol">)</span><span class="normal"> <a href="glib-Miscellaneous-Macros.html#G-GNUC-UNUSED:CAPS">G_GNUC_UNUSED</a></span><span class="symbol">;</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>See the GNU C documentation for more details.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-NULL-TERMINATED:CAPS"></a><h3>G_GNUC_NULL_TERMINATED</h3>
+<pre class="programlisting">#define G_GNUC_NULL_TERMINATED __attribute__((__sentinel__))
+</pre>
+<p>Expands to the GNU C sentinel function attribute if the compiler is gcc.
+This function attribute only applies to variadic functions and instructs
+the compiler to check that the argument list is terminated with an
+explicit <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>.</p>
+<p>Place the attribute after the declaration, just before the semicolon.</p>
+<p>See the GNU C documentation for more details.</p>
+<p class="since">Since: <a class="link" href="api-index-2-8.html#api-index-2.8">2.8</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-WARN-UNUSED-RESULT:CAPS"></a><h3>G_GNUC_WARN_UNUSED_RESULT</h3>
+<pre class="programlisting">#define G_GNUC_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
+</pre>
+<p>Expands to the GNU C warn_unused_result function attribute if the compiler
+is gcc. This function attribute makes the compiler emit a warning if the
+result of a function call is ignored.</p>
+<p>Place the attribute after the declaration, just before the semicolon.</p>
+<p>See the GNU C documentation for more details.</p>
+<p class="since">Since: <a class="link" href="api-index-2-10.html#api-index-2.10">2.10</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-FUNCTION:CAPS"></a><h3>G_GNUC_FUNCTION</h3>
+<pre class="programlisting">#define G_GNUC_FUNCTION         __FUNCTION__
+</pre>
+<div class="warning">
+<p><code class="literal">G_GNUC_FUNCTION</code> has been deprecated since version 2.16 and should not be used in newly-written code.</p>
+<p>Use <a class="link" href="glib-Miscellaneous-Macros.html#G-STRFUNC:CAPS" title="G_STRFUNC"><code class="function">G_STRFUNC()</code></a> instead</p>
+</div>
+<p>Expands to "" on all modern compilers, and to  __FUNCTION__ on gcc
+version 2.x. Don't use it.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-PRETTY-FUNCTION:CAPS"></a><h3>G_GNUC_PRETTY_FUNCTION</h3>
+<pre class="programlisting">#define G_GNUC_PRETTY_FUNCTION  __PRETTY_FUNCTION__
+</pre>
+<div class="warning">
+<p><code class="literal">G_GNUC_PRETTY_FUNCTION</code> has been deprecated since version 2.16 and should not be used in newly-written code.</p>
+<p>Use <a class="link" href="glib-Miscellaneous-Macros.html#G-STRFUNC:CAPS" title="G_STRFUNC"><code class="function">G_STRFUNC()</code></a> instead</p>
+</div>
+<p>Expands to "" on all modern compilers, and to __PRETTY_FUNCTION__
+on gcc version 2.x. Don't use it.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-NO-INSTRUMENT:CAPS"></a><h3>G_GNUC_NO_INSTRUMENT</h3>
+<pre class="programlisting">#define             G_GNUC_NO_INSTRUMENT</pre>
+<p>Expands to the GNU C no_instrument_function function attribute if the
+compiler is gcc. Functions with this attribute will not be instrumented
+for profiling, when the compiler is called with the
+<code class="literal">-finstrument-functions</code> option.</p>
+<p>Place the attribute after the declaration, just before the semicolon.</p>
+<p>See the GNU C documentation for more details.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-HAVE-GNUC-VISIBILITY:CAPS"></a><h3>G_HAVE_GNUC_VISIBILITY</h3>
+<pre class="programlisting">#define G_HAVE_GNUC_VISIBILITY 1
+</pre>
+<p>Defined to 1 if gcc-style visibility handling is supported.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-INTERNAL:CAPS"></a><h3>G_GNUC_INTERNAL</h3>
+<pre class="programlisting">#define G_GNUC_INTERNAL __attribute__((visibility("hidden")))
+</pre>
+<p>This attribute can be used for marking library functions as being used
+internally to the library only, which may allow the compiler to handle
+function calls more efficiently. Note that static functions do not need
+to be marked as internal in this way. See the GNU C documentation for
+details.</p>
+<p>When using a compiler that supports the GNU C hidden visibility attribute,
+this macro expands to __attribute__((visibility("hidden"))).
+When using the Sun Studio compiler, it expands to __hidden.</p>
+<p>Note that for portability, the attribute should be placed before the
+function declaration. While GCC allows the macro after the declaration,
+Sun Studio does not.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal"><a href="glib-Miscellaneous-Macros.html#G-GNUC-INTERNAL:CAPS">G_GNUC_INTERNAL</a></span>
+<span class="type">void</span><span class="normal"> </span><span class="function">_g_log_fallback_handler</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">    </span><span class="symbol">*</span><span class="normal">log_domain</span><span class="symbol">,</span>
+<span class="normal">                              </span><span class="usertype">GLogLevelFlags</span><span class="normal">  log_level</span><span class="symbol">,</span>
+<span class="normal">                              </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">    </span><span class="symbol">*</span><span class="normal">message</span><span class="symbol">,</span>
+<span class="normal">                              </span><span class="usertype">gpointer</span><span class="normal">        unused_data</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p class="since">Since: <a class="link" href="api-index-2-6.html#api-index-2.6">2.6</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GNUC-MAY-ALIAS:CAPS"></a><h3>G_GNUC_MAY_ALIAS</h3>
+<pre class="programlisting">#define G_GNUC_MAY_ALIAS __attribute__((may_alias))
+</pre>
+<p>Expands to the GNU C may_alias type attribute if the compiler is gcc.
+Types with this attribute will not be subjected to type-based alias
+analysis, but are assumed to alias with any other type, just like char.</p>
+<p>See the GNU C documentation for details.</p>
+<p class="since">Since: <a class="link" href="api-index-2-14.html#api-index-2.14">2.14</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-DEPRECATED:CAPS"></a><h3>G_DEPRECATED</h3>
+<pre class="programlisting">#define G_DEPRECATED __attribute__((__deprecated__))
+</pre>
+<p>This macro is similar to <a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-DEPRECATED:CAPS" title="G_GNUC_DEPRECATED"><code class="literal">G_GNUC_DEPRECATED</code></a>, and can be used to mark
+functions declarations as deprecated. Unlike <a class="link" href="glib-Miscellaneous-Macros.html#G-GNUC-DEPRECATED:CAPS" title="G_GNUC_DEPRECATED"><code class="literal">G_GNUC_DEPRECATED</code></a>, it is
+meant to be portable across different compilers and must be placed
+before the function declaration.</p>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-STRLOC:CAPS"></a><h3>G_STRLOC</h3>
+<pre class="programlisting">#define G_STRLOC __FILE__ ":" G_STRINGIFY (__LINE__) ":" __PRETTY_FUNCTION__ "()"
+</pre>
+<p>Expands to a string identifying the current code position.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-STRFUNC:CAPS"></a><h3>G_STRFUNC</h3>
+<pre class="programlisting">#define G_STRFUNC     ((const char*) (__PRETTY_FUNCTION__))
+</pre>
+<p>Expands to a string identifying the current function.</p>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

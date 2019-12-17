@@ -1,0 +1,4804 @@
+# translation of glib.master.te.po to Telugu
+# Telugu translation of glib
+# Copyright (C) 2012 Swecha telugu localisation Team <localization@swecha.net>
+# This file is distributed under the same license as the GLIB package.
+#
+#
+#
+# విక్రం ఫణీంద్ర <vikramphaneendra@yahoo.co.in>, 2005.
+# దండు ప్రసాద్ <dandu_prasad2000@yahoo.com>, 2005.
+# రమణ సాయి <rmn_sai@yahoo.co.in>, 2005.
+# Krishna Babu K <kkrothap@redhat.com>, 2008, 2009, 2012, 2013, 2014.
+# Sasi Bhushan Boddepalli <sasi@swecha.net>, 2012.
+# Praveen Illa (swecha team)<mail2ipn@gmail.com>, 2012.
+# GVS.Giri (swecha team)<gvs.giri947@gmail.com>,2012.
+# Sasi Bhushan Boddepalli<sasi@swecha.net> <>, 2012.
+msgid ""
+msgstr ""
+"Project-Id-Version: glib.master.te\n"
+"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?"
+"product=glib&keywords=I18N+L10N&component=general\n"
+"POT-Creation-Date: 2014-09-23 05:55+0000\n"
+"PO-Revision-Date: 2014-09-23 19:30+0530\n"
+"Last-Translator: Krishnababu Krothapalli <kkrothap@redhat.com>\n"
+"Language-Team: Telugu <kde-i18n-doc@kde.org>\n"
+"Language: te\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Lokalize 1.5\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#: ../gio/gapplication.c:514
+msgid "Enter GApplication service mode (use from D-Bus service files)"
+msgstr ""
+"GApplication సేవా రీతి (D-బస్ సేవా దస్త్రాలు నుండి ఉపయోగించు) ప్రవేశపెట్టుము"
+
+#: ../gio/gapplication.c:519
+#| msgid "Application Options:"
+msgid "GApplication options"
+msgstr "GApplication ఐచ్చికాలు"
+
+#: ../gio/gapplication.c:519
+#| msgid "Application Options:"
+msgid "Show GApplication options"
+msgstr "GApplication ఐచ్చికాలు చూపు"
+
+#: ../gio/gapplication-tool.c:45 ../gio/gapplication-tool.c:46
+#: ../gio/gresource-tool.c:485 ../gio/gsettings-tool.c:508
+msgid "Print help"
+msgstr "సహాయం ముద్రణ"
+
+#: ../gio/gapplication-tool.c:47 ../gio/gresource-tool.c:486
+#: ../gio/gresource-tool.c:554
+msgid "[COMMAND]"
+msgstr "[COMMAND]"
+
+#: ../gio/gapplication-tool.c:49
+#| msgid "Print address"
+msgid "Print version"
+msgstr "వర్షన్ ముద్రించు"
+
+#: ../gio/gapplication-tool.c:50 ../gio/gsettings-tool.c:514
+msgid "Print version information and exit"
+msgstr "వర్షన్ సమాచారం ముద్రించి నిష్క్రమించు"
+
+#: ../gio/gapplication-tool.c:52
+#| msgid "Can't find application"
+msgid "List applications"
+msgstr "అనువర్తనమునులు జాబితాచేయి"
+
+#: ../gio/gapplication-tool.c:53
+msgid "List the installed D-Bus activatable applications (by .desktop files)"
+msgstr "క్రియాసీలపర్చగల సంస్థాపిత D-బస్ అనువర్తనాల జాబిత (.desktop దస్త్రాలతో)"
+
+#: ../gio/gapplication-tool.c:55
+#| msgid "Can't find application"
+msgid "Launch an application"
+msgstr "అనువర్తనమును దించు"
+
+#: ../gio/gapplication-tool.c:56
+msgid "Launch the application (with optional files to open)"
+msgstr "అనువర్తనం దించు (తెరుచుటకు ఐచ్చిక ఫైళ్ళతో)"
+
+#: ../gio/gapplication-tool.c:57
+msgid "APPID [FILE...]"
+msgstr "APPID [FILE...]"
+
+#: ../gio/gapplication-tool.c:59
+msgid "Activate an action"
+msgstr "ఒక చర్యను క్రియాశీలపరచు"
+
+#: ../gio/gapplication-tool.c:60
+msgid "Invoke an action on the application"
+msgstr "అనువర్తనంపై ఒక చర్యను ప్రేరేపించు"
+
+#: ../gio/gapplication-tool.c:61
+msgid "APPID ACTION [PARAMETER]"
+msgstr "APPID ACTION [PARAMETER]"
+
+#: ../gio/gapplication-tool.c:63
+msgid "List available actions"
+msgstr "అందుబాటులోని చర్యలు జాబితాచేయి"
+
+#: ../gio/gapplication-tool.c:64
+msgid "List static actions for an application (from .desktop file)"
+msgstr "ఒక అనువర్తనం కొరకు స్టాటిక్ చర్యలను జాబితాచేయి (.desktop ఫైల్ నుండి)"
+
+#: ../gio/gapplication-tool.c:65 ../gio/gapplication-tool.c:71
+msgid "APPID"
+msgstr "APPID"
+
+#: ../gio/gapplication-tool.c:70 ../gio/gapplication-tool.c:133
+#: ../gio/gdbus-tool.c:90
+msgid "COMMAND"
+msgstr "కమాండ్"
+
+#: ../gio/gapplication-tool.c:70
+msgid "The command to print detailed help for"
+msgstr "దీనికొరకు వివరణాత్మక సహాయం ముద్రించుటకు"
+
+#: ../gio/gapplication-tool.c:71
+msgid "Application identifier in D-Bus format (eg: org.example.viewer)"
+msgstr "అనువర్తన ఐడెంటిఫైర్ D-బస్ ఫార్మాట్‌లో (ఉదా: org.example.viewer)"
+
+#: ../gio/gapplication-tool.c:72 ../gio/glib-compile-resources.c:589
+#: ../gio/glib-compile-resources.c:620 ../gio/gresource-tool.c:492
+#: ../gio/gresource-tool.c:558
+msgid "FILE"
+msgstr "FILE"
+
+#: ../gio/gapplication-tool.c:72
+msgid "Optional relative or relative filenames, or URIs to open"
+msgstr "ఐచ్చిక సారూప్య లేక సారూప్య దస్త్రపుపేర్లు, లేదా తెరుచుటకు URIలు"
+
+#: ../gio/gapplication-tool.c:73
+#| msgid "SECTION"
+msgid "ACTION"
+msgstr "చర్య"
+
+#: ../gio/gapplication-tool.c:73
+#| msgid "Destination name to introspect"
+msgid "The action name to invoke"
+msgstr "ప్రేరేపించుటకు చర్య పేరు"
+
+#: ../gio/gapplication-tool.c:74
+msgid "PARAMETER"
+msgstr "పారామితి"
+
+#: ../gio/gapplication-tool.c:74
+msgid "Optional parameter to the action invocation, in GVariant format"
+msgstr "చర్యా ప్రేరకానికి ఐచ్చిక పారామితి, GVariant ఫార్మాట్ నందు"
+
+#: ../gio/gapplication-tool.c:96 ../gio/gresource-tool.c:523
+#: ../gio/gsettings-tool.c:594
+#, c-format
+msgid ""
+"Unknown command %s\n"
+"\n"
+msgstr "తెలియని ఆదేశం %s\n"
+
+#: ../gio/gapplication-tool.c:101
+#| msgid "Usage:"
+msgid "Usage:\n"
+msgstr "వాడుక:\n"
+
+#: ../gio/gapplication-tool.c:114 ../gio/gresource-tool.c:548
+#: ../gio/gsettings-tool.c:628
+msgid "Arguments:\n"
+msgstr "వాదనలు:\n"
+
+#: ../gio/gapplication-tool.c:133
+msgid "[ARGS...]"
+msgstr "[ARGS...]"
+
+#: ../gio/gapplication-tool.c:134
+#, c-format
+msgid "Commands:\n"
+msgstr "ఆదేశాలు:\n"
+
+#. Translators: do not translate 'help', but please translate 'COMMAND'.
+#: ../gio/gapplication-tool.c:146
+#, c-format
+msgid ""
+"Use '%s help COMMAND' to get detailed help.\n"
+"\n"
+msgstr ""
+"వివరణాత్మక సహాయం పొందడానికి '%s help COMMAND' ఉపయోగించు.\n"
+"\n"
+
+#: ../gio/gapplication-tool.c:165
+#, c-format
+msgid ""
+"%s command requires an application id to directly follow\n"
+"\n"
+msgstr ""
+"నేరుగా అనుసరించడానికి %s ఆదేశానికి ఒక అనువర్తన ఐడి కావాలి\n"
+"\n"
+
+#: ../gio/gapplication-tool.c:171
+#, c-format
+#| msgid "invalid GVariant type string '%s'"
+msgid "invalid application id: '%s'\n"
+msgstr "చెల్లని అనువర్తన ఐడి: '%s'\n"
+
+#. Translators: %s is replaced with a command name like 'list-actions'
+#: ../gio/gapplication-tool.c:182
+#, c-format
+msgid ""
+"'%s' takes no arguments\n"
+"\n"
+msgstr ""
+"'%s' ఆర్గుమెంట్లను తీసుకోదు\n"
+"\n"
+
+#: ../gio/gapplication-tool.c:266
+#, c-format
+#| msgid "Could not connect to %s: "
+msgid "unable to connect to D-Bus: %s\n"
+msgstr "D-Bus కు అనుసంధానం కాలేదు: %s\n"
+
+#: ../gio/gapplication-tool.c:286
+#, c-format
+#| msgid "Error sending message: %s"
+msgid "error sending %s message to application: %s\n"
+msgstr "%s సందేశం అనువర్తనముకు పంపుటలో దోషం: %s\n"
+
+#: ../gio/gapplication-tool.c:317
+#, c-format
+msgid "action name must be given after application id\n"
+msgstr "అనువర్తన ఐడి తరువాత చర్య పేరు తప్పక ఇవ్వాలి\n"
+
+#: ../gio/gapplication-tool.c:325
+#, c-format
+msgid ""
+"invalid action name: '%s'\n"
+"action names must consist of only alphanumerics, '-' and '.'\n"
+msgstr ""
+"చెల్లని చర్య పేరు: '%s'\n"
+"చర్య పేర్లు తప్పకుండా అక్షరాలుసంఖ్యలు,  '-' and '.' మాత్రమే అయివుండాలి\n"
+
+#: ../gio/gapplication-tool.c:344
+#, c-format
+#| msgid "Error parsing parameter %d: %s\n"
+msgid "error parsing action parameter: %s\n"
+msgstr "చర్యా పారామితి పార్సింగ్ నందు దోషం: %s\n"
+
+#: ../gio/gapplication-tool.c:356
+#, c-format
+msgid "actions accept a maximum of one parameter\n"
+msgstr "చర్యలు గరిష్టంగా ఒక పారామితి మాత్రమే ఆమోదించును\n"
+
+#: ../gio/gapplication-tool.c:411
+#, c-format
+msgid "list-actions command takes only the application id"
+msgstr "జాబితా-చర్యల ఆదేశం అనువర్తన ఐడి మాత్రమే తీసుకొనును"
+
+#: ../gio/gapplication-tool.c:421
+#, c-format
+#| msgid "Unable to find terminal required for application"
+msgid "unable to find desktop file for application %s\n"
+msgstr "అనువర్తనం %s కొరకు డెస్క్‌టాప్ దస్త్రము కనుగొనలేదు\n"
+
+#: ../gio/gapplication-tool.c:466
+#, c-format
+#| msgid ""
+#| "Unknown command %s\n"
+#| "\n"
+msgid ""
+"unrecognised command: %s\n"
+"\n"
+msgstr ""
+"గుర్తించని ఆదేశం: %s\n"
+"\n"
+
+#: ../gio/gbufferedinputstream.c:420 ../gio/gbufferedinputstream.c:498
+#: ../gio/ginputstream.c:176 ../gio/ginputstream.c:370
+#: ../gio/ginputstream.c:608 ../gio/ginputstream.c:828
+#: ../gio/goutputstream.c:200 ../gio/goutputstream.c:823
+#: ../gio/gpollableinputstream.c:205 ../gio/gpollableoutputstream.c:206
+#, c-format
+msgid "Too large count value passed to %s"
+msgstr "చాలపెద్ద లెక్కింపు విలువ %sకు పంపబడింది"
+
+#: ../gio/gbufferedinputstream.c:891 ../gio/gbufferedoutputstream.c:575
+#: ../gio/gdataoutputstream.c:562
+msgid "Seek not supported on base stream"
+msgstr "ఆధార ప్రవాహం కు మద్దతు లేదు అర్థించు"
+
+#: ../gio/gbufferedinputstream.c:937
+msgid "Cannot truncate GBufferedInputStream"
+msgstr "GBuffered ఇన్పుట్ ప్రవాహ ఖండించు సాధ్యం కాదు"
+
+#: ../gio/gbufferedinputstream.c:982 ../gio/ginputstream.c:1017
+#: ../gio/giostream.c:277 ../gio/goutputstream.c:1464
+msgid "Stream is already closed"
+msgstr "స్ట్రీమ్ యిప్పటికే మూయబడింది"
+
+#: ../gio/gbufferedoutputstream.c:612 ../gio/gdataoutputstream.c:592
+msgid "Truncate not supported on base stream"
+msgstr "ఆధార ప్రవాహం కు మద్దతు లేదు ఖండించు"
+
+#: ../gio/gcancellable.c:310 ../gio/gdbusconnection.c:1896
+#: ../gio/gdbusconnection.c:1989 ../gio/gdbusprivate.c:1417
+#: ../gio/glocalfile.c:2181 ../gio/gsimpleasyncresult.c:830
+#: ../gio/gsimpleasyncresult.c:856
+#, c-format
+msgid "Operation was cancelled"
+msgstr "ఆపరేషన్ రద్దైనది"
+
+#: ../gio/gcharsetconverter.c:260
+msgid "Invalid object, not initialized"
+msgstr "చెల్లుబాటులో లేని అంశం, initialized లేదు"
+
+#: ../gio/gcharsetconverter.c:281 ../gio/gcharsetconverter.c:309
+msgid "Incomplete multibyte sequence in input"
+msgstr "ఇన్పుట్ లో అసంపూర్ణం మల్టిబైట్ క్రమం"
+
+#: ../gio/gcharsetconverter.c:315 ../gio/gcharsetconverter.c:324
+msgid "Not enough space in destination"
+msgstr "గమ్యం లేని తగినంత స్థలం"
+
+#: ../gio/gcharsetconverter.c:342 ../gio/gdatainputstream.c:848
+#: ../gio/gdatainputstream.c:1256 ../glib/gconvert.c:438
+#: ../glib/gconvert.c:845 ../glib/giochannel.c:1557 ../glib/giochannel.c:1599
+#: ../glib/giochannel.c:2443 ../glib/gutf8.c:837 ../glib/gutf8.c:1289
+msgid "Invalid byte sequence in conversion input"
+msgstr "ఎగుబడి బైట్ క్రమంను పరివర్తించుట నిస్సారమగును"
+
+#: ../gio/gcharsetconverter.c:347 ../glib/gconvert.c:446
+#: ../glib/gconvert.c:770 ../glib/giochannel.c:1564 ../glib/giochannel.c:2455
+#, c-format
+msgid "Error during conversion: %s"
+msgstr "పరివర్తనం నందు దోషం కలదు: %s"
+
+#: ../gio/gcharsetconverter.c:444 ../gio/gsocket.c:985
+msgid "Cancellable initialization not supported"
+msgstr "రద్దుచేయగలిగిన సిద్దీకరణ మద్దతీయబడదు"
+
+#: ../gio/gcharsetconverter.c:454 ../glib/gconvert.c:321
+#: ../glib/giochannel.c:1385
+#, c-format
+msgid "Conversion from character set '%s' to '%s' is not supported"
+msgstr "అక్షరమాలలొ కల '%s' నుండి '%s'  కు పరివర్తించడానికి  సహకరించదు"
+
+#: ../gio/gcharsetconverter.c:458 ../glib/gconvert.c:325
+#, c-format
+msgid "Could not open converter from '%s' to '%s'"
+msgstr "'%s' నుండి  '%s' కు పరివర్తించడం సాధ్యం కాదు "
+
+#: ../gio/gcontenttype.c:335
+#, c-format
+msgid "%s type"
+msgstr "%s రకము"
+
+#: ../gio/gcontenttype-win32.c:160
+msgid "Unknown type"
+msgstr "తెలియని రకము"
+
+#: ../gio/gcontenttype-win32.c:161
+#, c-format
+msgid "%s filetype"
+msgstr "%s దస్త్రమురకము"
+
+#: ../gio/gcredentials.c:312 ../gio/gcredentials.c:571
+msgid "GCredentials is not implemented on this OS"
+msgstr "GCredentials ఈ OS లో అమలు కాలేదు"
+
+#: ../gio/gcredentials.c:467
+msgid "There is no GCredentials support for your platform"
+msgstr "మీ వేదిక ఎటువంటి GCredentials మద్దతు ఉంది"
+
+#: ../gio/gcredentials.c:513
+msgid "GCredentials does not contain a process ID on this OS"
+msgstr "GCredentials ఈ OS పైన ప్రోసెస్ ఐడి కలిగివుండదు"
+
+#: ../gio/gcredentials.c:565
+#| msgid "GCredentials is not implemented on this OS"
+msgid "Credentials spoofing is not possible on this OS"
+msgstr "ఈ OS పైన క్రెడెన్షియల్స్ స్పూఫింగ్ సాధ్యపడదు"
+
+#: ../gio/gdatainputstream.c:304
+msgid "Unexpected early end-of-stream"
+msgstr "స్ట్రీమ్ యొక్క అనుకోని త్వరిత ముగింపు"
+
+#: ../gio/gdbusaddress.c:148 ../gio/gdbusaddress.c:236
+#: ../gio/gdbusaddress.c:317
+#, c-format
+msgid "Unsupported key '%s' in address entry '%s'"
+msgstr "మద్దతు లేని కీ '%s 'చిరునామా ప్రవేశం లో'%s'"
+
+#: ../gio/gdbusaddress.c:175
+#, c-format
+msgid ""
+"Address '%s' is invalid (need exactly one of path, tmpdir or abstract keys)"
+msgstr ""
+"చిరునామా '%s 'చెల్లదు (సరిగ్గా మార్గం, tmpdir లేదా నైరూప్య కీలను ఒక అవసరం)"
+
+#: ../gio/gdbusaddress.c:188
+#, c-format
+msgid "Meaningless key/value pair combination in address entry '%s'"
+msgstr "చిరునామా ప్రవేశం లో అర్ధం కీ / విలువ జంట కలయిక '%s '"
+
+#: ../gio/gdbusaddress.c:251 ../gio/gdbusaddress.c:332
+#, c-format
+msgid "Error in address '%s' - the port attribute is malformed"
+msgstr "చిరునామా '%s లో లోపం '- పోర్ట్ గుణం సరిగ్గా లేదు"
+
+#: ../gio/gdbusaddress.c:262 ../gio/gdbusaddress.c:343
+#, c-format
+msgid "Error in address '%s' - the family attribute is malformed"
+msgstr "చిరునామా '%s లో లోపం '- కుటుంబం గుణం సరిగ్గా లేదు"
+
+#: ../gio/gdbusaddress.c:452
+#, c-format
+msgid "Address element '%s' does not contain a colon (:)"
+msgstr "చిరునామా మూలకం '%s ' కోలన్ (:) కలిగి లేదు"
+
+#: ../gio/gdbusaddress.c:473
+#, c-format
+msgid ""
+"Key/Value pair %d, '%s', in address element '%s' does not contain an equal "
+"sign"
+msgstr "కీ/విలువ జత %d, '%s ', చిరునామా మూలకం లో '%s' ఈక్వల్ సైన్ కలిగిలేదు"
+
+#: ../gio/gdbusaddress.c:487
+#, c-format
+msgid ""
+"Error unescaping key or value in Key/Value pair %d, '%s', in address element "
+"'%s'"
+msgstr ""
+"చిరునామా మూలకం లో కీ / విలువ జంట%d లో లోపం unescaping కీ లేదా విలువ, '%s ''%s'"
+
+#: ../gio/gdbusaddress.c:565
+#, c-format
+msgid ""
+"Error in address '%s' - the unix transport requires exactly one of the keys "
+"'path' or 'abstract' to be set"
+msgstr ""
+"చిరునామా '%s 'లో లోపం - unix రవాణా కీలను సరిగ్గా ఒక అవసరం' మార్గం 'లేదా "
+"'నైరూప్య' అమర్చవచ్చును"
+
+#: ../gio/gdbusaddress.c:601
+#, c-format
+msgid "Error in address '%s' - the host attribute is missing or malformed"
+msgstr "చిరునామా '%s లో లోపం '- హోస్ట్ గుణం తప్పిపోయిన లేదా తప్పుడు ఉంది"
+
+#: ../gio/gdbusaddress.c:615
+#, c-format
+msgid "Error in address '%s' - the port attribute is missing or malformed"
+msgstr "చిరునామా లో లోపం '%s '- పోర్ట్ గుణం తప్పిపోయిన లేదా తప్పుడు ఉంది"
+
+#: ../gio/gdbusaddress.c:629
+#, c-format
+msgid "Error in address '%s' - the noncefile attribute is missing or malformed"
+msgstr "చిరునామా లో లోపం '%s '- noncefile గుణం లేదు లేదా తప్పుడు"
+
+#: ../gio/gdbusaddress.c:650
+msgid "Error auto-launching: "
+msgstr "అనుసంధానమగుటలో దోషము:"
+
+#: ../gio/gdbusaddress.c:658
+#, c-format
+msgid "Unknown or unsupported transport '%s' for address '%s'"
+msgstr "తెలియదు లేదా మద్దతు రవాణా '%s 'చిరునామా'%s కోసం'"
+
+#: ../gio/gdbusaddress.c:694
+#, c-format
+msgid "Error opening nonce file '%s': %s"
+msgstr "లోపం ప్రారంభ సమయము ఫైలు '%s ':%s"
+
+#: ../gio/gdbusaddress.c:712
+#, c-format
+msgid "Error reading from nonce file '%s': %s"
+msgstr "ఫైలు '%s': %s చదువుటలో దోషం"
+
+#: ../gio/gdbusaddress.c:721
+#, c-format
+msgid "Error reading from nonce file '%s', expected 16 bytes, got %d"
+msgstr "సమయ ఫైలు '%s ', 16 బైట్లు అంచనా, నుండి చదవడంలో లోపం  %d వచ్చింది"
+
+#: ../gio/gdbusaddress.c:739
+#, c-format
+msgid "Error writing contents of nonce file '%s' to stream:"
+msgstr "సమయము ఫైలు '%s 'ప్రవాహానికి విషయాలు వ్రాయడం లోపం:"
+
+#: ../gio/gdbusaddress.c:958
+msgid "The given address is empty"
+msgstr "ఇచ్చిన చిరునామా ఖాళీగా ఉంది"
+
+#: ../gio/gdbusaddress.c:1028
+#, c-format
+msgid "Cannot spawn a message bus when setuid"
+msgstr "uid అమర్చునప్పుడు సందేశ బస్ విస్తరింపలేము"
+
+#: ../gio/gdbusaddress.c:1035
+msgid "Cannot spawn a message bus without a machine-id: "
+msgstr "ఒక యంత్రం-id లేకుండా ఒక సందేశాన్ని బస్సు వ్యాపిస్తాయి సాధ్యం కాదు:"
+
+#: ../gio/gdbusaddress.c:1077
+#, c-format
+msgid "Error spawning command line '%s': "
+msgstr "లోపం ఆవిర్భావానికి కారణమైంది కమాండ్ లైన్ '%s ':"
+
+#: ../gio/gdbusaddress.c:1294
+#, c-format
+msgid "(Type any character to close this window)\n"
+msgstr "(ఈ విండోను మూసివేసి ఏ అక్షర టైప్ చేయండి)\n"
+
+#: ../gio/gdbusaddress.c:1425
+#, c-format
+msgid "Session dbus not running, and autolaunch failed"
+msgstr "సమావేశంలో నడుస్తోంది లేదు dbus, మరియు స్వయం ప్రారంభం విఫలమైంది"
+
+#: ../gio/gdbusaddress.c:1446
+#, c-format
+msgid "Cannot determine session bus address (not implemented for this OS)"
+msgstr "సెషన్ బస్సు చిరునామా (ఈ OS కోసం అమలు కాలేదు) కనుగొనలేదు"
+
+#: ../gio/gdbusaddress.c:1546 ../gio/gdbusconnection.c:6931
+#, c-format
+msgid ""
+"Cannot determine bus address from DBUS_STARTER_BUS_TYPE environment variable "
+"- unknown value '%s'"
+msgstr ""
+"చరరాశి DBUS_STARTER_BUS_TYPE పర్యావరణం నుంచి బస్సు చిరునామా కనుగొనలేదు - "
+"తెలియని విలువ '%s '"
+
+#: ../gio/gdbusaddress.c:1555 ../gio/gdbusconnection.c:6940
+msgid ""
+"Cannot determine bus address because the DBUS_STARTER_BUS_TYPE environment "
+"variable is not set"
+msgstr ""
+"బస్సు చిరునామా కనుగొనలేదు ఎందుకంటే DBUS_STARTER_BUS_TYPE పర్యావరణం వేరియబుల్ "
+"సెట్ లేదు"
+
+#: ../gio/gdbusaddress.c:1565
+#, c-format
+msgid "Unknown bus type %d"
+msgstr "తెలియని బస్సు రకం%d"
+
+#: ../gio/gdbusauth.c:293
+msgid "Unexpected lack of content trying to read a line"
+msgstr "ఒక లైన్ చదివి ప్రయత్నిస్తున్న కంటెంట్ ఊహించని లేకపోవడం"
+
+#: ../gio/gdbusauth.c:337
+msgid "Unexpected lack of content trying to (safely) read a line"
+msgstr "ప్రయత్నిస్తున్న కంటెంట్ ఊహించని లేకపోవడం (సురక్షితంగా) ఒక లైన్ చదివి"
+
+#: ../gio/gdbusauth.c:508
+#, c-format
+msgid ""
+"Exhausted all available authentication mechanisms (tried: %s) (available: %s)"
+msgstr ""
+"(అందుబాటులో:%s): అన్నీ అందుబాటులో ప్రామాణీకరణ విధానాల (%s ప్రయత్నించాడు) "
+"అలిసిపోయిన"
+
+#: ../gio/gdbusauth.c:1170
+msgid "Cancelled via GDBusAuthObserver::authorize-authenticated-peer"
+msgstr "GDBusAuthObserver ద్వారా రద్దు అయ్యింది :: అధికారం-అధికారం-పీర్"
+
+#: ../gio/gdbusauthmechanismsha1.c:261
+#, c-format
+msgid "Error when getting information for directory '%s': %s"
+msgstr "డైరెక్టరీ '%s' కొరకు సమాచారం పొందునప్పుడు దోషము: %s"
+
+#: ../gio/gdbusauthmechanismsha1.c:273
+#, c-format
+msgid ""
+"Permissions on directory '%s' are malformed. Expected mode 0700, got 0%o"
+msgstr ""
+"డైరెక్టరీ '%s'న అనుమతులు తప్పుడు ఉన్నాయి. ఊహించిన రీతిలో 0700, 0%o వచ్చింది"
+
+#: ../gio/gdbusauthmechanismsha1.c:294
+#, c-format
+msgid "Error creating directory '%s': %s"
+msgstr "డైరెక్టరీ '%s 'సృష్టించడంలో లోపం:%s"
+
+#: ../gio/gdbusauthmechanismsha1.c:377
+#, c-format
+msgid "Error opening keyring '%s' for reading: "
+msgstr "పఠనం కోసం '%s 'keyring లోపం ప్రారంభ:"
+
+#: ../gio/gdbusauthmechanismsha1.c:401 ../gio/gdbusauthmechanismsha1.c:714
+#, c-format
+msgid "Line %d of the keyring at '%s' with content '%s' is malformed"
+msgstr "లైన్ %d కంటెంట్ '%s' తో' %s వద్ద keyring వద్ద సరిగ్గా లేదు"
+
+#: ../gio/gdbusauthmechanismsha1.c:415 ../gio/gdbusauthmechanismsha1.c:728
+#, c-format
+msgid ""
+"First token of line %d of the keyring at '%s' with content '%s' is malformed"
+msgstr ""
+"లైన్ %d కంటెంట్  '%s' తో '%s వద్ద keyring యొక్క మొదటి టోకెన్ సరిగ్గా లేదు"
+
+#: ../gio/gdbusauthmechanismsha1.c:430 ../gio/gdbusauthmechanismsha1.c:742
+#, c-format
+msgid ""
+"Second token of line %d of the keyring at '%s' with content '%s' is malformed"
+msgstr ""
+"వరుస %d కంటెంట్ '%s' తో '%s' వద్ద keyring యొక్క రెండవ టోకెన్ సరిగ్గా లేదు"
+
+#: ../gio/gdbusauthmechanismsha1.c:454
+#, c-format
+msgid "Didn't find cookie with id %d in the keyring at '%s'"
+msgstr "keyringలో id %d తో '%s' వద్ద కుకీ కనుగొనలేదు"
+
+#: ../gio/gdbusauthmechanismsha1.c:532
+#, c-format
+msgid "Error deleting stale lock file '%s': %s"
+msgstr "లోపం తొలగించడంలో కాలం చెల్లిన లాక్ ఫైలు '%s': %s"
+
+#: ../gio/gdbusauthmechanismsha1.c:564
+#, c-format
+msgid "Error creating lock file '%s': %s"
+msgstr "%s లాక్ ఫైలు సృష్టించుటలో దోషం: %s"
+
+#: ../gio/gdbusauthmechanismsha1.c:594
+#, c-format
+msgid "Error closing (unlinked) lock file '%s': %s"
+msgstr "లోపం ముగింపు (unlinked) లాక్ ఫైలు '%s':%s"
+
+#: ../gio/gdbusauthmechanismsha1.c:604
+#, c-format
+msgid "Error unlinking lock file '%s': %s"
+msgstr "లోపం unlinking లాక్ ఫైలు '%s ':%s"
+
+#: ../gio/gdbusauthmechanismsha1.c:681
+#, c-format
+msgid "Error opening keyring '%s' for writing: "
+msgstr "రచన కోసం '%s' keyring లోపం ప్రారంభ:"
+
+#: ../gio/gdbusauthmechanismsha1.c:878
+#, c-format
+msgid "(Additionally, releasing the lock for '%s' also failed: %s) "
+msgstr "(అదనంగా, కోసం లాక్ విడుదల '%s' కూడా విఫలమైంది: %s)"
+
+#: ../gio/gdbusconnection.c:612 ../gio/gdbusconnection.c:2455
+msgid "The connection is closed"
+msgstr "కనెక్షన్ మూసివేయబడింది"
+
+#: ../gio/gdbusconnection.c:1942
+msgid "Timeout was reached"
+msgstr "సమయం ముగిసింది స్థానానికి చేరుకుంది"
+
+#: ../gio/gdbusconnection.c:2577
+msgid ""
+"Unsupported flags encountered when constructing a client-side connection"
+msgstr ""
+"ఒక క్లయింట్-వైపు కనెక్షన్ నిర్మించడానికి ఉన్నప్పుడు మద్దతు లేని జెండాలు "
+"ఎదుర్కొంది"
+
+#: ../gio/gdbusconnection.c:4157 ../gio/gdbusconnection.c:4504
+#, c-format
+msgid ""
+"No such interface 'org.freedesktop.DBus.Properties' on object at path %s"
+msgstr ""
+"మార్గం%s వద్ద వస్తువు మీద అటువంటి ఇంటర్ఫేస్ 'org.freedesktop.DBus.Properties '"
+
+#: ../gio/gdbusconnection.c:4299
+#, c-format
+msgid "No such property '%s'"
+msgstr "అటువంటి ఆస్తి '%s '"
+
+#: ../gio/gdbusconnection.c:4311
+#, c-format
+msgid "Property '%s' is not readable"
+msgstr "ఆస్తి '%s 'రీడబుల్ కాదు"
+
+#: ../gio/gdbusconnection.c:4322
+#, c-format
+msgid "Property '%s' is not writable"
+msgstr "ఆస్తి '%s 'వ్రైటబుల్ కాదు"
+
+#: ../gio/gdbusconnection.c:4342
+#, c-format
+msgid "Error setting property '%s': Expected type '%s' but got '%s'"
+msgstr "సెట్టింగ్లో లోపం ఆస్తి '%s ': ఊహించినది రకం'%s' కానీ వచ్చింది '%s '"
+
+#: ../gio/gdbusconnection.c:4447 ../gio/gdbusconnection.c:6371
+#, c-format
+msgid "No such interface '%s'"
+msgstr "అటువంటి ఇంటర్ఫేస్ '%s '"
+
+#: ../gio/gdbusconnection.c:4655
+msgid "No such interface"
+msgstr "అటువంటి ఇంటర్ఫేస్"
+
+#: ../gio/gdbusconnection.c:4873 ../gio/gdbusconnection.c:6880
+#, c-format
+msgid "No such interface '%s' on object at path %s"
+msgstr "అటువంటి ఇంటర్ఫేస్ '%s 'మార్గం%s వద్ద వస్తువు న"
+
+#: ../gio/gdbusconnection.c:4971
+#, c-format
+msgid "No such method '%s'"
+msgstr "అటువంటి పద్ధతి '%s'"
+
+#: ../gio/gdbusconnection.c:5002
+#, c-format
+msgid "Type of message, '%s', does not match expected type '%s'"
+msgstr "సందేశం యొక్క పద్ధతి, '%s ', సరిపోలడం లేదు అంచనా రకం'%s'"
+
+#: ../gio/gdbusconnection.c:5200
+#, c-format
+msgid "An object is already exported for the interface %s at %s"
+msgstr "ఒక వస్తువు ఇప్పటికే %s వద్ద ఇంటర్ఫేస్ %s కోసం ఎగుమతి ఉంది"
+
+#: ../gio/gdbusconnection.c:5399
+#, c-format
+msgid "Method '%s' returned type '%s', but expected '%s'"
+msgstr "పద్ధతి '%s 'తిరిగి రకం'%s', కానీ అంచనా '%s'"
+
+#: ../gio/gdbusconnection.c:6482
+#, c-format
+msgid "Method '%s' on interface '%s' with signature '%s' does not exist"
+msgstr "పద్ధతి '%s 'ఇంటర్ఫేస్ న'%s' సంతకం '%s 'లేదు తో"
+
+#: ../gio/gdbusconnection.c:6603
+#, c-format
+msgid "A subtree is already exported for %s"
+msgstr "ఒక subtree ఇప్పటికే %s కోసం ఎగుమతి ఉంది"
+
+#: ../gio/gdbusmessage.c:1246
+msgid "type is INVALID"
+msgstr "రకం చెల్లదు"
+
+#: ../gio/gdbusmessage.c:1257
+msgid "METHOD_CALL message: PATH or MEMBER header field is missing"
+msgstr "METHOD_CALL సందేశం: PATH లేదా సభ్యుల శీర్షిక ఫీల్డ్ లేదు"
+
+#: ../gio/gdbusmessage.c:1268
+msgid "METHOD_RETURN message: REPLY_SERIAL header field is missing"
+msgstr "METHOD_RETURN సందేశం: REPLY_SERIAL శీర్షిక ఫీల్డ్ లేదు"
+
+#: ../gio/gdbusmessage.c:1280
+msgid "ERROR message: REPLY_SERIAL or ERROR_NAME header field is missing"
+msgstr "ERROR సందేశం: REPLY_SERIAL లేదా ERROR_NAME శీర్షిక ఫీల్డ్ లేదు"
+
+#: ../gio/gdbusmessage.c:1293
+msgid "SIGNAL message: PATH, INTERFACE or MEMBER header field is missing"
+msgstr "సిగ్నల్ సందేశం: PATH, ఇంటర్ఫేస్ లేదా సభ్యుల శీర్షిక ఫీల్డ్ లేదు"
+
+#: ../gio/gdbusmessage.c:1301
+msgid ""
+"SIGNAL message: The PATH header field is using the reserved value /org/"
+"freedesktop/DBus/Local"
+msgstr ""
+"సిగ్నల్ సందేశం: PATH శీర్షిక field ప్రత్యేకించబడిన విలువ / org ఉపయోగించి / "
+"ఉందిfreedesktop/"
+"DBus/ స్థానిక"
+
+#: ../gio/gdbusmessage.c:1309
+msgid ""
+"SIGNAL message: The INTERFACE header field is using the reserved value org."
+"freedesktop.DBus.Local"
+msgstr ""
+"సిగ్నల్ సందేశం: ఇంటర్ఫేస్ శీర్షిక ఫీల్డ్ ప్రత్యేకించబడిన విలువ org "
+"ఉపయోగిస్తోంది freedesktop.DBus."
+"Local"
+
+#: ../gio/gdbusmessage.c:1357 ../gio/gdbusmessage.c:1417
+#, c-format
+msgid "Wanted to read %lu byte but only got %lu"
+msgid_plural "Wanted to read %lu bytes but only got %lu"
+msgstr[0] "%lu బైట్ చదవడానికి కావలెను కానీ %lu వచ్చింది"
+msgstr[1] "%lu బైట్లు చదవడానికి కావలెను కానీ %lu వచ్చాయి"
+
+#: ../gio/gdbusmessage.c:1371
+#, c-format
+msgid "Expected NUL byte after the string '%s' but found byte %d"
+msgstr "స్ట్రింగ్ '%s'తర్వాత NUL బైట్ అంచనా కానీ బైట్ %d దొరకలేదు"
+
+#: ../gio/gdbusmessage.c:1390
+#, c-format
+msgid ""
+"Expected valid UTF-8 string but found invalid bytes at byte offset %d "
+"(length of string is %d). The valid UTF-8 string up until that point was '%s'"
+msgstr ""
+"ఊహించిన చెల్లుబాటు అయ్యే UTF-8 string కానీ బైట్ ఆఫ్సెట్ %d వద్ద చెల్లని "
+"బైట్లు దొరకలేదు(స్ట్రింగ్ యొక్క "
+"పొడవు %d ఉంటుంది). చెల్లుబాటు అయ్యే UTF-8 string అప్ ఆ సమయం వరకు ఉంది'%s'"
+
+#: ../gio/gdbusmessage.c:1589
+#, c-format
+msgid "Parsed value '%s' is not a valid D-Bus object path"
+msgstr "అన్వయించడం విలువ '%s 'ఒక చెల్లుబాటు అయ్యే D-బస్ వస్తువు మార్గం కాదు"
+
+#: ../gio/gdbusmessage.c:1611
+#, c-format
+msgid "Parsed value '%s' is not a valid D-Bus signature"
+msgstr "అన్వయించడం విలువ '%s 'ఒక చెల్లుబాటు అయ్యే D-బస్ సంతకం కాదు "
+
+#: ../gio/gdbusmessage.c:1658
+#, c-format
+msgid ""
+"Encountered array of length %u byte. Maximum length is 2<<26 bytes (64 MiB)."
+msgid_plural ""
+"Encountered array of length %u bytes. Maximum length is 2<<26 bytes (64 MiB)."
+msgstr[0] ""
+"పొడవు %u బైట్ యొక్క ఎదుర్కొంది అర్రే. గరిష్ఠ పొడవు 2 << 26 బైట్లు (64 MiB) "
+"ఉంది."
+msgstr[1] ""
+"పొడవు %u బైట్లు యొక్క ఎదుర్కొంది అర్రే. గరిష్ఠ పొడవు 2 << 26 బైట్లు (64 "
+"MiB) ఉంది."
+
+#: ../gio/gdbusmessage.c:1678
+#, c-format
+msgid ""
+"Encountered array of type 'a%c', expected to have a length a multiple of %u "
+"bytes, but found to be %u bytes in length"
+msgstr ""
+"'a%c' రకపు ఎన్‌కౌంటర్డ్ ఎరే, %u బైట్ల గుణిజానికి సమాన పొడవును కోరుకుంటోంది, "
+"కాని %u బైట్ల పొడవు మాత్రమే లభ్యమైంది"
+
+#: ../gio/gdbusmessage.c:1845
+#, c-format
+msgid "Parsed value '%s' for variant is not a valid D-Bus signature"
+msgstr ""
+"అన్వయించడం విలువ '%s 'వేరియంట్ కొరకు ఒక చెల్లుబాటు అయ్యే D-బస్ సంతకం కాదు"
+
+#: ../gio/gdbusmessage.c:1869
+#, c-format
+msgid ""
+"Error deserializing GVariant with type string '%s' from the D-Bus wire format"
+msgstr ""
+"D-బస్ వైర్ ఫార్మాట్ నుండి రకం స్ట్రింగ్ '%s 'తో GVariant deserializing లోపం"
+
+#: ../gio/gdbusmessage.c:2053
+#, c-format
+msgid ""
+"Invalid endianness value. Expected 0x6c ('l') or 0x42 ('B') but found value "
+"0x%02x"
+msgstr ""
+"చెల్లని endianness విలువ. కానీ అంచనా 0x6c ('ఎల్') లేదా 0x42 ('B') విలువ "
+"దొరకలేదు0x%02x"
+
+#: ../gio/gdbusmessage.c:2066
+#, c-format
+msgid "Invalid major protocol version. Expected 1 but found %d"
+msgstr "చెల్లని ప్రధాన ప్రోటోకాల్ వెర్షన్. 1 అంచనా కాని %d దొరకలేదు"
+
+#: ../gio/gdbusmessage.c:2122
+#, c-format
+msgid "Signature header with signature '%s' found but message body is empty"
+msgstr "సంతకం '%s 'తో సంతకం శీర్షిక కానీ దొరకలేదు సందేశ భాగం ఖాళీగా ఉంది"
+
+#: ../gio/gdbusmessage.c:2136
+#, c-format
+msgid "Parsed value '%s' is not a valid D-Bus signature (for body)"
+msgstr ""
+"అన్వయించడం విలువ '%s 'ఒక చెల్లుబాటు అయ్యే D-బస్ సంతకం (శరీరం కోసం) కాదు"
+
+#: ../gio/gdbusmessage.c:2166
+#, c-format
+msgid "No signature header in message but the message body is %u byte"
+msgid_plural "No signature header in message but the message body is %u bytes"
+msgstr[0] "సందేశం కాని సందేశ భాగం లో కాదు సంతకం శీర్షిక %u బైట్ ఉంది"
+msgstr[1] "సందేశం ఏ సంతకం శీర్షిక కాని సందేశ భాగం %u బైట్లు"
+
+#: ../gio/gdbusmessage.c:2176
+msgid "Cannot deserialize message: "
+msgstr "సందేశం deserialize సాధ్యం కాదు:"
+
+#: ../gio/gdbusmessage.c:2517
+#, c-format
+msgid ""
+"Error serializing GVariant with type string '%s' to the D-Bus wire format"
+msgstr "తో GVariant serializing లోపం రకం స్ట్రింగ్ '%s 'D-బస్ వైర్ ఆకృతికి"
+
+#: ../gio/gdbusmessage.c:2654
+#, c-format
+msgid ""
+"Message has %d file descriptors but the header field indicates %d file "
+"descriptors"
+msgstr ""
+"సందేశం%d ఫైలు సూచికలు కలిగి ఉంది కాని శీర్షిక ఫీల్డ్ %d ఫైలు "
+"సూచిస్తుందిసూచికలు"
+
+#: ../gio/gdbusmessage.c:2662
+msgid "Cannot serialize message: "
+msgstr "సందేశం serialize సాధ్యం కాదు:"
+
+#: ../gio/gdbusmessage.c:2706
+#, c-format
+msgid "Message body has signature '%s' but there is no signature header"
+msgstr "సందేశ భాగం సంతకం '%s 'కలిగి ఉంది కాని సంఖ్య సంతకం శీర్షిక ఉంది"
+
+#: ../gio/gdbusmessage.c:2716
+#, c-format
+msgid ""
+"Message body has type signature '%s' but signature in the header field is "
+"'%s'"
+msgstr "సందేశ భాగం రకం లేదు సంతకం '%s' కానీ శీర్షిక క్షేత్రంలో సంతకం'%s' ఉంది"
+
+#: ../gio/gdbusmessage.c:2732
+#, c-format
+msgid "Message body is empty but signature in the header field is '(%s)'"
+msgstr "సందేశ భాగం ఖాళీగా ఉంది కానీ శీర్షిక క్షేత్రంలో సంతకం (%s) 'ఉంది '"
+
+#: ../gio/gdbusmessage.c:3282
+#, c-format
+msgid "Error return with body of type '%s'"
+msgstr "రకం '%s యొక్క శరీరం తో లోపం తిరిగి '"
+
+#: ../gio/gdbusmessage.c:3290
+msgid "Error return with empty body"
+msgstr "ఖాళీ శరీరంతో లోపం తిరిగి"
+
+#: ../gio/gdbusprivate.c:2067
+#, c-format
+msgid "Unable to get Hardware profile: %s"
+msgstr "హార్డువేర్ స్థూల వివరంపొందడం సాధ్యం కాలేదు %s"
+
+#: ../gio/gdbusprivate.c:2112
+msgid "Unable to load /var/lib/dbus/machine-id or /etc/machine-id: "
+msgstr "/var/lib/dbus/machine-id లేదా /etc/machine-id లోడ్ చేయుటలో విఫలమైంది: "
+
+#: ../gio/gdbusproxy.c:1630
+#, c-format
+msgid "Error calling StartServiceByName for %s: "
+msgstr "%s యొక్క లోపం కాల్ StartServiceByName: "
+
+#: ../gio/gdbusproxy.c:1653
+#, c-format
+msgid "Unexpected reply %d from StartServiceByName(\"%s\") method"
+msgstr "ఊహించని సమాధానం %d StartServiceByName (\"%s\") పద్దతి నుండి"
+
+#: ../gio/gdbusproxy.c:2754 ../gio/gdbusproxy.c:2891
+msgid ""
+"Cannot invoke method; proxy is for a well-known name without an owner and "
+"proxy was constructed with the G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START flag"
+msgstr ""
+"పద్ధతి ఇన్వోక్ కాదు; ప్రాక్సీ ఒక యజమాని లేకుండా ఒక well-తెలిసిన పేరు కోసం "
+"మరియుప్రాక్సీ "
+"G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START జెండా నిర్మించబడింది"
+
+#: ../gio/gdbusserver.c:708
+msgid "Abstract name space not supported"
+msgstr "మద్దతు లేదు నైరూప్య నేమ్ స్పేస్"
+
+#: ../gio/gdbusserver.c:795
+msgid "Cannot specify nonce file when creating a server"
+msgstr "స్ట్రింగ్ '%s 'ఒక చెల్లుబాటు అయ్యే D-బస్ GUID కాదు"
+
+#: ../gio/gdbusserver.c:873
+#, c-format
+msgid "Error writing nonce file at '%s': %s"
+msgstr "సమయ ఫైలు%s: '%s 'వద్ద రాయడం లోపం  "
+
+#: ../gio/gdbusserver.c:1044
+#, c-format
+msgid "The string '%s' is not a valid D-Bus GUID"
+msgstr "స్ట్రింగ్ '%s 'ఒక చెల్లుబాటు అయ్యే D-బస్ GUID కాదు "
+
+#: ../gio/gdbusserver.c:1084
+#, c-format
+msgid "Cannot listen on unsupported transport '%s'"
+msgstr "మద్దతివ్వని రవాణా '%s వినండి కాదు '"
+
+#: ../gio/gdbus-tool.c:95
+#, c-format
+msgid ""
+"Commands:\n"
+"  help         Shows this information\n"
+"  introspect   Introspect a remote object\n"
+"  monitor      Monitor a remote object\n"
+"  call         Invoke a method on a remote object\n"
+"  emit         Emit a signal\n"
+"\n"
+"Use \"%s COMMAND --help\" to get help on each command.\n"
+msgstr ""
+"ఆదేశాలు:\n"
+"  సహాయం               ఈ సమాచారాన్ని చూపించు\n"
+"  ఇంట్రోస్పెక్ట్                 తనను తాను పరిశీలించుకొను ఒక రిమోట్ వస్తువు \n"
+"  మానిటర్                  ఒక సుదూర వస్తువు పర్యవేక్షణ\n"
+"  కాల్             సుదూర వస్తువు పై ఒక పద్ధతి ఇన్వోక్ కాల్\n"
+"  ఎమిట్            ఒక సిగ్నల్ విడుదల చేస్తాయి విడుదల చేస్తాయి\n"
+"\n"
+"ప్రతి ఆదేశంపై సహాయం పొందడానికి \"%s COMMAND --help\" వాడండి\n"
+
+#: ../gio/gdbus-tool.c:164 ../gio/gdbus-tool.c:220 ../gio/gdbus-tool.c:292
+#: ../gio/gdbus-tool.c:316 ../gio/gdbus-tool.c:705 ../gio/gdbus-tool.c:1031
+#: ../gio/gdbus-tool.c:1465
+#, c-format
+msgid "Error: %s\n"
+msgstr "దోషం కలదు :%s\n"
+
+#: ../gio/gdbus-tool.c:175 ../gio/gdbus-tool.c:233 ../gio/gdbus-tool.c:1481
+#, c-format
+msgid "Error parsing introspection XML: %s\n"
+msgstr "లోపం అన్వయ బయటకు రావటం XML: %s \n"
+
+#: ../gio/gdbus-tool.c:350
+msgid "Connect to the system bus"
+msgstr "వ్యవస్థ బస్సు అనుసంధానమగుటకు"
+
+#: ../gio/gdbus-tool.c:351
+msgid "Connect to the session bus"
+msgstr "సెషన్ బస్సు అనుసంధానమగుటకు"
+
+#: ../gio/gdbus-tool.c:352
+msgid "Connect to given D-Bus address"
+msgstr "ఇచ్చిన D-బస్ చిరునామా అనుసంధానమగుటకు"
+
+#: ../gio/gdbus-tool.c:362
+msgid "Connection Endpoint Options:"
+msgstr "అనుసంధానము ముగింపు స్థలం ఎంపికలు:"
+
+#: ../gio/gdbus-tool.c:363
+msgid "Options specifying the connection endpoint"
+msgstr "అనుసంధానము చివరి పాయింట్ తెలిపిన ఎంపికలు"
+
+#: ../gio/gdbus-tool.c:385
+#, c-format
+msgid "No connection endpoint specified"
+msgstr "పేర్కొనలేదు అనుసంధానము చివరి పాయింట్"
+
+#: ../gio/gdbus-tool.c:395
+#, c-format
+msgid "Multiple connection endpoints specified"
+msgstr "పేర్కొన్న బహుళ అనుసంధానము అంత్య బిందువుల"
+
+#: ../gio/gdbus-tool.c:465
+#, c-format
+msgid ""
+"Warning: According to introspection data, interface '%s' does not exist\n"
+msgstr "హెచ్చరిక: ఆత్మ పరిశీలన డేటా ప్రకారం, ఇంటర్ఫేస్ '%s' లేదు \n"
+
+#: ../gio/gdbus-tool.c:474
+#, c-format
+msgid ""
+"Warning: According to introspection data, method '%s' does not exist on "
+"interface '%s'\n"
+msgstr "హెచ్చరిక: ఆత్మ పరిశీలన డేటా ప్రకారం, పద్ధతి '%s' లేదు ఇంటర్ఫేస్ '%s'\n"
+
+#: ../gio/gdbus-tool.c:536
+msgid "Optional destination for signal (unique name)"
+msgstr "సంకేతం కోసం ఇచ్చాపూరితం గమ్యం (ప్రత్యేక పేరు)"
+
+#: ../gio/gdbus-tool.c:537
+msgid "Object path to emit signal on"
+msgstr "న సంకేతం విడుదల చేస్తాయి కు వస్తువు మార్గం"
+
+#: ../gio/gdbus-tool.c:538
+msgid "Signal and interface name"
+msgstr "సంకేతం మరియు అంతర్ముఖం పేరు"
+
+#: ../gio/gdbus-tool.c:570
+msgid "Emit a signal."
+msgstr "ఒక సంకేతం విడుదల చేస్తాయి."
+
+#: ../gio/gdbus-tool.c:604 ../gio/gdbus-tool.c:836 ../gio/gdbus-tool.c:1571
+#: ../gio/gdbus-tool.c:1799
+#, c-format
+msgid "Error connecting: %s\n"
+msgstr "అనుసంధానించుటలో దోషం: %s \n"
+
+#: ../gio/gdbus-tool.c:616
+#, c-format
+msgid "Error: object path not specified.\n"
+msgstr "లోపం: వస్తువు మార్గం పేర్కొనబడలేదు.\n"
+
+#: ../gio/gdbus-tool.c:621 ../gio/gdbus-tool.c:897 ../gio/gdbus-tool.c:1629
+#: ../gio/gdbus-tool.c:1858
+#, c-format
+msgid "Error: %s is not a valid object path\n"
+msgstr "దోషం: %s ఒక చెల్లుబాటు అయ్యే వస్తువు మార్గం లేదు\n"
+
+#: ../gio/gdbus-tool.c:627
+#, c-format
+msgid "Error: signal not specified.\n"
+msgstr "లోపం: సంకేతం పేర్కొనబడలేదు \n"
+
+#: ../gio/gdbus-tool.c:634
+#, c-format
+msgid "Error: signal must be the fully-qualified name.\n"
+msgstr "దోషం: సంకేతం అనునది పూర్తిగా-ఉత్తీర్ణమైన పేరు కావలెను.\n"
+
+#: ../gio/gdbus-tool.c:642
+#, c-format
+msgid "Error: %s is not a valid interface name\n"
+msgstr "దోషం: %s ఒక చెల్లుబాటు అయ్యే అంతర్ముఖం పేరు కాదు \n"
+
+#: ../gio/gdbus-tool.c:648
+#, c-format
+msgid "Error: %s is not a valid member name\n"
+msgstr "దోషం: %s ఒక చెల్లుబాటు అయ్యే సభ్యుడు పేరు కాదు \n"
+
+#: ../gio/gdbus-tool.c:654
+#, c-format
+msgid "Error: %s is not a valid unique bus name.\n"
+msgstr "లోపం: %s ఒక చెల్లుబాటు అయ్యే ప్రత్యేక బస్సు పేరు కాదు.\n"
+
+#. Use the original non-"parse-me-harder" error
+#: ../gio/gdbus-tool.c:681 ../gio/gdbus-tool.c:999
+#, c-format
+msgid "Error parsing parameter %d: %s\n"
+msgstr "లోపం అన్వయ పారామితి %d: %s\n"
+
+#: ../gio/gdbus-tool.c:712
+#, c-format
+msgid "Error flushing connection: %s\n"
+msgstr "అనుసంధానమును లోపం ఒరవడిఅనుసంధానమును : %s\n"
+
+#: ../gio/gdbus-tool.c:739
+msgid "Destination name to invoke method on"
+msgstr "న పద్ధతి అర్థించడానికి గమ్యం పేరు"
+
+#: ../gio/gdbus-tool.c:740
+msgid "Object path to invoke method on"
+msgstr "న పద్ధతి అర్థించడానికి వస్తువు మార్గం"
+
+#: ../gio/gdbus-tool.c:741
+msgid "Method and interface name"
+msgstr "పద్ధతి మరియు అంతర్ముఖం పేరు"
+
+#: ../gio/gdbus-tool.c:742
+msgid "Timeout in seconds"
+msgstr "సెకండ్లలో గడువు ముగిసింది"
+
+#: ../gio/gdbus-tool.c:781
+msgid "Invoke a method on a remote object."
+msgstr "ఒక మారుమూల వస్తువు ఒక పద్ధతి అర్థించడానికి."
+
+#: ../gio/gdbus-tool.c:856 ../gio/gdbus-tool.c:1590 ../gio/gdbus-tool.c:1818
+#, c-format
+msgid "Error: Destination is not specified\n"
+msgstr "లోపం: గమ్యం పేర్కొన్న లేదు \n"
+
+#: ../gio/gdbus-tool.c:877 ../gio/gdbus-tool.c:1609
+#, c-format
+msgid "Error: Object path is not specified\n"
+msgstr "లోపం: వస్తువు మార్గం పేర్కొన్న లేదు \n"
+
+#: ../gio/gdbus-tool.c:912
+#, c-format
+msgid "Error: Method name is not specified\n"
+msgstr "లోపం: మెథడ్ పేరు పేర్కొన్న లేదు \n"
+
+#: ../gio/gdbus-tool.c:923
+#, c-format
+msgid "Error: Method name '%s' is invalid\n"
+msgstr "లోపం: పద్ధతి పేరు '%s' చెల్లదు \n"
+
+#: ../gio/gdbus-tool.c:991
+#, c-format
+msgid "Error parsing parameter %d of type '%s': %s\n"
+msgstr ""
+" ఒక దోషం ను అన్వయించడంలో %d పార్సీంగ్ పారామితి.ఆ దోషం దీనికి సంబంధించినది:'%"
+"s':%s\n"
+
+#: ../gio/gdbus-tool.c:1428
+msgid "Destination name to introspect"
+msgstr "గమ్యం పేరు తనను తాను పరిశీలించుకొను కు"
+
+#: ../gio/gdbus-tool.c:1429
+msgid "Object path to introspect"
+msgstr "గమ్యం పేరు తనను తాను పరిశీలించుకొను కు"
+
+#: ../gio/gdbus-tool.c:1430
+msgid "Print XML"
+msgstr "ముద్రణ XML"
+
+#: ../gio/gdbus-tool.c:1431
+msgid "Introspect children"
+msgstr "పిల్లలు పరిశీలించుకొను"
+
+#: ../gio/gdbus-tool.c:1432
+msgid "Only print properties"
+msgstr "కేవలం లక్షణాలు ముద్రించవచ్చు"
+
+#: ../gio/gdbus-tool.c:1523
+msgid "Introspect a remote object."
+msgstr "ఒక మారుమూల వస్తువు పరిశీలించుకొ."
+
+#: ../gio/gdbus-tool.c:1721
+msgid "Destination name to monitor"
+msgstr "పర్యవేక్షించుటకు గమ్యం పేరు"
+
+#: ../gio/gdbus-tool.c:1722
+msgid "Object path to monitor"
+msgstr "పర్యవేక్షించుటకు వస్తువు మార్గం"
+
+#: ../gio/gdbus-tool.c:1751
+msgid "Monitor a remote object."
+msgstr "ఒక మారుమూల వస్తువు పర్యవేక్షించడానికి"
+
+#: ../gio/gdesktopappinfo.c:2001 ../gio/gdesktopappinfo.c:4525
+#: ../gio/gwin32appinfo.c:219
+msgid "Unnamed"
+msgstr "నామములేని"
+
+#: ../gio/gdesktopappinfo.c:2410
+msgid "Desktop file didn't specify Exec field"
+msgstr "డెస్కుటాప్ దస్త్రము Exec క్షేత్రమును తెలుపలేదు"
+
+#: ../gio/gdesktopappinfo.c:2695
+msgid "Unable to find terminal required for application"
+msgstr "అనువర్తనంకు కావలిసిన ‍టెర్మినల్‌ను కనుగొనలేక పోయింది"
+
+#: ../gio/gdesktopappinfo.c:3116
+#, c-format
+msgid "Can't create user application configuration folder %s: %s"
+msgstr "వినియోగదారి అనువర్తన ఆకృతీకరణ సంచయం %sను సృష్టించలేకపోయింది: %s"
+
+#: ../gio/gdesktopappinfo.c:3120
+#, c-format
+msgid "Can't create user MIME configuration folder %s: %s"
+msgstr "వినియోగదారి MIME ఆకృతీకరణ సంచయం %sను సృష్టించలేకపోయింది: %s"
+
+#: ../gio/gdesktopappinfo.c:3360 ../gio/gdesktopappinfo.c:3384
+msgid "Application information lacks an identifier"
+msgstr "దరఖాస్తు సమాచారం ఒక గుర్తించే లేదు"
+
+#: ../gio/gdesktopappinfo.c:3617
+#, c-format
+msgid "Can't create user desktop file %s"
+msgstr "వినియోగదారి డెస్కుటాప్ దస్త్రమును సృష్టించలేకపోయింది %s"
+
+#: ../gio/gdesktopappinfo.c:3751
+#, c-format
+msgid "Custom definition for %s"
+msgstr "%s కొరకు మలిచిన నిర్వచనము"
+
+#: ../gio/gdrive.c:392
+msgid "drive doesn't implement eject"
+msgstr "డ్రైవ్ బయటకుపంపుదానిని చేయలేదు"
+
+#. Translators: This is an error
+#. * message for drive objects that
+#. * don't implement any of eject or eject_with_operation.
+#: ../gio/gdrive.c:470
+msgid "drive doesn't implement eject or eject_with_operation"
+msgstr ""
+"డ్రైవ్ బయటకుపంపు లేదా ఆపరేషన్‌తో_బయటకు_పంపు విలువను అభివృద్దిపరచలేక పోయింది"
+
+#: ../gio/gdrive.c:546
+msgid "drive doesn't implement polling for media"
+msgstr "మాధ్యమం కొరకు ఎన్నికను డ్రైవ్ చేయలేదు"
+
+#: ../gio/gdrive.c:751
+msgid "drive doesn't implement start"
+msgstr "డ్రైవు ప్రారంభమును అభివృద్ది పరచలేకపోయింది"
+
+#: ../gio/gdrive.c:853
+msgid "drive doesn't implement stop"
+msgstr "ఆపుటను డ్రైవు అభివృద్ది పరచలేకపోయింది"
+
+#: ../gio/gdummytlsbackend.c:189 ../gio/gdummytlsbackend.c:311
+#: ../gio/gdummytlsbackend.c:401
+msgid "TLS support is not available"
+msgstr "TLS మద్దతు అందుబాటులో లేదు"
+
+#: ../gio/gemblem.c:323
+#, c-format
+msgid "Can't handle version %d of GEmblem encoding"
+msgstr "GEmblem ఎన్కోడింగ్ యొక్క వర్షన్ %dను సంభాలించలేదు"
+
+#: ../gio/gemblem.c:333
+#, c-format
+msgid "Malformed number of tokens (%d) in GEmblem encoding"
+msgstr "GEmblem ఎన్కోడింగ్‌నందు టోకెన్సు (%d)యొక్క తప్పుగావున్న సంఖ్య"
+
+#: ../gio/gemblemedicon.c:362
+#, c-format
+msgid "Can't handle version %d of GEmblemedIcon encoding"
+msgstr "GEmblemedIcon ఎన్కోడింగ్ యొక్క వర్షన్ %dను సంభాలించలేదు"
+
+#: ../gio/gemblemedicon.c:372
+#, c-format
+msgid "Malformed number of tokens (%d) in GEmblemedIcon encoding"
+msgstr "GEmblemedIcon ఎన్కోడింగ్‌నందు టోకెన్సు (%d)యొక్క తప్పుగావున్న సంఖ్య"
+
+#: ../gio/gemblemedicon.c:395
+msgid "Expected a GEmblem for GEmblemedIcon"
+msgstr "GEmblemedIcon కొరకు GEmblem కావలసివుంది"
+
+#: ../gio/gfile.c:956 ../gio/gfile.c:1194 ../gio/gfile.c:1332
+#: ../gio/gfile.c:1570 ../gio/gfile.c:1625 ../gio/gfile.c:1683
+#: ../gio/gfile.c:1767 ../gio/gfile.c:1824 ../gio/gfile.c:1888
+#: ../gio/gfile.c:1943 ../gio/gfile.c:3591 ../gio/gfile.c:3646
+#: ../gio/gfile.c:3853 ../gio/gfile.c:3895 ../gio/gfile.c:4358
+#: ../gio/gfile.c:4769 ../gio/gfile.c:4854 ../gio/gfile.c:4944
+#: ../gio/gfile.c:5041 ../gio/gfile.c:5128 ../gio/gfile.c:5229
+#: ../gio/gfile.c:7748 ../gio/gfile.c:7838 ../gio/gfile.c:7922
+#: ../gio/win32/gwinhttpfile.c:437
+msgid "Operation not supported"
+msgstr "ఆపరేషన్ మద్దతీయబడలేదు"
+
+#. Translators: This is an error message when
+#. * trying to find the enclosing (user visible)
+#. * mount of a file, but none exists.
+#.
+#. Translators: This is an error message when trying to
+#. * find the enclosing (user visible) mount of a file, but
+#. * none exists.
+#. Translators: This is an error message when trying to find
+#. * the enclosing (user visible) mount of a file, but none
+#. * exists.
+#: ../gio/gfile.c:1455 ../gio/glocalfile.c:1103 ../gio/glocalfile.c:1114
+#: ../gio/glocalfile.c:1127
+msgid "Containing mount does not exist"
+msgstr "వినియోగదారికి దృగ్గోచరమగు మౌంట్ లేదు"
+
+#: ../gio/gfile.c:2502 ../gio/glocalfile.c:2337
+msgid "Can't copy over directory"
+msgstr "డైరెక్టరీనందు నకలు తీయలేదు"
+
+#: ../gio/gfile.c:2562
+msgid "Can't copy directory over directory"
+msgstr "డైరెక్టరీని డైరెక్టరీకి నకలు తీయలేము"
+
+#: ../gio/gfile.c:2570 ../gio/glocalfile.c:2346
+msgid "Target file exists"
+msgstr "లక్ష్యపు దస్త్రము వుంది"
+
+#: ../gio/gfile.c:2589
+msgid "Can't recursively copy directory"
+msgstr "డైరెక్టరీని పునరావృతముగా నకలుతీయలేదు"
+
+#: ../gio/gfile.c:2871
+msgid "Splice not supported"
+msgstr "అతుకుపెట్టు మద్దతు లేదు "
+
+#: ../gio/gfile.c:2875
+#, c-format
+msgid "Error splicing file: %s"
+msgstr "లోపం splicing ఫైలు: %s"
+
+#: ../gio/gfile.c:3006
+msgid "Copy (reflink/clone) between mounts is not supported"
+msgstr "నకలు తీయుట (reflink/clone) మౌంట్స్ మద్యన తోడ్పాటునీయదు"
+
+#: ../gio/gfile.c:3010
+msgid "Copy (reflink/clone) is not supported or invalid"
+msgstr "నకలు తీయుట (reflink/clone) తోడ్పాటు లేదు లేదా చెల్లనిది"
+
+#: ../gio/gfile.c:3015
+msgid "Copy (reflink/clone) is not supported or didn't work"
+msgstr "నకలు తీయుట (reflink/clone) తోడ్పాటు లేదు లేదా పనిచేయుటలేదు"
+
+#: ../gio/gfile.c:3078
+msgid "Can't copy special file"
+msgstr "ప్రత్యేక దస్త్రమును నకలుతీయలేదు"
+
+#: ../gio/gfile.c:3843
+msgid "Invalid symlink value given"
+msgstr "చెల్లని సిమ్‌లింక్ విలువ యివ్వబడినది"
+
+#: ../gio/gfile.c:4004
+msgid "Trash not supported"
+msgstr "ట్రాష్ మద్దతీయలేదు"
+
+#: ../gio/gfile.c:4116
+#, c-format
+msgid "File names cannot contain '%c'"
+msgstr "దస్త్రము నామములు '%c'ని కలిగిలేవు"
+
+#: ../gio/gfile.c:6540 ../gio/gvolume.c:363
+msgid "volume doesn't implement mount"
+msgstr "వాల్యూమ్ మౌంట్‌ను చేయలేకపోయింది"
+
+#: ../gio/gfile.c:6649
+msgid "No application is registered as handling this file"
+msgstr "ఈ దస్త్రము సంబాలించుతున్నట్లు యెటువంటి అనువర్తనము నమోదుకాలేదు"
+
+#: ../gio/gfileenumerator.c:212
+msgid "Enumerator is closed"
+msgstr "ఎన్యూమరేటర్ మూయబడినది"
+
+#: ../gio/gfileenumerator.c:219 ../gio/gfileenumerator.c:278
+#: ../gio/gfileenumerator.c:377 ../gio/gfileenumerator.c:476
+msgid "File enumerator has outstanding operation"
+msgstr "దస్త్ర యెన్యూమరేటర్ యిప్పటికే వొక ఆపరేషన్‌ను కలిగివుంది"
+
+#: ../gio/gfileenumerator.c:368 ../gio/gfileenumerator.c:467
+msgid "File enumerator is already closed"
+msgstr "దస్త్ర యెన్యూమరేటర్ యిప్పటికే మూయబడివుంది"
+
+#: ../gio/gfileicon.c:236
+#, c-format
+msgid "Can't handle version %d of GFileIcon encoding"
+msgstr "GFileIcon ఎన్కోడింగ్ యొక్క వర్షన్ %dను సంభాలించలేదు"
+
+#: ../gio/gfileicon.c:246
+msgid "Malformed input data for GFileIcon"
+msgstr "GFileIcon కొరకు తప్పుగావున్న ఇన్పుట్ డాటా"
+
+#: ../gio/gfileinputstream.c:149 ../gio/gfileinputstream.c:394
+#: ../gio/gfileiostream.c:167 ../gio/gfileoutputstream.c:164
+#: ../gio/gfileoutputstream.c:497
+msgid "Stream doesn't support query_info"
+msgstr "స్ట్రీమ్ క్వరీ సమాచారంను మద్దతీయుటలేదు (_i)"
+
+#: ../gio/gfileinputstream.c:325 ../gio/gfileiostream.c:379
+#: ../gio/gfileoutputstream.c:371
+msgid "Seek not supported on stream"
+msgstr "సీక్ స్ట్రీమ్‌పైన మద్దతీయుటలేదు"
+
+#: ../gio/gfileinputstream.c:369
+msgid "Truncate not allowed on input stream"
+msgstr "ట్రంకేట్ ఇన్‌పుట్ స్ట్రీమ్‌పైన అనుమతించబడుటలేదు"
+
+#: ../gio/gfileiostream.c:455 ../gio/gfileoutputstream.c:447
+msgid "Truncate not supported on stream"
+msgstr "స్ట్రీమ్‌పైన ట్రంకేట్ మద్దతీయుటలేదు"
+
+#: ../gio/gicon.c:290
+#, c-format
+msgid "Wrong number of tokens (%d)"
+msgstr "తప్పుడు సంఖ్యా టోకెన్లు (%d)"
+
+#: ../gio/gicon.c:310
+#, c-format
+msgid "No type for class name %s"
+msgstr "క్లాస్ నామము %s కొరకు ఏ రకములేదు"
+
+#: ../gio/gicon.c:320
+#, c-format
+msgid "Type %s does not implement the GIcon interface"
+msgstr "రకము %s GIcon యింటర్‌ఫేస్‌ను తయారుచేయలేదు"
+
+#: ../gio/gicon.c:331
+#, c-format
+msgid "Type %s is not classed"
+msgstr "రకము %s వర్గీకరించబడలేదు"
+
+#: ../gio/gicon.c:345
+#, c-format
+msgid "Malformed version number: %s"
+msgstr "తప్పుగావున్న వర్షన్ సంఖ్య: %s"
+
+#: ../gio/gicon.c:359
+#, c-format
+msgid "Type %s does not implement from_tokens() on the GIcon interface"
+msgstr "GIcon యింటర్ఫేస్ పైన రకము %s అనునది from_tokens()ను తయారుచేయలేదు"
+
+#: ../gio/gicon.c:461
+msgid "Can't handle the supplied version of the icon encoding"
+msgstr "ప్రతిమ యెన్కోడింగ్ యొక్క పంపిణీచేయబడిన వర్షన్‌ను సంభాలించలేదు"
+
+#: ../gio/ginetaddressmask.c:182
+msgid "No address specified"
+msgstr "ఏ చిరునామా తెలుపలేదు"
+
+#: ../gio/ginetaddressmask.c:190
+#, c-format
+msgid "Length %u is too long for address"
+msgstr "చిరునామా కొరకు %u మరీ పొడవుగా వుంది"
+
+#: ../gio/ginetaddressmask.c:223
+msgid "Address has bits set beyond prefix length"
+msgstr "ప్రిఫిక్స్ పొడవు దాటి బిట్సును చిరునామా కలిగివుంది"
+
+#: ../gio/ginetaddressmask.c:300
+#, c-format
+msgid "Could not parse '%s' as IP address mask"
+msgstr "'%s' ను IP చిరునామా మాస్కువలె పార్స్ చేయలేకపోయింది"
+
+#: ../gio/ginetsocketaddress.c:196 ../gio/ginetsocketaddress.c:213
+#: ../gio/gunixsocketaddress.c:209
+msgid "Not enough space for socket address"
+msgstr "సాకెట్ చిరునామా కొరకు సరిపోవునంత జాగాలేదు"
+
+#: ../gio/ginetsocketaddress.c:228
+msgid "Unsupported socket address"
+msgstr "మద్దతీయని సాకెట్ చిరునామా"
+
+#: ../gio/ginputstream.c:185
+msgid "Input stream doesn't implement read"
+msgstr "ఇన్‌పుట్ స్ట్రీమ్ చదువుటను అభివృద్ది చేయుటలేదు"
+
+#. Translators: This is an error you get if there is already an
+#. * operation running against this stream when you try to start
+#. * one
+#. Translators: This is an error you get if there is
+#. * already an operation running against this stream when
+#. * you try to start one
+#: ../gio/ginputstream.c:1027 ../gio/giostream.c:287
+#: ../gio/goutputstream.c:1474
+msgid "Stream has outstanding operation"
+msgstr "ఈ స్ట్రీమ్ యిప్పటికే వొక ఆపరేషన్‌ను కలిగివుంది"
+
+#: ../gio/glib-compile-resources.c:142 ../gio/glib-compile-schemas.c:1453
+#, c-format
+msgid "Element <%s> not allowed inside <%s>"
+msgstr "మూలకం <%s> <%s> లోపల అనుమతి లేదు"
+
+#: ../gio/glib-compile-resources.c:146
+#, c-format
+msgid "Element <%s> not allowed at toplevel"
+msgstr "మూలకం <%s> toplevel వద్ద అనుమతి లేదు"
+
+#: ../gio/glib-compile-resources.c:236
+#, c-format
+msgid "File %s appears multiple times in the resource"
+msgstr "వనరు నందు ఫైలు %s బహు పర్యాయాలు కనిపించెను"
+
+#: ../gio/glib-compile-resources.c:249
+#, c-format
+msgid "Failed to locate '%s' in any source directory"
+msgstr "ఏదైనా వనరు డైరెక్టరీనందు '%s' గుర్తించుటలో విఫలమైంది"
+
+#: ../gio/glib-compile-resources.c:260
+#, c-format
+msgid "Failed to locate '%s' in current directory"
+msgstr "ప్రస్తుత డైరెక్టరీ నందు '%s' గుర్తించుటకు విఫలమయ్యెను"
+
+#: ../gio/glib-compile-resources.c:288
+#, c-format
+msgid "Unknown processing option \"%s\""
+msgstr "తెలియని నిర్వర్తన ఐచ్చికం \"%s\""
+
+#: ../gio/glib-compile-resources.c:306 ../gio/glib-compile-resources.c:352
+#, c-format
+msgid "Failed to create temp file: %s"
+msgstr "తాత్కాలిక ఫైలు సృష్టించుటకు విఫలమైంది: %s"
+
+#: ../gio/glib-compile-resources.c:380
+#, c-format
+msgid "Error reading file %s: %s"
+msgstr "ఫైలు %s చదువుటలో దోషం: %s"
+
+#: ../gio/glib-compile-resources.c:400
+#, c-format
+msgid "Error compressing file %s"
+msgstr "ఫైలు %s కుదించుటలో దోషం"
+
+#: ../gio/glib-compile-resources.c:464 ../gio/glib-compile-schemas.c:1565
+#, c-format
+msgid "text may not appear inside <%s>"
+msgstr "టెక్స్ట్ <%s> లోపల కనిపించక పోవచ్చు"
+
+#: ../gio/glib-compile-resources.c:589
+msgid "name of the output file"
+msgstr "అవుట్పుట్ ఫైల్ పేరు"
+
+#: ../gio/glib-compile-resources.c:590
+msgid ""
+"The directories where files are to be read from (default to current "
+"directory)"
+msgstr ""
+"ఎచటనుండి ఫైళ్ళు చదువబడునో ఆ డైరెక్టరీలు (అప్రమేయంగా స్థానిక డైరెక్టరీనకు)"
+
+#: ../gio/glib-compile-resources.c:590 ../gio/glib-compile-schemas.c:1994
+#: ../gio/glib-compile-schemas.c:2023
+msgid "DIRECTORY"
+msgstr "డైరెక్టరీ"
+
+#: ../gio/glib-compile-resources.c:591
+msgid ""
+"Generate output in the format selected for by the target filename extension"
+msgstr ""
+"లక్ష్యపు ఫైల్‌పేరు పొడిగింపు చేత యెంపికచేసిన ఫార్మాట్‌లో అవుట్పుట్ జనియింపచేయి"
+
+#: ../gio/glib-compile-resources.c:592
+msgid "Generate source header"
+msgstr "మూలపు యెగువసూచి జనియింపచేయి"
+
+#: ../gio/glib-compile-resources.c:593
+msgid "Generate sourcecode used to link in the resource file into your code"
+msgstr ""
+"మీ కోడ్ లోనికి వనరు ఫైలునకు లింకు చేయుటకు వుపయోగించు సోర్సుకోడ్ జనియింపచేయి"
+
+#: ../gio/glib-compile-resources.c:594
+msgid "Generate dependency list"
+msgstr "ఆధార జాబితాను జనియింపచేయి"
+
+#: ../gio/glib-compile-resources.c:595
+msgid "Don't automatically create and register resource"
+msgstr "వనరు స్వయంచాలకంగా సృష్టించి మరియు నమోదు చేయవద్దు"
+
+#: ../gio/glib-compile-resources.c:596
+msgid "Don't export functions; declare them G_GNUC_INTERNAL"
+msgstr "ఫంక్షన్లను యెగుమతి చేయవద్దు; వాటిని ప్రకటించు G_GNUC_INTERNAL"
+
+#: ../gio/glib-compile-resources.c:597
+msgid "C identifier name used for the generated source code"
+msgstr "జనియింపచేసిన సోర్స్ కోడ్ కొరకు వుపయోగించిన C గుర్తింపుకారి"
+
+#: ../gio/glib-compile-resources.c:623
+msgid ""
+"Compile a resource specification into a resource file.\n"
+"Resource specification files have the extension .gresource.xml,\n"
+"and the resource file have the extension called .gresource."
+msgstr ""
+"వనరు వివరణమును వనరు ఫైలునకు వుంచుము.\n"
+"వనరు వివరణము ఫైళ్లు .gresource.xml పొడిగింపును కలిగివుంటాయి,\n"
+"మరియు మరియు వనరు ఫైలు .gresource గా పిలుచు పొడిగింపును కలిగివుండును."
+
+#: ../gio/glib-compile-resources.c:639
+#, c-format
+msgid "You should give exactly one file name\n"
+msgstr "మీరు ఖచ్చితంగా వొక ఫైలు పేరు యివ్వాలి\n"
+
+#: ../gio/glib-compile-schemas.c:772
+msgid "empty names are not permitted"
+msgstr "ఖాళీ పేర్లు అనుమతి లేదు"
+
+#: ../gio/glib-compile-schemas.c:782
+#, c-format
+msgid "invalid name '%s': names must begin with a lowercase letter"
+msgstr "చెల్లని పేరు '%s': పేర్లు ఒక చిన్న అక్షరంతో ప్రారంభమవుతాయి తప్పక"
+
+#: ../gio/glib-compile-schemas.c:794
+#, c-format
+msgid ""
+"invalid name '%s': invalid character '%c'; only lowercase letters, numbers "
+"and hyphen ('-') are permitted."
+msgstr ""
+"చెల్లని పేరు '%s': చెల్లని అక్షరం '%c'; చిన్న అక్షరాలు మాత్రమే, నంబర్లు మరియు "
+"హైఫన్ ('-') "
+"అనుమతించబడతాయి."
+
+#: ../gio/glib-compile-schemas.c:803
+#, c-format
+msgid "invalid name '%s': two successive hyphens ('--') are not permitted."
+msgstr "చెల్లని పేరు '%s': రెండు వరుస హైఫన్లు ('--') అనుమతించబడవు."
+
+#: ../gio/glib-compile-schemas.c:812
+#, c-format
+msgid "invalid name '%s': the last character may not be a hyphen ('-')."
+msgstr "చెల్లని పేరు '%s': చివరి అక్షరం ('-') కాలేకపోవచ్చు."
+
+#: ../gio/glib-compile-schemas.c:820
+#, c-format
+msgid "invalid name '%s': maximum length is 1024"
+msgstr "చెల్లని పేరు '%s': గరిష్ఠ పొడవు 1024 ఉంది"
+
+#: ../gio/glib-compile-schemas.c:889
+#, c-format
+msgid "<child name='%s'> already specified"
+msgstr "<పిల్లల పేరు = '%s'>ఇప్పటికే తెలుపబడిన"
+
+#: ../gio/glib-compile-schemas.c:915
+msgid "cannot add keys to a 'list-of' schema"
+msgstr "కీలను 'list-of' స్కీమాకు జతచేయలేము"
+
+#: ../gio/glib-compile-schemas.c:926
+#, c-format
+msgid "<key name='%s'> already specified"
+msgstr "<కీలక పేరు = '%s'>ఇప్పటికే తెలుపబడిన"
+
+#: ../gio/glib-compile-schemas.c:944
+#, c-format
+msgid ""
+"<key name='%s'> shadows <key name='%s'> in <schema id='%s'>; use <override> "
+"to modify value"
+msgstr ""
+"<schema id='%s'> లో <key name='%s'> నీడలు <key name='%s'>; ఉపయోగం <override> "
+"విలువ సవరించడానికి"
+
+#: ../gio/glib-compile-schemas.c:955
+#, c-format
+msgid ""
+"exactly one of 'type', 'enum' or 'flags' must be specified as an attribute "
+"to <key>"
+msgstr "సరిగ్గా 'రకం' ఒకటి, 'enum' లేదా 'జెండాలు' ఒక లక్షణం గా తప్పక<key> కు"
+
+#: ../gio/glib-compile-schemas.c:974
+#, c-format
+msgid "<%s id='%s'> not (yet) defined."
+msgstr "<%s id = '%s'> లేదు (ఇంకా) నిర్వచించింది."
+
+#: ../gio/glib-compile-schemas.c:989
+#, c-format
+msgid "invalid GVariant type string '%s'"
+msgstr "GVariant రకం స్ట్రింగ్ '%s' నిలిపివేసిన"
+
+#: ../gio/glib-compile-schemas.c:1019
+msgid "<override> given but schema isn't extending anything"
+msgstr "<override> ఇచ్చిన కాని స్కీమ ఏదైనా పొడిగిస్తూ లేదు"
+
+#: ../gio/glib-compile-schemas.c:1032
+#, c-format
+msgid "no <key name='%s'> to override"
+msgstr "తొలగించకండి ఎటువంటి <key name='%s'>"
+
+#: ../gio/glib-compile-schemas.c:1040
+#, c-format
+msgid "<override name='%s'> already specified"
+msgstr "<override name='%s'> ఇప్పటికే తెలుపబడిన"
+
+#: ../gio/glib-compile-schemas.c:1111
+#, c-format
+msgid "<schema id='%s'> already specified"
+msgstr "ఇప్పటికే పేర్కొన్న <schema id='%s'>"
+
+#: ../gio/glib-compile-schemas.c:1123
+#, c-format
+msgid "<schema id='%s'> extends not yet existing schema '%s'"
+msgstr "<schema id='%s'> ఇంకా ఇప్పటికి లేని స్కీమా '%s' విస్తరింపును"
+
+#: ../gio/glib-compile-schemas.c:1139
+#, c-format
+msgid "<schema id='%s'> is list of not yet existing schema '%s'"
+msgstr "<schema id='%s'> ఇంకా ఇప్పటికి లేని స్కీమా '%s' యొక్క జాబితా"
+
+#: ../gio/glib-compile-schemas.c:1147
+#, c-format
+msgid "Can not be a list of a schema with a path"
+msgstr "ఒక మార్గాన్ని ఒక స్కీమ జాబితా ఉండకూడదు"
+
+#: ../gio/glib-compile-schemas.c:1157
+#, c-format
+msgid "Can not extend a schema with a path"
+msgstr "ఒక మార్గాన్ని ఒక స్కీమ విస్తరించడానికి కాదు"
+
+#: ../gio/glib-compile-schemas.c:1167
+#, c-format
+msgid ""
+"<schema id='%s'> is a list, extending <schema id='%s'> which is not a list"
+msgstr "<schema id='%s'> ఒక జాబితా కాదు ఇది <schema id='%s'> వ్యాపించి జాబితా"
+
+#: ../gio/glib-compile-schemas.c:1177
+#, c-format
+msgid ""
+"<schema id='%s' list-of='%s'> extends <schema id='%s' list-of='%s'> but '%s' "
+"does not extend '%s'"
+msgstr ""
+"<schema id='%s' list-of='%s'> <schema id='%s' list-of='%s'> విస్తరించి కానీ "
+"'%s'విస్తరించడానికి లేదు '%s'"
+
+#: ../gio/glib-compile-schemas.c:1194
+#, c-format
+msgid "a path, if given, must begin and end with a slash"
+msgstr "ఒక మార్గ, వాడితేనే, ప్రారంభమవుతాయి మరియు ఒక స్లాష్ తో అంతం చేయాలి"
+
+#: ../gio/glib-compile-schemas.c:1201
+#, c-format
+msgid "the path of a list must end with ':/'"
+msgstr "ఒక జాబితా యొక్క మార్గం ':/' తో అంతం చేయాలి"
+
+#: ../gio/glib-compile-schemas.c:1233
+#, c-format
+msgid "<%s id='%s'> already specified"
+msgstr "<%s id = '%s'> ఇప్పటికే తెలుపబడిన"
+
+#: ../gio/glib-compile-schemas.c:1457
+#, c-format
+msgid "Element <%s> not allowed at the top level"
+msgstr "మూలకం <%s> పైస్థాయి వద్ద అనుమతించబడదు"
+
+#. Translators: Do not translate "--strict".
+#: ../gio/glib-compile-schemas.c:1752 ../gio/glib-compile-schemas.c:1823
+#: ../gio/glib-compile-schemas.c:1899
+#, c-format
+msgid "--strict was specified; exiting.\n"
+msgstr "-- కఠినమైన పేర్కొన్న జరిగినది; నిష్క్రమించే \n"
+
+#: ../gio/glib-compile-schemas.c:1760
+#, c-format
+msgid "This entire file has been ignored.\n"
+msgstr "ఈ మొత్తం ఫైలు విస్మరించబడింది.\n"
+
+#: ../gio/glib-compile-schemas.c:1819
+#, c-format
+msgid "Ignoring this file.\n"
+msgstr "ఈ ఫైలు విస్మరిస్తున్నాము.\n"
+
+#: ../gio/glib-compile-schemas.c:1859
+#, c-format
+msgid "No such key '%s' in schema '%s' as specified in override file '%s'"
+msgstr "అటువంటి కీలక '%s 'స్కీమ లో '%s' గా ఓవరురైడు ఫైలు లో పేర్కొన్న '%s '"
+
+#: ../gio/glib-compile-schemas.c:1865 ../gio/glib-compile-schemas.c:1923
+#: ../gio/glib-compile-schemas.c:1951
+#, c-format
+msgid "; ignoring override for this key.\n"
+msgstr ";. ఈ కీ కోసం ఓవరురైడు విస్మరిస్తూ \n"
+
+#: ../gio/glib-compile-schemas.c:1869 ../gio/glib-compile-schemas.c:1927
+#: ../gio/glib-compile-schemas.c:1955
+#, c-format
+msgid " and --strict was specified; exiting.\n"
+msgstr " మరియు కఠినమైన పేర్కొన్న జరిగినది; నిష్క్రమించే.\n"
+
+#: ../gio/glib-compile-schemas.c:1885
+#, c-format
+msgid ""
+"error parsing key '%s' in schema '%s' as specified in override file '%s': %s."
+msgstr ""
+"కీ '%s' ను స్కీమా '%s' నందు వోవర్‌రైడ్ ఫైలు '%s' నందు తెలిపినట్లు పార్స్ "
+"చేయుటలో దోషం: %s."
+
+#: ../gio/glib-compile-schemas.c:1895
+#, c-format
+msgid "Ignoring override for this key.\n"
+msgstr "ఈ కీ కోసం ఓవరురైడు విస్మరించడం. \n"
+
+#: ../gio/glib-compile-schemas.c:1913
+#, c-format
+msgid ""
+"override for key '%s' in schema '%s' in override file '%s' is outside the "
+"range given in the schema"
+msgstr ""
+"కీ '%s' కోసం స్కీమా'%s' నందు ఓవరురైడు ఫైలు '%s' నందు వోవర్ రైడ్ స్కీమలో "
+"ఇవ్వబడిన పరిధికి బయటవుంది"
+
+#: ../gio/glib-compile-schemas.c:1941
+#, c-format
+msgid ""
+"override for key '%s' in schema '%s' in override file '%s' is not in the "
+"list of valid choices"
+msgstr ""
+"కీలక '%s కోసం తొలగించకండి 'స్కీమ లో'%s' ఓవరురైడు ఫైలు '%s'లో లేదుచెల్లుబాటు "
+"అయ్యే ఎంపికలు యొక్క "
+"జాబితా"
+
+#: ../gio/glib-compile-schemas.c:1994
+msgid "where to store the gschemas.compiled file"
+msgstr "gschemas.compiled ఫైలు నిల్వ చేయడానికి ఇక్కడ"
+
+#: ../gio/glib-compile-schemas.c:1995
+msgid "Abort on any errors in schemas"
+msgstr "స్కీమాస్ ఏ లోపాలను విస్మరించు"
+
+#: ../gio/glib-compile-schemas.c:1996
+msgid "Do not write the gschema.compiled file"
+msgstr "Gschema.compiled ఫైలు వ్రాయడం లేదు"
+
+#: ../gio/glib-compile-schemas.c:1997
+msgid "Do not enforce key name restrictions"
+msgstr "కీలక పేరు ఆంక్షలు అమలు లేదు"
+
+#: ../gio/glib-compile-schemas.c:2026
+msgid ""
+"Compile all GSettings schema files into a schema cache.\n"
+"Schema files are required to have the extension .gschema.xml,\n"
+"and the cache file is called gschemas.compiled."
+msgstr ""
+"ఒక స్కీమ కాషె అన్ని GSettings స్కీమ ఫైళ్లు కంఫైల్.\n"
+"స్కీమ ఫైళ్లు పొడిగింపు కలిగి ఉంటుంది. Gschema.xml,\n"
+"మరియు కాషె ఫైల్ gschemas.compiled అని పిలుస్తారు."
+
+#: ../gio/glib-compile-schemas.c:2042
+#, c-format
+msgid "You should give exactly one directory name\n"
+msgstr "మీరు సరిగ్గా ఒక డైరెక్టరీ పేరు ఇవ్వాలి\n"
+
+#: ../gio/glib-compile-schemas.c:2081
+#, c-format
+msgid "No schema files found: "
+msgstr "ఏ స్కీమ ఫైళ్లు దొరకలేదు:"
+
+#: ../gio/glib-compile-schemas.c:2084
+#, c-format
+msgid "doing nothing.\n"
+msgstr "ఏమీ చేయడం.\n"
+
+#: ../gio/glib-compile-schemas.c:2087
+#, c-format
+msgid "removed existing output file.\n"
+msgstr "తొలగించబడింది ఉన్న అవుట్పుట్ ఫైలు.\n"
+
+#: ../gio/glocaldirectorymonitor.c:224
+msgid "Unable to find default local directory monitor type"
+msgstr "అప్రమేయ స్థానిక మానిటర్ రకమును కనుగొనలేక పోయింది"
+
+#: ../gio/glocalfile.c:604 ../gio/win32/gwinhttpfile.c:420
+#, c-format
+msgid "Invalid filename %s"
+msgstr "చెల్లని ఫైలుపేరు %s"
+
+#: ../gio/glocalfile.c:981
+#, c-format
+msgid "Error getting filesystem info: %s"
+msgstr "దస్త్రవ్యవస్థ సమాచారంను కనుగొనుటలో దోషము : %s"
+
+#: ../gio/glocalfile.c:1149
+msgid "Can't rename root directory"
+msgstr "రూట్ డైరెక్టరీని పునఃనామకరణ చేయలేము"
+
+#: ../gio/glocalfile.c:1169 ../gio/glocalfile.c:1195
+#, c-format
+msgid "Error renaming file: %s"
+msgstr "దస్త్రమును పునఃనామకరణ చేయుటలో దోషము: %s"
+
+#: ../gio/glocalfile.c:1178
+msgid "Can't rename file, filename already exists"
+msgstr "ఫైలు పేరు కాదు, ఫైల్ పేరు ఇప్పటికే ఉంది"
+
+#: ../gio/glocalfile.c:1191 ../gio/glocalfile.c:2210 ../gio/glocalfile.c:2239
+#: ../gio/glocalfile.c:2399 ../gio/glocalfileoutputstream.c:549
+msgid "Invalid filename"
+msgstr "చెల్లని దస్త్రనామము"
+
+#: ../gio/glocalfile.c:1358 ../gio/glocalfile.c:1382
+msgid "Can't open directory"
+msgstr "డెరెక్టరీని తెరువలేము"
+
+#: ../gio/glocalfile.c:1366
+#, c-format
+msgid "Error opening file: %s"
+msgstr "దస్త్రమును తెరుచుటలో దోషము : %s"
+
+#: ../gio/glocalfile.c:1507
+#, c-format
+msgid "Error removing file: %s"
+msgstr "దస్త్రమును తొలగించుటలో దోషము: %s"
+
+#: ../gio/glocalfile.c:1887
+#, c-format
+msgid "Error trashing file: %s"
+msgstr "దస్త్రమును ట్రాష్ చేయుటలో దోషము : %s"
+
+#: ../gio/glocalfile.c:1910
+#, c-format
+msgid "Unable to create trash dir %s: %s"
+msgstr "ట్రాష్ డెరెక్టరీ(dir)ను సృష్టించలేక పోయింది %s: %s"
+
+#: ../gio/glocalfile.c:1931
+msgid "Unable to find toplevel directory for trash"
+msgstr "ట్రాష్ కొరకు పైస్థాయి డైరెక్టరీని కనుగొనలేక పోయింది"
+
+#: ../gio/glocalfile.c:2010 ../gio/glocalfile.c:2030
+msgid "Unable to find or create trash directory"
+msgstr "ట్రాష్ డైరెక్టీని కనుగోనలేక పోయింది లేదా సృష్టించలేక పోయింది"
+
+#: ../gio/glocalfile.c:2064
+#, c-format
+msgid "Unable to create trashing info file: %s"
+msgstr "ట్రాషింగ్ సమాచారపు దస్త్రమును సృష్టించలేక పోయింది: %s"
+
+#: ../gio/glocalfile.c:2095 ../gio/glocalfile.c:2100 ../gio/glocalfile.c:2180
+#: ../gio/glocalfile.c:2187
+#, c-format
+msgid "Unable to trash file: %s"
+msgstr "దస్త్రమును ట్రాష్ చేయలేక పోయింది: %s"
+
+#: ../gio/glocalfile.c:2188 ../glib/gregex.c:281
+msgid "internal error"
+msgstr "అంతర్గత దోషము"
+
+#: ../gio/glocalfile.c:2214
+#, c-format
+msgid "Error creating directory: %s"
+msgstr "డెరెక్టరీని సృష్టించుటలో దోషము: %s"
+
+#: ../gio/glocalfile.c:2243
+#, c-format
+msgid "Filesystem does not support symbolic links"
+msgstr "ఫైల్సిస్టమ్ సింబాలిక్ లింకులు మద్దతు ఇవ్వదు"
+
+#: ../gio/glocalfile.c:2247
+#, c-format
+msgid "Error making symbolic link: %s"
+msgstr "చిహ్నరూప లింకును చేయుటలో దోషము: %s"
+
+#: ../gio/glocalfile.c:2309 ../gio/glocalfile.c:2403
+#, c-format
+msgid "Error moving file: %s"
+msgstr "దస్త్రమును కదుపుటలో దోషము: %s"
+
+#: ../gio/glocalfile.c:2332
+msgid "Can't move directory over directory"
+msgstr "డెరెక్టరీని డెరెక్టరీకి కదుపలేము"
+
+#: ../gio/glocalfile.c:2359 ../gio/glocalfileoutputstream.c:925
+#: ../gio/glocalfileoutputstream.c:939 ../gio/glocalfileoutputstream.c:954
+#: ../gio/glocalfileoutputstream.c:970 ../gio/glocalfileoutputstream.c:984
+msgid "Backup file creation failed"
+msgstr "బ్యాకప్ దస్త్రము సృష్టీకరణ విఫలమైంది"
+
+#: ../gio/glocalfile.c:2378
+#, c-format
+msgid "Error removing target file: %s"
+msgstr "టార్గెట్ దస్త్రమును తొలగించుటలో దోషము: %s"
+
+#: ../gio/glocalfile.c:2392
+msgid "Move between mounts not supported"
+msgstr "మౌంట్స్‍ మధ్య కదలిక మద్దతీయబడదు"
+
+#: ../gio/glocalfile.c:2603
+#, c-format
+#| msgid "Could not load schemas from %s: %s\n"
+msgid "Could not determine the disk usage of %s: %s"
+msgstr "%s యొక్క డిస్కు వినిమయాన్ని నిర్ణయించలేదు: %s"
+
+#: ../gio/glocalfileinfo.c:721
+msgid "Attribute value must be non-NULL"
+msgstr "యాట్రిబ్యూట్ విలువ తప్పక NULL-కాకూడదు"
+
+#: ../gio/glocalfileinfo.c:728
+msgid "Invalid attribute type (string expected)"
+msgstr "చెల్లని యాట్రిబ్యూట్ రకము (స్ట్రింగ్ ఊహించినది)"
+
+#: ../gio/glocalfileinfo.c:735
+msgid "Invalid extended attribute name"
+msgstr "పొడిగించిన యాట్రిబ్యూట్ చెల్లని నామము"
+
+#: ../gio/glocalfileinfo.c:775
+#, c-format
+msgid "Error setting extended attribute '%s': %s"
+msgstr "పొడిగించిన యాట్రిబ్యూట్ అమర్చుటలో దోషము '%s': %s"
+
+#: ../gio/glocalfileinfo.c:1556
+msgid " (invalid encoding)"
+msgstr " (చెల్లని యెన్కోడింగ్)"
+
+#: ../gio/glocalfileinfo.c:1747 ../gio/glocalfileoutputstream.c:803
+#, c-format
+msgid "Error when getting information for file '%s': %s"
+msgstr "ఫైలు '%s' కొరకు సమాచారంను పొందుటలో దోషం: %s"
+
+#: ../gio/glocalfileinfo.c:1998
+#, c-format
+msgid "Error when getting information for file descriptor: %s"
+msgstr "ఫైల్ వివరణి కొరకు సమాచారంను పొందుటలో దోషము: %s"
+
+#: ../gio/glocalfileinfo.c:2043
+msgid "Invalid attribute type (uint32 expected)"
+msgstr "చెల్లని యాట్రిబ్యూట్ రకము (uint32 అనుకోబడినది)"
+
+#: ../gio/glocalfileinfo.c:2061
+msgid "Invalid attribute type (uint64 expected)"
+msgstr "చెల్లని యాట్రిబ్యూట్ రకము (uint64 అనుకోబడినది)"
+
+#: ../gio/glocalfileinfo.c:2080 ../gio/glocalfileinfo.c:2099
+msgid "Invalid attribute type (byte string expected)"
+msgstr "చెల్లని యాట్రిబ్యూట్ రకము (బైట్ స్ట్రింగ్ అనుకోబడినది)"
+
+#: ../gio/glocalfileinfo.c:2134
+msgid "Cannot set permissions on symlinks"
+msgstr "సిమ్‌లింకుల నందు అనుమతులను అమర్చలేదు"
+
+#: ../gio/glocalfileinfo.c:2150
+#, c-format
+msgid "Error setting permissions: %s"
+msgstr "అనుమతులను అమర్చుటలో దోషము: %s"
+
+#: ../gio/glocalfileinfo.c:2201
+#, c-format
+msgid "Error setting owner: %s"
+msgstr "యజమానిని అమర్చుటలో దోషము: %s"
+
+#: ../gio/glocalfileinfo.c:2224
+msgid "symlink must be non-NULL"
+msgstr "సిమ్‌లింకు తప్పక NULL-కాకూడదు"
+
+#: ../gio/glocalfileinfo.c:2234 ../gio/glocalfileinfo.c:2253
+#: ../gio/glocalfileinfo.c:2264
+#, c-format
+msgid "Error setting symlink: %s"
+msgstr "సింమ్‌లింకు అమర్చుటలో దోషము: %s"
+
+#: ../gio/glocalfileinfo.c:2243
+msgid "Error setting symlink: file is not a symlink"
+msgstr "సింమ్‌లింకు అమర్చుటలో దోషము: దస్త్రము సిమ్‌లింకు కాదు"
+
+#: ../gio/glocalfileinfo.c:2369
+#, c-format
+msgid "Error setting modification or access time: %s"
+msgstr "సవరణ లేదా యాక్సెస్ సమయం అమర్చుటలో దోషము: %s"
+
+#: ../gio/glocalfileinfo.c:2392
+msgid "SELinux context must be non-NULL"
+msgstr "SELinux సందర్భం తప్పక NULL-కాకూడదు"
+
+#: ../gio/glocalfileinfo.c:2407
+#, c-format
+msgid "Error setting SELinux context: %s"
+msgstr "SELinux సందర్భం అమర్చుటలో దోషము: %s"
+
+#: ../gio/glocalfileinfo.c:2414
+msgid "SELinux is not enabled on this system"
+msgstr "SELinux ఈ సిస్టమ్‌పైన చేతనపరచ బడిలేదు"
+
+#: ../gio/glocalfileinfo.c:2506
+#, c-format
+msgid "Setting attribute %s not supported"
+msgstr "యాట్రిబ్యూట్ %sను అమర్చుట మద్దతీయుటలేదు"
+
+#: ../gio/glocalfileinputstream.c:168 ../gio/glocalfileoutputstream.c:694
+#, c-format
+msgid "Error reading from file: %s"
+msgstr "దస్త్రము నుండి చదువుటలో దోషము: %s"
+
+#: ../gio/glocalfileinputstream.c:199 ../gio/glocalfileinputstream.c:211
+#: ../gio/glocalfileinputstream.c:225 ../gio/glocalfileinputstream.c:333
+#: ../gio/glocalfileoutputstream.c:456 ../gio/glocalfileoutputstream.c:1002
+#, c-format
+msgid "Error seeking in file: %s"
+msgstr "దస్త్రముకు చూడుటలో దోషము: %s"
+
+#: ../gio/glocalfileinputstream.c:255 ../gio/glocalfileoutputstream.c:246
+#: ../gio/glocalfileoutputstream.c:340
+#, c-format
+msgid "Error closing file: %s"
+msgstr "దస్త్రము మూయుటలో దోషము: %s"
+
+#: ../gio/glocalfilemonitor.c:145
+msgid "Unable to find default local file monitor type"
+msgstr "అప్రమేయ స్థానిక దస్త్రపు మానిటర్ రకమును కనుగొనలేక పోయింది"
+
+#: ../gio/glocalfileoutputstream.c:194 ../gio/glocalfileoutputstream.c:226
+#: ../gio/glocalfileoutputstream.c:715
+#, c-format
+msgid "Error writing to file: %s"
+msgstr "దస్త్రముకు వ్రాయుటలో దోషము: %s"
+
+#: ../gio/glocalfileoutputstream.c:273
+#, c-format
+msgid "Error removing old backup link: %s"
+msgstr "పాత బ్యాకప్ లింకును తొలగించుటలో దోషము: %s"
+
+#: ../gio/glocalfileoutputstream.c:287 ../gio/glocalfileoutputstream.c:300
+#, c-format
+msgid "Error creating backup copy: %s"
+msgstr "బ్యాకప్ నకలును సృష్టించుటలో దోషము: %s"
+
+#: ../gio/glocalfileoutputstream.c:318
+#, c-format
+msgid "Error renaming temporary file: %s"
+msgstr "తాత్కాలిక దస్త్రమును పునఃనామకరణ చేయుటలో దోషము: %s"
+
+#: ../gio/glocalfileoutputstream.c:502 ../gio/glocalfileoutputstream.c:1053
+#, c-format
+msgid "Error truncating file: %s"
+msgstr "దస్త్రమును ట్రంకేట్‌ చేయుటలో దోషము: %s"
+
+#: ../gio/glocalfileoutputstream.c:555 ../gio/glocalfileoutputstream.c:785
+#: ../gio/glocalfileoutputstream.c:1034 ../gio/gsubprocess.c:360
+#, c-format
+msgid "Error opening file '%s': %s"
+msgstr "దస్త్రము '%s'ను తెరువుటలో దోషము: %s"
+
+#: ../gio/glocalfileoutputstream.c:816
+msgid "Target file is a directory"
+msgstr "లక్ష్యపు దస్త్రము వొక డైరెక్టరీ"
+
+#: ../gio/glocalfileoutputstream.c:821
+msgid "Target file is not a regular file"
+msgstr "లక్ష్యపు దస్త్రము వొక సాదారణ దస్త్రముకాదు"
+
+#: ../gio/glocalfileoutputstream.c:833
+msgid "The file was externally modified"
+msgstr "ఆ దస్త్రము బహిర్గతముగా మార్చబడినది"
+
+#: ../gio/glocalfileoutputstream.c:1018
+#, c-format
+msgid "Error removing old file: %s"
+msgstr "పాత దస్త్రమును తొలగించుటలో దోషము: %s"
+
+#: ../gio/gmemoryinputstream.c:471 ../gio/gmemoryoutputstream.c:771
+msgid "Invalid GSeekType supplied"
+msgstr "చెల్లని GSeekType పంపిణీచేయబడింది"
+
+#: ../gio/gmemoryinputstream.c:481
+msgid "Invalid seek request"
+msgstr "చెల్లని యెదురుచూపు అభ్యర్ధన"
+
+#: ../gio/gmemoryinputstream.c:505
+msgid "Cannot truncate GMemoryInputStream"
+msgstr "GMemoryInputStreamను కుదించ లేము"
+
+#: ../gio/gmemoryoutputstream.c:565
+msgid "Memory output stream not resizable"
+msgstr "మెమోరీ అవుట్‌పుట్ స్ట్రీమ్ పునఃపరిమాణము చేయలేము"
+
+#: ../gio/gmemoryoutputstream.c:581
+msgid "Failed to resize memory output stream"
+msgstr "మెమోరీ అవుట్‌పుట్ స్ట్రీమ్‌ను పునఃపరిమాణము చేయుటలో విఫలమైంది"
+
+#: ../gio/gmemoryoutputstream.c:673
+msgid ""
+"Amount of memory required to process the write is larger than available "
+"address space"
+msgstr ""
+"వ్రైట్ ప్రాసెస్ అవసరం మెమరీ పరిమాణాన్ని అందుబాటులో కంటే పెద్దదిచిరునామా స్థలం"
+
+#: ../gio/gmemoryoutputstream.c:781
+msgid "Requested seek before the beginning of the stream"
+msgstr "కోరుకుంటారు అభ్యర్థించిన స్ట్రీమ్ ప్రారంభంలో ముందు"
+
+#: ../gio/gmemoryoutputstream.c:796
+msgid "Requested seek beyond the end of the stream"
+msgstr "స్ట్రీమ్ ముగింపు దాటి కోరుకుంటారు అభ్యర్థించిన"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement unmount.
+#: ../gio/gmount.c:393
+msgid "mount doesn't implement \"unmount\""
+msgstr "మౌంట్  తెరవండి అమలు లేదు "
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement eject.
+#: ../gio/gmount.c:469
+msgid "mount doesn't implement \"eject\""
+msgstr "మౌంట్ నిష్క్రమణను అభివృద్ది చేయుటలేదు"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement any of unmount or unmount_with_operation.
+#: ../gio/gmount.c:547
+msgid "mount doesn't implement \"unmount\" or \"unmount_with_operation\""
+msgstr "అన్‌మౌంట్ లేదా ఆపరేషన్_తో_అన్‌మౌంట్‌ను మౌంటు అభివృద్ది పరచలేదు"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement any of eject or eject_with_operation.
+#: ../gio/gmount.c:632
+msgid "mount doesn't implement \"eject\" or \"eject_with_operation\""
+msgstr "మౌంట్ బయటకుపంపు లేదా ఆపరేషన్‌తో_బయటకు_పంపును అభివృద్దిపరచుటలేదు"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement remount.
+#: ../gio/gmount.c:720
+msgid "mount doesn't implement \"remount\""
+msgstr "మౌంట్ రీమౌంట్‌ను అభివృద్ది చేయుటలేదు"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement content type guessing.
+#: ../gio/gmount.c:802
+msgid "mount doesn't implement content type guessing"
+msgstr "సారము రకం ఊహింపును మౌంట్ అభివృద్దిచేయుటలేదు"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement content type guessing.
+#: ../gio/gmount.c:889
+msgid "mount doesn't implement synchronous content type guessing"
+msgstr "ఏకకాల సారము రకం ఊహింపును మౌంట్ అభివృద్ది చేయుటలేదు"
+
+#: ../gio/gnetworkaddress.c:338
+#, c-format
+msgid "Hostname '%s' contains '[' but not ']'"
+msgstr "హోస్టునామము '%s' కలిగివుంది '[' but not ']'"
+
+#: ../gio/gnetworkmonitorbase.c:189 ../gio/gnetworkmonitorbase.c:292
+msgid "Network unreachable"
+msgstr "నెట్వర్కు చేరుకోవుట్లేదు"
+
+#: ../gio/gnetworkmonitorbase.c:227 ../gio/gnetworkmonitorbase.c:257
+msgid "Host unreachable"
+msgstr "అతిథేయి చేరుకోవుటలేదు"
+
+#: ../gio/gnetworkmonitornetlink.c:96 ../gio/gnetworkmonitornetlink.c:108
+#: ../gio/gnetworkmonitornetlink.c:127
+#, c-format
+msgid "Could not create network monitor: %s"
+msgstr "నెట్వర్కు మానిటర్ సృష్టించలేక పోయింది: %s"
+
+#: ../gio/gnetworkmonitornetlink.c:117
+msgid "Could not create network monitor: "
+msgstr "నెట్వర్కు మానిటర్ సృష్టించలేక పోయింది:"
+
+#: ../gio/gnetworkmonitornetlink.c:175
+msgid "Could not get network status: "
+msgstr "నెట్వర్కు స్థితిని పొందలేక పోయింది: "
+
+#: ../gio/goutputstream.c:209 ../gio/goutputstream.c:550
+msgid "Output stream doesn't implement write"
+msgstr "అవుట్‌పుట్ స్ట్రీమ్ వ్రాయుటను అభివృద్దిచేయుటలేదు"
+
+#: ../gio/goutputstream.c:511 ../gio/goutputstream.c:1028
+msgid "Source stream is already closed"
+msgstr "మూల స్ట్రీమ్ యిప్పటికే మూయబడివుంది"
+
+#: ../gio/gresolver.c:320 ../gio/gthreadedresolver.c:116
+#: ../gio/gthreadedresolver.c:126
+#, c-format
+msgid "Error resolving '%s': %s"
+msgstr "'%s' పరిష్కరించుటలో దోషము: %s"
+
+#: ../gio/gresource.c:291 ../gio/gresource.c:539 ../gio/gresource.c:556
+#: ../gio/gresource.c:677 ../gio/gresource.c:746 ../gio/gresource.c:807
+#: ../gio/gresource.c:887 ../gio/gresourcefile.c:452
+#: ../gio/gresourcefile.c:553 ../gio/gresourcefile.c:655
+#, c-format
+msgid "The resource at '%s' does not exist"
+msgstr "'%s' వద్ద వనరు లేదు"
+
+#: ../gio/gresource.c:456
+#, c-format
+msgid "The resource at '%s' failed to decompress"
+msgstr "'%s' వద్ద వనరు డీకంప్రెస్ అగుటకు విఫలమైంది"
+
+#: ../gio/gresourcefile.c:651
+#, c-format
+msgid "The resource at '%s' is not a directory"
+msgstr "'%s' వద్దగల వనరు డైరెక్టరీ కాదు"
+
+#: ../gio/gresourcefile.c:859
+msgid "Input stream doesn't implement seek"
+msgstr "ఇన్‌పుట్ స్ట్రీమ్ సీక్‌ను అభివృద్ది చేయుటలేదు"
+
+#: ../gio/gresource-tool.c:491
+msgid "List sections containing resources in an elf FILE"
+msgstr "జాబితా విభాగాలు వనరులను elf ఫైలునందు కలిగివున్నాయి"
+
+#: ../gio/gresource-tool.c:497
+msgid ""
+"List resources\n"
+"If SECTION is given, only list resources in this section\n"
+"If PATH is given, only list matching resources"
+msgstr ""
+"వనరుల జాబితా\n"
+"విభాగము యీయబడితే, ఈ విభాగము నందలి వనరులు మాత్రమే జాబితాచేయి\n"
+"పాత్ యీయబడితే, సరిపోలిన వనరులను మాత్రమే జాబితాచేయి"
+
+#: ../gio/gresource-tool.c:500 ../gio/gresource-tool.c:510
+msgid "FILE [PATH]"
+msgstr "FILE [PATH]"
+
+#: ../gio/gresource-tool.c:501 ../gio/gresource-tool.c:511
+#: ../gio/gresource-tool.c:518
+msgid "SECTION"
+msgstr "విభాగము"
+
+#: ../gio/gresource-tool.c:506
+msgid ""
+"List resources with details\n"
+"If SECTION is given, only list resources in this section\n"
+"If PATH is given, only list matching resources\n"
+"Details include the section, size and compression"
+msgstr ""
+"వనరులను వివరాలతో జాబితాచేయి\n"
+"విభాగము యీయబడితే, ఈ విభాగము నందలి వనరులను మాత్రమే జాబితాచేయి\n"
+"పాత్ యీయబడితే, సరిపోలిన వనరులను మాత్రమే జాబితాచేయి\n"
+"వివరాలు విభాగము, పరిమాణం మరియు కంప్రెషన్ ను కలిగివుండును"
+
+#: ../gio/gresource-tool.c:516
+msgid "Extract a resource file to stdout"
+msgstr "వనరు ఫైలును stdout పైనకు తెమ్ము"
+
+#: ../gio/gresource-tool.c:517
+msgid "FILE PATH"
+msgstr "ఫైల్ పాత్"
+
+#: ../gio/gresource-tool.c:531
+msgid ""
+"Usage:\n"
+"  gresource [--section SECTION] COMMAND [ARGS...]\n"
+"\n"
+"Commands:\n"
+"  help                      Show this information\n"
+"  sections                  List resource sections\n"
+"  list                      List resources\n"
+"  details                   List resources with details\n"
+"  extract                   Extract a resource\n"
+"\n"
+"Use 'gresource help COMMAND' to get detailed help.\n"
+"\n"
+msgstr ""
+"వాడుక:\n"
+"  gresource [--section SECTION] COMMAND [ARGS...]\n"
+"\n"
+"Commands:\n"
+"  help                      ఈ సమాచారమును చూపుము\n"
+"  sections                   \n"
+"  list                      వనరులను జాబితాచేయును\n"
+"  details                   వనరులను వివరములతో జాబితాచేయును\n"
+"  extract                   ఒక వనరును బయటకుతెచ్చును\n"
+"\n"
+"విశదీకృత సహాయం కొరకు 'gresource help COMMAND' వుపయోగించు.\n"
+"\n"
+
+#: ../gio/gresource-tool.c:545
+#, c-format
+msgid ""
+"Usage:\n"
+"  gresource %s%s%s %s\n"
+"\n"
+"%s\n"
+"\n"
+msgstr ""
+"వాడుక:\n"
+"  gresource %s%s%s %s\n"
+"\n"
+"%s\n"
+"\n"
+
+#: ../gio/gresource-tool.c:552
+msgid "  SECTION   An (optional) elf section name\n"
+msgstr "  SECTION   ఒక (ఐచ్చిక) elf విభాగం పేరు\n"
+
+#: ../gio/gresource-tool.c:556 ../gio/gsettings-tool.c:635
+msgid "  COMMAND   The (optional) command to explain\n"
+msgstr "కమాండ్ (ఐచ్ఛిక) ఆదేశం వివరించటానికి \n"
+
+#: ../gio/gresource-tool.c:562
+msgid "  FILE      An elf file (a binary or a shared library)\n"
+msgstr "  FILE      ఒక elf ఫైలు (ఒక బైనరీ ఫైలు లేదా భాగస్వామ్య లైబ్రరీ)\n"
+
+#: ../gio/gresource-tool.c:565
+msgid ""
+"  FILE      An elf file (a binary or a shared library)\n"
+"            or a compiled resource file\n"
+msgstr ""
+"  FILE      ఒక elf ఫైలు (ఒక బైనరీ లేదా భాగస్వామ్య లైబ్రరీ)\n"
+"            లేదా కంపైల్డ్ వనరు ఫైలు\n"
+
+#: ../gio/gresource-tool.c:569
+msgid "[PATH]"
+msgstr "[PATH]"
+
+#: ../gio/gresource-tool.c:571
+msgid "  PATH      An (optional) resource path (may be partial)\n"
+msgstr "  PATH      ఒక (ఐచ్చిక) వనరు పాత్ (బహుశా పాక్షిక)\n"
+
+#: ../gio/gresource-tool.c:572
+msgid "PATH"
+msgstr "PATH"
+
+#: ../gio/gresource-tool.c:574
+msgid "  PATH      A resource path\n"
+msgstr "  PATH      ఒక వనరు పాత్\n"
+
+#: ../gio/gsettings-tool.c:51 ../gio/gsettings-tool.c:72
+#, c-format
+msgid "No such schema '%s'\n"
+msgstr "కాదు అలాంటి పథకం '%s' \n"
+
+#: ../gio/gsettings-tool.c:57
+#, c-format
+msgid "Schema '%s' is not relocatable (path must not be specified)\n"
+msgstr "స్కీమ '%s' relocatable కాదు (మార్గం పేర్కొన్న ఉండకూడదు) \n"
+
+#: ../gio/gsettings-tool.c:78
+#, c-format
+msgid "Schema '%s' is relocatable (path must be specified)\n"
+msgstr "స్కీమ '%s' relocatable (మార్గం తప్పక) ఉంది\n"
+
+#: ../gio/gsettings-tool.c:92
+#, c-format
+msgid "Empty path given.\n"
+msgstr "ఇచ్చిన ఖాళీ మార్గం.\n"
+
+#: ../gio/gsettings-tool.c:98
+#, c-format
+msgid "Path must begin with a slash (/)\n"
+msgstr "పాత్ ఒక స్లాష్ (/) ప్రారంభమవుతాయి తప్పక\n"
+
+#: ../gio/gsettings-tool.c:104
+#, c-format
+msgid "Path must end with a slash (/)\n"
+msgstr "పాత్ ఒక స్లాష్ (/) తో అంతం చేయాలి\n"
+
+#: ../gio/gsettings-tool.c:110
+#, c-format
+msgid "Path must not contain two adjacent slashes (//)\n"
+msgstr "పాత్ రెండు సమీప slashes (/ /) ఉండకూడదు\n"
+
+#: ../gio/gsettings-tool.c:477
+#, c-format
+msgid "The provided value is outside of the valid range\n"
+msgstr "యివ్వబడిన విలువ చెల్లుబాటు అయ్యే పరిధి బయట ఉంది\n"
+
+#: ../gio/gsettings-tool.c:484
+#, c-format
+#| msgid "Key %s is not writable\n"
+msgid "The key is not writable\n"
+msgstr "కీ వ్రాయదగది కాదు\n"
+
+#: ../gio/gsettings-tool.c:520
+msgid "List the installed (non-relocatable) schemas"
+msgstr "వ్యవస్థాపిత (non-relocatable) స్కీమాస్ జాబితా"
+
+#: ../gio/gsettings-tool.c:526
+msgid "List the installed relocatable schemas"
+msgstr "ఇన్స్టాల్ relocatable స్కీమాస్ జాబితా"
+
+#: ../gio/gsettings-tool.c:532
+msgid "List the keys in SCHEMA"
+msgstr "స్కీమ లో కీలను జాబితా"
+
+#: ../gio/gsettings-tool.c:533 ../gio/gsettings-tool.c:539
+#: ../gio/gsettings-tool.c:576
+msgid "SCHEMA[:PATH]"
+msgstr "షెడ్యూల్ [: PATH]"
+
+#: ../gio/gsettings-tool.c:538
+msgid "List the children of SCHEMA"
+msgstr "స్కీమ పిల్లలకు జాబితా"
+
+#: ../gio/gsettings-tool.c:544
+msgid ""
+"List keys and values, recursively\n"
+"If no SCHEMA is given, list all keys\n"
+msgstr ""
+"జాబితా కీలు మరియు విలువలు, పునరావృతంగా \n"
+"సంఖ్య స్కీమ ఇవ్వబడుతుంది ఒకవేళ అన్ని కీలను జాబితా\n"
+
+#: ../gio/gsettings-tool.c:546
+msgid "[SCHEMA[:PATH]]"
+msgstr "[చార్ట్ [: PATH]]"
+
+#: ../gio/gsettings-tool.c:551
+msgid "Get the value of KEY"
+msgstr "కీ విలువ పొందండి"
+
+#: ../gio/gsettings-tool.c:552 ../gio/gsettings-tool.c:558
+#: ../gio/gsettings-tool.c:570 ../gio/gsettings-tool.c:582
+msgid "SCHEMA[:PATH] KEY"
+msgstr "షెడ్యూల్ [: PATH] KEY"
+
+#: ../gio/gsettings-tool.c:557
+msgid "Query the range of valid values for KEY"
+msgstr "కీ కోసం చెల్లుబాటు అయ్యే విలువలు పరిధి విచారిస్తారు"
+
+#: ../gio/gsettings-tool.c:563
+msgid "Set the value of KEY to VALUE"
+msgstr "VALUE కీ యొక్క విలువ అమర్చు"
+
+#: ../gio/gsettings-tool.c:564
+msgid "SCHEMA[:PATH] KEY VALUE"
+msgstr "స్కీమ [: PATH] KEY VALUE"
+
+#: ../gio/gsettings-tool.c:569
+msgid "Reset KEY to its default value"
+msgstr "దాని సాధారణ విలువ కీ రీసెట్"
+
+#: ../gio/gsettings-tool.c:575
+msgid "Reset all keys in SCHEMA to their defaults"
+msgstr "స్కీమ వారి లకు అన్ని కీలను రీసెట్"
+
+#: ../gio/gsettings-tool.c:581
+msgid "Check if KEY is writable"
+msgstr "KEY రైటబుల్ ఉంటే తనిఖీ"
+
+#: ../gio/gsettings-tool.c:587
+msgid ""
+"Monitor KEY for changes.\n"
+"If no KEY is specified, monitor all keys in SCHEMA.\n"
+"Use ^C to stop monitoring.\n"
+msgstr ""
+"మార్పులు KEY పర్యవేక్షించడానికి.\n"
+"ఏ KEY పేర్కొన్న ఉంటే, స్కీమ అన్ని కీలను మానిటర్.\n"
+"వాడుక ^ సి పర్యవేక్షణ ఆపడానికి.\n"
+
+#: ../gio/gsettings-tool.c:590
+msgid "SCHEMA[:PATH] [KEY]"
+msgstr "SCHEMA[:PATH] [KEY]"
+
+#: ../gio/gsettings-tool.c:602
+#| msgid ""
+#| "Usage:\n"
+#| "  gsettings [--schemadir SCHEMADIR] COMMAND [ARGS...]\n"
+#| "\n"
+#| "Commands:\n"
+#| "  help                      Show this information\n"
+#| "  list-schemas              List installed schemas\n"
+#| "  list-relocatable-schemas  List relocatable schemas\n"
+#| "  list-keys                 List keys in a schema\n"
+#| "  list-children             List children of a schema\n"
+#| "  list-recursively          List keys and values, recursively\n"
+#| "  range                     Queries the range of a key\n"
+#| "  get                       Get the value of a key\n"
+#| "  set                       Set the value of a key\n"
+#| "  reset                     Reset the value of a key\n"
+#| "  reset-recursively         Reset all values in a given schema\n"
+#| "  writable                  Check if a key is writable\n"
+#| "  monitor                   Watch for changes\n"
+#| "\n"
+#| "Use 'gsettings help COMMAND' to get detailed help.\n"
+#| "\n"
+msgid ""
+"Usage:\n"
+"  gsettings --version\n"
+"  gsettings [--schemadir SCHEMADIR] COMMAND [ARGS...]\n"
+"\n"
+"Commands:\n"
+"  help                      Show this information\n"
+"  list-schemas              List installed schemas\n"
+"  list-relocatable-schemas  List relocatable schemas\n"
+"  list-keys                 List keys in a schema\n"
+"  list-children             List children of a schema\n"
+"  list-recursively          List keys and values, recursively\n"
+"  range                     Queries the range of a key\n"
+"  get                       Get the value of a key\n"
+"  set                       Set the value of a key\n"
+"  reset                     Reset the value of a key\n"
+"  reset-recursively         Reset all values in a given schema\n"
+"  writable                  Check if a key is writable\n"
+"  monitor                   Watch for changes\n"
+"\n"
+"Use 'gsettings help COMMAND' to get detailed help.\n"
+"\n"
+msgstr ""
+"వాడుక:\n"
+"  gsettings --version\n"
+"  gsettings [--schemadir SCHEMADIR] COMMAND [ARGS...]\n"
+"\n"
+"ఆదేశాలు:\n"
+"  help                      ఈ సమాచారాన్ని చూపించు\n"
+"  list-schemas              సంస్థాపించిన స్కీమాలను జాబితా చేయును\n"
+"  list-relocatable-schemas  relocatable స్కీమాస్ జాబితాచేయును\n"
+"  list-keys                 స్కీములోని కీలను జాబితాచేయును\n"
+"  list-children             స్కీము చిల్డ్రన్ జాబితాచేయును\n"
+"  list-recursively          కీలను మరియు విలువను జాబితాచేయును, పునరావృతంగా\n"
+"  range                     కీ విస్తృతిని ప్రశ్నించును\n"
+"  get                       కీ యొక్క విలువను పొందును\n"
+"  set                       కీ విలువను వుంచును\n"
+"  reset                     కీ విలువను తిరిగివుంచును\n"
+"  reset-recursively         ఇచ్చిన స్కీమా నందలి అన్ని విలువలను తిరిగివుంచును\n"
+"  writable                  కీ వ్రాయదగునదా లేదా అనేది పరిశీలించును\n"
+"  monitor                   మార్పులను పర్యవేక్షించును\n"
+"\n"
+"విశదీకృత సహాయం కొరకు 'gsettings help COMMAND' వుపయోగించు.\n"
+"\n"
+
+#: ../gio/gsettings-tool.c:625
+#, c-format
+msgid ""
+"Usage:\n"
+"  gsettings [--schemadir SCHEMADIR] %s %s\n"
+"\n"
+"%s\n"
+"\n"
+msgstr ""
+"వాడుక:\n"
+"  gsettings [--schemadir SCHEMADIR] %s %s\n"
+"\n"
+"%s\n"
+"\n"
+
+#: ../gio/gsettings-tool.c:631
+msgid "  SCHEMADIR A directory to search for additional schemas\n"
+msgstr "  SCHEMADIR అదనపు స్కీమాలను అన్వేషించుటకు వొక డైరక్టరీ\n"
+
+#: ../gio/gsettings-tool.c:639
+msgid ""
+"  SCHEMA    The name of the schema\n"
+"  PATH      The path, for relocatable schemas\n"
+msgstr ""
+"  స్కీమ యొక్క పథకం పేరు\n"
+"  PATH మార్గం, relocatable స్కీమాస్ కోసం \n"
+
+#: ../gio/gsettings-tool.c:644
+msgid "  KEY       The (optional) key within the schema\n"
+msgstr "స్కీమ లోపల కీ (ఆప్షనల్) కీలక \n"
+
+#: ../gio/gsettings-tool.c:648
+msgid "  KEY       The key within the schema\n"
+msgstr "స్కీమ లోపల KEY కీలక \n"
+
+#: ../gio/gsettings-tool.c:652
+msgid "  VALUE     The value to set\n"
+msgstr "అమర్చవలసిన విలువ VALUE\n"
+
+#: ../gio/gsettings-tool.c:707
+#, c-format
+msgid "Could not load schemas from %s: %s\n"
+msgstr "%s నుండి స్కీమాలను లోడు చేయలేదు: %s\n"
+
+#: ../gio/gsettings-tool.c:769
+#, c-format
+msgid "Empty schema name given\n"
+msgstr "ఖాళీ స్కీమ పేరు ఇవ్వబడింది \n"
+
+#: ../gio/gsettings-tool.c:798
+#, c-format
+msgid "No such key '%s'\n"
+msgstr "'%s' వంటి కీ లేదు\n"
+
+#: ../gio/gsocket.c:266
+msgid "Invalid socket, not initialized"
+msgstr "చెల్లని సాకెట్, సిద్దపరచలేదు"
+
+#: ../gio/gsocket.c:273
+#, c-format
+msgid "Invalid socket, initialization failed due to: %s"
+msgstr "చెల్లని సాకెట్, దీని కారణంగా సద్దీకరణ విఫలమైంది: %s"
+
+#: ../gio/gsocket.c:281
+msgid "Socket is already closed"
+msgstr "సాకెట్ యిప్పటికే మూయబడింది"
+
+#: ../gio/gsocket.c:296 ../gio/gsocket.c:3618 ../gio/gsocket.c:3673
+msgid "Socket I/O timed out"
+msgstr "సాకెట్ I / O సమయం ముగిసింది"
+
+#: ../gio/gsocket.c:443
+#, c-format
+msgid "creating GSocket from fd: %s"
+msgstr "fd నుండి GSocket సృష్టిస్తోంది: %s"
+
+#: ../gio/gsocket.c:471 ../gio/gsocket.c:525 ../gio/gsocket.c:532
+#, c-format
+msgid "Unable to create socket: %s"
+msgstr "సాకెట్‌ను సృష్టించలేక పోయింది: %s"
+
+#: ../gio/gsocket.c:525
+msgid "Unknown family was specified"
+msgstr "అపరిచిత కుటుంబం  తెలుపబడింది"
+
+#: ../gio/gsocket.c:532
+msgid "Unknown protocol was specified"
+msgstr "తెలియని ప్రోటోకాల్ తెలుపబడింది"
+
+#: ../gio/gsocket.c:1722
+#, c-format
+msgid "could not get local address: %s"
+msgstr "స్థానిక చిరునామాను పొందలేక పోయింది: %s"
+
+#: ../gio/gsocket.c:1765
+#, c-format
+msgid "could not get remote address: %s"
+msgstr "దూరస్థ చిరునామాను పొందలేక పోయింది: %s"
+
+#: ../gio/gsocket.c:1826
+#, c-format
+msgid "could not listen: %s"
+msgstr "%s వినలేక పోయింది"
+
+#: ../gio/gsocket.c:1925
+#, c-format
+msgid "Error binding to address: %s"
+msgstr "చిరునామాకు బందనం అగుటలో దోషము: %s"
+
+#: ../gio/gsocket.c:2037 ../gio/gsocket.c:2074
+#, c-format
+msgid "Error joining multicast group: %s"
+msgstr "మల్టీకాస్ట్ సమూహంకు జేరుటలో దోషం: %s"
+
+#: ../gio/gsocket.c:2038 ../gio/gsocket.c:2075
+#, c-format
+msgid "Error leaving multicast group: %s"
+msgstr "మల్టీకాస్ట్ సమూహంకు వదులుటలో దోషం: %s"
+
+#: ../gio/gsocket.c:2039
+msgid "No support for source-specific multicast"
+msgstr "వనరు-ప్రత్యేక మల్టీకాస్ట్ కొరకు తోడ్పాటులేదు"
+
+#: ../gio/gsocket.c:2261
+#, c-format
+msgid "Error accepting connection: %s"
+msgstr "అనుసంధానమును ఆమోదించుటలో దోషము: %s"
+
+#: ../gio/gsocket.c:2382
+msgid "Connection in progress"
+msgstr "అనుసంధానము పురోగతిలోవుంది"
+
+#: ../gio/gsocket.c:2432
+msgid "Unable to get pending error: "
+msgstr "వాయిదావున్న దోషమును పొందలేక పోయింది:"
+
+#: ../gio/gsocket.c:2633
+#, c-format
+msgid "Error receiving data: %s"
+msgstr "డాటా స్వీకరించుటలో దోషము: %s"
+
+#: ../gio/gsocket.c:2811
+#, c-format
+msgid "Error sending data: %s"
+msgstr "డాటా పంపుటలో దోషము: %s"
+
+#: ../gio/gsocket.c:2925
+#, c-format
+msgid "Unable to shutdown socket: %s"
+msgstr "మూసివేతను కరంటు ప్లగ్గు పెట్టే చోటు సాధ్యం కాదు:%s"
+
+#: ../gio/gsocket.c:3004
+#, c-format
+msgid "Error closing socket: %s"
+msgstr "సాకెట్ మూయుటలో దోషము: %s"
+
+#: ../gio/gsocket.c:3611
+#, c-format
+msgid "Waiting for socket condition: %s"
+msgstr "సాకెట్ పరిస్థితి కోరకు వేచివుంది: %s"
+
+#: ../gio/gsocket.c:3897 ../gio/gsocket.c:3978
+#, c-format
+msgid "Error sending message: %s"
+msgstr "సందేశమును పంపుటలో దోషము: %s"
+
+#: ../gio/gsocket.c:3922
+msgid "GSocketControlMessage not supported on Windows"
+msgstr "విండోస్ నందు GSocketControlMessage తోడ్పాటులేదు"
+
+#: ../gio/gsocket.c:4259 ../gio/gsocket.c:4394
+#, c-format
+msgid "Error receiving message: %s"
+msgstr "సందేశమును స్వీకరించుటలో దోషము: %s"
+
+#: ../gio/gsocket.c:4516
+#, c-format
+#| msgid "Unable to create socket: %s"
+msgid "Unable to read socket credentials: %s"
+msgstr "సాకెట్‌ను క్రెడెన్షియల్స్ చదువలేక పోయింది: %s"
+
+#: ../gio/gsocket.c:4525
+msgid "g_socket_get_credentials not implemented for this OS"
+msgstr "g(_s)తోర్ర_get_credentials ఈ OS కోసం అమలు కాలేదు"
+
+#: ../gio/gsocketclient.c:176
+#, c-format
+msgid "Could not connect to proxy server %s: "
+msgstr "ప్రోక్సీ సేవిక %sకు అనుసంధానం కాలేకపోయింది: "
+
+#: ../gio/gsocketclient.c:190
+#, c-format
+msgid "Could not connect to %s: "
+msgstr "%s కు అనుసంధానం కాలేక పోయింది: "
+
+#: ../gio/gsocketclient.c:192
+msgid "Could not connect: "
+msgstr "అనుసంధానం కాలేక పోయింది: "
+
+#: ../gio/gsocketclient.c:1027 ../gio/gsocketclient.c:1603
+msgid "Unknown error on connect"
+msgstr "అనుసంధానమునందు తెలియని దోషము"
+
+#: ../gio/gsocketclient.c:1082 ../gio/gsocketclient.c:1538
+msgid "Proxying over a non-TCP connection is not supported."
+msgstr "TCP-కాని అనుసంధానంలో ప్రోక్సీయింగ్ తోడ్పాటులేదు."
+
+#: ../gio/gsocketclient.c:1108 ../gio/gsocketclient.c:1559
+#, c-format
+msgid "Proxy protocol '%s' is not supported."
+msgstr "ప్రాక్సీ ప్రోటోకాల్ '%s' మద్దతు లేదు."
+
+#: ../gio/gsocketlistener.c:188
+msgid "Listener is already closed"
+msgstr "లిజనర్ యిప్పటికే మూసివేయబడింది"
+
+#: ../gio/gsocketlistener.c:234
+msgid "Added socket is closed"
+msgstr "జతచేసిన సాకెట్ మూయబడింది"
+
+#: ../gio/gsocks4aproxy.c:118
+#, c-format
+msgid "SOCKSv4 does not support IPv6 address '%s'"
+msgstr "SOCKSv4 IPv6 చిరునామా '%s' మద్దతు ఇవ్వదు"
+
+#: ../gio/gsocks4aproxy.c:136
+msgid "Username is too long for SOCKSv4 protocol"
+msgstr "SOCKSv4 నిబందన కొరకు వాడుకరిపేరు మరీ పొడవుగా వుంది"
+
+#: ../gio/gsocks4aproxy.c:153
+#, c-format
+msgid "Hostname '%s' is too long for SOCKSv4 protocol"
+msgstr "అతిథేయిపేరు '%s' అనునది SOCKSv4 నిబందనకు మరీ పొడవుగా వుంది"
+
+#: ../gio/gsocks4aproxy.c:179
+msgid "The server is not a SOCKSv4 proxy server."
+msgstr "సేవిక ఒక SOCKSv4 ప్రాక్సీ సర్వర్ కాదు."
+
+#: ../gio/gsocks4aproxy.c:186
+msgid "Connection through SOCKSv4 server was rejected"
+msgstr "SOCKSv4 సర్వర్ ద్వారా అనుసంధానము తిరస్కరించబడింది"
+
+#: ../gio/gsocks5proxy.c:153 ../gio/gsocks5proxy.c:324
+#: ../gio/gsocks5proxy.c:334
+msgid "The server is not a SOCKSv5 proxy server."
+msgstr "సేవిక ఒక SOCKSv5 ప్రాక్సీ సర్వర్ కాదు."
+
+#: ../gio/gsocks5proxy.c:167
+msgid "The SOCKSv5 proxy requires authentication."
+msgstr "SOCKSv5 ప్రాక్సీ ప్రమాణీకరణ అవసరం."
+
+#: ../gio/gsocks5proxy.c:177
+msgid ""
+"The SOCKSv5 proxy requires an authentication method that is not supported by "
+"GLib."
+msgstr "SOCKSv5 ప్రాక్సీ ద్వారా మద్దతు లేని ఒక ప్రామాణిక పద్ధతిని అవసరంGlib."
+
+#: ../gio/gsocks5proxy.c:206
+msgid "Username or password is too long for SOCKSv5 protocol."
+msgstr "SOCKSv5 నిబందనకు వాడుకరిపేరు లేదా సంకేతపదం మరీ పొడవుగా వుంది."
+
+#: ../gio/gsocks5proxy.c:236
+msgid "SOCKSv5 authentication failed due to wrong username or password."
+msgstr "SOCKSv5 ప్రమాణీకరణ వర్డ్ కారణంగా విఫలమైంది"
+
+#: ../gio/gsocks5proxy.c:286
+#, c-format
+msgid "Hostname '%s' is too long for SOCKSv5 protocol"
+msgstr "అతిథేయిపేరు '%s' అనునది SOCKSv5 నిబందనకు మరీ పొడవుగా వుంది"
+
+#: ../gio/gsocks5proxy.c:348
+msgid "The SOCKSv5 proxy server uses unknown address type."
+msgstr "SOCKSv5 ప్రాక్సీ సర్వర్ తెలియని చిరునామా రకం ఉపయోగిస్తుంది."
+
+#: ../gio/gsocks5proxy.c:355
+msgid "Internal SOCKSv5 proxy server error."
+msgstr "అంతర్గత SOCKSv5 ప్రాక్సీ సర్వర్ లోపం."
+
+#: ../gio/gsocks5proxy.c:361
+msgid "SOCKSv5 connection not allowed by ruleset."
+msgstr "Ruleset ద్వారా SOCKSv5 అనుసంధానము అనుమతి లేదు."
+
+#: ../gio/gsocks5proxy.c:368
+msgid "Host unreachable through SOCKSv5 server."
+msgstr "SOCKSv5 సర్వర్ ద్వారా అందుబాటులో లేదు హోస్ట్ చేయండి."
+
+#: ../gio/gsocks5proxy.c:374
+msgid "Network unreachable through SOCKSv5 proxy."
+msgstr "SOCKSv5 ప్రాక్సీ ద్వారా వర్క్ అందుబాటు లేదు."
+
+#: ../gio/gsocks5proxy.c:380
+msgid "Connection refused through SOCKSv5 proxy."
+msgstr "అనుసంధానము SOCKSv5 ప్రాక్సీ ద్వారా నిరాకరించారు."
+
+#: ../gio/gsocks5proxy.c:386
+msgid "SOCKSv5 proxy does not support 'connect' command."
+msgstr "SOCKSv5 ప్రాక్సీ 'అనుసంధానిస్తాయి' ఆదేశాన్ని మద్దతు ఇవ్వదు."
+
+#: ../gio/gsocks5proxy.c:392
+msgid "SOCKSv5 proxy does not support provided address type."
+msgstr "SOCKSv5 ప్రాక్సీ చిరునామా రకం అందించిన మద్దతు ఇవ్వదు."
+
+#: ../gio/gsocks5proxy.c:398
+msgid "Unknown SOCKSv5 proxy error."
+msgstr "తెలియని SOCKSv5 ప్రాక్సీ లోపం."
+
+#: ../gio/gthemedicon.c:518
+#, c-format
+msgid "Can't handle version %d of GThemedIcon encoding"
+msgstr "GThemedIcon ఎన్కోడింగుయొక్క వర్షన్ %dను సంభాలించలేదు"
+
+#: ../gio/gthreadedresolver.c:118
+msgid "No valid addresses were found"
+msgstr "చెల్లే చిరునామా కనబడలేదు"
+
+#: ../gio/gthreadedresolver.c:211
+#, c-format
+msgid "Error reverse-resolving '%s': %s"
+msgstr "వ్యతిరేక-పరిష్కారములో దోషము '%s': %s"
+
+#: ../gio/gthreadedresolver.c:546 ../gio/gthreadedresolver.c:626
+#: ../gio/gthreadedresolver.c:724 ../gio/gthreadedresolver.c:774
+#, c-format
+msgid "No DNS record of the requested type for '%s'"
+msgstr "'%s' కోసం అభ్యర్ధన రకం సంఖ్య DNS రికార్డు "
+
+#: ../gio/gthreadedresolver.c:551 ../gio/gthreadedresolver.c:729
+#, c-format
+msgid "Temporarily unable to resolve '%s'"
+msgstr "తాత్కాలికంగా '%s' పరిష్కరించలేదు"
+
+#: ../gio/gthreadedresolver.c:556 ../gio/gthreadedresolver.c:734
+#, c-format
+msgid "Error resolving '%s'"
+msgstr "%s పరిష్కరించుటలో దోషము"
+
+#: ../gio/gtlscertificate.c:247
+msgid "Cannot decrypt PEM-encoded private key"
+msgstr "PEM-encoded వ్యక్తిగత కీను డీక్రిప్టు చేయలేదు"
+
+#: ../gio/gtlscertificate.c:252
+msgid "No PEM-encoded private key found"
+msgstr "ఏవీ దొరకలేదు pem-కోడ్ అయిన ప్రైవేట్ కీ"
+
+#: ../gio/gtlscertificate.c:262
+msgid "Could not parse PEM-encoded private key"
+msgstr "Pem-కోడ్ అయిన ప్రైవేట్ కీ అన్వయించడం సాధ్యం కాదు"
+
+#: ../gio/gtlscertificate.c:287
+msgid "No PEM-encoded certificate found"
+msgstr "ఏవీ దొరకలేదు pem-కోడ్ అయిన సర్టిఫికేట్"
+
+#: ../gio/gtlscertificate.c:296
+msgid "Could not parse PEM-encoded certificate"
+msgstr "Pem-కోడ్ అయిన సర్టిఫికేట్ అన్వయించడం సాధ్యం కాదు"
+
+#: ../gio/gtlspassword.c:111
+msgid ""
+"This is the last chance to enter the password correctly before your access "
+"is locked out."
+msgstr ""
+"ఈ మీ ఆక్సెస్ ముందు సరిగ్గా పాస్వర్డ్ను ఎంటర్ చివరి అవకాశం ఉందిలాక్ "
+"చేయబడుతుంది."
+
+#: ../gio/gtlspassword.c:113
+msgid ""
+"Several password entered have been incorrect, and your access will be locked "
+"out after further failures."
+msgstr ""
+"ఎంటర్ అనేక వర్డ్ ఉన్నాయి, మరియు మీ ఆక్సెస్ లాక్ చేయబడుతుందిమరింత వైఫల్యాలు "
+"తర్వాత బయటకు."
+
+#: ../gio/gtlspassword.c:115
+msgid "The password entered is incorrect."
+msgstr "నమోదు చేసిన పాస్ వర్డ్ సరియైనది కాదు."
+
+#: ../gio/gunixconnection.c:159 ../gio/gunixconnection.c:554
+#, c-format
+msgid "Expecting 1 control message, got %d"
+msgid_plural "Expecting 1 control message, got %d"
+msgstr[0] "1 నింయంత్రణ సందేశము అనుకొంది, %d పొందింది"
+msgstr[1] "1 నింయంత్రణ సందేశము అనుకొంది, %d పొందింది"
+
+#: ../gio/gunixconnection.c:175 ../gio/gunixconnection.c:566
+msgid "Unexpected type of ancillary data"
+msgstr "ఊహించని యాన్సిల్లరి డాటా రకము"
+
+#: ../gio/gunixconnection.c:193
+#, c-format
+msgid "Expecting one fd, but got %d\n"
+msgid_plural "Expecting one fd, but got %d\n"
+msgstr[0] "ఒక fd ఊహించినది, అయితే %d పొందింది\n"
+msgstr[1] "ఒక fd ఊహించినది, అయితే %d పొందింది\n"
+
+#: ../gio/gunixconnection.c:212
+msgid "Received invalid fd"
+msgstr "చెల్లని fd స్వీకరించినది"
+
+#: ../gio/gunixconnection.c:348
+msgid "Error sending credentials: "
+msgstr "ఆధారాలను పంపడంలో లోపం:"
+
+#: ../gio/gunixconnection.c:496
+#, c-format
+msgid "Error checking if SO_PASSCRED is enabled for socket: %s"
+msgstr ""
+" SO(_P) పాస్క్రెడ్ ఉంటే తనిఖీ చేసేటప్పుడు లోపం సాకెట్ %s: కోసం ఉపయోగించ బడింది"
+
+#: ../gio/gunixconnection.c:511
+#, c-format
+msgid "Error enabling SO_PASSCRED: %s"
+msgstr "లోపం ఎనేబుల్ SO_PASSCRED:%s"
+
+#: ../gio/gunixconnection.c:540
+msgid ""
+"Expecting to read a single byte for receiving credentials but read zero bytes"
+msgstr ""
+"ఆధారాలను అందుకోవటానికి ఒకే బైట్ చదువు కానీ సున్నా బైట్లు చదవడానికి "
+"ఎక్స్పెక్టింగ్"
+
+#: ../gio/gunixconnection.c:580
+#, c-format
+msgid "Not expecting control message, but got %d"
+msgstr "నియంత్రణ సందేశం వస్తుందని వాళ్ళకు, కానీ%d సంపాదించుకున్నారు"
+
+#: ../gio/gunixconnection.c:604
+#, c-format
+msgid "Error while disabling SO_PASSCRED: %s"
+msgstr "SO_PASSCRED నిలిపివేసిన లోపం అయితే:%s"
+
+#: ../gio/gunixinputstream.c:370 ../gio/gunixinputstream.c:391
+#, c-format
+msgid "Error reading from file descriptor: %s"
+msgstr "ఫైలు వివరిణి నుండి చదువుటలో దోషం: %s"
+
+#: ../gio/gunixinputstream.c:424 ../gio/gunixoutputstream.c:410
+#, c-format
+msgid "Error closing file descriptor: %s"
+msgstr "ఫైల్ వివరిణిని మూయుటలో దోషం: %s"
+
+#: ../gio/gunixmounts.c:2054 ../gio/gunixmounts.c:2107
+msgid "Filesystem root"
+msgstr "దస్త్రవ్యవస్థ రూట్"
+
+#: ../gio/gunixoutputstream.c:356 ../gio/gunixoutputstream.c:377
+#, c-format
+msgid "Error writing to file descriptor: %s"
+msgstr "ఫైల్ వివరిణికి వ్రాయుటలో దోషం: %s"
+
+#: ../gio/gunixsocketaddress.c:232
+msgid "Abstract UNIX domain socket addresses not supported on this system"
+msgstr ""
+"ఆబ్‌స్ట్రాక్టు యునిక్సు డొమైన్ సాకెట్ చిరునామాలకు ఈ సిస్టమ్ నందు తోడ్పాటులేదు"
+
+#: ../gio/gvolume.c:437
+msgid "volume doesn't implement eject"
+msgstr "వాల్యూమ్ నిష్క్రమణిని అభివృద్ది చేయలేదు"
+
+#. Translators: This is an error
+#. * message for volume objects that
+#. * don't implement any of eject or eject_with_operation.
+#: ../gio/gvolume.c:514
+msgid "volume doesn't implement eject or eject_with_operation"
+msgstr ""
+"బయటకుపంపు లేదా ఆపరేషన్_తో_బయటకుపంపు అనుదానిని వాల్యూమ్ అభివృద్ది పరచుటలేదు"
+
+#: ../gio/gwin32appinfo.c:274
+msgid "Can't find application"
+msgstr "అనువర్తనమును కనుగొన లేదు"
+
+#: ../gio/gwin32appinfo.c:306
+#, c-format
+msgid "Error launching application: %s"
+msgstr "అనువర్తనంను ఆరంభించుటలో దోషము: %s"
+
+#: ../gio/gwin32appinfo.c:342
+msgid "URIs not supported"
+msgstr "URIలు మద్దతీయుటలేదు"
+
+#: ../gio/gwin32appinfo.c:364
+msgid "association changes not supported on win32"
+msgstr "win32 నందు సహసంభంద మార్పులు మద్దతీయుటలేదు"
+
+#: ../gio/gwin32appinfo.c:376
+msgid "Association creation not supported on win32"
+msgstr "win32 నందు సహసంభంద సృష్టీకరణ మద్దతీయుటలేదు"
+
+#: ../gio/gwin32inputstream.c:344
+#, c-format
+msgid "Error reading from handle: %s"
+msgstr "%s: అదుపు చేయగ వచ్చిన చదవడంలో లోపం"
+
+#: ../gio/gwin32inputstream.c:388 ../gio/gwin32outputstream.c:375
+#, c-format
+msgid "Error closing handle: %s"
+msgstr "హ్యాండిల్ మూయుటలో దోషము: %s"
+
+#: ../gio/gwin32outputstream.c:331
+#, c-format
+msgid "Error writing to handle: %s"
+msgstr "హ్యాండిల్ వ్రాయుటలో దోషము: %s"
+
+#: ../gio/gzlibcompressor.c:394 ../gio/gzlibdecompressor.c:347
+msgid "Not enough memory"
+msgstr "మెమోరీ అయిపోయింది"
+
+#: ../gio/gzlibcompressor.c:401 ../gio/gzlibdecompressor.c:354
+#, c-format
+msgid "Internal error: %s"
+msgstr "అంతర్గత దోషము: %s"
+
+#: ../gio/gzlibcompressor.c:414 ../gio/gzlibdecompressor.c:368
+msgid "Need more input"
+msgstr "మరింత ఇన్పుట్ అవసరం"
+
+#: ../gio/gzlibdecompressor.c:340
+msgid "Invalid compressed data"
+msgstr "చెల్లని కుదించబడిన డేటా"
+
+#: ../gio/tests/gdbus-daemon.c:18
+msgid "Address to listen on"
+msgstr "చిరునామా లో వినండి "
+
+#: ../gio/tests/gdbus-daemon.c:19
+msgid "Ignored, for compat with GTestDbus"
+msgstr "GTestDbus తో అనుసంధానం కోసం, నిర్లక్ష్యం"
+
+#: ../gio/tests/gdbus-daemon.c:20
+msgid "Print address"
+msgstr "చిరునామా ముద్రించు "
+
+#: ../gio/tests/gdbus-daemon.c:21
+msgid "Print address in shell mode"
+msgstr "షెల్ రీతిలో చిరునామా ముద్రించు "
+
+#: ../gio/tests/gdbus-daemon.c:28
+msgid "Run a dbus service"
+msgstr "ఒక dbus సేవను నడుపుము"
+
+#: ../gio/tests/gdbus-daemon.c:42
+#, c-format
+msgid "Wrong args\n"
+msgstr "తప్పు args\n"
+
+#: ../glib/gbookmarkfile.c:755
+#, c-format
+msgid "Unexpected attribute '%s' for element '%s'"
+msgstr "మూలకం '%2$s'కు అనుకోని యాట్రిబ్యూట్ '%1$s'"
+
+#: ../glib/gbookmarkfile.c:766 ../glib/gbookmarkfile.c:837
+#: ../glib/gbookmarkfile.c:847 ../glib/gbookmarkfile.c:954
+#, c-format
+msgid "Attribute '%s' of element '%s' not found"
+msgstr "మూలకం '%2$s'యొక్క యాట్రిబ్యూట్ '%1$s' కనబడలేదు"
+
+#: ../glib/gbookmarkfile.c:1124 ../glib/gbookmarkfile.c:1189
+#: ../glib/gbookmarkfile.c:1253 ../glib/gbookmarkfile.c:1263
+#, c-format
+msgid "Unexpected tag '%s', tag '%s' expected"
+msgstr "అనుకోని టాగ్ '%s', అనుకున్న టాగ్ '%s'"
+
+#: ../glib/gbookmarkfile.c:1149 ../glib/gbookmarkfile.c:1163
+#: ../glib/gbookmarkfile.c:1231
+#, c-format
+msgid "Unexpected tag '%s' inside '%s'"
+msgstr "అనుకోని టాగ్ '%s' దీని లోపల '%s'"
+
+#: ../glib/gbookmarkfile.c:1756
+msgid "No valid bookmark file found in data dirs"
+msgstr "డాటా dirsనందు యెటువంటి విలువైన పుస్తకగుర్తు దస్త్రము కనబడలేదు"
+
+#: ../glib/gbookmarkfile.c:1957
+#, c-format
+msgid "A bookmark for URI '%s' already exists"
+msgstr "URI '%s'కు యిప్పటికే ఒక పుస్తకగుర్తు వుంది"
+
+#: ../glib/gbookmarkfile.c:2003 ../glib/gbookmarkfile.c:2161
+#: ../glib/gbookmarkfile.c:2246 ../glib/gbookmarkfile.c:2326
+#: ../glib/gbookmarkfile.c:2411 ../glib/gbookmarkfile.c:2494
+#: ../glib/gbookmarkfile.c:2572 ../glib/gbookmarkfile.c:2651
+#: ../glib/gbookmarkfile.c:2693 ../glib/gbookmarkfile.c:2790
+#: ../glib/gbookmarkfile.c:2910 ../glib/gbookmarkfile.c:3100
+#: ../glib/gbookmarkfile.c:3176 ../glib/gbookmarkfile.c:3344
+#: ../glib/gbookmarkfile.c:3433 ../glib/gbookmarkfile.c:3522
+#: ../glib/gbookmarkfile.c:3638
+#, c-format
+msgid "No bookmark found for URI '%s'"
+msgstr "URI '%s'కొరకు యెటువంటి పుస్తకగుర్తు కనబడలేదు"
+
+#: ../glib/gbookmarkfile.c:2335
+#, c-format
+msgid "No MIME type defined in the bookmark for URI '%s'"
+msgstr "URI '%s'కొరకు పుస్తకగుర్తునందు యెటువంటి MIME రకము నిర్వచించలేదు"
+
+#: ../glib/gbookmarkfile.c:2420
+#, c-format
+msgid "No private flag has been defined in bookmark for URI '%s'"
+msgstr "URI '%s'కొరకు పుస్తుకగుర్తునందు యెటువంటి వ్యక్తిగత జెండా నిర్వచించలేదు"
+
+#: ../glib/gbookmarkfile.c:2799
+#, c-format
+msgid "No groups set in bookmark for URI '%s'"
+msgstr "URI '%s'కొరకు పుస్తకగుర్తునందు యెటువంటి సమూహములు అమర్చలేదు"
+
+#: ../glib/gbookmarkfile.c:3197 ../glib/gbookmarkfile.c:3354
+#, c-format
+msgid "No application with name '%s' registered a bookmark for '%s'"
+msgstr "ఎటువంటి అనువర్తనము '%s' నామముతో పుస్తకగుర్తును '%s'కొరకు నమోదుచేయలేదు"
+
+#: ../glib/gbookmarkfile.c:3377
+#, c-format
+msgid "Failed to expand exec line '%s' with URI '%s'"
+msgstr "exec వరుస '%s'ను URI '%s'తో పొడిగించుటకు విఫలమైంది"
+
+#: ../glib/gconvert.c:477 ../glib/gutf8.c:833 ../glib/gutf8.c:1044
+#: ../glib/gutf8.c:1181 ../glib/gutf8.c:1285
+msgid "Partial character sequence at end of input"
+msgstr "చివరి ఎగుబడి నందు పాక్షికముగా అక్షర క్రమము కలదు."
+
+#: ../glib/gconvert.c:742
+#, c-format
+msgid "Cannot convert fallback '%s' to codeset '%s'"
+msgstr "ఫాల్ బ్యాక్ '%s' ను  '%s'"
+
+#: ../glib/gconvert.c:1566
+#, c-format
+msgid "The URI '%s' is not an absolute URI using the \"file\" scheme"
+msgstr "\"ఫైలు\" యోచనను ఉపయోగించిన యుఆర్ఐ '%s' సంపూర్ణమైన యుఆర్ఐ కాదు"
+
+#: ../glib/gconvert.c:1576
+#, c-format
+msgid "The local file URI '%s' may not include a '#'"
+msgstr "స్థానిక యుఆర్ఐ '%s'   '#' ను కలుపుకొనియండలెదు  "
+
+#: ../glib/gconvert.c:1593
+#, c-format
+msgid "The URI '%s' is invalid"
+msgstr " '%s' యుఆర్ఐ నిస్సారము"
+
+#: ../glib/gconvert.c:1605
+#, c-format
+msgid "The hostname of the URI '%s' is invalid"
+msgstr "ఆతిథ్య నామం యొక్క యుఆర్ఐ '%s' నిస్సారము"
+
+#: ../glib/gconvert.c:1621
+#, c-format
+msgid "The URI '%s' contains invalidly escaped characters"
+msgstr "యుఆర్ఐ '%s' నిస్సారమైన ఎస్కేప్ అక్షరాలు కలిగియున్నాయి."
+
+#: ../glib/gconvert.c:1716
+#, c-format
+msgid "The pathname '%s' is not an absolute path"
+msgstr " '%s' త్రోవ నామం సరిఐనది కాదు."
+
+#: ../glib/gconvert.c:1726
+msgid "Invalid hostname"
+msgstr "నిస్సారమైన ఆతిథ్య నామము"
+
+#. Translators: 'before midday' indicator
+#: ../glib/gdatetime.c:201
+msgctxt "GDateTime"
+msgid "AM"
+msgstr "ఉ."
+
+#. Translators: 'after midday' indicator
+#: ../glib/gdatetime.c:203
+msgctxt "GDateTime"
+msgid "PM"
+msgstr "సా."
+
+#. Translators: this is the preferred format for expressing the date and the time
+#: ../glib/gdatetime.c:206
+msgctxt "GDateTime"
+msgid "%a %b %e %H:%M:%S %Y"
+msgstr "%a %b %e %H:%M:%S %Y"
+
+#. Translators: this is the preferred format for expressing the date
+#: ../glib/gdatetime.c:209
+msgctxt "GDateTime"
+msgid "%m/%d/%y"
+msgstr "%m/%d/%y"
+
+#. Translators: this is the preferred format for expressing the time
+#: ../glib/gdatetime.c:212
+msgctxt "GDateTime"
+msgid "%H:%M:%S"
+msgstr "%H:%M:%S"
+
+#. Translators: this is the preferred format for expressing 12 hour time
+#: ../glib/gdatetime.c:215
+msgctxt "GDateTime"
+msgid "%I:%M:%S %p"
+msgstr "%I:%M:%S %p"
+
+#: ../glib/gdatetime.c:228
+msgctxt "full month name"
+msgid "January"
+msgstr "జనవరి"
+
+#: ../glib/gdatetime.c:230
+msgctxt "full month name"
+msgid "February"
+msgstr "ఫిబ్రవరి"
+
+#: ../glib/gdatetime.c:232
+msgctxt "full month name"
+msgid "March"
+msgstr "మార్చి"
+
+#: ../glib/gdatetime.c:234
+msgctxt "full month name"
+msgid "April"
+msgstr "ఏప్రిల్"
+
+#: ../glib/gdatetime.c:236
+msgctxt "full month name"
+msgid "May"
+msgstr "మే"
+
+#: ../glib/gdatetime.c:238
+msgctxt "full month name"
+msgid "June"
+msgstr "జూన్"
+
+#: ../glib/gdatetime.c:240
+msgctxt "full month name"
+msgid "July"
+msgstr "జూలై"
+
+#: ../glib/gdatetime.c:242
+msgctxt "full month name"
+msgid "August"
+msgstr "ఆగష్టు"
+
+#: ../glib/gdatetime.c:244
+msgctxt "full month name"
+msgid "September"
+msgstr "సెప్టెంబరు"
+
+#: ../glib/gdatetime.c:246
+msgctxt "full month name"
+msgid "October"
+msgstr "అక్టోబరు"
+
+#: ../glib/gdatetime.c:248
+msgctxt "full month name"
+msgid "November"
+msgstr "నవంబరు"
+
+#: ../glib/gdatetime.c:250
+msgctxt "full month name"
+msgid "December"
+msgstr "డిసెంబరు"
+
+#: ../glib/gdatetime.c:265
+msgctxt "abbreviated month name"
+msgid "Jan"
+msgstr "జనవరి"
+
+#: ../glib/gdatetime.c:267
+msgctxt "abbreviated month name"
+msgid "Feb"
+msgstr "ఫిబ్రవరి"
+
+#: ../glib/gdatetime.c:269
+msgctxt "abbreviated month name"
+msgid "Mar"
+msgstr "మార్చి"
+
+#: ../glib/gdatetime.c:271
+msgctxt "abbreviated month name"
+msgid "Apr"
+msgstr "ఏప్రిల్"
+
+#: ../glib/gdatetime.c:273
+msgctxt "abbreviated month name"
+msgid "May"
+msgstr "మే"
+
+#: ../glib/gdatetime.c:275
+msgctxt "abbreviated month name"
+msgid "Jun"
+msgstr "జూన్"
+
+#: ../glib/gdatetime.c:277
+msgctxt "abbreviated month name"
+msgid "Jul"
+msgstr "జూలై"
+
+#: ../glib/gdatetime.c:279
+msgctxt "abbreviated month name"
+msgid "Aug"
+msgstr "ఆగష్టు"
+
+#: ../glib/gdatetime.c:281
+msgctxt "abbreviated month name"
+msgid "Sep"
+msgstr "సెప్టెంబరు"
+
+#: ../glib/gdatetime.c:283
+msgctxt "abbreviated month name"
+msgid "Oct"
+msgstr "అక్టోబరు"
+
+#: ../glib/gdatetime.c:285
+msgctxt "abbreviated month name"
+msgid "Nov"
+msgstr "నవంబరు"
+
+#: ../glib/gdatetime.c:287
+msgctxt "abbreviated month name"
+msgid "Dec"
+msgstr "డిసెంబరు"
+
+#: ../glib/gdatetime.c:302
+msgctxt "full weekday name"
+msgid "Monday"
+msgstr "సోమవారం"
+
+#: ../glib/gdatetime.c:304
+msgctxt "full weekday name"
+msgid "Tuesday"
+msgstr "మంగళవారం"
+
+#: ../glib/gdatetime.c:306
+msgctxt "full weekday name"
+msgid "Wednesday"
+msgstr "బుధవారం"
+
+#: ../glib/gdatetime.c:308
+msgctxt "full weekday name"
+msgid "Thursday"
+msgstr "గురువారం"
+
+#: ../glib/gdatetime.c:310
+msgctxt "full weekday name"
+msgid "Friday"
+msgstr "శుక్రవారం"
+
+#: ../glib/gdatetime.c:312
+msgctxt "full weekday name"
+msgid "Saturday"
+msgstr "శనివారం"
+
+#: ../glib/gdatetime.c:314
+msgctxt "full weekday name"
+msgid "Sunday"
+msgstr "ఆదివారం"
+
+#: ../glib/gdatetime.c:329
+msgctxt "abbreviated weekday name"
+msgid "Mon"
+msgstr "సోమ"
+
+#: ../glib/gdatetime.c:331
+msgctxt "abbreviated weekday name"
+msgid "Tue"
+msgstr "మంగళ"
+
+#: ../glib/gdatetime.c:333
+msgctxt "abbreviated weekday name"
+msgid "Wed"
+msgstr "బుధ"
+
+#: ../glib/gdatetime.c:335
+msgctxt "abbreviated weekday name"
+msgid "Thu"
+msgstr "గురు"
+
+#: ../glib/gdatetime.c:337
+msgctxt "abbreviated weekday name"
+msgid "Fri"
+msgstr "శుక్ర"
+
+#: ../glib/gdatetime.c:339
+msgctxt "abbreviated weekday name"
+msgid "Sat"
+msgstr "శని"
+
+#: ../glib/gdatetime.c:341
+msgctxt "abbreviated weekday name"
+msgid "Sun"
+msgstr "ఆది"
+
+#: ../glib/gdir.c:155
+#, c-format
+msgid "Error opening directory '%s': %s"
+msgstr " వివరణ తెరచుటలో దోషం '%s': %s"
+
+#: ../glib/gfileutils.c:700 ../glib/gfileutils.c:792
+#, c-format
+msgid "Could not allocate %lu byte to read file \"%s\""
+msgid_plural "Could not allocate %lu bytes to read file \"%s\""
+msgstr[0] "%lu బైటుని ఫైలు  \"%s\" చదువుటకు ఇవ్వలేము"
+msgstr[1] "%lu బైట్లని ఫైలు  \"%s\" చదువుటకు ఇవ్వలేము"
+
+#: ../glib/gfileutils.c:717
+#, c-format
+msgid "Error reading file '%s': %s"
+msgstr "ఫైలు '%s': %s చదువుటలో దోషం"
+
+#: ../glib/gfileutils.c:753
+#, c-format
+msgid "File \"%s\" is too large"
+msgstr "దస్త్రము \"%s\" చాలా పెద్దది"
+
+#: ../glib/gfileutils.c:817
+#, c-format
+msgid "Failed to read from file '%s': %s"
+msgstr " ఫైలు '%s': %s నుండి చదువుటలో విఫలమైనారు"
+
+#: ../glib/gfileutils.c:865 ../glib/gfileutils.c:937
+#, c-format
+msgid "Failed to open file '%s': %s"
+msgstr " ఫైలు '%s': %s తెరుచుటలో విఫలమైనారు"
+
+#: ../glib/gfileutils.c:877
+#, c-format
+msgid "Failed to get attributes of file '%s': fstat() failed: %s"
+msgstr "దస్త్ర ఆపాదనలు విఫలమగును '%s': ఎఫ్ స్టాట్() విఫలమైనది: %s"
+
+#: ../glib/gfileutils.c:907
+#, c-format
+msgid "Failed to open file '%s': fdopen() failed: %s"
+msgstr "ఫైలు '%s' తెరుచుటలో విఫలమైనారు: ఎఫ్ డిఓపన్()  విఫలమైనది: %s"
+
+#: ../glib/gfileutils.c:1006
+#, c-format
+msgid "Failed to rename file '%s' to '%s': g_rename() failed: %s"
+msgstr ""
+"దస్త్రమును '%s'నుండి '%s'కు పునఃనామకరణ చేయుటలో విఫలమైంది: g_rename() "
+"విఫలమైంది: %s"
+
+#: ../glib/gfileutils.c:1041 ../glib/gfileutils.c:1540
+#, c-format
+msgid "Failed to create file '%s': %s"
+msgstr " '%s' దస్త్రమును సృష్టించుటలో విఫలమయినావు. :%s"
+
+#: ../glib/gfileutils.c:1068
+#, c-format
+msgid "Failed to write file '%s': write() failed: %s"
+msgstr "ఫైలు '%s'కు వ్రాయటలో విఫలమైంది: write() విఫలమైంది: %s"
+
+#: ../glib/gfileutils.c:1111
+#, c-format
+msgid "Failed to write file '%s': fsync() failed: %s"
+msgstr "దస్త్రము '%s'కు వ్రాయటలో విఫలమైంది: fsync() విఫలమైంది:%s"
+
+#: ../glib/gfileutils.c:1235
+#, c-format
+msgid "Existing file '%s' could not be removed: g_unlink() failed: %s"
+msgstr "ఉన్న దస్త్రము '%s' తొలగించబడ లేకపోయింది: g_unlink() విఫలమైంది: %s"
+
+#: ../glib/gfileutils.c:1506
+#, c-format
+msgid "Template '%s' invalid, should not contain a '%s'"
+msgstr " '%s' మాదిరి,  '%s' కలిగియుండలెదు. "
+
+#: ../glib/gfileutils.c:1519
+#, c-format
+msgid "Template '%s' doesn't contain XXXXXX"
+msgstr "మాదిరి '%s' XXXXXX కలిగిలేదు"
+
+#: ../glib/gfileutils.c:2038
+#, c-format
+msgid "Failed to read the symbolic link '%s': %s"
+msgstr " '%s'  చిహ్న పూరితజోడి చదువుటలో విఫలమయినావు : %s"
+
+#: ../glib/gfileutils.c:2057
+msgid "Symbolic links not supported"
+msgstr "చిహ్న పూరితజోడి సహకరించలెదు. "
+
+#: ../glib/giochannel.c:1389
+#, c-format
+msgid "Could not open converter from '%s' to '%s': %s"
+msgstr "కన్వర్టర్‌ను '%s' నుండి '%s'కు తెరువలేకపోయింది: %s"
+
+#: ../glib/giochannel.c:1734
+msgid "Can't do a raw read in g_io_channel_read_line_string"
+msgstr " జి_ఐఓ_ఛానెల్_రీడ్_లైన్_స్ర్టింగ్ ముడి చదువు సాధ్యపడదు  "
+
+#: ../glib/giochannel.c:1781 ../glib/giochannel.c:2039
+#: ../glib/giochannel.c:2126
+msgid "Leftover unconverted data in read buffer"
+msgstr " మిగిలిన దత్తాంశమును రీడ్ బఫర్ లో పరివర్తించలెము  "
+
+#: ../glib/giochannel.c:1862 ../glib/giochannel.c:1939
+msgid "Channel terminates in a partial character"
+msgstr " పూర్తికాని అక్షరాన్ని ప్రసార మార్గం ముగించును. "
+
+#: ../glib/giochannel.c:1925
+msgid "Can't do a raw read in g_io_channel_read_to_end"
+msgstr "జి_ఐఓ_ఛానెల్_రీడ్_లైన్_ఎండ్ ముడి చదువు సాధ్యపడదు"
+
+#: ../glib/gkeyfile.c:719
+msgid "Valid key file could not be found in search dirs"
+msgstr "శోధన dirsనందు విలువైన కీ దస్త్రము కనబడలేదు"
+
+#: ../glib/gkeyfile.c:755
+msgid "Not a regular file"
+msgstr "క్రమబద్దమైన ఫైలు కాదు"
+
+#: ../glib/gkeyfile.c:1155
+#, c-format
+msgid ""
+"Key file contains line '%s' which is not a key-value pair, group, or comment"
+msgstr ""
+"ఏదైతే మీట-విలువలు , గ్రూప్ ,లేక వ్యాఖ్య కాదో అది మీట ఫైలులో లైన్ '%s' "
+"కలిగియున్నది"
+
+#: ../glib/gkeyfile.c:1212
+#, c-format
+msgid "Invalid group name: %s"
+msgstr "చెల్లని గ్రూప్ నామము : %s"
+
+#: ../glib/gkeyfile.c:1234
+msgid "Key file does not start with a group"
+msgstr " మీట ఫైలు సముదాయంతో ప్రారంభమవలెదు.  "
+
+#: ../glib/gkeyfile.c:1260
+#, c-format
+msgid "Invalid key name: %s"
+msgstr "చెల్లని కీ నామము :%s"
+
+#: ../glib/gkeyfile.c:1287
+#, c-format
+msgid "Key file contains unsupported encoding '%s'"
+msgstr " మీట ఫైలు కలిగియున్న సంకేతరచన '%s' సహకరించదు "
+
+#: ../glib/gkeyfile.c:1530 ../glib/gkeyfile.c:1692 ../glib/gkeyfile.c:3072
+#: ../glib/gkeyfile.c:3138 ../glib/gkeyfile.c:3264 ../glib/gkeyfile.c:3397
+#: ../glib/gkeyfile.c:3539 ../glib/gkeyfile.c:3768 ../glib/gkeyfile.c:3835
+#, c-format
+msgid "Key file does not have group '%s'"
+msgstr " మీట ఫైలు సముదాయం '%s' ను కలిగియుండలేదు "
+
+#: ../glib/gkeyfile.c:1704
+#, c-format
+msgid "Key file does not have key '%s'"
+msgstr "మీట ఫైలు '%s' తాళంను కలిగియుండలేదు. "
+
+#: ../glib/gkeyfile.c:1811 ../glib/gkeyfile.c:1927
+#, c-format
+msgid "Key file contains key '%s' with value '%s' which is not UTF-8"
+msgstr "'%s' మీట ఫైలు యొక్క మీటను కలిగియున్నది,దాని విలువ '%s' యుటిఫ్-8 "
+
+#: ../glib/gkeyfile.c:1831 ../glib/gkeyfile.c:1947 ../glib/gkeyfile.c:2316
+#, c-format
+msgid ""
+"Key file contains key '%s' which has a value that cannot be interpreted."
+msgstr ""
+"కీ దస్త్రము ఇంటర్‌ప్రీట్ కాలేనటువంటి విలువను కలిగివున్న కీ '%s'ను కలిగివుంది."
+
+#: ../glib/gkeyfile.c:2533 ../glib/gkeyfile.c:2901
+#, c-format
+msgid ""
+"Key file contains key '%s' in group '%s' which has a value that cannot be "
+"interpreted."
+msgstr ""
+"'%s' కీను '%s' సమూహం నందు కలిగివున్న కీఫైలు యింటర్‌ప్రెట్ చేయలేని విలువను "
+"కలిగివుంది."
+
+#: ../glib/gkeyfile.c:2611 ../glib/gkeyfile.c:2688
+#, c-format
+msgid "Key '%s' in group '%s' has value '%s' where %s was expected"
+msgstr "కీ '%s' సమూహం '%s' నందు '%s' విలువను కలిగివుంది కాని %s కావాలి"
+
+#: ../glib/gkeyfile.c:3087 ../glib/gkeyfile.c:3279 ../glib/gkeyfile.c:3846
+#, c-format
+msgid "Key file does not have key '%s' in group '%s'"
+msgstr "'%s' మీట ఫైలు యొక్క మీట ను గ్రూప్ '%s' లో కలిగియుండలేదు "
+
+#: ../glib/gkeyfile.c:4078
+msgid "Key file contains escape character at end of line"
+msgstr " మీట ఫైలు గీత చివర ఎస్పేప్ అక్షరము కలదు"
+
+#: ../glib/gkeyfile.c:4100
+#, c-format
+msgid "Key file contains invalid escape sequence '%s'"
+msgstr " '%s' మీట ఫైలు నిస్సారమైన ఎస్పేప్ వరుస కలదు "
+
+#: ../glib/gkeyfile.c:4242
+#, c-format
+msgid "Value '%s' cannot be interpreted as a number."
+msgstr "'%s' విలువను సంఖ్య గా చదువుటకు సాధ్యపడదు."
+
+#: ../glib/gkeyfile.c:4256
+#, c-format
+msgid "Integer value '%s' out of range"
+msgstr "పూర్ణాంకం విలువ '%s' విస్రృతిలో లేదు"
+
+#: ../glib/gkeyfile.c:4289
+#, c-format
+msgid "Value '%s' cannot be interpreted as a float number."
+msgstr "'%s' విలువను ఫ్లోట్ సంఖ్యగా చదువుటకు సాధ్యపడదు."
+
+#: ../glib/gkeyfile.c:4313
+#, c-format
+msgid "Value '%s' cannot be interpreted as a boolean."
+msgstr "%s' విలువను బులియన్ గా చదువుటకు సాధ్యపడదు."
+
+#: ../glib/gmappedfile.c:129
+#, c-format
+msgid "Failed to get attributes of file '%s%s%s%s': fstat() failed: %s"
+msgstr ""
+"'%s%s%s%s' ఫైలు యొక్క యాట్రిబ్యూట్లను పొందుటలో విఫలమైంది: fstat() విఫలమైంది: %"
+"s"
+
+#: ../glib/gmappedfile.c:195
+#, c-format
+msgid "Failed to map %s%s%s%s: mmap() failed: %s"
+msgstr "%s%s%s%s కు మాప్ అగుటలో విఫలమైంది: mmap() విఫలమైంది: %s"
+
+#: ../glib/gmappedfile.c:261
+#, c-format
+msgid "Failed to open file '%s': open() failed: %s"
+msgstr "దస్త్రము '%s'ను తెరువుటలో విఫలమైంది: open() విఫలమైంది: %s"
+
+#: ../glib/gmarkup.c:398 ../glib/gmarkup.c:440
+#, c-format
+msgid "Error on line %d char %d: "
+msgstr "వరుస %d అక్షరము %d పై దోషము: "
+
+#: ../glib/gmarkup.c:462 ../glib/gmarkup.c:545
+#, c-format
+msgid "Invalid UTF-8 encoded text in name - not valid '%s'"
+msgstr "నామమునందు చెల్లని UTF-8 ఎన్కోడెడ్ పాఠ్యము - చెల్లనిది '%s'"
+
+#: ../glib/gmarkup.c:473
+#, c-format
+msgid "'%s' is not a valid name"
+msgstr "'%s' చెల్లునటువంటి పేరు కాదు "
+
+#: ../glib/gmarkup.c:489
+#, c-format
+msgid "'%s' is not a valid name: '%c'"
+msgstr "'%s' చెల్లునటువంటి పేరు కాదు: '%c'"
+
+#: ../glib/gmarkup.c:599
+#, c-format
+msgid "Error on line %d: %s"
+msgstr "%d  వరుసలో దోషం కలదు : %s"
+
+#: ../glib/gmarkup.c:683
+#, c-format
+msgid ""
+"Failed to parse '%-.*s', which should have been a digit inside a character "
+"reference (&#234; for example) - perhaps the digit is too large"
+msgstr ""
+"అక్షరములో అంకె కలిగియున్నందువలన '%-.*s', పార్సింగ్ విఫలమైనది.దాదాపుగా అంక్య "
+"భారీగా ఉన్నది -నివేదన "
+"(ఉదాహరణకు : &#234; )"
+
+#: ../glib/gmarkup.c:695
+msgid ""
+"Character reference did not end with a semicolon; most likely you used an "
+"ampersand character without intending to start an entity - escape ampersand "
+"as &amp;"
+msgstr ""
+"అక్షర నివేదన సెమికోలన్ తో ముగియలేదు; దాదాపుగా యిది ఉపయెగించండి యాంపర్ సెండ్ "
+"అక్షరం తో ప్రారంభమవరాదు - "
+"ఎస్సేప్ యాంపర్ సెండ్ యాజ్ &యాంప్ "
+
+#: ../glib/gmarkup.c:721
+#, c-format
+msgid "Character reference '%-.*s' does not encode a permitted character"
+msgstr "అక్షర నివేదన '%-.*s' అనుమతించబడిన అక్షరము ఎన్ కోడ్ అవ్వదు."
+
+#: ../glib/gmarkup.c:759
+msgid ""
+"Empty entity '&;' seen; valid entities are: &amp; &quot; &lt; &gt; &apos;"
+msgstr ""
+" ఖాశి వ్యష్టి '&;' చూడబడినది;  వర్తించు వ్యష్టిలు: &amp; &quot; &lt; &gt; "
+"&apos;"
+
+#: ../glib/gmarkup.c:767
+#, c-format
+msgid "Entity name '%-.*s' is not known"
+msgstr "మూలకము నామము '%-.*s' తెలిసినది కాదు"
+
+#: ../glib/gmarkup.c:772
+msgid ""
+"Entity did not end with a semicolon; most likely you used an ampersand "
+"character without intending to start an entity - escape ampersand as &amp;"
+msgstr ""
+" వ్యష్టి సెమికోలన్ తో పూర్తవలేదు; దాదాపుగా యాంపర్ సెండ్ ఉపయెగించవలెను  "
+"అక్షరము దాదాపుగా  -' ఎస్కేప్ "
+"యంపర్ సెండ్ యాజ్ &యాంప్;' తో ప్రారంభమవలేదు. "
+
+#: ../glib/gmarkup.c:1178
+msgid "Document must begin with an element (e.g. <book>)"
+msgstr "పత్రం తప్పనిసరిగా ఒక మూలకంతో ప్రారంభమవలెను (ఉదా. <బుక్>)"
+
+#: ../glib/gmarkup.c:1218
+#, c-format
+msgid ""
+"'%s' is not a valid character following a '<' character; it may not begin an "
+"element name"
+msgstr ""
+"  '<' తో ప్రారంభమగు '%s' అనునది సరరిఐన అక్షరం కాదు ; యిది మూలక నామంతో "
+"ప్రారంభమవలేదు.  "
+
+#: ../glib/gmarkup.c:1260
+#, c-format
+msgid ""
+"Odd character '%s', expected a '>' character to end the empty-element tag "
+"'%s'"
+msgstr "బేసి అక్షరము '%s', ఖాళీ-మూలకపు టాగ్ '%s'ను ముగించుటకు '>' అనుకొనబడింది"
+
+#: ../glib/gmarkup.c:1341
+#, c-format
+msgid ""
+"Odd character '%s', expected a '=' after attribute name '%s' of element '%s'"
+msgstr "బేసి అక్షరము '%s', ఊహించిన '=' తర్వాత '%s'  ఆపాదించు నామం '%s' మూలకం "
+
+#: ../glib/gmarkup.c:1382
+#, c-format
+msgid ""
+"Odd character '%s', expected a '>' or '/' character to end the start tag of "
+"element '%s', or optionally an attribute; perhaps you used an invalid "
+"character in an attribute name"
+msgstr ""
+"'%s' ఊహించిన బేసి అక్షరము '>' లేక '/' చివరి ర్రంభ బొందు అక్షరము మాలకం %sలేక "
+"ఇచ్చాపూర్వక "
+"ఆపాదన; దాదాపుగా ఆపాదన నామంలో అనర్హమైన అక్షరం ఉపమెగించినావు"
+
+#: ../glib/gmarkup.c:1426
+#, c-format
+msgid ""
+"Odd character '%s', expected an open quote mark after the equals sign when "
+"giving value for attribute '%s' of element '%s'"
+msgstr ""
+"బేసి అక్షరము '%s', ఊహించిన తెరచిన క్వోట్ చిహ్నం తరాత ఇచ్చిన ఆపాదన విలువ  '%s' "
+"మూతకము '%s'"
+
+#: ../glib/gmarkup.c:1559
+#, c-format
+msgid ""
+"'%s' is not a valid character following the characters '</'; '%s' may not "
+"begin an element name"
+msgstr ""
+"  '</' వెంటనే ప్రారంభమగు '%s' నిసారమైన అక్షరము  ; '%s' తో మూలకనామం "
+"ప్రారంభమవరాదు "
+
+#: ../glib/gmarkup.c:1595
+#, c-format
+msgid ""
+"'%s' is not a valid character following the close element name '%s'; the "
+"allowed character is '>'"
+msgstr ""
+"'%s' is not a valid character following the close element name '%s'; the "
+"allowed character is '>'"
+
+#: ../glib/gmarkup.c:1606
+#, c-format
+msgid "Element '%s' was closed, no element is currently open"
+msgstr " '%s' మూలకం మూయబడినది, ప్రస్ధుతం ఏ మూలకము తెరచియుండలెదు "
+
+# ../glib/gmarkup.c:1588
+#: ../glib/gmarkup.c:1615
+#, c-format
+msgid "Element '%s' was closed, but the currently open element is '%s'"
+msgstr "'%s' మూలకం మూయబడినది, కాని ప్రస్ధుతం తెరువ బడిన మూలకం '%s'"
+
+#: ../glib/gmarkup.c:1768
+msgid "Document was empty or contained only whitespace"
+msgstr " పత్రం ఖాలిగా ఉన్నది లేక ఒక వైట్ స్పేస్ కలిగి యున్నది.  "
+
+#: ../glib/gmarkup.c:1782
+msgid "Document ended unexpectedly just after an open angle bracket '<'"
+msgstr "పత్రం చివర కోణ కుండలీకరణము'<' వెంటనె అనవసరముగా ముగింపు అయినది"
+
+#: ../glib/gmarkup.c:1790 ../glib/gmarkup.c:1835
+#, c-format
+msgid ""
+"Document ended unexpectedly with elements still open - '%s' was the last "
+"element opened"
+msgstr ""
+"మూలకములు ఇంకను తెరచియున్న పత్రం ఊహించని విధంగా అంతమైనది- '%s' చివరిది మూలకము "
+"తెరచబడినది"
+
+#: ../glib/gmarkup.c:1798
+#, c-format
+msgid ""
+"Document ended unexpectedly, expected to see a close angle bracket ending "
+"the tag <%s/>"
+msgstr ""
+"పత్రం ఊహించని విధంగా అంతమైనది,మూసిన కోణకుండశికరణం అంతము చూచుటకు ఊహించబడినది "
+"బొందు <%s/>"
+
+#: ../glib/gmarkup.c:1804
+msgid "Document ended unexpectedly inside an element name"
+msgstr " పత్రం చివర ఊహించని మూలకనామం కలదు "
+
+#: ../glib/gmarkup.c:1810
+msgid "Document ended unexpectedly inside an attribute name"
+msgstr "పత్రం చివర ఊహించని ఆపాదననామం కలదు"
+
+#: ../glib/gmarkup.c:1815
+msgid "Document ended unexpectedly inside an element-opening tag."
+msgstr "పత్రం చివర ఊహించని తెరచిన బొందు కలదు."
+
+#: ../glib/gmarkup.c:1821
+msgid ""
+"Document ended unexpectedly after the equals sign following an attribute "
+"name; no attribute value"
+msgstr ""
+" '=' చిహ్నము తర్వాత యాట్రిబ్యూట్ నామమును అనుసరిస్తూ యాట్రిబ్యూట్ విలువలేకుండా "
+"పత్రము అనుకోకుండా "
+"ముగించబడింది."
+
+#: ../glib/gmarkup.c:1828
+msgid "Document ended unexpectedly while inside an attribute value"
+msgstr " లోపల ఆపాదన విలువ ఉన్నపుడు పాఠం ఊహించకుండా ముగింపు అయినది "
+
+#: ../glib/gmarkup.c:1844
+#, c-format
+msgid "Document ended unexpectedly inside the close tag for element '%s'"
+msgstr " '%s'మూలకము యోక్క మూసిన బొందు ఊహించకుండా పాఠం ముగింపు అయినది "
+
+#: ../glib/gmarkup.c:1850
+msgid "Document ended unexpectedly inside a comment or processing instruction"
+msgstr " లోపల వ్యాఖ్య క్రమగతి ఆదేశం ఉండగా ఊహించకుండా పాఠం ముగింపు  అయినది "
+
+#: ../glib/goption.c:795
+msgid "Usage:"
+msgstr "వినిమయం:"
+
+#: ../glib/goption.c:795
+msgid "[OPTION...]"
+msgstr "[ఇచ్చాపూర్వరకం...]"
+
+#: ../glib/goption.c:911
+msgid "Help Options:"
+msgstr "సహాయ ఇచ్ఛాపూర్వకాలు:"
+
+#: ../glib/goption.c:912
+msgid "Show help options"
+msgstr "సహాయ ఇచ్ఛాపూర్వకాలను చూపించుట"
+
+#: ../glib/goption.c:918
+msgid "Show all help options"
+msgstr "సహాయ ఇచ్ఛాపూర్వకాలన్నింటని చూపించుట"
+
+#: ../glib/goption.c:980
+msgid "Application Options:"
+msgstr "కార్యక్షేత్ర ఇచ్ఛాపూర్వకాలు :"
+
+#: ../glib/goption.c:1044 ../glib/goption.c:1114
+#, c-format
+msgid "Cannot parse integer value '%s' for %s"
+msgstr "పూర్ణాంకం విలువ %sను %s కొరకు పార్స్‍ చేయలేదు"
+
+#: ../glib/goption.c:1054 ../glib/goption.c:1122
+#, c-format
+msgid "Integer value '%s' for %s out of range"
+msgstr " పూర్ణాంకం విలువ '%s' లో విస్రృతి లో లేని %s "
+
+#: ../glib/goption.c:1079
+#, c-format
+msgid "Cannot parse double value '%s' for %s"
+msgstr "డబుల్ విలువ '%s'ను %sకొరకు పార్శ్‍‌చేయలేదు"
+
+#: ../glib/goption.c:1087
+#, c-format
+msgid "Double value '%s' for %s out of range"
+msgstr "డబుల్ విలువ '%s' అనునది %sకొరకు వ్యాప్తిలో లేదు"
+
+#: ../glib/goption.c:1373 ../glib/goption.c:1452
+#, c-format
+msgid "Error parsing option %s"
+msgstr "ఐచ్చికం పార్శింగ్‌లో దోషము %s"
+
+#: ../glib/goption.c:1483 ../glib/goption.c:1596
+#, c-format
+msgid "Missing argument for %s"
+msgstr "%s కొరకు తప్పిపోయిన ఆర్గుమెంట్"
+
+#: ../glib/goption.c:2057
+#, c-format
+msgid "Unknown option %s"
+msgstr "తెలియని  ఇచ్ఛాపూర్వకము %s"
+
+#: ../glib/gregex.c:258
+msgid "corrupted object"
+msgstr "పాడైన ఆబ్జక్టు"
+
+#: ../glib/gregex.c:260
+msgid "internal error or corrupted object"
+msgstr "అతర్గత దోషము లేదా పాడైన ఆబ్జక్టు"
+
+#: ../glib/gregex.c:262
+msgid "out of memory"
+msgstr "మెమోరీ అయిపోయింది"
+
+#: ../glib/gregex.c:267
+msgid "backtracking limit reached"
+msgstr "బ్యాక్‌ట్రాకింగ్ పరిమితి చేరుకొంది"
+
+#: ../glib/gregex.c:279 ../glib/gregex.c:287
+msgid "the pattern contains items not supported for partial matching"
+msgstr "పాక్షిక సరిజోడికి మద్దతీయని అంశములను మాదిరి కలిగివుంది"
+
+#: ../glib/gregex.c:289
+msgid "back references as conditions are not supported for partial matching"
+msgstr "పాక్షిక సరిజోడికి నియమాలు మద్దతీయని కారణంగా బ్యాక్ రిఫరెన్స్‍"
+
+#: ../glib/gregex.c:298
+msgid "recursion limit reached"
+msgstr "పునరావృతపు పరిమితి చేరినది"
+
+#: ../glib/gregex.c:300
+msgid "invalid combination of newline flags"
+msgstr "కొత్తవరుస జెండాలయొక్క చెల్లని మిశ్రమం"
+
+#: ../glib/gregex.c:302
+msgid "bad offset"
+msgstr "బ్యాడ్ ఆఫ్‌సెట్"
+
+#: ../glib/gregex.c:304
+msgid "short utf8"
+msgstr "లఘు utf8"
+
+#: ../glib/gregex.c:306
+msgid "recursion loop"
+msgstr "పునరావృత ఆవృతం"
+
+#: ../glib/gregex.c:310
+msgid "unknown error"
+msgstr "తెలియని దోషము"
+
+#: ../glib/gregex.c:330
+msgid "\\ at end of pattern"
+msgstr "\\ మాదిరి చివర వద్ద"
+
+#: ../glib/gregex.c:333
+msgid "\\c at end of pattern"
+msgstr "\\c మాదిరి చివరవద్ద"
+
+#: ../glib/gregex.c:336
+msgid "unrecognized character following \\"
+msgstr "గుర్తించబడని అక్షరము అనుసరిస్తోంది \\"
+
+#: ../glib/gregex.c:339
+msgid "numbers out of order in {} quantifier"
+msgstr "{} క్వాంటిఫైర్‌లో క్రమము బయటవున్న సంఖ్యలు"
+
+#: ../glib/gregex.c:342
+msgid "number too big in {} quantifier"
+msgstr "{} క్వాంటిఫైర్‌లో పెద్దగావున్న సంఖ్య"
+
+#: ../glib/gregex.c:345
+msgid "missing terminating ] for character class"
+msgstr "అక్షరపు క్లాస్‌కు ] ముగింపు తప్పిపోయినది"
+
+#: ../glib/gregex.c:348
+msgid "invalid escape sequence in character class"
+msgstr "అక్షరపు క్లాస్‌నందు చెల్లని ఎస్కేప్ అనుక్రమము"
+
+#: ../glib/gregex.c:351
+msgid "range out of order in character class"
+msgstr "అక్షరపు క్లాస్‌నందు వ్యాప్తి క్రమముకు బయటవుంది"
+
+#: ../glib/gregex.c:354
+msgid "nothing to repeat"
+msgstr "మళ్ళీచేయుటకు యేమీలేదు"
+
+#: ../glib/gregex.c:358
+msgid "unexpected repeat"
+msgstr "అనుకోని ఆవృతము"
+
+#: ../glib/gregex.c:361
+msgid "unrecognized character after (? or (?-"
+msgstr "(? లేదా (?- తర్వాత గుర్తింపులేని అక్షరము"
+
+#: ../glib/gregex.c:364
+msgid "POSIX named classes are supported only within a class"
+msgstr "POSIX నామపు క్లాసెస్ క్లాస్ లోపల మాత్రమే మద్దతునిస్తాయి"
+
+#: ../glib/gregex.c:367
+msgid "missing terminating )"
+msgstr "ముగించునది ) తప్పిపోయింది"
+
+#: ../glib/gregex.c:370
+msgid "reference to non-existent subpattern"
+msgstr "లేని వుపమాదిరికి రిఫరెన్స్‍"
+
+#: ../glib/gregex.c:373
+msgid "missing ) after comment"
+msgstr "వ్యాఖ్యానం తర్వాత తప్పిపోయిన )"
+
+#: ../glib/gregex.c:376
+msgid "regular expression is too large"
+msgstr "సాదారణ సమీకరణం చాలా పెద్దది"
+
+#: ../glib/gregex.c:379
+msgid "failed to get memory"
+msgstr "మెమొరి పొందుటలో విఫలమైంది"
+
+#: ../glib/gregex.c:383
+msgid ") without opening ("
+msgstr ") తెరిచిన ( లేకుండా"
+
+#: ../glib/gregex.c:387
+msgid "code overflow"
+msgstr "కోడ్ వోవర్‌ఫ్లో"
+
+#: ../glib/gregex.c:391
+msgid "unrecognized character after (?<"
+msgstr "(?< తర్వాత గుర్తించని అక్షరము"
+
+#: ../glib/gregex.c:394
+msgid "lookbehind assertion is not fixed length"
+msgstr "వెనుకచూడండి చెప్పినమాట నిర్ధరిత పోడవులేదు"
+
+#: ../glib/gregex.c:397
+msgid "malformed number or name after (?("
+msgstr "(?( తర్వాత తప్పుగావున్న సంఖ్య లేదా నామము"
+
+#: ../glib/gregex.c:400
+msgid "conditional group contains more than two branches"
+msgstr "నియమరూపక సమూహం రెండుకన్నా యెక్కువ శాఖలను కలిగివుంది"
+
+#: ../glib/gregex.c:403
+msgid "assertion expected after (?("
+msgstr "(?( తర్వాత చెప్పేమాట అనుకోబడినది"
+
+#. translators: '(?R' and '(?[+-]digits' are both meant as (groups of)
+#. * sequences here, '(?-54' would be an example for the second group.
+#.
+#: ../glib/gregex.c:410
+msgid "(?R or (?[+-]digits must be followed by )"
+msgstr "(?R లేదా (?[+-]అంకెలు తప్పక ) అనుసరించాలి"
+
+#: ../glib/gregex.c:413
+msgid "unknown POSIX class name"
+msgstr "తెలియని POSIX తరగతి నామము"
+
+#: ../glib/gregex.c:416
+msgid "POSIX collating elements are not supported"
+msgstr "POSIX ఖండించుకొను మూలకాలు మద్దతీయబడవు"
+
+#: ../glib/gregex.c:419
+msgid "character value in \\x{...} sequence is too large"
+msgstr "\\x{...} అనుక్రమమునందలి అక్షరపు విలువ చాలా పెద్దది"
+
+#: ../glib/gregex.c:422
+msgid "invalid condition (?(0)"
+msgstr "చెల్లని నియమము (?(0)"
+
+#: ../glib/gregex.c:425
+msgid "\\C not allowed in lookbehind assertion"
+msgstr "వెనుక చెప్పిన దానిలో \\C అనుమతించబడదు"
+
+#: ../glib/gregex.c:432
+msgid "escapes \\L, \\l, \\N{name}, \\U, and \\u are not supported"
+msgstr "escapes \\L, \\l, \\N{name}, \\U, మరియు \\u తోడ్పాటులేదు"
+
+#: ../glib/gregex.c:435
+msgid "recursive call could loop indefinitely"
+msgstr "పునరావృత కాల్ అనంతంగా లూప్‌కాగలదు"
+
+#: ../glib/gregex.c:439
+msgid "unrecognized character after (?P"
+msgstr "(?P తర్వాత గుర్తించని అక్షరము"
+
+#: ../glib/gregex.c:442
+msgid "missing terminator in subpattern name"
+msgstr "ఉపమాదిరి నామమునందు తప్పిపోయిన ముగింపు"
+
+#: ../glib/gregex.c:445
+msgid "two named subpatterns have the same name"
+msgstr "రెండు నామాల వుపమాదిరిలు ఒకే నామమును కలిగివున్నాయి"
+
+#: ../glib/gregex.c:448
+msgid "malformed \\P or \\p sequence"
+msgstr "తప్పుగావున్న \\P లేదా \\p అనుక్రమము"
+
+#: ../glib/gregex.c:451
+msgid "unknown property name after \\P or \\p"
+msgstr "\\P లేదా \\p తర్వాత తెలియని లక్షణము నామము"
+
+#: ../glib/gregex.c:454
+msgid "subpattern name is too long (maximum 32 characters)"
+msgstr "ఉపమాదిరి నామము మరీ పెద్దది (గరిష్ఠం 32 అక్షరములు)"
+
+#: ../glib/gregex.c:457
+msgid "too many named subpatterns (maximum 10,000)"
+msgstr "నామము గలిగిన చాలా వుపమాదిరిలు (గరిష్ఠంగా 10,000)"
+
+#: ../glib/gregex.c:460
+msgid "octal value is greater than \\377"
+msgstr "అష్టాంశ విలువ \\377 కన్న పెద్దది"
+
+#: ../glib/gregex.c:464
+msgid "overran compiling workspace"
+msgstr "మించిపోయిన నిర్వర్తనా పనితలం"
+
+#: ../glib/gregex.c:468
+msgid "previously-checked referenced subpattern not found"
+msgstr "ముందుగా-పరిశీలించిన రిఫరెన్సుడు వుపమాదిరి కనబడలేదు"
+
+#: ../glib/gregex.c:471
+msgid "DEFINE group contains more than one branch"
+msgstr "నిర్వచించిన సమూహం వొకటికన్నా యెక్కువ శాఖలను కలిగివుంది"
+
+#: ../glib/gregex.c:474
+msgid "inconsistent NEWLINE options"
+msgstr "అస్థిరత్వ NEWLINE ఐచ్చికాలు"
+
+#: ../glib/gregex.c:477
+msgid ""
+"\\g is not followed by a braced, angle-bracketed, or quoted name or number, "
+"or by a plain number"
+msgstr ""
+"\\g బ్రేస్‌డ్, ఏంగిల్-బ్రాకెటెడ్, లేదా కోటెడ్ పేరు లేదా సంఖ్య, లేదా సాదా "
+"సంఖ్య చే అనుసరింపబడదు"
+
+#: ../glib/gregex.c:481
+msgid "a numbered reference must not be zero"
+msgstr "రిఫరెన్సు చేయబడుతున్న సంఖ్య సున్నా కారాదు"
+
+#: ../glib/gregex.c:484
+msgid "an argument is not allowed for (*ACCEPT), (*FAIL), or (*COMMIT)"
+msgstr ""
+"ఆర్గుమెంట్ అనునది (*ACCEPT), (*FAIL), లేదా (*COMMIT) కొరకై అనుమతించబడదు"
+
+#: ../glib/gregex.c:487
+msgid "(*VERB) not recognized"
+msgstr "(*VERB) గుర్తించబడలేదు"
+
+#: ../glib/gregex.c:490
+msgid "number is too big"
+msgstr "సంఖ్య మరీ పెద్దది"
+
+#: ../glib/gregex.c:493
+msgid "missing subpattern name after (?&"
+msgstr "(?& తరువాత వుపమాదిరి పేరు లేదు"
+
+#: ../glib/gregex.c:496
+msgid "digit expected after (?+"
+msgstr "(?+ తరువాతనే అంకె రావలెను"
+
+#: ../glib/gregex.c:499
+msgid "] is an invalid data character in JavaScript compatibility mode"
+msgstr "JavaScript సారూప్యతా రీతినందు ] చెల్లని దత్తాంశ అక్షరం"
+
+#: ../glib/gregex.c:502
+msgid "different names for subpatterns of the same number are not allowed"
+msgstr "ఒకే సంఖ్య యొక్క వుపమాదిరిల కొరకు వేరువేరు పేర్లు అనుమతించబడవు"
+
+#: ../glib/gregex.c:505
+msgid "(*MARK) must have an argument"
+msgstr "(*MARK) తప్పక వొక ఆర్గుమెంట్ కలిగివుండాలి"
+
+#: ../glib/gregex.c:508
+msgid "\\c must be followed by an ASCII character"
+msgstr "\\c తప్పక ASCII అక్షరంచే అనుసరించబడాలి"
+
+#: ../glib/gregex.c:511
+msgid "\\k is not followed by a braced, angle-bracketed, or quoted name"
+msgstr "\\k బ్రేస్‌డ్ లేదా ఏంగిల్-బ్రాకెట్, లేదా కోటెడ్ పేరు చే అనుసరింపబడదు"
+
+#: ../glib/gregex.c:514
+msgid "\\N is not supported in a class"
+msgstr "ఒక తరగతి నందు \\N తోడ్పాటునీయదు"
+
+#: ../glib/gregex.c:517
+msgid "too many forward references"
+msgstr "చాలా ఫార్వార్డ్ రిఫరెన్సులు"
+
+#: ../glib/gregex.c:520
+msgid "name is too long in (*MARK), (*PRUNE), (*SKIP), or (*THEN)"
+msgstr "(*MARK), (*PRUNE), (*SKIP), నందు (*THEN) పేరు చాలా పెద్దగావుంది"
+
+#: ../glib/gregex.c:523
+msgid "character value in \\u.... sequence is too large"
+msgstr "\\u.... వరుసక్రమం నందలి అక్షర విలువ మరీ పెద్దది"
+
+#: ../glib/gregex.c:746 ../glib/gregex.c:1915
+#, c-format
+msgid "Error while matching regular expression %s: %s"
+msgstr "సాదారణ సమీకరణమును సరిజోడి చేస్తున్నప్పుడు దోషము %s: %s"
+
+#: ../glib/gregex.c:1312
+msgid "PCRE library is compiled without UTF8 support"
+msgstr "PCRE లైబ్రరీ UTF-8 మద్దతులేకుండా నిర్వర్తించబడింది"
+
+#: ../glib/gregex.c:1316
+msgid "PCRE library is compiled without UTF8 properties support"
+msgstr "PCRE లైబ్రరీ UTF8 లక్షణముల మద్దతులేకుండా నిర్వర్తించబడింది"
+
+#: ../glib/gregex.c:1324
+msgid "PCRE library is compiled with incompatible options"
+msgstr "PCRE లైబ్రరీ సారూప్యతలేని ఐచ్చికాలతో నిర్వర్తించబడెను"
+
+#: ../glib/gregex.c:1383
+#, c-format
+msgid "Error while compiling regular expression %s at char %d: %s"
+msgstr "సాదారణ సమీకరణము %sను అక్షరము %dవద్ద నిర్వర్తిస్తున్నప్పుడు దోషము: %s"
+
+#: ../glib/gregex.c:1425
+#, c-format
+msgid "Error while optimizing regular expression %s: %s"
+msgstr "సాదారణ సమీకరణము %sను మెరుగుపరుస్తున్నప్పుడు దోషము: %s"
+
+#: ../glib/gregex.c:2347
+msgid "hexadecimal digit or '}' expected"
+msgstr "హెగ్జాడెసిమల్ డిజిట్ లేదా '}' అనుకోబడింది"
+
+#: ../glib/gregex.c:2363
+msgid "hexadecimal digit expected"
+msgstr "హెగ్జాడెసిమల్ అంకె అనుకోబడింది"
+
+#: ../glib/gregex.c:2403
+msgid "missing '<' in symbolic reference"
+msgstr "చిహ్నరూప రిఫరెన్సునందు '<' తప్పిపోయినది"
+
+#: ../glib/gregex.c:2412
+msgid "unfinished symbolic reference"
+msgstr "పూర్తికాని చిహ్నరూప రెఫరెన్సు"
+
+#: ../glib/gregex.c:2419
+msgid "zero-length symbolic reference"
+msgstr "సున్నా-పొడవు చిహ్నరూప రిఫరెన్సు"
+
+#: ../glib/gregex.c:2430
+msgid "digit expected"
+msgstr "అంకె అనుకోబడినది"
+
+#: ../glib/gregex.c:2448
+msgid "illegal symbolic reference"
+msgstr "సరికాని చిహ్నరూప రిఫరెన్సు"
+
+#: ../glib/gregex.c:2510
+msgid "stray final '\\'"
+msgstr "స్ట్రే ఫైనల్ '\\'"
+
+#: ../glib/gregex.c:2514
+msgid "unknown escape sequence"
+msgstr "తెలియని యెస్కేప్ అనుక్రమము"
+
+#: ../glib/gregex.c:2524
+#, c-format
+msgid "Error while parsing replacement text \"%s\" at char %lu: %s"
+msgstr "పునఃస్థన పాఠ్యము \"%s\"ను అక్షరం %lu వద్ద పార్శ్‍‌చేస్తుంటే దోషము: %s"
+
+#: ../glib/gshell.c:96
+msgid "Quoted text doesn't begin with a quotation mark"
+msgstr "కోటెడ్ పాఠం కొటేషన్ చిహ్నంతో ప్రారంభవరాదు"
+
+#: ../glib/gshell.c:186
+msgid "Unmatched quotation mark in command line or other shell-quoted text"
+msgstr " కమాండ్ లైన్ లేద షల్_కోటెడ్ పాఠం లో సామ్యంలేని కొటేషన్ చిహ్నం కలదు "
+
+#: ../glib/gshell.c:582
+#, c-format
+msgid "Text ended just after a '\\' character. (The text was '%s')"
+msgstr "పాఠం '\\' అక్షరము వెంటనె ముగింపు అయినది. (ఈ పాఠము '%s')"
+
+#: ../glib/gshell.c:589
+#, c-format
+msgid "Text ended before matching quote was found for %c. (The text was '%s')"
+msgstr ""
+"సామ్యమైన కొటేషన్ చిహ్నం %c లభించకముందె పాఠం ముగింపు అయినది . (ఈ పాఠము'%s')"
+
+#: ../glib/gshell.c:601
+msgid "Text was empty (or contained only whitespace)"
+msgstr "పాఠం ఏమి లేదు (లేక ఒక వైట్ స్పేస్ కలదు)"
+
+#: ../glib/gspawn.c:209
+#, c-format
+msgid "Failed to read data from child process (%s)"
+msgstr "(%s) శిశు కార్యం నుండి వివరము చదువుటలో విఫలమయినావు "
+
+#: ../glib/gspawn.c:353
+#, c-format
+msgid "Unexpected error in select() reading data from a child process (%s)"
+msgstr ""
+" శిశు కార్యం (%s) నుండి పాఠం చదువుటలో సెలెక్ట్() లో ఊహించని దోషం కలదు.  "
+
+#: ../glib/gspawn.c:438
+#, c-format
+msgid "Unexpected error in waitpid() (%s)"
+msgstr "వెయిట్ పిడ్() లో ఊహించని దోషం కలదు(%s)"
+
+#: ../glib/gspawn.c:849 ../glib/gspawn-win32.c:1233
+#, c-format
+msgid "Child process exited with code %ld"
+msgstr "%ld కోడ్‌ తో చైల్డ్ ప్రోసెస్ నిష్క్రమించెను"
+
+#: ../glib/gspawn.c:857
+#, c-format
+msgid "Child process killed by signal %ld"
+msgstr "సంకేతం %ld తో చెల్డ్ ప్రోసెస్ అంతంచేయబడెను"
+
+#: ../glib/gspawn.c:864
+#, c-format
+msgid "Child process stopped by signal %ld"
+msgstr "సంకేతం %ld తో చైల్డ్ ప్రోసెస్ ఆపివేయబడెను"
+
+#: ../glib/gspawn.c:871
+#, c-format
+msgid "Child process exited abnormally"
+msgstr "చైల్డ్ ప్రోసెస్ అసహజంగా నిష్క్రమించెను"
+
+#: ../glib/gspawn.c:1276 ../glib/gspawn-win32.c:339 ../glib/gspawn-win32.c:347
+#, c-format
+msgid "Failed to read from child pipe (%s)"
+msgstr " శిశు పైప్ నుండి చదువుటలో విఫలమయినావు(%s)"
+
+#: ../glib/gspawn.c:1346
+#, c-format
+msgid "Failed to fork (%s)"
+msgstr "(%s) ఫోర్క్ విఫలమయినది  "
+
+#: ../glib/gspawn.c:1495 ../glib/gspawn-win32.c:370
+#, c-format
+msgid "Failed to change to directory '%s' (%s)"
+msgstr " '%s' (%s) వివరణ మార్చుటలో విఫలమయినావు  "
+
+#: ../glib/gspawn.c:1505
+#, c-format
+msgid "Failed to execute child process \"%s\" (%s)"
+msgstr " \"%s\" శిశుకార్యం నిర్వర్తించుటలో విఫలమయినావు (%s)"
+
+#: ../glib/gspawn.c:1515
+#, c-format
+msgid "Failed to redirect output or input of child process (%s)"
+msgstr ""
+"ఎగుబడికి రిడైరెక్ట్ చేయుటలో విఫలమైనది లేక శిశు కార్యం యొక్క దిగుబడి  (%s)"
+
+#: ../glib/gspawn.c:1524
+#, c-format
+msgid "Failed to fork child process (%s)"
+msgstr " (%s) శిశుకార్యం యెక్క ఫోర్క్ విఫలమయినది "
+
+#: ../glib/gspawn.c:1532
+#, c-format
+msgid "Unknown error executing child process \"%s\""
+msgstr " \"%s\" శిశుకార్యం నిర్వర్తించుటలో తెలియని ధోషం కలదు  "
+
+#: ../glib/gspawn.c:1556
+#, c-format
+msgid "Failed to read enough data from child pid pipe (%s)"
+msgstr "శిశు పిడ్ పైప్ (%s) నుండి సరిపడునంత చదువుటలో విఫలమైనావు.  "
+
+#: ../glib/gspawn-win32.c:283
+msgid "Failed to read data from child process"
+msgstr " శిశు కార్యం నుండి చదువుటలో విఫలమయినావు "
+
+#: ../glib/gspawn-win32.c:300
+#, c-format
+msgid "Failed to create pipe for communicating with child process (%s)"
+msgstr " (%s) శిశు కార్యం తో తెలియచేయుటకు పైప్ ను సృష్టించుటలో విఫలమైనావు "
+
+#: ../glib/gspawn-win32.c:376 ../glib/gspawn-win32.c:495
+#, c-format
+msgid "Failed to execute child process (%s)"
+msgstr "(%s) శిశు కార్యం నిర్వర్తించుటలో విఫలమయినావు  "
+
+#: ../glib/gspawn-win32.c:445
+#, c-format
+msgid "Invalid program name: %s"
+msgstr "చెల్లని ప్రోగ్రామ్ నామము: %s"
+
+#: ../glib/gspawn-win32.c:455 ../glib/gspawn-win32.c:722
+#: ../glib/gspawn-win32.c:1297
+#, c-format
+msgid "Invalid string in argument vector at %d: %s"
+msgstr "ఆర్గుమెంట్ శీర్షములో %dవద్ద చెల్లని స్ట్రింగ్: %s"
+
+#: ../glib/gspawn-win32.c:466 ../glib/gspawn-win32.c:737
+#: ../glib/gspawn-win32.c:1330
+#, c-format
+msgid "Invalid string in environment: %s"
+msgstr "ఎన్విరాన్‌మెంట్ నందు చెల్లని స్ట్రింగ్: %s"
+
+#: ../glib/gspawn-win32.c:718 ../glib/gspawn-win32.c:1278
+#, c-format
+msgid "Invalid working directory: %s"
+msgstr "చెల్లని పనిచేయుచున్న డైరెక్టరి: %s"
+
+#: ../glib/gspawn-win32.c:783
+#, c-format
+msgid "Failed to execute helper program (%s)"
+msgstr "సహాయ కార్యక్రమం నిర్వర్తించుటలో విఫలమైంది (%s)"
+
+#: ../glib/gspawn-win32.c:997
+msgid ""
+"Unexpected error in g_io_channel_win32_poll() reading data from a child "
+"process"
+msgstr ""
+"  శిశు కార్యం నుండి జి_ఐఓ_ఛానెల్_విన్౩౨32_పోల్()  పాఠం ను చదువుటలో ఊహించని "
+"దోషం కలదు"
+
+#: ../glib/gutf8.c:780
+#| msgid "failed to get memory"
+msgid "Failed to allocate memory"
+msgstr "మెమొరి కేటాయింటలో విఫలమైంది"
+
+#: ../glib/gutf8.c:912
+msgid "Character out of range for UTF-8"
+msgstr "అక్షరము  యుటిఫ్-8 శ్రేణియందు లేదు "
+
+#: ../glib/gutf8.c:1012 ../glib/gutf8.c:1021 ../glib/gutf8.c:1151
+#: ../glib/gutf8.c:1160 ../glib/gutf8.c:1299 ../glib/gutf8.c:1396
+msgid "Invalid sequence in conversion input"
+msgstr "పరివర్తన ఎగుబడి వరుస నిస్సారము "
+
+# ../glib/gutf8.c:1382 ../glib/gutf8.c:1478
+#: ../glib/gutf8.c:1310 ../glib/gutf8.c:1407
+msgid "Character out of range for UTF-16"
+msgstr "అక్షరము UTF-16 శ్రేణియందు లేదు"
+
+#: ../glib/gutils.c:2116 ../glib/gutils.c:2143 ../glib/gutils.c:2249
+#, c-format
+msgid "%u byte"
+msgid_plural "%u bytes"
+msgstr[0] "%u బైట్"
+msgstr[1] "%u బైట్లు"
+
+#: ../glib/gutils.c:2122
+#, c-format
+msgid "%.1f KiB"
+msgstr "%.1f KiB"
+
+#: ../glib/gutils.c:2124
+#, c-format
+msgid "%.1f MiB"
+msgstr "%.1f MiB"
+
+#: ../glib/gutils.c:2127
+#, c-format
+msgid "%.1f GiB"
+msgstr "%.1f GiB"
+
+#: ../glib/gutils.c:2130
+#, c-format
+msgid "%.1f TiB"
+msgstr "%.1f TiB"
+
+#: ../glib/gutils.c:2133
+#, c-format
+msgid "%.1f PiB"
+msgstr "%.1f piB"
+
+#: ../glib/gutils.c:2136
+#, c-format
+msgid "%.1f EiB"
+msgstr "%.1f EiB"
+
+#: ../glib/gutils.c:2149
+#, c-format
+msgid "%.1f kB"
+msgstr "%.1f KB"
+
+#: ../glib/gutils.c:2152 ../glib/gutils.c:2267
+#, c-format
+msgid "%.1f MB"
+msgstr "%.1f MB"
+
+#: ../glib/gutils.c:2155 ../glib/gutils.c:2272
+#, c-format
+msgid "%.1f GB"
+msgstr "%.1f GB"
+
+#: ../glib/gutils.c:2157 ../glib/gutils.c:2277
+#, c-format
+msgid "%.1f TB"
+msgstr "%.1f KB"
+
+#: ../glib/gutils.c:2160 ../glib/gutils.c:2282
+#, c-format
+msgid "%.1f PB"
+msgstr "%.1f pB"
+
+#: ../glib/gutils.c:2163 ../glib/gutils.c:2287
+#, c-format
+msgid "%.1f EB"
+msgstr "%.1f EB"
+
+#. Translators: the %s in "%s bytes" will always be replaced by a number.
+#: ../glib/gutils.c:2200
+#, c-format
+msgid "%s byte"
+msgid_plural "%s bytes"
+msgstr[0] "%s బైటు"
+msgstr[1] "%s బైట్లు"
+
+#. Translators: this is from the deprecated function g_format_size_for_display() which uses 'KB' to
+#. * mean 1024 bytes.  I am aware that 'KB' is not correct, but it has been preserved for reasons of
+#. * compatibility.  Users will not see this string unless a program is using this deprecated function.
+#. * Please translate as literally as possible.
+#.
+#: ../glib/gutils.c:2262
+#, c-format
+msgid "%.1f KB"
+msgstr "%.1f KB"
+
+msgctxt "full month name with day"
+msgid "January"
+msgstr "జనవరి"
+
+msgctxt "full month name with day"
+msgid "February"
+msgstr "ఫిబ్రవరి"
+
+msgctxt "full month name with day"
+msgid "March"
+msgstr "మార్చి"
+
+msgctxt "full month name with day"
+msgid "April"
+msgstr "ఏప్రిల్"
+
+msgctxt "full month name with day"
+msgid "May"
+msgstr "మే"
+
+msgctxt "full month name with day"
+msgid "June"
+msgstr "జూన్"
+
+msgctxt "full month name with day"
+msgid "July"
+msgstr "జూలై"
+
+msgctxt "full month name with day"
+msgid "August"
+msgstr "ఆగష్టు"
+
+msgctxt "full month name with day"
+msgid "September"
+msgstr "సెప్టెంబరు"
+
+msgctxt "full month name with day"
+msgid "October"
+msgstr "అక్టోబరు"
+
+msgctxt "full month name with day"
+msgid "November"
+msgstr "నవంబరు"
+
+msgctxt "full month name with day"
+msgid "December"
+msgstr "డిసెంబరు"
+
+msgctxt "abbreviated month name with day"
+msgid "Jan"
+msgstr "జనవరి"
+
+msgctxt "abbreviated month name with day"
+msgid "Feb"
+msgstr "ఫిబ్రవరి"
+
+msgctxt "abbreviated month name with day"
+msgid "Mar"
+msgstr "మార్చి"
+
+msgctxt "abbreviated month name with day"
+msgid "Apr"
+msgstr "ఏప్రిల్"
+
+msgctxt "abbreviated month name with day"
+msgid "May"
+msgstr "మే"
+
+msgctxt "abbreviated month name with day"
+msgid "Jun"
+msgstr "జూన్"
+
+msgctxt "abbreviated month name with day"
+msgid "Jul"
+msgstr "జూలై"
+
+msgctxt "abbreviated month name with day"
+msgid "Aug"
+msgstr "ఆగష్టు"
+
+msgctxt "abbreviated month name with day"
+msgid "Sep"
+msgstr "సెప్టెంబరు"
+
+msgctxt "abbreviated month name with day"
+msgid "Oct"
+msgstr "అక్టోబరు"
+
+msgctxt "abbreviated month name with day"
+msgid "Nov"
+msgstr "నవంబరు"
+
+msgctxt "abbreviated month name with day"
+msgid "Dec"
+msgstr "డిసెంబరు"
+
+#~ msgid ""
+#~ "Error processing input file with xmllint:\n"
+#~ "%s"
+#~ msgstr ""
+#~ "xmllint తో యిన్పుట్ ఫైలు నిర్వర్తించుటలో దోషం:\n"
+#~ "%s"
+
+#~ msgid ""
+#~ "Error processing input file with to-pixdata:\n"
+#~ "%s"
+#~ msgstr ""
+#~ "to-pixdata తో యిన్పుట్ ఫైల్ నిర్వర్తించుటలో దోషం:\n"
+#~ "%s"
+
+#~ msgid "Unable to get pending error: %s"
+#~ msgstr "వాయిదావున్న దోషమును పొందలేక పోయింది: %s"
+
+#~ msgid "Failed to open file '%s' for writing: fdopen() failed: %s"
+#~ msgstr "దస్త్రము '%s'ను వ్రాయటుకొరకు తెరుచుటలో విఫలమైంది: fdopen() విఫలమైంది:%s"
+
+#~ msgid "Failed to write file '%s': fflush() failed: %s"
+#~ msgstr "దస్త్రము '%s'కు వ్రాయుటకు విఫలమైంది: fflush() విఫలమైంది: %s"
+
+#~ msgid "Failed to close file '%s': fclose() failed: %s"
+#~ msgstr "దస్త్రము '%s'ను మూయుటలో విఫలమైంది: fclose() విఫలమైంది: %s"
+
+#~ msgid "Incomplete data received for '%s'"
+#~ msgstr "అసంపూర్ణం సమాచారాన్ని పొందింది '%s' కొరకు "
+
+#~ msgid ""
+#~ "Unexpected option length while checking if SO_PASSCRED is enabled for "
+#~ "socket. Expected %d bytes, got %d"
+#~ msgstr ""
+#~ "ఊహించని ఎంపికను పొడవు SO_PASSCRED ఎనేబుల్ ఒకవేళ చూడ్డంలోకరంటు ప్లగ్గు పెట్టే చోటు. "
+#~ "ఆశించబడింది%d బైట్లు,%d వచ్చింది"
+
+#~ msgid "Abnormal program termination spawning command line '%s': %s"
+#~ msgstr "అసాధారణ కార్యక్రమం ముగింపు ఆవిర్భావానికి కారణమైంది కమాండ్ లైన్ '%s ':%s"
+
+#~ msgid "Command line '%s' exited with non-zero exit status %d: %s"
+#~ msgstr "కమాండ్ లైన్ '%s 'non-సున్నా నిష్క్రమణ స్థితి%d తో exited:%s"
+
+#~ msgid "workspace limit for empty substrings reached"
+#~ msgstr "ఖాళీ వుపస్ట్రింగ్స్‍ కొరకు పనితలం పరిమితి చేరినది"
+
+#~ msgid "case-changing escapes (\\l, \\L, \\u, \\U) are not allowed here"
+#~ msgstr "కేస్-మరల్పు యెస్కేప్స్‍ (\\l, \\L, \\u, \\U) యిక్కడ అనుమతించబడవు"
+
+#~ msgid "repeating a DEFINE group is not allowed"
+#~ msgstr "నిర్వచించు సమూహంను మళ్ళీచేయుట అనుమతించబడదు"
+
+#~ msgid "No service record for '%s'"
+#~ msgstr "'%s' కొరకు ఏ సేవ రికార్డైలేదు"
+
+#~ msgid "File is empty"
+#~ msgstr " కాళీ దస్త్రం "
+
+#~ msgid ""
+#~ "Key file contains key '%s' which has value that cannot be interpreted."
+#~ msgstr "'%s' మీట దస్త్రం యొక్క మీట ను కలిగియున్నది,దాని విలువను చదువుటకు సాధ్యపడదు."
+
+#~ msgid "This option will be removed soon."
+#~ msgstr "ఈ ఐచ్ఛికం వెంటనే తొలగించబడతాయి."
+
+#~ msgid "Error stating file '%s': %s"
+#~ msgstr "దస్త్రము '%s'ను ప్రారంభించుటలో దోషము: %s"
+
+#~ msgid "Error connecting: "
+#~ msgstr "అనుసంధానమగుటలో దోషము:"
+
+#~ msgid "Error connecting: %s"
+#~ msgstr "%sకు అనుసంధానమగుటలో దోషము"
+
+#~ msgid "SOCKSv4 implementation limits username to %i characters"
+#~ msgstr "%i అక్షరాల SOCKSv4 అమలు పరిమితులు యూజర్పేరు"
+
+#~ msgid "SOCKSv4a implementation limits hostname to %i characters"
+#~ msgstr "SOCKSv4a అమలు %i అక్షరాల హోస్ట్పేరు పరిమితం"
+
+#~ msgid "Error reading from unix: %s"
+#~ msgstr "యునిక్స్‍‌నుండి చదువుటలో దోషము: %s"
+
+#~ msgid "Error closing unix: %s"
+#~ msgstr "యునిక్స్‍‌ను మూయుటలో దోషము: %s"
+
+#~ msgid "Error writing to unix: %s"
+#~ msgstr "యునిక్స్‍‌కు వ్రాయుటలో దోషము: %s"
+
+#~ msgid "Do not give error for empty directory"
+#~ msgstr "ఖాళీ డైరెక్టరీ కోసం దోషాన్ని ఇస్తుంది లేదు"
+
+#~ msgid "Invalid UTF-8 sequence in input"
+#~ msgstr "ఇన్పుట్ లో చెల్లని UTF-8 క్రమం "
+
+#~ msgid "Reached maximum data array limit"
+#~ msgstr "గరిష్ఠ డాటా యెరే పరిమితిని చేరినది"
+
+#~ msgid "do not hide entries"
+#~ msgstr "ప్రవేశాలను మరుగుపరచవద్దు"
+
+#~ msgid "use a long listing format"
+#~ msgstr "పొడవైన జాబితాకరణ రూపాన్ని ఉపయోగించుము"

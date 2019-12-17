@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+]>
+<refentry id="gdbus-TestUglyCaseInterface">
+  <refmeta>    <refentrytitle role="top_of_page" id="gdbus-interface-TestUglyCaseInterface.top_of_page">TestUglyCaseInterface</refentrytitle>
+  <indexterm zone="gdbus-interface-TestUglyCaseInterface.top_of_page"><primary sortas="TesTuglyCASEInterface">TestUglyCaseInterface</primary></indexterm>
+  </refmeta>  <refnamediv>    <refname>TestUglyCaseInterface</refname>    <refpurpose></refpurpose>  </refnamediv>  <refsynopsisdiv role="synopsis">
+    <title role="synopsis.title">Methods</title>
+    <synopsis>
+<link linkend="gdbus-method-TestUglyCaseInterface.GetiSCSIServers">GetiSCSIServers</link> ();
+</synopsis>
+  </refsynopsisdiv>
+  <refsect1 role="signal_proto">
+    <title role="signal_proto.title">Signals</title>
+    <synopsis>
+<link linkend="gdbus-signal-TestUglyCaseInterface.serversUPDATEDNOW">serversUPDATEDNOW</link> ();
+</synopsis>
+  </refsect1>
+  <refsect1 role="properties">
+    <title role="properties.title">Properties</title>
+    <synopsis>
+<link linkend="gdbus-property-TestUglyCaseInterface.UGLYNAME">UGLYNAME</link>  readwrite  i
+</synopsis>
+  </refsect1>
+<refsect1 role="desc" id="gdbus-interface-TestUglyCaseInterface">
+  <title role="desc.title">Description</title>
+  <para></para>
+</refsect1>
+<refsect1 role="details" id="gdbus-methods-TestUglyCaseInterface">
+  <title role="details.title">Method Details</title>
+<refsect2 role="method" id="gdbus-method-TestUglyCaseInterface.GetiSCSIServers">
+  <title>The GetiSCSIServers() method</title>
+  <indexterm zone="gdbus-method-TestUglyCaseInterface.GetiSCSIServers"><primary sortas="TesTuglyCASEInterface.GetiSCSIServers">TestUglyCaseInterface.GetiSCSIServers()</primary></indexterm>
+<programlisting>
+GetiSCSIServers ();
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+<refsect1 role="details" id="gdbus-signals-TestUglyCaseInterface">
+  <title role="details.title">Signal Details</title>
+<refsect2 role="signal" id="gdbus-signal-TestUglyCaseInterface.serversUPDATEDNOW">
+  <title>The "serversUPDATEDNOW" signal</title>
+  <indexterm zone="gdbus-signal-TestUglyCaseInterface.serversUPDATEDNOW"><primary sortas="TesTuglyCASEInterface::serversUPDATEDNOW">TestUglyCaseInterface::serversUPDATEDNOW</primary></indexterm>
+<programlisting>
+serversUPDATEDNOW ();
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+<refsect1 role="details" id="gdbus-properties-TestUglyCaseInterface">
+  <title role="details.title">Property Details</title>
+<refsect2 role="property" id="gdbus-property-TestUglyCaseInterface.UGLYNAME">
+  <title>The "UGLYNAME" property</title>
+  <indexterm zone="gdbus-property-TestUglyCaseInterface.UGLYNAME"><primary sortas="TesTuglyCASEInterface:UGLYNAME">TestUglyCaseInterface:UGLYNAME</primary></indexterm>
+<programlisting>
+UGLYNAME  readwrite  i
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+</refentry>
+

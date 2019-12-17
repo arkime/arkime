@@ -1,0 +1,2469 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GDBusMessage: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="gdbus-lowlevel.html" title="Low-level D-Bus Support">
+<link rel="prev" href="gio-GDBusError.html" title="GDBusError">
+<link rel="next" href="GDBusConnection.html" title="GDBusConnection">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GDBusMessage.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GDBusMessage.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GDBusMessage.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="gdbus-lowlevel.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gio-GDBusError.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GDBusConnection.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GDBusMessage"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GDBusMessage.top_of_page"></a>GDBusMessage</span></h2>
+<p>GDBusMessage — D-Bus Message</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GDBusMessage.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-new" title="g_dbus_message_new ()">g_dbus_message_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-new-signal" title="g_dbus_message_new_signal ()">g_dbus_message_new_signal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-new-method-call" title="g_dbus_message_new_method_call ()">g_dbus_message_new_method_call</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-new-method-reply" title="g_dbus_message_new_method_reply ()">g_dbus_message_new_method_reply</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-new-method-error" title="g_dbus_message_new_method_error ()">g_dbus_message_new_method_error</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-new-method-error-valist" title="g_dbus_message_new_method_error_valist ()">g_dbus_message_new_method_error_valist</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-new-method-error-literal" title="g_dbus_message_new_method_error_literal ()">g_dbus_message_new_method_error_literal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-print" title="g_dbus_message_print ()">g_dbus_message_print</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-locked" title="g_dbus_message_get_locked ()">g_dbus_message_get_locked</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-lock" title="g_dbus_message_lock ()">g_dbus_message_lock</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-copy" title="g_dbus_message_copy ()">g_dbus_message_copy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusMessage.html#GDBusMessageByteOrder" title="enum GDBusMessageByteOrder"><span class="returnvalue">GDBusMessageByteOrder</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-byte-order" title="g_dbus_message_get_byte_order ()">g_dbus_message_get_byte_order</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-set-byte-order" title="g_dbus_message_set_byte_order ()">g_dbus_message_set_byte_order</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusMessage.html#GDBusMessageType" title="enum GDBusMessageType"><span class="returnvalue">GDBusMessageType</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-message-type" title="g_dbus_message_get_message_type ()">g_dbus_message_get_message_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-set-message-type" title="g_dbus_message_set_message_type ()">g_dbus_message_set_message_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-serial" title="g_dbus_message_get_serial ()">g_dbus_message_get_serial</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-set-serial" title="g_dbus_message_set_serial ()">g_dbus_message_set_serial</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusMessage.html#GDBusMessageFlags" title="enum GDBusMessageFlags"><span class="returnvalue">GDBusMessageFlags</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-flags" title="g_dbus_message_get_flags ()">g_dbus_message_get_flags</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-set-flags" title="g_dbus_message_set_flags ()">g_dbus_message_set_flags</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-body" title="g_dbus_message_get_body ()">g_dbus_message_get_body</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-set-body" title="g_dbus_message_set_body ()">g_dbus_message_set_body</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GUnixFDList.html" title="GUnixFDList"><span class="returnvalue">GUnixFDList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-unix-fd-list" title="g_dbus_message_get_unix_fd_list ()">g_dbus_message_get_unix_fd_list</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-set-unix-fd-list" title="g_dbus_message_set_unix_fd_list ()">g_dbus_message_set_unix_fd_list</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-num-unix-fds" title="g_dbus_message_get_num_unix_fds ()">g_dbus_message_get_num_unix_fds</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-set-num-unix-fds" title="g_dbus_message_set_num_unix_fds ()">g_dbus_message_set_num_unix_fds</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guchar"><span class="returnvalue">guchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-header-fields" title="g_dbus_message_get_header_fields ()">g_dbus_message_get_header_fields</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-header" title="g_dbus_message_get_header ()">g_dbus_message_get_header</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-set-header" title="g_dbus_message_set_header ()">g_dbus_message_set_header</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-destination" title="g_dbus_message_get_destination ()">g_dbus_message_get_destination</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-set-destination" title="g_dbus_message_set_destination ()">g_dbus_message_set_destination</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-error-name" title="g_dbus_message_get_error_name ()">g_dbus_message_get_error_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-set-error-name" title="g_dbus_message_set_error_name ()">g_dbus_message_set_error_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-interface" title="g_dbus_message_get_interface ()">g_dbus_message_get_interface</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-set-interface" title="g_dbus_message_set_interface ()">g_dbus_message_set_interface</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-member" title="g_dbus_message_get_member ()">g_dbus_message_get_member</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-set-member" title="g_dbus_message_set_member ()">g_dbus_message_set_member</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-path" title="g_dbus_message_get_path ()">g_dbus_message_get_path</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-set-path" title="g_dbus_message_set_path ()">g_dbus_message_set_path</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-reply-serial" title="g_dbus_message_get_reply_serial ()">g_dbus_message_get_reply_serial</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-set-reply-serial" title="g_dbus_message_set_reply_serial ()">g_dbus_message_set_reply_serial</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-sender" title="g_dbus_message_get_sender ()">g_dbus_message_get_sender</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-set-sender" title="g_dbus_message_set_sender ()">g_dbus_message_set_sender</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-signature" title="g_dbus_message_get_signature ()">g_dbus_message_get_signature</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-set-signature" title="g_dbus_message_set_signature ()">g_dbus_message_set_signature</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-arg0" title="g_dbus_message_get_arg0 ()">g_dbus_message_get_arg0</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guchar"><span class="returnvalue">guchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-to-blob" title="g_dbus_message_to_blob ()">g_dbus_message_to_blob</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gssize"><span class="returnvalue">gssize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-bytes-needed" title="g_dbus_message_bytes_needed ()">g_dbus_message_bytes_needed</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-new-from-blob" title="g_dbus_message_new_from_blob ()">g_dbus_message_new_from_blob</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMessage.html#g-dbus-message-to-gerror" title="g_dbus_message_to_gerror ()">g_dbus_message_to_gerror</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDBusMessage.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody><tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GDBusMessage.html#GDBusMessage--locked" title="The “locked” property">locked</a></td>
+<td class="property_flags">Read</td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDBusMessage.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GDBusMessage.html#GDBusMessage-struct" title="GDBusMessage">GDBusMessage</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="GDBusMessage.html#GDBusMessageType" title="enum GDBusMessageType">GDBusMessageType</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="GDBusMessage.html#GDBusMessageFlags" title="enum GDBusMessageFlags">GDBusMessageFlags</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="GDBusMessage.html#GDBusMessageHeaderField" title="enum GDBusMessageHeaderField">GDBusMessageHeaderField</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="GDBusMessage.html#GDBusMessageByteOrder" title="enum GDBusMessageByteOrder">GDBusMessageByteOrder</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDBusMessage.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GDBusMessage
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusMessage.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusMessage.description"></a><h2>Description</h2>
+<p>A type for representing D-Bus messages that can be sent or received
+on a <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>.</p>
+</div>
+<div class="refsect1">
+<a name="GDBusMessage.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-dbus-message-new"></a><h3>g_dbus_message_new ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+g_dbus_message_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Creates a new empty <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p>
+<div class="refsect3">
+<a name="g-dbus-message-new.returns"></a><h4>Returns</h4>
+<p> A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>. Free with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-new-signal"></a><h3>g_dbus_message_new_signal ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+g_dbus_message_new_signal (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *path</code></em>,
+                           <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *interface_</code></em>,
+                           <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *signal</code></em>);</pre>
+<p>Creates a new <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> for a signal emission.</p>
+<div class="refsect3">
+<a name="g-dbus-message-new-signal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>path</p></td>
+<td class="parameter_description"><p>A valid object path.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>interface_</p></td>
+<td class="parameter_description"><p>A valid D-Bus interface name.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>signal</p></td>
+<td class="parameter_description"><p>A valid signal name.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-new-signal.returns"></a><h4>Returns</h4>
+<p> A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>. Free with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-new-method-call"></a><h3>g_dbus_message_new_method_call ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+g_dbus_message_new_method_call (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *path</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *interface_</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *method</code></em>);</pre>
+<p>Creates a new <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> for a method call.</p>
+<div class="refsect3">
+<a name="g-dbus-message-new-method-call.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>A valid D-Bus name or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>path</p></td>
+<td class="parameter_description"><p>A valid object path.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>interface_</p></td>
+<td class="parameter_description"><p>A valid D-Bus interface name or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>method</p></td>
+<td class="parameter_description"><p>A valid method name.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-new-method-call.returns"></a><h4>Returns</h4>
+<p> A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>. Free with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-new-method-reply"></a><h3>g_dbus_message_new_method_reply ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+g_dbus_message_new_method_reply (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *method_call_message</code></em>);</pre>
+<p>Creates a new <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> that is a reply to <em class="parameter"><code>method_call_message</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-message-new-method-reply.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>method_call_message</p></td>
+<td class="parameter_description"><p>A message of type <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-TYPE-METHOD-CALL:CAPS"><code class="literal">G_DBUS_MESSAGE_TYPE_METHOD_CALL</code></a> to
+create a reply message to.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-new-method-reply.returns"></a><h4>Returns</h4>
+<p><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>. Free with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-new-method-error"></a><h3>g_dbus_message_new_method_error ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+g_dbus_message_new_method_error (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *method_call_message</code></em>,
+                                 <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *error_name</code></em>,
+                                 <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *error_message_format</code></em>,
+                                 <em class="parameter"><code>...</code></em>);</pre>
+<p>Creates a new <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> that is an error reply to <em class="parameter"><code>method_call_message</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-message-new-method-error.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>method_call_message</p></td>
+<td class="parameter_description"><p>A message of type <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-TYPE-METHOD-CALL:CAPS"><code class="literal">G_DBUS_MESSAGE_TYPE_METHOD_CALL</code></a> to
+create a reply message to.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error_name</p></td>
+<td class="parameter_description"><p>A valid D-Bus error name.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error_message_format</p></td>
+<td class="parameter_description"><p>The D-Bus error message in a <code class="function">printf()</code> format.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>Arguments for <em class="parameter"><code>error_message_format</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-new-method-error.returns"></a><h4>Returns</h4>
+<p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>. Free with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-new-method-error-valist"></a><h3>g_dbus_message_new_method_error_valist ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+g_dbus_message_new_method_error_valist
+                               (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *method_call_message</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *error_name</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *error_message_format</code></em>,
+                                <em class="parameter"><code><span class="type">va_list</span> var_args</code></em>);</pre>
+<p>Like <a class="link" href="GDBusMessage.html#g-dbus-message-new-method-error" title="g_dbus_message_new_method_error ()"><code class="function">g_dbus_message_new_method_error()</code></a> but intended for language bindings.</p>
+<div class="refsect3">
+<a name="g-dbus-message-new-method-error-valist.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>method_call_message</p></td>
+<td class="parameter_description"><p>A message of type <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-TYPE-METHOD-CALL:CAPS"><code class="literal">G_DBUS_MESSAGE_TYPE_METHOD_CALL</code></a> to
+create a reply message to.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error_name</p></td>
+<td class="parameter_description"><p>A valid D-Bus error name.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error_message_format</p></td>
+<td class="parameter_description"><p>The D-Bus error message in a <code class="function">printf()</code> format.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>var_args</p></td>
+<td class="parameter_description"><p>Arguments for <em class="parameter"><code>error_message_format</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-new-method-error-valist.returns"></a><h4>Returns</h4>
+<p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>. Free with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-new-method-error-literal"></a><h3>g_dbus_message_new_method_error_literal ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+g_dbus_message_new_method_error_literal
+                               (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *method_call_message</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *error_name</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *error_message</code></em>);</pre>
+<p>Creates a new <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> that is an error reply to <em class="parameter"><code>method_call_message</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-message-new-method-error-literal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>method_call_message</p></td>
+<td class="parameter_description"><p>A message of type <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-TYPE-METHOD-CALL:CAPS"><code class="literal">G_DBUS_MESSAGE_TYPE_METHOD_CALL</code></a> to
+create a reply message to.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error_name</p></td>
+<td class="parameter_description"><p>A valid D-Bus error name.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error_message</p></td>
+<td class="parameter_description"><p>The D-Bus error message.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-new-method-error-literal.returns"></a><h4>Returns</h4>
+<p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>. Free with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-print"></a><h3>g_dbus_message_print ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_message_print (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                      <em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> indent</code></em>);</pre>
+<p>Produces a human-readable multi-line description of <em class="parameter"><code>message</code></em>
+.</p>
+<p>The contents of the description has no ABI guarantees, the contents
+and formatting is subject to change at any time. Typical output
+looks something like this:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal">Type</span><span class="symbol">:</span><span class="normal">    method</span><span class="symbol">-</span><span class="normal">call</span>
+<span class="normal">Flags</span><span class="symbol">:</span><span class="normal">   none</span>
+<span class="normal">Version</span><span class="symbol">:</span><span class="normal"> </span><span class="number">0</span>
+<span class="normal">Serial</span><span class="symbol">:</span><span class="normal">  </span><span class="number">4</span>
+<span class="label">Headers:</span>
+<span class="normal">  path </span><span class="symbol">-&gt;</span><span class="normal"> objectpath </span><span class="string">'/org/gtk/GDBus/TestObject'</span>
+<span class="normal">  interface </span><span class="symbol">-&gt;</span><span class="normal"> </span><span class="string">'org.gtk.GDBus.TestInterface'</span>
+<span class="normal">  member </span><span class="symbol">-&gt;</span><span class="normal"> </span><span class="string">'GimmeStdout'</span>
+<span class="normal">  destination </span><span class="symbol">-&gt;</span><span class="normal"> </span><span class="string">':1.146'</span>
+<span class="normal">Body</span><span class="symbol">:</span><span class="normal"> </span><span class="symbol">()</span>
+<span class="normal">UNIX </span><span class="usertype">File</span><span class="normal"> Descriptors</span><span class="symbol">:</span>
+<span class="normal">  </span><span class="symbol">(</span><span class="normal">none</span><span class="symbol">)</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+or</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal">Type</span><span class="symbol">:</span><span class="normal">    method</span><span class="symbol">-</span><span class="keyword">return</span>
+<span class="normal">Flags</span><span class="symbol">:</span><span class="normal">   no</span><span class="symbol">-</span><span class="normal">reply</span><span class="symbol">-</span><span class="normal">expected</span>
+<span class="normal">Version</span><span class="symbol">:</span><span class="normal"> </span><span class="number">0</span>
+<span class="normal">Serial</span><span class="symbol">:</span><span class="normal">  </span><span class="number">477</span>
+<span class="label">Headers:</span>
+<span class="normal">  reply</span><span class="symbol">-</span><span class="normal">serial </span><span class="symbol">-&gt;</span><span class="normal"> uint32 </span><span class="number">4</span>
+<span class="normal">  destination </span><span class="symbol">-&gt;</span><span class="normal"> </span><span class="string">':1.159'</span>
+<span class="normal">  sender </span><span class="symbol">-&gt;</span><span class="normal"> </span><span class="string">':1.146'</span>
+<span class="normal">  num</span><span class="symbol">-</span><span class="normal">unix</span><span class="symbol">-</span><span class="normal">fds </span><span class="symbol">-&gt;</span><span class="normal"> uint32 </span><span class="number">1</span>
+<span class="normal">Body</span><span class="symbol">:</span><span class="normal"> </span><span class="symbol">()</span>
+<span class="normal">UNIX </span><span class="usertype">File</span><span class="normal"> Descriptors</span><span class="symbol">:</span>
+<span class="normal">  fd </span><span class="number">12</span><span class="symbol">:</span><span class="normal"> dev</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">:</span><span class="number">10</span><span class="symbol">,</span><span class="normal">mode</span><span class="symbol">=</span><span class="number">020620</span><span class="symbol">,</span><span class="normal">ino</span><span class="symbol">=</span><span class="number">5</span><span class="symbol">,</span><span class="normal">uid</span><span class="symbol">=</span><span class="number">500</span><span class="symbol">,</span><span class="normal">gid</span><span class="symbol">=</span><span class="number">5</span><span class="symbol">,</span><span class="normal">rdev</span><span class="symbol">=</span><span class="number">136</span><span class="symbol">:</span><span class="number">2</span><span class="symbol">,</span><span class="normal">size</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">,</span><span class="normal">atime</span><span class="symbol">=</span><span class="number">1273085037</span><span class="symbol">,</span><span class="normal">mtime</span><span class="symbol">=</span><span class="number">1273085851</span><span class="symbol">,</span><span class="normal">ctime</span><span class="symbol">=</span><span class="number">1272982635</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="g-dbus-message-print.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>indent</p></td>
+<td class="parameter_description"><p>Indentation level.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-print.returns"></a><h4>Returns</h4>
+<p> A string that should be freed with <a href="../glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-get-locked"></a><h3>g_dbus_message_get_locked ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_dbus_message_get_locked (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>);</pre>
+<p>Checks whether <em class="parameter"><code>message</code></em>
+ is locked. To monitor changes to this
+value, conncet to the <a href="../gobject-The-Base-Object-Type.html#GObject-notify"><span class="type">“notify”</span></a> signal to listen for changes
+on the <a class="link" href="GDBusMessage.html#GDBusMessage--locked" title="The “locked” property"><span class="type">“locked”</span></a> property.</p>
+<div class="refsect3">
+<a name="g-dbus-message-get-locked.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-get-locked.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>message</code></em>
+is locked, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-lock"></a><h3>g_dbus_message_lock ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_message_lock (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>);</pre>
+<p>If <em class="parameter"><code>message</code></em>
+ is locked, does nothing. Otherwise locks the message.</p>
+<div class="refsect3">
+<a name="g-dbus-message-lock.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-copy"></a><h3>g_dbus_message_copy ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+g_dbus_message_copy (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                     <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Copies <em class="parameter"><code>message</code></em>
+. The copy is a deep copy and the returned
+<a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> is completely identical except that it is guaranteed
+to not be locked.</p>
+<p>This operation can fail if e.g. <em class="parameter"><code>message</code></em>
+ contains file descriptors
+and the per-process or system-wide open files limit is reached.</p>
+<div class="refsect3">
+<a name="g-dbus-message-copy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>Return location for error or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-copy.returns"></a><h4>Returns</h4>
+<p>A new <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>error</code></em>
+is set.
+Free with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-get-byte-order"></a><h3>g_dbus_message_get_byte_order ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusMessage.html#GDBusMessageByteOrder" title="enum GDBusMessageByteOrder"><span class="returnvalue">GDBusMessageByteOrder</span></a>
+g_dbus_message_get_byte_order (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>);</pre>
+<p>Gets the byte order of <em class="parameter"><code>message</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-message-get-byte-order.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-get-byte-order.returns"></a><h4>Returns</h4>
+<p> The byte order.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-set-byte-order"></a><h3>g_dbus_message_set_byte_order ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_message_set_byte_order (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                               <em class="parameter"><code><a class="link" href="GDBusMessage.html#GDBusMessageByteOrder" title="enum GDBusMessageByteOrder"><span class="type">GDBusMessageByteOrder</span></a> byte_order</code></em>);</pre>
+<p>Sets the byte order of <em class="parameter"><code>message</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-message-set-byte-order.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>byte_order</p></td>
+<td class="parameter_description"><p>The byte order.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-get-message-type"></a><h3>g_dbus_message_get_message_type ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusMessage.html#GDBusMessageType" title="enum GDBusMessageType"><span class="returnvalue">GDBusMessageType</span></a>
+g_dbus_message_get_message_type (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>);</pre>
+<p>Gets the type of <em class="parameter"><code>message</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-message-get-message-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-get-message-type.returns"></a><h4>Returns</h4>
+<p> A 8-bit unsigned integer (typically a value from the <a class="link" href="GDBusMessage.html#GDBusMessageType" title="enum GDBusMessageType"><span class="type">GDBusMessageType</span></a> enumeration).</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-set-message-type"></a><h3>g_dbus_message_set_message_type ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_message_set_message_type (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                                 <em class="parameter"><code><a class="link" href="GDBusMessage.html#GDBusMessageType" title="enum GDBusMessageType"><span class="type">GDBusMessageType</span></a> type</code></em>);</pre>
+<p>Sets <em class="parameter"><code>message</code></em>
+ to be of <em class="parameter"><code>type</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-message-set-message-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>A 8-bit unsigned integer (typically a value from the <a class="link" href="GDBusMessage.html#GDBusMessageType" title="enum GDBusMessageType"><span class="type">GDBusMessageType</span></a> enumeration).</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-get-serial"></a><h3>g_dbus_message_get_serial ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>
+g_dbus_message_get_serial (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>);</pre>
+<p>Gets the serial for <em class="parameter"><code>message</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-message-get-serial.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-get-serial.returns"></a><h4>Returns</h4>
+<p> A <a href="../glib-Basic-Types.html#guint32"><span class="type">guint32</span></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-set-serial"></a><h3>g_dbus_message_set_serial ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_message_set_serial (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                           <em class="parameter"><code><a href="../glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> serial</code></em>);</pre>
+<p>Sets the serial for <em class="parameter"><code>message</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-message-set-serial.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>serial</p></td>
+<td class="parameter_description"><p>A <a href="../glib-Basic-Types.html#guint32"><span class="type">guint32</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-get-flags"></a><h3>g_dbus_message_get_flags ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusMessage.html#GDBusMessageFlags" title="enum GDBusMessageFlags"><span class="returnvalue">GDBusMessageFlags</span></a>
+g_dbus_message_get_flags (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>);</pre>
+<p>Gets the flags for <em class="parameter"><code>message</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-message-get-flags.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-get-flags.returns"></a><h4>Returns</h4>
+<p> Flags that are set (typically values from the <a class="link" href="GDBusMessage.html#GDBusMessageFlags" title="enum GDBusMessageFlags"><span class="type">GDBusMessageFlags</span></a> enumeration bitwise ORed together).</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-set-flags"></a><h3>g_dbus_message_set_flags ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_message_set_flags (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                          <em class="parameter"><code><a class="link" href="GDBusMessage.html#GDBusMessageFlags" title="enum GDBusMessageFlags"><span class="type">GDBusMessageFlags</span></a> flags</code></em>);</pre>
+<p>Sets the flags to set on <em class="parameter"><code>message</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-message-set-flags.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>Flags for <em class="parameter"><code>message</code></em>
+that are set (typically values from the <a class="link" href="GDBusMessage.html#GDBusMessageFlags" title="enum GDBusMessageFlags"><span class="type">GDBusMessageFlags</span></a>
+enumeration bitwise ORed together).</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-get-body"></a><h3>g_dbus_message_get_body ()</h3>
+<pre class="programlisting"><a href="../glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+g_dbus_message_get_body (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>);</pre>
+<p>Gets the body of a message.</p>
+<div class="refsect3">
+<a name="g-dbus-message-get-body.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-get-body.returns"></a><h4>Returns</h4>
+<p>A <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the body is
+empty. Do not free, it is owned by <em class="parameter"><code>message</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-set-body"></a><h3>g_dbus_message_set_body ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_message_set_body (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                         <em class="parameter"><code><a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *body</code></em>);</pre>
+<p>Sets the body <em class="parameter"><code>message</code></em>
+. As a side-effect the
+<a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-SIGNATURE:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_SIGNATURE</code></a> header field is set to the
+type string of <em class="parameter"><code>body</code></em>
+ (or cleared if <em class="parameter"><code>body</code></em>
+ is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>).</p>
+<p>If <em class="parameter"><code>body</code></em>
+ is floating, <em class="parameter"><code>message</code></em>
+ assumes ownership of <em class="parameter"><code>body</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-message-set-body.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>body</p></td>
+<td class="parameter_description"><p>Either <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> or a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> that is a tuple.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-get-unix-fd-list"></a><h3>g_dbus_message_get_unix_fd_list ()</h3>
+<pre class="programlisting"><a class="link" href="GUnixFDList.html" title="GUnixFDList"><span class="returnvalue">GUnixFDList</span></a> *
+g_dbus_message_get_unix_fd_list (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>);</pre>
+<p>Gets the UNIX file descriptors associated with <em class="parameter"><code>message</code></em>
+, if any.</p>
+<p>This method is only available on UNIX.</p>
+<div class="refsect3">
+<a name="g-dbus-message-get-unix-fd-list.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-get-unix-fd-list.returns"></a><h4>Returns</h4>
+<p>A <a class="link" href="GUnixFDList.html" title="GUnixFDList"><span class="type">GUnixFDList</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if no file descriptors are
+associated. Do not free, this object is owned by <em class="parameter"><code>message</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-set-unix-fd-list"></a><h3>g_dbus_message_set_unix_fd_list ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_message_set_unix_fd_list (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                                 <em class="parameter"><code><a class="link" href="GUnixFDList.html" title="GUnixFDList"><span class="type">GUnixFDList</span></a> *fd_list</code></em>);</pre>
+<p>Sets the UNIX file descriptors associated with <em class="parameter"><code>message</code></em>
+. As a
+side-effect the <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-NUM-UNIX-FDS:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_NUM_UNIX_FDS</code></a> header
+field is set to the number of fds in <em class="parameter"><code>fd_list</code></em>
+ (or cleared if
+<em class="parameter"><code>fd_list</code></em>
+ is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>).</p>
+<p>This method is only available on UNIX.</p>
+<div class="refsect3">
+<a name="g-dbus-message-set-unix-fd-list.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>fd_list</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GUnixFDList.html" title="GUnixFDList"><span class="type">GUnixFDList</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-get-num-unix-fds"></a><h3>g_dbus_message_get_num_unix_fds ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>
+g_dbus_message_get_num_unix_fds (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>);</pre>
+<p>Convenience getter for the <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-NUM-UNIX-FDS:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_NUM_UNIX_FDS</code></a> header field.</p>
+<div class="refsect3">
+<a name="g-dbus-message-get-num-unix-fds.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-get-num-unix-fds.returns"></a><h4>Returns</h4>
+<p> The value.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-set-num-unix-fds"></a><h3>g_dbus_message_set_num_unix_fds ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_message_set_num_unix_fds (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> value</code></em>);</pre>
+<p>Convenience setter for the <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-NUM-UNIX-FDS:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_NUM_UNIX_FDS</code></a> header field.</p>
+<div class="refsect3">
+<a name="g-dbus-message-set-num-unix-fds.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>The value to set.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-get-header-fields"></a><h3>g_dbus_message_get_header_fields ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guchar"><span class="returnvalue">guchar</span></a> *
+g_dbus_message_get_header_fields (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>);</pre>
+<p>Gets an array of all header fields on <em class="parameter"><code>message</code></em>
+ that are set.</p>
+<div class="refsect3">
+<a name="g-dbus-message-get-header-fields.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-get-header-fields.returns"></a><h4>Returns</h4>
+<p>An array of header fields
+terminated by <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-INVALID:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_INVALID</code></a>.  Each element
+is a <a href="../glib-Basic-Types.html#guchar"><span class="type">guchar</span></a>. Free with <a href="../glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-get-header"></a><h3>g_dbus_message_get_header ()</h3>
+<pre class="programlisting"><a href="../glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+g_dbus_message_get_header (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                           <em class="parameter"><code><a class="link" href="GDBusMessage.html#GDBusMessageHeaderField" title="enum GDBusMessageHeaderField"><span class="type">GDBusMessageHeaderField</span></a> header_field</code></em>);</pre>
+<p>Gets a header field on <em class="parameter"><code>message</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-message-get-header.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>header_field</p></td>
+<td class="parameter_description"><p>A 8-bit unsigned integer (typically a value from the <a class="link" href="GDBusMessage.html#GDBusMessageHeaderField" title="enum GDBusMessageHeaderField"><span class="type">GDBusMessageHeaderField</span></a> enumeration)</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-get-header.returns"></a><h4>Returns</h4>
+<p> A <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> with the value if the header was found, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+otherwise. Do not free, it is owned by <em class="parameter"><code>message</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-set-header"></a><h3>g_dbus_message_set_header ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_message_set_header (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                           <em class="parameter"><code><a class="link" href="GDBusMessage.html#GDBusMessageHeaderField" title="enum GDBusMessageHeaderField"><span class="type">GDBusMessageHeaderField</span></a> header_field</code></em>,
+                           <em class="parameter"><code><a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *value</code></em>);</pre>
+<p>Sets a header field on <em class="parameter"><code>message</code></em>
+.</p>
+<p>If <em class="parameter"><code>value</code></em>
+ is floating, <em class="parameter"><code>message</code></em>
+ assumes ownership of <em class="parameter"><code>value</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-message-set-header.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>header_field</p></td>
+<td class="parameter_description"><p>A 8-bit unsigned integer (typically a value from the <a class="link" href="GDBusMessage.html#GDBusMessageHeaderField" title="enum GDBusMessageHeaderField"><span class="type">GDBusMessageHeaderField</span></a> enumeration)</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>A <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> to set the header field or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to clear the header field. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-get-destination"></a><h3>g_dbus_message_get_destination ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_message_get_destination (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>);</pre>
+<p>Convenience getter for the <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-DESTINATION:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_DESTINATION</code></a> header field.</p>
+<div class="refsect3">
+<a name="g-dbus-message-get-destination.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-get-destination.returns"></a><h4>Returns</h4>
+<p> The value.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-set-destination"></a><h3>g_dbus_message_set_destination ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_message_set_destination (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);</pre>
+<p>Convenience setter for the <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-DESTINATION:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_DESTINATION</code></a> header field.</p>
+<div class="refsect3">
+<a name="g-dbus-message-set-destination.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>The value to set.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-get-error-name"></a><h3>g_dbus_message_get_error_name ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_message_get_error_name (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>);</pre>
+<p>Convenience getter for the <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-ERROR-NAME:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_ERROR_NAME</code></a> header field.</p>
+<div class="refsect3">
+<a name="g-dbus-message-get-error-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-get-error-name.returns"></a><h4>Returns</h4>
+<p> The value.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-set-error-name"></a><h3>g_dbus_message_set_error_name ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_message_set_error_name (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                               <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);</pre>
+<p>Convenience setter for the <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-ERROR-NAME:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_ERROR_NAME</code></a> header field.</p>
+<div class="refsect3">
+<a name="g-dbus-message-set-error-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>The value to set.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-get-interface"></a><h3>g_dbus_message_get_interface ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_message_get_interface (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>);</pre>
+<p>Convenience getter for the <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-INTERFACE:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_INTERFACE</code></a> header field.</p>
+<div class="refsect3">
+<a name="g-dbus-message-get-interface.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-get-interface.returns"></a><h4>Returns</h4>
+<p> The value.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-set-interface"></a><h3>g_dbus_message_set_interface ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_message_set_interface (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                              <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);</pre>
+<p>Convenience setter for the <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-INTERFACE:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_INTERFACE</code></a> header field.</p>
+<div class="refsect3">
+<a name="g-dbus-message-set-interface.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>The value to set.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-get-member"></a><h3>g_dbus_message_get_member ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_message_get_member (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>);</pre>
+<p>Convenience getter for the <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-MEMBER:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_MEMBER</code></a> header field.</p>
+<div class="refsect3">
+<a name="g-dbus-message-get-member.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-get-member.returns"></a><h4>Returns</h4>
+<p> The value.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-set-member"></a><h3>g_dbus_message_set_member ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_message_set_member (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                           <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);</pre>
+<p>Convenience setter for the <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-MEMBER:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_MEMBER</code></a> header field.</p>
+<div class="refsect3">
+<a name="g-dbus-message-set-member.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>The value to set.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-get-path"></a><h3>g_dbus_message_get_path ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_message_get_path (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>);</pre>
+<p>Convenience getter for the <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-PATH:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_PATH</code></a> header field.</p>
+<div class="refsect3">
+<a name="g-dbus-message-get-path.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-get-path.returns"></a><h4>Returns</h4>
+<p> The value.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-set-path"></a><h3>g_dbus_message_set_path ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_message_set_path (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                         <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);</pre>
+<p>Convenience setter for the <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-PATH:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_PATH</code></a> header field.</p>
+<div class="refsect3">
+<a name="g-dbus-message-set-path.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>The value to set.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-get-reply-serial"></a><h3>g_dbus_message_get_reply_serial ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>
+g_dbus_message_get_reply_serial (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>);</pre>
+<p>Convenience getter for the <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-REPLY-SERIAL:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_REPLY_SERIAL</code></a> header field.</p>
+<div class="refsect3">
+<a name="g-dbus-message-get-reply-serial.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-get-reply-serial.returns"></a><h4>Returns</h4>
+<p> The value.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-set-reply-serial"></a><h3>g_dbus_message_set_reply_serial ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_message_set_reply_serial (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> value</code></em>);</pre>
+<p>Convenience setter for the <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-REPLY-SERIAL:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_REPLY_SERIAL</code></a> header field.</p>
+<div class="refsect3">
+<a name="g-dbus-message-set-reply-serial.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>The value to set.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-get-sender"></a><h3>g_dbus_message_get_sender ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_message_get_sender (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>);</pre>
+<p>Convenience getter for the <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-SENDER:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_SENDER</code></a> header field.</p>
+<div class="refsect3">
+<a name="g-dbus-message-get-sender.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-get-sender.returns"></a><h4>Returns</h4>
+<p> The value.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-set-sender"></a><h3>g_dbus_message_set_sender ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_message_set_sender (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                           <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);</pre>
+<p>Convenience setter for the <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-SENDER:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_SENDER</code></a> header field.</p>
+<div class="refsect3">
+<a name="g-dbus-message-set-sender.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>The value to set.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-get-signature"></a><h3>g_dbus_message_get_signature ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_message_get_signature (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>);</pre>
+<p>Convenience getter for the <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-SIGNATURE:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_SIGNATURE</code></a> header field.</p>
+<div class="refsect3">
+<a name="g-dbus-message-get-signature.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-get-signature.returns"></a><h4>Returns</h4>
+<p> The value.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-set-signature"></a><h3>g_dbus_message_set_signature ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_message_set_signature (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                              <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>);</pre>
+<p>Convenience setter for the <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-SIGNATURE:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_SIGNATURE</code></a> header field.</p>
+<div class="refsect3">
+<a name="g-dbus-message-set-signature.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>The value to set.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-get-arg0"></a><h3>g_dbus_message_get_arg0 ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_message_get_arg0 (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>);</pre>
+<p>Convenience to get the first item in the body of <em class="parameter"><code>message</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-message-get-arg0.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-get-arg0.returns"></a><h4>Returns</h4>
+<p> The string item or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the first item in the body of
+<em class="parameter"><code>message</code></em>
+is not a string.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-to-blob"></a><h3>g_dbus_message_to_blob ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guchar"><span class="returnvalue">guchar</span></a> *
+g_dbus_message_to_blob (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                        <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> *out_size</code></em>,
+                        <em class="parameter"><code><a class="link" href="GDBusConnection.html#GDBusCapabilityFlags" title="enum GDBusCapabilityFlags"><span class="type">GDBusCapabilityFlags</span></a> capabilities</code></em>,
+                        <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Serializes <em class="parameter"><code>message</code></em>
+ to a blob. The byte order returned by
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-byte-order" title="g_dbus_message_get_byte_order ()"><code class="function">g_dbus_message_get_byte_order()</code></a> will be used.</p>
+<div class="refsect3">
+<a name="g-dbus-message-to-blob.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>out_size</p></td>
+<td class="parameter_description"><p>Return location for size of generated blob.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>capabilities</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusConnection.html#GDBusCapabilityFlags" title="enum GDBusCapabilityFlags"><span class="type">GDBusCapabilityFlags</span></a> describing what protocol features are supported.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>Return location for error.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-to-blob.returns"></a><h4>Returns</h4>
+<p>A pointer to a
+valid binary D-Bus message of <em class="parameter"><code>out_size</code></em>
+bytes generated by <em class="parameter"><code>message</code></em>
+or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>error</code></em>
+is set. Free with <a href="../glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=out_size][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-bytes-needed"></a><h3>g_dbus_message_bytes_needed ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gssize"><span class="returnvalue">gssize</span></a>
+g_dbus_message_bytes_needed (<em class="parameter"><code><a href="../glib-Basic-Types.html#guchar"><span class="type">guchar</span></a> *blob</code></em>,
+                             <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> blob_len</code></em>,
+                             <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Utility function to calculate how many bytes are needed to
+completely deserialize the D-Bus message stored at <em class="parameter"><code>blob</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-message-bytes-needed.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>blob</p></td>
+<td class="parameter_description"><p>A blob represent a binary D-Bus message. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=blob_len][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>blob_len</p></td>
+<td class="parameter_description"><p>The length of <em class="parameter"><code>blob</code></em>
+(must be at least 16).</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>Return location for error or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-bytes-needed.returns"></a><h4>Returns</h4>
+<p> Number of bytes needed or -1 if <em class="parameter"><code>error</code></em>
+is set (e.g. if
+<em class="parameter"><code>blob</code></em>
+contains invalid data or not enough data is available to
+determine the size).</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-new-from-blob"></a><h3>g_dbus_message_new_from_blob ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+g_dbus_message_new_from_blob (<em class="parameter"><code><a href="../glib-Basic-Types.html#guchar"><span class="type">guchar</span></a> *blob</code></em>,
+                              <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> blob_len</code></em>,
+                              <em class="parameter"><code><a class="link" href="GDBusConnection.html#GDBusCapabilityFlags" title="enum GDBusCapabilityFlags"><span class="type">GDBusCapabilityFlags</span></a> capabilities</code></em>,
+                              <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Creates a new <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> from the data stored at <em class="parameter"><code>blob</code></em>
+. The byte
+order that the message was in can be retrieved using
+<a class="link" href="GDBusMessage.html#g-dbus-message-get-byte-order" title="g_dbus_message_get_byte_order ()"><code class="function">g_dbus_message_get_byte_order()</code></a>.</p>
+<div class="refsect3">
+<a name="g-dbus-message-new-from-blob.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>blob</p></td>
+<td class="parameter_description"><p>A blob represent a binary D-Bus message. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=blob_len][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>blob_len</p></td>
+<td class="parameter_description"><p>The length of <em class="parameter"><code>blob</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>capabilities</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusConnection.html#GDBusCapabilityFlags" title="enum GDBusCapabilityFlags"><span class="type">GDBusCapabilityFlags</span></a> describing what protocol features are supported.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>Return location for error or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-new-from-blob.returns"></a><h4>Returns</h4>
+<p> A new <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>error</code></em>
+is set. Free with
+<a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-message-to-gerror"></a><h3>g_dbus_message_to_gerror ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_dbus_message_to_gerror (<em class="parameter"><code><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> *message</code></em>,
+                          <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>If <em class="parameter"><code>message</code></em>
+ is not of type <a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-TYPE-ERROR:CAPS"><code class="literal">G_DBUS_MESSAGE_TYPE_ERROR</code></a> does
+nothing and returns <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a>.</p>
+<p>Otherwise this method encodes the error in <em class="parameter"><code>message</code></em>
+ as a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>
+using <a class="link" href="gio-GDBusError.html#g-dbus-error-set-dbus-error" title="g_dbus_error_set_dbus_error ()"><code class="function">g_dbus_error_set_dbus_error()</code></a> using the information in the
+<a class="link" href="GDBusMessage.html#G-DBUS-MESSAGE-HEADER-FIELD-ERROR-NAME:CAPS"><code class="literal">G_DBUS_MESSAGE_HEADER_FIELD_ERROR_NAME</code></a> header field of <em class="parameter"><code>message</code></em>
+ as
+well as the first string item in <em class="parameter"><code>message</code></em>
+'s body.</p>
+<div class="refsect3">
+<a name="g-dbus-message-to-gerror.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>The <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> to set.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-message-to-gerror.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>error</code></em>
+was set, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusMessage.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GDBusMessage-struct"></a><h3>GDBusMessage</h3>
+<pre class="programlisting">typedef struct _GDBusMessage GDBusMessage;</pre>
+<p>The <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> structure contains only private data and should
+only be accessed using the provided API.</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusMessageType"></a><h3>enum GDBusMessageType</h3>
+<p>Message types used in <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p>
+<div class="refsect3">
+<a name="GDBusMessageType.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-TYPE-INVALID:CAPS"></a>G_DBUS_MESSAGE_TYPE_INVALID</p></td>
+<td class="enum_member_description">
+<p>Message is of invalid type.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-TYPE-METHOD-CALL:CAPS"></a>G_DBUS_MESSAGE_TYPE_METHOD_CALL</p></td>
+<td class="enum_member_description">
+<p>Method call.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-TYPE-METHOD-RETURN:CAPS"></a>G_DBUS_MESSAGE_TYPE_METHOD_RETURN</p></td>
+<td class="enum_member_description">
+<p>Method reply.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-TYPE-ERROR:CAPS"></a>G_DBUS_MESSAGE_TYPE_ERROR</p></td>
+<td class="enum_member_description">
+<p>Error reply.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-TYPE-SIGNAL:CAPS"></a>G_DBUS_MESSAGE_TYPE_SIGNAL</p></td>
+<td class="enum_member_description">
+<p>Signal emission.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusMessageFlags"></a><h3>enum GDBusMessageFlags</h3>
+<p>Message flags used in <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p>
+<div class="refsect3">
+<a name="GDBusMessageFlags.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-FLAGS-NONE:CAPS"></a>G_DBUS_MESSAGE_FLAGS_NONE</p></td>
+<td class="enum_member_description">
+<p>No flags set.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-FLAGS-NO-REPLY-EXPECTED:CAPS"></a>G_DBUS_MESSAGE_FLAGS_NO_REPLY_EXPECTED</p></td>
+<td class="enum_member_description">
+<p>A reply is not expected.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-FLAGS-NO-AUTO-START:CAPS"></a>G_DBUS_MESSAGE_FLAGS_NO_AUTO_START</p></td>
+<td class="enum_member_description">
+<p>The bus must not launch an
+owner for the destination name in response to this message.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-FLAGS-ALLOW-INTERACTIVE-AUTHORIZATION:CAPS"></a>G_DBUS_MESSAGE_FLAGS_ALLOW_INTERACTIVE_AUTHORIZATION</p></td>
+<td class="enum_member_description">
+<p>If set on a method
+call, this flag means that the caller is prepared to wait for interactive
+authorization. Since 2.46.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusMessageHeaderField"></a><h3>enum GDBusMessageHeaderField</h3>
+<p>Header fields used in <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>.</p>
+<div class="refsect3">
+<a name="GDBusMessageHeaderField.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-HEADER-FIELD-INVALID:CAPS"></a>G_DBUS_MESSAGE_HEADER_FIELD_INVALID</p></td>
+<td class="enum_member_description">
+<p>Not a valid header field.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-HEADER-FIELD-PATH:CAPS"></a>G_DBUS_MESSAGE_HEADER_FIELD_PATH</p></td>
+<td class="enum_member_description">
+<p>The object path.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-HEADER-FIELD-INTERFACE:CAPS"></a>G_DBUS_MESSAGE_HEADER_FIELD_INTERFACE</p></td>
+<td class="enum_member_description">
+<p>The interface name.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-HEADER-FIELD-MEMBER:CAPS"></a>G_DBUS_MESSAGE_HEADER_FIELD_MEMBER</p></td>
+<td class="enum_member_description">
+<p>The method or signal name.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-HEADER-FIELD-ERROR-NAME:CAPS"></a>G_DBUS_MESSAGE_HEADER_FIELD_ERROR_NAME</p></td>
+<td class="enum_member_description">
+<p>The name of the error that occurred.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-HEADER-FIELD-REPLY-SERIAL:CAPS"></a>G_DBUS_MESSAGE_HEADER_FIELD_REPLY_SERIAL</p></td>
+<td class="enum_member_description">
+<p>The serial number the message is a reply to.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-HEADER-FIELD-DESTINATION:CAPS"></a>G_DBUS_MESSAGE_HEADER_FIELD_DESTINATION</p></td>
+<td class="enum_member_description">
+<p>The name the message is intended for.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-HEADER-FIELD-SENDER:CAPS"></a>G_DBUS_MESSAGE_HEADER_FIELD_SENDER</p></td>
+<td class="enum_member_description">
+<p>Unique name of the sender of the message (filled in by the bus).</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-HEADER-FIELD-SIGNATURE:CAPS"></a>G_DBUS_MESSAGE_HEADER_FIELD_SIGNATURE</p></td>
+<td class="enum_member_description">
+<p>The signature of the message body.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-HEADER-FIELD-NUM-UNIX-FDS:CAPS"></a>G_DBUS_MESSAGE_HEADER_FIELD_NUM_UNIX_FDS</p></td>
+<td class="enum_member_description">
+<p>The number of UNIX file descriptors that accompany the message.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusMessageByteOrder"></a><h3>enum GDBusMessageByteOrder</h3>
+<p>Enumeration used to describe the byte order of a D-Bus message.</p>
+<div class="refsect3">
+<a name="GDBusMessageByteOrder.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-BYTE-ORDER-BIG-ENDIAN:CAPS"></a>G_DBUS_MESSAGE_BYTE_ORDER_BIG_ENDIAN</p></td>
+<td class="enum_member_description">
+<p>The byte order is big endian.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-MESSAGE-BYTE-ORDER-LITTLE-ENDIAN:CAPS"></a>G_DBUS_MESSAGE_BYTE_ORDER_LITTLE_ENDIAN</p></td>
+<td class="enum_member_description">
+<p>The byte order is little endian.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusMessage.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GDBusMessage--locked"></a><h3>The <code class="literal">“locked”</code> property</h3>
+<pre class="programlisting">  “locked”                   <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether the message is locked.</p>
+<p>Flags: Read</p>
+<p>Default value: FALSE</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

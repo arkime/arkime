@@ -1,0 +1,4 @@
+ELEMENT 'foo'
+  TEXT '
+'
+ERROR Error on line 2 char 5: Document ended unexpectedly inside an element name

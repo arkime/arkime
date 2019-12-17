@@ -1,0 +1,26 @@
+[Desktop Entry]
+Type=Application
+Exec=true openProfile webbrowsing
+Icon=konqueror
+X-DocPath=konqueror/index.html
+MimeType=x-scheme-handler/http;
+
+Name=Konqueror
+Name[bn]=কনকরার
+Name[bn_IN]=Konqueror
+Name[ca]=Konqueror
+Name[ca@valencia]=Konqueror
+Name[en_GB]=Konqueror
+Name[eo]=Konkeranto
+Name[pt]=Konqueror
+Name[pt_BR]=Konqueror
+GenericName=Web Browser
+GenericName[bn]=ওয়েব ব্রাউজার
+GenericName[bn_IN]=ওয়েব ব্রাউজার
+GenericName[ca]=Navegador web
+GenericName[ca@valencia]=Navegador web
+GenericName[en_GB]=Web Browser
+GenericName[eo]=TTT-foliumilo
+GenericName[pt]=Navegador Web
+GenericName[pt_BR]=Navegador Web
+Categories=Qt;KDE;Network;WebBrowser;

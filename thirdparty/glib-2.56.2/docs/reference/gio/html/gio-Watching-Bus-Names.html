@@ -1,0 +1,570 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Watching Bus Names: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="gdbus-convenience.html" title="High-level D-Bus Support">
+<link rel="prev" href="gio-Owning-Bus-Names.html" title="Owning Bus Names">
+<link rel="next" href="GDBusInterface.html" title="GDBusInterface">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gio-Watching-Bus-Names.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="gdbus-convenience.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gio-Owning-Bus-Names.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GDBusInterface.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-Watching-Bus-Names"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-Watching-Bus-Names.top_of_page"></a>Watching Bus Names</span></h2>
+<p>Watching Bus Names — Simple API for watching bus names</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gio-Watching-Bus-Names.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="gio-Watching-Bus-Names.html#GBusNameAppearedCallback" title="GBusNameAppearedCallback ()">*GBusNameAppearedCallback</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="gio-Watching-Bus-Names.html#GBusNameVanishedCallback" title="GBusNameVanishedCallback ()">*GBusNameVanishedCallback</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Watching-Bus-Names.html#g-bus-watch-name" title="g_bus_watch_name ()">g_bus_watch_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Watching-Bus-Names.html#g-bus-watch-name-on-connection" title="g_bus_watch_name_on_connection ()">g_bus_watch_name_on_connection</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Watching-Bus-Names.html#g-bus-unwatch-name" title="g_bus_unwatch_name ()">g_bus_unwatch_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Watching-Bus-Names.html#g-bus-watch-name-with-closures" title="g_bus_watch_name_with_closures ()">g_bus_watch_name_with_closures</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Watching-Bus-Names.html#g-bus-watch-name-on-connection-with-closures" title="g_bus_watch_name_on_connection_with_closures ()">g_bus_watch_name_on_connection_with_closures</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-Watching-Bus-Names.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="gio-Watching-Bus-Names.html#GBusNameWatcherFlags" title="enum GBusNameWatcherFlags">GBusNameWatcherFlags</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-Watching-Bus-Names.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-Watching-Bus-Names.description"></a><h2>Description</h2>
+<p>Convenience API for watching bus names.</p>
+<p>A simple example for watching a name can be found in
+<a class="ulink" href="https://git.gnome.org/browse/glib/tree/gio/tests/gdbus-example-watch-name.c" target="_top">gdbus-example-watch-name.c</a></p>
+</div>
+<div class="refsect1">
+<a name="gio-Watching-Bus-Names.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="GBusNameAppearedCallback"></a><h3>GBusNameAppearedCallback ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+<span class="c_punctuation">(</span>*GBusNameAppearedCallback<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                             <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                             <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name_owner</code></em>,
+                             <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Invoked when the name being watched is known to have to have a owner.</p>
+<div class="refsect3">
+<a name="GBusNameAppearedCallback.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>The <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> the name is being watched on.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>The name being watched.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name_owner</p></td>
+<td class="parameter_description"><p>Unique name of the owner of the name being watched.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>User data passed to <a class="link" href="gio-Watching-Bus-Names.html#g-bus-watch-name" title="g_bus_watch_name ()"><code class="function">g_bus_watch_name()</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GBusNameVanishedCallback"></a><h3>GBusNameVanishedCallback ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+<span class="c_punctuation">(</span>*GBusNameVanishedCallback<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                             <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                             <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Invoked when the name being watched is known not to have to have a owner.</p>
+<p>This is also invoked when the <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> on which the watch was
+established has been closed.  In that case, <em class="parameter"><code>connection</code></em>
+ will be
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p>
+<div class="refsect3">
+<a name="GBusNameVanishedCallback.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>The <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> the name is being watched on, or
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>The name being watched.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>User data passed to <a class="link" href="gio-Watching-Bus-Names.html#g-bus-watch-name" title="g_bus_watch_name ()"><code class="function">g_bus_watch_name()</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bus-watch-name"></a><h3>g_bus_watch_name ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+g_bus_watch_name (<em class="parameter"><code><a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a> bus_type</code></em>,
+                  <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                  <em class="parameter"><code><a class="link" href="gio-Watching-Bus-Names.html#GBusNameWatcherFlags" title="enum GBusNameWatcherFlags"><span class="type">GBusNameWatcherFlags</span></a> flags</code></em>,
+                  <em class="parameter"><code><a class="link" href="gio-Watching-Bus-Names.html#GBusNameAppearedCallback" title="GBusNameAppearedCallback ()"><span class="type">GBusNameAppearedCallback</span></a> name_appeared_handler</code></em>,
+                  <em class="parameter"><code><a class="link" href="gio-Watching-Bus-Names.html#GBusNameVanishedCallback" title="GBusNameVanishedCallback ()"><span class="type">GBusNameVanishedCallback</span></a> name_vanished_handler</code></em>,
+                  <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                  <em class="parameter"><code><a href="../glib-Datasets.html#GDestroyNotify"><span class="type">GDestroyNotify</span></a> user_data_free_func</code></em>);</pre>
+<p>Starts watching <em class="parameter"><code>name</code></em>
+ on the bus specified by <em class="parameter"><code>bus_type</code></em>
+ and calls
+<em class="parameter"><code>name_appeared_handler</code></em>
+ and <em class="parameter"><code>name_vanished_handler</code></em>
+ when the name is
+known to have a owner respectively known to lose its
+owner. Callbacks will be invoked in the
+<a href="../glib-The-Main-Event-Loop.html#g-main-context-push-thread-default">thread-default main context</a>
+of the thread you are calling this function from.</p>
+<p>You are guaranteed that one of the handlers will be invoked after
+calling this function. When you are done watching the name, just
+call <a class="link" href="gio-Watching-Bus-Names.html#g-bus-unwatch-name" title="g_bus_unwatch_name ()"><code class="function">g_bus_unwatch_name()</code></a> with the watcher id this function
+returns.</p>
+<p>If the name vanishes or appears (for example the application owning
+the name could restart), the handlers are also invoked. If the
+<a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> that is used for watching the name disconnects, then
+<em class="parameter"><code>name_vanished_handler</code></em>
+ is invoked since it is no longer
+possible to access the name.</p>
+<p>Another guarantee is that invocations of <em class="parameter"><code>name_appeared_handler</code></em>
+
+and <em class="parameter"><code>name_vanished_handler</code></em>
+ are guaranteed to alternate; that
+is, if <em class="parameter"><code>name_appeared_handler</code></em>
+ is invoked then you are
+guaranteed that the next time one of the handlers is invoked, it
+will be <em class="parameter"><code>name_vanished_handler</code></em>
+. The reverse is also true.</p>
+<p>This behavior makes it very simple to write applications that want
+to take action when a certain name exists.
+Basically, the application should create object proxies in
+<em class="parameter"><code>name_appeared_handler</code></em>
+ and destroy them again (if any) in
+<em class="parameter"><code>name_vanished_handler</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-bus-watch-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>bus_type</p></td>
+<td class="parameter_description"><p>The type of bus to watch a name on.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>The name (well-known or unique) to watch.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>Flags from the <a class="link" href="gio-Watching-Bus-Names.html#GBusNameWatcherFlags" title="enum GBusNameWatcherFlags"><span class="type">GBusNameWatcherFlags</span></a> enumeration.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name_appeared_handler</p></td>
+<td class="parameter_description"><p>Handler to invoke when <em class="parameter"><code>name</code></em>
+is known to exist or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name_vanished_handler</p></td>
+<td class="parameter_description"><p>Handler to invoke when <em class="parameter"><code>name</code></em>
+is known to not exist or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>User data to pass to handlers.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data_free_func</p></td>
+<td class="parameter_description"><p>Function for freeing <em class="parameter"><code>user_data</code></em>
+or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-bus-watch-name.returns"></a><h4>Returns</h4>
+<p> An identifier (never 0) that an be used with
+<a class="link" href="gio-Watching-Bus-Names.html#g-bus-unwatch-name" title="g_bus_unwatch_name ()"><code class="function">g_bus_unwatch_name()</code></a> to stop watching the name.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bus-watch-name-on-connection"></a><h3>g_bus_watch_name_on_connection ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+g_bus_watch_name_on_connection (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                <em class="parameter"><code><a class="link" href="gio-Watching-Bus-Names.html#GBusNameWatcherFlags" title="enum GBusNameWatcherFlags"><span class="type">GBusNameWatcherFlags</span></a> flags</code></em>,
+                                <em class="parameter"><code><a class="link" href="gio-Watching-Bus-Names.html#GBusNameAppearedCallback" title="GBusNameAppearedCallback ()"><span class="type">GBusNameAppearedCallback</span></a> name_appeared_handler</code></em>,
+                                <em class="parameter"><code><a class="link" href="gio-Watching-Bus-Names.html#GBusNameVanishedCallback" title="GBusNameVanishedCallback ()"><span class="type">GBusNameVanishedCallback</span></a> name_vanished_handler</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                                <em class="parameter"><code><a href="../glib-Datasets.html#GDestroyNotify"><span class="type">GDestroyNotify</span></a> user_data_free_func</code></em>);</pre>
+<p>Like <a class="link" href="gio-Watching-Bus-Names.html#g-bus-watch-name" title="g_bus_watch_name ()"><code class="function">g_bus_watch_name()</code></a> but takes a <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> instead of a
+<a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a>.</p>
+<div class="refsect3">
+<a name="g-bus-watch-name-on-connection.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>The name (well-known or unique) to watch.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>Flags from the <a class="link" href="gio-Watching-Bus-Names.html#GBusNameWatcherFlags" title="enum GBusNameWatcherFlags"><span class="type">GBusNameWatcherFlags</span></a> enumeration.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name_appeared_handler</p></td>
+<td class="parameter_description"><p>Handler to invoke when <em class="parameter"><code>name</code></em>
+is known to exist or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name_vanished_handler</p></td>
+<td class="parameter_description"><p>Handler to invoke when <em class="parameter"><code>name</code></em>
+is known to not exist or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>User data to pass to handlers.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data_free_func</p></td>
+<td class="parameter_description"><p>Function for freeing <em class="parameter"><code>user_data</code></em>
+or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-bus-watch-name-on-connection.returns"></a><h4>Returns</h4>
+<p> An identifier (never 0) that an be used with
+<a class="link" href="gio-Watching-Bus-Names.html#g-bus-unwatch-name" title="g_bus_unwatch_name ()"><code class="function">g_bus_unwatch_name()</code></a> to stop watching the name.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bus-unwatch-name"></a><h3>g_bus_unwatch_name ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_bus_unwatch_name (<em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> watcher_id</code></em>);</pre>
+<p>Stops watching a name.</p>
+<div class="refsect3">
+<a name="g-bus-unwatch-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>watcher_id</p></td>
+<td class="parameter_description"><p>An identifier obtained from <a class="link" href="gio-Watching-Bus-Names.html#g-bus-watch-name" title="g_bus_watch_name ()"><code class="function">g_bus_watch_name()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bus-watch-name-with-closures"></a><h3>g_bus_watch_name_with_closures ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+g_bus_watch_name_with_closures (<em class="parameter"><code><a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a> bus_type</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                <em class="parameter"><code><a class="link" href="gio-Watching-Bus-Names.html#GBusNameWatcherFlags" title="enum GBusNameWatcherFlags"><span class="type">GBusNameWatcherFlags</span></a> flags</code></em>,
+                                <em class="parameter"><code><a href="../gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> *name_appeared_closure</code></em>,
+                                <em class="parameter"><code><a href="../gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> *name_vanished_closure</code></em>);</pre>
+<p>Version of <a class="link" href="gio-Watching-Bus-Names.html#g-bus-watch-name" title="g_bus_watch_name ()"><code class="function">g_bus_watch_name()</code></a> using closures instead of callbacks for
+easier binding in other languages.</p>
+<p><span class="annotation">[<acronym title="Rename the original symbol's name to SYMBOL."><span class="acronym">rename-to</span></acronym> g_bus_watch_name]</span></p>
+<div class="refsect3">
+<a name="g-bus-watch-name-with-closures.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>bus_type</p></td>
+<td class="parameter_description"><p>The type of bus to watch a name on.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>The name (well-known or unique) to watch.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>Flags from the <a class="link" href="gio-Watching-Bus-Names.html#GBusNameWatcherFlags" title="enum GBusNameWatcherFlags"><span class="type">GBusNameWatcherFlags</span></a> enumeration.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name_appeared_closure</p></td>
+<td class="parameter_description"><p><a href="../gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> to invoke when <em class="parameter"><code>name</code></em>
+is known
+to exist or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name_vanished_closure</p></td>
+<td class="parameter_description"><p><a href="../gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> to invoke when <em class="parameter"><code>name</code></em>
+is known
+to not exist or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-bus-watch-name-with-closures.returns"></a><h4>Returns</h4>
+<p> An identifier (never 0) that an be used with
+<a class="link" href="gio-Watching-Bus-Names.html#g-bus-unwatch-name" title="g_bus_unwatch_name ()"><code class="function">g_bus_unwatch_name()</code></a> to stop watching the name.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bus-watch-name-on-connection-with-closures"></a><h3>g_bus_watch_name_on_connection_with_closures ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+g_bus_watch_name_on_connection_with_closures
+                               (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                <em class="parameter"><code><a class="link" href="gio-Watching-Bus-Names.html#GBusNameWatcherFlags" title="enum GBusNameWatcherFlags"><span class="type">GBusNameWatcherFlags</span></a> flags</code></em>,
+                                <em class="parameter"><code><a href="../gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> *name_appeared_closure</code></em>,
+                                <em class="parameter"><code><a href="../gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> *name_vanished_closure</code></em>);</pre>
+<p>Version of <a class="link" href="gio-Watching-Bus-Names.html#g-bus-watch-name-on-connection" title="g_bus_watch_name_on_connection ()"><code class="function">g_bus_watch_name_on_connection()</code></a> using closures instead of callbacks for
+easier binding in other languages.</p>
+<p><span class="annotation">[<acronym title="Rename the original symbol's name to SYMBOL."><span class="acronym">rename-to</span></acronym> g_bus_watch_name_on_connection]</span></p>
+<div class="refsect3">
+<a name="g-bus-watch-name-on-connection-with-closures.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>The name (well-known or unique) to watch.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>Flags from the <a class="link" href="gio-Watching-Bus-Names.html#GBusNameWatcherFlags" title="enum GBusNameWatcherFlags"><span class="type">GBusNameWatcherFlags</span></a> enumeration.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name_appeared_closure</p></td>
+<td class="parameter_description"><p><a href="../gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> to invoke when <em class="parameter"><code>name</code></em>
+is known
+to exist or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name_vanished_closure</p></td>
+<td class="parameter_description"><p><a href="../gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> to invoke when <em class="parameter"><code>name</code></em>
+is known
+to not exist or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-bus-watch-name-on-connection-with-closures.returns"></a><h4>Returns</h4>
+<p> An identifier (never 0) that an be used with
+<a class="link" href="gio-Watching-Bus-Names.html#g-bus-unwatch-name" title="g_bus_unwatch_name ()"><code class="function">g_bus_unwatch_name()</code></a> to stop watching the name.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-Watching-Bus-Names.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GBusNameWatcherFlags"></a><h3>enum GBusNameWatcherFlags</h3>
+<p>Flags used in <a class="link" href="gio-Watching-Bus-Names.html#g-bus-watch-name" title="g_bus_watch_name ()"><code class="function">g_bus_watch_name()</code></a>.</p>
+<div class="refsect3">
+<a name="GBusNameWatcherFlags.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-BUS-NAME-WATCHER-FLAGS-NONE:CAPS"></a>G_BUS_NAME_WATCHER_FLAGS_NONE</p></td>
+<td class="enum_member_description">
+<p>No flags set.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-BUS-NAME-WATCHER-FLAGS-AUTO-START:CAPS"></a>G_BUS_NAME_WATCHER_FLAGS_AUTO_START</p></td>
+<td class="enum_member_description">
+<p>If no-one owns the name when
+beginning to watch the name, ask the bus to launch an owner for the
+name.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

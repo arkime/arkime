@@ -1,0 +1,4125 @@
+# Pierakład glib.HEAD.
+# Copyright (C) 2007 THE glib.HEAD'S COPYRIGHT HOLDER
+# Alaksandar Navicki <zolak@lacinka.org>, 2007. www.lacinka.org
+# www.lacinka.org
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: glib HEAD\n"
+"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?"
+"product=glib&keywords=I18N+L10N&component=general\n"
+"POT-Creation-Date: 2011-09-04 23:56-0400\n"
+"PO-Revision-Date: 2008-02-16 23:33+0200\n"
+"Last-Translator: Ihar Hrachyshka <ihar.hrachyshka@gmail.com>\n"
+"Language-Team: Belarusian Latin <i18n@mova.org>\n"
+"Language: be@latin\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+# glib/gmarkup.c:1120
+#: ../glib/gbookmarkfile.c:780
+#, c-format
+msgid "Unexpected attribute '%s' for element '%s'"
+msgstr "Niečakany atrybut '%s' dla elementu '%s'"
+
+#: ../glib/gbookmarkfile.c:791 ../glib/gbookmarkfile.c:862
+#: ../glib/gbookmarkfile.c:872 ../glib/gbookmarkfile.c:979
+#, c-format
+msgid "Attribute '%s' of element '%s' not found"
+msgstr "Atrybut '%s' elementu '%s' nia znojdzieny"
+
+#: ../glib/gbookmarkfile.c:1149 ../glib/gbookmarkfile.c:1214
+#: ../glib/gbookmarkfile.c:1278 ../glib/gbookmarkfile.c:1288
+#, c-format
+msgid "Unexpected tag '%s', tag '%s' expected"
+msgstr "Niečakany značnik '%s', spadziavalisia značnika '%s'"
+
+#: ../glib/gbookmarkfile.c:1174 ../glib/gbookmarkfile.c:1188
+#: ../glib/gbookmarkfile.c:1256 ../glib/gbookmarkfile.c:1308
+#, c-format
+msgid "Unexpected tag '%s' inside '%s'"
+msgstr "Niečakany značnik '%s' unutry '%s'"
+
+#: ../glib/gbookmarkfile.c:1834
+msgid "No valid bookmark file found in data dirs"
+msgstr "Niemahčyma znajści pravilnaha fajłu zakładak u katalohach źviestak"
+
+#: ../glib/gbookmarkfile.c:2035
+#, c-format
+msgid "A bookmark for URI '%s' already exists"
+msgstr "Zakładka dla URI '%s' užo isnuje"
+
+#: ../glib/gbookmarkfile.c:2081 ../glib/gbookmarkfile.c:2239
+#: ../glib/gbookmarkfile.c:2324 ../glib/gbookmarkfile.c:2404
+#: ../glib/gbookmarkfile.c:2489 ../glib/gbookmarkfile.c:2572
+#: ../glib/gbookmarkfile.c:2650 ../glib/gbookmarkfile.c:2729
+#: ../glib/gbookmarkfile.c:2771 ../glib/gbookmarkfile.c:2868
+#: ../glib/gbookmarkfile.c:2994 ../glib/gbookmarkfile.c:3184
+#: ../glib/gbookmarkfile.c:3260 ../glib/gbookmarkfile.c:3425
+#: ../glib/gbookmarkfile.c:3514 ../glib/gbookmarkfile.c:3604
+#: ../glib/gbookmarkfile.c:3732
+#, c-format
+msgid "No bookmark found for URI '%s'"
+msgstr "Dla URI '%s' nia znojdziena zakładak"
+
+#: ../glib/gbookmarkfile.c:2413
+#, c-format
+msgid "No MIME type defined in the bookmark for URI '%s'"
+msgstr "Nie akreśleny typ MIME ŭ zakładcy dla URI '%s'"
+
+#: ../glib/gbookmarkfile.c:2498
+#, c-format
+msgid "No private flag has been defined in bookmark for URI '%s'"
+msgstr "Nie akreślili pryvatnaha ściažka ŭ zakładcy dla URI '%s'"
+
+#: ../glib/gbookmarkfile.c:2877
+#, c-format
+msgid "No groups set in bookmark for URI '%s'"
+msgstr "Nie akreślili hrup u zakładcy dla URI '%s'"
+
+#: ../glib/gbookmarkfile.c:3278 ../glib/gbookmarkfile.c:3435
+#, c-format
+msgid "No application with name '%s' registered a bookmark for '%s'"
+msgstr ""
+"Nivodnaja aplikacyja pad nazvaj '%s' nie zarehistravała zakładki dla '%s'"
+
+# glib/gfileutils.c:745
+#: ../glib/gbookmarkfile.c:3458
+#, c-format
+msgid "Failed to expand exec line '%s' with URI '%s'"
+msgstr "Prablema z razhortvańniem radka zapusku '%s' z URI '%s'"
+
+# glib/gconvert.c:390
+#: ../glib/gconvert.c:567 ../glib/gconvert.c:645 ../glib/giochannel.c:1404
+#: ../gio/gcharsetconverter.c:458
+#, c-format
+msgid "Conversion from character set '%s' to '%s' is not supported"
+msgstr "Kanversija naboru znakaŭ '%s' na '%s' nie padtrymlivajecca"
+
+# glib/gconvert.c:394
+#: ../glib/gconvert.c:571 ../glib/gconvert.c:649
+#: ../gio/gcharsetconverter.c:462
+#, c-format
+msgid "Could not open converter from '%s' to '%s'"
+msgstr "Niemahčyma adčynić kanverter z  '%s' na '%s'"
+
+# glib/gconvert.c:592 glib/gconvert.c:882 glib/giochannel.c:1282
+# glib/giochannel.c:1324 glib/giochannel.c:2163 glib/gutf8.c:875
+# glib/gutf8.c:1320
+#: ../glib/gconvert.c:768 ../glib/gconvert.c:1162 ../glib/giochannel.c:1576
+#: ../glib/giochannel.c:1618 ../glib/giochannel.c:2461 ../glib/gutf8.c:1012
+#: ../glib/gutf8.c:1463 ../gio/gcharsetconverter.c:345
+#: ../gio/gdatainputstream.c:854 ../gio/gdatainputstream.c:1291
+msgid "Invalid byte sequence in conversion input"
+msgstr "Niapravilnaja paśladoŭnaść bajtaŭ na ŭvachodzie kanversii"
+
+# glib/gconvert.c:597 glib/gconvert.c:813 glib/giochannel.c:1289
+# glib/giochannel.c:2175
+#: ../glib/gconvert.c:777 ../glib/gconvert.c:1087 ../glib/giochannel.c:1583
+#: ../glib/giochannel.c:2473 ../gio/gcharsetconverter.c:350
+#, c-format
+msgid "Error during conversion: %s"
+msgstr "Pamyłka padčas kanversii: %s"
+
+# glib/gconvert.c:615 glib/gutf8.c:871 glib/gutf8.c:1071 glib/gutf8.c:1212
+# glib/gutf8.c:1316
+#: ../glib/gconvert.c:809 ../glib/gutf8.c:1008 ../glib/gutf8.c:1218
+#: ../glib/gutf8.c:1355 ../glib/gutf8.c:1459
+msgid "Partial character sequence at end of input"
+msgstr "Niapoŭny znak u kancy ŭvachodnaha radka"
+
+# glib/gconvert.c:788
+#: ../glib/gconvert.c:1059
+#, c-format
+msgid "Cannot convert fallback '%s' to codeset '%s'"
+msgstr "Niemahčyma pierakanvertavać surahat znaku '%s' na nabor znakaŭ '%s'"
+
+# glib/gconvert.c:1593
+#: ../glib/gconvert.c:1886
+#, c-format
+msgid "The URI '%s' is not an absolute URI using the \"file\" scheme"
+msgstr ""
+"URI '%s' nie źjaŭlajucca absalutnym URI vykarystańnia \"fajłavaj\" schiemy"
+
+# glib/gconvert.c:1603
+#: ../glib/gconvert.c:1896
+#, c-format
+msgid "The local file URI '%s' may not include a '#'"
+msgstr "URI '%s' miascovaha fajłu nia moža ŭklučać '#'"
+
+# glib/gconvert.c:1620
+#: ../glib/gconvert.c:1913
+#, c-format
+msgid "The URI '%s' is invalid"
+msgstr "URI '%s' niapravilny"
+
+# glib/gconvert.c:1632
+#: ../glib/gconvert.c:1925
+#, c-format
+msgid "The hostname of the URI '%s' is invalid"
+msgstr "Niapravilnaja nazva hostu ŭ URI '%s' "
+
+# glib/gconvert.c:1648
+#: ../glib/gconvert.c:1941
+#, c-format
+msgid "The URI '%s' contains invalidly escaped characters"
+msgstr "URI '%s' utrymlivaje nieadpaviedna cytavanyja znaki"
+
+# glib/gconvert.c:1719
+#: ../glib/gconvert.c:2036
+#, c-format
+msgid "The pathname '%s' is not an absolute path"
+msgstr "Ściežka '%s nie źjaŭlajecca absalutnaj"
+
+# glib/gconvert.c:1729
+#: ../glib/gconvert.c:2046
+msgid "Invalid hostname"
+msgstr "Niapravilnaja nazva kamputara"
+
+#. Translators: 'before midday' indicator
+#: ../glib/gdatetime.c:202
+msgctxt "GDateTime"
+msgid "AM"
+msgstr ""
+
+#. Translators: 'after midday' indicator
+#: ../glib/gdatetime.c:204
+msgctxt "GDateTime"
+msgid "PM"
+msgstr ""
+
+#. Translators: this is the preferred format for expressing the date and the time
+#: ../glib/gdatetime.c:207
+msgctxt "GDateTime"
+msgid "%a %b %e %H:%M:%S %Y"
+msgstr "%a %d %b %Y %T"
+
+#. Translators: this is the preferred format for expressing the date
+#: ../glib/gdatetime.c:210
+msgctxt "GDateTime"
+msgid "%m/%d/%y"
+msgstr "%d.%m.%Y"
+
+#. Translators: this is the preferred format for expressing the time
+#: ../glib/gdatetime.c:213
+msgctxt "GDateTime"
+msgid "%H:%M:%S"
+msgstr "%T"
+
+#. Translators: this is the preferred format for expressing 12 hour time
+#: ../glib/gdatetime.c:216
+msgctxt "GDateTime"
+msgid "%I:%M:%S %p"
+msgstr ""
+
+#: ../glib/gdatetime.c:229
+msgctxt "full month name"
+msgid "January"
+msgstr "Studzień"
+
+#: ../glib/gdatetime.c:231
+msgctxt "full month name"
+msgid "February"
+msgstr "Luty"
+
+#: ../glib/gdatetime.c:233
+msgctxt "full month name"
+msgid "March"
+msgstr "Sakavik"
+
+#: ../glib/gdatetime.c:235
+msgctxt "full month name"
+msgid "April"
+msgstr "Krasavik"
+
+#: ../glib/gdatetime.c:237
+msgctxt "full month name"
+msgid "May"
+msgstr "Travień"
+
+#: ../glib/gdatetime.c:239
+msgctxt "full month name"
+msgid "June"
+msgstr "Červień"
+
+#: ../glib/gdatetime.c:241
+msgctxt "full month name"
+msgid "July"
+msgstr "Lipień"
+
+#: ../glib/gdatetime.c:243
+msgctxt "full month name"
+msgid "August"
+msgstr ""
+
+#: ../glib/gdatetime.c:245
+msgctxt "full month name"
+msgid "September"
+msgstr ""
+
+#: ../glib/gdatetime.c:247
+msgctxt "full month name"
+msgid "October"
+msgstr ""
+
+#: ../glib/gdatetime.c:249
+msgctxt "full month name"
+msgid "November"
+msgstr ""
+
+#: ../glib/gdatetime.c:251
+msgctxt "full month name"
+msgid "December"
+msgstr ""
+
+#: ../glib/gdatetime.c:266
+msgctxt "abbreviated month name"
+msgid "Jan"
+msgstr "Stu"
+
+#: ../glib/gdatetime.c:268
+msgctxt "abbreviated month name"
+msgid "Feb"
+msgstr "Lut"
+
+#: ../glib/gdatetime.c:270
+msgctxt "abbreviated month name"
+msgid "Mar"
+msgstr "Sak"
+
+#: ../glib/gdatetime.c:272
+msgctxt "abbreviated month name"
+msgid "Apr"
+msgstr "Kra"
+
+#: ../glib/gdatetime.c:274
+msgctxt "abbreviated month name"
+msgid "May"
+msgstr "Tra"
+
+#: ../glib/gdatetime.c:276
+msgctxt "abbreviated month name"
+msgid "Jun"
+msgstr "Čer"
+
+#: ../glib/gdatetime.c:278
+msgctxt "abbreviated month name"
+msgid "Jul"
+msgstr "Lip"
+
+#: ../glib/gdatetime.c:280
+msgctxt "abbreviated month name"
+msgid "Aug"
+msgstr ""
+
+#: ../glib/gdatetime.c:282
+msgctxt "abbreviated month name"
+msgid "Sep"
+msgstr ""
+
+#: ../glib/gdatetime.c:284
+msgctxt "abbreviated month name"
+msgid "Oct"
+msgstr ""
+
+#: ../glib/gdatetime.c:286
+msgctxt "abbreviated month name"
+msgid "Nov"
+msgstr ""
+
+#: ../glib/gdatetime.c:288
+msgctxt "abbreviated month name"
+msgid "Dec"
+msgstr ""
+
+#: ../glib/gdatetime.c:303
+msgctxt "full weekday name"
+msgid "Monday"
+msgstr "Paniadziełak"
+
+#: ../glib/gdatetime.c:305
+msgctxt "full weekday name"
+msgid "Tuesday"
+msgstr "Aŭtorak"
+
+#: ../glib/gdatetime.c:307
+msgctxt "full weekday name"
+msgid "Wednesday"
+msgstr "Sierada"
+
+#: ../glib/gdatetime.c:309
+msgctxt "full weekday name"
+msgid "Thursday"
+msgstr "Čaćvier"
+
+#: ../glib/gdatetime.c:311
+msgctxt "full weekday name"
+msgid "Friday"
+msgstr "Piatnica"
+
+#: ../glib/gdatetime.c:313
+msgctxt "full weekday name"
+msgid "Saturday"
+msgstr "Subota"
+
+#: ../glib/gdatetime.c:315
+msgctxt "full weekday name"
+msgid "Sunday"
+msgstr "Niadziela"
+
+#: ../glib/gdatetime.c:330
+msgctxt "abbreviated weekday name"
+msgid "Mon"
+msgstr "Pan"
+
+#: ../glib/gdatetime.c:332
+msgctxt "abbreviated weekday name"
+msgid "Tue"
+msgstr "Aŭt"
+
+#: ../glib/gdatetime.c:334
+msgctxt "abbreviated weekday name"
+msgid "Wed"
+msgstr "Sie"
+
+#: ../glib/gdatetime.c:336
+msgctxt "abbreviated weekday name"
+msgid "Thu"
+msgstr "Čać"
+
+#: ../glib/gdatetime.c:338
+msgctxt "abbreviated weekday name"
+msgid "Fri"
+msgstr "Pia"
+
+#: ../glib/gdatetime.c:340
+msgctxt "abbreviated weekday name"
+msgid "Sat"
+msgstr "Sub"
+
+#: ../glib/gdatetime.c:342
+msgctxt "abbreviated weekday name"
+msgid "Sun"
+msgstr "Nia"
+
+# glib/gdir.c:79
+#: ../glib/gdir.c:115 ../glib/gdir.c:138
+#, c-format
+msgid "Error opening directory '%s': %s"
+msgstr "Pamyłka pry adčynieńni katalohu '%s': %s"
+
+# glib/gfileutils.c:337 glib/gfileutils.c:402
+#: ../glib/gfileutils.c:540 ../glib/gfileutils.c:628
+#, c-format
+msgid "Could not allocate %lu bytes to read file \"%s\""
+msgstr "Nie atrymałasia raźmierkavać %lu bajtaŭ dla adčytańnia fajłu \"%s\""
+
+# glib/gfileutils.c:348
+#: ../glib/gfileutils.c:555
+#, c-format
+msgid "Error reading file '%s': %s"
+msgstr "Pamyłka adčytańnia fajłu '%s': %s"
+
+#: ../glib/gfileutils.c:569
+#, c-format
+msgid "File \"%s\" is too large"
+msgstr ""
+
+# glib/gfileutils.c:426
+#: ../glib/gfileutils.c:652
+#, c-format
+msgid "Failed to read from file '%s': %s"
+msgstr "Pamyłka čytańnia z fajłu '%s': %s"
+
+# glib/gfileutils.c:465 glib/gfileutils.c:533
+#: ../glib/gfileutils.c:703 ../glib/gfileutils.c:790
+#, c-format
+msgid "Failed to open file '%s': %s"
+msgstr "Niemahčyma adčynić fajł '%s': %s"
+
+# glib/gfileutils.c:479
+#: ../glib/gfileutils.c:720 ../glib/gmappedfile.c:169
+#, c-format
+msgid "Failed to get attributes of file '%s': fstat() failed: %s"
+msgstr ""
+"Niemahčyma atrymać atrybuty fajłu '%s': funkcyja fstat() vyvieła pamyłku: %s"
+
+# glib/gfileutils.c:505
+#: ../glib/gfileutils.c:754
+#, c-format
+msgid "Failed to open file '%s': fdopen() failed: %s"
+msgstr "Niemahčyma adčynić fajł '%s': funkcyja fdopen() vyvieła pamyłku: %s"
+
+# glib/gfileutils.c:505
+#: ../glib/gfileutils.c:862
+#, c-format
+msgid "Failed to rename file '%s' to '%s': g_rename() failed: %s"
+msgstr ""
+"Niemahčyma źmianic nazvu fajłu '%s' na '%s': funkcyja g_rename() vyvieła "
+"pamyłku: %s"
+
+# glib/gfileutils.c:745
+#: ../glib/gfileutils.c:904 ../glib/gfileutils.c:1449
+#, c-format
+msgid "Failed to create file '%s': %s"
+msgstr "Niemahčyma stvaryć fajł '%s': %s"
+
+# glib/gfileutils.c:505
+#: ../glib/gfileutils.c:918
+#, c-format
+msgid "Failed to open file '%s' for writing: fdopen() failed: %s"
+msgstr ""
+"Niemahčyma adčynic fajł %s' dla zapisu: funkcyja fdopen() vyvieła pamyłku: %s"
+
+# glib/gfileutils.c:505
+#: ../glib/gfileutils.c:943
+#, c-format
+msgid "Failed to write file '%s': fwrite() failed: %s"
+msgstr "Niemahčyma zapisać fajł '%s': funkcyja fwrite() vyvieła pamyłku: %s"
+
+# glib/gfileutils.c:505
+#: ../glib/gfileutils.c:962
+#, fuzzy, c-format
+msgid "Failed to write file '%s': fflush() failed: %s"
+msgstr "Niemahčyma zapisać fajł '%s': funkcyja fwrite() vyvieła pamyłku: %s"
+
+# glib/gfileutils.c:505
+#: ../glib/gfileutils.c:1006
+#, fuzzy, c-format
+msgid "Failed to write file '%s': fsync() failed: %s"
+msgstr "Niemahčyma zapisać fajł '%s': funkcyja fwrite() vyvieła pamyłku: %s"
+
+# glib/gfileutils.c:505
+#: ../glib/gfileutils.c:1030
+#, c-format
+msgid "Failed to close file '%s': fclose() failed: %s"
+msgstr "Niemahčyma začynić fajł %s': funkcyja fclose() vyvieła pamyłku: %s"
+
+#: ../glib/gfileutils.c:1152
+#, c-format
+msgid "Existing file '%s' could not be removed: g_unlink() failed: %s"
+msgstr ""
+"Niemahčyma vydalić najaŭny fajł '%s': funkcyja g_unlink() vyvieła pamyłku: %s"
+
+# glib/gfileutils.c:712
+#: ../glib/gfileutils.c:1412
+#, c-format
+msgid "Template '%s' invalid, should not contain a '%s'"
+msgstr "Šablon '%s' niapravilny, u im nie pavinna być '%s'"
+
+# glib/gfileutils.c:724
+#: ../glib/gfileutils.c:1425
+#, c-format
+msgid "Template '%s' doesn't contain XXXXXX"
+msgstr "U šablonie '%s' niama XXXXXX"
+
+#: ../glib/gfileutils.c:2001 ../glib/gfileutils.c:2029
+#: ../glib/gfileutils.c:2134
+#, c-format
+msgid "%u byte"
+msgid_plural "%u bytes"
+msgstr[0] "%u bajt"
+msgstr[1] "%u bajty"
+msgstr[2] "%u bajtaŭ"
+
+#: ../glib/gfileutils.c:2007
+#, fuzzy, c-format
+msgid "%.1f KiB"
+msgstr "%.1f KB"
+
+#: ../glib/gfileutils.c:2010
+#, fuzzy, c-format
+msgid "%.1f MiB"
+msgstr "%.1f MB"
+
+#: ../glib/gfileutils.c:2013
+#, fuzzy, c-format
+msgid "%.1f GiB"
+msgstr "%.1f GB"
+
+#: ../glib/gfileutils.c:2016
+#, fuzzy, c-format
+msgid "%.1f TiB"
+msgstr "%.1f KB"
+
+#: ../glib/gfileutils.c:2019
+#, fuzzy, c-format
+msgid "%.1f PiB"
+msgstr "%.1f KB"
+
+#: ../glib/gfileutils.c:2022
+#, fuzzy, c-format
+msgid "%.1f EiB"
+msgstr "%.1f KB"
+
+#: ../glib/gfileutils.c:2035
+#, fuzzy, c-format
+msgid "%.1f kB"
+msgstr "%.1f KB"
+
+#: ../glib/gfileutils.c:2038 ../glib/gfileutils.c:2147
+#, c-format
+msgid "%.1f MB"
+msgstr "%.1f MB"
+
+#: ../glib/gfileutils.c:2041 ../glib/gfileutils.c:2152
+#, c-format
+msgid "%.1f GB"
+msgstr "%.1f GB"
+
+#: ../glib/gfileutils.c:2044 ../glib/gfileutils.c:2157
+#, fuzzy, c-format
+msgid "%.1f TB"
+msgstr "%.1f KB"
+
+#: ../glib/gfileutils.c:2047 ../glib/gfileutils.c:2162
+#, fuzzy, c-format
+msgid "%.1f PB"
+msgstr "%.1f KB"
+
+#: ../glib/gfileutils.c:2050 ../glib/gfileutils.c:2167
+#, fuzzy, c-format
+msgid "%.1f EB"
+msgstr "%.1f KB"
+
+#. Translators: the %s in "%s bytes" will always be replaced by a number.
+#: ../glib/gfileutils.c:2087
+#, fuzzy, c-format
+msgid "%s byte"
+msgid_plural "%s bytes"
+msgstr[0] "%u bajt"
+msgstr[1] "%u bajty"
+msgstr[2] "%u bajtaŭ"
+
+#: ../glib/gfileutils.c:2142
+#, c-format
+msgid "%.1f KB"
+msgstr "%.1f KB"
+
+# glib/gfileutils.c:745
+#: ../glib/gfileutils.c:2210
+#, c-format
+msgid "Failed to read the symbolic link '%s': %s"
+msgstr "Niemahčyma pračytać symbalnuju spasyłku '%s': %s"
+
+#: ../glib/gfileutils.c:2231
+msgid "Symbolic links not supported"
+msgstr "Symbalnyja spasyłki nie padtrymlivajucca"
+
+# glib/giochannel.c:1114
+#: ../glib/giochannel.c:1408
+#, c-format
+msgid "Could not open converter from '%s' to '%s': %s"
+msgstr "Nielha adčynić kanverter z '%s' na '%s': %s"
+
+# glib/giochannel.c:1460
+#: ../glib/giochannel.c:1753
+msgid "Can't do a raw read in g_io_channel_read_line_string"
+msgstr ""
+"Niemahčyma vykanać niepasrednaje čytańnie ŭ funkcyi "
+"g_io_channel_read_line_string"
+
+# glib/giochannel.c:1507 glib/giochannel.c:1761 glib/giochannel.c:1847
+#: ../glib/giochannel.c:1800 ../glib/giochannel.c:2057
+#: ../glib/giochannel.c:2144
+msgid "Leftover unconverted data in read buffer"
+msgstr "U bufery čytańnia zastalisia niepieraŭtvoranyja źviestki"
+
+# glib/giochannel.c:1587 glib/giochannel.c:1661
+#: ../glib/giochannel.c:1881 ../glib/giochannel.c:1958
+msgid "Channel terminates in a partial character"
+msgstr "Na kancy kanału isnuje paśladoŭnaść, jakaja adpaviadaje častcy znaku"
+
+# glib/giochannel.c:1647
+#: ../glib/giochannel.c:1944
+msgid "Can't do a raw read in g_io_channel_read_to_end"
+msgstr ""
+"Niemahčyma vykanać niepasrednaje čytańnie ŭ funkcyi g_io_channel_read_to_end"
+
+# glib/gfileutils.c:505
+#: ../glib/gmappedfile.c:150
+#, c-format
+msgid "Failed to open file '%s': open() failed: %s"
+msgstr "Niemahčyma adčynić fajł '%s': funkcyja open() vyvieła pamyłku: %s"
+
+# glib/gfileutils.c:505
+#: ../glib/gmappedfile.c:229
+#, c-format
+msgid "Failed to map file '%s': mmap() failed: %s"
+msgstr "Niemahčyma zmapavać fajł '%s': funkcyja mmap() vyvieła: %s"
+
+# glib/gmarkup.c:219
+#: ../glib/gmarkup.c:355 ../glib/gmarkup.c:396
+#, c-format
+msgid "Error on line %d char %d: "
+msgstr "Pamyłka ŭ %d radku pry znaku %d: "
+
+# glib/gmarkup.c:837 glib/gmarkup.c:865 glib/gmarkup.c:896
+#: ../glib/gmarkup.c:418 ../glib/gmarkup.c:501
+#, fuzzy, c-format
+msgid "Invalid UTF-8 encoded text in name - not valid '%s'"
+msgstr "Niapravilna kadavany tekst UTF-8 - niapravilny \"%s\""
+
+#: ../glib/gmarkup.c:429
+#, c-format
+msgid "'%s' is not a valid name "
+msgstr ""
+
+#: ../glib/gmarkup.c:445
+#, c-format
+msgid "'%s' is not a valid name: '%c' "
+msgstr ""
+
+# glib/gmarkup.c:303
+#: ../glib/gmarkup.c:554
+#, c-format
+msgid "Error on line %d: %s"
+msgstr "Pamyłka ŭ radku %d: %s"
+
+# glib/gmarkup.c:528
+#: ../glib/gmarkup.c:638
+#, c-format
+msgid ""
+"Failed to parse '%-.*s', which should have been a digit inside a character "
+"reference (&#234; for example) - perhaps the digit is too large"
+msgstr ""
+"Niemahčyma pierapracavać '%-.*s', dzie musić być ličba unutry łučyva da "
+"znaku (naprykład &#234;) — mahčyma, ličba zavialikaja"
+
+# glib/gmarkup.c:580
+#: ../glib/gmarkup.c:650
+msgid ""
+"Character reference did not end with a semicolon; most likely you used an "
+"ampersand character without intending to start an entity - escape ampersand "
+"as &amp;"
+msgstr ""
+"Spasyłka na znak nie kančajecca kropkaj z koskaj; mahčyma znak & vykarystany "
+"nie dla paznačeńnia pačatku adzinki — u takim vypadku zamianicie jaho jak "
+"&amp;"
+
+# glib/gmarkup.c:553
+#: ../glib/gmarkup.c:676
+#, c-format
+msgid "Character reference '%-.*s' does not encode a permitted character"
+msgstr "Spasyłka na znak '%-.*s' nie źjaŭlajecca zapisam dazvolenaha znaku"
+
+# glib/gmarkup.c:382
+#: ../glib/gmarkup.c:714
+msgid ""
+"Empty entity '&;' seen; valid entities are: &amp; &quot; &lt; &gt; &apos;"
+msgstr "Pusty zapis '&;' adšukany; dapuščalnyja: &amp; &quot; &lt; &gt; &apos;"
+
+# glib/gmarkup.c:472
+#: ../glib/gmarkup.c:722
+#, fuzzy, c-format
+msgid "Entity name '%-.*s' is not known"
+msgstr "Nieviadomaja nazva adzinki '%s'"
+
+# glib/gmarkup.c:482
+#: ../glib/gmarkup.c:727
+msgid ""
+"Entity did not end with a semicolon; most likely you used an ampersand "
+"character without intending to start an entity - escape ampersand as &amp;"
+msgstr ""
+"Zapis nie kančajecca kropkaj z koskaj; zdajecca, vykarystali znak &, jaki "
+"nia mieŭ aznačać pačatku adzinki — zamianicie jaho na &amp;"
+
+# glib/gmarkup.c:932
+#: ../glib/gmarkup.c:1078
+msgid "Document must begin with an element (e.g. <book>)"
+msgstr "Dakument musić pačynacca z elementu (naprykład <book>)"
+
+# glib/gmarkup.c:970
+#: ../glib/gmarkup.c:1118
+#, c-format
+msgid ""
+"'%s' is not a valid character following a '<' character; it may not begin an "
+"element name"
+msgstr ""
+"'%s' nie źjaŭlajecca dapuščalnym znakam, paśla znaku '<'; hety znak nia moža "
+"pačynać nazvy adzinki"
+
+# glib/gmarkup.c:1033
+#: ../glib/gmarkup.c:1186
+#, fuzzy, c-format
+msgid ""
+"Odd character '%s', expected a '>' character to end the empty-element tag "
+"'%s'"
+msgstr ""
+"Dziŭny znak '%s', čakaŭsia znak '>' dla zakančeńnia značnika elementu '%s'"
+
+# glib/gmarkup.c:1120
+#: ../glib/gmarkup.c:1270
+#, c-format
+msgid ""
+"Odd character '%s', expected a '=' after attribute name '%s' of element '%s'"
+msgstr ""
+"Dziŭny znak '%s', čakaŭsia znak '=' paśla nazvy atrybutu '%s' elementu '%s'"
+
+# glib/gmarkup.c:1161
+#: ../glib/gmarkup.c:1311
+#, c-format
+msgid ""
+"Odd character '%s', expected a '>' or '/' character to end the start tag of "
+"element '%s', or optionally an attribute; perhaps you used an invalid "
+"character in an attribute name"
+msgstr ""
+"Dziŭny znak '%s', čakali znaku '>' albo '/' dla zakryćcia pačatkovaha "
+"značnika elementu '%s' ci dadatkova atrybutu; mahčyma, byŭ vykarystany "
+"niedapuščalny znak u nazovie atrybutu"
+
+# glib/gmarkup.c:1244
+#: ../glib/gmarkup.c:1355
+#, c-format
+msgid ""
+"Odd character '%s', expected an open quote mark after the equals sign when "
+"giving value for attribute '%s' of element '%s'"
+msgstr ""
+"Dziŭny znak '%s', čakałasia padvojnaja dužka paśla znaku roŭnaści, kali "
+"nadajecca značeńnie atrybutu '%s' elementu '%s'"
+
+# glib/gmarkup.c:1384
+#: ../glib/gmarkup.c:1488
+#, c-format
+msgid ""
+"'%s' is not a valid character following the characters '</'; '%s' may not "
+"begin an element name"
+msgstr ""
+"'%s' nie źjaŭlajecca dapuščalnym znakam paśla znakaŭ '</'; '%s' nia moža "
+"pačynać nazovu elementu"
+
+# glib/gmarkup.c:1422
+#: ../glib/gmarkup.c:1524
+#, c-format
+msgid ""
+"'%s' is not a valid character following the close element name '%s'; the "
+"allowed character is '>'"
+msgstr ""
+"'%s' nia źjaŭlajecca dapuščalnym znakam zakančeńnia nazvy elementu '%s'; "
+"dapuščalnym znakam źjaŭlajecca '>'"
+
+# glib/gmarkup.c:1433
+#: ../glib/gmarkup.c:1535
+#, c-format
+msgid "Element '%s' was closed, no element is currently open"
+msgstr "Element '%s' byŭ začynieny, dziejna niama adčynienych elementaŭ"
+
+# glib/gmarkup.c:1442
+#: ../glib/gmarkup.c:1544
+#, c-format
+msgid "Element '%s' was closed, but the currently open element is '%s'"
+msgstr "Element '%s' byŭ začynieny, ale dziejna adčynieny '%s'"
+
+# glib/gmarkup.c:1574
+#: ../glib/gmarkup.c:1712
+msgid "Document was empty or contained only whitespace"
+msgstr "Dakument byŭ pusty albo ŭtrymlivaŭ tolki prabieły"
+
+# glib/gmarkup.c:1588
+#: ../glib/gmarkup.c:1726
+msgid "Document ended unexpectedly just after an open angle bracket '<'"
+msgstr "Adrazu paśla znaku '%s' dakument niečakana skončyŭsia"
+
+# glib/gmarkup.c:1596 glib/gmarkup.c:1640
+#: ../glib/gmarkup.c:1734 ../glib/gmarkup.c:1779
+#, c-format
+msgid ""
+"Document ended unexpectedly with elements still open - '%s' was the last "
+"element opened"
+msgstr ""
+"Dakument niečakana skončyŭsia, kali peŭnyja elementy byli jašče adčynienyja "
+"— '%s' byŭ apošnim adčynienym elementam"
+
+# glib/gmarkup.c:1604
+#: ../glib/gmarkup.c:1742
+#, c-format
+msgid ""
+"Document ended unexpectedly, expected to see a close angle bracket ending "
+"the tag <%s/>"
+msgstr ""
+"Dakument niečakana skončyŭsia, čakałasia vuhłavaja dužka, jakaja začyniaje "
+"značnik <%s/>"
+
+# glib/gmarkup.c:1610
+#: ../glib/gmarkup.c:1748
+msgid "Document ended unexpectedly inside an element name"
+msgstr "Dakument niečakana skončyŭsia ŭnutry nazvy elementu"
+
+# glib/gmarkup.c:1615
+#: ../glib/gmarkup.c:1754
+msgid "Document ended unexpectedly inside an attribute name"
+msgstr "Dakument niečakana skončyŭsia ŭnutry nazvy atrybutu"
+
+# glib/gmarkup.c:1620
+#: ../glib/gmarkup.c:1759
+msgid "Document ended unexpectedly inside an element-opening tag."
+msgstr "Dakument niečakana skončyŭsia ŭnutry elementu, jaki adkryvaje značnik."
+
+# glib/gmarkup.c:1626
+#: ../glib/gmarkup.c:1765
+msgid ""
+"Document ended unexpectedly after the equals sign following an attribute "
+"name; no attribute value"
+msgstr ""
+"Dakument niečakana skončyŭsia paśla znaku roŭnaści, jaki išoŭ za nazvaj "
+"atrybutu: niama vartaści atrybutu"
+
+# glib/gmarkup.c:1633
+#: ../glib/gmarkup.c:1772
+msgid "Document ended unexpectedly while inside an attribute value"
+msgstr "Dakument niečakana skončyŭsia ŭnutry vartaści atrybutu"
+
+# glib/gmarkup.c:1648
+#: ../glib/gmarkup.c:1788
+#, c-format
+msgid "Document ended unexpectedly inside the close tag for element '%s'"
+msgstr "Dakument niečakana skončyŭsia ŭnutry značnika zamykańnia elementu '%s'"
+
+# glib/gmarkup.c:1654
+#: ../glib/gmarkup.c:1794
+msgid "Document ended unexpectedly inside a comment or processing instruction"
+msgstr "Dakument niečakana skončyŭsia ŭnutry kamentara albo instrukcyi"
+
+#: ../glib/gregex.c:189
+msgid "corrupted object"
+msgstr "sapsavany abjekt"
+
+#: ../glib/gregex.c:191
+msgid "internal error or corrupted object"
+msgstr "unutranaja pamyłka ci sapsavany abjekt"
+
+#: ../glib/gregex.c:193
+msgid "out of memory"
+msgstr "nie chapiła pamiaci"
+
+#: ../glib/gregex.c:198
+msgid "backtracking limit reached"
+msgstr "limit viartańnia (backtracking) dasiahnutaja"
+
+#: ../glib/gregex.c:210 ../glib/gregex.c:218
+msgid "the pattern contains items not supported for partial matching"
+msgstr ""
+"šablon utrymlivaje elementy, jakija nie padtrymvajucca dla častkovaj "
+"adpaviadnaści"
+
+#: ../glib/gregex.c:212 ../gio/glocalfile.c:2107
+msgid "internal error"
+msgstr "unutranaja pamyłka"
+
+#: ../glib/gregex.c:220
+msgid "back references as conditions are not supported for partial matching"
+msgstr ""
+"advarotnyja spasyłki jak umovy nie padtrymvajucca dla častkovaj adpaviadnaści"
+
+#: ../glib/gregex.c:229
+msgid "recursion limit reached"
+msgstr "limit rekursii dasiahnuty"
+
+#: ../glib/gregex.c:231
+msgid "workspace limit for empty substrings reached"
+msgstr "limit rabočaj prastory dla pustych padradkoŭ dasiahnuty"
+
+#: ../glib/gregex.c:233
+msgid "invalid combination of newline flags"
+msgstr "niapravilnaja kambinacyja ściažkoŭ novych radkoŭ"
+
+#: ../glib/gregex.c:235
+msgid "bad offset"
+msgstr ""
+
+#: ../glib/gregex.c:237
+msgid "short utf8"
+msgstr ""
+
+#: ../glib/gregex.c:241
+msgid "unknown error"
+msgstr "nieviadomaja pamyłka"
+
+#: ../glib/gregex.c:261
+msgid "\\ at end of pattern"
+msgstr "\\ u kancy šablonu"
+
+#: ../glib/gregex.c:264
+msgid "\\c at end of pattern"
+msgstr "\\c u kancy šablonu"
+
+#: ../glib/gregex.c:267
+msgid "unrecognized character follows \\"
+msgstr "za \\ śleduje nieviadomy znak"
+
+#: ../glib/gregex.c:274
+msgid "case-changing escapes (\\l, \\L, \\u, \\U) are not allowed here"
+msgstr ""
+"escapy, jakija źmianiajuć rehistar (\\l, \\L, \\u, \\U), tut nie dazvolenyja"
+
+#: ../glib/gregex.c:277
+msgid "numbers out of order in {} quantifier"
+msgstr "niečarhovyja liki ŭ quantyfikatary {}"
+
+#: ../glib/gregex.c:280
+msgid "number too big in {} quantifier"
+msgstr "zavialiki lik u quantyfikatary {}"
+
+# glib/giochannel.c:1587 glib/giochannel.c:1661
+#: ../glib/gregex.c:283
+msgid "missing terminating ] for character class"
+msgstr "nie staje kancavoj [ dziela znakavaj klasy"
+
+# glib/gconvert.c:592 glib/gconvert.c:882 glib/giochannel.c:1282
+# glib/giochannel.c:1324 glib/giochannel.c:2163 glib/gutf8.c:875
+# glib/gutf8.c:1320
+#: ../glib/gregex.c:286
+msgid "invalid escape sequence in character class"
+msgstr "niapravilnaja paśladoŭnaść escape ŭ znakavaj klasie"
+
+#: ../glib/gregex.c:289
+msgid "range out of order in character class"
+msgstr "dyjapazon nie ŭ paradku ŭ klasie znakaŭ"
+
+#: ../glib/gregex.c:292
+msgid "nothing to repeat"
+msgstr "niama čaho paŭtarać"
+
+#: ../glib/gregex.c:295
+msgid "unrecognized character after (?"
+msgstr "nieviadomy znak paśla (?"
+
+#: ../glib/gregex.c:299
+msgid "unrecognized character after (?<"
+msgstr "nieviadomy znak paśla (?<"
+
+#: ../glib/gregex.c:303
+msgid "unrecognized character after (?P"
+msgstr "nieviadomy znak paśla (?P"
+
+#: ../glib/gregex.c:306
+msgid "POSIX named classes are supported only within a class"
+msgstr "Nazvanyja klasy POSIX padtrymlivajucca tolki ŭ klasach"
+
+#: ../glib/gregex.c:309
+msgid "missing terminating )"
+msgstr "nie staje kancavoha )"
+
+#: ../glib/gregex.c:313
+msgid ") without opening ("
+msgstr ") biaz pačatkovaj ("
+
+#. translators: '(?R' and '(?[+-]digits' are both meant as (groups of)
+#. * sequences here, '(?-54' would be an example for the second group.
+#.
+#: ../glib/gregex.c:320
+msgid "(?R or (?[+-]digits must be followed by )"
+msgstr "(?R ci (?[+-]ličby musić zakančvacca na )"
+
+#: ../glib/gregex.c:323
+msgid "reference to non-existent subpattern"
+msgstr "spasyłka na niaisny padšablon"
+
+#: ../glib/gregex.c:326
+msgid "missing ) after comment"
+msgstr "nie staje ) paśla kamentara"
+
+#: ../glib/gregex.c:329
+msgid "regular expression too large"
+msgstr "rehularny vyraz zavialiki"
+
+#: ../glib/gregex.c:332
+msgid "failed to get memory"
+msgstr "niemahčyma atrymać pamiaci"
+
+#: ../glib/gregex.c:335
+msgid "lookbehind assertion is not fixed length"
+msgstr "assertacyja lookbehind niastałaj daŭžyni"
+
+#: ../glib/gregex.c:338
+msgid "malformed number or name after (?("
+msgstr "nierečaisny lik ci nazva paśla (?("
+
+#: ../glib/gregex.c:341
+msgid "conditional group contains more than two branches"
+msgstr "umoŭnaja hrupa maje bolej za dźvie haliny"
+
+#: ../glib/gregex.c:344
+msgid "assertion expected after (?("
+msgstr "čakaŭsia assert paśla (?("
+
+#: ../glib/gregex.c:347
+msgid "unknown POSIX class name"
+msgstr "nieviadomaja nazva klasy POSIX"
+
+#: ../glib/gregex.c:350
+msgid "POSIX collating elements are not supported"
+msgstr "elementy paradkavańnia POSIX nie padtrymlivajucca"
+
+#: ../glib/gregex.c:353
+msgid "character value in \\x{...} sequence is too large"
+msgstr "znakavaja vartaść u paśladoŭnaści \\x{...} zavialikaja"
+
+#: ../glib/gregex.c:356
+msgid "invalid condition (?(0)"
+msgstr "niapravilnaja ŭmova (?(0)"
+
+#: ../glib/gregex.c:359
+msgid "\\C not allowed in lookbehind assertion"
+msgstr "\\C nie dazvoleny ŭ assertacyi lookbehind"
+
+#: ../glib/gregex.c:362
+msgid "recursive call could loop indefinitely"
+msgstr "rekursiŭny vyklik moža zacyklicca niapeŭnym čynam"
+
+#: ../glib/gregex.c:365
+msgid "missing terminator in subpattern name"
+msgstr "nie staje terminatara ŭ naźvie padšablonu"
+
+#: ../glib/gregex.c:368
+msgid "two named subpatterns have the same name"
+msgstr "dva nazvanyja padšablony adnolkava nazyvajucca"
+
+#: ../glib/gregex.c:371
+msgid "malformed \\P or \\p sequence"
+msgstr "nierečaisnaja paśladoŭnaść \\P ci \\p"
+
+#: ../glib/gregex.c:374
+msgid "unknown property name after \\P or \\p"
+msgstr "nazva nieviadomaj ułaścivaści paśla \\P ci \\p"
+
+#: ../glib/gregex.c:377
+msgid "subpattern name is too long (maximum 32 characters)"
+msgstr "nazva padšablonu zavialikaja (maksymalna 32 znakaŭ)"
+
+#: ../glib/gregex.c:380
+msgid "too many named subpatterns (maximum 10,000)"
+msgstr "zašmat nazvanych padšablonaŭ (maksymalna 10,000)"
+
+#: ../glib/gregex.c:383
+msgid "octal value is greater than \\377"
+msgstr "vaśmiarkovaja vartaść bolšaja za \\377"
+
+#: ../glib/gregex.c:386
+msgid "DEFINE group contains more than one branch"
+msgstr "Hrupa DEFINE źmiaščaje bolš za adnu halinu"
+
+#: ../glib/gregex.c:389
+msgid "repeating a DEFINE group is not allowed"
+msgstr "paŭtor hrupy DEFINE nie dazvoleny"
+
+#: ../glib/gregex.c:392
+msgid "inconsistent NEWLINE options"
+msgstr "niapoŭnyja opcyi NEWLINE"
+
+#: ../glib/gregex.c:395
+msgid ""
+"\\g is not followed by a braced name or an optionally braced non-zero number"
+msgstr ""
+"paśla \\g nie padadziena nazvy ŭ dužkach ci nienulavoha liku ŭ "
+"nieabaviazkovych dužkach"
+
+#: ../glib/gregex.c:400
+msgid "unexpected repeat"
+msgstr "niečakany paŭtor"
+
+#: ../glib/gregex.c:404
+msgid "code overflow"
+msgstr "pierapaŭnieńnie kodu"
+
+#: ../glib/gregex.c:408
+msgid "overran compiling workspace"
+msgstr "rabočy abšar dla kampilavańnia pierapaŭnieńnia"
+
+#: ../glib/gregex.c:412
+msgid "previously-checked referenced subpattern not found"
+msgstr "raniej pravierany padšablon sa spasyłkami nia znojdzieny"
+
+#: ../glib/gregex.c:630 ../glib/gregex.c:1753
+#, c-format
+msgid "Error while matching regular expression %s: %s"
+msgstr "Pamyłka padčas pošuku adpaviednikaŭ dla rehularnaha vyrazu %s: %s"
+
+#: ../glib/gregex.c:1206
+msgid "PCRE library is compiled without UTF8 support"
+msgstr "Biblijateka PCRE skampilavanaja biez padtrymki UTF8"
+
+#: ../glib/gregex.c:1215
+msgid "PCRE library is compiled without UTF8 properties support"
+msgstr "Biblijateka PCRE skampilavanaja biez padtrymki ŭłaścivaściaŭ UTF8"
+
+# glib/gmarkup.c:219
+#: ../glib/gregex.c:1271
+#, c-format
+msgid "Error while compiling regular expression %s at char %d: %s"
+msgstr "Pamyłka padčas kampilavańnia rehularnaha vyrazu %s pry znaku %d: %s"
+
+#: ../glib/gregex.c:1307
+#, c-format
+msgid "Error while optimizing regular expression %s: %s"
+msgstr "Pamyłka padčas aptymizacyi rehularnaha vyrazu %s: %s"
+
+#: ../glib/gregex.c:2183
+msgid "hexadecimal digit or '}' expected"
+msgstr "šasnaccatkovaja ličba ci \"}\" čakalisia"
+
+#: ../glib/gregex.c:2199
+msgid "hexadecimal digit expected"
+msgstr "šasnaccatkovaja ličba čakałasia"
+
+#: ../glib/gregex.c:2239
+msgid "missing '<' in symbolic reference"
+msgstr "nie staje \"<\" u symbalnaj spasyłcy"
+
+#: ../glib/gregex.c:2248
+msgid "unfinished symbolic reference"
+msgstr "niezavieršanaja symbalnaja spasyłka"
+
+#: ../glib/gregex.c:2255
+msgid "zero-length symbolic reference"
+msgstr "symbalnaja spasyłka nulavoj daŭžyni"
+
+#: ../glib/gregex.c:2266
+msgid "digit expected"
+msgstr "čakałasia ličba"
+
+#: ../glib/gregex.c:2284
+msgid "illegal symbolic reference"
+msgstr "zabaronienaja symbalnaja spasyłka"
+
+#: ../glib/gregex.c:2346
+msgid "stray final '\\'"
+msgstr "zabłukaŭšy kancavy \"\\\""
+
+#: ../glib/gregex.c:2350
+msgid "unknown escape sequence"
+msgstr "nieviadomaja cytavanaja paśladoŭnaść"
+
+#: ../glib/gregex.c:2360
+#, c-format
+msgid "Error while parsing replacement text \"%s\" at char %lu: %s"
+msgstr "Pamyłka padčas razboru tekstu zamieny \"%s\" pry znaku %lu: %s"
+
+# glib/gshell.c:71
+#: ../glib/gshell.c:91
+msgid "Quoted text doesn't begin with a quotation mark"
+msgstr "Cytavany znak nie pačynajecca znakam dvukośsia"
+
+# glib/gshell.c:161
+#: ../glib/gshell.c:181
+msgid "Unmatched quotation mark in command line or other shell-quoted text"
+msgstr ""
+"U zahadnym radku albo inšym cytavanym, jak u abałoncy, tekście pajaviŭsia "
+"adzinočny znak cytavańnia"
+
+# glib/gshell.c:529
+#: ../glib/gshell.c:559
+#, c-format
+msgid "Text ended just after a '\\' character. (The text was '%s')"
+msgstr "Tekst skončyŭsia adrazu paśla znaku '\\'. (Tekst byŭ '%s')"
+
+# glib/gshell.c:536
+#: ../glib/gshell.c:566
+#, c-format
+msgid "Text ended before matching quote was found for %c. (The text was '%s')"
+msgstr ""
+"Tekst skončyŭsia pierad adpaviednym dvukośsiem dla %c. (Tekst byŭ '%s')"
+
+# glib/gshell.c:548
+#: ../glib/gshell.c:578
+msgid "Text was empty (or contained only whitespace)"
+msgstr "Tekst byŭ pusty (albo ŭ im byli tolki prabieły)"
+
+# glib/gspawn-win32.c:214
+#: ../glib/gspawn-win32.c:282
+msgid "Failed to read data from child process"
+msgstr "Niemahčyma adčytać źviestki pracesu-naščadka"
+
+# glib/gspawn-win32.c:981 glib/gspawn.c:1228
+#: ../glib/gspawn-win32.c:299 ../glib/gspawn.c:1517
+#, c-format
+msgid "Failed to create pipe for communicating with child process (%s)"
+msgstr "Nielha stvaryć płyniu dziela kamunikacyi z pracesam-naščadkam (%s)"
+
+# glib/gspawn-win32.c:843 glib/gspawn.c:914
+#: ../glib/gspawn-win32.c:338 ../glib/gspawn-win32.c:346 ../glib/gspawn.c:1170
+#, c-format
+msgid "Failed to read from child pipe (%s)"
+msgstr "Niemahčyma adčytać płyniu naščadka (%s)"
+
+# glib/gspawn-win32.c:931 glib/gspawn.c:1119
+#: ../glib/gspawn-win32.c:369 ../glib/gspawn.c:1383
+#, c-format
+msgid "Failed to change to directory '%s' (%s)"
+msgstr "Niemahčyma źmianić kataloh na '%s' (%s)"
+
+# glib/gspawn-win32.c:940
+#: ../glib/gspawn-win32.c:375 ../glib/gspawn-win32.c:494
+#, c-format
+msgid "Failed to execute child process (%s)"
+msgstr "Niemahčyma vykanać praces-naščadka (%s)"
+
+# glib/gconvert.c:1729
+#: ../glib/gspawn-win32.c:444
+#, c-format
+msgid "Invalid program name: %s"
+msgstr "Niapravilnaja nazva prahramy: %s"
+
+#: ../glib/gspawn-win32.c:454 ../glib/gspawn-win32.c:722
+#: ../glib/gspawn-win32.c:1278
+#, c-format
+msgid "Invalid string in argument vector at %d: %s"
+msgstr "Niapravilny paradak u arhumencie %d: %s"
+
+# glib/gutf8.c:1039 glib/gutf8.c:1048 glib/gutf8.c:1180 glib/gutf8.c:1189
+# glib/gutf8.c:1330 glib/gutf8.c:1426
+#: ../glib/gspawn-win32.c:465 ../glib/gspawn-win32.c:737
+#: ../glib/gspawn-win32.c:1311
+#, c-format
+msgid "Invalid string in environment: %s"
+msgstr "Niapravilny radok u asiarodździ: %s"
+
+# glib/gdir.c:79
+#: ../glib/gspawn-win32.c:718 ../glib/gspawn-win32.c:1259
+#, c-format
+msgid "Invalid working directory: %s"
+msgstr "Niapravilny rabočy kataloh: %s"
+
+# glib/gspawn-win32.c:940
+#: ../glib/gspawn-win32.c:783
+#, c-format
+msgid "Failed to execute helper program (%s)"
+msgstr "Niemahčyma ŭklučyć prahramu dapamohi (%s)"
+
+# glib/gspawn-win32.c:365
+#: ../glib/gspawn-win32.c:997
+msgid ""
+"Unexpected error in g_io_channel_win32_poll() reading data from a child "
+"process"
+msgstr ""
+"Pry adčytvańni źviestak pracesu-naščadka ŭ funkcyi g_io_channel_win32_poll() "
+"adbyłasia nieviadomaja pamyłka"
+
+# glib/gspawn.c:161
+#: ../glib/gspawn.c:207
+#, c-format
+msgid "Failed to read data from child process (%s)"
+msgstr "Niemahčyma adčytać źviestki pracesu-naščadka (%s)"
+
+# glib/gspawn.c:293
+#: ../glib/gspawn.c:347
+#, c-format
+msgid "Unexpected error in select() reading data from a child process (%s)"
+msgstr ""
+"Niečakanaja pamyłka ŭ funkcyi select() padčas čytańnia źviestak pracesu-"
+"naščadka (%s)"
+
+# glib/gspawn.c:376
+#: ../glib/gspawn.c:432
+#, c-format
+msgid "Unexpected error in waitpid() (%s)"
+msgstr "Niečakanaja pamyłka ŭ waitpid() (%s)"
+
+# glib/gspawn.c:979
+#: ../glib/gspawn.c:1237
+#, c-format
+msgid "Failed to fork (%s)"
+msgstr "Niemahčyma stvaryć praces (%s)"
+
+# glib/gspawn.c:1129
+#: ../glib/gspawn.c:1393
+#, c-format
+msgid "Failed to execute child process \"%s\" (%s)"
+msgstr "Niemahvyma vykanać praces-naščadka \"%s\" (%s)"
+
+# glib/gspawn.c:1139
+#: ../glib/gspawn.c:1403
+#, c-format
+msgid "Failed to redirect output or input of child process (%s)"
+msgstr "Niemahčyma pierakiravać uvachod albo vyjście pracesu-naščadka (%s)"
+
+# glib/gspawn.c:1148
+#: ../glib/gspawn.c:1412
+#, c-format
+msgid "Failed to fork child process (%s)"
+msgstr "Niemahčyma stvaryć praces-naščadka (%s)"
+
+# glib/gspawn.c:1156
+#: ../glib/gspawn.c:1420
+#, c-format
+msgid "Unknown error executing child process \"%s\""
+msgstr "Nieviadomaja pamyłka vykanańnia pracesu-naščadka \"%s\""
+
+# glib/gspawn.c:1178
+#: ../glib/gspawn.c:1444
+#, c-format
+msgid "Failed to read enough data from child pid pipe (%s)"
+msgstr ""
+"Niemahčyma adčytać adpaviednuju kolkaść źviestak ź PID kanału naščadka (%s)"
+
+# glib/gutf8.c:950
+#: ../glib/gutf8.c:1086
+msgid "Character out of range for UTF-8"
+msgstr "Znak pa-za dyjapazonam UTF-8"
+
+# glib/gutf8.c:1039 glib/gutf8.c:1048 glib/gutf8.c:1180 glib/gutf8.c:1189
+# glib/gutf8.c:1330 glib/gutf8.c:1426
+#: ../glib/gutf8.c:1186 ../glib/gutf8.c:1195 ../glib/gutf8.c:1325
+#: ../glib/gutf8.c:1334 ../glib/gutf8.c:1473 ../glib/gutf8.c:1569
+msgid "Invalid sequence in conversion input"
+msgstr "Niapravilny paradak na ŭvachodzie kanversii"
+
+# glib/gutf8.c:1341 glib/gutf8.c:1437
+#: ../glib/gutf8.c:1484 ../glib/gutf8.c:1580
+msgid "Character out of range for UTF-16"
+msgstr "Znak pa-za dyjapazonam UTF-16"
+
+#: ../glib/goption.c:760
+msgid "Usage:"
+msgstr "Vykarystańnie:"
+
+#: ../glib/goption.c:760
+msgid "[OPTION...]"
+msgstr "[OPCYJA...]"
+
+#: ../glib/goption.c:866
+msgid "Help Options:"
+msgstr "Opcyi dapamohi:"
+
+#: ../glib/goption.c:867
+msgid "Show help options"
+msgstr "Pakažy opcyi dapamohi"
+
+#: ../glib/goption.c:873
+msgid "Show all help options"
+msgstr "Pakažy ŭsie opcyi dapamohi"
+
+#: ../glib/goption.c:935
+msgid "Application Options:"
+msgstr "Opcyi aplikacyi:"
+
+#: ../glib/goption.c:997 ../glib/goption.c:1067
+#, c-format
+msgid "Cannot parse integer value '%s' for %s"
+msgstr "Niemahčyma pierapracavać ličbavaj vartaści '%s' dla %s"
+
+#: ../glib/goption.c:1007 ../glib/goption.c:1075
+#, c-format
+msgid "Integer value '%s' for %s out of range"
+msgstr "Ličbavaja vartaść '%s' dla %s pa-za dapuščalnymi miežami"
+
+#: ../glib/goption.c:1032
+#, c-format
+msgid "Cannot parse double value '%s' for %s"
+msgstr "Nielha pierapracavać padvojnuju ličbavuju vartaść '%s' dla %s"
+
+#: ../glib/goption.c:1040
+#, c-format
+msgid "Double value '%s' for %s out of range"
+msgstr "Padvojnaja ličbavaja vartaść '%s' dla %s pa-za dapuščalnymi miežami"
+
+# glib/gconvert.c:597 glib/gconvert.c:813 glib/giochannel.c:1289
+# glib/giochannel.c:2175
+#: ../glib/goption.c:1303 ../glib/goption.c:1382
+#, c-format
+msgid "Error parsing option %s"
+msgstr "Pamyłka padčas pierapracoŭki %s"
+
+#: ../glib/goption.c:1413 ../glib/goption.c:1526
+#, c-format
+msgid "Missing argument for %s"
+msgstr "Adsutny parametar dla %s"
+
+#: ../glib/goption.c:1957
+#, c-format
+msgid "Unknown option %s"
+msgstr "Nieviadomaja opcyja %s"
+
+#: ../glib/gkeyfile.c:366
+msgid "Valid key file could not be found in search dirs"
+msgstr "Niemahčyma znajści pravilnaha fajłu kluča ŭ katalohach pošuku"
+
+#: ../glib/gkeyfile.c:401
+msgid "Not a regular file"
+msgstr "Heta nie zvyčajny fajł"
+
+#: ../glib/gkeyfile.c:409
+msgid "File is empty"
+msgstr "Fajł pusty"
+
+#: ../glib/gkeyfile.c:768
+#, c-format
+msgid ""
+"Key file contains line '%s' which is not a key-value pair, group, or comment"
+msgstr ""
+"Fajł kluču ŭtrymlivaje radok '%s', jaki nie źjaŭlajecca paraj kluč-vartaść, "
+"hrupaj, albo kamentarom"
+
+# glib/gconvert.c:1729
+#: ../glib/gkeyfile.c:828
+#, c-format
+msgid "Invalid group name: %s"
+msgstr "Niapravilnaja nazva hrupy: %s"
+
+#: ../glib/gkeyfile.c:850
+msgid "Key file does not start with a group"
+msgstr "Fajł kluča nie pačynajecca ad hrupy"
+
+# glib/gconvert.c:1729
+#: ../glib/gkeyfile.c:876
+#, c-format
+msgid "Invalid key name: %s"
+msgstr "Niapravilnaja nazva kluča: %s"
+
+#: ../glib/gkeyfile.c:903
+#, c-format
+msgid "Key file contains unsupported encoding '%s'"
+msgstr "Fajł kluča ŭtrymlivaje kadavańnie '%s', jakoje nie absłuhoŭvajecca"
+
+#: ../glib/gkeyfile.c:1149 ../glib/gkeyfile.c:1311 ../glib/gkeyfile.c:2686
+#: ../glib/gkeyfile.c:2752 ../glib/gkeyfile.c:2887 ../glib/gkeyfile.c:3020
+#: ../glib/gkeyfile.c:3162 ../glib/gkeyfile.c:3394 ../glib/gkeyfile.c:3463
+#, c-format
+msgid "Key file does not have group '%s'"
+msgstr "Fajł kluča nie ŭklučaje ŭ siabie hrupy '%s'"
+
+#: ../glib/gkeyfile.c:1323
+#, c-format
+msgid "Key file does not have key '%s'"
+msgstr "Fajł kluča nie ŭklučaje ŭ siabie kluča '%s'"
+
+#: ../glib/gkeyfile.c:1430 ../glib/gkeyfile.c:1546
+#, c-format
+msgid "Key file contains key '%s' with value '%s' which is not UTF-8"
+msgstr ""
+"Fajł kluča ŭklučaje ŭ siabie kluč '%s' z vartaściu '%s', nie zapisanaj jak "
+"UTF-8"
+
+#: ../glib/gkeyfile.c:1450 ../glib/gkeyfile.c:1934
+#, c-format
+msgid "Key file contains key '%s' which has value that cannot be interpreted."
+msgstr ""
+"Fajł kluča ŭklučaje ŭ siabie kluč '%s' ź nieinterpretavalnaj vartaściu."
+
+#: ../glib/gkeyfile.c:1566
+#, fuzzy, c-format
+msgid ""
+"Key file contains key '%s' which has a value that cannot be interpreted."
+msgstr ""
+"Fajł kluča ŭklučaje ŭ siabie kluč '%s' ź nieinterpretavalnaj vartaściu."
+
+#: ../glib/gkeyfile.c:2151 ../glib/gkeyfile.c:2515
+#, c-format
+msgid ""
+"Key file contains key '%s' in group '%s' which has value that cannot be "
+"interpreted."
+msgstr ""
+"Fajł kluča ŭklučaje ŭ siabie kluč '%s' u hrupie '%s', jaki maje "
+"nieinterpretavalnuju vartaść."
+
+#: ../glib/gkeyfile.c:2701 ../glib/gkeyfile.c:2902 ../glib/gkeyfile.c:3474
+#, c-format
+msgid "Key file does not have key '%s' in group '%s'"
+msgstr "Fajł kluča nia maje kluča '%s' u hrupie '%s'"
+
+#: ../glib/gkeyfile.c:3708
+msgid "Key file contains escape character at end of line"
+msgstr "Fajł kluča maje ŭ sabie cytavany znak na kancy radka"
+
+# glib/gconvert.c:1648
+#: ../glib/gkeyfile.c:3730
+#, c-format
+msgid "Key file contains invalid escape sequence '%s'"
+msgstr "Fajł kluča maje ŭ sabie niedapuščalny cytavalny łancužok '%s'"
+
+#: ../glib/gkeyfile.c:3872
+#, c-format
+msgid "Value '%s' cannot be interpreted as a number."
+msgstr "Nielha interpretavać '%s' jak ličbavuju vartaść."
+
+#: ../glib/gkeyfile.c:3886
+#, c-format
+msgid "Integer value '%s' out of range"
+msgstr "Ličbavaja vartaść '%s' pa-za dapuščalnymi miežami"
+
+#: ../glib/gkeyfile.c:3919
+#, c-format
+msgid "Value '%s' cannot be interpreted as a float number."
+msgstr ""
+"Niemahčyma interpretavać značeńnie '%s' jak ličbavuju vartaść ź "
+"niefiksavanaj koskaj."
+
+#: ../glib/gkeyfile.c:3943
+#, c-format
+msgid "Value '%s' cannot be interpreted as a boolean."
+msgstr "Ličbavuju vartaść '%s' niemahčyma interpretavać jak lahičnuju vartaść."
+
+#: ../gio/gbufferedinputstream.c:411 ../gio/gbufferedinputstream.c:492
+#: ../gio/ginputstream.c:185 ../gio/ginputstream.c:317
+#: ../gio/ginputstream.c:556 ../gio/ginputstream.c:680
+#: ../gio/goutputstream.c:198 ../gio/goutputstream.c:732
+#, c-format
+msgid "Too large count value passed to %s"
+msgstr "Funkcyi %s pieradadzieny nadta vialiki ličylnik"
+
+#: ../gio/gbufferedinputstream.c:881 ../gio/ginputstream.c:888
+#: ../gio/giostream.c:306 ../gio/goutputstream.c:1206
+msgid "Stream is already closed"
+msgstr "Płyń užo začynienaja"
+
+#: ../gio/gcancellable.c:321 ../gio/gdbusconnection.c:1640
+#: ../gio/gdbusconnection.c:1729 ../gio/gdbusconnection.c:1916
+#: ../gio/glocalfile.c:2100 ../gio/gsimpleasyncresult.c:814
+#: ../gio/gsimpleasyncresult.c:840
+msgid "Operation was cancelled"
+msgstr "Aperacyja anulavanaja"
+
+#: ../gio/gcharsetconverter.c:263
+msgid "Invalid object, not initialized"
+msgstr ""
+
+# glib/gconvert.c:592 glib/gconvert.c:882 glib/giochannel.c:1282
+# glib/giochannel.c:1324 glib/giochannel.c:2163 glib/gutf8.c:875
+# glib/gutf8.c:1320
+#: ../gio/gcharsetconverter.c:284 ../gio/gcharsetconverter.c:312
+#, fuzzy
+msgid "Incomplete multibyte sequence in input"
+msgstr "Niapravilnaja paśladoŭnaść bajtaŭ na ŭvachodzie kanversii"
+
+#: ../gio/gcharsetconverter.c:318 ../gio/gcharsetconverter.c:327
+msgid "Not enough space in destination"
+msgstr ""
+
+#: ../gio/gcharsetconverter.c:447 ../gio/gsocket.c:854
+#, fuzzy
+msgid "Cancellable initialization not supported"
+msgstr "Aperacyja nie padtrymlivajecca"
+
+#: ../gio/gcontenttype.c:180
+msgid "Unknown type"
+msgstr "Nieviadomy typ"
+
+#: ../gio/gcontenttype.c:181
+#, c-format
+msgid "%s filetype"
+msgstr "typ fajłaŭ %s"
+
+#: ../gio/gcontenttype.c:680
+#, c-format
+msgid "%s type"
+msgstr "typ %s"
+
+#: ../gio/gcredentials.c:273 ../gio/gcredentials.c:495
+msgid "GCredentials is not implemented on this OS"
+msgstr ""
+
+#: ../gio/gcredentials.c:447
+msgid "There is no GCredentials support for your platform"
+msgstr ""
+
+#: ../gio/gdatainputstream.c:311
+msgid "Unexpected early end-of-stream"
+msgstr "Zaŭčasny kaniec płyni"
+
+#: ../gio/gdbusaddress.c:142 ../gio/gdbusaddress.c:230
+#: ../gio/gdbusaddress.c:311
+#, c-format
+msgid "Unsupported key '%s' in address entry '%s'"
+msgstr ""
+
+#: ../gio/gdbusaddress.c:169
+#, c-format
+msgid ""
+"Address '%s' is invalid (need exactly one of path, tmpdir or abstract keys)"
+msgstr ""
+
+#: ../gio/gdbusaddress.c:182
+#, c-format
+msgid "Meaningless key/value pair combination in address entry '%s'"
+msgstr ""
+
+#: ../gio/gdbusaddress.c:245 ../gio/gdbusaddress.c:326
+#, c-format
+msgid "Error in address '%s' - the port attribute is malformed"
+msgstr ""
+
+#: ../gio/gdbusaddress.c:256 ../gio/gdbusaddress.c:337
+#, c-format
+msgid "Error in address '%s' - the family attribute is malformed"
+msgstr ""
+
+#: ../gio/gdbusaddress.c:446
+#, c-format
+msgid "Address element '%s', does not contain a colon (:)"
+msgstr ""
+
+#: ../gio/gdbusaddress.c:467
+#, c-format
+msgid ""
+"Key/Value pair %d, '%s', in address element '%s', does not contain an equal "
+"sign"
+msgstr ""
+
+#: ../gio/gdbusaddress.c:481
+#, c-format
+msgid ""
+"Error unescaping key or value in Key/Value pair %d, '%s', in address element "
+"'%s'"
+msgstr ""
+
+#: ../gio/gdbusaddress.c:559
+#, c-format
+msgid ""
+"Error in address '%s' - the unix transport requires exactly one of the keys "
+"'path' or 'abstract' to be set"
+msgstr ""
+
+#: ../gio/gdbusaddress.c:595
+#, c-format
+msgid "Error in address '%s' - the host attribute is missing or malformed"
+msgstr ""
+
+#: ../gio/gdbusaddress.c:609
+#, c-format
+msgid "Error in address '%s' - the port attribute is missing or malformed"
+msgstr ""
+
+#: ../gio/gdbusaddress.c:623
+#, c-format
+msgid "Error in address '%s' - the noncefile attribute is missing or malformed"
+msgstr ""
+
+# glib/gfileutils.c:348
+#: ../gio/gdbusaddress.c:644
+#, fuzzy
+msgid "Error auto-launching: "
+msgstr "Pamyłka abcinańnia fajłu: %s"
+
+#: ../gio/gdbusaddress.c:652
+#, c-format
+msgid "Unknown or unsupported transport '%s' for address '%s'"
+msgstr ""
+
+# glib/gfileutils.c:348
+#: ../gio/gdbusaddress.c:688
+#, fuzzy, c-format
+msgid "Error opening nonce file '%s': %s"
+msgstr "Pamyłka adčynieńnia fajłu '%s': %s"
+
+# glib/gfileutils.c:348
+#: ../gio/gdbusaddress.c:706
+#, fuzzy, c-format
+msgid "Error reading from nonce file '%s': %s"
+msgstr "Pamyłka adčytańnia fajłu '%s': %s"
+
+# glib/gfileutils.c:348
+#: ../gio/gdbusaddress.c:715
+#, fuzzy, c-format
+msgid "Error reading from nonce file '%s', expected 16 bytes, got %d"
+msgstr "Pamyłka adčytańnia fajłu '%s': %s"
+
+# glib/gfileutils.c:348
+#: ../gio/gdbusaddress.c:733
+#, fuzzy, c-format
+msgid "Error writing contents of nonce file '%s' to stream:"
+msgstr "Pamyłka zapisu ŭ fajł: %s"
+
+#: ../gio/gdbusaddress.c:951
+msgid "The given address is empty"
+msgstr ""
+
+#: ../gio/gdbusaddress.c:1020
+msgid "Cannot spawn a message bus without a machine-id: "
+msgstr ""
+
+# glib/gfileutils.c:348
+#: ../gio/gdbusaddress.c:1057
+#, fuzzy, c-format
+msgid "Error spawning command line '%s': "
+msgstr "Pamyłka adčytańnia fajłu '%s': %s"
+
+#: ../gio/gdbusaddress.c:1068
+#, c-format
+msgid "Abnormal program termination spawning command line '%s': %s"
+msgstr ""
+
+#: ../gio/gdbusaddress.c:1082
+#, c-format
+msgid "Command line '%s' exited with non-zero exit status %d: %s"
+msgstr ""
+
+#: ../gio/gdbusaddress.c:1155
+#, c-format
+msgid "Cannot determine session bus address (not implemented for this OS)"
+msgstr ""
+
+#: ../gio/gdbusaddress.c:1254 ../gio/gdbusconnection.c:6409
+#, c-format
+msgid ""
+"Cannot determine bus address from DBUS_STARTER_BUS_TYPE environment variable "
+"- unknown value '%s'"
+msgstr ""
+
+#: ../gio/gdbusaddress.c:1263 ../gio/gdbusconnection.c:6418
+msgid ""
+"Cannot determine bus address because the DBUS_STARTER_BUS_TYPE environment "
+"variable is not set"
+msgstr ""
+
+#: ../gio/gdbusaddress.c:1273
+#, fuzzy, c-format
+msgid "Unknown bus type %d"
+msgstr "Nieviadomy typ"
+
+#: ../gio/gdbusauth.c:288
+msgid "Unexpected lack of content trying to read a line"
+msgstr ""
+
+#: ../gio/gdbusauth.c:332
+msgid "Unexpected lack of content trying to (safely) read a line"
+msgstr ""
+
+#: ../gio/gdbusauth.c:503
+#, c-format
+msgid ""
+"Exhausted all available authentication mechanisms (tried: %s) (available: %s)"
+msgstr ""
+
+#: ../gio/gdbusauth.c:1159
+msgid "Cancelled via GDBusAuthObserver::authorize-authenticated-peer"
+msgstr ""
+
+# glib/gdir.c:79
+#: ../gio/gdbusauthmechanismsha1.c:266
+#, fuzzy, c-format
+msgid "Error statting directory '%s': %s"
+msgstr "Pamyłka pry adčynieńni katalohu '%s': %s"
+
+#: ../gio/gdbusauthmechanismsha1.c:278
+#, c-format
+msgid ""
+"Permissions on directory '%s' are malformed. Expected mode 0700, got 0%o"
+msgstr ""
+
+# glib/gdir.c:79
+#: ../gio/gdbusauthmechanismsha1.c:299
+#, fuzzy, c-format
+msgid "Error creating directory '%s': %s"
+msgstr "Pamyłka pry adčynieńni katalohu '%s': %s"
+
+# glib/gfileutils.c:348
+#: ../gio/gdbusauthmechanismsha1.c:382
+#, fuzzy, c-format
+msgid "Error opening keyring '%s' for reading: "
+msgstr "Pamyłka adčynieńnia fajłu '%s': %s"
+
+#: ../gio/gdbusauthmechanismsha1.c:406 ../gio/gdbusauthmechanismsha1.c:718
+#, c-format
+msgid "Line %d of the keyring at '%s' with content '%s' is malformed"
+msgstr ""
+
+#: ../gio/gdbusauthmechanismsha1.c:420 ../gio/gdbusauthmechanismsha1.c:732
+#, c-format
+msgid ""
+"First token of line %d of the keyring at '%s' with content '%s' is malformed"
+msgstr ""
+
+#: ../gio/gdbusauthmechanismsha1.c:435 ../gio/gdbusauthmechanismsha1.c:746
+#, c-format
+msgid ""
+"Second token of line %d of the keyring at '%s' with content '%s' is malformed"
+msgstr ""
+
+#: ../gio/gdbusauthmechanismsha1.c:459
+#, c-format
+msgid "Didn't find cookie with id %d in the keyring at '%s'"
+msgstr ""
+
+# glib/gfileutils.c:348
+#: ../gio/gdbusauthmechanismsha1.c:536
+#, fuzzy, c-format
+msgid "Error deleting stale lock file '%s': %s"
+msgstr "Pamyłka adčytańnia fajłu '%s': %s"
+
+# glib/gfileutils.c:348
+#: ../gio/gdbusauthmechanismsha1.c:568
+#, fuzzy, c-format
+msgid "Error creating lock file '%s': %s"
+msgstr "Pamyłka adčytańnia fajłu '%s': %s"
+
+# glib/gfileutils.c:348
+#: ../gio/gdbusauthmechanismsha1.c:598
+#, fuzzy, c-format
+msgid "Error closing (unlinked) lock file '%s': %s"
+msgstr "Pamyłka začynieńnia fajłu: %s"
+
+# glib/gfileutils.c:348
+#: ../gio/gdbusauthmechanismsha1.c:608
+#, fuzzy, c-format
+msgid "Error unlinking lock file '%s': %s"
+msgstr "Pamyłka adčynieńnia fajłu '%s': %s"
+
+# glib/gfileutils.c:348
+#: ../gio/gdbusauthmechanismsha1.c:685
+#, fuzzy, c-format
+msgid "Error opening keyring '%s' for writing: "
+msgstr "Pamyłka adčynieńnia fajłu '%s': %s"
+
+#: ../gio/gdbusauthmechanismsha1.c:882
+#, c-format
+msgid "(Additionally, releasing the lock for '%s' also failed: %s) "
+msgstr ""
+
+#: ../gio/gdbusconnection.c:1150 ../gio/gdbusconnection.c:1376
+#: ../gio/gdbusconnection.c:1415 ../gio/gdbusconnection.c:1740
+#, fuzzy
+msgid "The connection is closed"
+msgstr "Ličylnik začynieny"
+
+#: ../gio/gdbusconnection.c:1684
+msgid "Timeout was reached"
+msgstr ""
+
+#: ../gio/gdbusconnection.c:2306
+msgid ""
+"Unsupported flags encountered when constructing a client-side connection"
+msgstr ""
+
+#: ../gio/gdbusconnection.c:3770 ../gio/gdbusconnection.c:4086
+#, c-format
+msgid ""
+"No such interface 'org.freedesktop.DBus.Properties' on object at path %s"
+msgstr ""
+
+#: ../gio/gdbusconnection.c:3841
+#, c-format
+msgid "Error setting property '%s': Expected type '%s' but got '%s'"
+msgstr ""
+
+#: ../gio/gdbusconnection.c:3936
+#, c-format
+msgid "No such property '%s'"
+msgstr ""
+
+#: ../gio/gdbusconnection.c:3948
+#, c-format
+msgid "Property '%s' is not readable"
+msgstr ""
+
+#: ../gio/gdbusconnection.c:3959
+#, c-format
+msgid "Property '%s' is not writable"
+msgstr ""
+
+#: ../gio/gdbusconnection.c:4029 ../gio/gdbusconnection.c:5853
+#, c-format
+msgid "No such interface '%s'"
+msgstr ""
+
+#: ../gio/gdbusconnection.c:4213
+msgid "No such interface"
+msgstr ""
+
+#: ../gio/gdbusconnection.c:4432 ../gio/gdbusconnection.c:6359
+#, c-format
+msgid "No such interface '%s' on object at path %s"
+msgstr ""
+
+#: ../gio/gdbusconnection.c:4484
+#, c-format
+msgid "No such method '%s'"
+msgstr ""
+
+#: ../gio/gdbusconnection.c:4515
+#, c-format
+msgid "Type of message, '%s', does not match expected type '%s'"
+msgstr ""
+
+#: ../gio/gdbusconnection.c:4734
+#, c-format
+msgid "An object is already exported for the interface %s at %s"
+msgstr ""
+
+#: ../gio/gdbusconnection.c:4932
+#, c-format
+msgid "Method '%s' returned type '%s', but expected '%s'"
+msgstr ""
+
+#: ../gio/gdbusconnection.c:5964
+#, c-format
+msgid "Method '%s' on interface '%s' with signature '%s' does not exist"
+msgstr ""
+
+#: ../gio/gdbusconnection.c:6082
+#, fuzzy, c-format
+msgid "A subtree is already exported for %s"
+msgstr "Płyń užo začynienaja"
+
+#: ../gio/gdbusmessage.c:859
+msgid "type is INVALID"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:870
+msgid "METHOD_CALL message: PATH or MEMBER header field is missing"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:881
+msgid "METHOD_RETURN message: REPLY_SERIAL header field is missing"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:893
+msgid "ERROR message: REPLY_SERIAL or ERROR_NAME header field is missing"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:906
+msgid "SIGNAL message: PATH, INTERFACE or MEMBER header field is missing"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:914
+msgid ""
+"SIGNAL message: The PATH header field is using the reserved value /org/"
+"freedesktop/DBus/Local"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:922
+msgid ""
+"SIGNAL message: The INTERFACE header field is using the reserved value org."
+"freedesktop.DBus.Local"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:998
+#, c-format
+msgid "Wanted to read %lu byte but got EOF"
+msgid_plural "Wanted to read %lu bytes but got EOF"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#: ../gio/gdbusmessage.c:1025
+#, c-format
+msgid ""
+"Expected valid UTF-8 string but found invalid bytes at byte offset %d "
+"(length of string is %d). The valid UTF-8 string up until that point was '%s'"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:1038
+#, c-format
+msgid "Expected NUL byte after the string '%s' but found byte %d"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:1242
+#, c-format
+msgid "Parsed value '%s' is not a valid D-Bus object path"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:1268
+#, c-format
+msgid "Parsed value '%s' is not a valid D-Bus signature"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:1324
+#, c-format
+msgid ""
+"Encountered array of length %u byte. Maximum length is 2<<26 bytes (64 MiB)."
+msgid_plural ""
+"Encountered array of length %u bytes. Maximum length is 2<<26 bytes (64 MiB)."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#: ../gio/gdbusmessage.c:1490
+#, c-format
+msgid "Parsed value '%s' for variant is not a valid D-Bus signature"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:1517
+#, c-format
+msgid ""
+"Error deserializing GVariant with type string '%s' from the D-Bus wire format"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:1705
+#, c-format
+msgid ""
+"Invalid endianness value. Expected 0x6c ('l') or 0x42 ('B') but found value "
+"0x%02x"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:1719
+#, c-format
+msgid "Invalid major protocol version. Expected 1 but found %d"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:1776
+#, c-format
+msgid "Signature header with signature '%s' found but message body is empty"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:1790
+#, c-format
+msgid "Parsed value '%s' is not a valid D-Bus signature (for body)"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:1821
+#, c-format
+msgid "No signature header in message but the message body is %u byte"
+msgid_plural "No signature header in message but the message body is %u bytes"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#: ../gio/gdbusmessage.c:1831
+msgid "Cannot deserialize message: "
+msgstr ""
+
+#: ../gio/gdbusmessage.c:2163
+#, c-format
+msgid ""
+"Error serializing GVariant with type string '%s' to the D-Bus wire format"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:2303
+#, c-format
+msgid ""
+"Message has %d file descriptors but the header field indicates %d file "
+"descriptors"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:2311
+msgid "Cannot serialize message: "
+msgstr ""
+
+#: ../gio/gdbusmessage.c:2355
+#, c-format
+msgid "Message body has signature '%s' but there is no signature header"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:2365
+#, c-format
+msgid ""
+"Message body has type signature '%s' but signature in the header field is '"
+"%s'"
+msgstr ""
+
+#: ../gio/gdbusmessage.c:2381
+#, c-format
+msgid "Message body is empty but signature in the header field is '(%s)'"
+msgstr ""
+
+# glib/gfileutils.c:348
+#: ../gio/gdbusmessage.c:2938
+#, fuzzy, c-format
+msgid "Error return with body of type '%s'"
+msgstr "Pamyłka zapisu ŭ fajł: %s"
+
+#: ../gio/gdbusmessage.c:2946
+msgid "Error return with empty body"
+msgstr ""
+
+#: ../gio/gdbusprivate.c:1736
+msgid "Unable to load /var/lib/dbus/machine-id: "
+msgstr ""
+
+#: ../gio/gdbusproxy.c:1489
+#, c-format
+msgid "Error calling StartServiceByName for %s: "
+msgstr ""
+
+#: ../gio/gdbusproxy.c:1510
+#, c-format
+msgid "Unexpected reply %d from StartServiceByName(\"%s\") method"
+msgstr ""
+
+#: ../gio/gdbusproxy.c:2600 ../gio/gdbusproxy.c:2734
+msgid ""
+"Cannot invoke method; proxy is for a well-known name without an owner and "
+"proxy was constructed with the G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START flag"
+msgstr ""
+
+#: ../gio/gdbusserver.c:711
+#, fuzzy
+msgid "Abstract name space not supported"
+msgstr "Śmietnica nie padtrymlivajacca"
+
+#: ../gio/gdbusserver.c:798
+msgid "Cannot specify nonce file when creating a server"
+msgstr ""
+
+# glib/gfileutils.c:348
+#: ../gio/gdbusserver.c:875
+#, fuzzy, c-format
+msgid "Error writing nonce file at '%s': %s"
+msgstr "Pamyłka zapisu ŭ fajł: %s"
+
+#: ../gio/gdbusserver.c:1042
+#, c-format
+msgid "The string '%s' is not a valid D-Bus GUID"
+msgstr ""
+
+#: ../gio/gdbusserver.c:1082
+#, c-format
+msgid "Cannot listen on unsupported transport '%s'"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:88
+msgid "COMMAND"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:93
+#, c-format
+msgid ""
+"Commands:\n"
+"  help         Shows this information\n"
+"  introspect   Introspect a remote object\n"
+"  monitor      Monitor a remote object\n"
+"  call         Invoke a method on a remote object\n"
+"  emit         Emit a signal\n"
+"\n"
+"Use \"%s COMMAND --help\" to get help on each command.\n"
+msgstr ""
+
+# glib/gmarkup.c:303
+#: ../gio/gdbus-tool.c:162 ../gio/gdbus-tool.c:218 ../gio/gdbus-tool.c:290
+#: ../gio/gdbus-tool.c:314 ../gio/gdbus-tool.c:691 ../gio/gdbus-tool.c:1010
+#: ../gio/gdbus-tool.c:1443
+#, fuzzy, c-format
+msgid "Error: %s\n"
+msgstr "Pamyłka ŭ radku %d: %s"
+
+# glib/gconvert.c:597 glib/gconvert.c:813 glib/giochannel.c:1289
+# glib/giochannel.c:2175
+#: ../gio/gdbus-tool.c:173 ../gio/gdbus-tool.c:231 ../gio/gdbus-tool.c:1459
+#, fuzzy, c-format
+msgid "Error parsing introspection XML: %s\n"
+msgstr "Pamyłka padčas pierapracoŭki %s"
+
+#: ../gio/gdbus-tool.c:348
+msgid "Connect to the system bus"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:349
+msgid "Connect to the session bus"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:350
+msgid "Connect to given D-Bus address"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:360
+msgid "Connection Endpoint Options:"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:361
+msgid "Options specifying the connection endpoint"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:383
+#, c-format
+msgid "No connection endpoint specified"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:393
+#, c-format
+msgid "Multiple connection endpoints specified"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:463
+#, c-format
+msgid ""
+"Warning: According to introspection data, interface '%s' does not exist\n"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:472
+#, c-format
+msgid ""
+"Warning: According to introspection data, method '%s' does not exist on "
+"interface '%s'\n"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:534
+msgid "Optional destination for signal (unique name)"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:535
+msgid "Object path to emit signal on"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:536
+msgid "Signal and interface name"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:568
+msgid "Emit a signal."
+msgstr ""
+
+# glib/gfileutils.c:348
+#: ../gio/gdbus-tool.c:602 ../gio/gdbus-tool.c:822 ../gio/gdbus-tool.c:1549
+#: ../gio/gdbus-tool.c:1781
+#, fuzzy, c-format
+msgid "Error connecting: %s\n"
+msgstr "Pamyłka adčynieńnia fajłu: %s"
+
+#: ../gio/gdbus-tool.c:614
+#, c-format
+msgid "Error: object path not specified.\n"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:619 ../gio/gdbus-tool.c:883 ../gio/gdbus-tool.c:1607
+#: ../gio/gdbus-tool.c:1840
+#, c-format
+msgid "Error: %s is not a valid object path\n"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:625
+#, c-format
+msgid "Error: signal not specified.\n"
+msgstr ""
+
+# glib/gmarkup.c:428
+#: ../gio/gdbus-tool.c:634
+#, fuzzy, c-format
+msgid "Error: %s is not a valid interface name\n"
+msgstr "Znak '%s' niedapuščalny ŭnutry nazvy adzinki"
+
+# glib/gmarkup.c:428
+#: ../gio/gdbus-tool.c:640
+#, fuzzy, c-format
+msgid "Error: %s is not a valid member name\n"
+msgstr "Znak '%s' niedapuščalny ŭnutry nazvy adzinki"
+
+# glib/gmarkup.c:428
+#: ../gio/gdbus-tool.c:646
+#, fuzzy, c-format
+msgid "Error: %s is not a valid unique bus name.\n"
+msgstr "Znak '%s' niedapuščalny ŭnutry nazvy adzinki"
+
+# glib/gconvert.c:597 glib/gconvert.c:813 glib/giochannel.c:1289
+# glib/giochannel.c:2175
+#: ../gio/gdbus-tool.c:669 ../gio/gdbus-tool.c:982
+#, fuzzy, c-format
+msgid "Error parsing parameter %d: %s\n"
+msgstr "Pamyłka padčas pierapracoŭki %s"
+
+# glib/gconvert.c:597 glib/gconvert.c:813 glib/giochannel.c:1289
+# glib/giochannel.c:2175
+#: ../gio/gdbus-tool.c:698
+#, fuzzy, c-format
+msgid "Error flushing connection: %s\n"
+msgstr "Pamyłka padčas kanversii: %s"
+
+#: ../gio/gdbus-tool.c:725
+msgid "Destination name to invoke method on"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:726
+msgid "Object path to invoke method on"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:727
+msgid "Method and interface name"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:728
+msgid "Timeout in seconds"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:767
+msgid "Invoke a method on a remote object."
+msgstr ""
+
+#: ../gio/gdbus-tool.c:842 ../gio/gdbus-tool.c:1568 ../gio/gdbus-tool.c:1800
+#, c-format
+msgid "Error: Destination is not specified\n"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:863 ../gio/gdbus-tool.c:1587
+#, c-format
+msgid "Error: Object path is not specified\n"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:898
+#, c-format
+msgid "Error: Method name is not specified\n"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:909
+#, c-format
+msgid "Error: Method name '%s' is invalid\n"
+msgstr ""
+
+# glib/gdir.c:79
+#: ../gio/gdbus-tool.c:974
+#, fuzzy, c-format
+msgid "Error parsing parameter %d of type '%s': %s\n"
+msgstr "Pamyłka pry adčynieńni katalohu '%s': %s"
+
+#: ../gio/gdbus-tool.c:1406
+msgid "Destination name to introspect"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:1407
+msgid "Object path to introspect"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:1408
+msgid "Print XML"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:1409
+msgid "Introspect children"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:1410
+msgid "Only print properties"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:1501
+msgid "Introspect a remote object."
+msgstr ""
+
+#: ../gio/gdbus-tool.c:1699
+msgid "Destination name to monitor"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:1700
+msgid "Object path to monitor"
+msgstr ""
+
+#: ../gio/gdbus-tool.c:1733
+#, fuzzy
+msgid "Monitor a remote object."
+msgstr "sapsavany abjekt"
+
+#: ../gio/gdesktopappinfo.c:572 ../gio/gwin32appinfo.c:221
+msgid "Unnamed"
+msgstr "Nienazvany"
+
+#: ../gio/gdesktopappinfo.c:969
+msgid "Desktop file didn't specify Exec field"
+msgstr "Fajł stała nie akreślivaje pola Exec"
+
+#: ../gio/gdesktopappinfo.c:1250
+msgid "Unable to find terminal required for application"
+msgstr "Niemahčyma znajści terminału, vymahanaha dla aplikacyi"
+
+#: ../gio/gdesktopappinfo.c:1515
+#, c-format
+msgid "Can't create user application configuration folder %s: %s"
+msgstr ""
+"Niemahčyma stvaryć kanfihuracyjny kataloh %s karystalnika dla aplikacyi: %s"
+
+#: ../gio/gdesktopappinfo.c:1519
+#, c-format
+msgid "Can't create user MIME configuration folder %s: %s"
+msgstr "Niemahčyma stvaryć kanfihuracyjny kataloh MIME %s dla karystalnika: %s"
+
+#: ../gio/gdesktopappinfo.c:1785 ../gio/gdesktopappinfo.c:1809
+msgid "Application information lacks an identifier"
+msgstr ""
+
+#: ../gio/gdesktopappinfo.c:2033
+#, c-format
+msgid "Can't create user desktop file %s"
+msgstr "Niemahčyma stvaryć fajł stała %s dla karystalnika"
+
+#: ../gio/gdesktopappinfo.c:2149
+#, c-format
+msgid "Custom definition for %s"
+msgstr "Asablivaje aznačeńnie dla %s"
+
+#: ../gio/gdrive.c:363
+msgid "drive doesn't implement eject"
+msgstr "pryłada nie zaimplementavała vysoŭvańnia (eject)"
+
+#. Translators: This is an error
+#. * message for drive objects that
+#. * don't implement any of eject or eject_with_operation.
+#: ../gio/gdrive.c:444
+#, fuzzy
+msgid "drive doesn't implement eject or eject_with_operation"
+msgstr "pryłada nie zaimplementavała vysoŭvańnia (eject)"
+
+#: ../gio/gdrive.c:521
+msgid "drive doesn't implement polling for media"
+msgstr "pryłada nie zaimplementavała apytańnia nośbitaŭ (poll)"
+
+#: ../gio/gdrive.c:728
+#, fuzzy
+msgid "drive doesn't implement start"
+msgstr "pryłada nie zaimplementavała vysoŭvańnia (eject)"
+
+#: ../gio/gdrive.c:831
+#, fuzzy
+msgid "drive doesn't implement stop"
+msgstr "pryłada nie zaimplementavała vysoŭvańnia (eject)"
+
+#: ../gio/gdummytlsbackend.c:168 ../gio/gdummytlsbackend.c:288
+#: ../gio/gdummytlsbackend.c:378
+msgid "TLS support is not available"
+msgstr ""
+
+#: ../gio/gemblem.c:324
+#, c-format
+msgid "Can't handle version %d of GEmblem encoding"
+msgstr ""
+
+#: ../gio/gemblem.c:334
+#, c-format
+msgid "Malformed number of tokens (%d) in GEmblem encoding"
+msgstr ""
+
+#: ../gio/gemblemedicon.c:368
+#, c-format
+msgid "Can't handle version %d of GEmblemedIcon encoding"
+msgstr ""
+
+#: ../gio/gemblemedicon.c:378
+#, c-format
+msgid "Malformed number of tokens (%d) in GEmblemedIcon encoding"
+msgstr ""
+
+#: ../gio/gemblemedicon.c:401
+msgid "Expected a GEmblem for GEmblemedIcon"
+msgstr ""
+
+#: ../gio/gfile.c:871 ../gio/gfile.c:1102 ../gio/gfile.c:1237
+#: ../gio/gfile.c:1474 ../gio/gfile.c:1528 ../gio/gfile.c:1585
+#: ../gio/gfile.c:1668 ../gio/gfile.c:1723 ../gio/gfile.c:1783
+#: ../gio/gfile.c:1837 ../gio/gfile.c:3307 ../gio/gfile.c:3361
+#: ../gio/gfile.c:3493 ../gio/gfile.c:3534 ../gio/gfile.c:3864
+#: ../gio/gfile.c:4266 ../gio/gfile.c:4352 ../gio/gfile.c:4441
+#: ../gio/gfile.c:4539 ../gio/gfile.c:4626 ../gio/gfile.c:4720
+#: ../gio/gfile.c:5041 ../gio/gfile.c:5308 ../gio/gfile.c:5373
+#: ../gio/gfile.c:6947 ../gio/gfile.c:7037 ../gio/gfile.c:7123
+#: ../gio/win32/gwinhttpfile.c:439
+msgid "Operation not supported"
+msgstr "Aperacyja nie padtrymlivajecca"
+
+#. Translators: This is an error message when trying to find the
+#. * enclosing (user visible) mount of a file, but none exists.
+#. Translators: This is an error message when trying to
+#. * find the enclosing (user visible) mount of a file, but
+#. * none exists.
+#. Translators: This is an error message when trying to find
+#. * the enclosing (user visible) mount of a file, but none
+#. * exists.
+#: ../gio/gfile.c:1358 ../gio/glocalfile.c:1051 ../gio/glocalfile.c:1062
+#: ../gio/glocalfile.c:1075
+msgid "Containing mount does not exist"
+msgstr "Źmiaščalnaje mantavańnie nie isnuje"
+
+#: ../gio/gfile.c:2411 ../gio/glocalfile.c:2256
+msgid "Can't copy over directory"
+msgstr "Niemahčyma skapijavać zamiest katalohu"
+
+#: ../gio/gfile.c:2472
+msgid "Can't copy directory over directory"
+msgstr "Niemahčyma skapijavać kataloh zamiest inšaha katalohu"
+
+#: ../gio/gfile.c:2480 ../gio/glocalfile.c:2265
+msgid "Target file exists"
+msgstr "Metavy fajł isnuje"
+
+#: ../gio/gfile.c:2498
+msgid "Can't recursively copy directory"
+msgstr "Niemahčyma rekursiŭna skapijavać kataloh"
+
+#: ../gio/gfile.c:2758
+#, fuzzy
+msgid "Splice not supported"
+msgstr "Symbalnyja spasyłki nie padtrymlivajucca"
+
+# glib/gfileutils.c:348
+#: ../gio/gfile.c:2762
+#, fuzzy, c-format
+msgid "Error splicing file: %s"
+msgstr "Pamyłka adčynieńnia fajłu: %s"
+
+#: ../gio/gfile.c:2909
+#, fuzzy
+msgid "Can't copy special file"
+msgstr "Niemahčyma skapijavać zamiest katalohu"
+
+#: ../gio/gfile.c:3483
+msgid "Invalid symlink value given"
+msgstr "Padadzienaja niapravilnaja vartaść symbalnaj spasyłki"
+
+#: ../gio/gfile.c:3577
+msgid "Trash not supported"
+msgstr "Śmietnica nie padtrymlivajacca"
+
+#: ../gio/gfile.c:3626
+#, c-format
+msgid "File names cannot contain '%c'"
+msgstr "Nazvy fajłaŭ nia mohuć utrymlivać \"%c\""
+
+#: ../gio/gfile.c:6006 ../gio/gvolume.c:332
+msgid "volume doesn't implement mount"
+msgstr "masiŭ nie zaimplementavaŭ mantavańnia (mount)"
+
+#: ../gio/gfile.c:6117
+msgid "No application is registered as handling this file"
+msgstr "Nivodnaja aplikacyja nie zarehistravanaja dla pracy z hetym fajłam"
+
+#: ../gio/gfileenumerator.c:205
+msgid "Enumerator is closed"
+msgstr "Ličylnik začynieny"
+
+#: ../gio/gfileenumerator.c:212 ../gio/gfileenumerator.c:271
+#: ../gio/gfileenumerator.c:371 ../gio/gfileenumerator.c:480
+msgid "File enumerator has outstanding operation"
+msgstr "U fajłavaha ličylnika jość važkaja aperacyja"
+
+#: ../gio/gfileenumerator.c:361 ../gio/gfileenumerator.c:470
+msgid "File enumerator is already closed"
+msgstr "Fajłavy ličylnik užo začynieny"
+
+#: ../gio/gfileicon.c:236
+#, c-format
+msgid "Can't handle version %d of GFileIcon encoding"
+msgstr ""
+
+#: ../gio/gfileicon.c:246
+msgid "Malformed input data for GFileIcon"
+msgstr ""
+
+#: ../gio/gfileinputstream.c:154 ../gio/gfileinputstream.c:420
+#: ../gio/gfileiostream.c:170 ../gio/gfileoutputstream.c:169
+#: ../gio/gfileoutputstream.c:523
+msgid "Stream doesn't support query_info"
+msgstr "Płyń nie padtrymlivaje query_info"
+
+#: ../gio/gfileinputstream.c:335 ../gio/gfileiostream.c:387
+#: ../gio/gfileoutputstream.c:381
+msgid "Seek not supported on stream"
+msgstr "Dla płyni nie padtrymlivajecca zruch"
+
+#: ../gio/gfileinputstream.c:379
+msgid "Truncate not allowed on input stream"
+msgstr "Dla ŭvachodnaj płyni nie dazvolenaje abcinańnie"
+
+#: ../gio/gfileiostream.c:463 ../gio/gfileoutputstream.c:457
+msgid "Truncate not supported on stream"
+msgstr "Dla płyni nie padtrymlivajecca abcinańnie"
+
+#: ../gio/gicon.c:284
+#, c-format
+msgid "Wrong number of tokens (%d)"
+msgstr ""
+
+#: ../gio/gicon.c:304
+#, c-format
+msgid "No type for class name %s"
+msgstr ""
+
+#: ../gio/gicon.c:314
+#, c-format
+msgid "Type %s does not implement the GIcon interface"
+msgstr ""
+
+#: ../gio/gicon.c:325
+#, c-format
+msgid "Type %s is not classed"
+msgstr ""
+
+#: ../gio/gicon.c:339
+#, c-format
+msgid "Malformed version number: %s"
+msgstr ""
+
+#: ../gio/gicon.c:353
+#, c-format
+msgid "Type %s does not implement from_tokens() on the GIcon interface"
+msgstr ""
+
+#: ../gio/gicon.c:430
+msgid "Can't handle the supplied version the icon encoding"
+msgstr ""
+
+#: ../gio/ginputstream.c:194
+msgid "Input stream doesn't implement read"
+msgstr "Uvachodnaja płyń nie zaimplementavała čytańnia (read)"
+
+#. Translators: This is an error you get if there is already an
+#. * operation running against this stream when you try to start
+#. * one
+#. Translators: This is an error you get if there is
+#. * already an operation running against this stream when
+#. * you try to start one
+#: ../gio/ginputstream.c:898 ../gio/giostream.c:316
+#: ../gio/goutputstream.c:1216
+msgid "Stream has outstanding operation"
+msgstr "Dla płyni jość važkaja aperacyja"
+
+#: ../gio/ginetsocketaddress.c:181 ../gio/ginetsocketaddress.c:198
+#: ../gio/gunixsocketaddress.c:221
+msgid "Not enough space for socket address"
+msgstr ""
+
+#: ../gio/ginetsocketaddress.c:211
+msgid "Unsupported socket address"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:741
+#, fuzzy
+msgid "empty names are not permitted"
+msgstr "Śmietnica nie padtrymlivajacca"
+
+#: ../gio/glib-compile-schemas.c:751
+#, c-format
+msgid "invalid name '%s': names must begin with a lowercase letter"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:763
+#, c-format
+msgid ""
+"invalid name '%s': invalid character '%c'; only lowercase letters, numbers "
+"and dash ('-') are permitted."
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:772
+#, c-format
+msgid "invalid name '%s': two successive dashes ('--') are not permitted."
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:781
+#, c-format
+msgid "invalid name '%s': the last character may not be a dash ('-')."
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:789
+#, c-format
+msgid "invalid name '%s': maximum length is 1024"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:858
+#, c-format
+msgid "<child name='%s'> already specified"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:884
+msgid "can not add keys to a 'list-of' schema"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:895
+#, c-format
+msgid "<key name='%s'> already specified"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:913
+#, c-format
+msgid ""
+"<key name='%s'> shadows <key name='%s'> in <schema id='%s'>; use <override> "
+"to modify value"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:924
+#, c-format
+msgid ""
+"exactly one of 'type', 'enum' or 'flags' must be specified as an attribute "
+"to <key>"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:943
+#, c-format
+msgid "<%s id='%s'> not (yet) defined."
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:958
+#, fuzzy, c-format
+msgid "invalid GVariant type string '%s'"
+msgstr "Niapravilny typ atrybutu (čakaŭsia tekstavy radok)"
+
+#: ../gio/glib-compile-schemas.c:988
+msgid "<override> given but schema isn't extending anything"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1001
+#, c-format
+msgid "no <key name='%s'> to override"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1009
+#, c-format
+msgid "<override name='%s'> already specified"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1080
+#, c-format
+msgid "<schema id='%s'> already specified"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1092
+#, c-format
+msgid "<schema id='%s'> extends not yet existing schema '%s'"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1108
+#, c-format
+msgid "<schema id='%s'> is list of not yet existing schema '%s'"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1116
+#, c-format
+msgid "Can not be a list of a schema with a path"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1126
+#, c-format
+msgid "Can not extend a schema with a path"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1136
+#, c-format
+msgid ""
+"<schema id='%s'> is a list, extending <schema id='%s'> which is not a list"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1146
+#, c-format
+msgid ""
+"<schema id='%s' list-of='%s'> extends <schema id='%s' list-of='%s'> but '%s' "
+"does not extend '%s'"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1163
+#, c-format
+msgid "a path, if given, must begin and end with a slash"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1170
+#, c-format
+msgid "the path of a list must end with ':/'"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1196
+#, c-format
+msgid "<%s id='%s'> already specified"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1416
+#, c-format
+msgid "Element <%s> not allowed inside <%s>"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1420
+#, c-format
+msgid "Element <%s> not allowed at toplevel"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1511
+#, c-format
+msgid "text may not appear inside <%s>"
+msgstr ""
+
+#. Translators: Do not translate "--strict".
+#: ../gio/glib-compile-schemas.c:1696 ../gio/glib-compile-schemas.c:1767
+#: ../gio/glib-compile-schemas.c:1843
+#, c-format
+msgid "--strict was specified; exiting.\n"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1704
+#, c-format
+msgid "This entire file has been ignored.\n"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1763
+#, c-format
+msgid "Ignoring this file.\n"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1803
+#, c-format
+msgid "No such key '%s' in schema '%s' as specified in override file '%s'"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1809 ../gio/glib-compile-schemas.c:1867
+#: ../gio/glib-compile-schemas.c:1895
+#, c-format
+msgid "; ignoring override for this key.\n"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1813 ../gio/glib-compile-schemas.c:1871
+#: ../gio/glib-compile-schemas.c:1899
+#, c-format
+msgid " and --strict was specified; exiting.\n"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1829
+#, c-format
+msgid ""
+"error parsing key '%s' in schema '%s' as specified in override file '%s': "
+"%s.  "
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1839
+#, c-format
+msgid "Ignoring override for this key.\n"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1857
+#, c-format
+msgid ""
+"override for key '%s' in schema '%s' in override file '%s' is out of the "
+"range given in the schema"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1885
+#, c-format
+msgid ""
+"override for key '%s' in schema '%s' in override file '%s' is not in the "
+"list of valid choices"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1939
+msgid "where to store the gschemas.compiled file"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1939 ../gio/glib-compile-schemas.c:1970
+msgid "DIRECTORY"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1940
+msgid "Abort on any errors in schemas"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1941
+msgid "Do not write the gschema.compiled file"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1942
+msgid "This option will be removed soon."
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1943
+msgid "Do not enforce key name restrictions"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1973
+msgid ""
+"Compile all GSettings schema files into a schema cache.\n"
+"Schema files are required to have the extension .gschema.xml,\n"
+"and the cache file is called gschemas.compiled."
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:1989
+#, c-format
+msgid "You should give exactly one directory name\n"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:2028
+#, c-format
+msgid "No schema files found: "
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:2031
+#, c-format
+msgid "doing nothing.\n"
+msgstr ""
+
+#: ../gio/glib-compile-schemas.c:2034
+#, c-format
+msgid "removed existing output file.\n"
+msgstr ""
+
+#: ../gio/glocaldirectorymonitor.c:287
+msgid "Unable to find default local directory monitor type"
+msgstr "Niemahčyma znajści zmoŭčany typ manitora dla lakalnaha katalohu"
+
+# glib/gconvert.c:1729
+#: ../gio/glocalfile.c:571 ../gio/win32/gwinhttpfile.c:422
+#, c-format
+msgid "Invalid filename %s"
+msgstr "Niapravilnaja nazva fajłu %s"
+
+# glib/gfileutils.c:348
+#: ../gio/glocalfile.c:948
+#, c-format
+msgid "Error getting filesystem info: %s"
+msgstr "Pamyłka atrymańnia źviestak ab fajłavaj systemie: %s"
+
+#: ../gio/glocalfile.c:1097
+msgid "Can't rename root directory"
+msgstr "Niemahčyma źmianić nazvu dla karaniovaha katalohu"
+
+# glib/gfileutils.c:348
+#: ../gio/glocalfile.c:1117 ../gio/glocalfile.c:1143
+#, c-format
+msgid "Error renaming file: %s"
+msgstr "Pamyłka adčytańnia fajłu: %s"
+
+#: ../gio/glocalfile.c:1126
+#, fuzzy
+msgid "Can't rename file, filename already exists"
+msgstr "Niemahčyma źmianić nazvu dla fajłu, taki fajł užo isnuje"
+
+# glib/gconvert.c:1729
+#: ../gio/glocalfile.c:1139 ../gio/glocalfile.c:2129 ../gio/glocalfile.c:2158
+#: ../gio/glocalfile.c:2318 ../gio/glocalfileoutputstream.c:571
+#: ../gio/glocalfileoutputstream.c:624 ../gio/glocalfileoutputstream.c:669
+#: ../gio/glocalfileoutputstream.c:1157
+msgid "Invalid filename"
+msgstr "Niapravilnaja nazva fajłu"
+
+# glib/gfileutils.c:348
+#: ../gio/glocalfile.c:1300
+#, c-format
+msgid "Error opening file: %s"
+msgstr "Pamyłka adčynieńnia fajłu: %s"
+
+#: ../gio/glocalfile.c:1316
+msgid "Can't open directory"
+msgstr "Niemahčyma adčynić kataloh"
+
+# glib/gfileutils.c:348
+#: ../gio/glocalfile.c:1441
+#, c-format
+msgid "Error removing file: %s"
+msgstr "Pamyłka vydaleńnia fajłu: %s"
+
+# glib/gfileutils.c:348
+#: ../gio/glocalfile.c:1808
+#, c-format
+msgid "Error trashing file: %s"
+msgstr "Pamyłka vykidańnia ŭ śmietnicu fajłu: %s"
+
+# glib/gfileutils.c:745
+#: ../gio/glocalfile.c:1831
+#, c-format
+msgid "Unable to create trash dir %s: %s"
+msgstr "Niemahčyma stvaryć kataloh śmietnicy %s: %s"
+
+#: ../gio/glocalfile.c:1852
+msgid "Unable to find toplevel directory for trash"
+msgstr "Niemahčyma znajści najvyšejšy kataloh dziela śmiećcia"
+
+#: ../gio/glocalfile.c:1931 ../gio/glocalfile.c:1951
+msgid "Unable to find or create trash directory"
+msgstr "Niemahčyma znajści ci stvaryć kataloh dziela śmiećcia"
+
+# glib/gfileutils.c:745
+#: ../gio/glocalfile.c:1985
+#, c-format
+msgid "Unable to create trashing info file: %s"
+msgstr "Niemahčyma stvaryć śmiaćciovy fajł źviestak: %s"
+
+# glib/gfileutils.c:745
+#: ../gio/glocalfile.c:2014 ../gio/glocalfile.c:2019 ../gio/glocalfile.c:2099
+#: ../gio/glocalfile.c:2106
+#, c-format
+msgid "Unable to trash file: %s"
+msgstr "Niemahčyma vykinuć u śmietnicu fajł: %s"
+
+# glib/gdir.c:79
+#: ../gio/glocalfile.c:2133
+#, fuzzy, c-format
+msgid "Error creating directory: %s"
+msgstr "Pamyłka pry adčynieńni katalohu '%s': %s"
+
+# glib/gfileutils.c:745
+#: ../gio/glocalfile.c:2162
+#, fuzzy, c-format
+msgid "Filesystem does not support symbolic links"
+msgstr "Niemahčyma pračytać symbalnuju spasyłku '%s': %s"
+
+# glib/gconvert.c:597 glib/gconvert.c:813 glib/giochannel.c:1289
+# glib/giochannel.c:2175
+#: ../gio/glocalfile.c:2166
+#, c-format
+msgid "Error making symbolic link: %s"
+msgstr "Pamyłka stvareńnia symbalnaj spasyłki: %s"
+
+# glib/gfileutils.c:348
+#: ../gio/glocalfile.c:2228 ../gio/glocalfile.c:2322
+#, c-format
+msgid "Error moving file: %s"
+msgstr "Pamyłka pieranosu fajłu: %s"
+
+#: ../gio/glocalfile.c:2251
+msgid "Can't move directory over directory"
+msgstr "Niemahčyma pieranieści kataloh zamiest inšaha katalohu"
+
+#: ../gio/glocalfile.c:2278 ../gio/glocalfileoutputstream.c:955
+#: ../gio/glocalfileoutputstream.c:969 ../gio/glocalfileoutputstream.c:984
+#: ../gio/glocalfileoutputstream.c:1000 ../gio/glocalfileoutputstream.c:1014
+msgid "Backup file creation failed"
+msgstr "Niaŭdałaje stvareńnie zapasnoha fajłu"
+
+# glib/gfileutils.c:348
+#: ../gio/glocalfile.c:2297
+#, c-format
+msgid "Error removing target file: %s"
+msgstr "Pamyłka vydaleńnia metavaha fajłu: %s"
+
+#: ../gio/glocalfile.c:2311
+msgid "Move between mounts not supported"
+msgstr "Pieranos pamiž punktami mantavańnia nie padtrymlivajecca"
+
+#: ../gio/glocalfileinfo.c:719
+msgid "Attribute value must be non-NULL"
+msgstr "Vartaść atrybutu musić być nia-NULL"
+
+#: ../gio/glocalfileinfo.c:726
+msgid "Invalid attribute type (string expected)"
+msgstr "Niapravilny typ atrybutu (čakaŭsia tekstavy radok)"
+
+# glib/gmarkup.c:1615
+#: ../gio/glocalfileinfo.c:733
+msgid "Invalid extended attribute name"
+msgstr "Niapravilnaja nazva pašyranaha atrybutu"
+
+# glib/gdir.c:79
+#: ../gio/glocalfileinfo.c:773
+#, c-format
+msgid "Error setting extended attribute '%s': %s"
+msgstr "Pamyłka akreśleńnia pašyranaha atrybutu '%s': %s"
+
+# glib/gfileutils.c:348
+#: ../gio/glocalfileinfo.c:1482 ../gio/glocalfileoutputstream.c:833
+#, c-format
+msgid "Error stating file '%s': %s"
+msgstr "Pamyłka atrymańnia stat() dla fajłu '%s': %s"
+
+#: ../gio/glocalfileinfo.c:1566
+msgid " (invalid encoding)"
+msgstr " (niapravilnaje kadavańnie)"
+
+# glib/gfileutils.c:348
+#: ../gio/glocalfileinfo.c:1768
+#, c-format
+msgid "Error stating file descriptor: %s"
+msgstr "Pamyłka atrymańnia stat() dla fajłavaha deskryptara: %s"
+
+#: ../gio/glocalfileinfo.c:1813
+msgid "Invalid attribute type (uint32 expected)"
+msgstr "Niapravilny typ atrybutu (čakaŭsia uint32)"
+
+#: ../gio/glocalfileinfo.c:1831
+msgid "Invalid attribute type (uint64 expected)"
+msgstr "Niapravilny typ atrybutu (čakaŭsia uint64)"
+
+#: ../gio/glocalfileinfo.c:1850 ../gio/glocalfileinfo.c:1869
+msgid "Invalid attribute type (byte string expected)"
+msgstr "Niapravilny typ atrybutu (čakaŭsia bajtavy radok)"
+
+# glib/gconvert.c:597 glib/gconvert.c:813 glib/giochannel.c:1289
+# glib/giochannel.c:2175
+#: ../gio/glocalfileinfo.c:1904
+#, fuzzy
+msgid "Cannot set permissions on symlinks"
+msgstr "Pamyłka akreśleńnia pravoŭ: %s"
+
+# glib/gconvert.c:597 glib/gconvert.c:813 glib/giochannel.c:1289
+# glib/giochannel.c:2175
+#: ../gio/glocalfileinfo.c:1920
+#, c-format
+msgid "Error setting permissions: %s"
+msgstr "Pamyłka akreśleńnia pravoŭ: %s"
+
+# glib/gconvert.c:597 glib/gconvert.c:813 glib/giochannel.c:1289
+# glib/giochannel.c:2175
+#: ../gio/glocalfileinfo.c:1971
+#, c-format
+msgid "Error setting owner: %s"
+msgstr "Pamyłka akreśleńnia ŭładalnika: %s"
+
+#: ../gio/glocalfileinfo.c:1994
+msgid "symlink must be non-NULL"
+msgstr "symbalnaja spasyłka musić być nia-NULL"
+
+# glib/gmarkup.c:303
+#: ../gio/glocalfileinfo.c:2004 ../gio/glocalfileinfo.c:2023
+#: ../gio/glocalfileinfo.c:2034
+#, c-format
+msgid "Error setting symlink: %s"
+msgstr "Pamyłka akreśleńnia symbalnaj spasyłki: %s"
+
+#: ../gio/glocalfileinfo.c:2013
+msgid "Error setting symlink: file is not a symlink"
+msgstr ""
+"Pamyłka akreśleńnia symbalnaj spasyłki: fajł nie źjaŭlajecca symbalnaj "
+"spasyłkaj"
+
+# glib/gconvert.c:597 glib/gconvert.c:813 glib/giochannel.c:1289
+# glib/giochannel.c:2175
+#: ../gio/glocalfileinfo.c:2139
+#, fuzzy, c-format
+msgid "Error setting modification or access time: %s"
+msgstr "Pamyłka akreśleńnia pravoŭ: %s"
+
+#: ../gio/glocalfileinfo.c:2162
+#, fuzzy
+msgid "SELinux context must be non-NULL"
+msgstr "symbalnaja spasyłka musić być nia-NULL"
+
+# glib/gconvert.c:597 glib/gconvert.c:813 glib/giochannel.c:1289
+# glib/giochannel.c:2175
+#: ../gio/glocalfileinfo.c:2177
+#, fuzzy, c-format
+msgid "Error setting SELinux context: %s"
+msgstr "Pamyłka akreśleńnia ŭładalnika: %s"
+
+#: ../gio/glocalfileinfo.c:2184
+msgid "SELinux is not enabled on this system"
+msgstr ""
+
+#: ../gio/glocalfileinfo.c:2276
+#, c-format
+msgid "Setting attribute %s not supported"
+msgstr "Akreśleńnie atrybutu %s nie padtrymlivajecca"
+
+# glib/gfileutils.c:348
+#: ../gio/glocalfileinputstream.c:185 ../gio/glocalfileoutputstream.c:722
+#, c-format
+msgid "Error reading from file: %s"
+msgstr "Pamyłka adčytańnia z fajłu: %s"
+
+# glib/gfileutils.c:348
+#: ../gio/glocalfileinputstream.c:216 ../gio/glocalfileinputstream.c:228
+#: ../gio/glocalfileinputstream.c:340 ../gio/glocalfileoutputstream.c:470
+#: ../gio/glocalfileoutputstream.c:1032
+#, c-format
+msgid "Error seeking in file: %s"
+msgstr "Pamyłka zruchu ŭ fajle: %s"
+
+# glib/gfileutils.c:348
+#: ../gio/glocalfileinputstream.c:261 ../gio/glocalfileoutputstream.c:256
+#: ../gio/glocalfileoutputstream.c:351
+#, c-format
+msgid "Error closing file: %s"
+msgstr "Pamyłka začynieńnia fajłu: %s"
+
+#: ../gio/glocalfilemonitor.c:212
+msgid "Unable to find default local file monitor type"
+msgstr "Niemahčyma znajści zmoŭčany typ manitora dla lakalnaha fajłu"
+
+# glib/gfileutils.c:348
+#: ../gio/glocalfileoutputstream.c:202 ../gio/glocalfileoutputstream.c:235
+#: ../gio/glocalfileoutputstream.c:743
+#, c-format
+msgid "Error writing to file: %s"
+msgstr "Pamyłka zapisu ŭ fajł: %s"
+
+# glib/gconvert.c:597 glib/gconvert.c:813 glib/giochannel.c:1289
+# glib/giochannel.c:2175
+#: ../gio/glocalfileoutputstream.c:283
+#, c-format
+msgid "Error removing old backup link: %s"
+msgstr "Pamyłka vydaleńnia staroj zapasnoj spasyłki: %s"
+
+# glib/gfileutils.c:348
+#: ../gio/glocalfileoutputstream.c:297 ../gio/glocalfileoutputstream.c:310
+#, c-format
+msgid "Error creating backup copy: %s"
+msgstr "Pamyłka stvareńnia zapasnoj kopii: %s"
+
+# glib/gfileutils.c:348
+#: ../gio/glocalfileoutputstream.c:328
+#, c-format
+msgid "Error renaming temporary file: %s"
+msgstr "Pamyłka źmieny nazy časovaha fajłu: %s"
+
+# glib/gfileutils.c:348
+#: ../gio/glocalfileoutputstream.c:516 ../gio/glocalfileoutputstream.c:1083
+#, c-format
+msgid "Error truncating file: %s"
+msgstr "Pamyłka abcinańnia fajłu: %s"
+
+# glib/gfileutils.c:348
+#: ../gio/glocalfileoutputstream.c:577 ../gio/glocalfileoutputstream.c:630
+#: ../gio/glocalfileoutputstream.c:675 ../gio/glocalfileoutputstream.c:815
+#: ../gio/glocalfileoutputstream.c:1064 ../gio/glocalfileoutputstream.c:1163
+#, c-format
+msgid "Error opening file '%s': %s"
+msgstr "Pamyłka adčynieńnia fajłu '%s': %s"
+
+#: ../gio/glocalfileoutputstream.c:846
+msgid "Target file is a directory"
+msgstr "Metavy fajł źjaŭlajecca kataloham"
+
+#: ../gio/glocalfileoutputstream.c:851
+msgid "Target file is not a regular file"
+msgstr "Metavy fajł nia prosty"
+
+#: ../gio/glocalfileoutputstream.c:863
+msgid "The file was externally modified"
+msgstr "Fajł byŭ źmienieny zvonku"
+
+# glib/gfileutils.c:348
+#: ../gio/glocalfileoutputstream.c:1048
+#, fuzzy, c-format
+msgid "Error removing old file: %s"
+msgstr "Pamyłka vydaleńnia fajłu: %s"
+
+#: ../gio/gmemoryinputstream.c:486 ../gio/gmemoryoutputstream.c:746
+msgid "Invalid GSeekType supplied"
+msgstr "Akreśleny niapravilny GSeekType"
+
+# glib/gconvert.c:1729
+#: ../gio/gmemoryinputstream.c:496
+msgid "Invalid seek request"
+msgstr "Niapravilnaja zapyt pieraskoku ŭ fajle"
+
+#: ../gio/gmemoryinputstream.c:520
+msgid "Cannot truncate GMemoryInputStream"
+msgstr "Niemahčyma padrezać GMemoryInputStream"
+
+#: ../gio/gmemoryoutputstream.c:496
+msgid "Memory output stream not resizable"
+msgstr "Nielha źmianiać pamier płyni vyjścia ŭ pamiaci"
+
+#: ../gio/gmemoryoutputstream.c:512
+msgid "Failed to resize memory output stream"
+msgstr "Nie ŭdałosia źmianić pamier płyni vyjścia ŭ pamiaci"
+
+#: ../gio/gmemoryoutputstream.c:600
+msgid ""
+"Amount of memory required to process the write is larger than available "
+"address space"
+msgstr ""
+
+#: ../gio/gmemoryoutputstream.c:756
+msgid "Requested seek before the beginning of the stream"
+msgstr ""
+
+#: ../gio/gmemoryoutputstream.c:765
+msgid "Requested seek beyond the end of the stream"
+msgstr ""
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement unmount.
+#: ../gio/gmount.c:363
+#, fuzzy
+msgid "mount doesn't implement \"unmount\""
+msgstr "mantavańnie nie zaimplementavała admantavańnia (unmount)"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement eject.
+#: ../gio/gmount.c:442
+#, fuzzy
+msgid "mount doesn't implement \"eject\""
+msgstr "mantavańnie nie zaimplementavała vysoŭvańnia (eject)"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement any of unmount or unmount_with_operation.
+#: ../gio/gmount.c:523
+#, fuzzy
+msgid "mount doesn't implement \"unmount\" or \"unmount_with_operation\""
+msgstr "mantavańnie nie zaimplementavała admantavańnia (unmount)"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement any of eject or eject_with_operation.
+#: ../gio/gmount.c:611
+#, fuzzy
+msgid "mount doesn't implement \"eject\" or \"eject_with_operation\""
+msgstr "mantavańnie nie zaimplementavała vysoŭvańnia (eject)"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement remount.
+#: ../gio/gmount.c:701
+#, fuzzy
+msgid "mount doesn't implement \"remount\""
+msgstr "mantavańnie nie zaimplementavała pieramantavańnia (remount)"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement content type guessing.
+#: ../gio/gmount.c:785
+#, fuzzy
+msgid "mount doesn't implement content type guessing"
+msgstr "mantavańnie nie zaimplementavała admantavańnia (unmount)"
+
+#. Translators: This is an error
+#. * message for mount objects that
+#. * don't implement content type guessing.
+#: ../gio/gmount.c:874
+#, fuzzy
+msgid "mount doesn't implement synchronous content type guessing"
+msgstr "mantavańnie nie zaimplementavała admantavańnia (unmount)"
+
+#: ../gio/gnetworkaddress.c:322
+#, c-format
+msgid "Hostname '%s' contains '[' but not ']'"
+msgstr ""
+
+#: ../gio/goutputstream.c:207 ../gio/goutputstream.c:411
+msgid "Output stream doesn't implement write"
+msgstr "Vyjściovaja płyń nie zaimplementavała zapisu (write)"
+
+#: ../gio/goutputstream.c:372 ../gio/goutputstream.c:855
+msgid "Source stream is already closed"
+msgstr "Kryničnaja płyń užo začynienaja"
+
+# glib/gfileutils.c:348
+#: ../gio/gresolver.c:779
+#, fuzzy, c-format
+msgid "Error resolving '%s': %s"
+msgstr "Pamyłka adčytańnia fajłu '%s': %s"
+
+# glib/gfileutils.c:348
+#: ../gio/gresolver.c:829
+#, fuzzy, c-format
+msgid "Error reverse-resolving '%s': %s"
+msgstr "Pamyłka adčytańnia fajłu '%s': %s"
+
+#: ../gio/gresolver.c:864 ../gio/gresolver.c:943
+#, c-format
+msgid "No service record for '%s'"
+msgstr ""
+
+#: ../gio/gresolver.c:869 ../gio/gresolver.c:948
+#, c-format
+msgid "Temporarily unable to resolve '%s'"
+msgstr ""
+
+# glib/gfileutils.c:348
+#: ../gio/gresolver.c:874 ../gio/gresolver.c:953
+#, fuzzy, c-format
+msgid "Error resolving '%s'"
+msgstr "Pamyłka vydaleńnia fajłu: %s"
+
+#: ../gio/gsettings-tool.c:60
+#, c-format
+msgid "Schema '%s' is not relocatable (path must not be specified)\n"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:65 ../gio/gsettings-tool.c:82
+#, c-format
+msgid "No such schema '%s'\n"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:77
+#, c-format
+msgid "Schema '%s' is relocatable (path must be specified)\n"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:92
+#, c-format
+msgid "Empty path given.\n"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:98
+#, c-format
+msgid "Path must begin with a slash (/)\n"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:104
+#, c-format
+msgid "Path must end with a slash (/)\n"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:110
+#, c-format
+msgid "Path must not contain two adjacent slashes (//)\n"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:131
+#, c-format
+msgid "No such key '%s'\n"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:504
+#, c-format
+msgid "The provided value is outside of the valid range\n"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:533
+msgid "Print help"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:539
+msgid "List the installed (non-relocatable) schemas"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:545
+msgid "List the installed relocatable schemas"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:551
+msgid "List the keys in SCHEMA"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:552 ../gio/gsettings-tool.c:558
+#: ../gio/gsettings-tool.c:595
+msgid "SCHEMA[:PATH]"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:557
+msgid "List the children of SCHEMA"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:563
+msgid ""
+"List keys and values, recursively\n"
+"If no SCHEMA is given, list all keys\n"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:565
+msgid "[SCHEMA[:PATH]]"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:570
+msgid "Get the value of KEY"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:571 ../gio/gsettings-tool.c:577
+#: ../gio/gsettings-tool.c:589 ../gio/gsettings-tool.c:601
+msgid "SCHEMA[:PATH] KEY"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:576
+msgid "Query the range of valid values for KEY"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:582
+msgid "Set the value of KEY to VALUE"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:583
+msgid "SCHEMA[:PATH] KEY VALUE"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:588
+msgid "Reset KEY to its default value"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:594
+msgid "Reset all keys in SCHEMA to their defaults"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:600
+msgid "Check if KEY is writable"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:606
+msgid ""
+"Monitor KEY for changes.\n"
+"If no KEY is specified, monitor all keys in SCHEMA.\n"
+"Use ^C to stop monitoring.\n"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:609
+msgid "SCHEMA[:PATH] [KEY]"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:613
+#, fuzzy, c-format
+msgid ""
+"Unknown command %s\n"
+"\n"
+msgstr "Nieviadomaja opcyja %s"
+
+#: ../gio/gsettings-tool.c:621
+msgid ""
+"Usage:\n"
+"  gsettings COMMAND [ARGS...]\n"
+"\n"
+"Commands:\n"
+"  help                      Show this information\n"
+"  list-schemas              List installed schemas\n"
+"  list-relocatable-schemas  List relocatable schemas\n"
+"  list-keys                 List keys in a schema\n"
+"  list-children             List children of a schema\n"
+"  list-recursively          List keys and values, recursively\n"
+"  range                     Queries the range of a key\n"
+"  get                       Get the value of a key\n"
+"  set                       Set the value of a key\n"
+"  reset                     Reset the value of a key\n"
+"  reset-recursively         Reset all values in a given schema\n"
+"  writable                  Check if a key is writable\n"
+"  monitor                   Watch for changes\n"
+"\n"
+"Use 'gsettings help COMMAND' to get detailed help.\n"
+"\n"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:643
+#, c-format
+msgid ""
+"Usage:\n"
+"  gsettings %s %s\n"
+"\n"
+"%s\n"
+"\n"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:648
+msgid "Arguments:\n"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:652
+msgid "  COMMAND   The (optional) command to explain\n"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:656
+msgid ""
+"  SCHEMA    The name of the schema\n"
+"  PATH      The path, for relocatable schemas\n"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:661
+msgid "  KEY       The (optional) key within the schema\n"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:665
+msgid "  KEY       The key within the schema\n"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:669
+msgid "  VALUE     The value to set\n"
+msgstr ""
+
+#: ../gio/gsettings-tool.c:766
+#, c-format
+msgid "Empty schema name given\n"
+msgstr ""
+
+#: ../gio/gsocket.c:275
+msgid "Invalid socket, not initialized"
+msgstr ""
+
+#: ../gio/gsocket.c:282
+#, c-format
+msgid "Invalid socket, initialization failed due to: %s"
+msgstr ""
+
+#: ../gio/gsocket.c:290
+#, fuzzy
+msgid "Socket is already closed"
+msgstr "Kryničnaja płyń užo začynienaja"
+
+#: ../gio/gsocket.c:298 ../gio/gsocket.c:2798 ../gio/gsocket.c:2842
+msgid "Socket I/O timed out"
+msgstr ""
+
+# glib/gfileutils.c:348
+#: ../gio/gsocket.c:464
+#, fuzzy, c-format
+msgid "creating GSocket from fd: %s"
+msgstr "Pamyłka adčytańnia z fajłu: %s"
+
+# glib/gfileutils.c:745
+#: ../gio/gsocket.c:498 ../gio/gsocket.c:514
+#, fuzzy, c-format
+msgid "Unable to create socket: %s"
+msgstr "Niemahčyma stvaryć kataloh śmietnicy %s: %s"
+
+#: ../gio/gsocket.c:498
+msgid "Unknown protocol was specified"
+msgstr ""
+
+#: ../gio/gsocket.c:1268
+#, c-format
+msgid "could not get local address: %s"
+msgstr ""
+
+#: ../gio/gsocket.c:1311
+#, c-format
+msgid "could not get remote address: %s"
+msgstr ""
+
+#: ../gio/gsocket.c:1372
+#, c-format
+msgid "could not listen: %s"
+msgstr ""
+
+# glib/gfileutils.c:348
+#: ../gio/gsocket.c:1446
+#, fuzzy, c-format
+msgid "Error binding to address: %s"
+msgstr "Pamyłka zapisu ŭ fajł: %s"
+
+# glib/gconvert.c:597 glib/gconvert.c:813 glib/giochannel.c:1289
+# glib/giochannel.c:2175
+#: ../gio/gsocket.c:1566
+#, fuzzy, c-format
+msgid "Error accepting connection: %s"
+msgstr "Pamyłka padčas kanversii: %s"
+
+# glib/gfileutils.c:348
+#: ../gio/gsocket.c:1683
+#, fuzzy
+msgid "Error connecting: "
+msgstr "Pamyłka abcinańnia fajłu: %s"
+
+#: ../gio/gsocket.c:1688
+msgid "Connection in progress"
+msgstr ""
+
+# glib/gfileutils.c:348
+#: ../gio/gsocket.c:1695
+#, fuzzy, c-format
+msgid "Error connecting: %s"
+msgstr "Pamyłka adčynieńnia fajłu: %s"
+
+# glib/gfileutils.c:745
+#: ../gio/gsocket.c:1738 ../gio/gsocket.c:3579
+#, fuzzy, c-format
+msgid "Unable to get pending error: %s"
+msgstr "Niemahčyma vykinuć u śmietnicu fajł: %s"
+
+# glib/gfileutils.c:348
+#: ../gio/gsocket.c:1875
+#, fuzzy, c-format
+msgid "Error receiving data: %s"
+msgstr "Pamyłka vydaleńnia fajłu: %s"
+
+# glib/gfileutils.c:348
+#: ../gio/gsocket.c:2050
+#, fuzzy, c-format
+msgid "Error sending data: %s"
+msgstr "Pamyłka adčynieńnia fajłu: %s"
+
+# glib/gfileutils.c:745
+#: ../gio/gsocket.c:2163
+#, fuzzy, c-format
+msgid "Unable to shutdown socket: %s"
+msgstr "Niemahčyma stvaryć kataloh śmietnicy %s: %s"
+
+# glib/gfileutils.c:348
+#: ../gio/gsocket.c:2242
+#, fuzzy, c-format
+msgid "Error closing socket: %s"
+msgstr "Pamyłka začynieńnia fajłu: %s"
+
+#: ../gio/gsocket.c:2791
+#, c-format
+msgid "Waiting for socket condition: %s"
+msgstr ""
+
+# glib/gfileutils.c:348
+#: ../gio/gsocket.c:3056 ../gio/gsocket.c:3137
+#, fuzzy, c-format
+msgid "Error sending message: %s"
+msgstr "Pamyłka adčynieńnia fajłu: %s"
+
+#: ../gio/gsocket.c:3081
+#, fuzzy
+msgid "GSocketControlMessage not supported on windows"
+msgstr "źmieny asacyjacyjaŭ nie padtrymlivajucca dla win32"
+
+# glib/gfileutils.c:348
+#: ../gio/gsocket.c:3358 ../gio/gsocket.c:3494
+#, fuzzy, c-format
+msgid "Error receiving message: %s"
+msgstr "Pamyłka vydaleńnia fajłu: %s"
+
+#: ../gio/gsocket.c:3598
+msgid "g_socket_get_credentials not implemented for this OS"
+msgstr ""
+
+#: ../gio/gsocketclient.c:798 ../gio/gsocketclient.c:1368
+#, fuzzy
+msgid "Unknown error on connect"
+msgstr "nieviadomaja pamyłka"
+
+#: ../gio/gsocketclient.c:836 ../gio/gsocketclient.c:1252
+msgid "Trying to proxy over non-TCP connection is not supported."
+msgstr ""
+
+#: ../gio/gsocketclient.c:858 ../gio/gsocketclient.c:1277
+#, fuzzy, c-format
+msgid "Proxy protocol '%s' is not supported."
+msgstr "Symbalnyja spasyłki nie padtrymlivajucca"
+
+#: ../gio/gsocketlistener.c:191
+#, fuzzy
+msgid "Listener is already closed"
+msgstr "Płyń užo začynienaja"
+
+#: ../gio/gsocketlistener.c:232
+msgid "Added socket is closed"
+msgstr ""
+
+#: ../gio/gsocks4aproxy.c:121
+#, c-format
+msgid "SOCKSv4 does not support IPv6 address '%s'"
+msgstr ""
+
+#: ../gio/gsocks4aproxy.c:139
+#, c-format
+msgid "SOCKSv4 implementation limits username to %i characters"
+msgstr ""
+
+#: ../gio/gsocks4aproxy.c:157
+#, c-format
+msgid "SOCKSv4a implementation limits hostname to %i characters"
+msgstr ""
+
+#: ../gio/gsocks4aproxy.c:183
+msgid "The server is not a SOCKSv4 proxy server."
+msgstr ""
+
+#: ../gio/gsocks4aproxy.c:190
+msgid "Connection through SOCKSv4 server was rejected"
+msgstr ""
+
+#: ../gio/gsocks5proxy.c:155 ../gio/gsocks5proxy.c:328
+#: ../gio/gsocks5proxy.c:338
+msgid "The server is not a SOCKSv5 proxy server."
+msgstr ""
+
+#: ../gio/gsocks5proxy.c:169
+msgid "The SOCKSv5 proxy requires authentication."
+msgstr ""
+
+#: ../gio/gsocks5proxy.c:179
+msgid ""
+"The SOCKSv5 proxy requires an authentication method that is not supported by "
+"GLib."
+msgstr ""
+
+#: ../gio/gsocks5proxy.c:208
+#, c-format
+msgid "Username or password is too long for SOCKSv5 protocol (max. is %i)."
+msgstr ""
+
+#: ../gio/gsocks5proxy.c:239
+msgid "SOCKSv5 authentication failed due to wrong username or password."
+msgstr ""
+
+#: ../gio/gsocks5proxy.c:289
+#, c-format
+msgid "Hostname '%s' too long for SOCKSv5 protocol (maximum is %i bytes)"
+msgstr ""
+
+#: ../gio/gsocks5proxy.c:352
+msgid "The SOCKSv5 proxy server uses unknown address type."
+msgstr ""
+
+#: ../gio/gsocks5proxy.c:359
+msgid "Internal SOCKSv5 proxy server error."
+msgstr ""
+
+#: ../gio/gsocks5proxy.c:365
+msgid "SOCKSv5 connection not allowed by ruleset."
+msgstr ""
+
+#: ../gio/gsocks5proxy.c:372
+msgid "Host unreachable through SOCKSv5 server."
+msgstr ""
+
+#: ../gio/gsocks5proxy.c:378
+msgid "Network unreachable through SOCKSv5 proxy."
+msgstr ""
+
+#: ../gio/gsocks5proxy.c:384
+msgid "Connection refused through SOCKSv5 proxy."
+msgstr ""
+
+#: ../gio/gsocks5proxy.c:390
+msgid "SOCKSv5 proxy does not support 'connect' command."
+msgstr ""
+
+#: ../gio/gsocks5proxy.c:396
+msgid "SOCKSv5 proxy does not support provided address type."
+msgstr ""
+
+#: ../gio/gsocks5proxy.c:402
+msgid "Unknown SOCKSv5 proxy error."
+msgstr ""
+
+#: ../gio/gthemedicon.c:498
+#, c-format
+msgid "Can't handle version %d of GThemedIcon encoding"
+msgstr ""
+
+#: ../gio/gtlscertificate.c:226
+msgid "No PEM-encoded private key found"
+msgstr ""
+
+#: ../gio/gtlscertificate.c:235
+msgid "Could not parse PEM-encoded private key"
+msgstr ""
+
+#: ../gio/gtlscertificate.c:260
+msgid "No PEM-encoded certificate found"
+msgstr ""
+
+#: ../gio/gtlscertificate.c:269
+msgid "Could not parse PEM-encoded certificate"
+msgstr ""
+
+#: ../gio/gtlspassword.c:114
+msgid ""
+"This is the last chance to enter the password correctly before your access "
+"is locked out."
+msgstr ""
+
+#: ../gio/gtlspassword.c:116
+msgid ""
+"Several password entered have been incorrect, and your access will be locked "
+"out after further failures."
+msgstr ""
+
+#: ../gio/gtlspassword.c:118
+msgid "The password entered is incorrect."
+msgstr ""
+
+#: ../gio/gunixconnection.c:164 ../gio/gunixconnection.c:521
+#, c-format
+msgid "Expecting 1 control message, got %d"
+msgstr ""
+
+#: ../gio/gunixconnection.c:177 ../gio/gunixconnection.c:531
+#, fuzzy
+msgid "Unexpected type of ancillary data"
+msgstr "Zaŭčasny kaniec płyni"
+
+#: ../gio/gunixconnection.c:195
+#, c-format
+msgid "Expecting one fd, but got %d\n"
+msgstr ""
+
+#: ../gio/gunixconnection.c:211
+msgid "Received invalid fd"
+msgstr ""
+
+# glib/gfileutils.c:348
+#: ../gio/gunixconnection.c:371
+#, fuzzy
+msgid "Error sending credentials: "
+msgstr "Pamyłka adčynieńnia fajłu: %s"
+
+#: ../gio/gunixconnection.c:452
+#, c-format
+msgid "Error checking if SO_PASSCRED is enabled for socket: %s"
+msgstr ""
+
+#: ../gio/gunixconnection.c:461
+#, c-format
+msgid ""
+"Unexpected option length while checking if SO_PASSCRED is enabled for "
+"socket. Expected %d bytes, got %d"
+msgstr ""
+
+# glib/gfileutils.c:348
+#: ../gio/gunixconnection.c:478
+#, fuzzy, c-format
+msgid "Error enabling SO_PASSCRED: %s"
+msgstr "Pamyłka adčytańnia fajłu: %s"
+
+#: ../gio/gunixconnection.c:509
+msgid ""
+"Expecting to read a single byte for receiving credentials but read zero bytes"
+msgstr ""
+
+#: ../gio/gunixconnection.c:545
+#, c-format
+msgid "Not expecting control message, but got %d"
+msgstr ""
+
+#: ../gio/gunixconnection.c:571
+#, c-format
+msgid "Error while disabling SO_PASSCRED: %s"
+msgstr ""
+
+# glib/gfileutils.c:348
+#: ../gio/gunixinputstream.c:368 ../gio/gunixinputstream.c:388
+#: ../gio/gunixinputstream.c:466
+#, c-format
+msgid "Error reading from unix: %s"
+msgstr "Pamyłka adčytańnia z unix: %s"
+
+# glib/gmarkup.c:303
+#: ../gio/gunixinputstream.c:421 ../gio/gunixinputstream.c:601
+#: ../gio/gunixoutputstream.c:407 ../gio/gunixoutputstream.c:556
+#, c-format
+msgid "Error closing unix: %s"
+msgstr "Pamyłka začynieńnia unix: %s"
+
+#: ../gio/gunixmounts.c:1900 ../gio/gunixmounts.c:1937
+msgid "Filesystem root"
+msgstr "Korań fajłavaj systemy"
+
+# glib/gconvert.c:597 glib/gconvert.c:813 glib/giochannel.c:1289
+# glib/giochannel.c:2175
+#: ../gio/gunixoutputstream.c:353 ../gio/gunixoutputstream.c:374
+#: ../gio/gunixoutputstream.c:452
+#, c-format
+msgid "Error writing to unix: %s"
+msgstr "Pamyłka zapisu ŭ unix: %s"
+
+#: ../gio/gunixsocketaddress.c:244
+msgid "Abstract unix domain socket addresses not supported on this system"
+msgstr ""
+
+#: ../gio/gvolume.c:408
+msgid "volume doesn't implement eject"
+msgstr "masiŭ nie zaimplementavaŭ vysoŭvańnia (eject)"
+
+#. Translators: This is an error
+#. * message for volume objects that
+#. * don't implement any of eject or eject_with_operation.
+#: ../gio/gvolume.c:488
+#, fuzzy
+msgid "volume doesn't implement eject or eject_with_operation"
+msgstr "masiŭ nie zaimplementavaŭ vysoŭvańnia (eject)"
+
+#: ../gio/gwin32appinfo.c:276
+msgid "Can't find application"
+msgstr "Niemahčyma znajści aplikacyju"
+
+# glib/gconvert.c:597 glib/gconvert.c:813 glib/giochannel.c:1289
+# glib/giochannel.c:2175
+#: ../gio/gwin32appinfo.c:299
+#, c-format
+msgid "Error launching application: %s"
+msgstr "Pamyłka ŭklučeńnia aplikacyi: %s"
+
+#: ../gio/gwin32appinfo.c:335
+msgid "URIs not supported"
+msgstr "Adrasy URI nie padtrymlivajucca"
+
+#: ../gio/gwin32appinfo.c:357
+msgid "association changes not supported on win32"
+msgstr "źmieny asacyjacyjaŭ nie padtrymlivajucca dla win32"
+
+#: ../gio/gwin32appinfo.c:369
+msgid "Association creation not supported on win32"
+msgstr "Stvareńnie asacyjacyjaŭ nie padtrymlivajecca dla win32"
+
+# glib/gfileutils.c:348
+#: ../gio/gwin32inputstream.c:318
+#, fuzzy, c-format
+msgid "Error reading from handle: %s"
+msgstr "Pamyłka adčytańnia z fajłu: %s"
+
+# glib/gfileutils.c:348
+#: ../gio/gwin32inputstream.c:348 ../gio/gwin32outputstream.c:348
+#, fuzzy, c-format
+msgid "Error closing handle: %s"
+msgstr "Pamyłka začynieńnia fajłu: %s"
+
+# glib/gfileutils.c:348
+#: ../gio/gwin32outputstream.c:318
+#, fuzzy, c-format
+msgid "Error writing to handle: %s"
+msgstr "Pamyłka zapisu ŭ fajł: %s"
+
+#: ../gio/gzlibcompressor.c:396 ../gio/gzlibdecompressor.c:349
+#, fuzzy
+msgid "Not enough memory"
+msgstr "nie chapiła pamiaci"
+
+#: ../gio/gzlibcompressor.c:403 ../gio/gzlibdecompressor.c:356
+#, fuzzy, c-format
+msgid "Internal error: %s"
+msgstr "unutranaja pamyłka"
+
+#: ../gio/gzlibcompressor.c:416 ../gio/gzlibdecompressor.c:370
+msgid "Need more input"
+msgstr ""
+
+# glib/gconvert.c:1729
+#: ../gio/gzlibdecompressor.c:342
+#, fuzzy
+msgid "Invalid compressed data"
+msgstr "Niapravilnaja nazva kamputara"
+
+#, fuzzy
+#~ msgid "Do not give error for empty directory"
+#~ msgstr "Niemahčyma pieranieści kataloh zamiest inšaha katalohu"
+
+# glib/gutf8.c:1039 glib/gutf8.c:1048 glib/gutf8.c:1180 glib/gutf8.c:1189
+# glib/gutf8.c:1330 glib/gutf8.c:1426
+#, fuzzy
+#~ msgid "Invalid UTF-8 sequence in input"
+#~ msgstr "Niapravilny paradak na ŭvachodzie kanversii"
+
+#~ msgid "Reached maximum data array limit"
+#~ msgstr "Dasiahnuta maksymalnaje abmiežavańnie masiva źviestak"
+
+#~ msgid "do not hide entries"
+#~ msgstr "nie chavaj elementaŭ"
+
+#~ msgid "use a long listing format"
+#~ msgstr "užyj daŭhi śpiskavy farmat"
+
+#~ msgid "[FILE...]"
+#~ msgstr "[FAJŁ...]"
+
+# glib/gmarkup.c:392
+#~ msgid ""
+#~ "Character '%s' is not valid at the start of an entity name; the & "
+#~ "character begins an entity; if this ampersand isn't supposed to be an "
+#~ "entity, escape it as &amp;"
+#~ msgstr ""
+#~ "Znak '%s' niedapuščalny na pačatku nazvy adzinki; znak & pačynaje "
+#~ "adzinku; kali hety znak nie pavinien pačynać adzinki, zamianicie jaho na "
+#~ "znak &amp;"
+
+# glib/gmarkup.c:570
+#~ msgid "Empty character reference; should include a digit such as &#454;"
+#~ msgstr ""
+#~ "Pustaja spasyłka na znak: u joj pavinien być numar, naprykład &#454;"
+
+#~ msgid "Unfinished entity reference"
+#~ msgstr "Niezavieršanaja spasyłka na adzinku"
+
+#~ msgid "Unfinished character reference"
+#~ msgstr "Niezavieršanaja spasyłka na znak"
+
+# glib/gmarkup.c:837 glib/gmarkup.c:865 glib/gmarkup.c:896
+#~ msgid "Invalid UTF-8 encoded text - overlong sequence"
+#~ msgstr "Niapravilna kadavany tekst UTF-8 - zadoŭhaja paśladoŭnaść"
+
+# glib/gmarkup.c:837 glib/gmarkup.c:865 glib/gmarkup.c:896
+#~ msgid "Invalid UTF-8 encoded text - not a start char"
+#~ msgstr "Niapravilna kadavany tekst UTF-8 - nie pačatkovy znak"
+
+# glib/gconvert.c:1632
+#, fuzzy
+#~ msgid "The file containing the icon"
+#~ msgstr "Niapravilnaja nazva hostu ŭ URI '%s' "
+
+#, fuzzy
+#~ msgid "name"
+#~ msgstr "Nienazvany"
+
+# glib/gconvert.c:1632
+#, fuzzy
+#~ msgid "The name of the icon"
+#~ msgstr "Niapravilnaja nazva hostu ŭ URI '%s' "
+
+#, fuzzy
+#~ msgid "names"
+#~ msgstr "Nienazvany"
+
+# glib/gfileutils.c:348
+#, fuzzy
+#~ msgid "Close file descriptor"
+#~ msgstr "Pamyłka atrymańnia stat() dla fajłavaha deskryptara: %s"
+
+#~ msgid "Can't load just created desktop file"
+#~ msgstr "Niemahčyma zahruzić tolki što stvorany fajł stała"
+
+# glib/gconvert.c:597 glib/gconvert.c:813 glib/giochannel.c:1289
+# glib/giochannel.c:2175
+#~ msgid "Error creating backup link: %s"
+#~ msgstr "Pamyłka stvareńnia zapasnoj spasyłki: %s"
+
+#~ msgid "Too large count value passed to g_input_stream_read_async"
+#~ msgstr ""
+#~ "Funkcyi g_input_stream_read_async pieradadzieny nadta vialiki ličylnik"
+
+#~ msgid "Too large count value passed to g_input_stream_skip"
+#~ msgstr "Funkcyi g_input_stream_skip pieradadzieny nadta vialiki ličylnik"
+
+#~ msgid "Too large count value passed to g_input_stream_skip_async"
+#~ msgstr ""
+#~ "Funkcyi g_input_stream_skip_async pieradadzieny nadta vialiki ličylnik"
+
+#~ msgid "Target file already exists"
+#~ msgstr "Metavy fajł užo isnuje"
+
+#~ msgid "Too large count value passed to g_output_stream_write"
+#~ msgstr "Funkcyi g_output_stream_write pieradadzieny nadta vialiki ličylnik"
+
+#~ msgid "Too large count value passed to g_output_stream_write_async"
+#~ msgstr ""
+#~ "Funkcyi g_output_stream_write_async pieradadzieny nadta vialiki ličylnik"

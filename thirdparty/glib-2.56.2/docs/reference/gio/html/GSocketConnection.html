@@ -1,0 +1,626 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GSocketConnection: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="highlevel-socket.html" title="High-level network functionallity">
+<link rel="prev" href="GSocketClient.html" title="GSocketClient">
+<link rel="next" href="GUnixConnection.html" title="GUnixConnection">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GSocketConnection.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GSocketConnection.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GSocketConnection.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="highlevel-socket.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GSocketClient.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GUnixConnection.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GSocketConnection"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GSocketConnection.top_of_page"></a>GSocketConnection</span></h2>
+<p>GSocketConnection — A socket connection</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GSocketConnection.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GSocketConnection.html#g-socket-connection-connect" title="g_socket_connection_connect ()">g_socket_connection_connect</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSocketConnection.html#g-socket-connection-connect-async" title="g_socket_connection_connect_async ()">g_socket_connection_connect_async</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GSocketConnection.html#g-socket-connection-connect-finish" title="g_socket_connection_connect_finish ()">g_socket_connection_connect_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GSocketConnection.html#g-socket-connection-is-connected" title="g_socket_connection_is_connected ()">g_socket_connection_is_connected</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="returnvalue">GSocketAddress</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSocketConnection.html#g-socket-connection-get-local-address" title="g_socket_connection_get_local_address ()">g_socket_connection_get_local_address</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="returnvalue">GSocketAddress</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSocketConnection.html#g-socket-connection-get-remote-address" title="g_socket_connection_get_remote_address ()">g_socket_connection_get_remote_address</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GSocket.html" title="GSocket"><span class="returnvalue">GSocket</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSocketConnection.html#g-socket-connection-get-socket" title="g_socket_connection_get_socket ()">g_socket_connection_get_socket</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="returnvalue">GSocketConnection</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSocketConnection.html#g-socket-connection-factory-create-connection" title="g_socket_connection_factory_create_connection ()">g_socket_connection_factory_create_connection</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GSocketConnection.html#g-socket-connection-factory-lookup-type" title="g_socket_connection_factory_lookup_type ()">g_socket_connection_factory_lookup_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSocketConnection.html#g-socket-connection-factory-register-type" title="g_socket_connection_factory_register_type ()">g_socket_connection_factory_register_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSocketConnection.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody><tr>
+<td class="property_type">
+<a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a> *</td>
+<td class="property_name"><a class="link" href="GSocketConnection.html#GSocketConnection--socket" title="The “socket” property">socket</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSocketConnection.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GSocketConnection.html#GSocketConnection-struct" title="GSocketConnection">GSocketConnection</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSocketConnection.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> <a class="link" href="GIOStream.html" title="GIOStream">GIOStream</a>
+        <span class="lineart">╰──</span> GSocketConnection
+            <span class="lineart">├──</span> <a class="link" href="GTcpConnection.html" title="GTcpConnection">GTcpConnection</a>
+            <span class="lineart">╰──</span> <a class="link" href="GUnixConnection.html" title="GUnixConnection">GUnixConnection</a>
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSocketConnection.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSocketConnection.description"></a><h2>Description</h2>
+<p><a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a> is a <a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a> for a connected socket. They
+can be created either by <a class="link" href="GSocketClient.html" title="GSocketClient"><span class="type">GSocketClient</span></a> when connecting to a host,
+or by <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a> when accepting a new client.</p>
+<p>The type of the <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a> object returned from these calls
+depends on the type of the underlying socket that is in use. For
+instance, for a TCP/IP connection it will be a <a class="link" href="GTcpConnection.html" title="GTcpConnection"><span class="type">GTcpConnection</span></a>.</p>
+<p>Choosing what type of object to construct is done with the socket
+connection factory, and it is possible for 3rd parties to register
+custom socket connection types for specific combination of socket
+family/type/protocol using <a class="link" href="GSocketConnection.html#g-socket-connection-factory-register-type" title="g_socket_connection_factory_register_type ()"><code class="function">g_socket_connection_factory_register_type()</code></a>.</p>
+<p>To close a <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a>, use <a class="link" href="GIOStream.html#g-io-stream-close" title="g_io_stream_close ()"><code class="function">g_io_stream_close()</code></a>. Closing both
+substreams of the <a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a> separately will not close the underlying
+<a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a>.</p>
+</div>
+<div class="refsect1">
+<a name="GSocketConnection.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-socket-connection-connect"></a><h3>g_socket_connection_connect ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_socket_connection_connect (<em class="parameter"><code><a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a> *connection</code></em>,
+                             <em class="parameter"><code><a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="type">GSocketAddress</span></a> *address</code></em>,
+                             <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                             <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Connect <em class="parameter"><code>connection</code></em>
+ to the specified remote address.</p>
+<div class="refsect3">
+<a name="g-socket-connection-connect.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="type">GSocketAddress</span></a> specifying the remote address.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><code class="literal">GCancellable</code></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for error reporting, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-socket-connection-connect.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the connection succeeded, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> on error</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-connection-connect-async"></a><h3>g_socket_connection_connect_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_socket_connection_connect_async (<em class="parameter"><code><a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a> *connection</code></em>,
+                                   <em class="parameter"><code><a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="type">GSocketAddress</span></a> *address</code></em>,
+                                   <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                   <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                   <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Asynchronously connect <em class="parameter"><code>connection</code></em>
+ to the specified remote address.</p>
+<p>This clears the <a class="link" href="GSocket.html#GSocket--blocking" title="The “blocking” property"><span class="type">“blocking”</span></a> flag on <em class="parameter"><code>connection</code></em>
+'s underlying
+socket if it is currently set.</p>
+<p>Use <a class="link" href="GSocketConnection.html#g-socket-connection-connect-finish" title="g_socket_connection_connect_finish ()"><code class="function">g_socket_connection_connect_finish()</code></a> to retrieve the result.</p>
+<div class="refsect3">
+<a name="g-socket-connection-connect-async.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="type">GSocketAddress</span></a> specifying the remote address.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><code class="literal">GCancellable</code></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data for the callback. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-connection-connect-finish"></a><h3>g_socket_connection_connect_finish ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_socket_connection_connect_finish (<em class="parameter"><code><a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a> *connection</code></em>,
+                                    <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                    <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Gets the result of a <a class="link" href="GSocketConnection.html#g-socket-connection-connect-async" title="g_socket_connection_connect_async ()"><code class="function">g_socket_connection_connect_async()</code></a> call.</p>
+<div class="refsect3">
+<a name="g-socket-connection-connect-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for error reporting, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-socket-connection-connect-finish.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the connection succeeded, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> on error</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-connection-is-connected"></a><h3>g_socket_connection_is_connected ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_socket_connection_is_connected (<em class="parameter"><code><a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a> *connection</code></em>);</pre>
+<p>Checks if <em class="parameter"><code>connection</code></em>
+ is connected. This is equivalent to calling
+<a class="link" href="GSocket.html#g-socket-is-connected" title="g_socket_is_connected ()"><code class="function">g_socket_is_connected()</code></a> on <em class="parameter"><code>connection</code></em>
+'s underlying <a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a>.</p>
+<div class="refsect3">
+<a name="g-socket-connection-is-connected.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-socket-connection-is-connected.returns"></a><h4>Returns</h4>
+<p> whether <em class="parameter"><code>connection</code></em>
+is connected</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-connection-get-local-address"></a><h3>g_socket_connection_get_local_address ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="returnvalue">GSocketAddress</span></a> *
+g_socket_connection_get_local_address (<em class="parameter"><code><a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a> *connection</code></em>,
+                                       <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Try to get the local address of a socket connection.</p>
+<div class="refsect3">
+<a name="g-socket-connection-get-local-address.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for error reporting, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-socket-connection-get-local-address.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="type">GSocketAddress</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error.
+Free the returned object with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-connection-get-remote-address"></a><h3>g_socket_connection_get_remote_address ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="returnvalue">GSocketAddress</span></a> *
+g_socket_connection_get_remote_address
+                               (<em class="parameter"><code><a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a> *connection</code></em>,
+                                <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Try to get the remote address of a socket connection.</p>
+<p>Since GLib 2.40, when used with <a class="link" href="GSocketClient.html#g-socket-client-connect" title="g_socket_client_connect ()"><code class="function">g_socket_client_connect()</code></a> or
+<a class="link" href="GSocketClient.html#g-socket-client-connect-async" title="g_socket_client_connect_async ()"><code class="function">g_socket_client_connect_async()</code></a>, during emission of
+<a class="link" href="GSocketClient.html#G-SOCKET-CLIENT-CONNECTING:CAPS"><code class="literal">G_SOCKET_CLIENT_CONNECTING</code></a>, this function will return the remote
+address that will be used for the connection.  This allows
+applications to print e.g. "Connecting to example.com
+(10.42.77.3)...".</p>
+<div class="refsect3">
+<a name="g-socket-connection-get-remote-address.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for error reporting, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-socket-connection-get-remote-address.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="type">GSocketAddress</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error.
+Free the returned object with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-connection-get-socket"></a><h3>g_socket_connection_get_socket ()</h3>
+<pre class="programlisting"><a class="link" href="GSocket.html" title="GSocket"><span class="returnvalue">GSocket</span></a> *
+g_socket_connection_get_socket (<em class="parameter"><code><a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a> *connection</code></em>);</pre>
+<p>Gets the underlying <a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a> object of the connection.
+This can be useful if you want to do something unusual on it
+not supported by the <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a> APIs.</p>
+<div class="refsect3">
+<a name="g-socket-connection-get-socket.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-socket-connection-get-socket.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-connection-factory-create-connection"></a><h3>g_socket_connection_factory_create_connection ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="returnvalue">GSocketConnection</span></a> *
+g_socket_connection_factory_create_connection
+                               (<em class="parameter"><code><a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a> *socket</code></em>);</pre>
+<p>Creates a <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a> subclass of the right type for
+<em class="parameter"><code>socket</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-socket-connection-factory-create-connection.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>socket</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-socket-connection-factory-create-connection.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-connection-factory-lookup-type"></a><h3>g_socket_connection_factory_lookup_type ()</h3>
+<pre class="programlisting"><a href="../gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+g_socket_connection_factory_lookup_type
+                               (<em class="parameter"><code><a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="type">GSocketFamily</span></a> family</code></em>,
+                                <em class="parameter"><code><a class="link" href="GSocket.html#GSocketType" title="enum GSocketType"><span class="type">GSocketType</span></a> type</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> protocol_id</code></em>);</pre>
+<p>Looks up the <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> to be used when creating socket connections on
+sockets with the specified <em class="parameter"><code>family</code></em>
+, <em class="parameter"><code>type</code></em>
+ and <em class="parameter"><code>protocol_id</code></em>
+.</p>
+<p>If no type is registered, the <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a> base type is returned.</p>
+<div class="refsect3">
+<a name="g-socket-connection-factory-lookup-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>family</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="type">GSocketFamily</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocket.html#GSocketType" title="enum GSocketType"><span class="type">GSocketType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>protocol_id</p></td>
+<td class="parameter_description"><p>a protocol id</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-socket-connection-factory-lookup-type.returns"></a><h4>Returns</h4>
+<p> a <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-connection-factory-register-type"></a><h3>g_socket_connection_factory_register_type ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_socket_connection_factory_register_type
+                               (<em class="parameter"><code><a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> g_type</code></em>,
+                                <em class="parameter"><code><a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="type">GSocketFamily</span></a> family</code></em>,
+                                <em class="parameter"><code><a class="link" href="GSocket.html#GSocketType" title="enum GSocketType"><span class="type">GSocketType</span></a> type</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> protocol</code></em>);</pre>
+<p>Looks up the <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> to be used when creating socket connections on
+sockets with the specified <em class="parameter"><code>family</code></em>
+, <em class="parameter"><code>type</code></em>
+ and <em class="parameter"><code>protocol</code></em>
+.</p>
+<p>If no type is registered, the <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a> base type is returned.</p>
+<div class="refsect3">
+<a name="g-socket-connection-factory-register-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>g_type</p></td>
+<td class="parameter_description"><p>a <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a>, inheriting from <code class="literal">G_TYPE_SOCKET_CONNECTION</code></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>family</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="type">GSocketFamily</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocket.html#GSocketType" title="enum GSocketType"><span class="type">GSocketType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>protocol</p></td>
+<td class="parameter_description"><p>a protocol id</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GSocketConnection.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GSocketConnection-struct"></a><h3>GSocketConnection</h3>
+<pre class="programlisting">typedef struct _GSocketConnection GSocketConnection;</pre>
+<p>A socket connection GIOStream object for connection-oriented sockets.</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GSocketConnection.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GSocketConnection--socket"></a><h3>The <code class="literal">“socket”</code> property</h3>
+<pre class="programlisting">  “socket”                   <a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a> *</pre>
+<p>The underlying GSocket.</p>
+<p>Flags: Read / Write / Construct Only</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GSocketConnection.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a>, <a class="link" href="GSocketClient.html" title="GSocketClient"><span class="type">GSocketClient</span></a>, <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

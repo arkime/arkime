@@ -1,0 +1,564 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Non-instantiable classed types: interfaces: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="chapter-gtype.html" title="The GLib Dynamic Type System">
+<link rel="prev" href="gtype-instantiable-classed.html" title="Instantiable classed types: objects">
+<link rel="next" href="chapter-gobject.html" title="The GObject base class">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="chapter-gtype.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gtype-instantiable-classed.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="chapter-gobject.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="gtype-non-instantiable-classed"></a>Non-instantiable classed types: interfaces</h2></div></div></div>
+<p>
+          This section covers the theory behind interfaces. See
+          <a class="xref" href="howto-interface.html" title="How to define and implement interfaces"><i>How to define and implement interfaces</i></a> for the recommended way to define an
+          interface.
+        </p>
+<p>
+          GType's interfaces are very similar to Java's interfaces. They allow
+          to describe a common API that several classes will adhere to.
+          Imagine the play, pause and stop buttons on hi-fi equipment — those can
+          be seen as a playback interface. Once you know what they do, you can
+          control your CD player, MP3 player or anything that uses these symbols.
+          To declare an interface you have to register a non-instantiable
+          classed type which derives from 
+          <a class="link" href="gobject-Type-Information.html#GTypeInterface" title="struct GTypeInterface"><span class="type">GTypeInterface</span></a>. The following piece of code declares such an interface.
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="preproc">#define</span><span class="normal"> </span><span class="usertype">VIEWER_TYPE_EDITABLE</span><span class="normal"> </span><span class="function">viewer_editable_get_type</span><span class="normal"> </span><span class="symbol">()</span>
+<span class="function"><a href="gobject-Type-Information.html#G-DECLARE-INTERFACE:CAPS">G_DECLARE_INTERFACE</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ViewerEditable</span><span class="symbol">,</span><span class="normal"> viewer_editable</span><span class="symbol">,</span><span class="normal"> VIEWER</span><span class="symbol">,</span><span class="normal"> EDITABLE</span><span class="symbol">,</span><span class="normal"> <a href="gobject-The-Base-Object-Type.html#GObject-struct">GObject</a></span><span class="symbol">)</span>
+
+<span class="keyword">struct</span><span class="normal"> </span><span class="classname">_ViewerEditableInterface</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GTypeInterface</span><span class="normal"> parent</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="type">void</span><span class="normal"> </span><span class="symbol">(*</span><span class="normal">save</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditable</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">,</span>
+<span class="normal">                </span><span class="usertype">GError</span><span class="normal">         </span><span class="symbol">**</span><span class="normal">error</span><span class="symbol">);</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+
+<span class="type">void</span><span class="normal"> </span><span class="function">viewer_editable_save</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditable</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">,</span>
+<span class="normal">                           </span><span class="usertype">GError</span><span class="normal">         </span><span class="symbol">**</span><span class="normal">error</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+          The interface function, <code class="function">viewer_editable_save</code> is implemented
+          in a pretty simple way:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="type">void</span>
+<span class="function">viewer_editable_save</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditable</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">,</span>
+<span class="normal">                      </span><span class="usertype">GError</span><span class="normal">         </span><span class="symbol">**</span><span class="normal">error</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">ViewerEditableinterface</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">iface</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-return-if-fail">g_return_if_fail</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">VIEWER_IS_EDITABLE</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">));</span>
+<span class="normal">  </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-return-if-fail">g_return_if_fail</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">error </span><span class="symbol">==</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a> </span><span class="symbol">||</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">error </span><span class="symbol">==</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="normal">  iface </span><span class="symbol">=</span><span class="normal"> </span><span class="function">VIEWER_EDITABLE_GET_IFACE</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-return-if-fail">g_return_if_fail</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">iface</span><span class="symbol">-&gt;</span><span class="normal">save </span><span class="symbol">!=</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">  iface</span><span class="symbol">-&gt;</span><span class="function">save</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">);</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+         <code class="function">viewer_editable_get_type</code> registers a type named <span class="emphasis"><em>ViewerEditable</em></span>
+         which inherits from <span class="type">G_TYPE_INTERFACE</span>. All interfaces must
+         be children of <span class="type">G_TYPE_INTERFACE</span> in the  inheritance tree.
+        </p>
+<p>
+          An interface is defined by only one structure which must contain as first member
+          a <a class="link" href="gobject-Type-Information.html#GTypeInterface" title="struct GTypeInterface"><span class="type">GTypeInterface</span></a> structure. The interface structure is expected to
+          contain the function pointers of the interface methods. It is good style to 
+          define helper functions for each of the interface methods which simply call
+          the interface's method directly: <code class="function">viewer_editable_save</code>
+          is one of these.
+        </p>
+<p>
+        If you have no special requirements you can use the
+        <a class="link" href="gobject-Type-Information.html#G-IMPLEMENT-INTERFACE:CAPS" title="G_IMPLEMENT_INTERFACE()">G_IMPLEMENT_INTERFACE</a> macro
+        to implement an interface:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_file_save</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditable</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"File implementation of editable interface save method.</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_file_editable_interface_init</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditableInterface</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">iface</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  iface</span><span class="symbol">-&gt;</span><span class="normal">save </span><span class="symbol">=</span><span class="normal"> viewer_file_save</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+
+<span class="function"><a href="gobject-Type-Information.html#G-DEFINE-TYPE-WITH-CODE:CAPS">G_DEFINE_TYPE_WITH_CODE</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ViewerFile</span><span class="symbol">,</span><span class="normal"> viewer_file</span><span class="symbol">,</span><span class="normal"> VIEWER_TYPE_FILE</span><span class="symbol">,</span>
+<span class="normal">                         </span><span class="function"><a href="gobject-Type-Information.html#G-IMPLEMENT-INTERFACE:CAPS">G_IMPLEMENT_INTERFACE</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">VIEWER_TYPE_EDITABLE</span><span class="symbol">,</span>
+<span class="normal">                                                viewer_file_editable_interface_init</span><span class="symbol">))</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+        </p>
+<p>
+          If your code does have special requirements, you must write a custom
+          <code class="function">get_type</code> function to register your GType which
+          inherits from some <a class="link" href="gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a>
+          and which implements the interface <span class="type">ViewerEditable</span>. For
+          example, this code registers a new <span class="type">ViewerFile</span> class which
+          implements <span class="type">ViewerEditable</span>:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_file_save</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditable</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">editable</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"File implementation of editable interface save method.</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_file_editable_interface_init</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">gpointer</span><span class="normal"> g_iface</span><span class="symbol">,</span>
+<span class="normal">                                     </span><span class="usertype">gpointer</span><span class="normal"> iface_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">ViewerEditableInterface</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">iface </span><span class="symbol">=</span><span class="normal"> g_iface</span><span class="symbol">;</span>
+
+<span class="normal">  iface</span><span class="symbol">-&gt;</span><span class="normal">save </span><span class="symbol">=</span><span class="normal"> viewer_file_save</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+
+<span class="normal"><a href="gobject-Type-Information.html#GType">GType</a> </span>
+<span class="function">viewer_file_get_type</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">GType</span><span class="normal"> type </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">type </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">GTypeInfo</span><span class="normal"> info </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="keyword">sizeof</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ViewerFileClass</span><span class="symbol">),</span>
+<span class="normal">      <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal">   </span><span class="comment">/* base_init */</span>
+<span class="normal">      <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal">   </span><span class="comment">/* base_finalize */</span>
+<span class="normal">      <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal">   </span><span class="comment">/* class_init */</span>
+<span class="normal">      <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal">   </span><span class="comment">/* class_finalize */</span>
+<span class="normal">      <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal">   </span><span class="comment">/* class_data */</span>
+<span class="normal">      </span><span class="keyword">sizeof</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ViewerFile</span><span class="symbol">),</span>
+<span class="normal">      </span><span class="number">0</span><span class="symbol">,</span><span class="normal">      </span><span class="comment">/* n_preallocs */</span>
+<span class="normal">      <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a>    </span><span class="comment">/* instance_init */</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">GInterfaceInfo</span><span class="normal"> editable_info </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="symbol">(</span><span class="normal"><a href="gobject-Type-Information.html#GInterfaceInitFunc">GInterfaceInitFunc</a></span><span class="symbol">)</span><span class="normal"> viewer_file_editable_interface_init</span><span class="symbol">,</span><span class="normal">  </span><span class="comment">/* interface_init */</span>
+<span class="normal">      <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal">   </span><span class="comment">/* interface_finalize */</span>
+<span class="normal">      <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a>    </span><span class="comment">/* interface_data */</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="symbol">;</span>
+<span class="normal">    type </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gobject-Type-Information.html#g-type-register-static">g_type_register_static</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">VIEWER_TYPE_FILE</span><span class="symbol">,</span>
+<span class="normal">                                   </span><span class="string">"ViewerFile"</span><span class="symbol">,</span>
+<span class="normal">                                   </span><span class="symbol">&amp;</span><span class="normal">info</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="function"><a href="gobject-Type-Information.html#g-type-add-interface-static">g_type_add_interface_static</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">type</span><span class="symbol">,</span>
+<span class="normal">                                 VIEWER_TYPE_EDITABLE</span><span class="symbol">,</span>
+<span class="normal">                                 </span><span class="symbol">&amp;</span><span class="normal">editable_info</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="cbracket">}</span>
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> type</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+        </p>
+<p>
+          <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-add-interface-static" title="g_type_add_interface_static ()">g_type_add_interface_static</a></code> records in the type system that
+          a given type implements also <span class="type">FooInterface</span> 
+          (<code class="function">foo_interface_get_type</code> returns the type of 
+          <span class="type">FooInterface</span>).
+                The <a class="link" href="gobject-Type-Information.html#GInterfaceInfo" title="struct GInterfaceInfo"><span class="type">GInterfaceInfo</span></a> structure holds
+          information about the implementation of the interface:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">struct</span><span class="normal"> </span><span class="classname">_GInterfaceInfo</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GInterfaceInitFunc</span><span class="normal">     interface_init</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GInterfaceFinalizeFunc</span><span class="normal"> interface_finalize</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">gpointer</span><span class="normal">               interface_data</span><span class="symbol">;</span>
+<span class="cbracket">}</span><span class="symbol">;</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+        </p>
+<div class="sect2">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="gtype-non-instantiable-classed-init"></a>Interface Initialization</h3></div></div></div>
+<p>
+            When an instantiable classed type which implements an interface
+            (either directly or by inheriting an implementation from a superclass)
+            is created for the first time, its class structure is initialized
+            following the process described in <a class="xref" href="gtype-instantiable-classed.html" title="Instantiable classed types: objects">the section called “Instantiable classed types: objects”</a>.
+            After that, the interface implementations associated with
+            the type are initialized.
+          </p>
+<p>
+            First a memory buffer is allocated to hold the interface structure. The parent's
+            interface structure is then copied over to the new interface structure (the parent
+            interface is already initialized at that point). If there is no parent interface,
+            the interface structure is initialized with zeros. The
+            <em class="structfield"><code>g_type</code></em> and the
+            <em class="structfield"><code>g_instance_type</code></em> fields are then
+            initialized: <em class="structfield"><code>g_type</code></em> is set to the type of
+            the most-derived interface and
+            <em class="structfield"><code>g_instance_type</code></em> is set to the type of the
+            most derived type which implements  this interface.
+          </p>
+<p>
+            The interface's <code class="function">base_init</code> function is called,
+            and then the interface's <code class="function">default_init</code> is invoked.
+            Finally if the type has registered an implementation of the interface,
+            the implementation's <code class="function">interface_init</code>
+            function is invoked. If there are multiple implementations of an
+            interface the <code class="function">base_init</code> and
+            <code class="function">interface_init</code> functions will be invoked once
+            for each implementation initialized.
+          </p>
+<p>
+            It is thus recommended to use a <code class="function">default_init</code> function to
+            initialize an interface. This function is called only once for the interface no
+            matter how many implementations there are. The
+            <code class="function">default_init</code> function is declared by
+            <a class="link" href="gobject-Type-Information.html#G-DEFINE-INTERFACE:CAPS" title="G_DEFINE_INTERFACE()">G_DEFINE_INTERFACE</a>
+            which can be used to define the interface:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="function"><a href="gobject-Type-Information.html#G-DEFINE-INTERFACE:CAPS">G_DEFINE_INTERFACE</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ViewerEditable</span><span class="symbol">,</span><span class="normal"> viewer_editable</span><span class="symbol">,</span><span class="normal"> <a href="gobject-Type-Information.html#G-TYPE-OBJECT:CAPS">G_TYPE_OBJECT</a></span><span class="symbol">)</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_editable_default_init</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditableInterface</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">iface</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="comment">/* add properties and signals here, will only be called once */</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+          </p>
+<p>
+            Or you can do that yourself in a GType function for your interface:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal"><a href="gobject-Type-Information.html#GType">GType</a></span>
+<span class="function">viewer_editable_get_type</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">volatile</span><span class="normal"> </span><span class="usertype">gsize</span><span class="normal"> type_id </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="../glib-Threads.html#g-once-init-enter">g_once_init_enter</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">type_id</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">GTypeInfo</span><span class="normal"> info </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="keyword">sizeof</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ViewerEditableInterface</span><span class="symbol">),</span>
+<span class="normal">      <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal">   </span><span class="comment">/* base_init */</span>
+<span class="normal">      <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal">   </span><span class="comment">/* base_finalize */</span>
+<span class="normal">      viewer_editable_default_init</span><span class="symbol">,</span><span class="normal"> </span><span class="comment">/* class_init */</span>
+<span class="normal">      <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal">   </span><span class="comment">/* class_finalize */</span>
+<span class="normal">      <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal">   </span><span class="comment">/* class_data */</span>
+<span class="normal">      </span><span class="number">0</span><span class="symbol">,</span><span class="normal">      </span><span class="comment">/* instance_size */</span>
+<span class="normal">      </span><span class="number">0</span><span class="symbol">,</span><span class="normal">      </span><span class="comment">/* n_preallocs */</span>
+<span class="normal">      <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a>    </span><span class="comment">/* instance_init */</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="usertype">GType</span><span class="normal"> type </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gobject-Type-Information.html#g-type-register-static">g_type_register_static</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="gobject-Type-Information.html#G-TYPE-INTERFACE:CAPS">G_TYPE_INTERFACE</a></span><span class="symbol">,</span>
+<span class="normal">                                         </span><span class="string">"ViewerEditable"</span><span class="symbol">,</span>
+<span class="normal">                                         </span><span class="symbol">&amp;</span><span class="normal">info</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="function"><a href="../glib-Threads.html#g-once-init-leave">g_once_init_leave</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">type_id</span><span class="symbol">,</span><span class="normal"> type</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="cbracket">}</span>
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> type_id</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_editable_default_init</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditableInterface</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">iface</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="comment">/* add properties and signals here, will only called once */</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+          </p>
+<p>
+          In summary, interface initialization uses the following functions:
+        </p>
+<p>
+          </p>
+<div class="table">
+<a name="ginterface-init-table"></a><p class="title"><b>Table 2. Interface Initialization</b></p>
+<div class="table-contents"><table class="table" summary="Interface Initialization" border="1">
+<colgroup>
+<col align="left">
+<col align="left">
+<col align="left">
+</colgroup>
+<thead><tr>
+<th align="left">Invocation time</th>
+<th align="left">Function Invoked</th>
+<th align="left">Function's parameters</th>
+<th>Remark</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">First call to <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-create-instance" title="g_type_create_instance ()">g_type_create_instance</a></code>
+                    for <span class="emphasis"><em>any</em></span> type implementing interface
+                   </td>
+<td align="left">interface's <code class="function">base_init</code> function</td>
+<td align="left">On interface's vtable</td>
+<td>Rarely necessary to use this. Called once per instantiated classed type implementing the interface.</td>
+</tr>
+<tr>
+<td align="left">First call to <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-create-instance" title="g_type_create_instance ()">g_type_create_instance</a></code>
+                    for <span class="emphasis"><em>each</em></span> type implementing interface
+                   </td>
+<td align="left">interface's <code class="function">default_init</code> function</td>
+<td align="left">On interface's vtable</td>
+<td>Register interface's signals, properties, etc. here. Will be called once.</td>
+</tr>
+<tr>
+<td align="left">First call to <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-create-instance" title="g_type_create_instance ()">g_type_create_instance</a></code>
+                    for <span class="emphasis"><em>any</em></span> type implementing interface
+                   </td>
+<td align="left">implementation's <code class="function">interface_init</code> function</td>
+<td align="left">On interface's vtable</td>
+<td>
+                    Initialize interface implementation. Called for each class that that
+                    implements the interface. Initialize the interface method pointers
+                    in the interface structure to the implementing class's implementation.
+                  </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p><br class="table-break">
+        </p>
+</div>
+<div class="sect2">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="gtype-non-instantiable-classed-dest"></a>Interface Destruction</h3></div></div></div>
+<p>
+            When the last instance of an instantiable type which registered 
+            an interface implementation is destroyed, the interface's 
+            implementations associated to the type are destroyed.
+          </p>
+<p>
+            To destroy an interface implementation, GType first calls the 
+            implementation's <code class="function">interface_finalize</code> function 
+            and then the interface's most-derived 
+            <code class="function">base_finalize</code> function.
+          </p>
+<p>
+            Again, it is important to understand, as in 
+            <a class="xref" href="gtype-non-instantiable-classed.html#gtype-non-instantiable-classed-init" title="Interface Initialization">the section called “Interface Initialization”</a>,
+              that both <code class="function">interface_finalize</code> and <code class="function">base_finalize</code>
+              are invoked exactly once for the destruction of each implementation of an interface. Thus,
+              if you were to use one of these functions, you would need to use a static integer variable
+              which would hold the number of instances of implementations of an interface such that
+              the interface's class is destroyed only once (when the integer variable reaches zero).
+          </p>
+<p>
+          The above process can be summarized as follows:
+          </p>
+<div class="table">
+<a name="ginterface-fini-table"></a><p class="title"><b>Table 3. Interface Finalization</b></p>
+<div class="table-contents"><table class="table" summary="Interface Finalization" border="1">
+<colgroup>
+<col align="left">
+<col align="left">
+<col align="left">
+</colgroup>
+<thead><tr>
+<th align="left">Invocation time</th>
+<th align="left">Function Invoked</th>
+<th align="left">Function's parameters</th>
+</tr></thead>
+<tbody>
+<tr>
+<td rowspan="2" align="left">Last call to <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-free-instance" title="g_type_free_instance ()">g_type_free_instance</a></code> for type
+                    implementing interface
+                   </td>
+<td align="left">interface's <code class="function">interface_finalize</code> function</td>
+<td align="left">On interface's vtable</td>
+</tr>
+<tr>
+<td align="left">interface's <code class="function">base_finalize</code> function</td>
+<td align="left">On interface's vtable</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p><br class="table-break">
+        </p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,1 @@
+ERROR Error on line 1 char 10: Odd character '{', expected an open quote mark after the equals sign when giving value for attribute 'bar' of element 'foo'

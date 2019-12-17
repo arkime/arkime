@@ -1,0 +1,212 @@
+<schemalist>
+
+  <schema id="org.gtk.test" path="/tests/" gettext-domain="test">
+    <key name="greeting" type="s">
+      <default l10n="messages">"Hello, earthlings"</default>
+      <summary>A greeting</summary>
+      <description>
+         Greeting of the invading martians
+      </description>
+    </key>
+    <key name="farewell" type="s">
+      <default l10n="messages">"So long"</default>
+    </key>
+
+    <child name='basic-types' schema='org.gtk.test.basic-types'/>
+    <child name='complex-types' schema='org.gtk.test.complex-types'/>
+    <child name='localized' schema='org.gtk.test.localized'/>
+  </schema>
+
+  <schema id="org.gtk.test.no-path">
+    <key name="test-boolean" type="b">
+      <default>true</default>
+    </key>
+  </schema>
+
+  <schema id="org.gtk.test.basic-types" path="/tests/basic-types/">
+    <key name="test-boolean" type="b">
+      <default>true</default>
+    </key>
+    <key name="test-byte" type="y">
+      <default>25</default>
+    </key>
+    <key name="test-int16" type="n">
+      <default>-1234</default>
+    </key>
+    <key name="test-uint16" type="q">
+      <default>1234</default>
+    </key>
+    <key name="test-int32" type="i">
+      <default>-123456</default>
+    </key>
+    <key name="test-uint32" type="u">
+      <default>123456</default>
+    </key>
+    <key name="test-int64" type="x">
+      <default>-123456789</default>
+    </key>
+    <key name="test-uint64" type="t">
+      <default>123456789</default>
+    </key>
+    <key name="test-double" type="d">
+      <default>123.456</default>
+    </key>
+    <key name="test-string" type="s">
+      <default>"a string, it seems"</default>
+    </key>
+    <key name="test-objectpath" type="o">
+      <default>"/a/object/path"</default>
+    </key>
+  </schema>
+
+  <schema id="org.gtk.test.complex-types" path="/tests/complex-types/">
+    <key name="test-tuple" type="(s(ii))">
+      <default>("one",(2,3))</default>
+    </key>
+    <key name="test-array" type="ai">
+      <default>[0,1,2,3,4,5]</default>
+    </key>
+    <key name="test-dict" type="a{sau}">
+      <default>
+      {
+        "AC": [0,0, 0,0,0,0,0,0],
+        "IV": [0,0, 0,0,0,0,0,0]
+      }
+      </default>
+    </key>
+  </schema>
+
+  <schema id="org.gtk.test.localized" path="/tests/localized/" gettext-domain="test">
+    <key name="error-message" type="s">
+      <default l10n="messages">"Unnamed"</default>
+    </key>
+    <key name="backspace" type="s">
+      <default l10n="messages" context="keyboard label">"BackSpace"</default>
+    </key>
+  </schema>
+
+  <schema id="org.gtk.test.binding" path="/tests/binding/">
+    <key name="bool" type="b">
+      <default>false</default>
+    </key>
+    <key name="anti-bool" type="b">
+      <default>false</default>
+    </key>
+    <key name="byte" type="y">
+      <default>0</default>
+    </key>
+    <key name="int16" type="n">
+      <default>0</default>
+    </key>
+    <key name="uint16" type="q">
+      <default>0</default>
+    </key>
+    <key name="int" type="i">
+      <default>0</default>
+    </key>
+    <key name="uint" type="u">
+      <default>0</default>
+    </key>
+    <key name="int64" type="x">
+      <default>0</default>
+    </key>
+    <key name="uint64" type="t">
+      <default>0</default>
+    </key>
+    <key name="double" type="d">
+      <default>0</default>
+    </key>
+    <key name="string" type="s">
+      <default>""</default>
+    </key>
+    <key name="chararray" type="ay">
+      <default>[48, 49]</default>
+    </key>
+    <key name="strv" type="as">
+      <default>[]</default>
+    </key>
+    <key name="enum" enum="org.gtk.test.TestEnum">
+      <default>'foo'</default>
+    </key>
+    <key name="flags" flags="org.gtk.test.TestFlags">
+      <default>['mourning', 'laughing']</default>
+    </key>
+  </schema>
+
+  <schema id='org.gtk.test.enums' path='/tests/enums/'>
+    <key name='test' enum='org.gtk.test.TestEnum'>
+      <default>'bar'</default>
+      <aliases>
+        <alias value='qux' target='quux'/>
+      </aliases>
+    </key>
+    <key name='f-test' flags='org.gtk.test.TestFlags'>
+      <default>[]</default>
+      <aliases>
+        <alias value='speaking' target='talking'/>
+      </aliases>
+    </key>
+  </schema>
+
+  <schema id='org.gtk.test.enums.direct' path='/tests/enums/'>
+    <key name='f-test' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='test' type='s'>
+      <default>'bar'</default>
+    </key>
+  </schema>
+
+  <schema id='org.gtk.test.range' path='/tests/range/'>
+    <key name='val' type='i'>
+      <default>33</default>
+      <range min='2' max='44'/>
+    </key>
+  </schema>
+
+  <schema id='org.gtk.test.range.direct' path='/tests/range/'>
+    <key name='val' type='i'>
+      <default>33</default>
+    </key>
+  </schema>
+
+  <schema id='org.gtk.test.mapped' path='/tests/mapped/'>
+    <key name='val' type='i'>
+      <default>0</default>
+    </key>
+  </schema>
+
+  <schema id="org.gtk.test.descriptions" path="/a/">
+    <key name='a' type='i'>
+      <summary>
+        a paragraph.
+
+        with some whitespace.
+         
+        because not everyone has a great editor.
+
+       	  
+
+
+        lots of space is            as one.    
+      </summary>
+      <default>0</default>
+    </key>
+  </schema>
+
+  <schema id='org.gtk.test.extends.base'>
+    <key name='int32' type='i'>
+      <default>0</default>
+    </key>
+    <key name='string' type='s'>
+      <default>''</default>
+    </key>
+  </schema>
+  <schema id='org.gtk.test.extends.extended' extends='org.gtk.test.extends.base'>
+    <override name="int32">42</override>
+    <key name='another-int32' type='i'>
+      <default>0</default>
+    </key>
+  </schema>
+
+</schemalist>

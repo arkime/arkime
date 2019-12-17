@@ -1,0 +1,535 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GListStore: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="data-models.html" title="Data Models">
+<link rel="prev" href="GListModel.html" title="GListModel">
+<link rel="next" href="registry.html" title="Win32 registry support">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GListStore.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GListStore.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_interfaces">  <span class="dim">|</span> 
+                  <a href="#GListStore.implemented-interfaces" class="shortcut">Implemented Interfaces</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GListStore.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="data-models.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GListModel.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="registry.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GListStore"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GListStore.top_of_page"></a>GListStore</span></h2>
+<p>GListStore — A simple implementation of <a class="link" href="GListModel.html" title="GListModel"><span class="type">GListModel</span></a></p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GListStore.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GListStore.html" title="GListStore"><span class="returnvalue">GListStore</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GListStore.html#g-list-store-new" title="g_list_store_new ()">g_list_store_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GListStore.html#g-list-store-insert" title="g_list_store_insert ()">g_list_store_insert</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GListStore.html#g-list-store-insert-sorted" title="g_list_store_insert_sorted ()">g_list_store_insert_sorted</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GListStore.html#g-list-store-append" title="g_list_store_append ()">g_list_store_append</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GListStore.html#g-list-store-remove" title="g_list_store_remove ()">g_list_store_remove</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GListStore.html#g-list-store-remove-all" title="g_list_store_remove_all ()">g_list_store_remove_all</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GListStore.html#g-list-store-splice" title="g_list_store_splice ()">g_list_store_splice</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GListStore.html#g-list-store-sort" title="g_list_store_sort ()">g_list_store_sort</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GListStore.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody><tr>
+<td class="property_type">
+<a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> *</td>
+<td class="property_name"><a class="link" href="GListStore.html#GListStore--item-type" title="The “item-type” property">item-type</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GListStore.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GListStore.html#GListStore-struct" title="GListStore">GListStore</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GListStore.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GListStore
+</pre>
+</div>
+<div class="refsect1">
+<a name="GListStore.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GListStore implements
+ <a class="link" href="GListModel.html" title="GListModel">GListModel</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GListStore.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GListStore.description"></a><h2>Description</h2>
+<p><a class="link" href="GListStore.html" title="GListStore"><span class="type">GListStore</span></a> is a simple implementation of <a class="link" href="GListModel.html" title="GListModel"><span class="type">GListModel</span></a> that stores all
+items in memory.</p>
+<p>It provides insertions, deletions, and lookups in logarithmic time
+with a fast path for the common case of iterating the list linearly.</p>
+</div>
+<div class="refsect1">
+<a name="GListStore.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-list-store-new"></a><h3>g_list_store_new ()</h3>
+<pre class="programlisting"><a class="link" href="GListStore.html" title="GListStore"><span class="returnvalue">GListStore</span></a> *
+g_list_store_new (<em class="parameter"><code><a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> item_type</code></em>);</pre>
+<p>Creates a new <a class="link" href="GListStore.html" title="GListStore"><span class="type">GListStore</span></a> with items of type <em class="parameter"><code>item_type</code></em>
+. <em class="parameter"><code>item_type</code></em>
+
+must be a subclass of <a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a>.</p>
+<div class="refsect3">
+<a name="g-list-store-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>item_type</p></td>
+<td class="parameter_description"><p>the <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> of items in the list</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-list-store-new.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="GListStore.html" title="GListStore"><span class="type">GListStore</span></a></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-list-store-insert"></a><h3>g_list_store_insert ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_list_store_insert (<em class="parameter"><code><a class="link" href="GListStore.html" title="GListStore"><span class="type">GListStore</span></a> *store</code></em>,
+                     <em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> position</code></em>,
+                     <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> item</code></em>);</pre>
+<p>Inserts <em class="parameter"><code>item</code></em>
+ into <em class="parameter"><code>store</code></em>
+ at <em class="parameter"><code>position</code></em>
+. <em class="parameter"><code>item</code></em>
+ must be of type
+<a class="link" href="GListStore.html#GListStore--item-type" title="The “item-type” property"><span class="type">“item-type”</span></a> or derived from it. <em class="parameter"><code>position</code></em>
+ must be smaller
+than the length of the list, or equal to it to append.</p>
+<p>This function takes a ref on <em class="parameter"><code>item</code></em>
+.</p>
+<p>Use <a class="link" href="GListStore.html#g-list-store-splice" title="g_list_store_splice ()"><code class="function">g_list_store_splice()</code></a> to insert multiple items at the same time
+efficiently.</p>
+<div class="refsect3">
+<a name="g-list-store-insert.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>store</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GListStore.html" title="GListStore"><span class="type">GListStore</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>position</p></td>
+<td class="parameter_description"><p>the position at which to insert the new item</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>item</p></td>
+<td class="parameter_description"><p>the new item. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GObject]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-list-store-insert-sorted"></a><h3>g_list_store_insert_sorted ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+g_list_store_insert_sorted (<em class="parameter"><code><a class="link" href="GListStore.html" title="GListStore"><span class="type">GListStore</span></a> *store</code></em>,
+                            <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> item</code></em>,
+                            <em class="parameter"><code><a href="../glib-Doubly-Linked-Lists.html#GCompareDataFunc"><span class="type">GCompareDataFunc</span></a> compare_func</code></em>,
+                            <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Inserts <em class="parameter"><code>item</code></em>
+ into <em class="parameter"><code>store</code></em>
+ at a position to be determined by the
+<em class="parameter"><code>compare_func</code></em>
+.</p>
+<p>The list must already be sorted before calling this function or the
+result is undefined.  Usually you would approach this by only ever
+inserting items by way of this function.</p>
+<p>This function takes a ref on <em class="parameter"><code>item</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-list-store-insert-sorted.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>store</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GListStore.html" title="GListStore"><span class="type">GListStore</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>item</p></td>
+<td class="parameter_description"><p>the new item. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GObject]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>compare_func</p></td>
+<td class="parameter_description"><p>pairwise comparison function for sorting. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid only during the call to the method."><span class="acronym">scope call</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data for <em class="parameter"><code>compare_func</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-list-store-insert-sorted.returns"></a><h4>Returns</h4>
+<p> the position at which <em class="parameter"><code>item</code></em>
+was inserted</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-list-store-append"></a><h3>g_list_store_append ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_list_store_append (<em class="parameter"><code><a class="link" href="GListStore.html" title="GListStore"><span class="type">GListStore</span></a> *store</code></em>,
+                     <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> item</code></em>);</pre>
+<p>Appends <em class="parameter"><code>item</code></em>
+ to <em class="parameter"><code>store</code></em>
+. <em class="parameter"><code>item</code></em>
+ must be of type <a class="link" href="GListStore.html#GListStore--item-type" title="The “item-type” property"><span class="type">“item-type”</span></a>.</p>
+<p>This function takes a ref on <em class="parameter"><code>item</code></em>
+.</p>
+<p>Use <a class="link" href="GListStore.html#g-list-store-splice" title="g_list_store_splice ()"><code class="function">g_list_store_splice()</code></a> to append multiple items at the same time
+efficiently.</p>
+<div class="refsect3">
+<a name="g-list-store-append.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>store</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GListStore.html" title="GListStore"><span class="type">GListStore</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>item</p></td>
+<td class="parameter_description"><p>the new item. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GObject]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-list-store-remove"></a><h3>g_list_store_remove ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_list_store_remove (<em class="parameter"><code><a class="link" href="GListStore.html" title="GListStore"><span class="type">GListStore</span></a> *store</code></em>,
+                     <em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> position</code></em>);</pre>
+<p>Removes the item from <em class="parameter"><code>store</code></em>
+ that is at <em class="parameter"><code>position</code></em>
+. <em class="parameter"><code>position</code></em>
+ must be
+smaller than the current length of the list.</p>
+<p>Use <a class="link" href="GListStore.html#g-list-store-splice" title="g_list_store_splice ()"><code class="function">g_list_store_splice()</code></a> to remove multiple items at the same time
+efficiently.</p>
+<div class="refsect3">
+<a name="g-list-store-remove.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>store</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GListStore.html" title="GListStore"><span class="type">GListStore</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>position</p></td>
+<td class="parameter_description"><p>the position of the item that is to be removed</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-list-store-remove-all"></a><h3>g_list_store_remove_all ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_list_store_remove_all (<em class="parameter"><code><a class="link" href="GListStore.html" title="GListStore"><span class="type">GListStore</span></a> *store</code></em>);</pre>
+<p>Removes all items from <em class="parameter"><code>store</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-list-store-remove-all.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>store</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GListStore.html" title="GListStore"><span class="type">GListStore</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-list-store-splice"></a><h3>g_list_store_splice ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_list_store_splice (<em class="parameter"><code><a class="link" href="GListStore.html" title="GListStore"><span class="type">GListStore</span></a> *store</code></em>,
+                     <em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> position</code></em>,
+                     <em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> n_removals</code></em>,
+                     <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> *additions</code></em>,
+                     <em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> n_additions</code></em>);</pre>
+<p>Changes <em class="parameter"><code>store</code></em>
+ by removing <em class="parameter"><code>n_removals</code></em>
+ items and adding <em class="parameter"><code>n_additions</code></em>
+
+items to it. <em class="parameter"><code>additions</code></em>
+ must contain <em class="parameter"><code>n_additions</code></em>
+ items of type
+<a class="link" href="GListStore.html#GListStore--item-type" title="The “item-type” property"><span class="type">“item-type”</span></a>.  <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> is not permitted.</p>
+<p>This function is more efficient than <a class="link" href="GListStore.html#g-list-store-insert" title="g_list_store_insert ()"><code class="function">g_list_store_insert()</code></a> and
+<a class="link" href="GListStore.html#g-list-store-remove" title="g_list_store_remove ()"><code class="function">g_list_store_remove()</code></a>, because it only emits
+<a class="link" href="GListModel.html#GListModel-items-changed" title="The “items-changed” signal"><span class="type">“items-changed”</span></a> once for the change.</p>
+<p>This function takes a ref on each item in <em class="parameter"><code>additions</code></em>
+.</p>
+<p>The parameters <em class="parameter"><code>position</code></em>
+ and <em class="parameter"><code>n_removals</code></em>
+ must be correct (ie:
+<em class="parameter"><code>position</code></em>
+ + <em class="parameter"><code>n_removals</code></em>
+ must be less than or equal to the length of
+the list at the time this function is called).</p>
+<div class="refsect3">
+<a name="g-list-store-splice.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>store</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GListStore.html" title="GListStore"><span class="type">GListStore</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>position</p></td>
+<td class="parameter_description"><p>the position at which to make the change</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n_removals</p></td>
+<td class="parameter_description"><p>the number of items to remove</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>additions</p></td>
+<td class="parameter_description"><p>the items to add. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=n_additions][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GObject]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n_additions</p></td>
+<td class="parameter_description"><p>the number of items to add</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-list-store-sort"></a><h3>g_list_store_sort ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_list_store_sort (<em class="parameter"><code><a class="link" href="GListStore.html" title="GListStore"><span class="type">GListStore</span></a> *store</code></em>,
+                   <em class="parameter"><code><a href="../glib-Doubly-Linked-Lists.html#GCompareDataFunc"><span class="type">GCompareDataFunc</span></a> compare_func</code></em>,
+                   <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Sort the items in <em class="parameter"><code>store</code></em>
+ according to <em class="parameter"><code>compare_func</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-list-store-sort.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>store</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GListStore.html" title="GListStore"><span class="type">GListStore</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>compare_func</p></td>
+<td class="parameter_description"><p>pairwise comparison function for sorting. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid only during the call to the method."><span class="acronym">scope call</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data for <em class="parameter"><code>compare_func</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GListStore.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GListStore-struct"></a><h3>GListStore</h3>
+<pre class="programlisting">typedef struct _GListStore GListStore;</pre>
+<p><a class="link" href="GListStore.html" title="GListStore"><span class="type">GListStore</span></a> is an opaque data structure and can only be accessed
+using the following functions.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GListStore.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GListStore--item-type"></a><h3>The <code class="literal">“item-type”</code> property</h3>
+<pre class="programlisting">  “item-type”                <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> *</pre>
+<p>The type of items contained in this list store. Items must be
+subclasses of <a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a>.</p>
+<p>Flags: Read / Write / Construct Only</p>
+<p>Allowed values: GObject</p>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

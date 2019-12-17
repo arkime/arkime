@@ -1,0 +1,347 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GUnixFDMessage: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="networking.html" title="Low-level network support">
+<link rel="prev" href="GUnixFDList.html" title="GUnixFDList">
+<link rel="next" href="GCredentials.html" title="GCredentials">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GUnixFDMessage.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GUnixFDMessage.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GUnixFDMessage.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="networking.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GUnixFDList.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GCredentials.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GUnixFDMessage"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GUnixFDMessage.top_of_page"></a>GUnixFDMessage</span></h2>
+<p>GUnixFDMessage — A GSocketControlMessage containing a GUnixFDList</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GUnixFDMessage.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GSocketControlMessage.html" title="GSocketControlMessage"><span class="returnvalue">GSocketControlMessage</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GUnixFDMessage.html#g-unix-fd-message-new-with-fd-list" title="g_unix_fd_message_new_with_fd_list ()">g_unix_fd_message_new_with_fd_list</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GSocketControlMessage.html" title="GSocketControlMessage"><span class="returnvalue">GSocketControlMessage</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GUnixFDMessage.html#g-unix-fd-message-new" title="g_unix_fd_message_new ()">g_unix_fd_message_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GUnixFDList.html" title="GUnixFDList"><span class="returnvalue">GUnixFDList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GUnixFDMessage.html#g-unix-fd-message-get-fd-list" title="g_unix_fd_message_get_fd_list ()">g_unix_fd_message_get_fd_list</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GUnixFDMessage.html#g-unix-fd-message-append-fd" title="g_unix_fd_message_append_fd ()">g_unix_fd_message_append_fd</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GUnixFDMessage.html#g-unix-fd-message-steal-fds" title="g_unix_fd_message_steal_fds ()">g_unix_fd_message_steal_fds</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GUnixFDMessage.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody><tr>
+<td class="property_type">
+<a class="link" href="GUnixFDList.html" title="GUnixFDList"><span class="type">GUnixFDList</span></a> *</td>
+<td class="property_name"><a class="link" href="GUnixFDMessage.html#GUnixFDMessage--fd-list" title="The “fd-list” property">fd-list</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GUnixFDMessage.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GUnixFDMessage.html#GUnixFDMessage-struct" title="struct GUnixFDMessage">GUnixFDMessage</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GUnixFDMessage.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> <a class="link" href="GSocketControlMessage.html" title="GSocketControlMessage">GSocketControlMessage</a>
+        <span class="lineart">╰──</span> GUnixFDMessage
+</pre>
+</div>
+<div class="refsect1">
+<a name="GUnixFDMessage.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gunixfdmessage.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GUnixFDMessage.description"></a><h2>Description</h2>
+<p>This <a class="link" href="GSocketControlMessage.html" title="GSocketControlMessage"><span class="type">GSocketControlMessage</span></a> contains a <a class="link" href="GUnixFDList.html" title="GUnixFDList"><span class="type">GUnixFDList</span></a>.
+It may be sent using <a class="link" href="GSocket.html#g-socket-send-message" title="g_socket_send_message ()"><code class="function">g_socket_send_message()</code></a> and received using
+<a class="link" href="GSocket.html#g-socket-receive-message" title="g_socket_receive_message ()"><code class="function">g_socket_receive_message()</code></a> over UNIX sockets (ie: sockets in the
+<code class="literal">G_SOCKET_ADDRESS_UNIX</code> family). The file descriptors are copied
+between processes by the kernel.</p>
+<p>For an easier way to send and receive file descriptors over
+stream-oriented UNIX sockets, see <a class="link" href="GUnixConnection.html#g-unix-connection-send-fd" title="g_unix_connection_send_fd ()"><code class="function">g_unix_connection_send_fd()</code></a> and
+<a class="link" href="GUnixConnection.html#g-unix-connection-receive-fd" title="g_unix_connection_receive_fd ()"><code class="function">g_unix_connection_receive_fd()</code></a>.</p>
+<p>Note that <code class="literal">&amp;lt;gio/gunixfdmessage.h&gt;</code> belongs to the UNIX-specific GIO
+interfaces, thus you have to use the <code class="literal">gio-unix-2.0.pc</code> pkg-config
+file when using it.</p>
+</div>
+<div class="refsect1">
+<a name="GUnixFDMessage.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-unix-fd-message-new-with-fd-list"></a><h3>g_unix_fd_message_new_with_fd_list ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketControlMessage.html" title="GSocketControlMessage"><span class="returnvalue">GSocketControlMessage</span></a> *
+g_unix_fd_message_new_with_fd_list (<em class="parameter"><code><a class="link" href="GUnixFDList.html" title="GUnixFDList"><span class="type">GUnixFDList</span></a> *fd_list</code></em>);</pre>
+<p>Creates a new <a class="link" href="GUnixFDMessage.html" title="GUnixFDMessage"><span class="type">GUnixFDMessage</span></a> containing <em class="parameter"><code>list</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-unix-fd-message-new-with-fd-list.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>fd_list</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GUnixFDList.html" title="GUnixFDList"><span class="type">GUnixFDList</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-fd-message-new-with-fd-list.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="GUnixFDMessage.html" title="GUnixFDMessage"><span class="type">GUnixFDMessage</span></a></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-fd-message-new"></a><h3>g_unix_fd_message_new ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketControlMessage.html" title="GSocketControlMessage"><span class="returnvalue">GSocketControlMessage</span></a> *
+g_unix_fd_message_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Creates a new <a class="link" href="GUnixFDMessage.html" title="GUnixFDMessage"><span class="type">GUnixFDMessage</span></a> containing an empty file descriptor
+list.</p>
+<div class="refsect3">
+<a name="g-unix-fd-message-new.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="GUnixFDMessage.html" title="GUnixFDMessage"><span class="type">GUnixFDMessage</span></a></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-fd-message-get-fd-list"></a><h3>g_unix_fd_message_get_fd_list ()</h3>
+<pre class="programlisting"><a class="link" href="GUnixFDList.html" title="GUnixFDList"><span class="returnvalue">GUnixFDList</span></a> *
+g_unix_fd_message_get_fd_list (<em class="parameter"><code><a class="link" href="GUnixFDMessage.html" title="GUnixFDMessage"><span class="type">GUnixFDMessage</span></a> *message</code></em>);</pre>
+<p>Gets the <a class="link" href="GUnixFDList.html" title="GUnixFDList"><span class="type">GUnixFDList</span></a> contained in <em class="parameter"><code>message</code></em>
+.  This function does not
+return a reference to the caller, but the returned list is valid for
+the lifetime of <em class="parameter"><code>message</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-unix-fd-message-get-fd-list.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GUnixFDMessage.html" title="GUnixFDMessage"><span class="type">GUnixFDMessage</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-fd-message-get-fd-list.returns"></a><h4>Returns</h4>
+<p>the <a class="link" href="GUnixFDList.html" title="GUnixFDList"><span class="type">GUnixFDList</span></a> from <em class="parameter"><code>message</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-fd-message-append-fd"></a><h3>g_unix_fd_message_append_fd ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_unix_fd_message_append_fd (<em class="parameter"><code><a class="link" href="GUnixFDMessage.html" title="GUnixFDMessage"><span class="type">GUnixFDMessage</span></a> *message</code></em>,
+                             <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> fd</code></em>,
+                             <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Adds a file descriptor to <em class="parameter"><code>message</code></em>
+.</p>
+<p>The file descriptor is duplicated using <code class="function">dup()</code>. You keep your copy
+of the descriptor and the copy contained in <em class="parameter"><code>message</code></em>
+ will be closed
+when <em class="parameter"><code>message</code></em>
+ is finalized.</p>
+<p>A possible cause of failure is exceeding the per-process or
+system-wide file descriptor limit.</p>
+<div class="refsect3">
+<a name="g-unix-fd-message-append-fd.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GUnixFDMessage.html" title="GUnixFDMessage"><span class="type">GUnixFDMessage</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>fd</p></td>
+<td class="parameter_description"><p>a valid open file descriptor</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> pointer</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-fd-message-append-fd.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> in case of success, else <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> (and <em class="parameter"><code>error</code></em>
+is set)</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-fd-message-steal-fds"></a><h3>g_unix_fd_message_steal_fds ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a> *
+g_unix_fd_message_steal_fds (<em class="parameter"><code><a class="link" href="GUnixFDMessage.html" title="GUnixFDMessage"><span class="type">GUnixFDMessage</span></a> *message</code></em>,
+                             <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> *length</code></em>);</pre>
+<p>Returns the array of file descriptors that is contained in this
+object.</p>
+<p>After this call, the descriptors are no longer contained in
+<em class="parameter"><code>message</code></em>
+. Further calls will return an empty list (unless more
+descriptors have been added).</p>
+<p>The return result of this function must be freed with <a href="../glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a>.
+The caller is also responsible for closing all of the file
+descriptors.</p>
+<p>If <em class="parameter"><code>length</code></em>
+ is non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then it is set to the number of file
+descriptors in the returned array. The returned array is also
+terminated with -1.</p>
+<p>This function never returns <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. In case there are no file
+descriptors contained in <em class="parameter"><code>message</code></em>
+, an empty array is returned.</p>
+<div class="refsect3">
+<a name="g-unix-fd-message-steal-fds.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GUnixFDMessage.html" title="GUnixFDMessage"><span class="type">GUnixFDMessage</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>length</p></td>
+<td class="parameter_description"><p>pointer to the length of the returned
+array, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-fd-message-steal-fds.returns"></a><h4>Returns</h4>
+<p>an array of file
+descriptors. </p>
+<p><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=length][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GUnixFDMessage.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GUnixFDMessage-struct"></a><h3>struct GUnixFDMessage</h3>
+<pre class="programlisting">struct GUnixFDMessage;</pre>
+<p><a class="link" href="GUnixFDMessage.html" title="GUnixFDMessage"><span class="type">GUnixFDMessage</span></a> is an opaque data structure and can only be accessed
+using the following functions.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GUnixFDMessage.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GUnixFDMessage--fd-list"></a><h3>The <code class="literal">“fd-list”</code> property</h3>
+<pre class="programlisting">  “fd-list”                  <a class="link" href="GUnixFDList.html" title="GUnixFDList"><span class="type">GUnixFDList</span></a> *</pre>
+<p>The GUnixFDList object to send with the message.</p>
+<p>Flags: Read / Write / Construct Only</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GUnixFDMessage.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="GUnixConnection.html" title="GUnixConnection"><span class="type">GUnixConnection</span></a>, <a class="link" href="GUnixFDList.html" title="GUnixFDList"><span class="type">GUnixFDList</span></a>, <a class="link" href="GSocketControlMessage.html" title="GSocketControlMessage"><span class="type">GSocketControlMessage</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

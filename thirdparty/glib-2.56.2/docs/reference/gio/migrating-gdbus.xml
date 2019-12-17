@@ -1,0 +1,284 @@
+<?xml version="1.0"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+                  "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
+<!ENTITY version SYSTEM "version.xml">
+]>
+<chapter>
+  <title>Migrating to GDBus</title>
+
+  <section>
+    <title>Conceptual differences</title>
+
+    <para>
+      The central concepts of D-Bus are modelled in a very similar way
+      in dbus-glib and GDBus. Both have a objects representing connections,
+      proxies and method invocations. But there are some important
+      differences:
+      <itemizedlist>
+        <listitem><para>
+          dbus-glib uses the <ulink
+          url="http://www.freedesktop.org/wiki/Software/dbus#ReferenceImplementation.28dbus-daemonandlibdbus.29">libdbus
+          reference implementation</ulink>, GDBus doesn't. Instead, it
+          relies on GIO streams as transport layer, and has its own
+          implementation for the D-Bus connection setup and
+          authentication. Apart from using streams as transport,
+          avoiding libdbus also lets GDBus avoid some thorny
+          multithreading issues.
+        </para></listitem>
+        <listitem><para>
+          dbus-glib uses the GObject type system for method arguments and
+          return values, including a homegrown container specialization
+          mechanism. GDBus relies on the #GVariant type system which is
+          explicitly designed to match D-Bus types.
+        </para></listitem>
+        <listitem><para>
+          dbus-glib models only D-Bus interfaces and does not provide
+          any types for objects. GDBus models both D-Bus interfaces
+          (via the #GDBusInterface, #GDBusProxy and
+          #GDBusInterfaceSkeleton types) and objects (via the
+          #GDBusObject, #GDBusObjectSkeleton and #GDBusObjectProxy types).
+        </para></listitem>
+        <listitem><para>
+          GDBus includes native support for the <ulink url="http://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-properties">org.freedesktop.DBus.Properties</ulink> (via the #GDBusProxy type) and <ulink url="http://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-objectmanager">org.freedesktop.DBus.ObjectManager</ulink> D-Bus interfaces, dbus-glib doesn't.
+        </para></listitem>
+        <listitem><para>
+          The typical way to export an object in dbus-glib involves
+          generating glue code from XML introspection data using
+          <command>dbus-binding-tool</command>. GDBus provides a
+          similar tool called <command><link
+          linkend="gdbus-codegen">gdbus-codegen</link></command> that
+          can also generate Docbook D-Bus interface documentation.
+        </para></listitem>
+        <listitem><para>
+          dbus-glib doesn't provide any convenience API for owning and
+          watching bus names, GDBus provides the g_bus_own_name() and
+          g_bus_watch_name() family of convenience functions.
+        </para></listitem>
+        <listitem><para>
+          GDBus provides API to parse, generate and work with <link
+          linkend="gio-D-Bus-Introspection-Data">Introspection
+          XML</link>, dbus-glib doesn't.
+        </para></listitem>
+        <listitem><para>
+          GTestDBus provides API to create isolated unit tests <link
+          linkend="gio-D-Bus-Test-Scaffolding">GDBus Test Scaffolding</link>.
+        </para></listitem>
+      </itemizedlist>
+    </para>
+  </section>
+
+  <section>
+    <title>API comparison</title>
+
+    <table id="dbus-glib-vs-gdbus">
+      <title>dbus-glib APIs and their GDBus counterparts</title>
+      <tgroup cols="2">
+        <thead>
+           <row><entry>dbus-glib</entry><entry>GDBus</entry></row>
+        </thead>
+        <tbody>
+          <row><entry>#DBusGConnection</entry><entry>#GDBusConnection</entry></row>
+          <row><entry>#DBusGProxy</entry><entry>#GDBusProxy, #GDBusInterface - also see #GDBusObjectProxy</entry></row>
+          <row><entry>#DBusGObject</entry><entry>#GDBusInterfaceSkeleton, #GDBusInterface - also see #GDBusObjectSkeleton</entry></row>
+          <row><entry>#DBusGMethodInvocation</entry><entry>#GDBusMethodInvocation</entry></row>
+          <row><entry>dbus_g_bus_get()</entry><entry>g_bus_get_sync(), also see
+               g_bus_get()</entry></row>
+          <row><entry>dbus_g_proxy_new_for_name()</entry><entry>g_dbus_proxy_new_sync() and
+               g_dbus_proxy_new_for_bus_sync(), also see g_dbus_proxy_new()</entry></row>
+          <row><entry>dbus_g_proxy_add_signal()</entry><entry>not needed, use the generic #GDBusProxy::g-signal</entry></row>
+          <row><entry>dbus_g_proxy_connect_signal()</entry><entry>use g_signal_connect() with #GDBusProxy::g-signal</entry></row>
+          <row><entry>dbus_g_connection_register_g_object()</entry><entry>g_dbus_connection_register_object() - also see g_dbus_object_manager_server_export()</entry></row>
+          <row><entry>dbus_g_connection_unregister_g_object()</entry><entry>g_dbus_connection_unregister_object() - also see g_dbus_object_manager_server_unexport()</entry></row>
+          <row><entry>dbus_g_object_type_install_info()</entry><entry>introspection data is installed while registering
+               an object, see g_dbus_connection_register_object()</entry></row>
+          <row><entry>dbus_g_proxy_begin_call()</entry><entry>g_dbus_proxy_call()</entry></row>
+          <row><entry>dbus_g_proxy_end_call()</entry><entry>g_dbus_proxy_call_finish()</entry></row>
+          <row><entry>dbus_g_proxy_call()</entry><entry>g_dbus_proxy_call_sync()</entry></row>
+          <row><entry>dbus_g_error_domain_register()</entry><entry>g_dbus_error_register_error_domain()</entry></row>
+          <row><entry>dbus_g_error_has_name()</entry><entry>no direct equivalent, see g_dbus_error_get_remote_error()</entry></row>
+          <row><entry>dbus_g_method_return()</entry><entry>g_dbus_method_invocation_return_value()</entry></row>
+          <row><entry>dbus_g_method_return_error()</entry><entry>g_dbus_method_invocation_return_error() and variants</entry></row>
+          <row><entry>dbus_g_method_get_sender()</entry><entry>g_dbus_method_invocation_get_sender()</entry></row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+
+  <section>
+    <title>Owning bus names</title>
+    <para>
+      Using dbus-glib, you typically call RequestName manually
+      to own a name, like in the following excerpt:
+      <informalexample><programlisting><![CDATA[
+  error = NULL;
+  res = dbus_g_proxy_call (system_bus_proxy,
+                           "RequestName",
+                           &error,
+                           G_TYPE_STRING, NAME_TO_CLAIM,
+                           G_TYPE_UINT,   DBUS_NAME_FLAG_ALLOW_REPLACEMENT,
+                           G_TYPE_INVALID,
+                           G_TYPE_UINT,   &result,
+                           G_TYPE_INVALID);
+  if (!res)
+    {
+      if (error != NULL)
+        {
+          g_warning ("Failed to acquire %s: %s",
+                     NAME_TO_CLAIM, error->message);
+          g_error_free (error);
+        }
+      else
+        {
+          g_warning ("Failed to acquire %s", NAME_TO_CLAIM);
+        }
+      goto out;
+    }
+
+  if (result != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER)
+    {
+      if (error != NULL)
+        {
+          g_warning ("Failed to acquire %s: %s",
+                     NAME_TO_CLAIM, error->message);
+          g_error_free (error);
+        }
+      else
+        {
+          g_warning ("Failed to acquire %s", NAME_TO_CLAIM);
+        }
+      exit (1);
+    }
+
+  dbus_g_proxy_add_signal (system_bus_proxy, "NameLost",
+                           G_TYPE_STRING, G_TYPE_INVALID);
+  dbus_g_proxy_connect_signal (system_bus_proxy, "NameLost",
+                               G_CALLBACK (on_name_lost), NULL, NULL);
+
+  /* further setup ... */
+]]>
+      </programlisting></informalexample>
+    </para>
+    <para>
+    While you can do things this way with GDBus too, using
+    g_dbus_proxy_call_sync(), it is much nicer to use the high-level API
+    for this:
+    <informalexample><programlisting><![CDATA[
+static void
+on_name_acquired (GDBusConnection *connection,
+                  const gchar     *name,
+                  gpointer         user_data)
+{
+  /* further setup ... */
+}
+
+/* ... */
+
+  owner_id = g_bus_own_name (G_BUS_TYPE_SYSTEM,
+                             NAME_TO_CLAIM,
+                             G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT,
+                             on_bus_acquired,
+                             on_name_acquired,
+                             on_name_lost,
+                             NULL,
+                             NULL);
+
+  g_main_loop_run (loop);
+
+  g_bus_unown_name (owner_id);
+]]>
+    </programlisting></informalexample>
+    Note that g_bus_own_name() works asynchronously and requires
+    you to enter your mainloop to await the on_name_aquired()
+    callback. Also note that in order to avoid race conditions (e.g.
+    when your service is activated by a method call), you have to export
+    your manager object <emphasis>before</emphasis> acquiring the
+    name. The on_bus_acquired() callback is the right place to do
+    such preparations.
+    </para>
+  </section>
+
+  <section>
+    <title>Creating proxies for well-known names</title>
+    <para>
+      dbus-glib lets you create proxy objects for well-known names, like the
+      following example:
+      <informalexample><programlisting><![CDATA[
+  proxy = dbus_g_proxy_new_for_name (system_bus_connection,
+                                     "org.freedesktop.Accounts",
+                                     "/org/freedesktop/Accounts",
+                                     "org.freedesktop.Accounts");
+      ]]>
+      </programlisting></informalexample>
+      For a #DBusGProxy constructed like this, method calls will be sent to
+      the current owner of the name, and that owner can change over time.
+    </para>
+    <para>
+      The same can be achieved with #GDBusProxy:
+      <informalexample><programlisting><![CDATA[
+  error = NULL;
+  proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SYSTEM,
+                                         G_DBUS_PROXY_FLAGS_NONE,
+                                         NULL, /* GDBusInterfaceInfo */
+                                         "org.freedesktop.Accounts",
+                                         "/org/freedesktop/Accounts",
+                                         "org.freedesktop.Accounts",
+                                         NULL, /* GCancellable */
+                                         &error);
+      ]]>
+      </programlisting></informalexample>
+      For an added layer of safety, you can specify what D-Bus
+      interface the proxy is expected to conform to by using the
+      #GDBusInterfaceInfo type.  Additionally, #GDBusProxy loads,
+      caches and tracks changes to the D-Bus properties on the remote
+      object. It also sets up match rules so D-Bus signals from the
+      remote object are delivered locally.
+    </para>
+    <para>
+      The #GDBusProxy type normally isn't used directly - instead
+      proxies subclassing #GDBusProxy generated by <command><link
+      linkend="gdbus-codegen">gdbus-codegen</link></command> is used, see <xref linkend="gdbus-example-gdbus-codegen"/>
+    </para>
+  </section>
+
+  <section id="gdbus-example-gdbus-codegen">
+    <title>Using gdbus-codegen</title>
+
+    <para>
+      dbus-glib comes with <command>dbus-binding-tool</command>, which
+      can produce somewhat nice client- and server-side wrappers for a D-Bus interface.
+      With GDBus, <command><link
+      linkend="gdbus-codegen">gdbus-codegen</link></command> is used and like
+      its counterpart, it also takes D-Bus Introspection XML as input:
+    </para>
+    <example id="gdbus-example-codegen-input"><title>Example D-Bus Introspection XML</title><programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="text" href="../gdbus-example-objectmanager.xml"><xi:fallback>FIXME: MISSING XINCLUDE CONTENT</xi:fallback></xi:include></programlisting></example>
+    <para>
+      If this XML is processed like this
+<informalexample><programlisting><![CDATA[
+gdbus-codegen --interface-prefix org.gtk.GDBus.Example.ObjectManager. \
+              --generate-c-code generated-code	                      \
+              --c-namespace Example 				      \
+              --c-generate-object-manager			      \
+              --generate-docbook generated-docs                       \
+              gdbus-example-objectmanager.xml
+]]></programlisting></informalexample>
+      then two files <filename>generated-code.h</filename> and
+      <filename>generated-code.c</filename> are
+      generated. Additionally, two XML files
+      <filename>generated-docs-org.gtk.GDBus.Example.ObjectManager.Animal</filename> and
+      <filename>generated-docs-org.gtk.GDBus.Example.ObjectManager.Cat</filename>
+      with Docbook XML are generated.
+    </para>
+    <para>
+      While the contents of <filename>generated-code.h</filename> and
+      <filename>generated-code.c</filename> are best described by the
+      <command><link
+      linkend="gdbus-codegen">gdbus-codegen</link></command> manual
+      page, brief examples of how this generated code can be used can be found in
+      <xref linkend="gdbus-example-codegen-server"/>
+      and <xref linkend="gdbus-example-codegen-client"/>.
+    </para>
+
+  </section>
+
+</chapter>

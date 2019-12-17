@@ -1,0 +1,716 @@
+<?xml version="1.0"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN" "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<refentry id="gio">
+  <refentryinfo>
+    <title>gio</title>
+    <productname>GIO</productname>
+    <authorgroup>
+      <author>
+        <contrib>Developer</contrib>
+        <firstname>Matthias</firstname>
+        <surname>Clasen</surname>
+        <email>mclasen@redhat.com</email>
+      </author>
+    </authorgroup>
+  </refentryinfo>
+
+  <refmeta>
+    <refentrytitle>gio</refentrytitle>
+    <manvolnum>1</manvolnum>
+    <refmiscinfo class="manual">User Commands</refmiscinfo>
+  </refmeta>
+
+  <refnamediv>
+    <refname>gio</refname>
+    <refpurpose>GIO commandline tool</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>gio</command>
+      <arg choice="plain">help</arg>
+      <arg choice="opt"><replaceable>COMMAND</replaceable></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>gio</command>
+      <arg choice="plain">version</arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>gio</command>
+      <arg choice="plain">cat</arg>
+      <arg choice="plain" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>gio</command>
+      <arg choice="plain">copy</arg>
+      <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+      <arg choice="plain" rep="repeat"><replaceable>SOURCE</replaceable></arg>
+      <arg choice="plain"><replaceable>DESTINATION</replaceable></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>gio</command>
+      <arg choice="plain">info</arg>
+      <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+      <arg choice="plain" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>gio</command>
+      <arg choice="plain">list</arg>
+      <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+      <arg choice="opt" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>gio</command>
+      <arg choice="plain">mime</arg>
+      <arg choice="plain"><replaceable>MIMETYPE</replaceable></arg>
+      <arg choice="opt"><replaceable>HANDLER</replaceable></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>gio</command>
+      <arg choice="plain">mkdir</arg>
+      <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+      <arg choice="plain" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>gio</command>
+      <arg choice="plain">monitor</arg>
+      <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+      <arg choice="opt" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>gio</command>
+      <arg choice="plain">mount</arg>
+      <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+      <arg choice="opt" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>gio</command>
+      <arg choice="plain">move</arg>
+      <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+      <arg choice="plain" rep="repeat"><replaceable>SOURCE</replaceable></arg>
+      <arg choice="plain"><replaceable>DESTINATION</replaceable></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>gio</command>
+      <arg choice="plain">open</arg>
+      <arg choice="plain" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>gio</command>
+      <arg choice="plain">rename</arg>
+      <arg choice="plain"><replaceable>LOCATION</replaceable></arg>
+      <arg choice="plain"><replaceable>NAME</replaceable></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>gio</command>
+      <arg choice="plain">remove</arg>
+      <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+      <arg choice="plain" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>gio</command>
+      <arg choice="plain">save</arg>
+      <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+      <arg choice="plain"><replaceable>DESTINATION</replaceable></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>gio</command>
+      <arg choice="plain">set</arg>
+      <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+      <arg choice="plain"><replaceable>LOCATION</replaceable></arg>
+      <arg choice="plain"><replaceable>ATTRIBUTE</replaceable></arg>
+      <arg choice="plain" rep="repeat"><replaceable>VALUE</replaceable></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>gio</command>
+      <arg choice="plain">trash</arg>
+      <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+      <arg choice="opt" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>gio</command>
+      <arg choice="plain">tree</arg>
+      <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+      <arg choice="opt" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+    <para><command>gio</command> is a utility that makes many of the GIO
+      features available from the commandline. In doing so, it provides
+      commands that are similar to traditional utilities, but let you
+      use GIO locations instead of local files: for example you can use
+      something like <filename>smb://server/resource/file.txt</filename>
+      as location.</para>
+  </refsect1>
+
+  <refsect1>
+    <title>Commands</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>
+          <command>help</command>
+          <arg choice="opt"><replaceable>COMMAND</replaceable></arg>
+        </term>
+        <listitem>
+          <para>Displays a short synopsis of the available commands or provides
+            detailed help on a specific command.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>
+          <command>version</command>
+        </term>
+        <listitem>
+          <para>Prints the GLib version to which <command>gio</command>
+            belongs.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>
+          <command>cat</command>
+          <arg choice="plain" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+        </term>
+        <listitem>
+          <para>Concatenates the given files and prints them to the standard
+            output.</para>
+          <para>The cat command works just like the traditional cat utility.</para>
+          <para>Note: just pipe through cat if you need its formatting options
+            like -n, -T or other.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>
+          <command>copy</command>
+          <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+          <arg choice="plain" rep="repeat"><replaceable>SOURCE</replaceable></arg>
+          <arg choice="plain"><replaceable>DESTINATION</replaceable></arg>
+        </term>
+        <listitem>
+          <para>Copies one or more files from <replaceable>SOURCE</replaceable>
+            to <replaceable>DESTINATION</replaceable>. If more than one source
+            is specified, the destination must be a directory.</para>
+          <para>The copy command is similar to the traditional cp utility.</para>
+          <refsect3>
+            <title>Options</title>
+            <variablelist>
+              <varlistentry>
+                <term><option>-T</option>, <option>--no-target-directory</option></term>
+                <listitem><para>Don't copy into <replaceable>DESTINATION</replaceable> even if it is a directory.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-p</option>, <option>--progress</option></term>
+                <listitem><para>Show progress.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-i</option>, <option>--interactive</option></term>
+                <listitem><para>Prompt for confirmation before overwriting files.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>--preserve</option></term>
+                <listitem><para>Preserve all attributes of copied files.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-b</option>, <option>--backup</option></term>
+                <listitem><para>Create backups of existing destination files.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-P</option>, <option>--no-dereference</option></term>
+                <listitem><para>Never follow symbolic links.</para></listitem>
+              </varlistentry>
+            </variablelist>
+          </refsect3>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <command>info</command>
+          <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+          <arg choice="plain" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+        </term>
+        <listitem>
+          <para>Shows information about the given locations.</para>
+          <para>The info command is similar to the traditional ls utility.</para>
+          <refsect3>
+            <title>Options</title>
+            <variablelist>
+              <varlistentry>
+                <term><option>-w</option>, <option>--query-writable</option></term>
+                <listitem><para>List writable attributes.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-f</option>, <option>--filesystem</option></term>
+                <listitem><para>Show information about the filesystem that the given
+                locations reside on.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-a</option> <option>--attributes=<replaceable>ATTRIBUTES</replaceable></option></term>
+                <listitem><para>The attributes to get.</para>
+                  <para>Attributes can be specified with their GIO name, e.g.
+                    standard::icon, or just by namespace, e.g. unix, or by '*',
+                    which matches all attributes. Several attributes or groups
+                    of attributes can be specified, separated by comma.</para>
+                  <para>By default, all attributes are listed.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-n</option>, <option>--nofollow-symlinks</option></term>
+                <listitem><para>Don't follow symbolic links.</para></listitem>
+              </varlistentry>
+            </variablelist>
+          </refsect3>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>
+          <command>list</command>
+          <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+          <arg choice="opt" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+        </term>
+        <listitem>
+          <para>Lists the contents of the given locations. If no location is
+            given, the contents of the current directory are shown.</para>
+          <para>The list command is similar to the traditional ls utility.</para>
+          <refsect3>
+            <title>Options</title>
+            <variablelist>
+              <varlistentry>
+                <term><option>-a</option> <option>--attributes=<replaceable>ATTRIBUTES</replaceable></option></term>
+                <listitem><para>The attributes to get.</para>
+                  <para>Attributes can be specified with their GIO name, e.g.
+                    standard::icon, or just by namespace, e.g. unix, or by '*',
+                    which matches all attributes. Several attributes or groups
+                    of attributes can be specified, separated by comma.</para>
+                  <para>By default, all attributes are listed.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-h</option>, <option>--hidden</option></term>
+                <listitem><para>Show hidden files.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-l</option>, <option>--long</option></term>
+                <listitem><para>Use a long listing format.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-n</option>, <option>--nofollow-symlinks</option></term>
+                <listitem><para>Don't follow symbolic links.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-u</option>, <option>--print-uris</option></term>
+                <listitem><para>Print full URIs.</para></listitem>
+              </varlistentry>
+            </variablelist>
+          </refsect3>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>
+          <command>mime</command>
+          <arg choice="plain"><replaceable>MIMETYPE</replaceable></arg>
+          <arg choice="opt"><replaceable>HANDLER</replaceable></arg>
+        </term>
+        <listitem>
+          <para>If no handler is given, the mime command lists the
+            registered and recommended applications for the mimetype.
+            If a handler is given, it is set as the default handler for
+            the mimetype.</para>
+          <para>Handlers must be specified by their desktop file name,
+            including the extension. Example: org.gnome.gedit.desktop.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>
+          <command>mkdir</command>
+          <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+          <arg choice="plain" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+        </term>
+        <listitem>
+          <para>Creates directories.</para>
+          <para>The mkdir command is similar to the traditional mkdir utility.</para>
+          <refsect3>
+            <title>Options</title>
+            <variablelist>
+              <varlistentry>
+                <term><option>-p</option>, <option>--parent</option></term>
+                <listitem><para>Create parent directories when necessary.</para></listitem>
+              </varlistentry>
+            </variablelist>
+          </refsect3>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>
+          <command>monitor</command>
+          <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+          <arg choice="opt" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+        </term>
+        <listitem>
+          <para>Monitors files or directories for changes, such as creation
+            deletion, content and attribute changes, and mount and unmount
+            operations affecting the monitored locations.</para>
+          <para>The monitor command uses the GIO file monitoring APIs to do
+            its job. GIO has different implementations for different platforms.
+            The most common implementation on Linux uses inotify.</para>
+          <refsect3>
+            <title>Options</title>
+            <variablelist>
+              <varlistentry>
+                <term><option>-d</option>, <option>--dir=<replaceable>LOCATION</replaceable></option></term>
+                <listitem><para>Monitor the given location as a directory. Normally,
+                  the file type is used to determine whether to monitor a file or directory.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-f</option>, <option>--file=<replaceable>LOCATION</replaceable></option></term>
+                <listitem><para>Monitor the given location as a file. Normally,
+                  the file type is used to determine whether to monitor a file or directory.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-D</option>, <option>--direct=<replaceable>LOCATION</replaceable></option></term>
+                <listitem><para>Monitor the file directly. This allows to capture changes made via hardlinks.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-s</option>, <option>--silent=<replaceable>LOCATION</replaceable></option></term>
+                <listitem><para>Monitor the file directly, but don't report changes.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-n</option>, <option>--no-moves</option></term>
+                <listitem><para>Report moves and renames as simple deleted/created events.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-m</option>, <option>--mounts</option></term>
+                <listitem><para>Watch for mount events.</para></listitem>
+              </varlistentry>
+            </variablelist>
+          </refsect3>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>
+          <command>mount</command>
+          <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+          <arg choice="opt" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+        </term>
+        <listitem>
+          <para>Provides commandline access to various aspects of GIOs mounting
+            functionality.</para>
+          <para>Mounting refers to the traditional concept of arranging multiple
+            file systems and devices in a single tree, rooted at /. Classical
+            mounting happens in the kernel and is controlle by the mount utility.
+            GIO expands this concept by introducing mount daemons that can make
+            file systems available to GIO applications without kernel
+            involvement.</para>
+          <para>GIO mounts can require authentication, and the mount command
+            may ask for user IDs, passwords, and so on, when required.</para>
+          <refsect3>
+            <title>Options</title>
+            <variablelist>
+              <varlistentry>
+                <term><option>-m</option>, <option>--mountable</option></term>
+                <listitem><para>Mount as mountable.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-d</option>, <option>--device=<replaceable>DEVICE</replaceable></option></term>
+                <listitem><para>Mount volume with device file.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-u</option>, <option>--unmount</option></term>
+                <listitem><para>Unmount the location.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-e</option>, <option>--eject</option></term>
+                <listitem><para>Eject the location.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-s</option>, <option>--unmount-scheme=<replaceable>SCHEME</replaceable></option></term>
+                <listitem><para>Unmount all mounts with the given scheme.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-f</option>, <option>--force</option></term>
+                <listitem><para>Ignore outstanding file operations when unmounting or ejecting.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-a</option>, <option>--anonymous</option></term>
+                <listitem><para>Use an anonymous user when authenticating.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-l</option>, <option>--list</option></term>
+                <listitem><para>List all GIO mounts.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-o</option>, <option>--monitor</option></term>
+                <listitem><para>Monitor mount-related events.</para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-i</option>, <option>--detail</option></term>
+                <listitem><para>Show extra information.</para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </refsect3>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>
+          <command>move</command>
+          <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+          <arg choice="plain" rep="repeat"><replaceable>SOURCE</replaceable></arg>
+          <arg choice="plain"><replaceable>DESTINATION</replaceable></arg>
+        </term>
+        <listitem>
+          <para>Moves one or more files from <replaceable>SOURCE</replaceable>
+            to <replaceable>DESTINATION</replaceable>. If more than one source
+            is specified, the destination must be a directory.</para>
+          <para>The move command is similar to the traditional mv utility.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>
+          <command>open</command>
+          <arg choice="plain" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+        </term>
+        <listitem>
+          <para>Opens files with the default application that is registered
+            to handle files of this type.</para>
+          <para>GIO obtains this information from the shared-mime-info
+            database, with per-user overrides stored in
+            <filename><envar>$XDG_DATA_HOME</envar>/applications/mimeapps.list</filename>.</para>
+          <para>The mime command can be used to change the default handler for
+            a mimetype.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>
+          <command>rename</command>
+          <arg choice="plain"><replaceable>LOCATION</replaceable></arg>
+          <arg choice="plain"><replaceable>NAME</replaceable></arg>
+        </term>
+        <listitem>
+          <para>Renames a file.</para>
+          <para>The rename command is similar to the traditional rename utility.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>
+          <command>remove</command>
+          <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+          <arg choice="plain" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+        </term>
+        <listitem>
+          <para>Deletes each given file.</para>
+          <para>This command removes files irreversibly. If you want a reversible
+            way to remove files, see the trash command.</para>
+          <para>Note that not all URI schemes that are supported by GIO may
+            allow deletion of files.</para>
+          <para> The remove command is similar to the traditional rm utility.</para>
+          <refsect3>
+            <title>Options</title>
+            <variablelist>
+              <varlistentry>
+                <term><option>-f</option>, <option>--force</option></term>
+                <listitem><para>Ignore non-existent and non-deletable files.</para></listitem>
+              </varlistentry>
+            </variablelist>
+          </refsect3>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>
+          <command>save</command>
+          <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+          <arg choice="plain"><replaceable>DESTINATION</replaceable></arg>
+        </term>
+        <listitem>
+          <para>Reads from standard input and saves the data to the given
+            location.</para>
+          <para>This is similar to just redirecting output to a file using
+            traditional shell syntax, but the save command allows saving to
+            location that GIO can write to.</para>
+          <refsect3>
+            <title>Options</title>
+            <variablelist>
+              <varlistentry>
+                <term><option>-b</option>, <option>--backup</option></term>
+                <listitem><para>Backup existing destination files.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-c</option>, <option>--create</option></term>
+                <listitem><para>Only create the destination if it doesn't exist yet.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-a</option>, <option>--append</option></term>
+                <listitem><para>Append to the end of the file.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-p</option>, <option>--private</option></term>
+                <listitem><para>When creating, restrict access to the current user.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-u</option>, <option>--unlink</option></term>
+                <listitem><para>When replacing, replace as if the destination did not exist.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-v</option>, <option>--print-etag</option></term>
+                <listitem><para>Print the new etag in the end.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-e</option>, <option>--etag=<replaceable>ETAG</replaceable></option></term>
+                <listitem><para>The etag of the file that is overwritten.</para></listitem>
+              </varlistentry>
+            </variablelist>
+          </refsect3>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>
+          <command>set</command>
+          <arg choice="plain"><replaceable>LOCATION</replaceable></arg>
+          <arg choice="plain"><replaceable>ATTRIBUTE</replaceable></arg>
+          <arg choice="plain" rep="repeat"><replaceable>VALUE</replaceable></arg>
+        </term>
+        <listitem>
+          <para>Allows to set a file attribute on a file.</para>
+          <para>File attributes can be specified with their GIO name, e.g
+            standard::icon. Note that not all GIO file attributes are writable.
+            Use the --query-writable option of the info command to list
+            writable file attributes.</para>
+          <para>If the <replaceable>TYPE</replaceable> is unset,
+            <replaceable>VALUE</replaceable> does not have to be specified.
+            If the type is stringv, multiple values can be given.</para>
+          <refsect3>
+            <title>Options</title>
+            <variablelist>
+              <varlistentry>
+                <term><option>-t</option>, <option>--type=<replaceable>TYPE</replaceable></option></term>
+                <listitem><para>Specifies the type of the attribute. Supported
+                  types are string, stringv, bytestring, boolean, uint32, int32,
+                  uint64, int64 and unset.</para>
+                  <para>If the type is not specified, string is assumed.</para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-n</option>, <option>--nofollow-symlinks</option></term>
+                <listitem><para>Don't follow symbolic links.</para></listitem>
+              </varlistentry>
+            </variablelist>
+          </refsect3>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>
+          <command>trash</command>
+          <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+          <arg choice="opt" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+        </term>
+        <listitem>
+          <para>Sends files or directories to the "Trashcan". This can be a
+            different folder depending on where the file is located, and not
+            all file systems support this concept. In the common case that the
+            file lives inside a users home directory, the trash folder is
+            <filename><envar>$XDG_DATA_HOME</envar>/Trash</filename>.</para>
+          <para>Note that moving files to the trash does not free up space on
+            the file system until the "Trashcan" is emptied. If you are interested
+            in deleting a file irreversibly, see the remove command.</para>
+          <para>Inspecting and emptying the "Trashcan" is normally supported by
+            graphical file managers such as nautilus, but you can also see the
+            trash with the command: gio list trash://.</para>
+          <refsect3>
+            <title>Options</title>
+            <variablelist>
+              <varlistentry>
+                <term><option>-f</option>, <option>--force</option></term>
+                <listitem><para>Ignore non-existent and non-deletable files.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>--empty</option></term>
+                <listitem><para>Empty the trash.</para></listitem>
+              </varlistentry>
+            </variablelist>
+          </refsect3>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>
+          <command>tree</command>
+          <arg choice="opt" rep="repeat"><replaceable>OPTION</replaceable></arg>
+          <arg choice="opt" rep="repeat"><replaceable>LOCATION</replaceable></arg>
+        </term>
+        <listitem>
+          <para>Lists the contents of the given locations recursively, in a
+            tree-like format. If no location is given, it defaults to the current
+            directory.</para>
+          <para>The tree command is similar to the traditional tree utility.</para>
+          <refsect3>
+            <title>Options</title>
+            <variablelist>
+              <varlistentry>
+                <term><option>-h</option>, <option>--hidden</option></term>
+                <listitem><para>Show hidden files.</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><option>-l</option>, <option>--follow-symlinks</option></term>
+                <listitem><para>Follow symbolic links.</para></listitem>
+              </varlistentry>
+            </variablelist>
+          </refsect3>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>Exit status</title>
+    <para>On success 0 is returned, a non-zero failure code otherwise.</para>
+  </refsect1>
+
+  <refsect1>
+    <title>See Also</title>
+    <para>
+      <citerefentry>
+        <refentrytitle>cat</refentrytitle>
+        <manvolnum>1</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>cp</refentrytitle>
+        <manvolnum>1</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>ls</refentrytitle>
+        <manvolnum>1</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>mkdir</refentrytitle>
+        <manvolnum>1</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>mv</refentrytitle>
+        <manvolnum>1</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rm</refentrytitle>
+        <manvolnum>1</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>tree</refentrytitle>
+        <manvolnum>1</manvolnum>
+      </citerefentry>.
+    </para>
+  </refsect1>
+</refentry>

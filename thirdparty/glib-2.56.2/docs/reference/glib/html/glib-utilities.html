@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GLib Utilities: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="index.html" title="GLib Reference Manual">
+<link rel="prev" href="glib-Message-Logging.html" title="Message Output and Debugging Functions">
+<link rel="next" href="glib-String-Utility-Functions.html" title="String Utility Functions">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><img src="up-insensitive.png" width="16" height="16" border="0"></td>
+<td><a accesskey="p" href="glib-Message-Logging.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-String-Utility-Functions.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="chapter">
+<div class="titlepage"><div><div><h1 class="title">
+<a name="glib-utilities"></a>GLib Utilities</h1></div></div></div>
+<div class="toc"><dl class="toc">
+<dt>
+<span class="refentrytitle"><a href="glib-String-Utility-Functions.html">String Utility Functions</a></span><span class="refpurpose"> — various string-related functions</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Character-Set-Conversion.html">Character Set Conversion</a></span><span class="refpurpose"> — convert strings between different character sets</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Unicode-Manipulation.html">Unicode Manipulation</a></span><span class="refpurpose"> — functions operating on Unicode characters and
+    UTF-8 strings</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Base64-Encoding.html">Base64 Encoding</a></span><span class="refpurpose"> — encodes and decodes data in Base64 format</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Data-Checksums.html">Data Checksums</a></span><span class="refpurpose"> — computes the checksum for data</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Data-HMACs.html">Secure HMAC Digests</a></span><span class="refpurpose"> — computes the HMAC for data</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-I18N.html">Internationalization</a></span><span class="refpurpose"> — gettext support macros</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Date-and-Time-Functions.html">Date and Time Functions</a></span><span class="refpurpose"> — calendrical calculations and miscellaneous time stuff</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-GTimeZone.html">GTimeZone</a></span><span class="refpurpose"> — a structure representing a time zone</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-GDateTime.html">GDateTime</a></span><span class="refpurpose"> — a structure representing Date and Time</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Random-Numbers.html">Random Numbers</a></span><span class="refpurpose"> — pseudo-random number generator</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Hook-Functions.html">Hook Functions</a></span><span class="refpurpose"> — support for manipulating lists of hook functions</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Miscellaneous-Utility-Functions.html">Miscellaneous Utility Functions</a></span><span class="refpurpose"> — a selection of portable utility functions</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Lexical-Scanner.html">Lexical Scanner</a></span><span class="refpurpose"> — a general purpose lexical scanner</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Timers.html">Timers</a></span><span class="refpurpose"> — keep track of elapsed time</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Spawning-Processes.html">Spawning Processes</a></span><span class="refpurpose"> — process launching</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-File-Utilities.html">File Utilities</a></span><span class="refpurpose"> — various file-related functions</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-URI-Functions.html">URI Functions</a></span><span class="refpurpose"> — manipulating URIs</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Hostname-Utilities.html">Hostname Utilities</a></span><span class="refpurpose"> — Internet hostname utilities</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Shell-related-Utilities.html">Shell-related Utilities</a></span><span class="refpurpose"> — shell-like commandline handling</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Commandline-option-parser.html">Commandline option parser</a></span><span class="refpurpose"> — parses commandline options</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Glob-style-pattern-matching.html">Glob-style pattern matching</a></span><span class="refpurpose"> — matches strings against patterns containing '*'
+                    (wildcard) and '?' (joker)</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Perl-compatible-regular-expressions.html">Perl-compatible regular expressions</a></span><span class="refpurpose"> — matches strings against regular expressions</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-regex-syntax.html">Regular expression syntax</a></span><span class="refpurpose"> — 
+syntax and semantics of regular expressions supported by GRegex
+</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Simple-XML-Subset-Parser.html">Simple XML Subset Parser</a></span><span class="refpurpose"> — parses a subset of XML</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Key-value-file-parser.html">Key-value file parser</a></span><span class="refpurpose"> — parses .ini-like config files</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Bookmark-file-parser.html">Bookmark file parser</a></span><span class="refpurpose"> — parses files containing bookmarks</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Testing.html">Testing</a></span><span class="refpurpose"> — a test framework</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-UNIX-specific-utilities-and-integration.html">UNIX-specific utilities and integration</a></span><span class="refpurpose"> — pipes, signal handling</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-Windows-Compatibility-Functions.html">Windows Compatibility Functions</a></span><span class="refpurpose"> — UNIX emulation on Windows</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-GUuid.html">GUuid</a></span><span class="refpurpose"> — a universally unique identifier</span>
+</dt>
+</dl></div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

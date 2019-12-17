@@ -1,0 +1,282 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Hostname Utilities: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-utilities.html" title="GLib Utilities">
+<link rel="prev" href="glib-URI-Functions.html" title="URI Functions">
+<link rel="next" href="glib-Shell-related-Utilities.html" title="Shell-related Utilities">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-Hostname-Utilities.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-utilities.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-URI-Functions.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-Shell-related-Utilities.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Hostname-Utilities"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Hostname-Utilities.top_of_page"></a>Hostname Utilities</span></h2>
+<p>Hostname Utilities — Internet hostname utilities</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-Hostname-Utilities.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hostname-Utilities.html#g-hostname-to-ascii" title="g_hostname_to_ascii ()">g_hostname_to_ascii</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hostname-Utilities.html#g-hostname-to-unicode" title="g_hostname_to_unicode ()">g_hostname_to_unicode</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hostname-Utilities.html#g-hostname-is-non-ascii" title="g_hostname_is_non_ascii ()">g_hostname_is_non_ascii</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hostname-Utilities.html#g-hostname-is-ascii-encoded" title="g_hostname_is_ascii_encoded ()">g_hostname_is_ascii_encoded</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Hostname-Utilities.html#g-hostname-is-ip-address" title="g_hostname_is_ip_address ()">g_hostname_is_ip_address</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Hostname-Utilities.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib.h&gt;
+#include &lt;glib/gi18n.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Hostname-Utilities.description"></a><h2>Description</h2>
+<p>Functions for manipulating internet hostnames; in particular, for
+converting between Unicode and ASCII-encoded forms of
+Internationalized Domain Names (IDNs).</p>
+<p>The
+<a class="ulink" href="http://www.ietf.org/rfc/rfc3490.txt" target="_top">Internationalized Domain Names for Applications (IDNA)</a>
+standards allow for the use
+of Unicode domain names in applications, while providing
+backward-compatibility with the old ASCII-only DNS, by defining an
+ASCII-Compatible Encoding of any given Unicode name, which can be
+used with non-IDN-aware applications and protocols. (For example,
+"Παν語.org" maps to "xn--4wa8awb4637h.org".)</p>
+</div>
+<div class="refsect1">
+<a name="glib-Hostname-Utilities.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-hostname-to-ascii"></a><h3>g_hostname_to_ascii ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_hostname_to_ascii (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *hostname</code></em>);</pre>
+<p>Converts <em class="parameter"><code>hostname</code></em>
+ to its canonical ASCII form; an ASCII-only
+string containing no uppercase letters and not ending with a
+trailing dot.</p>
+<div class="refsect3">
+<a name="g-hostname-to-ascii.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>hostname</p></td>
+<td class="parameter_description"><p>a valid UTF-8 or ASCII hostname</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hostname-to-ascii.returns"></a><h4>Returns</h4>
+<p> an ASCII hostname, which must be freed, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if
+<em class="parameter"><code>hostname</code></em>
+is in some way invalid.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hostname-to-unicode"></a><h3>g_hostname_to_unicode ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_hostname_to_unicode (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *hostname</code></em>);</pre>
+<p>Converts <em class="parameter"><code>hostname</code></em>
+ to its canonical presentation form; a UTF-8
+string in Unicode normalization form C, containing no uppercase
+letters, no forbidden characters, and no ASCII-encoded segments,
+and not ending with a trailing dot.</p>
+<p>Of course if <em class="parameter"><code>hostname</code></em>
+ is not an internationalized hostname, then
+the canonical presentation form will be entirely ASCII.</p>
+<div class="refsect3">
+<a name="g-hostname-to-unicode.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>hostname</p></td>
+<td class="parameter_description"><p>a valid UTF-8 or ASCII hostname</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hostname-to-unicode.returns"></a><h4>Returns</h4>
+<p> a UTF-8 hostname, which must be freed, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if
+<em class="parameter"><code>hostname</code></em>
+is in some way invalid.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hostname-is-non-ascii"></a><h3>g_hostname_is_non_ascii ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_hostname_is_non_ascii (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *hostname</code></em>);</pre>
+<p>Tests if <em class="parameter"><code>hostname</code></em>
+ contains Unicode characters. If this returns
+<a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>, you need to encode the hostname with <a class="link" href="glib-Hostname-Utilities.html#g-hostname-to-ascii" title="g_hostname_to_ascii ()"><code class="function">g_hostname_to_ascii()</code></a>
+before using it in non-IDN-aware contexts.</p>
+<p>Note that a hostname might contain a mix of encoded and unencoded
+segments, and so it is possible for <a class="link" href="glib-Hostname-Utilities.html#g-hostname-is-non-ascii" title="g_hostname_is_non_ascii ()"><code class="function">g_hostname_is_non_ascii()</code></a> and
+<a class="link" href="glib-Hostname-Utilities.html#g-hostname-is-ascii-encoded" title="g_hostname_is_ascii_encoded ()"><code class="function">g_hostname_is_ascii_encoded()</code></a> to both return <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> for a name.</p>
+<div class="refsect3">
+<a name="g-hostname-is-non-ascii.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>hostname</p></td>
+<td class="parameter_description"><p>a hostname</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hostname-is-non-ascii.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>hostname</code></em>
+contains any non-ASCII characters</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hostname-is-ascii-encoded"></a><h3>g_hostname_is_ascii_encoded ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_hostname_is_ascii_encoded (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *hostname</code></em>);</pre>
+<p>Tests if <em class="parameter"><code>hostname</code></em>
+ contains segments with an ASCII-compatible
+encoding of an Internationalized Domain Name. If this returns
+<a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>, you should decode the hostname with <a class="link" href="glib-Hostname-Utilities.html#g-hostname-to-unicode" title="g_hostname_to_unicode ()"><code class="function">g_hostname_to_unicode()</code></a>
+before displaying it to the user.</p>
+<p>Note that a hostname might contain a mix of encoded and unencoded
+segments, and so it is possible for <a class="link" href="glib-Hostname-Utilities.html#g-hostname-is-non-ascii" title="g_hostname_is_non_ascii ()"><code class="function">g_hostname_is_non_ascii()</code></a> and
+<a class="link" href="glib-Hostname-Utilities.html#g-hostname-is-ascii-encoded" title="g_hostname_is_ascii_encoded ()"><code class="function">g_hostname_is_ascii_encoded()</code></a> to both return <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> for a name.</p>
+<div class="refsect3">
+<a name="g-hostname-is-ascii-encoded.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>hostname</p></td>
+<td class="parameter_description"><p>a hostname</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hostname-is-ascii-encoded.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>hostname</code></em>
+contains any ASCII-encoded
+segments.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-hostname-is-ip-address"></a><h3>g_hostname_is_ip_address ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_hostname_is_ip_address (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *hostname</code></em>);</pre>
+<p>Tests if <em class="parameter"><code>hostname</code></em>
+ is the string form of an IPv4 or IPv6 address.
+(Eg, "192.168.0.1".)</p>
+<div class="refsect3">
+<a name="g-hostname-is-ip-address.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>hostname</p></td>
+<td class="parameter_description"><p>a hostname (or IP address in string form)</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-hostname-is-ip-address.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>hostname</code></em>
+is an IP address</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Hostname-Utilities.other_details"></a><h2>Types and Values</h2>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

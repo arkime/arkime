@@ -1,0 +1,204 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GDtlsServerConnection: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="tls.html" title="TLS (SSL) support">
+<link rel="prev" href="GDtlsClientConnection.html" title="GDtlsClientConnection">
+<link rel="next" href="GTlsBackend.html" title="GTlsBackend">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GDtlsServerConnection.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GDtlsServerConnection.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_prerequisites">  <span class="dim">|</span> 
+                  <a href="#GDtlsServerConnection.prerequisites" class="shortcut">Prerequisites</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GDtlsServerConnection.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="tls.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GDtlsClientConnection.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GTlsBackend.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GDtlsServerConnection"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GDtlsServerConnection.top_of_page"></a>GDtlsServerConnection</span></h2>
+<p>GDtlsServerConnection — DTLS server-side connection</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GDtlsServerConnection.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody><tr>
+<td class="function_type">
+<a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="returnvalue">GDatagramBased</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDtlsServerConnection.html#g-dtls-server-connection-new" title="g_dtls_server_connection_new ()">g_dtls_server_connection_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDtlsServerConnection.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody><tr>
+<td class="property_type"><a class="link" href="gio-TLS-Overview.html#GTlsAuthenticationMode" title="enum GTlsAuthenticationMode"><span class="type">GTlsAuthenticationMode</span></a></td>
+<td class="property_name"><a class="link" href="GDtlsServerConnection.html#GDtlsServerConnection--authentication-mode" title="The “authentication-mode” property">authentication-mode</a></td>
+<td class="property_flags">Read / Write</td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDtlsServerConnection.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GDtlsServerConnection.html#GDtlsServerConnection-struct" title="GDtlsServerConnection">GDtlsServerConnection</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GDtlsServerConnection.html#GDtlsServerConnectionInterface" title="struct GDtlsServerConnectionInterface">GDtlsServerConnectionInterface</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDtlsServerConnection.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/GTypeModule.html">GInterface</a>
+    <span class="lineart">╰──</span> GDtlsServerConnection
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDtlsServerConnection.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GDtlsServerConnection requires
+ <a class="link" href="GDtlsConnection.html" title="GDtlsConnection">GDtlsConnection</a>,  <a class="link" href="GDatagramBased.html" title="GDatagramBased">GDatagramBased</a> and  <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GDtlsServerConnection.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDtlsServerConnection.description"></a><h2>Description</h2>
+<p><a class="link" href="GDtlsServerConnection.html" title="GDtlsServerConnection"><span class="type">GDtlsServerConnection</span></a> is the server-side subclass of <a class="link" href="GDtlsConnection.html" title="GDtlsConnection"><span class="type">GDtlsConnection</span></a>,
+representing a server-side DTLS connection.</p>
+</div>
+<div class="refsect1">
+<a name="GDtlsServerConnection.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-dtls-server-connection-new"></a><h3>g_dtls_server_connection_new ()</h3>
+<pre class="programlisting"><a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="returnvalue">GDatagramBased</span></a> *
+g_dtls_server_connection_new (<em class="parameter"><code><a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a> *base_socket</code></em>,
+                              <em class="parameter"><code><a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> *certificate</code></em>,
+                              <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Creates a new <a class="link" href="GDtlsServerConnection.html" title="GDtlsServerConnection"><span class="type">GDtlsServerConnection</span></a> wrapping <em class="parameter"><code>base_socket</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dtls-server-connection-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>base_socket</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a> to wrap</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>certificate</p></td>
+<td class="parameter_description"><p>the default server certificate, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for error reporting, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dtls-server-connection-new.returns"></a><h4>Returns</h4>
+<p>the new
+<a class="link" href="GDtlsServerConnection.html" title="GDtlsServerConnection"><span class="type">GDtlsServerConnection</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GDtlsServerConnection]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-48.html#api-index-2.48">2.48</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDtlsServerConnection.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GDtlsServerConnection-struct"></a><h3>GDtlsServerConnection</h3>
+<pre class="programlisting">typedef struct _GDtlsServerConnection GDtlsServerConnection;</pre>
+<p>DTLS server-side connection. This is the server-side implementation
+of a <a class="link" href="GDtlsConnection.html" title="GDtlsConnection"><span class="type">GDtlsConnection</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-48.html#api-index-2.48">2.48</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDtlsServerConnectionInterface"></a><h3>struct GDtlsServerConnectionInterface</h3>
+<pre class="programlisting">struct GDtlsServerConnectionInterface {
+  GTypeInterface g_iface;
+};
+</pre>
+<p>vtable for a <a class="link" href="GDtlsServerConnection.html" title="GDtlsServerConnection"><span class="type">GDtlsServerConnection</span></a> implementation.</p>
+<div class="refsect3">
+<a name="GDtlsServerConnectionInterface.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-48.html#api-index-2.48">2.48</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDtlsServerConnection.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GDtlsServerConnection--authentication-mode"></a><h3>The <code class="literal">“authentication-mode”</code> property</h3>
+<pre class="programlisting">  “authentication-mode”      <a class="link" href="gio-TLS-Overview.html#GTlsAuthenticationMode" title="enum GTlsAuthenticationMode"><span class="type">GTlsAuthenticationMode</span></a></pre>
+<p>The <a class="link" href="gio-TLS-Overview.html#GTlsAuthenticationMode" title="enum GTlsAuthenticationMode"><span class="type">GTlsAuthenticationMode</span></a> for the server. This can be changed
+before calling <a class="link" href="GDtlsConnection.html#g-dtls-connection-handshake" title="g_dtls_connection_handshake ()"><code class="function">g_dtls_connection_handshake()</code></a> if you want to
+rehandshake with a different mode from the initial handshake.</p>
+<p>Flags: Read / Write</p>
+<p>Default value: G_TLS_AUTHENTICATION_NONE</p>
+<p class="since">Since: <a class="link" href="api-index-2-48.html#api-index-2.48">2.48</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

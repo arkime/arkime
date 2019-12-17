@@ -1,0 +1,3 @@
+ELEMENT 'foo'
+  TEXT 'data'
+END 'foo'

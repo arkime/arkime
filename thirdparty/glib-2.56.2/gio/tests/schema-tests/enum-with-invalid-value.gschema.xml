@@ -1,0 +1,10 @@
+<schemalist>
+  <enum id='org.gtk.test.MyEnum'>
+    <value nick='nospam' value='*'/>
+    <value nick='spam' value='1'/>
+    <value nick='ham' value='2'/>
+    <value nick='eggs' value='3'/>
+    <value nick='bangers' value='4'/>
+    <value nick='mash' value='5'/>
+  </enum>
+</schemalist>

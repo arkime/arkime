@@ -1,0 +1,463 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GThemedIcon: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="icons.html" title="Icons">
+<link rel="prev" href="GLoadableIcon.html" title="GLoadableIcon">
+<link rel="next" href="GEmblemedIcon.html" title="GEmblemedIcon">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GThemedIcon.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GThemedIcon.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_interfaces">  <span class="dim">|</span> 
+                  <a href="#GThemedIcon.implemented-interfaces" class="shortcut">Implemented Interfaces</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GThemedIcon.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="icons.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GLoadableIcon.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GEmblemedIcon.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GThemedIcon"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GThemedIcon.top_of_page"></a>GThemedIcon</span></h2>
+<p>GThemedIcon — Icon theming support</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GThemedIcon.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GThemedIcon.html#g-themed-icon-new" title="g_themed_icon_new ()">g_themed_icon_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GThemedIcon.html#g-themed-icon-new-from-names" title="g_themed_icon_new_from_names ()">g_themed_icon_new_from_names</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GThemedIcon.html#g-themed-icon-new-with-default-fallbacks" title="g_themed_icon_new_with_default_fallbacks ()">g_themed_icon_new_with_default_fallbacks</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GThemedIcon.html#g-themed-icon-prepend-name" title="g_themed_icon_prepend_name ()">g_themed_icon_prepend_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GThemedIcon.html#g-themed-icon-append-name" title="g_themed_icon_append_name ()">g_themed_icon_append_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> * const *
+</td>
+<td class="function_name">
+<a class="link" href="GThemedIcon.html#g-themed-icon-get-names" title="g_themed_icon_get_names ()">g_themed_icon_get_names</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GThemedIcon.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="property_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<td class="property_name"><a class="link" href="GThemedIcon.html#GThemedIcon--name" title="The “name” property">name</a></td>
+<td class="property_flags">Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-String-Utility-Functions.html#GStrv"><span class="type">GStrv</span></a></td>
+<td class="property_name"><a class="link" href="GThemedIcon.html#GThemedIcon--names" title="The “names” property">names</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GThemedIcon.html#GThemedIcon--use-default-fallbacks" title="The “use-default-fallbacks” property">use-default-fallbacks</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GThemedIcon.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GThemedIcon.html#GThemedIcon-struct" title="GThemedIcon">GThemedIcon</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GThemedIcon.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GThemedIcon
+</pre>
+</div>
+<div class="refsect1">
+<a name="GThemedIcon.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GThemedIcon implements
+ <a class="link" href="GIcon.html" title="GIcon">GIcon</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GThemedIcon.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GThemedIcon.description"></a><h2>Description</h2>
+<p><a class="link" href="GThemedIcon.html" title="GThemedIcon"><span class="type">GThemedIcon</span></a> is an implementation of <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> that supports icon themes.
+<a class="link" href="GThemedIcon.html" title="GThemedIcon"><span class="type">GThemedIcon</span></a> contains a list of all of the icons present in an icon
+theme, so that icons can be looked up quickly. <a class="link" href="GThemedIcon.html" title="GThemedIcon"><span class="type">GThemedIcon</span></a> does
+not provide actual pixmaps for icons, just the icon names.
+Ideally something like <code class="function">gtk_icon_theme_choose_icon()</code> should be used to
+resolve the list of names so that fallback icons work nicely with
+themes that inherit other themes.</p>
+</div>
+<div class="refsect1">
+<a name="GThemedIcon.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-themed-icon-new"></a><h3>g_themed_icon_new ()</h3>
+<pre class="programlisting"><a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+g_themed_icon_new (<em class="parameter"><code>const <span class="type">char</span> *iconname</code></em>);</pre>
+<p>Creates a new themed icon for <em class="parameter"><code>iconname</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-themed-icon-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>iconname</p></td>
+<td class="parameter_description"><p>a string containing an icon name.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-themed-icon-new.returns"></a><h4>Returns</h4>
+<p>a new <a class="link" href="GThemedIcon.html" title="GThemedIcon"><span class="type">GThemedIcon</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GThemedIcon]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-themed-icon-new-from-names"></a><h3>g_themed_icon_new_from_names ()</h3>
+<pre class="programlisting"><a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+g_themed_icon_new_from_names (<em class="parameter"><code><span class="type">char</span> **iconnames</code></em>,
+                              <em class="parameter"><code><span class="type">int</span> len</code></em>);</pre>
+<p>Creates a new themed icon for <em class="parameter"><code>iconnames</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-themed-icon-new-from-names.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>iconnames</p></td>
+<td class="parameter_description"><p>an array of strings containing icon names. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=len]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>len</p></td>
+<td class="parameter_description"><p>the length of the <em class="parameter"><code>iconnames</code></em>
+array, or -1 if <em class="parameter"><code>iconnames</code></em>
+is
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-themed-icon-new-from-names.returns"></a><h4>Returns</h4>
+<p>a new <a class="link" href="GThemedIcon.html" title="GThemedIcon"><span class="type">GThemedIcon</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GThemedIcon]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-themed-icon-new-with-default-fallbacks"></a><h3>g_themed_icon_new_with_default_fallbacks ()</h3>
+<pre class="programlisting"><a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+g_themed_icon_new_with_default_fallbacks
+                               (<em class="parameter"><code>const <span class="type">char</span> *iconname</code></em>);</pre>
+<p>Creates a new themed icon for <em class="parameter"><code>iconname</code></em>
+, and all the names
+that can be created by shortening <em class="parameter"><code>iconname</code></em>
+ at '-' characters.</p>
+<p>In the following example, <em class="parameter"><code>icon1</code></em>
+ and <em class="parameter"><code>icon2</code></em>
+ are equivalent:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">const</span><span class="normal"> </span><span class="type">char</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">names</span><span class="symbol">[]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span>
+<span class="normal">  </span><span class="string">"gnome-dev-cdrom-audio"</span><span class="symbol">,</span>
+<span class="normal">  </span><span class="string">"gnome-dev-cdrom"</span><span class="symbol">,</span>
+<span class="normal">  </span><span class="string">"gnome-dev"</span><span class="symbol">,</span>
+<span class="normal">  </span><span class="string">"gnome"</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+
+<span class="normal">icon1 </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GThemedIcon.html#g-themed-icon-new-from-names">g_themed_icon_new_from_names</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">names</span><span class="symbol">,</span><span class="normal"> </span><span class="number">4</span><span class="symbol">);</span>
+<span class="normal">icon2 </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GThemedIcon.html#g-themed-icon-new-with-default-fallbacks">g_themed_icon_new_with_default_fallbacks</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"gnome-dev-cdrom-audio"</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="g-themed-icon-new-with-default-fallbacks.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>iconname</p></td>
+<td class="parameter_description"><p>a string containing an icon name</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-themed-icon-new-with-default-fallbacks.returns"></a><h4>Returns</h4>
+<p>a new <a class="link" href="GThemedIcon.html" title="GThemedIcon"><span class="type">GThemedIcon</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GThemedIcon]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-themed-icon-prepend-name"></a><h3>g_themed_icon_prepend_name ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_themed_icon_prepend_name (<em class="parameter"><code><a class="link" href="GThemedIcon.html" title="GThemedIcon"><span class="type">GThemedIcon</span></a> *icon</code></em>,
+                            <em class="parameter"><code>const <span class="type">char</span> *iconname</code></em>);</pre>
+<p>Prepend a name to the list of icons from within <em class="parameter"><code>icon</code></em>
+.</p>
+<p>Note that doing so invalidates the hash computed by prior calls
+to <a class="link" href="GIcon.html#g-icon-hash" title="g_icon_hash ()"><code class="function">g_icon_hash()</code></a>.</p>
+<div class="refsect3">
+<a name="g-themed-icon-prepend-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>icon</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GThemedIcon.html" title="GThemedIcon"><span class="type">GThemedIcon</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>iconname</p></td>
+<td class="parameter_description"><p>name of icon to prepend to list of icons from within <em class="parameter"><code>icon</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-18.html#api-index-2.18">2.18</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-themed-icon-append-name"></a><h3>g_themed_icon_append_name ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_themed_icon_append_name (<em class="parameter"><code><a class="link" href="GThemedIcon.html" title="GThemedIcon"><span class="type">GThemedIcon</span></a> *icon</code></em>,
+                           <em class="parameter"><code>const <span class="type">char</span> *iconname</code></em>);</pre>
+<p>Append a name to the list of icons from within <em class="parameter"><code>icon</code></em>
+.</p>
+<p>Note that doing so invalidates the hash computed by prior calls
+to <a class="link" href="GIcon.html#g-icon-hash" title="g_icon_hash ()"><code class="function">g_icon_hash()</code></a>.</p>
+<div class="refsect3">
+<a name="g-themed-icon-append-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>icon</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GThemedIcon.html" title="GThemedIcon"><span class="type">GThemedIcon</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>iconname</p></td>
+<td class="parameter_description"><p>name of icon to append to list of icons from within <em class="parameter"><code>icon</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-themed-icon-get-names"></a><h3>g_themed_icon_get_names ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> * const *
+g_themed_icon_get_names (<em class="parameter"><code><a class="link" href="GThemedIcon.html" title="GThemedIcon"><span class="type">GThemedIcon</span></a> *icon</code></em>);</pre>
+<p>Gets the names of icons from within <em class="parameter"><code>icon</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-themed-icon-get-names.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>icon</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GThemedIcon.html" title="GThemedIcon"><span class="type">GThemedIcon</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-themed-icon-get-names.returns"></a><h4>Returns</h4>
+<p>a list of icon names. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GThemedIcon.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GThemedIcon-struct"></a><h3>GThemedIcon</h3>
+<pre class="programlisting">typedef struct _GThemedIcon GThemedIcon;</pre>
+<p>An implementation of <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> for themed icons.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GThemedIcon.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GThemedIcon--name"></a><h3>The <code class="literal">“name”</code> property</h3>
+<pre class="programlisting">  “name”                     <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>The icon name.</p>
+<p>Flags: Write / Construct Only</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GThemedIcon--names"></a><h3>The <code class="literal">“names”</code> property</h3>
+<pre class="programlisting">  “names”                    <a href="../glib-String-Utility-Functions.html#GStrv"><span class="type">GStrv</span></a></pre>
+<p>A <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of icon names.</p>
+<p>Flags: Read / Write / Construct Only</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GThemedIcon--use-default-fallbacks"></a><h3>The <code class="literal">“use-default-fallbacks”</code> property</h3>
+<pre class="programlisting">  “use-default-fallbacks”    <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether to use the default fallbacks found by shortening the icon name
+
+at '-' characters. If the "names" array has more than one element,
+
+ignores any past the first.</p>
+<p>For example, if the icon name was "gnome-dev-cdrom-audio", the array
+
+would become</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="cbracket">{</span>
+<span class="normal">  </span><span class="string">"gnome-dev-cdrom-audio"</span><span class="symbol">,</span>
+<span class="normal">  </span><span class="string">"gnome-dev-cdrom"</span><span class="symbol">,</span>
+<span class="normal">  </span><span class="string">"gnome-dev"</span><span class="symbol">,</span>
+<span class="normal">  </span><span class="string">"gnome"</span><span class="symbol">,</span>
+<span class="normal">  <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span>
+<span class="cbracket">}</span><span class="symbol">;</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>Flags: Read / Write / Construct Only</p>
+<p>Default value: FALSE</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GThemedIcon.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>, <a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

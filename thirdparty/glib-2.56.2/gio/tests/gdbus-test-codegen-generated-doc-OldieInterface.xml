@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+]>
+<refentry id="gdbus-OldieInterface">
+  <refmeta>    <refentrytitle role="top_of_page" id="gdbus-interface-OldieInterface.top_of_page">OldieInterface</refentrytitle>
+  <indexterm zone="gdbus-interface-OldieInterface.top_of_page"><primary sortas="OldieInterface">OldieInterface</primary></indexterm>
+  </refmeta>  <refnamediv>    <refname>OldieInterface</refname>    <refpurpose>A an example of an deprecated interface</refpurpose>  </refnamediv>  <refsynopsisdiv role="synopsis">
+    <title role="synopsis.title">Methods</title>
+    <synopsis>
+<link linkend="gdbus-method-OldieInterface.Foo">Foo</link> ();
+</synopsis>
+  </refsynopsisdiv>
+  <refsect1 role="signal_proto">
+    <title role="signal_proto.title">Signals</title>
+    <synopsis>
+<link linkend="gdbus-signal-OldieInterface.Bar">Bar</link> ();
+</synopsis>
+  </refsect1>
+  <refsect1 role="properties">
+    <title role="properties.title">Properties</title>
+    <synopsis>
+<link linkend="gdbus-property-OldieInterface.Bat">Bat</link>  readwrite  i
+</synopsis>
+  </refsect1>
+<refsect1 role="desc" id="gdbus-interface-OldieInterface">
+  <title role="desc.title">Description</title>
+  <para>    This is an example of a deprecated interface.
+</para>
+<warning><para>The OldieInterface interface is deprecated.</para></warning></refsect1>
+<refsect1 role="details" id="gdbus-methods-OldieInterface">
+  <title role="details.title">Method Details</title>
+<refsect2 role="method" id="gdbus-method-OldieInterface.Foo">
+  <title>The Foo() method</title>
+  <indexterm zone="gdbus-method-OldieInterface.Foo"><primary sortas="OldieInterface.Foo">OldieInterface.Foo()</primary></indexterm>
+<programlisting>
+Foo ();
+</programlisting>
+<para></para>
+<warning><para>The Foo() method is deprecated.</para></warning></refsect2>
+</refsect1>
+<refsect1 role="details" id="gdbus-signals-OldieInterface">
+  <title role="details.title">Signal Details</title>
+<refsect2 role="signal" id="gdbus-signal-OldieInterface.Bar">
+  <title>The "Bar" signal</title>
+  <indexterm zone="gdbus-signal-OldieInterface.Bar"><primary sortas="OldieInterface::Bar">OldieInterface::Bar</primary></indexterm>
+<programlisting>
+Bar ();
+</programlisting>
+<para></para>
+<warning><para>The "Bar" signal is deprecated.</para></warning></refsect2>
+</refsect1>
+<refsect1 role="details" id="gdbus-properties-OldieInterface">
+  <title role="details.title">Property Details</title>
+<refsect2 role="property" id="gdbus-property-OldieInterface.Bat">
+  <title>The "Bat" property</title>
+  <indexterm zone="gdbus-property-OldieInterface.Bat"><primary sortas="OldieInterface:Bat">OldieInterface:Bat</primary></indexterm>
+<programlisting>
+Bat  readwrite  i
+</programlisting>
+<para></para>
+<warning><para>The "Bat" property is deprecated.</para></warning></refsect2>
+</refsect1>
+</refentry>
+

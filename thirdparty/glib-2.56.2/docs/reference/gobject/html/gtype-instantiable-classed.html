@@ -1,0 +1,412 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Instantiable classed types: objects: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="chapter-gtype.html" title="The GLib Dynamic Type System">
+<link rel="prev" href="gtype-non-instantiable.html" title="Non-instantiable non-classed fundamental types">
+<link rel="next" href="gtype-non-instantiable-classed.html" title="Non-instantiable classed types: interfaces">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="chapter-gtype.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gtype-non-instantiable.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gtype-non-instantiable-classed.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="gtype-instantiable-classed"></a>Instantiable classed types: objects</h2></div></div></div>
+<p>
+          This section covers the theory behind objects. See
+          <a class="xref" href="howto-gobject.html" title="How to define and implement a new GObject"><i>How to define and implement a new GObject</i></a> for the recommended way to define a
+          GObject.
+        </p>
+<p>
+          Types which are registered with a class and are declared instantiable are
+          what most closely resembles an <span class="emphasis"><em>object</em></span>. 
+          Although <a class="link" href="gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a>s (detailed in <a class="xref" href="chapter-gobject.html" title="The GObject base class"><i>The GObject base class</i></a>) 
+          are the most well known type of instantiable
+          classed types, other kinds of similar objects used as the base of an inheritance 
+          hierarchy have been externally developed and they are all built on the fundamental
+          features described below.
+        </p>
+<p>
+          For example, the code below shows how you could register 
+          such a fundamental object type in the type system (using none of the
+          GObject convenience API):
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">struct</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GObject</span><span class="normal"> parent</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="comment">/* instance members */</span>
+<span class="normal">  </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">filename</span><span class="symbol">;</span>
+<span class="cbracket">}</span><span class="normal"> ViewerFile</span><span class="symbol">;</span>
+
+<span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">struct</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GObjectClass</span><span class="normal"> parent</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="comment">/* class members */</span>
+<span class="normal">  </span><span class="comment">/* the first is public, pure and virtual */</span>
+<span class="normal">  </span><span class="type">void</span><span class="normal"> </span><span class="symbol">(*</span><span class="normal">open</span><span class="symbol">)</span><span class="normal">  </span><span class="symbol">(</span><span class="usertype">ViewerFile</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="usertype">GError</span><span class="normal">     </span><span class="symbol">**</span><span class="normal">error</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">/* the second is public and virtual */</span>
+<span class="normal">  </span><span class="type">void</span><span class="normal"> </span><span class="symbol">(*</span><span class="normal">close</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerFile</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="usertype">GError</span><span class="normal">     </span><span class="symbol">**</span><span class="normal">error</span><span class="symbol">);</span>
+<span class="cbracket">}</span><span class="normal"> ViewerFileClass</span><span class="symbol">;</span>
+
+<span class="preproc">#define</span><span class="normal"> </span><span class="function">VIEWER_TYPE_FILE</span><span class="normal"> </span><span class="symbol">(</span><span class="function">viewer_file_get_type</span><span class="normal"> </span><span class="symbol">())</span>
+
+<span class="normal"><a href="gobject-Type-Information.html#GType">GType</a> </span>
+<span class="function">viewer_file_get_type</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">GType</span><span class="normal"> type </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">type </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">GTypeInfo</span><span class="normal"> info </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="keyword">sizeof</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ViewerFileClass</span><span class="symbol">),</span>
+<span class="normal">      <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal">           </span><span class="comment">/* base_init */</span>
+<span class="normal">      <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal">           </span><span class="comment">/* base_finalize */</span>
+<span class="normal">      </span><span class="symbol">(</span><span class="normal"><a href="gobject-Type-Information.html#GClassInitFunc">GClassInitFunc</a></span><span class="symbol">)</span><span class="normal"> viewer_file_class_init</span><span class="symbol">,</span>
+<span class="normal">      <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal">           </span><span class="comment">/* class_finalize */</span>
+<span class="normal">      <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal">           </span><span class="comment">/* class_data */</span>
+<span class="normal">      </span><span class="keyword">sizeof</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ViewerFile</span><span class="symbol">),</span>
+<span class="normal">      </span><span class="number">0</span><span class="symbol">,</span><span class="normal">              </span><span class="comment">/* n_preallocs */</span>
+<span class="normal">      </span><span class="symbol">(</span><span class="normal"><a href="gobject-Type-Information.html#GInstanceInitFunc">GInstanceInitFunc</a></span><span class="symbol">)</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a> </span><span class="comment">/* instance_init */</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="symbol">;</span>
+<span class="normal">    type </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gobject-Type-Information.html#g-type-register-static">g_type_register_static</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="gobject-Type-Information.html#G-TYPE-OBJECT:CAPS">G_TYPE_OBJECT</a></span><span class="symbol">,</span>
+<span class="normal">                                   </span><span class="string">"ViewerFile"</span><span class="symbol">,</span>
+<span class="normal">                                   </span><span class="symbol">&amp;</span><span class="normal">info</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="cbracket">}</span>
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> type</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+          Upon the first call to <code class="function">viewer_file_get_type</code>, the type named
+          <span class="emphasis"><em>ViewerFile</em></span> will be registered in the type system as inheriting
+          from the type <span class="emphasis"><em>G_TYPE_OBJECT</em></span>.
+        </p>
+<p>
+          Every object must define two structures: its class structure and its 
+          instance structure. All class structures must contain as first member
+          a <a class="link" href="gobject-Type-Information.html#GTypeClass" title="struct GTypeClass"><span class="type">GTypeClass</span></a> structure. All instance structures must contain as first
+          member a <a class="link" href="gobject-Type-Information.html#GTypeInstance" title="struct GTypeInstance"><span class="type">GTypeInstance</span></a> structure. The declaration of these C types,
+          coming from <code class="filename">gtype.h</code> is shown below:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">struct</span><span class="normal"> </span><span class="classname">_GTypeClass</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GType</span><span class="normal"> g_type</span><span class="symbol">;</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+<span class="keyword">struct</span><span class="normal"> </span><span class="classname">_GTypeInstance</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GTypeClass</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">g_class</span><span class="symbol">;</span>
+<span class="cbracket">}</span><span class="symbol">;</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+          These constraints allow the type system to make sure that every object instance
+          (identified by a pointer to the object's instance structure) contains in its
+          first bytes a pointer to the object's class structure.
+        </p>
+<p>
+          This relationship is best explained by an example: let's take object B which
+          inherits from object A:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="comment">/* A definitions */</span>
+<span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">struct</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GTypeInstance</span><span class="normal"> parent</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="type">int</span><span class="normal"> field_a</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="type">int</span><span class="normal"> field_b</span><span class="symbol">;</span>
+<span class="cbracket">}</span><span class="normal"> A</span><span class="symbol">;</span>
+<span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">struct</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GTypeClass</span><span class="normal"> parent_class</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="type">void</span><span class="normal"> </span><span class="symbol">(*</span><span class="normal">method_a</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="type">void</span><span class="normal"> </span><span class="symbol">(*</span><span class="normal">method_b</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">);</span>
+<span class="cbracket">}</span><span class="normal"> AClass</span><span class="symbol">;</span>
+
+<span class="comment">/* B definitions. */</span>
+<span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">struct</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">A</span><span class="normal"> parent</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="type">int</span><span class="normal"> field_c</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="type">int</span><span class="normal"> field_d</span><span class="symbol">;</span>
+<span class="cbracket">}</span><span class="normal"> B</span><span class="symbol">;</span>
+<span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">struct</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">AClass</span><span class="normal"> parent_class</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="type">void</span><span class="normal"> </span><span class="symbol">(*</span><span class="normal">method_c</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="type">void</span><span class="normal"> </span><span class="symbol">(*</span><span class="normal">method_d</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">);</span>
+<span class="cbracket">}</span><span class="normal"> BClass</span><span class="symbol">;</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>          
+          The C standard mandates that the first field of a C structure is stored starting
+          in the first byte of the buffer used to hold the structure's fields in memory.
+          This means that the first field of an instance of an object B is A's first field
+          which in turn is <span class="type">GTypeInstance</span>'s first field which in
+          turn is <em class="structfield"><code>g_class</code></em>, a pointer
+          to B's class structure.
+        </p>
+<p>
+          Thanks to these simple conditions, it is possible to detect the type of every
+          object instance by doing: 
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">B</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">b</span><span class="symbol">;</span>
+<span class="normal">b</span><span class="symbol">-&gt;</span><span class="normal">parent</span><span class="symbol">.</span><span class="normal">parent</span><span class="symbol">.</span><span class="normal">g_class</span><span class="symbol">-&gt;</span><span class="normal">g_type</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+          or, more quickly:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">B</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">b</span><span class="symbol">;</span>
+<span class="symbol">((</span><span class="normal"><a href="gobject-Type-Information.html#GTypeInstance">GTypeInstance</a> </span><span class="symbol">*)</span><span class="normal"> b</span><span class="symbol">)-&gt;</span><span class="normal">g_class</span><span class="symbol">-&gt;</span><span class="normal">g_type</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+        </p>
+<div class="sect2">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="gtype-instantiable-classed-init-done"></a>Initialization and Destruction</h3></div></div></div>
+<p>
+            instantiation of these types can be done with 
+            <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-create-instance" title="g_type_create_instance ()">g_type_create_instance</a></code>,
+            which will look up the type information
+            structure associated with the type requested. Then, the instance size and instantiation
+            policy (if the <em class="structfield"><code>n_preallocs</code></em> field is set
+            to a non-zero value, the type system allocates
+            the object's instance structures in chunks rather than mallocing for every instance)
+            declared by the user are used to get a buffer to hold the object's instance
+            structure.
+          </p>
+<p>
+            If this is the first instance of the object ever created, the type system must create a class structure.
+            It allocates a buffer to hold the object's class structure and initializes it. The first part of the
+            class structure (ie: the embedded parent class structure) is initialized by copying the contents from
+            the class structure of the parent class. The rest of class structure is initialized to zero.  If there
+            is no parent, the entire class structure is initialized to zero. The type system then invokes the
+            <code class="function">base_class_initialization</code> functions
+            (<a class="link" href="gobject-Type-Information.html#GBaseInitFunc" title="GBaseInitFunc ()"><span class="type">GBaseInitFunc</span></a>) from topmost 
+            fundamental object to bottom-most most derived object. The object's <code class="function">class_init</code>
+            (<a class="link" href="gobject-Type-Information.html#GClassInitFunc" title="GClassInitFunc ()"><span class="type">GClassInitFunc</span></a>) function is invoked afterwards to complete
+            initialization of the class structure.
+            Finally, the object's interfaces are initialized (we will discuss interface initialization
+            in more detail later).
+          </p>
+<p>
+            Once the type system has a pointer to an initialized class structure, it sets the object's
+            instance class pointer to the object's class structure and invokes the object's
+            <code class="function">instance_init</code>
+            (<a class="link" href="gobject-Type-Information.html#GInstanceInitFunc" title="GInstanceInitFunc ()"><span class="type">GInstanceInitFunc</span></a>)
+            functions, from top-most fundamental 
+            type to bottom-most most-derived type.
+          </p>
+<p>
+            Object instance destruction through <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-free-instance" title="g_type_free_instance ()">g_type_free_instance</a></code> is very simple:
+            the instance structure is returned to the instance pool if there is one and if this was the
+            last living instance of the object, the class is destroyed.
+          </p>
+<p>
+            Class destruction (the concept of destruction is sometimes partly 
+            referred to as finalization in GType) is the symmetric process of 
+            the initialization: interfaces are destroyed first. 
+            Then, the most derived 
+            class_finalize (<a class="link" href="gobject-Type-Information.html#GClassFinalizeFunc" title="GClassFinalizeFunc ()"><span class="type">GClassFinalizeFunc</span></a>) function is invoked. Finally, the
+            base_class_finalize (<a class="link" href="gobject-Type-Information.html#GBaseFinalizeFunc" title="GBaseFinalizeFunc ()"><span class="type">GBaseFinalizeFunc</span></a>) functions are 
+            invoked from bottom-most most-derived type to top-most fundamental type and
+            the class structure is freed.
+          </p>
+<p>
+            The base initialization/finalization process is
+            very similar to the C++ constructor/destructor paradigm. The practical details are different
+            though and it is important not to get confused by superficial similarities. 
+            GTypes have no instance destruction mechanism. It is
+            the user's responsibility to implement correct destruction semantics on top
+            of the existing GType code. (This is what GObject does: see 
+            <a class="xref" href="chapter-gobject.html" title="The GObject base class"><i>The GObject base class</i></a>.)
+           Furthermore, C++ code equivalent to the <code class="function">base_init</code>
+           and <code class="function">class_init</code> callbacks of GType is usually not needed because C++ cannot really create object 
+           types at runtime.
+          </p>
+<p>
+            The instantiation/finalization process can be summarized as follows:
+            </p>
+<div class="table">
+<a name="gtype-init-fini-table"></a><p class="title"><b>Table 1. GType Instantiation/Finalization</b></p>
+<div class="table-contents"><table class="table" summary="GType Instantiation/Finalization" border="1">
+<colgroup>
+<col align="left">
+<col align="left">
+<col align="left">
+</colgroup>
+<thead><tr>
+<th align="left">Invocation time</th>
+<th align="left">Function invoked</th>
+<th align="left">Function's parameters</th>
+</tr></thead>
+<tbody>
+<tr>
+<td rowspan="3" align="left">First call to <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-create-instance" title="g_type_create_instance ()">g_type_create_instance</a></code> for target type</td>
+<td align="left">type's <code class="function">base_init</code> function</td>
+<td align="left">On the inheritance tree of classes from fundamental type to target type. 
+                      <code class="function">base_init</code> is invoked once for each class structure.</td>
+</tr>
+<tr>
+<td align="left">target type's <code class="function">class_init</code> function</td>
+<td align="left">On target type's class structure</td>
+</tr>
+<tr>
+<td align="left">interface initialization, see 
+                      <a class="xref" href="gtype-non-instantiable-classed.html#gtype-non-instantiable-classed-init" title="Interface Initialization">the section called “Interface Initialization”</a>
+</td>
+<td align="left"> </td>
+</tr>
+<tr>
+<td align="left">Each call to <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-create-instance" title="g_type_create_instance ()">g_type_create_instance</a></code> for target type</td>
+<td align="left">target type's <code class="function">instance_init</code> function</td>
+<td align="left">On object's instance</td>
+</tr>
+<tr>
+<td rowspan="3" align="left">Last call to <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-free-instance" title="g_type_free_instance ()">g_type_free_instance</a></code> for target type</td>
+<td align="left">interface destruction, see
+                      <a class="xref" href="gtype-non-instantiable-classed.html#gtype-non-instantiable-classed-dest" title="Interface Destruction">the section called “Interface Destruction”</a>
+</td>
+<td align="left"> </td>
+</tr>
+<tr>
+<td align="left">target type's <code class="function">class_finalize</code> function</td>
+<td align="left">On target type's class structure</td>
+</tr>
+<tr>
+<td align="left">type's <code class="function">base_finalize</code> function</td>
+<td align="left">On the inheritance tree of classes from fundamental type to target type. 
+                      <code class="function">base_finalize</code> is invoked once for each class structure.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p><br class="table-break">
+          </p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

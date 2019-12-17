@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GConfClient (and GConfBridge) API conversion: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="ch34.html" title="Migrating from GConf to GSettings">
+<link rel="prev" href="ch34s02.html" title="Conceptual differences">
+<link rel="next" href="ch34s04.html" title="Change notification">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch34.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="ch34s02.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="ch34s04.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="id-1.5.4.4"></a>GConfClient (and GConfBridge) API conversion</h2></div></div></div>
+<p>
+        Most people use GConf via the high-level <span class="type">GConfClient</span> API.
+        The corresponding API is the <a class="link" href="GSettings.html" title="GSettings"><span class="type">GSettings</span></a> object. While not
+        every GConfClient function has a direct GSettings equivalent,
+        many do:
+        </p>
+<div class="table">
+<a name="gconf-client-vs-gsettings"></a><p class="title"><b>Table 3. </b></p>
+<div class="table-contents"><table class="table" border="1">
+<colgroup>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>GConfClient</th>
+<th>GSettings</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code class="function">gconf_client_get_default()</code></td>
+<td>no direct equivalent,
+                                                                   instead you call <a class="link" href="GSettings.html#g-settings-new" title="g_settings_new ()"><code class="function">g_settings_new()</code></a> for the schemas you use</td>
+</tr>
+<tr>
+<td><code class="function">gconf_client_set()</code></td>
+<td><a class="link" href="GSettings.html#g-settings-set" title="g_settings_set ()"><code class="function">g_settings_set()</code></a></td>
+</tr>
+<tr>
+<td><code class="function">gconf_client_get()</code></td>
+<td><a class="link" href="GSettings.html#g-settings-get" title="g_settings_get ()"><code class="function">g_settings_get()</code></a></td>
+</tr>
+<tr>
+<td><code class="function">gconf_client_get_bool()</code></td>
+<td><a class="link" href="GSettings.html#g-settings-get-boolean" title="g_settings_get_boolean ()"><code class="function">g_settings_get_boolean()</code></a></td>
+</tr>
+<tr>
+<td><code class="function">gconf_client_set_bool()</code></td>
+<td><a class="link" href="GSettings.html#g-settings-set-boolean" title="g_settings_set_boolean ()"><code class="function">g_settings_set_boolean()</code></a></td>
+</tr>
+<tr>
+<td><code class="function">gconf_client_get_int()</code></td>
+<td><a class="link" href="GSettings.html#g-settings-get-int" title="g_settings_get_int ()"><code class="function">g_settings_get_int()</code></a></td>
+</tr>
+<tr>
+<td><code class="function">gconf_client_set_int()</code></td>
+<td><a class="link" href="GSettings.html#g-settings-set-int" title="g_settings_set_int ()"><code class="function">g_settings_set_int()</code></a></td>
+</tr>
+<tr>
+<td><code class="function">gconf_client_get_float()</code></td>
+<td><a class="link" href="GSettings.html#g-settings-get-double" title="g_settings_get_double ()"><code class="function">g_settings_get_double()</code></a></td>
+</tr>
+<tr>
+<td><code class="function">gconf_client_set_float()</code></td>
+<td><a class="link" href="GSettings.html#g-settings-set-double" title="g_settings_set_double ()"><code class="function">g_settings_set_double()</code></a></td>
+</tr>
+<tr>
+<td><code class="function">gconf_client_get_string()</code></td>
+<td><a class="link" href="GSettings.html#g-settings-get-string" title="g_settings_get_string ()"><code class="function">g_settings_get_string()</code></a></td>
+</tr>
+<tr>
+<td><code class="function">gconf_client_set_string()</code></td>
+<td><a class="link" href="GSettings.html#g-settings-set-string" title="g_settings_set_string ()"><code class="function">g_settings_set_string()</code></a></td>
+</tr>
+<tr>
+<td><code class="function">gconf_client_get_list()</code></td>
+<td>for string lists, see <a class="link" href="GSettings.html#g-settings-get-strv" title="g_settings_get_strv ()"><code class="function">g_settings_get_strv()</code></a>, else see <a class="link" href="GSettings.html#g-settings-get-value" title="g_settings_get_value ()"><code class="function">g_settings_get_value()</code></a> and <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> API</td>
+</tr>
+<tr>
+<td><code class="function">gconf_client_set_list()</code></td>
+<td>for string lists, see <a class="link" href="GSettings.html#g-settings-set-strv" title="g_settings_set_strv ()"><code class="function">g_settings_set_strv()</code></a>, else see <a class="link" href="GSettings.html#g-settings-set-value" title="g_settings_set_value ()"><code class="function">g_settings_set_value()</code></a> and <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> API</td>
+</tr>
+<tr>
+<td><code class="function">gconf_entry_get_is_writable()</code></td>
+<td><a class="link" href="GSettings.html#g-settings-is-writable" title="g_settings_is_writable ()"><code class="function">g_settings_is_writable()</code></a></td>
+</tr>
+<tr>
+<td><code class="function">gconf_client_notify_add()</code></td>
+<td>not required, the <a class="link" href="GSettings.html#GSettings-changed" title="The “changed” signal"><span class="type">“changed”</span></a> signal is emitted automatically</td>
+</tr>
+<tr>
+<td><code class="function">gconf_client_add_dir()</code></td>
+<td>not required, each GSettings instance automatically watches all keys in its path</td>
+</tr>
+<tr>
+<td><span class="type">GConfChangeSet</span></td>
+<td>
+<a class="link" href="GSettings.html#g-settings-delay" title="g_settings_delay ()"><code class="function">g_settings_delay()</code></a>, <a class="link" href="GSettings.html#g-settings-apply" title="g_settings_apply ()"><code class="function">g_settings_apply()</code></a>
+</td>
+</tr>
+<tr>
+<td><code class="function">gconf_client_get_default_from_schema()</code></td>
+<td>no equivalent, applications are expected to know their schema</td>
+</tr>
+<tr>
+<td><code class="function">gconf_client_all_entries()</code></td>
+<td>no equivalent, applications are expected to know their schema, and GSettings does not allow schema-less entries</td>
+</tr>
+<tr>
+<td><code class="function">gconf_client_get_without_default()</code></td>
+<td>no equivalent</td>
+</tr>
+<tr>
+<td><code class="function">gconf_bridge_bind_property()</code></td>
+<td><a class="link" href="GSettings.html#g-settings-bind" title="g_settings_bind ()"><code class="function">g_settings_bind()</code></a></td>
+</tr>
+<tr>
+<td><code class="function">gconf_bridge_bind_property_full()</code></td>
+<td><a class="link" href="GSettings.html#g-settings-bind-with-mapping" title="g_settings_bind_with_mapping ()"><code class="function">g_settings_bind_with_mapping()</code></a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p><br class="table-break">
+      </p>
+<p>
+        GConfBridge was a third-party library that used GConf to bind an object property
+        to a particular configuration key. GSettings offers this service itself.
+      </p>
+<p>
+        There is a pattern that is sometimes used for GConf, where a setting can have
+        explicit 'value A', explicit 'value B' or 'use the system default'. With GConf,
+        'use the system default' is sometimes implemented by unsetting the user value.
+      </p>
+<p>
+        This is not possible in GSettings, since it does not have API to determine if a value
+        is the default and does not let you unset values. The recommended way (and much
+        clearer) way in which this can be implemented in GSettings is to have a separate
+        'use-system-default' boolean setting.
+      </p>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

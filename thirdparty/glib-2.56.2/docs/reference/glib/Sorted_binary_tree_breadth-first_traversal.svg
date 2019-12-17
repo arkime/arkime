@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="266px" height="212px" viewBox="0 0 266 212" enable-background="new 0 0 266 212" xml:space="preserve">
+<g>
+	<g>
+		<line fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" x1="27.23" y1="23.192" x2="29.23" y2="23.192"/>
+		
+			<line fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" stroke-dasharray="3.9562,3.9562" x1="33.187" y1="23.192" x2="236.932" y2="23.192"/>
+		<polyline fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" points="238.91,23.192 240.91,23.192 
+			238.97,23.677 		"/>
+		
+			<line fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" stroke-dasharray="3.9907,3.9907" x1="235.099" y1="24.646" x2="27.971" y2="76.427"/>
+		<polyline fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" points="26.035,76.912 24.095,77.396 
+			26.095,77.396 		"/>
+		
+			<line fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" stroke-dasharray="4.0154,4.0154" x1="30.11" y1="77.396" x2="236.902" y2="77.396"/>
+		<polyline fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" points="238.91,77.396 240.91,77.396 
+			238.97,77.881 		"/>
+		
+			<line fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" stroke-dasharray="3.9907,3.9907" x1="235.099" y1="78.85" x2="27.971" y2="130.631"/>
+		<polyline fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" points="26.035,131.114 24.095,131.6 
+			26.095,131.6 		"/>
+		
+			<line fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" stroke-dasharray="4.0154,4.0154" x1="30.11" y1="131.6" x2="236.902" y2="131.6"/>
+		<polyline fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" points="238.91,131.6 240.91,131.6 
+			238.97,132.085 		"/>
+		
+			<line fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" stroke-dasharray="3.9907,3.9907" x1="235.099" y1="133.053" x2="27.971" y2="184.835"/>
+		<polyline fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" points="26.035,185.318 24.095,185.804 
+			26.095,185.804 		"/>
+		
+			<line fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" stroke-dasharray="4.0086,4.0086" x1="30.104" y1="185.804" x2="228.53" y2="185.804"/>
+		
+			<line fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" x1="230.534" y1="185.804" x2="232.534" y2="185.804"/>
+		<g>
+			<rect x="24.095" y="19.892" width="6.602" height="6.602"/>
+		</g>
+		<g>
+			<path d="M238.569,185.804c-2.84,1.054-6.363,2.852-8.548,4.756l1.721-4.756l-1.721-4.755
+				C232.206,182.953,235.729,184.751,238.569,185.804z"/>
+		</g>
+	</g>
+</g>
+<g id="graph0">
+	<title>sorted_binary_tree</title>
+	<g id="node1">
+		<title>C</title>
+		<ellipse fill="#FFFFFF" stroke="#000000" cx="60.23" cy="185.804" rx="18.067" ry="18.067"/>
+		<text transform="matrix(1 0 0 1 55.5435 190.8223)" font-family="'Times-Roman'" font-size="14.0528">C</text>
+	</g>
+	<g id="node2">
+		<title>E</title>
+		<ellipse fill="#FFFFFF" stroke="#000000" cx="132.502" cy="185.804" rx="18.067" ry="18.067"/>
+		<text transform="matrix(1 0 0 1 128.21 190.8223)" font-family="'Times-Roman'" font-size="14.0528">E</text>
+	</g>
+	<g id="node3">
+		<title>H</title>
+		<ellipse fill="#FFFFFF" stroke="#000000" cx="204.773" cy="185.804" rx="17.064" ry="18.067"/>
+		<text transform="matrix(1 0 0 1 199.6992 190.8223)" font-family="'Times-Roman'" font-size="14.0528">H</text>
+	</g>
+	<g id="node4">
+		<title>A</title>
+		<ellipse fill="#FFFFFF" stroke="#000000" cx="24.094" cy="131.6" rx="17.064" ry="18.068"/>
+		<text transform="matrix(1 0 0 1 19.02 136.6191)" font-family="'Times-Roman'" font-size="14.0528">A</text>
+	</g>
+	<g id="node5">
+		<title>D</title>
+		<ellipse fill="#FFFFFF" stroke="#000000" cx="96.366" cy="131.6" rx="17.064" ry="18.068"/>
+		<text transform="matrix(1 0 0 1 91.292 136.6191)" font-family="'Times-Roman'" font-size="14.0528">D</text>
+	</g>
+	<g id="edge6">
+		<title>D-&gt;C</title>
+		<path fill="none" stroke="#000000" d="M86.328,147.66c-3.011,4.016-7.026,9.034-10.038,14.053"/>
+		<polygon stroke="#000000" points="78.298,164.725 70.268,170.747 73.279,160.709 		"/>
+	</g>
+	<g id="edge8">
+		<title>D-&gt;E</title>
+		<path fill="none" stroke="#000000" d="M106.404,147.66c3.011,4.016,7.026,9.034,10.038,14.053"/>
+		<polygon stroke="#000000" points="119.453,160.709 122.464,170.747 114.434,164.725 		"/>
+	</g>
+	<g id="node6">
+		<title>I</title>
+		<ellipse fill="#FFFFFF" stroke="#000000" cx="240.909" cy="131.6" rx="18.068" ry="18.068"/>
+		<text transform="matrix(1 0 0 1 238.5693 136.6191)" font-family="'Times-Roman'" font-size="14.0528">I</text>
+	</g>
+	<g id="edge12">
+		<title>I-&gt;H</title>
+		<path fill="none" stroke="#000000" d="M230.871,146.656c-3.011,5.02-6.021,10.038-10.037,15.057"/>
+		<polygon stroke="#000000" points="223.846,163.721 214.812,169.743 217.822,159.705 		"/>
+	</g>
+	<g id="node7">
+		<title>B</title>
+		<ellipse fill="#FFFFFF" stroke="#000000" cx="60.23" cy="77.396" rx="18.068" ry="18.068"/>
+		<text transform="matrix(1 0 0 1 55.5435 82.415)" font-family="'Times-Roman'" font-size="14.0528">B</text>
+	</g>
+	<g id="edge3">
+		<title>B-&gt;A</title>
+		<path fill="none" stroke="#000000" d="M50.192,92.453c-3.011,5.019-6.022,10.038-10.038,15.057"/>
+		<polygon stroke="#000000" points="43.166,109.518 34.132,115.539 37.144,105.502 		"/>
+	</g>
+	<g id="edge5">
+		<title>B-&gt;D</title>
+		<path fill="none" stroke="#000000" d="M70.268,92.453c3.011,5.019,6.022,10.038,10.038,15.057"/>
+		<polygon stroke="#000000" points="83.317,105.502 86.328,115.539 77.294,109.518 		"/>
+	</g>
+	<g id="node8">
+		<title>G</title>
+		<ellipse fill="#FFFFFF" stroke="#000000" cx="204.773" cy="77.396" rx="17.064" ry="18.068"/>
+		<text transform="matrix(1 0 0 1 199.6992 82.415)" font-family="'Times-Roman'" font-size="14.0528">G</text>
+	</g>
+	<g id="edge11">
+		<title>G-&gt;I</title>
+		<path fill="none" stroke="#000000" d="M214.812,93.457c3.011,4.015,7.026,9.034,10.038,14.053"/>
+		<polygon stroke="#000000" points="227.86,106.506 230.871,116.543 222.842,110.521 		"/>
+	</g>
+	<g id="node9">
+		<title>F</title>
+		<ellipse fill="#FFFFFF" stroke="#000000" cx="132.502" cy="23.192" rx="18.068" ry="18.068"/>
+		<text transform="matrix(1 0 0 1 128.5942 28.2109)" font-family="'Times-Roman'" font-size="14.0528">F</text>
+	</g>
+	<g id="edge2">
+		<title>F-&gt;B</title>
+		<path fill="none" stroke="#000000" d="M117.445,34.234c-11.042,8.03-23.087,17.064-34.128,26.098"/>
+		<polygon stroke="#000000" points="85.325,63.343 75.287,66.354 81.31,57.321 		"/>
+	</g>
+	<g id="edge10">
+		<title>F-&gt;G</title>
+		<path fill="none" stroke="#000000" d="M147.559,34.234c11.041,8.03,23.087,17.064,34.129,26.098"/>
+		<polygon stroke="#000000" points="183.694,57.321 189.717,66.354 179.68,63.343 		"/>
+	</g>
+</g>
+</svg>

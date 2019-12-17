@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding="UTF-8"?>
+<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+]>
+<part label="V">
+  <title>Related Tools</title>
+  
+  <partintro>
+    <para>
+      Several useful developer tools have been build around GObject
+      technology.  The next sections briefly introduce them and link to
+      the respective project pages.
+    </para>
+  
+    <para>
+      For example, writing GObjects is often seen as a tedious task. It
+      requires a lot of typing and just doing a copy/paste requires a
+      great deal of care. A lot of projects and scripts have been
+      written to generate GObject skeleton form boilerplate code, or
+      even translating higher-level language into plain C.
+    </para>
+  </partintro>
+  
+  <chapter id="tools-vala">
+    <title>Vala</title>
+    <para>
+      From the <ulink url="https://wiki.gnome.org/Projects/Vala">Vala
+      homepage</ulink> itself: <quote>Vala is a new programming language
+      that aims to bring modern programming language features to GNOME
+      developers without imposing any additional runtime requirements
+      and without using a different ABI compared to applications and
+      libraries written in C.</quote>
+    </para>
+  
+    <para>
+      The syntax of Vala is similar to C#. The available compiler
+      translates Vala into GObject C code. It can also compile
+      non-GObject C, using plain C API.
+    </para>
+  </chapter>
+  
+  <chapter id="tools-gob">
+    <title>GObject builder</title>
+  
+    <para>
+      In order to help a GObject class developer, one obvious idea is
+      to use some sort of templates for the skeletons and then run
+      them through a special tool to generate the real C files.  <ulink
+      url="http://www.5z.com/jirka/gob.html">GOB</ulink> (or GOB2) is
+      such a tool. It is a preprocessor which can be used to build
+      GObjects with inline C code so that there is no need to edit the
+      generated C code.  The syntax is inspired by Java and Yacc or
+      Lex. The implementation is intentionally kept simple: the inline C
+      code provided by the user is not parsed.
+    </para>
+  </chapter>
+  
+  <chapter id="tools-ginspector">
+      <title>Graphical inspection of GObjects</title>
+  
+      <para>
+        Yet another tool that you may find helpful when working with
+        GObjects is <ulink
+        url="http://sourceforge.net/projects/g-inspector">G-Inspector</ulink>. It
+        is able to display GLib/GTK+ objects and their properties.
+      </para>
+  </chapter>
+  
+  <chapter id="tools-refdb">
+    <title>Debugging reference count problems</title>
+  
+    <para>
+      The reference counting scheme used by GObject does solve quite 
+      a few memory management problems but also introduces new sources of bugs.
+      In large applications, finding the exact spot where the reference count
+      of an Object is not properly handled can be very difficult.
+    </para>
+    <para>
+      A useful tool in debugging reference counting problems is to
+      set breakpoints in gdb on g_object_ref() and g_object_unref().
+      Once you know the address of the object you are interested in,
+      you can make the breakpoints conditional:
+      <programlisting>
+break g_object_ref if _object == 0xcafebabe
+break g_object_unref if _object == 0xcafebabe
+      </programlisting>
+    </para>
+  </chapter>
+    
+  <chapter id="tools-gtkdoc">
+    <title>Writing API docs</title>
+  
+    <para>The API documentation for most of the GLib, GObject, GTK+ and GNOME
+    libraries is built with a combination of complex tools. Typically, the part of 
+    the documentation which describes the behavior of each function is extracted
+    from the specially-formatted source code comments by a tool named gtk-doc which
+    generates DocBook XML and merges this DocBook XML with a set of master XML 
+    DocBook files. These XML DocBook files are finally processed with xsltproc
+    (a small program part of the libxslt library) to generate the final HTML
+    output. Other tools can be used to generate PDF output from the source XML.
+    The following code excerpt shows what these comments look like.
+      <informalexample><programlisting>
+/**
+ * gtk_widget_freeze_child_notify:
+ * @widget: a #GtkWidget
+ * 
+ * Stops emission of "child-notify" signals on @widget. The signals are
+ * queued until gtk_widget_thaw_child_notify() is called on @widget. 
+ *
+ * This is the analogue of g_object_freeze_notify() for child properties.
+ **/
+void
+gtk_widget_freeze_child_notify (GtkWidget *widget)
+{
+...
+      </programlisting></informalexample>
+    </para>
+    <para>
+    Thorough
+    <ulink url="https://developer.gnome.org/gtk-doc-manual/stable/">documentation</ulink>
+    on how to set up and use gtk-doc in your project is provided on the
+    <ulink url="https://developer.gnome.org/">GNOME developer website</ulink>.
+    </para>
+  </chapter>
+</part>

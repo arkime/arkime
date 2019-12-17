@@ -1,0 +1,16 @@
+{ global:
+MMDB_aget_value;
+MMDB_close;
+MMDB_dump_entry_data_list;
+MMDB_free_entry_data_list;
+MMDB_get_entry_data_list;
+MMDB_get_metadata_as_entry_data_list;
+MMDB_get_value;
+MMDB_lib_version;
+MMDB_lookup_sockaddr;
+MMDB_lookup_string;
+MMDB_open;
+MMDB_read_node;
+MMDB_strerror;
+MMDB_vget_value;
+local: *; };

@@ -1,0 +1,3 @@
+<schemalist>
+  <schema id='a' list-of='x'/>
+</schemalist>

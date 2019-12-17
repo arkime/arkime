@@ -1,0 +1,741 @@
+<part>
+  <title>GIO Overview</title>
+
+  <chapter>
+    <title>Introduction</title>
+
+  <para>
+    GIO is striving to provide a modern, easy-to-use VFS API that sits
+    at the right level in the library stack, as well as other generally
+    useful APIs for desktop applications (such as networking and
+    D-Bus support). The goal is to overcome the shortcomings of GnomeVFS
+    and provide an API that is so good that developers prefer it over raw
+    POSIX calls. Among other things that means using GObject. It also means
+    not cloning the POSIX API, but providing higher-level, document-centric
+    interfaces.
+  </para>
+
+  <para>
+    The abstract file system model of GIO consists of a number of
+    interfaces and base classes for I/O and files:
+    <variablelist>
+       <varlistentry>
+         <term>GFile</term>
+         <listitem><para>reference to a file</para></listitem>
+       </varlistentry>
+       <varlistentry>
+         <term>GFileInfo</term>
+         <listitem><para>information about a file or filesystem</para></listitem>
+       </varlistentry>
+       <varlistentry>
+         <term>GFileEnumerator</term>
+         <listitem><para>list files in directories</para></listitem>
+       </varlistentry>
+       <varlistentry>
+         <term>GDrive</term>
+         <listitem><para>represents a drive</para></listitem>
+       </varlistentry>
+       <varlistentry>
+         <term>GVolume</term>
+         <listitem><para>represents a file system in an abstract way</para></listitem>
+       </varlistentry>
+       <varlistentry>
+         <term>GMount</term>
+         <listitem><para>represents a mounted file system</para></listitem>
+       </varlistentry>
+    </variablelist>
+    Then there is a number of stream classes, similar to the input and
+    output stream hierarchies that can be found in frameworks like Java:
+    <variablelist>
+       <varlistentry>
+         <term>GInputStream</term>
+         <listitem><para>read data</para></listitem>
+       </varlistentry>
+       <varlistentry>
+         <term>GOutputStream</term>
+         <listitem><para>write data</para></listitem>
+       </varlistentry>
+       <varlistentry>
+         <term>GIOStream</term>
+         <listitem><para>read and write data</para></listitem>
+       </varlistentry>
+       <varlistentry>
+         <term>GSeekable</term>
+         <listitem><para>interface optionally implemented by streams to support seeking</para></listitem>
+       </varlistentry>
+    </variablelist>
+    There are interfaces related to applications and the types
+    of files they handle:
+    <variablelist>
+       <varlistentry>
+          <term>GAppInfo</term>
+          <listitem><para>information about an installed application</para></listitem>
+       </varlistentry>
+       <varlistentry>
+          <term>GIcon</term>
+          <listitem><para>abstract type for file and application icons</para></listitem>
+       </varlistentry>
+    </variablelist>
+    There is a framework for storing and retrieving application settings:
+    <variablelist>
+       <varlistentry>
+          <term>GSettings</term>
+          <listitem><para>stores and retrieves application settings</para></listitem>
+       </varlistentry>
+    </variablelist>
+    There is support for network programming, including connectivity monitoring,
+    name resolution, lowlevel socket APIs and highlevel client and server
+    helper classes:
+    <variablelist>
+       <varlistentry>
+          <term>GSocket</term>
+          <listitem><para>lowlevel platform independent socket object</para></listitem>
+       </varlistentry>
+       <varlistentry>
+          <term>GResolver</term>
+          <listitem><para>asynchronous and cancellable DNS resolver</para></listitem>
+       </varlistentry>
+       <varlistentry>
+          <term>GSocketClient</term>
+          <listitem><para>high-level network client helper</para></listitem>
+       </varlistentry>
+       <varlistentry>
+          <term>GSocketService</term>
+          <listitem><para>high-level network server helper</para></listitem>
+       </varlistentry>
+       <varlistentry>
+          <term>GSocketConnection</term>
+          <listitem><para>network connection stream</para></listitem>
+       </varlistentry>
+       <varlistentry>
+          <term>GNetworkMonitor</term>
+          <listitem><para>network connectivity monitoring</para></listitem>
+       </varlistentry>
+    </variablelist>
+    There is support for connecting to <link linkend="http://www.freedesktop.org/wiki/Software/dbus">D-Bus</link>,
+    sending and receiving messages, owning and watching bus names,
+    and making objects available on the bus:
+    <variablelist>
+       <varlistentry>
+          <term>GDBusConnection</term>
+          <listitem><para>a D-Bus connection</para></listitem>
+       </varlistentry>
+
+       <varlistentry>
+          <term>GDBusMethodInvocation</term>
+          <listitem><para>for handling remote calls</para></listitem>
+       </varlistentry>
+
+       <varlistentry>
+          <term>GDBusServer</term>
+          <listitem><para>helper for accepting connections</para></listitem>
+       </varlistentry>
+
+       <varlistentry>
+          <term>GDBusProxy</term>
+          <listitem><para>proxy to access D-Bus interfaces on a remote object</para></listitem>
+       </varlistentry>
+
+    </variablelist>
+    Beyond these, GIO provides facilities for file monitoring,
+    asynchronous I/O and filename completion. In addition to the
+    interfaces, GIO provides implementations for the local case.
+    Implementations for various network file systems are provided
+    by the GVFS package as loadable modules.
+  </para>
+
+  <para>
+    Other design choices which consciously break with the GnomeVFS
+    design are to move backends out-of-process, which minimizes the
+    dependency bloat and makes the whole system more robust. The backends
+    are not included in GIO, but in the separate GVFS package. The GVFS
+    package also contains the GVFS daemon, which spawn further mount
+    daemons for each individual connection.
+  </para>
+
+  <figure id="gvfs-overview">
+    <title>GIO in the GTK+ library stack</title>
+    <graphic fileref="gvfs-overview.png" format="PNG"></graphic>
+  </figure>
+
+  <para>
+    The GIO model of I/O is stateful: if an application establishes e.g.
+    a SFTP connection to a server, it becomes available to all applications
+    in the session; the user does not have to enter his password over
+    and over again.
+  </para>
+  <para>
+    One of the big advantages of putting the VFS in the GLib layer
+    is that GTK+ can directly use it, e.g. in the filechooser.
+  </para>
+  </chapter>
+
+  <chapter>
+    <title>Writing GIO applications</title>
+
+    <para>
+      The information in the GLib <ulink url="http://developer.gnome.org/glib/stable/glib-programming.html">documentation</ulink> about writing GLib
+      applications is generally applicable when writing GIO applications.
+    </para>
+
+    <simplesect><title>Threads</title>
+
+    <para>
+       GDBus has its own private worker thread, so applications using
+       GDBus have at least 3 threads. GIO makes heavy use of the concept
+       of a <link linkend="g-main-context-push-thread-default">thread-default
+       main context</link> to execute callbacks of asynchronous
+       methods in the same context in which the operation was started.
+    </para>
+
+    </simplesect>
+
+    <simplesect id="async-programming"><title>Asynchronous Programming</title>
+
+    <para>
+      Many GIO functions come in two versions: synchronous and asynchronous,
+      denoted by an <code>_async</code> suffix. It is important to use these
+      appropriately: synchronous calls should not be used from
+      within a main loop which is shared with other code, such as one in the
+      application’s main thread. Synchronous calls block until they complete,
+      and I/O operations can take noticeable amounts of time (even on ‘fast’
+      SSDs). Blocking a main loop iteration while waiting for I/O means that
+      other sources in the main loop will not be dispatched, such as input and
+      redraw handlers for the application’s UI. This can cause the application
+      to ‘freeze’ until I/O completes.
+    </para>
+
+    <para>
+      A few self-contained groups of functions, such as code generated by
+      <link linkend="gdbus-codegen"><application>gdbus-codegen</application></link>,
+      use a different convention: functions are asynchronous default, and it is
+      the <emphasis>synchronous</emphasis> version which has a
+      <code>_sync</code>
+      suffix. Aside from naming differences, they should be treated the same
+      way as functions following the normal convention above.
+    </para>
+
+    <para>
+      The asynchronous (<code>_async</code>) versions of functions return
+      control to the caller immediately, after scheduling the I/O in the kernel
+      and adding a callback for it to the main loop. This callback will be
+      invoked when the operation has completed. From the callback, the paired
+      <code>_finish</code> function should be called to retrieve the return
+      value of the I/O operation, and any errors which occurred. For more
+      information on using and implementing asynchronous functions, see
+      <link linkend="GAsyncResult.description"><type>GAsyncResult</type></link>
+      and <link linkend="GTask.description"><type>GTask</type></link>.
+    </para>
+
+    <para>
+      By starting multiple asynchronous operations in succession, they will be
+      executed in parallel (up to an arbitrary limit imposed by GIO’s internal
+      worker thread pool).
+    </para>
+
+    <para>
+      The synchronous versions of functions can be used early in application
+      startup when there is no main loop to block, for example to load initial
+      configuration files. They can also be used for I/O on files which are
+      guaranteed to be small and on the local disk. Note that the user’s home
+      directory is not guaranteed to be on the local disk.
+    </para>
+    </simplesect>
+
+    <simplesect><title>Security</title>
+
+<para>
+When your program needs to carry out some privileged operation (say,
+create a new user account), there are various ways in which you can go
+about this:
+<itemizedlist>
+<listitem><para>
+Implement a daemon that offers the privileged operation. A convenient
+way to do this is as a D-Bus system-bus service. The daemon will probably
+need ways to check the identity and authorization of the caller before
+executing the operation. <ulink url="http://www.freedesktop.org/software/polkit/docs/latest/polkit.8.html">polkit</ulink> is a framework that allows this.
+</para></listitem>
+<listitem><para>
+Use a small helper that is executed with elevated privileges via
+pkexec. <ulink url="http://www.freedesktop.org/software/polkit/docs/latest/pkexec.1.html">pkexec</ulink> is a small program launcher that is part of polkit.
+</para></listitem>
+<listitem><para>
+Use a small helper that is executed with elevated privileges by
+being suid root.
+</para></listitem>
+</itemizedlist>
+None of these approaches is the clear winner, they all have their
+advantages and disadvantages.
+</para>
+
+<para>
+When writing code that runs with elevated privileges, it is important
+to follow some basic rules of secure programming. David Wheeler has an
+excellent book on this topic,
+<ulink url="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO/index.html">Secure Programming for Linux and Unix HOWTO</ulink>.
+</para>
+
+<para>
+When using GIO in code that runs with elevated privileges, you have to
+be careful. GIO has extension points whose implementations get loaded
+from modules (executable code in shared objects), which could allow
+an attacker to sneak his own code into your application by tricking it
+into loading the code as a module. However, GIO will never load modules
+from your home directory except when explictly asked to do so via an
+environment variable.
+</para>
+
+<para>
+In most cases, your helper program should be so small that you don't
+need GIO, whose APIs are largely designed to support full-blown desktop
+applications. If you can't resist the convenience of these APIs, here
+are some steps you should take:
+<itemizedlist>
+<listitem><para>
+Clear the environment, e.g. using the <function>clearenv()</function>
+function.
+David Wheeler has a good <ulink url="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO/environment-variables.html">explanation</ulink> for why it is
+important to sanitize the environment.
+See <xref linkend="running-gio-apps"/>
+for a list of all environment variables affecting GIO. In particular,
+<envar>PATH</envar> (used to locate binaries), <envar>GIO_EXTRA_MODULES</envar> (used to locate loadable modules) and <envar>DBUS_{SYSTEM,SESSION}_BUS_ADDRESS</envar> (used to locate the D-Bus system and session bus) are important.
+</para></listitem>
+<listitem><para>
+Don't use GVfs, by setting <envar>GIO_USE_VFS=local</envar> in the environment.
+The reason to avoid GVfs in security-sensitive programs is that it uses
+many libraries which have not necessarily been audited for security problems.
+Gvfs is also heavily distributed and relies on a session bus to be present.
+</para></listitem>
+</itemizedlist>
+</para>
+
+    </simplesect>
+
+  </chapter>
+
+  <chapter>
+    <title>Compiling GIO applications</title>
+
+    <para>
+      GIO comes with a <filename>gio-2.0.pc</filename> file that you
+      should use together with <literal>pkg-config</literal> to obtain
+      the necessary information about header files and libraries. See
+      the <literal>pkg-config</literal> man page or the GLib documentation
+      for more information on how to use <literal>pkg-config</literal>
+      to compile your application.
+    </para>
+
+    <para>
+      If you are using GIO on UNIX-like systems, you may want to use
+      UNIX-specific GIO interfaces such as #GUnixInputStream,
+      #GUnixOutputStream, #GUnixMount or #GDesktopAppInfo.
+      To do so, use the <filename>gio-unix-2.0.pc</filename> file
+      instead of <filename>gio-2.0.pc</filename>
+    </para>
+  </chapter>
+
+  <chapter id="running-gio-apps">
+    <title>Running GIO applications</title>
+
+    <para>
+      GIO inspects a few environment variables in addition to the
+      ones used by GLib.
+    </para>
+
+    <formalpara>
+      <title><envar>XDG_DATA_HOME</envar>, <envar>XDG_DATA_DIRS</envar></title>
+
+      <para>
+        GIO uses these environment variables to locate MIME information.
+        For more information, see the <ulink url="http://freedesktop.org/Standards/shared-mime-info-spec">Shared MIME-info Database</ulink>
+        and the <ulink url="http://freedesktop.org/Standards/basedir-spec">Base Directory Specification</ulink>.
+      </para>
+    </formalpara>
+
+    <formalpara>
+      <title><envar>GVFS_DISABLE_FUSE</envar></title>
+
+      <para>
+        This variable can be set to keep #Gvfs from starting the fuse backend,
+        which may be unwanted or unnecessary in certain situations.
+      </para>
+    </formalpara>
+
+    <formalpara>
+      <title><envar>GIO_USE_VFS</envar></title>
+
+      <para>
+        This environment variable can be set to the name of a #GVfs
+        implementation to override the default for debugging purposes.
+        The #GVfs implementation for local files that is included in GIO
+        has the name "local", the implementation in the gvfs module has
+        the name "gvfs".  Most commonly, system software will set this to "local"
+	to avoid having `GFile` APIs perform unnecessary DBus calls.
+      </para>
+    </formalpara>
+
+    <para>
+      The following environment variables are only useful for debugging
+      GIO itself or modules that it loads. They should not be set in a
+      production environment.
+    </para>
+
+    <formalpara>
+      <title><envar>GIO_USE_FILE_MONITOR</envar></title>
+
+      <para>
+        This variable can be set to the name of a #GFileMonitor
+        implementation to override the default for debugging purposes.
+        The #GFileMonitor implementation for local files that is included
+        in GIO on Linux has the name "inotify", others that are built
+        are built as modules (depending on the platform) are called
+        "fam" and "fen".
+      </para>
+    </formalpara>
+
+    <formalpara>
+      <title><envar>GIO_USE_VOLUME_MONITOR</envar></title>
+
+      <para>
+        This variable can be set to the name of a #GVolumeMonitor
+        implementation to override the default for debugging purposes.
+        The #GVolumeMonitor implementation for local files that is included
+        in GIO has the name "unix", the udisks2-based implementation in the
+        gvfs module has the name "udisks2".
+      </para>
+    </formalpara>
+
+    <formalpara>
+      <title><envar>GIO_USE_TLS</envar></title>
+
+      <para>
+        This variable can be set to the name of a #GTlsBackend
+        implementation to override the default for debugging purposes.
+        GIO does not include a #GTlsBackend implementation, the gnutls-based
+        implementation in the glib-networking module has the name "gnutls".
+      </para>
+    </formalpara>
+
+    <formalpara>
+      <title><envar>GIO_MODULE_DIR</envar></title>
+
+      <para>
+        When this environment variable is set to a path, GIO will load
+	modules from this alternate directory instead of the directory
+	built into GIO. This is useful when running tests, for example.
+      </para>
+    </formalpara>
+
+    <formalpara>
+      <title><envar>GIO_EXTRA_MODULES</envar></title>
+
+      <para>
+        When this environment variable is set to a path, or a set of
+        paths separated by a colon, GIO will attempt to load
+        additional modules from within the path.
+      </para>
+    </formalpara>
+
+    <formalpara>
+      <title><envar>GSETTINGS_BACKEND</envar></title>
+
+      <para>
+        This variable can be set to the name of a #GSettingsBackend
+        implementation to override the default for debugging purposes.
+        The memory-based implementation that is included in GIO has
+        the name "memory", the one in dconf has the name "dconf-settings".
+      </para>
+    </formalpara>
+
+    <formalpara>
+      <title><envar>GSETTINGS_SCHEMA_DIR</envar></title>
+
+      <para>
+        This variable can be set to the name of a directory that is
+        considered in addition to the <filename>glib-2.0/schemas</filename>
+        subdirectories of the XDG system data dirs when looking
+        for compiled schemas for #GSettings.
+      </para>
+    </formalpara>
+
+   <formalpara>
+      <title><envar>DBUS_SYSTEM_BUS_ADDRESS</envar></title>
+
+      <para>
+        This variable is consulted to find the address of the D-Bus system
+        bus. For the format of D-Bus addresses, see the D-Bus
+        <ulink url="http://dbus.freedesktop.org/doc/dbus-specification.html#addresses">specification</ulink>.
+      </para>
+      <para>
+        Setting this variable overrides platform-specific ways of determining
+        the system bus address.
+      </para>
+   </formalpara>
+
+   <formalpara>
+      <title><envar>DBUS_SESSION_BUS_ADDRESS</envar></title>
+
+      <para>
+        This variable is consulted to find the address of the D-Bus session bus.
+      </para>
+      <para>
+        Setting this variable overrides platform-specific ways of determining
+        the session bus address.
+      </para>
+   </formalpara>
+
+   <formalpara>
+      <title><envar>DBUS_STARTER_BUS_TYPE</envar></title>
+
+      <para>
+        This variable is consulted to find out the 'starter' bus for an
+        application that has been started via D-Bus activation. The possible
+        values are 'system' or 'session'.
+      </para>
+   </formalpara>
+
+   <formalpara>
+      <title><envar>G_DBUS_DEBUG</envar></title>
+
+      <para>
+         This variable can be set to a list of debug options, which
+         cause GLib to print out different types of debugging
+         information when using the D-Bus routines.
+         <variablelist>
+           <varlistentry>
+             <term>transport</term>
+             <listitem><para>Show IO activity (e.g. reads and writes)</para></listitem>
+           </varlistentry>
+           <varlistentry>
+             <term>message</term>
+             <listitem><para>Show all sent and received D-Bus messages</para></listitem>
+           </varlistentry>
+           <varlistentry>
+             <term>payload</term>
+             <listitem><para>Show payload for all sent and received D-Bus messages (implies message)</para></listitem>
+           </varlistentry>
+           <varlistentry>
+             <term>call</term>
+             <listitem><para>Trace g_dbus_connection_call() and g_dbus_connection_call_sync() API usage</para></listitem>
+           </varlistentry>
+           <varlistentry>
+             <term>signal</term>
+             <listitem><para>Show when a D-Bus signal is received</para></listitem>
+           </varlistentry>
+           <varlistentry>
+             <term>incoming</term>
+             <listitem><para>Show when an incoming D-Bus method call is received</para></listitem>
+           </varlistentry>
+           <varlistentry>
+             <term>return</term>
+             <listitem><para>Show when a reply is returned via the #GDBusMethodInvocation API</para></listitem>
+           </varlistentry>
+           <varlistentry>
+             <term>emission</term>
+             <listitem><para>Trace g_dbus_connection_emit_signal() API usage</para></listitem>
+           </varlistentry>
+           <varlistentry>
+             <term>authentication</term>
+             <listitem><para>Show information about connection authentication</para></listitem>
+           </varlistentry>
+           <varlistentry>
+             <term>address</term>
+             <listitem><para>Show information about D-Bus address lookups and autolaunching</para></listitem>
+           </varlistentry>
+         </variablelist>
+         The special value <literal>all</literal> can be used to turn
+         on all debug options. The special value
+         <literal>help</literal> can be used to print a list of
+         supported options to standard output.
+      </para>
+   </formalpara>
+
+   <formalpara>
+      <title><envar>G_DBUS_COOKIE_SHA1_KEYRING_DIR</envar></title>
+
+      <para>
+        Can be used to override the directory used to store the
+        keyring used in the <literal>DBUS_COOKIE_SHA1</literal>
+        authentication mechanism. Normally the directory used is
+        <filename>.dbus-keyrings</filename> in the user's home
+        directory.
+      </para>
+   </formalpara>
+
+   <formalpara>
+      <title><envar>G_DBUS_COOKIE_SHA1_KEYRING_DIR_IGNORE_PERMISSION</envar></title>
+
+      <para>
+        If set, the permissions of the directory used to store the
+        keyring used in the <literal>DBUS_COOKIE_SHA1</literal>
+        authentication mechanism won't be checked. Normally the
+        directory must be readable only by the user.
+      </para>
+   </formalpara>
+  </chapter>
+
+  <chapter id="extending-gio">
+    <title>Extending GIO</title>
+
+    <para>
+      A lot of the functionality that is accessible through GIO
+      is implemented in loadable modules, and modules provide a convenient
+      way to extend GIO. In addition to the #GIOModule API which supports
+      writing such modules, GIO has a mechanism to define extension points,
+      and register implementations thereof, see #GIOExtensionPoint.
+    </para>
+    <para>
+      The following extension points are currently defined by GIO:
+    </para>
+
+    <formalpara>
+       <title>G_VFS_EXTENSION_POINT_NAME</title>
+
+       <para>
+          Allows to override the functionality of the #GVfs class.
+          Implementations of this extension point must be derived from #GVfs.
+          GIO uses the implementation with the highest priority that is active,
+          see g_vfs_is_active().
+       </para>
+       <para>
+          GIO implements this extension point for local files, gvfs contains
+          an implementation that supports all the backends in gvfs.
+       </para>
+   </formalpara>
+
+   <formalpara>
+      <title>G_VOLUME_MONITOR_EXTENSION_POINT_NAME</title>
+
+      <para>
+         Allows to add more volume monitors.
+         Implementations of this extension point must be derived from
+         #GVolumeMonitor. GIO uses all registered extensions.
+      </para>
+      <para>
+        gvfs contains an implementation that works together with the #GVfs
+        implementation in gvfs.
+      </para>
+   </formalpara>
+
+   <formalpara>
+      <title>G_NATIVE_VOLUME_MONITOR_EXTENSION_POINT_NAME</title>
+
+      <para>
+         Allows to override the 'native' volume monitor.
+         Implementations of this extension point must be derived from
+         #GNativeVolumeMonitor. GIO uses the implementation with
+         the highest priority that is supported, as determined by the
+         is_supported() vfunc in #GVolumeMonitorClass.
+      </para>
+      <para>
+         GIO implements this extension point for local mounts,
+         gvfs contains a udisks2-based implementation.
+      </para>
+   </formalpara>
+
+   <formalpara>
+      <title>G_LOCAL_FILE_MONITOR_EXTENSION_POINT_NAME</title>
+
+      <para>
+        Allows to override the file monitor implementation for
+        local files. Implementations of this extension point must
+        be derived from #GLocalFileMonitor. GIO uses the implementation
+        with the highest priority that is supported, as determined by the
+        is_supported() vfunc in #GLocalFileMonitorClass.
+      </para>
+      <para>
+        GIO uses this extension point internally, to switch between
+        its fam-based and inotify-based file monitoring implementations.
+      </para>
+   </formalpara>
+
+   <formalpara>
+      <title>G_LOCAL_DIRECTORY_MONITOR_EXTENSION_POINT_NAME</title>
+
+      <para>
+        Allows to override the directory monitor implementation for
+        local files. Implementations of this extension point must be
+        derived from #GLocalDirectoryMonitor. GIO uses the implementation
+        with the highest priority that is supported, as determined by the
+        is_supported() vfunc in #GLocalDirectoryMonitorClass.
+      </para>
+      <para>
+        GIO uses this extension point internally, to switch between
+        its fam-based and inotify-based directory monitoring implementations.
+      </para>
+   </formalpara>
+
+   <formalpara>
+      <title>G_DESKTOP_APP_INFO_LOOKUP_EXTENSION_POINT_NAME</title>
+
+      <para>
+        Unix-only. Allows to provide a way to associate default handlers
+        with URI schemes. Implementations of this extension point must
+        implement the #GDesktopAppInfoLookup interface. GIO uses the
+        implementation with the highest priority.
+      </para>
+      <para>
+        This extension point has been discontinued in GLib 2.28. It is
+        still available to keep API and ABI stability, but GIO is no
+        longer using it for default handlers. Instead, the mime handler
+        mechanism is used, together with x-scheme-handler pseudo-mimetypes.
+      </para>
+   </formalpara>
+
+   <formalpara>
+      <title>G_SETTINGS_BACKEND_EXTENSION_POINT_NAME</title>
+
+      <para>
+        Allows to provide an alternative storage for #GSettings.
+        Implementations of this extension point must derive from the
+        #GSettingsBackend type. GIO contains a keyfile-based
+        implementation of this extension point, another one is provided
+        by dconf.
+      </para>
+   </formalpara>
+
+   <formalpara>
+     <title>G_PROXY_EXTENSION_POINT_NAME</title>
+
+     <para>
+       Allows to provide implementations for network proxying.
+       Implementations of this extension point must provide the
+       #GProxy interface, and must be named after the network
+       protocol they are proxying.
+     </para>
+     <para>
+       glib-networking contains an implementation of this extension
+       point based on libproxy.
+     </para>
+   </formalpara>
+   <formalpara>
+     <title>G_TLS_BACKEND_EXTENSION_POINT_NAME</title>
+
+     <para>
+       Allows to provide implementations for TLS support.
+       Implementations of this extension point must implement
+       the #GTlsBackend interface.
+     </para>
+     <para>
+       glib-networking contains an implementation of this extension
+       point.
+     </para>
+   </formalpara>
+
+   <formalpara>
+     <title>G_NETWORK_MONITOR_EXTENSION_POINT_NAME</title>
+
+     <para>
+       Allows to provide implementations for network connectivity
+       monitoring.
+       Implementations of this extension point must implement
+       the #GNetworkMonitorInterface interface.
+     </para>
+     <para>
+       GIO contains an implementation of this extension point
+       that is using the netlink interface of the Linux kernel.
+     </para>
+   </formalpara>
+  </chapter>
+</part>
+

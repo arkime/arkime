@@ -1,0 +1,88 @@
+<refentry id="glib-gettextize" lang="en">
+
+<refentryinfo>
+<title>glib-gettextize</title>
+<productname>GLib</productname>
+<authorgroup>
+<author>
+<contrib>Developer</contrib>
+<firstname>Owen</firstname>
+<surname>Taylor</surname>
+</author>
+</authorgroup>
+</refentryinfo>
+
+<refmeta>
+<refentrytitle>glib-gettextize</refentrytitle>
+<manvolnum>1</manvolnum>
+<refmiscinfo class="manual">User Commands</refmiscinfo>
+</refmeta>
+
+<refnamediv>
+<refname>glib-gettextize</refname>
+<refpurpose>gettext internationalization utility</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>glib-gettextize</command>
+<arg choice="opt" rep="repeat">OPTION</arg>
+<arg choice="opt">DIRECTORY</arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+<para><command>glib-gettextize</command> helps to prepare a source package for being
+internationalized through <application>gettext</application>. 
+It is a variant of the <command>gettextize</command> that ships with
+<application>gettext</application>. 
+</para>
+
+<para><command>glib-gettextize</command> differs
+from <command>gettextize</command> in that it doesn't create an
+<filename>intl/</filename> subdirectory and doesn't modify
+<filename>po/ChangeLog</filename> (note that newer versions of 
+<command>gettextize</command> behave like this when called with the
+<option>--no-changelog</option> option).
+</para>
+</refsect1>
+
+<refsect1><title>Options</title>
+<variablelist>
+
+<varlistentry>
+<term><option>--help</option></term>
+<listitem><para>
+print help and exit
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--version</option></term>
+<listitem><para>
+print version information and exit
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-c</option>, <option>--copy</option></term>
+<listitem><para>
+copy files instead of making symlinks
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-f</option>, <option>--force</option></term>
+<listitem><para>
+force writing of new files even if old ones exist
+</para></listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+
+<refsect1><title>See also</title>
+<para>
+<citerefentry><refentrytitle>gettextize</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+</para>
+</refsect1>
+</refentry>

@@ -1,0 +1,17 @@
+<schemalist>
+  <schema id='a'>
+    <key name='foo' type='s'>
+      <default>''</default>
+    </key>
+  </schema>
+
+  <schema id='b' extends='a'>
+    <key name='bar' type='s'>
+      <default>''</default>
+    </key>
+  </schema>
+
+  <schema id='c' extends='b'>
+    <key name='foo' type='s'/>
+  </schema>
+</schemalist>

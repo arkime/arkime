@@ -1,0 +1,446 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Compiling the GLib package: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib.html" title="GLib Overview">
+<link rel="prev" href="glib.html" title="GLib Overview">
+<link rel="next" href="glib-cross-compiling.html" title="Cross-compiling the GLib package">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-cross-compiling.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-building"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle">Compiling the GLib package</span></h2>
+<p>Compiling the GLib Package — How to compile GLib itself</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="building"></a><h2>Building the Library on UNIX</h2>
+<p>
+      On UNIX, GLib uses the standard GNU build system,
+      using <span class="application">autoconf</span> for package
+      configuration and resolving portability issues,
+      <span class="application">automake</span> for building makefiles
+      that comply with the GNU Coding Standards, and
+      <span class="application">libtool</span> for building shared
+      libraries on multiple platforms.  The normal sequence for
+      compiling and installing the GLib library is thus:
+
+      </p>
+<div class="literallayout"><p><br>
+        <strong class="userinput"><code>./configure</code></strong><br>
+        <strong class="userinput"><code>make</code></strong><br>
+        <strong class="userinput"><code>make install</code></strong><br>
+      </p></div>
+<p>
+    </p>
+<p>
+      The standard options provided by <span class="application">GNU
+      autoconf</span> may be passed to the
+      <span class="command"><strong>configure</strong></span> script.  Please see the
+      <span class="application">autoconf</span> documentation or run
+      <span class="command"><strong>./configure --help</strong></span> for information about
+      the standard options.
+    </p>
+<p>
+      GLib is compiled with
+      <a class="ulink" href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-fstrict-aliasing" target="_top">strict aliasing</a>
+      disabled. It is strongly recommended that this is not re-enabled by
+      overriding the compiler flags, as GLib has not been tested with strict
+      aliasing and cannot be guaranteed to work.
+    </p>
+<p>
+      The GTK+ documentation contains
+      <a class="ulink" href="https://developer.gnome.org/gtk3/stable/gtk-building.html" target="_top">further details</a>
+      about the build process and ways to influence it.
+    </p>
+</div>
+<div class="refsect1">
+<a name="dependencies"></a><h2>Dependencies</h2>
+<p>
+      Before you can compile the GLib library, you need to have
+      various other tools and libraries installed on your system.
+      If you are building from a release archive, you will need
+      <a class="ulink" href="https://wiki.gnome.org/Projects/GLib/CompilerRequirements" target="_top">a compliant C toolchain</a>,
+      GNU Make, and <span class="application">pkg-config</span>;
+      if you are building directly from a Git repository clone
+      of GLib, you will also need the GNU Autotools mentioned
+      above.
+    </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>
+          <a class="ulink" href="https://www.freedesktop.org/wiki/Software/pkg-config/" target="_top">pkg-config</a>
+          is a tool for tracking the compilation flags needed for
+          libraries that are used by the GLib library. (For each
+          library, a small <code class="literal">.pc</code> text file is
+          installed in a standard location that contains the compilation
+          flags needed for that library along with version number
+          information).
+        </p></li>
+<li class="listitem"><p>
+          The GLib Makefiles make use of several features specific to
+          <a class="ulink" href="http://www.gnu.org/software/make" target="_top">GNU
+          make</a>, and will not build correctly with other
+          versions of <span class="command"><strong>make</strong></span>. You will need to
+          install it if you don't already have it on your system. (It
+          may be called <span class="command"><strong>gmake</strong></span> rather than
+          <span class="command"><strong>make</strong></span>.)
+        </p></li>
+</ul></div>
+<p>
+      A UNIX build of GLib requires that the system implements at
+      least the original 1990 version of POSIX. Beyond this, it
+      depends on a number of other libraries.
+    </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem">
+<p>
+          The <a class="ulink" href="http://www.gnu.org/software/libiconv/" target="_top">GNU
+          libiconv library</a> is needed to build GLib if your
+          system doesn't have the <code class="function">iconv()</code>
+          function for doing conversion between character
+          encodings. Most modern systems should have
+          <code class="function">iconv()</code>, however many older systems lack
+          an <code class="function">iconv()</code> implementation. On such systems,
+          you must install the libiconv library. This can be found at:
+          <a class="ulink" href="http://www.gnu.org/software/libiconv" target="_top">http://www.gnu.org/software/libiconv</a>.
+        </p>
+<p>
+          If your system has an <code class="function">iconv()</code> implementation but
+          you want to use libiconv instead, you can pass the
+          <code class="option">--with-libiconv</code> option to configure. This forces
+          libiconv to be used.
+        </p>
+<p>
+          Note that if you have libiconv installed in your default include
+          search path (for instance, in <code class="filename">/usr/local/</code>), but
+          don't enable it, you will get an error while compiling GLib because
+          the <code class="filename">iconv.h</code> that libiconv installs hides the
+          system iconv.
+        </p>
+<p>
+          If you are using the native iconv implementation on Solaris
+          instead of libiconv, you'll need to make sure that you have
+          the converters between locale encodings and UTF-8 installed.
+          At a minimum you'll need the SUNWuiu8 package. You probably
+          should also install the SUNWciu8, SUNWhiu8, SUNWjiu8, and
+          SUNWkiu8 packages.
+        </p>
+<p>
+          The native iconv on Compaq Tru64 doesn't contain support for
+          UTF-8, so you'll need to use GNU libiconv instead. (When
+          using GNU libiconv for GLib, you'll need to use GNU libiconv
+          for GNU gettext as well.) This probably applies to related
+          operating systems as well.
+        </p>
+</li>
+<li class="listitem"><p>
+          The libintl library from the <a class="ulink" href="http://www.gnu.org/software/gettext" target="_top">GNU gettext
+          package</a> is needed if your system doesn't have the
+          <code class="function">gettext()</code> functionality for handling
+          message translation databases.
+        </p></li>
+<li class="listitem"><p>
+          A thread implementation is needed. The thread support in GLib
+          can be based upon POSIX threads or win32 threads.
+        </p></li>
+<li class="listitem"><p>
+          GRegex uses the <a class="ulink" href="http://www.pcre.org/" target="_top">PCRE library</a>
+          for regular expression matching. The default is to use the system
+          version of PCRE, to reduce the chances of security fixes going out
+          of sync. GLib additionally provides an internal copy of PCRE in case
+          the system version is too old, or does not support UTF-8; the internal
+          copy is patched to use GLib for memory management and to share the
+          same Unicode tables.
+        </p></li>
+<li class="listitem"><p>
+          The optional extended attribute support in GIO requires the
+          <code class="function">getxattr()</code> family of functions that may be
+          provided by the C library or by the standalone libattr library. To
+          build GLib without extended attribute support, use the
+          <code class="option">--disable-xattr</code> option.
+        </p></li>
+<li class="listitem"><p>
+          The optional SELinux support in GIO requires libselinux.
+          To build GLib without SELinux support, use the
+          <code class="option">--disable-selinux</code> option.
+        </p></li>
+<li class="listitem"><p>
+          The optional support for DTrace requires the
+          <code class="filename">sys/sdt.h</code> header, which is provided
+          by SystemTap on Linux. To build GLib without DTrace, use
+          the <code class="option">--disable-dtrace</code> configure option.
+        </p></li>
+<li class="listitem"><p>
+          The optional support for
+          <a class="ulink" href="http://sourceware.org/systemtap/" target="_top">SystemTap</a>
+          can be disabled with the <code class="option">--disable-systemtap</code>
+          configure option. Additionally, you can control the location
+          where GLib installs the SystemTap probes, using the
+          <code class="option">--with-tapset-install-dir=DIR</code> configure option.
+        </p></li>
+</ul></div>
+</div>
+<div class="refsect1">
+<a name="extra-configuration-options"></a><h2>Extra Configuration Options</h2>
+<p>
+      In addition to the normal options, the
+      <span class="command"><strong>configure</strong></span> script in the GLib
+      library supports these additional arguments:
+    </p>
+<p><b><code class="option">--enable-debug</code>. </b>
+        Turns on various amounts of debugging support. Setting this to 'no'
+        disables <code class="function">g_assert()</code>, <code class="function">g_return_if_fail()</code>,
+        <code class="function">g_return_val_if_fail()</code> and all cast checks
+        between different object types. Setting it to 'minimum' disables
+        only cast checks. Setting it to 'yes' enables <a class="link" href="glib-running.html#G-DEBUG:CAPS" title="G_DEBUG">runtime debugging</a>.
+        The default is 'minimum' for stable releases, and 'yes' for development
+        snapshots. Note that 'no' is fast, but dangerous as it tends to destabilize
+        even mostly bug-free software by changing the effect of many bugs
+        from simple warnings into fatal crashes. Thus
+        <code class="option">--enable-debug=no</code> should <span class="emphasis"><em>not</em></span>
+        be used for stable releases of GLib.
+      </p>
+<p><b><code class="option">--disable-gc-friendly</code> and
+        <code class="option">--enable-gc-friendly</code>. </b>
+        By default, and with <code class="option">--disable-gc-friendly</code>
+        as well, GLib does not clear the memory for certain objects before
+        they are freed. For example, GLib may decide to recycle GList nodes
+        by putting them in a free list. However, memory profiling and debugging
+        tools like <a class="ulink" href="http://www.valgrind.org" target="_top">Valgrind</a> work
+        better if an application does not keep dangling pointers to freed
+        memory (even though these pointers are no longer dereferenced), or
+        invalid pointers inside uninitialized memory.
+        The <code class="option">--enable-gc-friendly</code> option makes GLib
+        clear memory in these situations:
+      </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>
+            When shrinking a GArray, GLib will clear the memory no longer
+            available in the array: shrink an array from 10 bytes to 7, and
+            the last 3 bytes will be cleared. This includes removals of single
+            and multiple elements.
+          </p></li>
+<li class="listitem"><p>
+            When growing a GArray, GLib will clear the new chunk of memory.
+            Grow an array from 7 bytes to 10 bytes, and the last 3 bytes will
+            be cleared.
+          </p></li>
+<li class="listitem"><p>
+            The above applies to GPtrArray as well.
+          </p></li>
+<li class="listitem"><p>
+            When freeing a node from a GHashTable, GLib will first clear
+            the node, which used to have pointers to the key and the value
+            stored at that node.
+          </p></li>
+<li class="listitem"><p>
+            When destroying or removing a GTree node, GLib will clear the node,
+            which used to have pointers to the node's value, and the left and
+            right subnodes.
+          </p></li>
+</ul></div>
+<p>
+        Since clearing the memory has a cost,
+        <code class="option">--disable-gc-friendly</code> is the default.
+      </p>
+<p><b><code class="option">--disable-mem-pools</code> and
+        <code class="option">--enable-mem-pools</code>. </b>
+        Many small chunks of memory are often allocated via collective pools
+        in GLib and are cached after release to speed up reallocations.
+        For sparse memory systems this behaviour is often inferior, so
+        memory pools can be disabled to avoid excessive caching and force
+        atomic maintenance of chunks through the <code class="function">g_malloc()</code>
+        and <code class="function">g_free()</code> functions. Code currently affected by
+        this:
+        </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>
+              <span class="structname">GMemChunk</span>s become basically non-effective
+            </p></li>
+<li class="listitem"><p>
+              <span class="structname">GSignal</span> disables all caching
+              (potentially very slow)
+            </p></li>
+<li class="listitem"><p>
+              <span class="structname">GType</span> doesn't honour the
+              <span class="structname">GTypeInfo</span>
+              <em class="structfield"><code>n_preallocs</code></em> field anymore
+            </p></li>
+<li class="listitem"><p>
+              the <span class="structname">GBSearchArray</span> flag
+              <code class="literal">G_BSEARCH_ALIGN_POWER2</code> becomes non-functional
+            </p></li>
+</ul></div>
+<p>
+      </p>
+<p><b><code class="option">--with-threads</code>. </b>
+        Specify a thread implementation to use. Available options are
+        'posix' or 'win32'. Normally, <span class="command"><strong>configure</strong></span>
+        should be able to work out the system threads API on its own.
+      </p>
+<p><b><code class="option">--with-pcre</code>. </b>
+        Specify whether to use the internal or the system-supplied
+        PCRE library.
+        </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>
+              'internal' means that GRegex will be compiled to use
+              the internal PCRE library.
+            </p></li>
+<li class="listitem"><p>
+              'system' means that GRegex will be compiled to use
+              the system-supplied PCRE library; this is the default
+              setting.
+            </p></li>
+</ul></div>
+<p>
+        Using the internal PCRE is the preferred solution if:
+        </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>
+              your system has strict resource constraints; the system-supplied
+              PCRE has a separated copy of the tables used for Unicode
+              handling, whereas the internal copy shares the Unicode tables
+              used by GLib.
+            </p></li>
+<li class="listitem"><p>
+              your system has PCRE built without some needed features,
+              such as UTF-8 and Unicode support.
+            </p></li>
+<li class="listitem"><p>
+              you are planning to use both GRegex and PCRE API at the same
+              time, either directly or indirectly through a dependency; PCRE
+              uses some global variables for memory management and
+              other features, and if both GLib and PCRE try to access them
+              at the same time, this could lead to undefined behavior.
+            </p></li>
+</ul></div>
+<p>
+      </p>
+<p><b><code class="option">--disable-included-printf</code> and
+        <code class="option">--enable-included-printf</code>. </b>
+        By default the <span class="command"><strong>configure</strong></span> script will try
+        to auto-detect whether the C library provides a suitable set
+        of <code class="function">printf()</code> functions. In detail,
+        <span class="command"><strong>configure</strong></span> checks that the semantics of
+        <code class="function">snprintf()</code> are as specified by C99
+        and that positional parameters as specified in the Single Unix
+        Specification are supported. If this not the case, GLib will
+        include an implementation of the <code class="function">printf()</code>
+        family.
+      
+        These options can be used to explicitly control whether
+        an implementation of the <code class="function">printf()</code> family
+        should be included or not.
+      </p>
+<p><b><code class="option">--disable-Bsymbolic</code> and
+        <code class="option">--enable-Bsymbolic</code>. </b>
+        By default, GLib uses the <code class="option">-Bsymbolic-functions</code>
+        linker flag to avoid intra-library PLT jumps. A side-effect
+        of this is that it is no longer possible to override
+        internal uses of GLib functions with
+        <code class="envar">LD_PRELOAD</code>. Therefore, it may make
+        sense to turn this feature off in some situations.
+        The <code class="option">--disable-Bsymbolic</code> option allows
+        to do that.
+      </p>
+<p><b><code class="option">--disable-gtk-doc</code> and
+        <code class="option">--enable-gtk-doc</code>. </b>
+        By default the <span class="command"><strong>configure</strong></span> script will try
+        to auto-detect whether the
+        <span class="application">gtk-doc</span> package is installed.
+        If it is, then it will use it to extract and build the
+        documentation for the GLib library. These options
+        can be used to explicitly control whether
+        <span class="application">gtk-doc</span> should be
+        used or not. If it is not used, the distributed,
+        pre-generated HTML files will be installed instead of
+        building them on your machine.
+      </p>
+<p><b><code class="option">--disable-man</code> and
+        <code class="option">--enable-man</code>. </b>
+        By default the <span class="command"><strong>configure</strong></span> script will try
+        to auto-detect whether <span class="application">xsltproc</span>
+        and the necessary Docbook stylesheets are installed.
+        If they are, then it will use them to rebuild the included
+        man pages from the XML sources. These options can be used
+        to explicitly control whether man pages should be rebuilt
+        used or not. The distribution includes pre-generated man
+        pages.
+      </p>
+<p><b><code class="option">--disable-xattr</code> and
+        <code class="option">--enable-xattr</code>. </b>
+        By default the <span class="command"><strong>configure</strong></span> script will try
+        to auto-detect whether the <code class="function">getxattr()</code>
+        family of functions is available. If it is, then extended
+        attribute support will be included in GIO. These options can
+        be used to explicitly control whether extended attribute
+        support should be included or not. <code class="function">getxattr()</code>
+        and friends can be provided by glibc or by the standalone
+        libattr library.
+      </p>
+<p><b><code class="option">--disable-selinux</code> and
+        <code class="option">--enable-selinux</code>. </b>
+        By default the <span class="command"><strong>configure</strong></span> script will
+        auto-detect if libselinux is available and include
+        SELinux support in GIO if it is. These options can be
+        used to explicitly control whether SELinux support should
+        be included.
+      </p>
+<p><b><code class="option">--disable-dtrace</code> and
+        <code class="option">--enable-dtrace</code>. </b>
+        By default the <span class="command"><strong>configure</strong></span> script will
+        detect if DTrace support is available, and use it.
+      </p>
+<p><b><code class="option">--disable-systemtap</code> and
+        <code class="option">--enable-systemtap</code>. </b>
+        This option requires DTrace support. If it is available, then
+        the <span class="command"><strong>configure</strong></span> script will also check for
+        the presence of SystemTap.
+      </p>
+<p><b><code class="option">--enable-coverage</code> and
+        <code class="option">--disable-coverage</code>. </b>
+        Enable the generation of coverage reports for the GLib tests.
+        This requires the lcov frontend to gcov from the
+        <a class="ulink" href="http://ltp.sourceforge.net" target="_top">Linux Test Project</a>.
+        To generate a coverage report, use the lcov make target. The
+        report is placed in the <code class="filename">glib-lcov</code> directory.
+      </p>
+<p><b><code class="option">--with-runtime-libdir=RELPATH</code>. </b>
+        Allows specifying a relative path to where to install the runtime
+        libraries (meaning library files used for running, not developing,
+        GLib applications). This can be used in operating system setups where
+        programs using GLib needs to run before e.g. <code class="filename">/usr</code>
+        is mounted.
+        For example, if <code class="varname">LIBDIR</code> is <code class="filename">/usr/lib</code> and
+        <code class="filename">../../lib</code> is passed to
+        <code class="option">--with-runtime-libdir</code> then the
+        runtime libraries are installed into <code class="filename">/lib</code> rather
+        than <code class="filename">/usr/lib</code>.
+      </p>
+<p><b><code class="option">--with-python=PATH</code>. </b>
+        Allows specifying the Python interpreter to use, either as an absolute path,
+        or as a program name. GLib can be built with Python 2 (at least version 2.7)
+        or, preferably, with Python 3.
+      </p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

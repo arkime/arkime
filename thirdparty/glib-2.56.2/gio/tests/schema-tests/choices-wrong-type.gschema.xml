@@ -1,0 +1,8 @@
+<schemalist>
+    <schema id="test">
+      <key name="test" type="(is)">
+        <choices />
+        <default>(1,"a")</default>
+      </key>
+    </schema>
+</schemalist>

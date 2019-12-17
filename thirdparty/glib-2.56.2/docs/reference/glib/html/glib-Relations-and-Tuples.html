@@ -1,0 +1,653 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Relations and Tuples: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="deprecated.html" title="Deprecated APIs">
+<link rel="prev" href="glib-Caches.html" title="Caches">
+<link rel="next" href="glib-Automatic-String-Completion.html" title="Automatic String Completion">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-Relations-and-Tuples.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="deprecated.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Caches.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-Automatic-String-Completion.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Relations-and-Tuples"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Relations-and-Tuples.top_of_page"></a>Relations and Tuples</span></h2>
+<p>Relations and Tuples — tables of data which can be indexed on any
+                    number of fields</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-Relations-and-Tuples.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="returnvalue">GRelation</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Relations-and-Tuples.html#g-relation-new" title="g_relation_new ()">g_relation_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Relations-and-Tuples.html#g-relation-index" title="g_relation_index ()">g_relation_index</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Relations-and-Tuples.html#g-relation-insert" title="g_relation_insert ()">g_relation_insert</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Relations-and-Tuples.html#g-relation-exists" title="g_relation_exists ()">g_relation_exists</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Relations-and-Tuples.html#g-relation-count" title="g_relation_count ()">g_relation_count</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Relations-and-Tuples.html#GTuples" title="struct GTuples"><span class="returnvalue">GTuples</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Relations-and-Tuples.html#g-relation-select" title="g_relation_select ()">g_relation_select</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Relations-and-Tuples.html#g-relation-delete" title="g_relation_delete ()">g_relation_delete</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Relations-and-Tuples.html#g-relation-destroy" title="g_relation_destroy ()">g_relation_destroy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Relations-and-Tuples.html#g-relation-print" title="g_relation_print ()">g_relation_print</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Relations-and-Tuples.html#g-tuples-destroy" title="g_tuples_destroy ()">g_tuples_destroy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Relations-and-Tuples.html#g-tuples-index" title="g_tuples_index ()">g_tuples_index</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Relations-and-Tuples.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation">GRelation</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="glib-Relations-and-Tuples.html#GTuples" title="struct GTuples">GTuples</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Relations-and-Tuples.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gmodule.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Relations-and-Tuples.description"></a><h2>Description</h2>
+<p>A <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a> is a table of data which can be indexed on any number
+of fields, rather like simple database tables. A <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a> contains
+a number of records, called tuples. Each record contains a number of
+fields. Records are not ordered, so it is not possible to find the
+record at a particular index.</p>
+<p>Note that <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a> tables are currently limited to 2 fields.</p>
+<p>To create a GRelation, use <a class="link" href="glib-Relations-and-Tuples.html#g-relation-new" title="g_relation_new ()"><code class="function">g_relation_new()</code></a>.</p>
+<p>To specify which fields should be indexed, use <a class="link" href="glib-Relations-and-Tuples.html#g-relation-index" title="g_relation_index ()"><code class="function">g_relation_index()</code></a>.
+Note that this must be called before any tuples are added to the
+<a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>.</p>
+<p>To add records to a <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a> use <a class="link" href="glib-Relations-and-Tuples.html#g-relation-insert" title="g_relation_insert ()"><code class="function">g_relation_insert()</code></a>.</p>
+<p>To determine if a given record appears in a <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>, use
+<a class="link" href="glib-Relations-and-Tuples.html#g-relation-exists" title="g_relation_exists ()"><code class="function">g_relation_exists()</code></a>. Note that fields are compared directly, so
+pointers must point to the exact same position (i.e. different
+copies of the same string will not match.)</p>
+<p>To count the number of records which have a particular value in a
+given field, use <a class="link" href="glib-Relations-and-Tuples.html#g-relation-count" title="g_relation_count ()"><code class="function">g_relation_count()</code></a>.</p>
+<p>To get all the records which have a particular value in a given
+field, use <a class="link" href="glib-Relations-and-Tuples.html#g-relation-select" title="g_relation_select ()"><code class="function">g_relation_select()</code></a>. To access fields of the resulting
+records, use <a class="link" href="glib-Relations-and-Tuples.html#g-tuples-index" title="g_tuples_index ()"><code class="function">g_tuples_index()</code></a>. To free the resulting records use
+<a class="link" href="glib-Relations-and-Tuples.html#g-tuples-destroy" title="g_tuples_destroy ()"><code class="function">g_tuples_destroy()</code></a>.</p>
+<p>To delete all records which have a particular value in a given
+field, use <a class="link" href="glib-Relations-and-Tuples.html#g-relation-delete" title="g_relation_delete ()"><code class="function">g_relation_delete()</code></a>.</p>
+<p>To destroy the <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>, use <a class="link" href="glib-Relations-and-Tuples.html#g-relation-destroy" title="g_relation_destroy ()"><code class="function">g_relation_destroy()</code></a>.</p>
+<p>To help debug <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a> objects, use <a class="link" href="glib-Relations-and-Tuples.html#g-relation-print" title="g_relation_print ()"><code class="function">g_relation_print()</code></a>.</p>
+<p>GRelation has been marked as deprecated, since this API has never
+been fully implemented, is not very actively maintained and rarely
+used.</p>
+</div>
+<div class="refsect1">
+<a name="glib-Relations-and-Tuples.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-relation-new"></a><h3>g_relation_new ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="returnvalue">GRelation</span></a> *
+g_relation_new (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> fields</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_relation_new</code> has been deprecated since version 2.26 and should not be used in newly-written code.</p>
+<p>Rarely used API</p>
+</div>
+<p>Creates a new <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a> with the given number of fields. Note that
+currently the number of fields must be 2.</p>
+<div class="refsect3">
+<a name="g-relation-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>fields</p></td>
+<td class="parameter_description"><p>the number of fields.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-relation-new.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-relation-index"></a><h3>g_relation_index ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_relation_index (<em class="parameter"><code><a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a> *relation</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> field</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GHashFunc" title="GHashFunc ()"><span class="type">GHashFunc</span></a> hash_func</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Hash-Tables.html#GEqualFunc" title="GEqualFunc ()"><span class="type">GEqualFunc</span></a> key_equal_func</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_relation_index</code> has been deprecated since version 2.26 and should not be used in newly-written code.</p>
+<p>Rarely used API</p>
+</div>
+<p>Creates an index on the given field. Note that this must be called
+before any records are added to the <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>.</p>
+<div class="refsect3">
+<a name="g-relation-index.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>relation</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>field</p></td>
+<td class="parameter_description"><p>the field to index, counting from 0.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>hash_func</p></td>
+<td class="parameter_description"><p>a function to produce a hash value from the field data.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key_equal_func</p></td>
+<td class="parameter_description"><p>a function to compare two values of the given field.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-relation-insert"></a><h3>g_relation_insert ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_relation_insert (<em class="parameter"><code><a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a> *relation</code></em>,
+                   <em class="parameter"><code>...</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_relation_insert</code> has been deprecated since version 2.26 and should not be used in newly-written code.</p>
+<p>Rarely used API</p>
+</div>
+<p>Inserts a record into a <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>.</p>
+<div class="refsect3">
+<a name="g-relation-insert.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>relation</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>the fields of the record to add. These must match the
+number of fields in the <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>, and of type <a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a>
+or <a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-relation-exists"></a><h3>g_relation_exists ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_relation_exists (<em class="parameter"><code><a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a> *relation</code></em>,
+                   <em class="parameter"><code>...</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_relation_exists</code> has been deprecated since version 2.26 and should not be used in newly-written code.</p>
+<p>Rarely used API</p>
+</div>
+<p>Returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if a record with the given values exists in a
+<a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>. Note that the values are compared directly, so that, for
+example, two copies of the same string will not match.</p>
+<div class="refsect3">
+<a name="g-relation-exists.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>relation</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>the fields of the record to compare. The number must match
+the number of fields in the <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-relation-exists.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if a record matches.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-relation-count"></a><h3>g_relation_count ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+g_relation_count (<em class="parameter"><code><a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a> *relation</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> key</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> field</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_relation_count</code> has been deprecated since version 2.26 and should not be used in newly-written code.</p>
+<p>Rarely used API</p>
+</div>
+<p>Returns the number of tuples in a <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a> that have the given
+value in the given field.</p>
+<div class="refsect3">
+<a name="g-relation-count.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>relation</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>the value to compare with.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>field</p></td>
+<td class="parameter_description"><p>the field of each record to match.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-relation-count.returns"></a><h4>Returns</h4>
+<p> the number of matches.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-relation-select"></a><h3>g_relation_select ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Relations-and-Tuples.html#GTuples" title="struct GTuples"><span class="returnvalue">GTuples</span></a> *
+g_relation_select (<em class="parameter"><code><a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a> *relation</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> key</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> field</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_relation_select</code> has been deprecated since version 2.26 and should not be used in newly-written code.</p>
+<p>Rarely used API</p>
+</div>
+<p>Returns all of the tuples which have the given key in the given
+field. Use <a class="link" href="glib-Relations-and-Tuples.html#g-tuples-index" title="g_tuples_index ()"><code class="function">g_tuples_index()</code></a> to access the returned records. The
+returned records should be freed with <a class="link" href="glib-Relations-and-Tuples.html#g-tuples-destroy" title="g_tuples_destroy ()"><code class="function">g_tuples_destroy()</code></a>.</p>
+<div class="refsect3">
+<a name="g-relation-select.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>relation</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>the value to compare with.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>field</p></td>
+<td class="parameter_description"><p>the field of each record to match.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-relation-select.returns"></a><h4>Returns</h4>
+<p> the records (tuples) that matched.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-relation-delete"></a><h3>g_relation_delete ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+g_relation_delete (<em class="parameter"><code><a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a> *relation</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> key</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> field</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_relation_delete</code> has been deprecated since version 2.26 and should not be used in newly-written code.</p>
+<p>Rarely used API</p>
+</div>
+<p>Deletes any records from a <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a> that have the given key value
+in the given field.</p>
+<div class="refsect3">
+<a name="g-relation-delete.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>relation</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>the value to compare with.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>field</p></td>
+<td class="parameter_description"><p>the field of each record to match.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-relation-delete.returns"></a><h4>Returns</h4>
+<p> the number of records deleted.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-relation-destroy"></a><h3>g_relation_destroy ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_relation_destroy (<em class="parameter"><code><a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a> *relation</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_relation_destroy</code> has been deprecated since version 2.26 and should not be used in newly-written code.</p>
+<p>Rarely used API</p>
+</div>
+<p>Destroys the <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>, freeing all memory allocated. However, it
+does not free memory allocated for the tuple data, so you should
+free that first if appropriate.</p>
+<div class="refsect3">
+<a name="g-relation-destroy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>relation</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-relation-print"></a><h3>g_relation_print ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_relation_print (<em class="parameter"><code><a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a> *relation</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_relation_print</code> has been deprecated since version 2.26 and should not be used in newly-written code.</p>
+<p>Rarely used API</p>
+</div>
+<p>Outputs information about all records in a <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>, as well as
+the indexes. It is for debugging.</p>
+<div class="refsect3">
+<a name="g-relation-print.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>relation</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tuples-destroy"></a><h3>g_tuples_destroy ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_tuples_destroy (<em class="parameter"><code><a class="link" href="glib-Relations-and-Tuples.html#GTuples" title="struct GTuples"><span class="type">GTuples</span></a> *tuples</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_tuples_destroy</code> has been deprecated since version 2.26 and should not be used in newly-written code.</p>
+<p>Rarely used API</p>
+</div>
+<p>Frees the records which were returned by <a class="link" href="glib-Relations-and-Tuples.html#g-relation-select" title="g_relation_select ()"><code class="function">g_relation_select()</code></a>. This
+should always be called after <a class="link" href="glib-Relations-and-Tuples.html#g-relation-select" title="g_relation_select ()"><code class="function">g_relation_select()</code></a> when you are
+finished with the records. The records are not removed from the
+<a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a>.</p>
+<div class="refsect3">
+<a name="g-tuples-destroy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>tuples</p></td>
+<td class="parameter_description"><p>the tuple data to free.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tuples-index"></a><h3>g_tuples_index ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+g_tuples_index (<em class="parameter"><code><a class="link" href="glib-Relations-and-Tuples.html#GTuples" title="struct GTuples"><span class="type">GTuples</span></a> *tuples</code></em>,
+                <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> index_</code></em>,
+                <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> field</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_tuples_index</code> has been deprecated since version 2.26 and should not be used in newly-written code.</p>
+<p>Rarely used API</p>
+</div>
+<p>Gets a field from the records returned by <a class="link" href="glib-Relations-and-Tuples.html#g-relation-select" title="g_relation_select ()"><code class="function">g_relation_select()</code></a>. It
+returns the given field of the record at the given index. The
+returned value should not be changed.</p>
+<div class="refsect3">
+<a name="g-tuples-index.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>tuples</p></td>
+<td class="parameter_description"><p>the tuple data, returned by <a class="link" href="glib-Relations-and-Tuples.html#g-relation-select" title="g_relation_select ()"><code class="function">g_relation_select()</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>index_</p></td>
+<td class="parameter_description"><p>the index of the record.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>field</p></td>
+<td class="parameter_description"><p>the field to return.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tuples-index.returns"></a><h4>Returns</h4>
+<p> the field of the record.</p>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Relations-and-Tuples.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GRelation"></a><h3>GRelation</h3>
+<pre class="programlisting">typedef struct _GRelation GRelation;</pre>
+<p>The <a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a> struct is an opaque data structure to represent a
+<a class="link" href="glib-Relations-and-Tuples.html" title="Relations and Tuples">Relation</a>. It should
+only be accessed via the following functions.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTuples"></a><h3>struct GTuples</h3>
+<pre class="programlisting">struct GTuples {
+  guint len;
+};
+</pre>
+<p>The <a class="link" href="glib-Relations-and-Tuples.html#GTuples" title="struct GTuples"><span class="type">GTuples</span></a> struct is used to return records (or tuples) from the
+<a class="link" href="glib-Relations-and-Tuples.html#GRelation" title="GRelation"><span class="type">GRelation</span></a> by <a class="link" href="glib-Relations-and-Tuples.html#g-relation-select" title="g_relation_select ()"><code class="function">g_relation_select()</code></a>. It only contains one public
+member - the number of records that matched. To access the matched
+records, you must use <a class="link" href="glib-Relations-and-Tuples.html#g-tuples-index" title="g_tuples_index ()"><code class="function">g_tuples_index()</code></a>.</p>
+<div class="refsect3">
+<a name="GTuples.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody><tr>
+<td class="struct_member_name"><p><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> <em class="structfield"><code><a name="GTuples.len"></a>len</code></em>;</p></td>
+<td class="struct_member_description"><p>the number of records that matched.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

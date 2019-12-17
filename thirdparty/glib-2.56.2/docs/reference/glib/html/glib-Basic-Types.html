@@ -1,0 +1,1180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Basic Types: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-fundamentals.html" title="GLib Fundamentals">
+<link rel="prev" href="glib-Version-Information.html" title="Version Information">
+<link rel="next" href="glib-Standard-Macros.html" title="Standard Macros">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-Basic-Types.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-fundamentals.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Version-Information.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-Standard-Macros.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Basic-Types"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Basic-Types.top_of_page"></a>Basic Types</span></h2>
+<p>Basic Types — standard GLib types, defined for ease-of-use
+    and portability</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-Basic-Types.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<span class="returnvalue">GLIB_AVAILABLE_IN_ALL</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Basic-Types.html#gint" title="gint ()">gint</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">GLIB_AVAILABLE_IN_ALL</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()">guint</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Basic-Types.html#G-GINT64-CONSTANT:CAPS" title="G_GINT64_CONSTANT()">G_GINT64_CONSTANT</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Basic-Types.html#G-GUINT64-CONSTANT:CAPS" title="G_GUINT64_CONSTANT()">G_GUINT64_CONSTANT</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Basic-Types.html#G-GOFFSET-CONSTANT:CAPS" title="G_GOFFSET_CONSTANT()">G_GOFFSET_CONSTANT</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Basic-Types.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean">gboolean</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer">gpointer</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer">gconstpointer</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar">gchar</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#guchar" title="guchar">guchar</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MININT:CAPS" title="G_MININT">G_MININT</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MAXINT:CAPS" title="G_MAXINT">G_MAXINT</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MAXUINT:CAPS" title="G_MAXUINT">G_MAXUINT</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#gshort" title="gshort">gshort</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MINSHORT:CAPS" title="G_MINSHORT">G_MINSHORT</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MAXSHORT:CAPS" title="G_MAXSHORT">G_MAXSHORT</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#gushort" title="gushort">gushort</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MAXUSHORT:CAPS" title="G_MAXUSHORT">G_MAXUSHORT</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#glong" title="glong">glong</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MINLONG:CAPS" title="G_MINLONG">G_MINLONG</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MAXLONG:CAPS" title="G_MAXLONG">G_MAXLONG</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#gulong" title="gulong">gulong</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MAXULONG:CAPS" title="G_MAXULONG">G_MAXULONG</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#gint8" title="gint8">gint8</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MININT8:CAPS" title="G_MININT8">G_MININT8</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MAXINT8:CAPS" title="G_MAXINT8">G_MAXINT8</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#guint8" title="guint8">guint8</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MAXUINT8:CAPS" title="G_MAXUINT8">G_MAXUINT8</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#gint16" title="gint16">gint16</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MININT16:CAPS" title="G_MININT16">G_MININT16</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MAXINT16:CAPS" title="G_MAXINT16">G_MAXINT16</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-GINT16-MODIFIER:CAPS" title="G_GINT16_MODIFIER">G_GINT16_MODIFIER</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-GINT16-FORMAT:CAPS" title="G_GINT16_FORMAT">G_GINT16_FORMAT</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#guint16" title="guint16">guint16</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MAXUINT16:CAPS" title="G_MAXUINT16">G_MAXUINT16</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-GUINT16-FORMAT:CAPS" title="G_GUINT16_FORMAT">G_GUINT16_FORMAT</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#gint32" title="gint32">gint32</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MININT32:CAPS" title="G_MININT32">G_MININT32</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MAXINT32:CAPS" title="G_MAXINT32">G_MAXINT32</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-GINT32-MODIFIER:CAPS" title="G_GINT32_MODIFIER">G_GINT32_MODIFIER</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-GINT32-FORMAT:CAPS" title="G_GINT32_FORMAT">G_GINT32_FORMAT</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#guint32" title="guint32">guint32</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MAXUINT32:CAPS" title="G_MAXUINT32">G_MAXUINT32</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-GUINT32-FORMAT:CAPS" title="G_GUINT32_FORMAT">G_GUINT32_FORMAT</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#gint64" title="gint64">gint64</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MININT64:CAPS" title="G_MININT64">G_MININT64</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MAXINT64:CAPS" title="G_MAXINT64">G_MAXINT64</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-GINT64-MODIFIER:CAPS" title="G_GINT64_MODIFIER">G_GINT64_MODIFIER</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-GINT64-FORMAT:CAPS" title="G_GINT64_FORMAT">G_GINT64_FORMAT</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#guint64" title="guint64">guint64</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MAXUINT64:CAPS" title="G_MAXUINT64">G_MAXUINT64</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-GUINT64-FORMAT:CAPS" title="G_GUINT64_FORMAT">G_GUINT64_FORMAT</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#gfloat" title="gfloat">gfloat</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MINFLOAT:CAPS" title="G_MINFLOAT">G_MINFLOAT</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MAXFLOAT:CAPS" title="G_MAXFLOAT">G_MAXFLOAT</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#gdouble" title="gdouble">gdouble</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MINDOUBLE:CAPS" title="G_MINDOUBLE">G_MINDOUBLE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MAXDOUBLE:CAPS" title="G_MAXDOUBLE">G_MAXDOUBLE</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#gsize" title="gsize">gsize</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MAXSIZE:CAPS" title="G_MAXSIZE">G_MAXSIZE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-GSIZE-MODIFIER:CAPS" title="G_GSIZE_MODIFIER">G_GSIZE_MODIFIER</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-GSIZE-FORMAT:CAPS" title="G_GSIZE_FORMAT">G_GSIZE_FORMAT</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#gssize" title="gssize">gssize</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MINSSIZE:CAPS" title="G_MINSSIZE">G_MINSSIZE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MAXSSIZE:CAPS" title="G_MAXSSIZE">G_MAXSSIZE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-GSSIZE-MODIFIER:CAPS" title="G_GSSIZE_MODIFIER">G_GSSIZE_MODIFIER</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-GSSIZE-FORMAT:CAPS" title="G_GSSIZE_FORMAT">G_GSSIZE_FORMAT</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#goffset" title="goffset">goffset</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MINOFFSET:CAPS" title="G_MINOFFSET">G_MINOFFSET</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-MAXOFFSET:CAPS" title="G_MAXOFFSET">G_MAXOFFSET</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-GOFFSET-MODIFIER:CAPS" title="G_GOFFSET_MODIFIER">G_GOFFSET_MODIFIER</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-GOFFSET-FORMAT:CAPS" title="G_GOFFSET_FORMAT">G_GOFFSET_FORMAT</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#gintptr" title="gintptr">gintptr</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-GINTPTR-MODIFIER:CAPS" title="G_GINTPTR_MODIFIER">G_GINTPTR_MODIFIER</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-GINTPTR-FORMAT:CAPS" title="G_GINTPTR_FORMAT">G_GINTPTR_FORMAT</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#guintptr" title="guintptr">guintptr</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Basic-Types.html#G-GUINTPTR-FORMAT:CAPS" title="G_GUINTPTR_FORMAT">G_GUINTPTR_FORMAT</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Basic-Types.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Basic-Types.description"></a><h2>Description</h2>
+<p>GLib defines a number of commonly used types, which can be divided
+into several groups:</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>New types which are not part of standard C (but are defined in
+various C standard library header files) — <a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="type">gboolean</span></a>, <a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a>.</p></li>
+<li class="listitem"><p>Integer types which are guaranteed to be the same size across
+all platforms — <a class="link" href="glib-Basic-Types.html#gint8" title="gint8"><span class="type">gint8</span></a>, <a class="link" href="glib-Basic-Types.html#guint8" title="guint8"><span class="type">guint8</span></a>, <a class="link" href="glib-Basic-Types.html#gint16" title="gint16"><span class="type">gint16</span></a>, <a class="link" href="glib-Basic-Types.html#guint16" title="guint16"><span class="type">guint16</span></a>, <a class="link" href="glib-Basic-Types.html#gint32" title="gint32"><span class="type">gint32</span></a>,
+<a class="link" href="glib-Basic-Types.html#guint32" title="guint32"><span class="type">guint32</span></a>, <a class="link" href="glib-Basic-Types.html#gint64" title="gint64"><span class="type">gint64</span></a>, <a class="link" href="glib-Basic-Types.html#guint64" title="guint64"><span class="type">guint64</span></a>.</p></li>
+<li class="listitem"><p>Types which are easier to use than their standard C counterparts -
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a>, <a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a>, <a class="link" href="glib-Basic-Types.html#guchar" title="guchar"><span class="type">guchar</span></a>, <a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a>, <a class="link" href="glib-Basic-Types.html#gushort" title="gushort"><span class="type">gushort</span></a>, <a class="link" href="glib-Basic-Types.html#gulong" title="gulong"><span class="type">gulong</span></a>.</p></li>
+<li class="listitem"><p>Types which correspond exactly to standard C types, but are
+included for completeness — <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a>, <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a>, <a class="link" href="glib-Basic-Types.html#gshort" title="gshort"><span class="type">gshort</span></a>, <a class="link" href="glib-Basic-Types.html#glong" title="glong"><span class="type">glong</span></a>,
+<a class="link" href="glib-Basic-Types.html#gfloat" title="gfloat"><span class="type">gfloat</span></a>, <a class="link" href="glib-Basic-Types.html#gdouble" title="gdouble"><span class="type">gdouble</span></a>.</p></li>
+<li class="listitem"><p>Types which correspond exactly to standard C99 types, but are available
+to use even if your compiler does not support C99 — <a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a>, <a class="link" href="glib-Basic-Types.html#goffset" title="goffset"><span class="type">goffset</span></a>,
+<a class="link" href="glib-Basic-Types.html#gintptr" title="gintptr"><span class="type">gintptr</span></a>, <a class="link" href="glib-Basic-Types.html#guintptr" title="guintptr"><span class="type">guintptr</span></a>.</p></li>
+</ul></div>
+<p>GLib also defines macros for the limits of some of the standard
+integer and floating point types, as well as macros for suitable
+<code class="function">printf()</code> formats for these types.</p>
+</div>
+<div class="refsect1">
+<a name="glib-Basic-Types.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="gint"></a><h3>gint ()</h3>
+<pre class="programlisting"><span class="returnvalue">GLIB_AVAILABLE_IN_ALL</span>
+gint ();</pre>
+<p>Corresponds to the standard C int type.
+Values of this type can range from <a class="link" href="glib-Basic-Types.html#G-MININT:CAPS" title="G_MININT"><span class="type">G_MININT</span></a> to <a class="link" href="glib-Basic-Types.html#G-MAXINT:CAPS" title="G_MAXINT"><span class="type">G_MAXINT</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="guint"></a><h3>guint ()</h3>
+<pre class="programlisting"><span class="returnvalue">GLIB_AVAILABLE_IN_ALL</span>
+guint ();</pre>
+<p>Corresponds to the standard C unsigned int type.
+Values of this type can range from 0 to <a class="link" href="glib-Basic-Types.html#G-MAXUINT:CAPS" title="G_MAXUINT"><span class="type">G_MAXUINT</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GINT64-CONSTANT:CAPS"></a><h3>G_GINT64_CONSTANT()</h3>
+<pre class="programlisting">#define G_GINT64_CONSTANT(val) (val##L)
+</pre>
+<p>This macro is used to insert 64-bit integer literals
+into the source code.</p>
+<div class="refsect3">
+<a name="G-GINT64-CONSTANT.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>a literal integer value, e.g. 0x1d636b02300a7aa7</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GUINT64-CONSTANT:CAPS"></a><h3>G_GUINT64_CONSTANT()</h3>
+<pre class="programlisting">#define G_GUINT64_CONSTANT(val) (val##UL)
+</pre>
+<p>This macro is used to insert 64-bit unsigned integer
+literals into the source code.</p>
+<div class="refsect3">
+<a name="G-GUINT64-CONSTANT.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>a literal integer value, e.g. 0x1d636b02300a7aa7U</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-10.html#api-index-2.10">2.10</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GOFFSET-CONSTANT:CAPS"></a><h3>G_GOFFSET_CONSTANT()</h3>
+<pre class="programlisting">#define G_GOFFSET_CONSTANT(val) G_GINT64_CONSTANT(val)
+</pre>
+<p>This macro is used to insert <a class="link" href="glib-Basic-Types.html#goffset" title="goffset"><span class="type">goffset</span></a> 64-bit integer literals
+into the source code.</p>
+<p>See also <a class="link" href="glib-Basic-Types.html#G-GINT64-CONSTANT:CAPS" title="G_GINT64_CONSTANT()"><span class="type">G_GINT64_CONSTANT</span></a>.</p>
+<div class="refsect3">
+<a name="G-GOFFSET-CONSTANT.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>a literal integer value, e.g. 0x1d636b02300a7aa7</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-20.html#api-index-2.20">2.20</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Basic-Types.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="gboolean"></a><h3>gboolean</h3>
+<pre class="programlisting">typedef gint   gboolean;
+</pre>
+<p>A standard boolean type.
+Variables of this type should only contain the value
+<a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> or <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gpointer"></a><h3>gpointer</h3>
+<pre class="programlisting">typedef void* gpointer;
+</pre>
+<p>An untyped pointer.
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> looks better and is easier to use than void*.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gconstpointer"></a><h3>gconstpointer</h3>
+<pre class="programlisting">typedef const void *gconstpointer;
+</pre>
+<p>An untyped pointer to constant data.
+The data pointed to should not be changed.</p>
+<p>This is typically used in function prototypes to indicate
+that the data pointed to will not be altered by the function.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gchar"></a><h3>gchar</h3>
+<pre class="programlisting">typedef char   gchar;
+</pre>
+<p>Corresponds to the standard C char type.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="guchar"></a><h3>guchar</h3>
+<pre class="programlisting">typedef unsigned char   guchar;
+</pre>
+<p>Corresponds to the standard C unsigned char type.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MININT:CAPS"></a><h3>G_MININT</h3>
+<pre class="programlisting">#define G_MININT INT_MIN
+</pre>
+<p>The minimum value which can be held in a <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MAXINT:CAPS"></a><h3>G_MAXINT</h3>
+<pre class="programlisting">#define G_MAXINT INT_MAX
+</pre>
+<p>The maximum value which can be held in a <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MAXUINT:CAPS"></a><h3>G_MAXUINT</h3>
+<pre class="programlisting">#define G_MAXUINT UINT_MAX
+</pre>
+<p>The maximum value which can be held in a <a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gshort"></a><h3>gshort</h3>
+<pre class="programlisting">typedef short  gshort;
+</pre>
+<p>Corresponds to the standard C short type.
+Values of this type can range from <a class="link" href="glib-Basic-Types.html#G-MINSHORT:CAPS" title="G_MINSHORT"><span class="type">G_MINSHORT</span></a> to <a class="link" href="glib-Basic-Types.html#G-MAXSHORT:CAPS" title="G_MAXSHORT"><span class="type">G_MAXSHORT</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MINSHORT:CAPS"></a><h3>G_MINSHORT</h3>
+<pre class="programlisting">#define G_MINSHORT SHRT_MIN
+</pre>
+<p>The minimum value which can be held in a <a class="link" href="glib-Basic-Types.html#gshort" title="gshort"><span class="type">gshort</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MAXSHORT:CAPS"></a><h3>G_MAXSHORT</h3>
+<pre class="programlisting">#define G_MAXSHORT SHRT_MAX
+</pre>
+<p>The maximum value which can be held in a <a class="link" href="glib-Basic-Types.html#gshort" title="gshort"><span class="type">gshort</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gushort"></a><h3>gushort</h3>
+<pre class="programlisting">typedef unsigned short  gushort;
+</pre>
+<p>Corresponds to the standard C unsigned short type.
+Values of this type can range from 0 to <a class="link" href="glib-Basic-Types.html#G-MAXUSHORT:CAPS" title="G_MAXUSHORT"><span class="type">G_MAXUSHORT</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MAXUSHORT:CAPS"></a><h3>G_MAXUSHORT</h3>
+<pre class="programlisting">#define G_MAXUSHORT USHRT_MAX
+</pre>
+<p>The maximum value which can be held in a <a class="link" href="glib-Basic-Types.html#gushort" title="gushort"><span class="type">gushort</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="glong"></a><h3>glong</h3>
+<pre class="programlisting">typedef long   glong;
+</pre>
+<p>Corresponds to the standard C long type.
+Values of this type can range from <a class="link" href="glib-Basic-Types.html#G-MINLONG:CAPS" title="G_MINLONG"><span class="type">G_MINLONG</span></a> to <a class="link" href="glib-Basic-Types.html#G-MAXLONG:CAPS" title="G_MAXLONG"><span class="type">G_MAXLONG</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MINLONG:CAPS"></a><h3>G_MINLONG</h3>
+<pre class="programlisting">#define G_MINLONG LONG_MIN
+</pre>
+<p>The minimum value which can be held in a <a class="link" href="glib-Basic-Types.html#glong" title="glong"><span class="type">glong</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MAXLONG:CAPS"></a><h3>G_MAXLONG</h3>
+<pre class="programlisting">#define G_MAXLONG LONG_MAX
+</pre>
+<p>The maximum value which can be held in a <a class="link" href="glib-Basic-Types.html#glong" title="glong"><span class="type">glong</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gulong"></a><h3>gulong</h3>
+<pre class="programlisting">typedef unsigned long   gulong;
+</pre>
+<p>Corresponds to the standard C unsigned long type.
+Values of this type can range from 0 to <a class="link" href="glib-Basic-Types.html#G-MAXULONG:CAPS" title="G_MAXULONG"><span class="type">G_MAXULONG</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MAXULONG:CAPS"></a><h3>G_MAXULONG</h3>
+<pre class="programlisting">#define G_MAXULONG ULONG_MAX
+</pre>
+<p>The maximum value which can be held in a <a class="link" href="glib-Basic-Types.html#gulong" title="gulong"><span class="type">gulong</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gint8"></a><h3>gint8</h3>
+<pre class="programlisting">typedef signed char gint8;
+</pre>
+<p>A signed integer guaranteed to be 8 bits on all platforms.
+Values of this type can range from <a class="link" href="glib-Basic-Types.html#G-MININT8:CAPS" title="G_MININT8"><span class="type">G_MININT8</span></a> (= -128) to
+<a class="link" href="glib-Basic-Types.html#G-MAXINT8:CAPS" title="G_MAXINT8"><span class="type">G_MAXINT8</span></a> (= 127).</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MININT8:CAPS"></a><h3>G_MININT8</h3>
+<pre class="programlisting">#define G_MININT8 ((gint8) -0x80)
+</pre>
+<p>The minimum value which can be held in a <a class="link" href="glib-Basic-Types.html#gint8" title="gint8"><span class="type">gint8</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MAXINT8:CAPS"></a><h3>G_MAXINT8</h3>
+<pre class="programlisting">#define G_MAXINT8 ((gint8)  0x7f)
+</pre>
+<p>The maximum value which can be held in a <a class="link" href="glib-Basic-Types.html#gint8" title="gint8"><span class="type">gint8</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="guint8"></a><h3>guint8</h3>
+<pre class="programlisting">typedef unsigned char guint8;
+</pre>
+<p>An unsigned integer guaranteed to be 8 bits on all platforms.
+Values of this type can range from 0 to <a class="link" href="glib-Basic-Types.html#G-MAXUINT8:CAPS" title="G_MAXUINT8"><span class="type">G_MAXUINT8</span></a> (= 255).</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MAXUINT8:CAPS"></a><h3>G_MAXUINT8</h3>
+<pre class="programlisting">#define G_MAXUINT8 ((guint8) 0xff)
+</pre>
+<p>The maximum value which can be held in a <a class="link" href="glib-Basic-Types.html#guint8" title="guint8"><span class="type">guint8</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gint16"></a><h3>gint16</h3>
+<pre class="programlisting">typedef signed short gint16;
+</pre>
+<p>A signed integer guaranteed to be 16 bits on all platforms.
+Values of this type can range from <a class="link" href="glib-Basic-Types.html#G-MININT16:CAPS" title="G_MININT16"><span class="type">G_MININT16</span></a> (= -32,768) to
+<a class="link" href="glib-Basic-Types.html#G-MAXINT16:CAPS" title="G_MAXINT16"><span class="type">G_MAXINT16</span></a> (= 32,767).</p>
+<p>To print or scan values of this type, use
+<a class="link" href="glib-Basic-Types.html#G-GINT16-MODIFIER:CAPS" title="G_GINT16_MODIFIER"><code class="literal">G_GINT16_MODIFIER</code></a> and/or <a class="link" href="glib-Basic-Types.html#G-GINT16-FORMAT:CAPS" title="G_GINT16_FORMAT"><code class="literal">G_GINT16_FORMAT</code></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MININT16:CAPS"></a><h3>G_MININT16</h3>
+<pre class="programlisting">#define G_MININT16 ((gint16) -0x8000)
+</pre>
+<p>The minimum value which can be held in a <a class="link" href="glib-Basic-Types.html#gint16" title="gint16"><span class="type">gint16</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MAXINT16:CAPS"></a><h3>G_MAXINT16</h3>
+<pre class="programlisting">#define G_MAXINT16 ((gint16)  0x7fff)
+</pre>
+<p>The maximum value which can be held in a <a class="link" href="glib-Basic-Types.html#gint16" title="gint16"><span class="type">gint16</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GINT16-MODIFIER:CAPS"></a><h3>G_GINT16_MODIFIER</h3>
+<pre class="programlisting">#define G_GINT16_MODIFIER "h"
+</pre>
+<p>The platform dependent length modifier for conversion specifiers
+for scanning and printing values of type <a class="link" href="glib-Basic-Types.html#gint16" title="gint16"><span class="type">gint16</span></a> or <a class="link" href="glib-Basic-Types.html#guint16" title="guint16"><span class="type">guint16</span></a>. It
+is a string literal, but doesn't include the percent-sign, such
+that you can add precision and length modifiers between percent-sign
+and conversion specifier and append a conversion specifier.</p>
+<p>The following example prints "0x7b";</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">gint16</span><span class="normal"> value </span><span class="symbol">=</span><span class="normal"> </span><span class="number">123</span><span class="symbol">;</span>
+<span class="function"><a href="glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"%#"</span><span class="normal"> <a href="glib-Basic-Types.html#G-GINT16-MODIFIER:CAPS">G_GINT16_MODIFIER</a> </span><span class="string">"x"</span><span class="symbol">,</span><span class="normal"> value</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GINT16-FORMAT:CAPS"></a><h3>G_GINT16_FORMAT</h3>
+<pre class="programlisting">#define G_GINT16_FORMAT "hi"
+</pre>
+<p>This is the platform dependent conversion specifier for scanning and
+printing values of type <a class="link" href="glib-Basic-Types.html#gint16" title="gint16"><span class="type">gint16</span></a>. It is a string literal, but doesn't
+include the percent-sign, such that you can add precision and length
+modifiers between percent-sign and conversion specifier.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">gint16</span><span class="normal"> in</span><span class="symbol">;</span>
+<span class="usertype">gint32</span><span class="normal"> out</span><span class="symbol">;</span>
+<span class="function">sscanf</span><span class="normal"> </span><span class="symbol">(</span><span class="string">"42"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"%"</span><span class="normal"> <a href="glib-Basic-Types.html#G-GINT16-FORMAT:CAPS">G_GINT16_FORMAT</a></span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">in</span><span class="symbol">)</span>
+<span class="normal">out </span><span class="symbol">=</span><span class="normal"> in </span><span class="symbol">*</span><span class="normal"> </span><span class="number">1000</span><span class="symbol">;</span>
+<span class="function"><a href="glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"%"</span><span class="normal"> <a href="glib-Basic-Types.html#G-GINT32-FORMAT:CAPS">G_GINT32_FORMAT</a></span><span class="symbol">,</span><span class="normal"> out</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="guint16"></a><h3>guint16</h3>
+<pre class="programlisting">typedef unsigned short guint16;
+</pre>
+<p>An unsigned integer guaranteed to be 16 bits on all platforms.
+Values of this type can range from 0 to <a class="link" href="glib-Basic-Types.html#G-MAXUINT16:CAPS" title="G_MAXUINT16"><span class="type">G_MAXUINT16</span></a> (= 65,535).</p>
+<p>To print or scan values of this type, use
+<a class="link" href="glib-Basic-Types.html#G-GINT16-MODIFIER:CAPS" title="G_GINT16_MODIFIER"><code class="literal">G_GINT16_MODIFIER</code></a> and/or <a class="link" href="glib-Basic-Types.html#G-GUINT16-FORMAT:CAPS" title="G_GUINT16_FORMAT"><code class="literal">G_GUINT16_FORMAT</code></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MAXUINT16:CAPS"></a><h3>G_MAXUINT16</h3>
+<pre class="programlisting">#define G_MAXUINT16 ((guint16) 0xffff)
+</pre>
+<p>The maximum value which can be held in a <a class="link" href="glib-Basic-Types.html#guint16" title="guint16"><span class="type">guint16</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GUINT16-FORMAT:CAPS"></a><h3>G_GUINT16_FORMAT</h3>
+<pre class="programlisting">#define G_GUINT16_FORMAT "hu"
+</pre>
+<p>This is the platform dependent conversion specifier for scanning
+and printing values of type <a class="link" href="glib-Basic-Types.html#guint16" title="guint16"><span class="type">guint16</span></a>. See also <a class="link" href="glib-Basic-Types.html#G-GINT16-FORMAT:CAPS" title="G_GINT16_FORMAT"><span class="type">G_GINT16_FORMAT</span></a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gint32"></a><h3>gint32</h3>
+<pre class="programlisting">typedef signed int gint32;
+</pre>
+<p>A signed integer guaranteed to be 32 bits on all platforms.
+Values of this type can range from <a class="link" href="glib-Basic-Types.html#G-MININT32:CAPS" title="G_MININT32"><span class="type">G_MININT32</span></a> (= -2,147,483,648)
+to <a class="link" href="glib-Basic-Types.html#G-MAXINT32:CAPS" title="G_MAXINT32"><span class="type">G_MAXINT32</span></a> (= 2,147,483,647).</p>
+<p>To print or scan values of this type, use
+<a class="link" href="glib-Basic-Types.html#G-GINT32-MODIFIER:CAPS" title="G_GINT32_MODIFIER"><code class="literal">G_GINT32_MODIFIER</code></a> and/or <a class="link" href="glib-Basic-Types.html#G-GINT32-FORMAT:CAPS" title="G_GINT32_FORMAT"><code class="literal">G_GINT32_FORMAT</code></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MININT32:CAPS"></a><h3>G_MININT32</h3>
+<pre class="programlisting">#define G_MININT32 ((gint32) -0x80000000)
+</pre>
+<p>The minimum value which can be held in a <a class="link" href="glib-Basic-Types.html#gint32" title="gint32"><span class="type">gint32</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MAXINT32:CAPS"></a><h3>G_MAXINT32</h3>
+<pre class="programlisting">#define G_MAXINT32 ((gint32)  0x7fffffff)
+</pre>
+<p>The maximum value which can be held in a <a class="link" href="glib-Basic-Types.html#gint32" title="gint32"><span class="type">gint32</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GINT32-MODIFIER:CAPS"></a><h3>G_GINT32_MODIFIER</h3>
+<pre class="programlisting">#define G_GINT32_MODIFIER ""
+</pre>
+<p>The platform dependent length modifier for conversion specifiers
+for scanning and printing values of type <a class="link" href="glib-Basic-Types.html#gint32" title="gint32"><span class="type">gint32</span></a> or <a class="link" href="glib-Basic-Types.html#guint32" title="guint32"><span class="type">guint32</span></a>. It
+is a string literal. See also <a class="link" href="glib-Basic-Types.html#G-GINT16-MODIFIER:CAPS" title="G_GINT16_MODIFIER"><span class="type">G_GINT16_MODIFIER</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GINT32-FORMAT:CAPS"></a><h3>G_GINT32_FORMAT</h3>
+<pre class="programlisting">#define G_GINT32_FORMAT "i"
+</pre>
+<p>This is the platform dependent conversion specifier for scanning
+and printing values of type <a class="link" href="glib-Basic-Types.html#gint32" title="gint32"><span class="type">gint32</span></a>. See also <a class="link" href="glib-Basic-Types.html#G-GINT16-FORMAT:CAPS" title="G_GINT16_FORMAT"><span class="type">G_GINT16_FORMAT</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="guint32"></a><h3>guint32</h3>
+<pre class="programlisting">typedef unsigned int guint32;
+</pre>
+<p>An unsigned integer guaranteed to be 32 bits on all platforms.
+Values of this type can range from 0 to <a class="link" href="glib-Basic-Types.html#G-MAXUINT32:CAPS" title="G_MAXUINT32"><span class="type">G_MAXUINT32</span></a> (= 4,294,967,295).</p>
+<p>To print or scan values of this type, use
+<a class="link" href="glib-Basic-Types.html#G-GINT32-MODIFIER:CAPS" title="G_GINT32_MODIFIER"><code class="literal">G_GINT32_MODIFIER</code></a> and/or <a class="link" href="glib-Basic-Types.html#G-GUINT32-FORMAT:CAPS" title="G_GUINT32_FORMAT"><code class="literal">G_GUINT32_FORMAT</code></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MAXUINT32:CAPS"></a><h3>G_MAXUINT32</h3>
+<pre class="programlisting">#define G_MAXUINT32 ((guint32) 0xffffffff)
+</pre>
+<p>The maximum value which can be held in a <a class="link" href="glib-Basic-Types.html#guint32" title="guint32"><span class="type">guint32</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GUINT32-FORMAT:CAPS"></a><h3>G_GUINT32_FORMAT</h3>
+<pre class="programlisting">#define G_GUINT32_FORMAT "u"
+</pre>
+<p>This is the platform dependent conversion specifier for scanning
+and printing values of type <a class="link" href="glib-Basic-Types.html#guint32" title="guint32"><span class="type">guint32</span></a>. See also <a class="link" href="glib-Basic-Types.html#G-GINT16-FORMAT:CAPS" title="G_GINT16_FORMAT"><span class="type">G_GINT16_FORMAT</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gint64"></a><h3>gint64</h3>
+<pre class="programlisting">typedef signed long gint64;
+</pre>
+<p>A signed integer guaranteed to be 64 bits on all platforms.
+Values of this type can range from <a class="link" href="glib-Basic-Types.html#G-MININT64:CAPS" title="G_MININT64"><span class="type">G_MININT64</span></a>
+(= -9,223,372,036,854,775,808) to <a class="link" href="glib-Basic-Types.html#G-MAXINT64:CAPS" title="G_MAXINT64"><span class="type">G_MAXINT64</span></a>
+(= 9,223,372,036,854,775,807).</p>
+<p>To print or scan values of this type, use
+<a class="link" href="glib-Basic-Types.html#G-GINT64-MODIFIER:CAPS" title="G_GINT64_MODIFIER"><code class="literal">G_GINT64_MODIFIER</code></a> and/or <a class="link" href="glib-Basic-Types.html#G-GINT64-FORMAT:CAPS" title="G_GINT64_FORMAT"><code class="literal">G_GINT64_FORMAT</code></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MININT64:CAPS"></a><h3>G_MININT64</h3>
+<pre class="programlisting">#define G_MININT64 ((gint64) G_GINT64_CONSTANT(-0x8000000000000000))
+</pre>
+<p>The minimum value which can be held in a <a class="link" href="glib-Basic-Types.html#gint64" title="gint64"><span class="type">gint64</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MAXINT64:CAPS"></a><h3>G_MAXINT64</h3>
+<pre class="programlisting">#define G_MAXINT64 G_GINT64_CONSTANT(0x7fffffffffffffff)
+</pre>
+<p>The maximum value which can be held in a <a class="link" href="glib-Basic-Types.html#gint64" title="gint64"><span class="type">gint64</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GINT64-MODIFIER:CAPS"></a><h3>G_GINT64_MODIFIER</h3>
+<pre class="programlisting">#define G_GINT64_MODIFIER "l"
+</pre>
+<p>The platform dependent length modifier for conversion specifiers
+for scanning and printing values of type <a class="link" href="glib-Basic-Types.html#gint64" title="gint64"><span class="type">gint64</span></a> or <a class="link" href="glib-Basic-Types.html#guint64" title="guint64"><span class="type">guint64</span></a>.
+It is a string literal.</p>
+<p>Some platforms do not support printing 64-bit integers, even
+though the types are supported. On such platforms <a class="link" href="glib-Basic-Types.html#G-GINT64-MODIFIER:CAPS" title="G_GINT64_MODIFIER"><code class="literal">G_GINT64_MODIFIER</code></a>
+is not defined.</p>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GINT64-FORMAT:CAPS"></a><h3>G_GINT64_FORMAT</h3>
+<pre class="programlisting">#define G_GINT64_FORMAT "li"
+</pre>
+<p>This is the platform dependent conversion specifier for scanning
+and printing values of type <a class="link" href="glib-Basic-Types.html#gint64" title="gint64"><span class="type">gint64</span></a>. See also <a class="link" href="glib-Basic-Types.html#G-GINT16-FORMAT:CAPS" title="G_GINT16_FORMAT"><span class="type">G_GINT16_FORMAT</span></a>.</p>
+<p>Some platforms do not support scanning and printing 64-bit integers,
+even though the types are supported. On such platforms <a class="link" href="glib-Basic-Types.html#G-GINT64-FORMAT:CAPS" title="G_GINT64_FORMAT"><code class="literal">G_GINT64_FORMAT</code></a>
+is not defined. Note that <code class="function">scanf()</code> may not support 64-bit integers, even
+if <a class="link" href="glib-Basic-Types.html#G-GINT64-FORMAT:CAPS" title="G_GINT64_FORMAT"><code class="literal">G_GINT64_FORMAT</code></a> is defined. Due to its weak error handling, <code class="function">scanf()</code>
+is not recommended for parsing anyway; consider using <a class="link" href="glib-String-Utility-Functions.html#g-ascii-strtoull" title="g_ascii_strtoull ()"><code class="function">g_ascii_strtoull()</code></a>
+instead.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="guint64"></a><h3>guint64</h3>
+<pre class="programlisting">typedef unsigned long guint64;
+</pre>
+<p>An unsigned integer guaranteed to be 64-bits on all platforms.
+Values of this type can range from 0 to <a class="link" href="glib-Basic-Types.html#G-MAXUINT64:CAPS" title="G_MAXUINT64"><span class="type">G_MAXUINT64</span></a>
+(= 18,446,744,073,709,551,615).</p>
+<p>To print or scan values of this type, use
+<a class="link" href="glib-Basic-Types.html#G-GINT64-MODIFIER:CAPS" title="G_GINT64_MODIFIER"><code class="literal">G_GINT64_MODIFIER</code></a> and/or <a class="link" href="glib-Basic-Types.html#G-GUINT64-FORMAT:CAPS" title="G_GUINT64_FORMAT"><code class="literal">G_GUINT64_FORMAT</code></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MAXUINT64:CAPS"></a><h3>G_MAXUINT64</h3>
+<pre class="programlisting">#define G_MAXUINT64 G_GUINT64_CONSTANT(0xffffffffffffffff)
+</pre>
+<p>The maximum value which can be held in a <a class="link" href="glib-Basic-Types.html#guint64" title="guint64"><span class="type">guint64</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GUINT64-FORMAT:CAPS"></a><h3>G_GUINT64_FORMAT</h3>
+<pre class="programlisting">#define G_GUINT64_FORMAT "lu"
+</pre>
+<p>This is the platform dependent conversion specifier for scanning
+and printing values of type <a class="link" href="glib-Basic-Types.html#guint64" title="guint64"><span class="type">guint64</span></a>. See also <a class="link" href="glib-Basic-Types.html#G-GINT16-FORMAT:CAPS" title="G_GINT16_FORMAT"><span class="type">G_GINT16_FORMAT</span></a>.</p>
+<p>Some platforms do not support scanning and printing 64-bit integers,
+even though the types are supported. On such platforms <a class="link" href="glib-Basic-Types.html#G-GUINT64-FORMAT:CAPS" title="G_GUINT64_FORMAT"><code class="literal">G_GUINT64_FORMAT</code></a>
+is not defined.  Note that <code class="function">scanf()</code> may not support 64-bit integers, even
+if <a class="link" href="glib-Basic-Types.html#G-GINT64-FORMAT:CAPS" title="G_GINT64_FORMAT"><code class="literal">G_GINT64_FORMAT</code></a> is defined. Due to its weak error handling, <code class="function">scanf()</code>
+is not recommended for parsing anyway; consider using <a class="link" href="glib-String-Utility-Functions.html#g-ascii-strtoull" title="g_ascii_strtoull ()"><code class="function">g_ascii_strtoull()</code></a>
+instead.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gfloat"></a><h3>gfloat</h3>
+<pre class="programlisting">typedef float   gfloat;
+</pre>
+<p>Corresponds to the standard C float type.
+Values of this type can range from -<a class="link" href="glib-Basic-Types.html#G-MAXFLOAT:CAPS" title="G_MAXFLOAT"><span class="type">G_MAXFLOAT</span></a> to <a class="link" href="glib-Basic-Types.html#G-MAXFLOAT:CAPS" title="G_MAXFLOAT"><span class="type">G_MAXFLOAT</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MINFLOAT:CAPS"></a><h3>G_MINFLOAT</h3>
+<pre class="programlisting">#define G_MINFLOAT FLT_MIN
+</pre>
+<p>The minimum positive value which can be held in a <a class="link" href="glib-Basic-Types.html#gfloat" title="gfloat"><span class="type">gfloat</span></a>.</p>
+<p>If you are interested in the smallest value which can be held
+in a <a class="link" href="glib-Basic-Types.html#gfloat" title="gfloat"><span class="type">gfloat</span></a>, use -<a class="link" href="glib-Basic-Types.html#G-MAXFLOAT:CAPS" title="G_MAXFLOAT"><code class="literal">G_MAXFLOAT</code></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MAXFLOAT:CAPS"></a><h3>G_MAXFLOAT</h3>
+<pre class="programlisting">#define G_MAXFLOAT FLT_MAX
+</pre>
+<p>The maximum value which can be held in a <a class="link" href="glib-Basic-Types.html#gfloat" title="gfloat"><span class="type">gfloat</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gdouble"></a><h3>gdouble</h3>
+<pre class="programlisting">typedef double  gdouble;
+</pre>
+<p>Corresponds to the standard C double type.
+Values of this type can range from -<a class="link" href="glib-Basic-Types.html#G-MAXDOUBLE:CAPS" title="G_MAXDOUBLE"><span class="type">G_MAXDOUBLE</span></a> to <a class="link" href="glib-Basic-Types.html#G-MAXDOUBLE:CAPS" title="G_MAXDOUBLE"><span class="type">G_MAXDOUBLE</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MINDOUBLE:CAPS"></a><h3>G_MINDOUBLE</h3>
+<pre class="programlisting">#define G_MINDOUBLE DBL_MIN
+</pre>
+<p>The minimum positive value which can be held in a <a class="link" href="glib-Basic-Types.html#gdouble" title="gdouble"><span class="type">gdouble</span></a>.</p>
+<p>If you are interested in the smallest value which can be held
+in a <a class="link" href="glib-Basic-Types.html#gdouble" title="gdouble"><span class="type">gdouble</span></a>, use -<a class="link" href="glib-Basic-Types.html#G-MAXDOUBLE:CAPS" title="G_MAXDOUBLE"><code class="literal">G_MAXDOUBLE</code></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MAXDOUBLE:CAPS"></a><h3>G_MAXDOUBLE</h3>
+<pre class="programlisting">#define G_MAXDOUBLE DBL_MAX
+</pre>
+<p>The maximum value which can be held in a <a class="link" href="glib-Basic-Types.html#gdouble" title="gdouble"><span class="type">gdouble</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsize"></a><h3>gsize</h3>
+<pre class="programlisting">typedef unsigned long gsize;
+</pre>
+<p>An unsigned integer type of the result of the sizeof operator,
+corresponding to the size_t type defined in C99.
+This type is wide enough to hold the numeric value of a pointer,
+so it is usually 32 bit wide on a 32-bit platform and 64 bit wide
+on a 64-bit platform. Values of this type can range from 0 to
+<a class="link" href="glib-Basic-Types.html#G-MAXSIZE:CAPS" title="G_MAXSIZE"><span class="type">G_MAXSIZE</span></a>.</p>
+<p>To print or scan values of this type, use
+<a class="link" href="glib-Basic-Types.html#G-GSIZE-MODIFIER:CAPS" title="G_GSIZE_MODIFIER"><code class="literal">G_GSIZE_MODIFIER</code></a> and/or <a class="link" href="glib-Basic-Types.html#G-GSIZE-FORMAT:CAPS" title="G_GSIZE_FORMAT"><code class="literal">G_GSIZE_FORMAT</code></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MAXSIZE:CAPS"></a><h3>G_MAXSIZE</h3>
+<pre class="programlisting">#define G_MAXSIZE G_MAXULONG
+</pre>
+<p>The maximum value which can be held in a <a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GSIZE-MODIFIER:CAPS"></a><h3>G_GSIZE_MODIFIER</h3>
+<pre class="programlisting">#define G_GSIZE_MODIFIER "l"
+</pre>
+<p>The platform dependent length modifier for conversion specifiers
+for scanning and printing values of type <a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a>. It
+is a string literal.</p>
+<p class="since">Since: <a class="link" href="api-index-2-6.html#api-index-2.6">2.6</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GSIZE-FORMAT:CAPS"></a><h3>G_GSIZE_FORMAT</h3>
+<pre class="programlisting">#define G_GSIZE_FORMAT "lu"
+</pre>
+<p>This is the platform dependent conversion specifier for scanning
+and printing values of type <a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a>. See also <a class="link" href="glib-Basic-Types.html#G-GINT16-FORMAT:CAPS" title="G_GINT16_FORMAT"><span class="type">G_GINT16_FORMAT</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-6.html#api-index-2.6">2.6</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gssize"></a><h3>gssize</h3>
+<pre class="programlisting">typedef signed long gssize;
+</pre>
+<p>A signed variant of <a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a>, corresponding to the
+ssize_t defined on most platforms.
+Values of this type can range from <a class="link" href="glib-Basic-Types.html#G-MINSSIZE:CAPS" title="G_MINSSIZE"><span class="type">G_MINSSIZE</span></a>
+to <a class="link" href="glib-Basic-Types.html#G-MAXSSIZE:CAPS" title="G_MAXSSIZE"><span class="type">G_MAXSSIZE</span></a>.</p>
+<p>To print or scan values of this type, use
+<a class="link" href="glib-Basic-Types.html#G-GSSIZE-MODIFIER:CAPS" title="G_GSSIZE_MODIFIER"><code class="literal">G_GSSIZE_MODIFIER</code></a> and/or <a class="link" href="glib-Basic-Types.html#G-GSSIZE-FORMAT:CAPS" title="G_GSSIZE_FORMAT"><code class="literal">G_GSSIZE_FORMAT</code></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MINSSIZE:CAPS"></a><h3>G_MINSSIZE</h3>
+<pre class="programlisting">#define G_MINSSIZE G_MINLONG
+</pre>
+<p>The minimum value which can be held in a <a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-14.html#api-index-2.14">2.14</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MAXSSIZE:CAPS"></a><h3>G_MAXSSIZE</h3>
+<pre class="programlisting">#define G_MAXSSIZE G_MAXLONG
+</pre>
+<p>The maximum value which can be held in a <a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-14.html#api-index-2.14">2.14</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GSSIZE-MODIFIER:CAPS"></a><h3>G_GSSIZE_MODIFIER</h3>
+<pre class="programlisting">#define G_GSSIZE_MODIFIER "l"
+</pre>
+<p>The platform dependent length modifier for conversion specifiers
+for scanning and printing values of type <a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a>. It
+is a string literal.</p>
+<p class="since">Since: <a class="link" href="api-index-2-6.html#api-index-2.6">2.6</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GSSIZE-FORMAT:CAPS"></a><h3>G_GSSIZE_FORMAT</h3>
+<pre class="programlisting">#define G_GSSIZE_FORMAT "li"
+</pre>
+<p>This is the platform dependent conversion specifier for scanning
+and printing values of type <a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a>. See also <a class="link" href="glib-Basic-Types.html#G-GINT16-FORMAT:CAPS" title="G_GINT16_FORMAT"><span class="type">G_GINT16_FORMAT</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-6.html#api-index-2.6">2.6</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="goffset"></a><h3>goffset</h3>
+<pre class="programlisting">typedef gint64 goffset;
+</pre>
+<p>A signed integer type that is used for file offsets,
+corresponding to the POSIX type <code class="literal">off_t</code> as if compiling with
+<code class="literal">_FILE_OFFSET_BITS</code> set to 64. <a class="link" href="glib-Basic-Types.html#goffset" title="goffset"><span class="type">goffset</span></a> is always 64 bits wide, even on
+32-bit architectures.
+Values of this type can range from <a class="link" href="glib-Basic-Types.html#G-MINOFFSET:CAPS" title="G_MINOFFSET"><span class="type">G_MINOFFSET</span></a> to
+<a class="link" href="glib-Basic-Types.html#G-MAXOFFSET:CAPS" title="G_MAXOFFSET"><span class="type">G_MAXOFFSET</span></a>.</p>
+<p>To print or scan values of this type, use
+<a class="link" href="glib-Basic-Types.html#G-GOFFSET-MODIFIER:CAPS" title="G_GOFFSET_MODIFIER"><code class="literal">G_GOFFSET_MODIFIER</code></a> and/or <a class="link" href="glib-Basic-Types.html#G-GOFFSET-FORMAT:CAPS" title="G_GOFFSET_FORMAT"><code class="literal">G_GOFFSET_FORMAT</code></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-14.html#api-index-2.14">2.14</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MINOFFSET:CAPS"></a><h3>G_MINOFFSET</h3>
+<pre class="programlisting">#define G_MINOFFSET G_MININT64
+</pre>
+<p>The minimum value which can be held in a <a class="link" href="glib-Basic-Types.html#goffset" title="goffset"><span class="type">goffset</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MAXOFFSET:CAPS"></a><h3>G_MAXOFFSET</h3>
+<pre class="programlisting">#define G_MAXOFFSET G_MAXINT64
+</pre>
+<p>The maximum value which can be held in a <a class="link" href="glib-Basic-Types.html#goffset" title="goffset"><span class="type">goffset</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GOFFSET-MODIFIER:CAPS"></a><h3>G_GOFFSET_MODIFIER</h3>
+<pre class="programlisting">#define G_GOFFSET_MODIFIER      G_GINT64_MODIFIER
+</pre>
+<p>The platform dependent length modifier for conversion specifiers
+for scanning and printing values of type <a class="link" href="glib-Basic-Types.html#goffset" title="goffset"><span class="type">goffset</span></a>. It is a string
+literal. See also <a class="link" href="glib-Basic-Types.html#G-GINT64-MODIFIER:CAPS" title="G_GINT64_MODIFIER"><span class="type">G_GINT64_MODIFIER</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-20.html#api-index-2.20">2.20</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GOFFSET-FORMAT:CAPS"></a><h3>G_GOFFSET_FORMAT</h3>
+<pre class="programlisting">#define G_GOFFSET_FORMAT        G_GINT64_FORMAT
+</pre>
+<p>This is the platform dependent conversion specifier for scanning
+and printing values of type <a class="link" href="glib-Basic-Types.html#goffset" title="goffset"><span class="type">goffset</span></a>. See also <a class="link" href="glib-Basic-Types.html#G-GINT64-FORMAT:CAPS" title="G_GINT64_FORMAT"><span class="type">G_GINT64_FORMAT</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-20.html#api-index-2.20">2.20</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gintptr"></a><h3>gintptr</h3>
+<pre class="programlisting">typedef signed long gintptr;
+</pre>
+<p>Corresponds to the C99 type intptr_t,
+a signed integer type that can hold any pointer.</p>
+<p>To print or scan values of this type, use
+<a class="link" href="glib-Basic-Types.html#G-GINTPTR-MODIFIER:CAPS" title="G_GINTPTR_MODIFIER"><code class="literal">G_GINTPTR_MODIFIER</code></a> and/or <a class="link" href="glib-Basic-Types.html#G-GINTPTR-FORMAT:CAPS" title="G_GINTPTR_FORMAT"><code class="literal">G_GINTPTR_FORMAT</code></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-18.html#api-index-2.18">2.18</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GINTPTR-MODIFIER:CAPS"></a><h3>G_GINTPTR_MODIFIER</h3>
+<pre class="programlisting">#define G_GINTPTR_MODIFIER      "l"
+</pre>
+<p>The platform dependent length modifier for conversion specifiers
+for scanning and printing values of type <a class="link" href="glib-Basic-Types.html#gintptr" title="gintptr"><span class="type">gintptr</span></a> or <a class="link" href="glib-Basic-Types.html#guintptr" title="guintptr"><span class="type">guintptr</span></a>.
+It is a string literal.</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GINTPTR-FORMAT:CAPS"></a><h3>G_GINTPTR_FORMAT</h3>
+<pre class="programlisting">#define G_GINTPTR_FORMAT        "li"
+</pre>
+<p>This is the platform dependent conversion specifier for scanning
+and printing values of type <a class="link" href="glib-Basic-Types.html#gintptr" title="gintptr"><span class="type">gintptr</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="guintptr"></a><h3>guintptr</h3>
+<pre class="programlisting">typedef unsigned long guintptr;
+</pre>
+<p>Corresponds to the C99 type uintptr_t,
+an unsigned integer type that can hold any pointer.</p>
+<p>To print or scan values of this type, use
+<a class="link" href="glib-Basic-Types.html#G-GINTPTR-MODIFIER:CAPS" title="G_GINTPTR_MODIFIER"><code class="literal">G_GINTPTR_MODIFIER</code></a> and/or <a class="link" href="glib-Basic-Types.html#G-GUINTPTR-FORMAT:CAPS" title="G_GUINTPTR_FORMAT"><code class="literal">G_GUINTPTR_FORMAT</code></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-18.html#api-index-2.18">2.18</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-GUINTPTR-FORMAT:CAPS"></a><h3>G_GUINTPTR_FORMAT</h3>
+<pre class="programlisting">#define G_GUINTPTR_FORMAT       "lu"
+</pre>
+<p>This is the platform dependent conversion specifier
+for scanning and printing values of type <a class="link" href="glib-Basic-Types.html#guintptr" title="guintptr"><span class="type">guintptr</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

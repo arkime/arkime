@@ -1,0 +1,664 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+]>
+<refentry id="gdbus-org.project.Bar">
+  <refmeta>    <refentrytitle role="top_of_page" id="gdbus-interface-org-project-Bar.top_of_page">org.project.Bar</refentrytitle>
+  <indexterm zone="gdbus-interface-org-project-Bar.top_of_page"><primary sortas="Bar">org.project.Bar</primary></indexterm>
+  </refmeta>  <refnamediv>    <refname>org.project.Bar</refname>    <refpurpose>Brief interface doc string</refpurpose>  </refnamediv>  <refsynopsisdiv role="synopsis">
+    <title role="synopsis.title">Methods</title>
+    <synopsis>
+<link linkend="gdbus-method-org-project-Bar.HelloWorld">HelloWorld</link>               (IN  s        greeting,
+                          OUT s        response);
+<link linkend="gdbus-method-org-project-Bar.TestPrimitiveTypes">TestPrimitiveTypes</link>       (IN  y        val_byte,
+                          IN  b        val_boolean,
+                          IN  n        val_int16,
+                          IN  q        val_uint16,
+                          IN  i        val_int32,
+                          IN  u        val_uint32,
+                          IN  x        val_int64,
+                          IN  t        val_uint64,
+                          IN  d        val_double,
+                          IN  s        val_string,
+                          IN  o        val_objpath,
+                          IN  g        val_signature,
+                          IN  ay       val_bytestring,
+                          OUT y        ret_byte,
+                          OUT b        ret_boolean,
+                          OUT n        ret_int16,
+                          OUT q        ret_uint16,
+                          OUT i        ret_int32,
+                          OUT u        ret_uint32,
+                          OUT x        ret_int64,
+                          OUT t        ret_uint64,
+                          OUT d        ret_double,
+                          OUT s        ret_string,
+                          OUT o        ret_objpath,
+                          OUT g        ret_signature,
+                          OUT ay       ret_bytestring);
+<link linkend="gdbus-method-org-project-Bar.TestNonPrimitiveTypes">TestNonPrimitiveTypes</link>    (IN  a{ss}    dict_s_to_s,
+                          IN  a{s(ii)} dict_s_to_pairs,
+                          IN  (iss)    a_struct,
+                          IN  as       array_of_strings,
+                          IN  ao       array_of_objpaths,
+                          IN  ag       array_of_signatures,
+                          IN  aay      array_of_bytestrings,
+                          OUT as       ret_array_of_strings,
+                          OUT ao       ret_array_of_objpaths,
+                          OUT ag       ret_array_of_signatures,
+                          OUT aay      ret_array_of_bytestrings,
+                          OUT ay       result);
+<link linkend="gdbus-method-org-project-Bar.RequestSignalEmission">RequestSignalEmission</link>    (IN  i        which_one);
+<link linkend="gdbus-method-org-project-Bar.RequestMultiPropertyMods">RequestMultiPropertyMods</link> ();
+<link linkend="gdbus-method-org-project-Bar.UnimplementedMethod">UnimplementedMethod</link>      ();
+<link linkend="gdbus-method-org-project-Bar.PropertyCancellation">PropertyCancellation</link>     ();
+</synopsis>
+  </refsynopsisdiv>
+  <refsect1 role="signal_proto">
+    <title role="signal_proto.title">Signals</title>
+    <synopsis>
+<link linkend="gdbus-signal-org-project-Bar.TestSignal">TestSignal</link>    (i        val_int32,
+               as       array_of_strings,
+               aay      array_of_bytestrings,
+               a{s(ii)} dict_s_to_pairs);
+<link linkend="gdbus-signal-org-project-Bar.AnotherSignal">AnotherSignal</link> (s        word);
+</synopsis>
+  </refsect1>
+  <refsect1 role="properties">
+    <title role="properties.title">Properties</title>
+    <synopsis>
+<link linkend="gdbus-property-org-project-Bar.y">y</link>                  readwrite  y
+<link linkend="gdbus-property-org-project-Bar.b">b</link>                  readwrite  b
+<link linkend="gdbus-property-org-project-Bar.n">n</link>                  readwrite  n
+<link linkend="gdbus-property-org-project-Bar.q">q</link>                  readwrite  q
+<link linkend="gdbus-property-org-project-Bar.i">i</link>                  readwrite  i
+<link linkend="gdbus-property-org-project-Bar.u">u</link>                  readwrite  u
+<link linkend="gdbus-property-org-project-Bar.x">x</link>                  readwrite  x
+<link linkend="gdbus-property-org-project-Bar.t">t</link>                  readwrite  t
+<link linkend="gdbus-property-org-project-Bar.d">d</link>                  readwrite  d
+<link linkend="gdbus-property-org-project-Bar.s">s</link>                  readwrite  s
+<link linkend="gdbus-property-org-project-Bar.o">o</link>                  readwrite  o
+<link linkend="gdbus-property-org-project-Bar.g">g</link>                  readwrite  g
+<link linkend="gdbus-property-org-project-Bar.ay">ay</link>                 readwrite  ay
+<link linkend="gdbus-property-org-project-Bar.as">as</link>                 readwrite  as
+<link linkend="gdbus-property-org-project-Bar.aay">aay</link>                readwrite  aay
+<link linkend="gdbus-property-org-project-Bar.ao">ao</link>                 readwrite  ao
+<link linkend="gdbus-property-org-project-Bar.ag">ag</link>                 readwrite  ag
+<link linkend="gdbus-property-org-project-Bar.FinallyNormalName">FinallyNormalName</link>  readwrite  s
+<link linkend="gdbus-property-org-project-Bar.ReadonlyProperty">ReadonlyProperty</link>   readable   s
+<link linkend="gdbus-property-org-project-Bar.WriteonlyProperty">WriteonlyProperty</link>  writable   s
+<link linkend="gdbus-property-org-project-Bar.unset_i">unset_i</link>            readwrite  i
+<link linkend="gdbus-property-org-project-Bar.unset_d">unset_d</link>            readwrite  d
+<link linkend="gdbus-property-org-project-Bar.unset_s">unset_s</link>            readwrite  s
+<link linkend="gdbus-property-org-project-Bar.unset_o">unset_o</link>            readwrite  o
+<link linkend="gdbus-property-org-project-Bar.unset_g">unset_g</link>            readwrite  g
+<link linkend="gdbus-property-org-project-Bar.unset_ay">unset_ay</link>           readwrite  ay
+<link linkend="gdbus-property-org-project-Bar.unset_as">unset_as</link>           readwrite  as
+<link linkend="gdbus-property-org-project-Bar.unset_ao">unset_ao</link>           readwrite  ao
+<link linkend="gdbus-property-org-project-Bar.unset_ag">unset_ag</link>           readwrite  ag
+<link linkend="gdbus-property-org-project-Bar.unset_struct">unset_struct</link>       readwrite  (idsogayasaoag)
+</synopsis>
+  </refsect1>
+<refsect1 role="desc" id="gdbus-interface-org-project-Bar">
+  <title role="desc.title">Description</title>
+  <para>The org.project.Bar interface is very complicated.</para>
+</refsect1>
+<refsect1 role="details" id="gdbus-methods-org.project.Bar">
+  <title role="details.title">Method Details</title>
+<refsect2 role="method" id="gdbus-method-org-project-Bar.HelloWorld">
+  <title>The HelloWorld() method</title>
+  <indexterm zone="gdbus-method-org-project-Bar.HelloWorld"><primary sortas="Bar.HelloWorld">org.project.Bar.HelloWorld()</primary></indexterm>
+<programlisting>
+HelloWorld (IN  s greeting,
+            OUT s response);
+</programlisting>
+<para>Method <emphasis>documentation</emphasis> blablablabla.</para>
+<variablelist role="params">
+<varlistentry>
+  <term><literal>IN s <parameter>greeting</parameter></literal>:</term>
+  <listitem><para>in param doc</para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT s <parameter>response</parameter></literal>:</term>
+  <listitem><para>out param doc</para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-org-project-Bar.TestPrimitiveTypes">
+  <title>The TestPrimitiveTypes() method</title>
+  <indexterm zone="gdbus-method-org-project-Bar.TestPrimitiveTypes"><primary sortas="Bar.TestPrimitiveTypes">org.project.Bar.TestPrimitiveTypes()</primary></indexterm>
+<programlisting>
+TestPrimitiveTypes (IN  y  val_byte,
+                    IN  b  val_boolean,
+                    IN  n  val_int16,
+                    IN  q  val_uint16,
+                    IN  i  val_int32,
+                    IN  u  val_uint32,
+                    IN  x  val_int64,
+                    IN  t  val_uint64,
+                    IN  d  val_double,
+                    IN  s  val_string,
+                    IN  o  val_objpath,
+                    IN  g  val_signature,
+                    IN  ay val_bytestring,
+                    OUT y  ret_byte,
+                    OUT b  ret_boolean,
+                    OUT n  ret_int16,
+                    OUT q  ret_uint16,
+                    OUT i  ret_int32,
+                    OUT u  ret_uint32,
+                    OUT x  ret_int64,
+                    OUT t  ret_uint64,
+                    OUT d  ret_double,
+                    OUT s  ret_string,
+                    OUT o  ret_objpath,
+                    OUT g  ret_signature,
+                    OUT ay ret_bytestring);
+</programlisting>
+<para></para>
+<variablelist role="params">
+<varlistentry>
+  <term><literal>IN y <parameter>val_byte</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN b <parameter>val_boolean</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN n <parameter>val_int16</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN q <parameter>val_uint16</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN i <parameter>val_int32</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN u <parameter>val_uint32</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN x <parameter>val_int64</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN t <parameter>val_uint64</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN d <parameter>val_double</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN s <parameter>val_string</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN o <parameter>val_objpath</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN g <parameter>val_signature</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN ay <parameter>val_bytestring</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT y <parameter>ret_byte</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT b <parameter>ret_boolean</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT n <parameter>ret_int16</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT q <parameter>ret_uint16</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT i <parameter>ret_int32</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT u <parameter>ret_uint32</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT x <parameter>ret_int64</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT t <parameter>ret_uint64</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT d <parameter>ret_double</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT s <parameter>ret_string</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT o <parameter>ret_objpath</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT g <parameter>ret_signature</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT ay <parameter>ret_bytestring</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-org-project-Bar.TestNonPrimitiveTypes">
+  <title>The TestNonPrimitiveTypes() method</title>
+  <indexterm zone="gdbus-method-org-project-Bar.TestNonPrimitiveTypes"><primary sortas="Bar.TestNonPrimitiveTypes">org.project.Bar.TestNonPrimitiveTypes()</primary></indexterm>
+<programlisting>
+TestNonPrimitiveTypes (IN  a{ss}    dict_s_to_s,
+                       IN  a{s(ii)} dict_s_to_pairs,
+                       IN  (iss)    a_struct,
+                       IN  as       array_of_strings,
+                       IN  ao       array_of_objpaths,
+                       IN  ag       array_of_signatures,
+                       IN  aay      array_of_bytestrings,
+                       OUT as       ret_array_of_strings,
+                       OUT ao       ret_array_of_objpaths,
+                       OUT ag       ret_array_of_signatures,
+                       OUT aay      ret_array_of_bytestrings,
+                       OUT ay       result);
+</programlisting>
+<para></para>
+<variablelist role="params">
+<varlistentry>
+  <term><literal>IN a{ss} <parameter>dict_s_to_s</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN a{s(ii)} <parameter>dict_s_to_pairs</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN (iss) <parameter>a_struct</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN as <parameter>array_of_strings</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN ao <parameter>array_of_objpaths</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN ag <parameter>array_of_signatures</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN aay <parameter>array_of_bytestrings</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT as <parameter>ret_array_of_strings</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT ao <parameter>ret_array_of_objpaths</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT ag <parameter>ret_array_of_signatures</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT aay <parameter>ret_array_of_bytestrings</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT ay <parameter>result</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-org-project-Bar.RequestSignalEmission">
+  <title>The RequestSignalEmission() method</title>
+  <indexterm zone="gdbus-method-org-project-Bar.RequestSignalEmission"><primary sortas="Bar.RequestSignalEmission">org.project.Bar.RequestSignalEmission()</primary></indexterm>
+<programlisting>
+RequestSignalEmission (IN  i which_one);
+</programlisting>
+<para></para>
+<variablelist role="params">
+<varlistentry>
+  <term><literal>IN i <parameter>which_one</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-org-project-Bar.RequestMultiPropertyMods">
+  <title>The RequestMultiPropertyMods() method</title>
+  <indexterm zone="gdbus-method-org-project-Bar.RequestMultiPropertyMods"><primary sortas="Bar.RequestMultiPropertyMods">org.project.Bar.RequestMultiPropertyMods()</primary></indexterm>
+<programlisting>
+RequestMultiPropertyMods ();
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-org-project-Bar.UnimplementedMethod">
+  <title>The UnimplementedMethod() method</title>
+  <indexterm zone="gdbus-method-org-project-Bar.UnimplementedMethod"><primary sortas="Bar.UnimplementedMethod">org.project.Bar.UnimplementedMethod()</primary></indexterm>
+<programlisting>
+UnimplementedMethod ();
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-org-project-Bar.PropertyCancellation">
+  <title>The PropertyCancellation() method</title>
+  <indexterm zone="gdbus-method-org-project-Bar.PropertyCancellation"><primary sortas="Bar.PropertyCancellation">org.project.Bar.PropertyCancellation()</primary></indexterm>
+<programlisting>
+PropertyCancellation ();
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+<refsect1 role="details" id="gdbus-signals-org.project.Bar">
+  <title role="details.title">Signal Details</title>
+<refsect2 role="signal" id="gdbus-signal-org-project-Bar.TestSignal">
+  <title>The "TestSignal" signal</title>
+  <indexterm zone="gdbus-signal-org-project-Bar.TestSignal"><primary sortas="Bar::TestSignal">org.project.Bar::TestSignal</primary></indexterm>
+<programlisting>
+TestSignal (i        val_int32,
+            as       array_of_strings,
+            aay      array_of_bytestrings,
+            a{s(ii)} dict_s_to_pairs);
+</programlisting>
+<para>Signal documentation.</para>
+<variablelist role="params">
+<varlistentry>
+  <term><literal>i <parameter>val_int32</parameter></literal>:</term>
+  <listitem><para>Signal param docs</para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>as <parameter>array_of_strings</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>aay <parameter>array_of_bytestrings</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>a{s(ii)} <parameter>dict_s_to_pairs</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2 role="signal" id="gdbus-signal-org-project-Bar.AnotherSignal">
+  <title>The "AnotherSignal" signal</title>
+  <indexterm zone="gdbus-signal-org-project-Bar.AnotherSignal"><primary sortas="Bar::AnotherSignal">org.project.Bar::AnotherSignal</primary></indexterm>
+<programlisting>
+AnotherSignal (s word);
+</programlisting>
+<para></para>
+<variablelist role="params">
+<varlistentry>
+  <term><literal>s <parameter>word</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+</refsect1>
+<refsect1 role="details" id="gdbus-properties-org.project.Bar">
+  <title role="details.title">Property Details</title>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.y">
+  <title>The "y" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.y"><primary sortas="Bar:y">org.project.Bar:y</primary></indexterm>
+<programlisting>
+y  readwrite  y
+</programlisting>
+<para>Property docs, yah...</para><para>Second paragraph.</para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.b">
+  <title>The "b" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.b"><primary sortas="Bar:b">org.project.Bar:b</primary></indexterm>
+<programlisting>
+b  readwrite  b
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.n">
+  <title>The "n" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.n"><primary sortas="Bar:n">org.project.Bar:n</primary></indexterm>
+<programlisting>
+n  readwrite  n
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.q">
+  <title>The "q" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.q"><primary sortas="Bar:q">org.project.Bar:q</primary></indexterm>
+<programlisting>
+q  readwrite  q
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.i">
+  <title>The "i" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.i"><primary sortas="Bar:i">org.project.Bar:i</primary></indexterm>
+<programlisting>
+i  readwrite  i
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.u">
+  <title>The "u" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.u"><primary sortas="Bar:u">org.project.Bar:u</primary></indexterm>
+<programlisting>
+u  readwrite  u
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.x">
+  <title>The "x" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.x"><primary sortas="Bar:x">org.project.Bar:x</primary></indexterm>
+<programlisting>
+x  readwrite  x
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.t">
+  <title>The "t" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.t"><primary sortas="Bar:t">org.project.Bar:t</primary></indexterm>
+<programlisting>
+t  readwrite  t
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.d">
+  <title>The "d" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.d"><primary sortas="Bar:d">org.project.Bar:d</primary></indexterm>
+<programlisting>
+d  readwrite  d
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.s">
+  <title>The "s" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.s"><primary sortas="Bar:s">org.project.Bar:s</primary></indexterm>
+<programlisting>
+s  readwrite  s
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.o">
+  <title>The "o" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.o"><primary sortas="Bar:o">org.project.Bar:o</primary></indexterm>
+<programlisting>
+o  readwrite  o
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.g">
+  <title>The "g" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.g"><primary sortas="Bar:g">org.project.Bar:g</primary></indexterm>
+<programlisting>
+g  readwrite  g
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.ay">
+  <title>The "ay" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.ay"><primary sortas="Bar:ay">org.project.Bar:ay</primary></indexterm>
+<programlisting>
+ay  readwrite  ay
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.as">
+  <title>The "as" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.as"><primary sortas="Bar:as">org.project.Bar:as</primary></indexterm>
+<programlisting>
+as  readwrite  as
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.aay">
+  <title>The "aay" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.aay"><primary sortas="Bar:aay">org.project.Bar:aay</primary></indexterm>
+<programlisting>
+aay  readwrite  aay
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.ao">
+  <title>The "ao" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.ao"><primary sortas="Bar:ao">org.project.Bar:ao</primary></indexterm>
+<programlisting>
+ao  readwrite  ao
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.ag">
+  <title>The "ag" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.ag"><primary sortas="Bar:ag">org.project.Bar:ag</primary></indexterm>
+<programlisting>
+ag  readwrite  ag
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.FinallyNormalName">
+  <title>The "FinallyNormalName" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.FinallyNormalName"><primary sortas="Bar:FinallyNormalName">org.project.Bar:FinallyNormalName</primary></indexterm>
+<programlisting>
+FinallyNormalName  readwrite  s
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.ReadonlyProperty">
+  <title>The "ReadonlyProperty" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.ReadonlyProperty"><primary sortas="Bar:ReadonlyProperty">org.project.Bar:ReadonlyProperty</primary></indexterm>
+<programlisting>
+ReadonlyProperty  readable   s
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.WriteonlyProperty">
+  <title>The "WriteonlyProperty" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.WriteonlyProperty"><primary sortas="Bar:WriteonlyProperty">org.project.Bar:WriteonlyProperty</primary></indexterm>
+<programlisting>
+WriteonlyProperty  writable   s
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.unset_i">
+  <title>The "unset_i" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.unset_i"><primary sortas="Bar:unset_i">org.project.Bar:unset_i</primary></indexterm>
+<programlisting>
+unset_i  readwrite  i
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.unset_d">
+  <title>The "unset_d" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.unset_d"><primary sortas="Bar:unset_d">org.project.Bar:unset_d</primary></indexterm>
+<programlisting>
+unset_d  readwrite  d
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.unset_s">
+  <title>The "unset_s" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.unset_s"><primary sortas="Bar:unset_s">org.project.Bar:unset_s</primary></indexterm>
+<programlisting>
+unset_s  readwrite  s
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.unset_o">
+  <title>The "unset_o" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.unset_o"><primary sortas="Bar:unset_o">org.project.Bar:unset_o</primary></indexterm>
+<programlisting>
+unset_o  readwrite  o
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.unset_g">
+  <title>The "unset_g" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.unset_g"><primary sortas="Bar:unset_g">org.project.Bar:unset_g</primary></indexterm>
+<programlisting>
+unset_g  readwrite  g
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.unset_ay">
+  <title>The "unset_ay" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.unset_ay"><primary sortas="Bar:unset_ay">org.project.Bar:unset_ay</primary></indexterm>
+<programlisting>
+unset_ay  readwrite  ay
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.unset_as">
+  <title>The "unset_as" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.unset_as"><primary sortas="Bar:unset_as">org.project.Bar:unset_as</primary></indexterm>
+<programlisting>
+unset_as  readwrite  as
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.unset_ao">
+  <title>The "unset_ao" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.unset_ao"><primary sortas="Bar:unset_ao">org.project.Bar:unset_ao</primary></indexterm>
+<programlisting>
+unset_ao  readwrite  ao
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.unset_ag">
+  <title>The "unset_ag" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.unset_ag"><primary sortas="Bar:unset_ag">org.project.Bar:unset_ag</primary></indexterm>
+<programlisting>
+unset_ag  readwrite  ag
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bar.unset_struct">
+  <title>The "unset_struct" property</title>
+  <indexterm zone="gdbus-property-org-project-Bar.unset_struct"><primary sortas="Bar:unset_struct">org.project.Bar:unset_struct</primary></indexterm>
+<programlisting>
+unset_struct  readwrite  (idsogayasaoag)
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+</refentry>
+

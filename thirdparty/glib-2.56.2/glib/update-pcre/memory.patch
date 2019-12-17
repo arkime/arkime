@@ -1,0 +1,40 @@
+From acf401f1353a37b6edff9577ff07d055c625e4ca Mon Sep 17 00:00:00 2001
+From: Christian Persch <chpe@gnome.org>
+Date: Sun, 12 Feb 2012 19:40:48 +0100
+Subject: [PATCH] regex: Use glib memory allocator
+
+---
+ glib/pcre/pcre_globals.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/glib/pcre/pcre_globals.c b/glib/pcre/pcre_globals.c
+index 36e6ddb..93d3af5 100644
+--- a/glib/pcre/pcre_globals.c
++++ b/glib/pcre/pcre_globals.c
+@@ -58,6 +58,8 @@ global variables are not used. */
+ 
+ #include "pcre_internal.h"
+ 
++#include "gmem.h"
++
+ #if defined _MSC_VER || defined  __SYMBIAN32__
+ static void* LocalPcreMalloc(size_t aSize)
+   {
+@@ -74,10 +76,10 @@ PCRE_EXP_DATA_DEFN void  (*PUBL(stack_free))(void *) = LocalPcreFree;
+ PCRE_EXP_DATA_DEFN int   (*PUBL(callout))(PUBL(callout_block) *) = NULL;
+ 
+ #elif !defined VPCOMPAT
+-PCRE_EXP_DATA_DEFN void *(*PUBL(malloc))(size_t) = malloc;
+-PCRE_EXP_DATA_DEFN void  (*PUBL(free))(void *) = free;
+-PCRE_EXP_DATA_DEFN void *(*PUBL(stack_malloc))(size_t) = malloc;
+-PCRE_EXP_DATA_DEFN void  (*PUBL(stack_free))(void *) = free;
++PCRE_EXP_DATA_DEFN void *(*PUBL(malloc))(size_t) = g_try_malloc;
++PCRE_EXP_DATA_DEFN void  (*PUBL(free))(void *) = g_free;
++PCRE_EXP_DATA_DEFN void *(*PUBL(stack_malloc))(size_t) = g_try_malloc;
++PCRE_EXP_DATA_DEFN void  (*PUBL(stack_free))(void *) = g_free;
+ PCRE_EXP_DATA_DEFN int   (*PUBL(callout))(PUBL(callout_block) *) = NULL;
+ #endif
+ 
+-- 
+1.7.5.1.217.g4e3aa.dirty
+

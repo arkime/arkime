@@ -1,0 +1,5966 @@
+=== ChangeLog discontinued ===
+
+	With the move to git, GLib is switching from a ChangeLog file
+	to relying on commit messages to provide change history. Please
+	see README.commits for guidance on the expected message format.
+
+2009-03-26  Carlos Garnacho  <carlosg@gnome.org>
+
+	Bug 575270 – GVolumeMonitor::mount-pre-unmount not being emitted
+
+	* gunixmount.c (eject_unmount_cb) (eject_unmount_do_cb)
+	(eject_unmount_do): Emit ::mount-pre-unmount and wait 500msec before
+	actually trying to unmount.
+
+2009-03-17  Colin Walters  <walters@redhat.com>
+
+	Bug 575708 - runaway inotify madness ...
+
+	* gfilemonitor.c: Queue up events in a local list and
+	fire one idle, instead of queuing lots of individual
+	idles which has bad performance behavior.
+
+2009-03-17  Alexander Larsson  <alexl@redhat.com>
+
+        * glocalfileinputstream.c:
+        * glocalfileoutputstream.c:
+	fix attributes argument of query_info methods to
+	be "const char *".
+
+2009-03-16  Alexander Larsson  <alexl@redhat.com>
+
+	Bug 575555 – Use fsync() when replacing files to avoid data loss on crash
+
+        * glocalfileoutputstream.c:
+        (g_local_file_output_stream_close):
+        (_g_local_file_output_stream_replace):
+	fsync temp file before closing if replacing target file
+
+2009-03-13  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.20.0 ===
+
+2009-03-04  Alexander Larsson  <alexl@redhat.com>
+
+	Bug 573843 – g_get_current_dir returns non-absolute path
+
+	* glocalfile.c (canonicalize_filename):
+	Handle the case where g_get_current_dir() returns a non-absolute path.
+
+2009-03-04  Alexander Larsson  <alexl@redhat.com>
+
+	Bug 573970 – crash in gunixvolumemonitor:update_mounts when unmounting
+
+        * gunionvolumemonitor.c:
+        (g_union_volume_monitor_dispose):
+	Run dispose on child monitors when disposing.
+
+        * gunixvolumemonitor.c:
+	Remove all volumes and mount on dispose to avoid circular
+	dependencies not freeing the monitor
+
+2009-03-03  Alexander Larsson  <alexl@redhat.com>
+
+	Bug 561172 – gnome-open fails on local URIs with anchors
+
+        * gdesktopappinfo.c:
+	Don't force uris to filenames if the uri has an anchor, because
+	that would strip the anchor.
+
+        * glocalvfs.c:
+	Strip anchor from file:// uris when creating GFile, since
+	g_filename_from_uri doesn't handle them.
+
+2009-03-03  Alexander Larsson  <alexl@redhat.com>
+
+	Bug 562613 – Missing const modifier in string parameters
+
+        * gfileinputstream.[ch]:
+        * gfileoutputstream.[ch]:
+        * glocalfileinfo.[ch]:
+	Make string arguments const if used as such.
+
+2009-03-03  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfile.c (g_local_file_query_filesystem_info):
+	Handle filesystems no supporting reporting how much is free.
+	This fixes bug 573454 where the filesystem not supporting this
+	is the gvfs smb backend over the fuse filesystem.
+
+2009-03-02  Matthias Clasen <mclasen@redhat.com>
+
+	* === Released 2.19.10 ===
+
+2009-03-02  Matthias Clasen <mclasen@redhat.com>
+
+	* === Released 2.19.9 ===
+
+2009-03-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* gioenums.h: Add a Since: tag
+
+2009-03-01  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 573658 – Deadlock in giomodule.c
+
+	* giomodule.c: Use a separate lock for extension point registration
+	to avoid deadlock. Discovered by Torsten Schoenfeld
+
+2009-03-01  Matthias Clasen  <mclasen@redhat.com>
+
+	* gdatainputstream.c: Fix docs
+
+2009-02-27  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 573421 – Clarify message format in GMountOperation
+
+	* gmountoperation.c: Document that the first line of a
+	multi-line message should be interpreted as a heading.
+
+2009-02-27  David Zeuthen  <davidz@redhat.com>
+
+	Bug 573462 – GEmblemedIcon leak
+
+	* gemblemedicon.c (g_emblemed_icon_finalize):
+	Avoid leaking a GList.
+
+2009-02-27  Alexander Larsson  <alexl@redhat.com>
+
+        * giomodule-priv.h:
+        * giomodule.c:
+	Split out the extension point registration code to its
+	own function.
+
+        * glocalvfs.c:
+	Ensure extension points are registered before extending it.
+	It might not have happened yet if g_vfs_get_local() is called.
+
+2009-02-26  Alexander Larsson  <alexl@redhat.com>
+
+	Bug 540461 – g_memory_output_stream_get_data_size() doesn't behave as document
+        * gmemoryoutputstream.c:
+	Track actual valid size, even if we later seek back.
+
+        * tests/memory-output-stream.c:
+	Add testcase
+
+2009-02-26  Alexander Larsson  <alexl@redhat.com>
+
+	Bug 543183 – Clarify docs for g_file_has_prefix
+
+	* gfile.c: (g_file_has_prefix):
+	Clarify how the prefix matching works.
+
+2009-02-26  Alexander Larsson  <alexl@redhat.com>
+
+	* gdesktopappinfo.c:
+	Support desktop file key X-GIO-NoFuse which disables
+	use of fuse pathnames for %u and %U arguments.
+
+2009-02-25  Alexander Larsson  <alexl@redhat.com>
+
+	Bug 570073 – Add support for reading filesystems on Interix
+
+	* gunixmounts.c (_g_get_unix_mounts):
+	Support Interix. Patch from  Fabian Groffen 
+
+2009-02-25  Paolo Borelli  <pborelli@katamail.com>
+
+	Bug 570069 – wrong preprocessor directive in gio/glocalfileinfo.c
+
+	* glocalfileinfo.c: fix preprocessor condition. Patch by Markus Duft.
+
+2009-02-23  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfile.c:
+	Remove accidentally commited spew
+
+2009-02-20  Alexander Larsson  <alexl@redhat.com>
+
+        * gcontenttype.c:
+        (g_content_type_guess):
+	Don't ever sniff desktop files when the filename is known.
+	In other words, only allow desktop files with the .desktop extension
+	and when the filename isn't known.
+	This is a security precaution since desktop files can execute
+	arbitrary code when launched and we don't want to allow them to
+	try and hide as another type. There is no legit reason to not
+	have the .desktop extension anyway.
+
+2009-02-19  Alexander Larsson  <alexl@redhat.com>
+
+	Bug 549298 – impossible to copy files with p (pipe) flag
+
+	* gfile.c:
+	(file_copy_fallback):
+	Error out if the source file is a special file
+
+2009-02-18  Alexander Larsson  <alexl@redhat.com>
+
+	Bug 560564 – Replacing a symlink with its linked file truncates the original file
+
+	* gioenums.h:
+	Add G_FILE_CREATE_REPLACE_DESTINATION
+
+	* glocalfileoutputstream.c:
+	(handle_overwrite_open):
+	(_g_local_file_output_stream_replace):
+	Handle G_FILE_CREATE_REPLACE_DESTINATION when overwriting files.
+
+	* gfile.c:
+	(file_copy_fallback):
+	Pass G_FILE_CREATE_REPLACE_DESTINATION to g_file_replace when copying
+	with overwrite.
+
+2009-02-17  Ryan Lortie  <desrt@desrt.ca>
+
+	* gfileinfo.c: unref the destination's attribute matcher before
+	overwriting it.
+
+2009-02-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.19.8 ===
+
+2009-02-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio.symbols: Add missing exports for new API
+
+	* gdatainputstream.c: Add missing Since: tags.
+
+2009-02-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.19.7 ===
+
+2009-02-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* gmountoperation.[hc]: Add an "aborted" signal to abort a
+	mount operation from the backend side.
+
+	* gvolume.h: Add docs regarding the "aborted" signal.
+
+2009-02-16  Ryan Lortie  <desrt@desrt.ca>
+
+	Bug 505042 – add file attribute for actually used file size in bytes
+
+	* gfileinfo.h: add G_FILE_ATTRIBUTE_STANDARD_ALLOCATED_SIZE define to
+	"standard::allocated-size"
+	* gfileattribute.c: document
+	* glocalfileinfo.c: set the allocated size from st_blocks * 512
+
+2009-02-16  Ryan Lortie  <desrt@desrt.ca>
+
+	Bug 571598 – GAsyncResult with NULL gobject
+
+	* gsimpleasyncresult.c: remove various assertions and add some checks
+	to allow for a NULL source_object in GSimpleAsyncResult.
+
+2009-02-11  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 541225 – Can't compile gio on AIX : duplicate case value in 
+	gioerror.c
+
+	* gioerror.c (g_io_error_from_errno): Cope with EEXIST == ENOTEMPTY. 
+	Reported by Nicolas Joseph 
+
+2009-02-04  Alexander Larsson  <alexl@redhat.com>
+
+	Bug 566747 - URIs opened with firefox %u load as local files
+
+	* gdummyfile.c (g_dummy_file_get_path):
+	Dummy files are never used for local paths, so always return NULL
+	in get_path(). 
+
+2009-02-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.19.6 ===
+
+2009-01-31  Paolo Borelli  <pborelli@katamail.com>
+
+	* glocalfileinfo.c: plug a tiny mem leak.
+
+2009-01-29  Ryan Lortie  <desrt@desrt.ca>
+
+	* gioerror.c (g_io_error_from_errno): handle all possible cases of
+	EAGAIN and EWOULDBLOCK being (un)defined and (un)equal.
+
+2009-01-28  Ryan Lortie  <desrt@desrt.ca>
+
+	Bug 568575 – _async functions for GDataInputStream
+
+	* gdatainputstream.h:
+	* gdatainputstream.c: add _async versions of read_line and read_until.
+	* gio.symbols:
+	* ../docs/reference/gio/gio-sections.txt: add new functions
+	* tests/sleepy-stream.c: new test case for async read line
+	* tests/Makefile.am: add new test
+
+2009-01-22  Ryan Lortie  <desrt@desrt.ca>
+
+	Bug 568723 – g_buffered_input_stream_fill_async doesn't take count == -1
+
+	* gbufferedinputstream.c (g_buffered_input_stream_fill_async,
+	g_buffered_input_stream_fill): check for count < -1 instead of count <
+	0 and copy modified check to non-async version for consistency.
+	document the "count = -1" API.
+
+2009-01-22  Ryan Lortie  <desrt@desrt.ca>
+
+	Bug 568741 – g_buffered_input_stream_fill_async doesn't work
+
+	* gbufferedinputstream.c (fill_async_callback): grow the buffer tail
+	after we have successfully read data from the base stream
+
+2009-01-20  Ryan Lortie  <desrt@desrt.ca>
+
+	Bug 568394 – dropping the last reference to a stream filter closes the
+	base stream
+
+	* gfilterinputstream.h:
+	* gfilterinputstream.c: add "close-base-stream" property and only
+	close the base stream if it is true.  issue async close callbacks from
+	correct source object.
+	* gfilteroutputstream.h:
+	* gfilteroutputstream.c: add a "close-base-stream" property and only
+	close the base stream if it is true.  issue async close callbacks from
+	correct source object.
+	* gbufferedoutputstream: check g_filter_output_stream_get_close_base()
+	before closing the base stream.  fix invalid source tag comparison in
+	close_async (was comparing to flush_async).
+	* ../docs/reference/gio/gio-sections.txt:
+	* gio.symbols: add
+	g_filter_{in,out}put_stream_{g,s}et_close_base_stream
+	* tests/filter-streams.c: new test cases
+	* tests/Makefile.am: add new test
+	* tests/.gitignore: add new test
+
+2009-01-19  Matthias Clasen  <mclasen@redhat.com>
+
+	* gdesktopappinfo.c (g_desktop_app_info_new): Expand the docs.
+
+2009-01-19  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.19.5 ===
+
+2009-01-19  Matthias Clasen  <mclasen@redhat.com>
+
+	* gappinfo.h: Document get_commandline vfunc
+
+2009-01-19  Matthias Clasen  <mclasen@redhat.com>
+
+	* gunixmounts.c: Some stylistic fixes.
+
+2009-01-08  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 565484 – g_content_type_guess passes non-UTF8 text to XDG 
+	functions in non-UTF8 locale
+
+	* xdgmime/xdgmimecache.c:
+	* xdgmime/xdgmimeglob.c: Don't assume filenames are UTF-8.
+
+2009-01-08  Matthias Clasen  <mclasen@redhat.com>
+
+	* xdgmime/test-mime.c: Make tests work with current shared-mime-info.
+
+2009-01-07  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 566770 – error code 0 for Too many open files is useless
+
+	* gioenums.h: Add a G_IO_ERROR_TOO_MANY_OPEN_FILES error code.
+	Requested by Olivier Sessink.
+
+	* gioerror.c: Translate EMFILE to G_IO_ERROR_TOO_MANY_OPEN_FILES.
+
+	* glocalfileenumerator.c: Translate G_FILE_ERROR_MFILE to
+	G_IO_ERROR_TOO_MANY_OPEN_FILES.
+
+2009-01-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.19.4 ===
+
+2009-01-05  Dan Winship  <danw@gnome.org>
+
+	* gdesktopappinfo.c (update_mimeapps_list): cast a "char **" to
+	"const char **" to avoid a warning.
+
+	* gemblem.c (g_emblem_from_tokens):
+	* gemblemedicon.c (g_emblemed_icon_from_tokens):
+	* xdgmime/xdgmime.c (xdg_mime_get_icon): remove unused
+	variables
+
+2009-01-05  Matthias Clasen <mclasen@redhat.com>
+
+	Bug 566064 – Add NOATIME flag to query_info_flags
+
+	* glocalfileinfo.c (get_content_type): Try using O_NOATIME when
+	sniffing for mime types. Based on a patch by A. Walton
+
+2009-01-05  Ryan Lortie  <desrt@desrt.ca>
+
+	* tests/.gitignore: improve
+	* tests/Makefile.am: add new simple-async-result test
+	* tests/simple-async-result.c: new file to test GSimpleAsyncResult
+
+2009-01-05  Ryan Lortie  <desrt@desrt.ca>
+
+	* gio.symbols:
+	* ../docs/reference/gio/gio-sections.txt:
+	* gsimpleasyncresult.h:
+	* gsimpleasyncresult.c: Add g_simple_async_result_is_valid().
+	Implementation by Dan Winship.  Closes #566170.
+
+2008-12-31  Matthias Clasen <mclasen@redhat.com>
+
+	* gdesktopappinfo.c:
+	* gunixmounts.c:
+	* gunixinputstream.c:
+	* gunixoutputstream.c: Add a note about being UNIX-specific.
+
+2008-12-15  Matthias Clasen <mclasen@redhat.com>
+
+	* === Released 2.19.3 ===
+
+2008-12-12  Dan Winship  <danw@gnome.org>
+
+	* pltcheck.sh: make this work on x86_64
+
+2008-12-12  Ryan Lortie  <desrt@desrt.ca>
+
+	* gio/gicon.c (g_icon_to_string_tokenized): free the tokens when done
+	with them
+
+2008-12-12  Ryan Lortie  <desrt@desrt.ca>
+
+	* gio/gunixmounts.c (g_unix_mount_at): fix leak that occurs when
+	multiple mount entries match the requested path
+
+2008-12-10  Alexander Larsson  <alexl@redhat.com>
+
+	Bug 562452 - Ensure we return G_IO_ERROR_CANCELLED if cancelling
+	g_simple_async_result_run_in_thread
+	
+	* gsimpleasyncresult.c:
+	Make g_simple_async_result_run_in_thread check cancellation before
+	calling out to the user in the callback. This means we guarantee
+	reporting cancels of async operations from the main threads, which
+	is probably more in line with what users expect.
+	
+	Note that there are still no such guarantees for cancelling sync
+	operations or cancelling async operation from outside the main
+	thread. Furthermore, the exact behaviour of async implementations
+	not using run_in_thread may differ.
+
+2008-12-09  Alexander Larsson  <alexl@redhat.com>
+
+	Bug 515777 - incorrect date&time on copy
+	
+	* glocalfile.c:
+	(g_local_file_class_init):
+	Copy mtime by default
+	
+	* gfile.c:
+	Change docs about G_FILE_COPY_ALL_METADATA to not mention
+	mtime as an example.
+
+2008-12-08  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 558298 – Hide ecryptfs mounts
+
+	* gunixmounts.c: (guess_system_internal): Hide ecryptfs mounts, 
+	so that the desktop does not show both the mount and the target 
+	directory. Patch by Martin Pitt
+ 
+2008-12-08  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 555465 – GUnix{Input,Output}Stream lacks fd/close_fd_at_close 
+	property
+
+	* gio.symbols:
+	* gunixinputstream.[hc]:
+	* gunixoutputstream.[hc]: Add "fd" and "close-fd" properties
+	including getters and setters. Patch by Maciej Piechotka
+
+2008-12-07  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 558458 – Cannot build gio tests on Solaris using SUN cc
+
+	* tests/live-g-file.c: Support compilers that don't understand
+	ISO C varargs macros. Patch by Eric Lamarque
+
+2008-12-07  Matthias Clasen  <mclasen@redhat.com>
+	
+	Bug 526320 – should not list mounts that the user doesn't have 
+	permission to use
+
+	gunixmounts.c: Use g_access() to check accessibility of local devices.
+	Patch by Martin Pitt
+
+2008-12-01  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.19.2 ===
+
+2008-12-01  Matthias Clasen  <mclasen@redhat.com>
+
+	* gdatainputstream.c (g_data_input_stream_read_line): Revert the
+	behaviour change, and update the docs instead, to avoid breaking
+	existing users.
+
+2008-12-01  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.19.1 ===
+
+2008-12-01  Alexander Larsson  <alexl@redhat.com>
+
+	* gio.symbols:
+	* gmount.[ch]:
+	* gunionvolumemonitor.c:
+	* gvolume.c:
+	Add and document g_mount_is_shadowed plus calls
+	to set/unset a mount as shadowed
+	
+2008-11-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/tests/g-icon.c: Comment out two failing tests
+
+2008-11-28  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 555486 – No way to recover command line from GAppInfo
+
+	* gio.symbols:
+	* gappinfo.[hc]: Add g_app_info_get_commandline. Requested
+	by Hans Petter Jansson.
+	
+	* gdesktopappinfo.c: And implement it here.
+
+2008-11-28  Christian Dywan  <christian@imendio.com>
+
+	* gappinfo.c: Fix a typo, s/detext/detect. Patch by Enrico Tröger.
+
+2008-11-28  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 559633 – gtk_image_new_from_gicon does not always work for
+	.desktop files
+
+	* gdesktopappinfo.c (g_desktop_app_info_new_from_keyfile): Ignore
+	extensions on icon names.  Proposed by Axel von Bertoldi.
+
+2008-11-28  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 548163 – Nautilus displays wrong error message for too long file
+	names
+
+	* glocalfile.c (g_local_file_set_display_name): Correctly set
+	error conditions if the new name is e.g. too long. Reported
+	by Leonardo Ferreira Fontenelle.
+
+2008-11-28  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 547481 – g_data_input_stream_read_line behaves not as stated in
+	the docs
+
+	* gdatainputstream.c (g_data_input_stream_read_line): Behave as
+	documented and include the line end in the returned string. 
+	Pointed out by Paul Pogonyshev.
+
+	* tests/data-input-stream.c: Fix the read_line test to test the
+	documented behaviour.
+
+2008-11-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* gdesktopappinfo.c (g_app_info_can_delete): Only allow deleting
+	files that have been created by g_app_info_create_from_commandline.
+
+2008-11-28  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 541715 – win32 : patch for warnings and signature problems in 
+	recent code
+	
+	* glocalvfs.c: Avoid unused variables. Pointed out by Jody
+	Goldberg.
+
+2008-11-28  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 562393 – g_buffered_input_stream_read_byte broken if data
+	available
+
+	* gbufferedinputstream.c (g_buffered_input_stream_read_byte): Fix
+	handling of buffered content.  Patch by Philip Withnall
+
+	* tests/buffered-input-stream.c: Add a testcase for this bug.
+	* tests/Makefile.am: And build it
+
+2008-11-28  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 561807 – inotify_sub.c :: dup_dirname() fails to remove trailing
+	'/'
+
+	* inotify/inotify-sub.c (dup_dirname): Actually strip the trailing
+	'/' away. Spotted by Dan Williams.
+
+2008-11-21  Cosimo Cecchi  <cosimoc@gnome.org>
+
+	Bug 561375 – Leaks mountpoint description
+
+	* glocalfile.c: (get_mount_info): don't leak the mountpoint description
+	string.
+
+2008-11-21  Cosimo Cecchi  <cosimoc@gnome.org>
+
+	Bug 561352 – Leak of icon description
+
+	* gcontenttype.c: (g_content_type_get_icon): don't leak the XDG mimetype
+	generic icon string.
+
+2008-11-14  Matthias Clasen <mclasen@redhat.com>
+
+	* gfileattribute.c: Add G_FILE_ATTRIBUTE_PREVIEW_ICON to doc table.
+
+2008-11-12  Tor Lillqvist  <tml@novell.com>
+
+	Bug 556415 - Crash on Windows 2000 in g_winhttp_vfs_init()
+
+	* win32/gwinhttpvfs.h: Move the set of function pointers to
+	winhttp.dll into a separate struct GWinHttpDllFuncs. Just have a
+	pointer to that in the GWinHttpVfsClass.
+	
+	* win32/gwinhttpvfs.c: Move the lookup of functions from
+	winhttp.dll into a function of its own, that stores the pointers
+	in a separate GWinHttpDllFuncs variable. Add two bookeeping
+	booleans lookup_done and funcs_found.
+
+	Don't call g_io_extension_point_implement() to register the
+	winhttp extension unless winhttp.dll has been successfully loaded
+	and the required functions found in it.
+
+	* win32/gwinhttp*.c: Adjust calls of the functions looked up from
+	winhttp.dll correspondingly.
+
+2008-10-28  Cosimo Cecchi  <cosimoc@gnome.org>
+
+	reviewed by: Alexander Larsson <alexl@redhat.com>
+
+	* gdatainputstream.c: Make the docs of g_dada_input_stream_read_line ()
+	clearer about the behavior when there's no more content to read.
+
+2008-10-27  Federico Mena Quintero  <federico@novell.com>
+
+	* glocalfile.c (g_local_file_get_parse_name): Don't leak roundtripped_filename.
+
+2008-10-27  Tor Lillqvist  <tml@novell.com>
+
+	Bug 557592 - Missing include in gwinhttpfile.c
+
+	* win32/gwinhttpfile.c: Include <wchar.h> to make it compile with
+	MSVC2008.
+
+2008-10-24  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 556910 – [fam-helper.c:223]: Memory leak: sub
+
+	* fam/fam-helper.c: Fix a memory leak and formatting issues.
+	Reported by Daniel Marjamäki
+
+2008-10-23  Matthias Clasen  <mclasen@redhat.com>
+
+	* gdesktopappinfo.c (g_app_info_reset_type_associations): Fix docs.
+
+2008-10-23  Alexander Larsson  <alexl@redhat.com>
+
+	Bug 528320 - Incorrect icons displayed for files with custom mimetype icons
+	
+	* glocalfileinfo.c:
+	(_g_local_file_info_get):
+	Don't return the fallback icon (text-x-generic) for all files.
+	This is causing problems with theme icon lookup and custom mime
+	icons, as the generic fallback overrides custom mime icons in
+	inherited themes.
+
+	This is a slight change as applications might not get an icon wher
+	they previously did. But there is no guarantee to get on neither before
+	or after this change, so it should not break applications. Changes
+	to nautilus and gtk+ will be done to manually use the generic fallback
+	icon if no icon is found, but this is only required for rare cases.
+
+2008-10-21  Alexander Larsson  <alexl@redhat.com>
+
+	* gfileinfo.h:
+	Add G_FILE_ATTRIBUTE_PREVIEW_ICON (#557182)
+
+2008-10-21  Alexander Larsson  <alexl@redhat.com>
+
+	Bug 555740 - gicon serialization
+	Based on patch from David Zeuthen
+	
+	* gicon.[ch]:
+	* gio.symbols:
+	Add g_icon_to_string() and g_icon_new_for_string().
+	
+	* gemblem.c:
+	* gemblemedicon.c:
+	* gfileicon.c:
+	* gthemedicon.c:
+	Implement icon serialization for built-in icon types
+	
+	* tests/Makefile.am:
+	* tests/g-icon.c:
+	Added GIcon serialization test
+
+2008-10-16  Matthias Clasen <mclasen@redhat.com>
+
+	* === Released 2.19.0 ===
+
+2008-10-16  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 556422 – g_file_enumerator_next_file: unclear whether return 
+	value needs to be freed
+
+	* gfileenumerator.c (g_file_enumerate_next_file): Clarify
+	the return value docs. Pointed out by Armin Burgmeier
+
+2008-10-14  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 556334 – Warning when building without selinux support
+
+	* glocalfileinfo.c: Avoid compiler warnings when selinux is
+	disabled. Patch by Pascal Terjan
+
+2008-10-14  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 556335 – make check fails in abicheck.sh
+
+	* gio.symbols: Add g_file_attribute_info_list_get_type. 
+	Pointed out by Pascal Terjan.
+
+2008-10-13  Alexander Larsson  <alexl@redhat.com>
+
+	* gdesktopappinfo.c:
+	When adding an application as handling a mime type (but
+	not as the default), copy the full list of desktop ids handling
+	that type in before adding the new one on the end of the list.
+	This means we're not accidentally changing the default by overriding
+	the info from the later directories in the search path.
+	
+	Also, fixes small leak of removed_entries.
+
+2008-10-12  David Zeuthen  <davidz@redhat.com>
+
+	* gio.symbols:
+	* gunionvolumemonitor.c:
+	* gvolumemonitor.h:
+	Deprecate g_volume_monitor_adopt_orphan_mount() (#555331).
+
+2008-10-10  Alexander Larsson  <alexl@redhat.com>
+
+	* gfileattribute.c (escape_byte_string):
+	Upper half of byte is >> 4, not >> 8.
+	Found by Kjartan Maraas via sparse
+
+2008-10-10  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 555711 – Wrong fallback order of mimetype icons
+
+	* gcontenttype.c: Don't prefer generic icons over
+	default mimetype icons.
+
+	* xdgmime/xdgmimecache.c (xdg_mime_cache_get_icon): 
+	* xdgmime/xdgmime.c (xdg_mime_get_icon): Don't fall back
+	to generic icons.
+	Patch by Krysztof Kosiński
+
+2008-10-10  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 555121 – Improved build-time handling of gio module-dir
+
+	* fam/Makefile.am: Use GIO_MODULE_DIR consistently.
+	* Makefile.am: Create the module dir.
+
+2008-10-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/glocalfileinfo.c:
+	* gio/tests/live-g-file.c:
+	* gio/gsimpleasyncresult.c: Fix gcc warnings.
+
+2008-10-09  Alexander Larsson  <alexl@redhat.com>
+
+	* gunixinputstream.c (g_unix_input_stream_read):
+	Actually return -1 in case of cancelled, not old res value.
+
+2008-10-06  Colin Walters  <walters@verbum.org>
+
+	Bug 554745 - GFileAttributeInfoList should be boxed
+
+	* gio/gfileattribute.c: Define a boxed type for GFileAttributeList
+	for convenience of bindings.
+	* gio/gfileattribute.h: Prototype it.
+
+2008-10-05  Pascal Terjan  <pterjan@linuxfr.org>
+
+	Bug 554970 – segfault when update-desktop-database is not available
+	on the system
+
+	* gdesktopappinfo.c (run_update_command): Have the error set before 
+	using it.
+
+2008-10-01  David Zeuthen  <davidz@redhat.com>
+
+	* gdesktopappinfo.c (expand_macro): If possible, always pass FUSE
+	file:// URIs (such as '/home/davidz/.gvfs/sftp on foo/file.avi')
+	instead of the gio URI (such as sftp://foo/file.avi) when using
+	g_app_info_launch() and friends. With a sufficiently recent gvfs,
+	apps using gio+gvfs will map the FUSE file:// URI back to the gio
+	URI (and thus bypass the fuse daemon) thanks the patch from bug
+	#530654.  Since Nautilus is an user of g_app_info_launch() it
+	means that non-gio POSIX apps, such as mplayer, will Just Work(tm)
+	when launced via the file manager. Win. Fixes bug #528670.
+
+	* gappinfo.c: Add some notes about the FUSE POSIX URI <-> GIO URI
+	mapping to the description of GAppInfo.
+
+2008-09-30  Tor Lillqvist  <tml@novell.com>
+
+	* tests/Makefile.am: Build desktop-app-info only on Unix.
+
+	* glocalfile.c (get_volume_for_path) [Win32]: Avoid a
+	g_critical(). Pass a large enough result buffer to
+	GetVolumePathNameW(). Just use MAX_PATH.
+
+2008-09-29  David Zeuthen  <davidz@redhat.com>
+
+	* gvolume.c: Clarify semantics of g_volume_mount_finish() (#552168)
+
+2008-09-26  Dan Winship  <danw@gnome.org>
+
+	* tests/data-input-stream.c:
+	* tests/data-output-stream.c:
+	* tests/live-g-file.c:
+	* tests/memory-input-stream.c:
+	* tests/memory-output-stream.c: Use g_assert_error() and
+	g_assert_no_error()
+
+2008-09-26  Matthias Clasen  <mclasen@redhat.com>
+	
+	Bug 545350 – GAppInfo deletion
+	Bug 545351 – Reset associations for content type
+
+	* gio.symbols:
+	* gappinfo.[hc]: New functions g_app_info_can_delete,
+	g_app_info_delete and g_app_info_reset_type_associations.
+
+	* gdesktopappinfo.c:
+	* gwin32appinfo.c: Implementations of these.
+
+	* tests/Makefile.am:
+	* tests/desktop-app-info.c: Tests for GAppInfo functionality.
+
+2008-09-26  Dan Winship  <danw@gnome.org>
+
+	Bug 505361 – gunixinputstream.c assumes poll() available
+	Bug 509446 – portable blocking gio cancellation
+
+	* gcancellable.c (g_cancellable_make_pollfd): New method to make a
+	GPollFD for a cancellable (which is slightly more complicated on
+	Windows than Unix).
+
+	* gunixinputstream.c (g_unix_input_stream_read):
+	* gunixoutputstream.c (g_unix_output_stream_write): Use
+	g_cancellable_make_pollfd() and g_poll() rather than using poll()
+	directly.
+
+	* tests/unix-streams.c: test of GUnixInputStream,
+	GUnixOutputStream, and GCancellable.
+
+2008-09-26  Dan Winship  <danw@gnome.org>
+
+	* gdesktopappinfo.c (get_all_desktop_entries_for_mime_type): add a
+	cast to stop a gcc warning
+
+	* gfile.c (g_file_copy_attributes): add parens to stop a gcc
+	warning
+
+2008-09-25  Dan Winship  <danw@gnome.org>
+
+	Bug 553426 - cancellable clarifications
+
+	* gcancellable.c (g_cancellable_class_init): Add a note to the
+	"cancelled" signal docs warning about thread-safety issues
+	(g_cancellable_cancel): Note that cancelling an asynchronous
+	operation takes effect asynchronously, not immediately.
+
+2008-09-22  Nelson Benítez León  <nbenitez@svn.gnome.org>
+
+	* gioenums.h: Add new GFileCopyFlag, to leave target file with
+	default perms, instead of setting the source file perms, in a copy
+	operation.
+
+	* gfile.c (g_file_copy_attributes) 
+	(build_attribute_list_for_copy)
+	(should_copy): Not copy "unix::mode" attribute if we have received
+	G_FILE_COPY_TARGET_DEFAULT_PERMS flag.
+
+2008-09-20  Matthias Clasen  <mclasen@redhat.com>
+
+	* gdesktopappinfo.c (expand_macro_single): Plug a memory leak
+
+2008-09-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.18.1 ===
+
+2008-09-16  Michael Natterer  <mitch@imendio.com>
+
+	* gcontenttype.c (g_content_type_guess): can't assign the return
+	value of g_strdupv() to an array. Fill the array manually with
+	const strings instead (it is never freed anyway). Fixes the
+	build. Also fixed indentation.
+
+2008-09-16  Wouter Bolsterlee  <wbolster@svn.gnome.org>
+
+	* gdesktopappinfo.c (g_desktop_app_info_new_from_keyfile):
+	Fix trivial typo to unbreak the build (there was a colon
+	instead of a semicolon at the end of a statement).
+
+2008-09-15  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 552352 – g_app_info_launch doesn't work if "Path" key in .desktop 
+	file is empty
+
+	* gdesktopappinfo.c (g_desktop_app_info_new_from_keyfile): Ignore
+	an empty Path value.  
+
+2008-09-15  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 551681 – g_content_type_guess() too naive with filenames
+
+	* gcontenttype.c (g_content_type_guess): Check whether there's a '/'
+	at the end of the filename, and declare it a directory.
+	Patch by Bastien Nocera
+
+2008-09-14  Cosimo Cecchi  <cosimoc@gnome.org>
+
+	Bug 551887 – Docs for g_desktop_app_info_new_from_filename ()
+	aren't clear.
+
+	* gdesktopappinfo.c: add a note in the docs clarifying what the
+	"filename" parameter really is.
+
+2008-09-12  Tor Lillqvist  <tml@novell.com>
+
+	* gwin32appinfo.c (g_win32_app_info_launch): Don't call
+	FormatMessage() etc here. Call g_win32_error_message() instead
+	which already does all that. Besides, the code was broken as it
+	called the default "A" version of FormatMessage() but still
+	thought it produced a wide string.
+
+2008-09-12  Michael Natterer  <mitch@imendio.com>
+
+	* gfileinfo.c (g_file_info_get_content_type): remove dangling 's'
+	in the documentation.
+
+2008-09-08  Christian Neumair  <cneumair@gnome.org>
+
+	* gunixmount.c (eject_unmount_read_error), (eject_unmount_do):
+	* gunixvolume.c (eject_mount_read_error), (eject_mount_do):
+	Use non-blocking pipe for mount helper I/O. Fixes #550647.
+
+2008-09-06  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 551149 – xdgmime mem leak
+
+	* xdgmime/xdgmime.c (xdg_mime_init_from_directory): Plug
+	a memory leak. Patch by Christian Persch
+
+2008-09-04  Tor Lillqvist  <tml@novell.com>
+
+	* gwin32mount.c (g_win32_mount_finalize): Don't unref icon if
+	NULL.
+
+2008-09-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.18.0 ===
+
+2008-09-02  Michael Natterer  <mitch@imendio.com>
+
+	* *.h: big header formatting cleanup: indentation, vtable
+	formatting, consistent spacing in (* vfunc), trailing whitespace
+	removal. Formatting should be pretty consistent in all GIO headers
+	now.
+
+2008-09-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* gmount.h: Document guess_content_type sync vfunc.
+
+2008-09-02  Michael Natterer  <mitch@imendio.com>
+
+	* gbufferedoutputstream.h (struct _GBufferedOutputStreamClass):
+	fix parent_class member to be GFilterOutputStreamClass (not
+	GOutputStreamClass). Drop three pointers of padding, which is
+	exactly what GFilterOutputStreamClass adds to GOutputStreamClass,
+	so the class struct size stays the same.
+
+2008-09-02  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 550059 – Wrong docs for g_emblemed_icon_add_emblem
+
+	* gemblemedicon.c (g_emblemed_icon_get_add_emblem): Don't document
+	nonexisting return values. Pointed out by Cosimo Cecchi.
+
+2008-08-23  Tor Lillqvist  <tml@novell.com>
+
+	Bug 548988 - g_file_replace fails on Windows when the target file
+	exists already
+
+	* glocalfileoutputstream.c (g_local_file_output_stream_close): On
+	Windows, close the file before potentially renaming it (in case we
+	have been writing to a file with a temporary name).
+
+	(g_local_file_output_stream_close, handle_overwrite_open): Use
+	GLocalFileStat instead of plain struct stat, for passing to
+	_g_local_file_info_create_etag(). Thus also use _fstati64()
+	instead of plain fstat() on Windows.
+
+2008-08-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.17.7 ===
+
+2008-08-15  Padraig O'Briain  <padraig.obriain@sun.com>
+
+	* gunixmounts.c: Add zfs to ignore_fs array in guess_system_internal:
+	Fix for #542156.
+
+2008-08-13  Tor Lillqvist  <tml@novell.com>
+
+	* win32/gwinhttpvfs.c
+	* win32/gwinhttpvfs.h
+	* win32/gwinhttpfile.c
+	* win32/gwinhttpfileinputstream.c
+	* win32/gwinhttpfileoutputstream.c: Refactor some common code
+	snippets into helper functions. Check HTTP response status
+	codes. Implement g_winhttp_file_query_info(), looking at
+	Content-Length, Content-Type and Last-Modified.
+
+	* win32/winhttp.h: Add some symbolic constants that are not
+	publicly documented. Just a handful, so it should be OK to use
+	information from the Windows SDK's headers.
+
+2008-08-13  Tor Lillqvist  <tml@novell.com>
+
+	Bug 546582 - Callbacks from GFileMonitor present a GFile in the
+	wrong folder
+
+	* win32/gwin32directorymonitor.c
+	(g_win32_directory_monitor_callback): Patch by Erik van Pienbroek.
+
+2008-08-13  Matthias Clasen  <mclasen@redhat.com>
+
+	* ginputstream.c:
+	* goutputstream.c: Add intro docs.
+
+2008-08-13  Tor Lillqvist  <tml@novell.com>
+
+	* win32/gwinhttpfileoutputstream.c
+	(g_winhttp_file_output_stream_write): Don't write the
+	Content-Length header ourselves, WinHttpSendRequest() takes care
+	of that when the dwTotalLength parameter is non-zero. Increment
+	offset by the number of actual bytes sent, although I wonder if
+	such a scenario is possible where less than requested would be
+	sent and accepted by the server without errors.
+
+2008-08-13  Tor Lillqvist  <tml@novell.com>
+
+	* win32/gwinhttpvfs.c
+	* win32/gwinhttpvfs.h
+	* win32/gwinhttpfile.c
+	* win32/gwinhttpfile.h
+	* win32/gwinhttpfileinputstream.c
+	* win32/gwinhttpfileinputstream.h
+	* win32/gwinhttpfileoutputstream.c
+	* win32/gwinhttpfileoutputstream.h: New files implementing
+	GWinHttpVfs and related classes, a GVfs for HTTP and HTTPS URIs on
+	Windows. The implementation uses the WinHttp API. Both reading and
+	writing are supported, i.e. GET and PUT requests. When writing,
+	each write call is done using a separate PUT request with a
+	Content-Range header. Requests for file URIs and plain pathnames
+	are forwarded to GLocalVfs.
+
+	* win32/winhttp.h: Reverse engineered <winhttp.h>, borrowed from
+	WINE. Used as there is no <winhttp.h> bundled with mingw, and
+	requiring people to download the Windows SDK just for this one
+	header is not reasonable.
+
+	* win32/Makefile.am: Add above files.
+
+	* giomodule.c: Call _g_winhttp_vfs_get_type() on Windows to set up
+	the plumbing for the above.
+
+2008-08-11  Sven Neumann  <sven@gimp.org>
+
+	* gfilenamecompleter.c
+	* glocaldirectorymonitor.c
+	* gmountoperation.c
+	* gunionvolumemonitor.c
+	* gunixmount.c
+	* gunixmounts.c
+	* gunixvolume.c
+	* gunixvolumemonitor.c
+	* gvolumemonitor.c
+	* gwin32mount.c
+	* gwin32volumemonitor.c: use canonical signal names.
+
+2008-08-11  Tor Lillqvist  <tml@novell.com>
+
+	* Makefile.am: Put a list of the platform-dependent .la files in
+	the subdirectories in the platform_deps Make variable, and make
+	libgio-2.0.la depend on that, so that it gets relinked if one of
+	the dependent libraries has changed.
+
+2008-08-11  Tor Lillqvist  <tml@novell.com>
+
+	* Makefile.am (platform_libadd): Remove -lwininet which had been
+	added by mistake. We will probably eventually be using WinHTTP,
+	not the older WinInet anyway. (Actually I am working on it.)
+
+2008-08-10  Felix Riemann  <friemann@svn.gnome.org>
+
+	Bug 547080 – g_file_copy leaks expected errors
+
+	* gfile.c: (g_file_copy): Clear G_IO_ERROR_NOT_SUPPORTED errors
+	before trying the next fallback routine.
+
+2008-08-09  Loïc Minier  <lool@dooz.org>
+
+	Bug 535124 – umask 002 not being applied for new directories, new
+	files get the correct umask
+
+	* gfile.c (g_file_make_directory)
+	(g_file_make_directory_with_parents): Document ownership and
+	permissions of newly created directories as being the default
+	ones of the process.
+
+2008-08-08  Loïc Minier  <lool@dooz.org>
+
+	Bug 535124 – umask 002 not being applied for new directories, new
+	files get the correct umask
+
+	* glocalfile.c: (g_local_file_make_directory): Use 0777 instead of
+	0755 as umask
+
+2008-08-08  Tor Lillqvist  <tml@novell.com>
+
+	* gwin32mount.c: Remove unused code. Whitespace cleanup.
+
+	* gwin32volumemonitor.c (get_connected_drives): Put questionable
+	code that didn't actually do anything inside #if 0, and add a
+	comment wondering what the code was supposed to do. This also gets
+	rid of a leftover debugging printout.
+
+2008-08-07  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gfileicon.c (g_file_icon_get_property)
+	(g_file_icon_set_property): New functions.
+	(g_file_icon_class_init): Hook them up.  Install `GFileIcon:file'
+	property.
+	(g_file_icon_new): Use the property (bug #546132).
+
+2008-08-06  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gthemedicon.c (g_themed_icon_get_property): Also handle
+	`PROP_USE_DEFAULT_FALLBACKS'.
+	(g_themed_icon_class_init): Make
+	`GThemedIcon:use-default-fallbacks' read-write (bug #546483).
+
+2008-08-05  Behdad Esfahbod  <behdad@gnome.org>
+
+	Bug 546371 – Improve docs re g_file_monitor
+
+	* gfilemonitor.c: Mention g_file_monitor() in the docs.
+
+2008-08-04  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.17.6 ===
+
+2008-08-04  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.17.5 ===
+
+2008-08-04  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 546017 – Don't copy attributes when copying a symlink
+
+	* gfile.c (g_file_copy_attributes): Specify
+	G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS in the call to 
+	g_file_set_attributes_from_info. Patch by Christian Kellner
+
+2008-08-04  Matthias Clasen  <mclasen@redhat.com>
+
+	* gemblemedicon.[hc]: 
+	* gio.symbols:
+	* gemblem.[hc]: Add GEmblem to make the emblem mechanism
+	a bit more extensible. Work by Clemens Buss.
+
+	* gioenums.h: Add GEmblemOrigin.
+	* Makefile.am: Glue
+
+2008-08-03  Carlos Garcia Campos  <carlosgc@gnome.org>
+
+	Bug 546079 – leak in xdgmime
+	
+	* xdgmime/xdgmime.c (xdg_mime_shutdown): Fix memory leak.
+	
+2008-08-03  Tor Lillqvist  <tml@novell.com>
+
+	* win32/gwin32directorymonitor.h
+	* win32/gwin32directorymonitor.c: Whitespace cleanup to match GLib
+	style.
+
+2008-08-03  Tor Lillqvist  <tml@novell.com>
+
+	* win32/gwin32directorymonitor.c
+	(g_win32_directory_monitor_callback): Make prototype match
+	LPOVERLAPPED_COMPLETION_ROUTINE to avoid warning. Cast
+	LPOVERLAPPED parameter to local GWin32DirectoryMonitorPrivate
+	pointer.
+
+	(g_win32_directory_monitor_constructor):
+	GLocalDirectoryMonitor::dirname is in UTF-8 like all other file
+	names in the GLib API on Windows, so convert to UTF-16 and open
+	with CreateFileW().
+
+2008-08-03  Tor Lillqvist  <tml@novell.com>
+
+	Bug 541036 - Gnumeric crashes when trying to open Desktop or
+	user's folder under Windows
+
+	* win32/gwin32directorymonitor.c
+	(g_win32_directory_monitor_constructor): Ignore error from
+	CreateFile() when opening directory. Instead of asserting, just
+	store INVALID_HANDLE_VALUE then in
+	GWin32DirectoryMonitorPrivate::hDirectory. Also ignore error from
+	ReadDirectoryChangesW().
+	(g_win32_directory_monitor_cancel): Don't attempt to close
+	directory handle if it is INVALID_HANDLE_VALUE.
+
+2008-08-01  Matthias Clasen  <mclasen@redhat.com>
+
+	* gdesktopappinfo.c: Remove debug spew
+
+2008-08-01  Hans Breuer  <hans@breuer.org>
+
+	* makefile.msc : add gemblembedicon
+
+2008-07-30  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 545457 – gdmsetup crashed with SIGSEGV in
+	g_unix_mount_guess_should_display()
+
+	* gunixvolumemonitor.c (get_mount_for_mount_path): Don't 
+	crash if no mount is found.
+
+2008-07-28  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 545203 – gfile.c: argument is different type.
+
+	* gfile.c (open_read_async_thread): Pass a GError **
+	to g_file_set_error_literal.
+	Reported by Kazuki Iwamoto
+
+2008-07-28  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 545157 – wrong/no list of "open with" applications for .cc and
+	.cpp files
+
+	* gdesktopappinfo.c (get_all_desktop_entries_for_mime_type):
+	Collect all ancestors, not just direct parents. Pointed
+	out by Bastien Nocera
+
+2008-07-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* Makefile.am: Install gemblemedicon.h
+
+2008-07-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* gemblemedicon.[hc]: Add a GIcon implementation that can
+	add an emblem to another icon.
+
+	* gio.h:
+	* Makefile.am:
+	* gio.symbols: Glue
+
+	* gloadableicon.c:
+	* gfileicon.c: Small documentation additions.
+
+2008-07-28  Tor Lillqvist  <tml@novell.com>
+
+	* gwin32appinfo.c (g_win32_app_info_get_icon): Correct return
+	type.
+
+2008-07-27  Tor Lillqvist  <tml@novell.com>
+
+	* Makefile.am (gio-2.0.lib): Pass appropriate -machine flag to lib.exe.
+
+2008-07-24  David Zeuthen  <davidz@redhat.com>
+
+	* gmount.[ch]:
+	* gio.symbols:
+	Also export a g_mount_guess_content_type_sync() function.
+
+2008-07-23  Matthias Clasen  <mclasen@redhat.com>
+
+	529694 – SELinux context setting support
+
+	* gfileinfo.c: Support setting selinux attributes.
+	Patch by Tomas Bzatek
+
+2008-07-22  Priit Laes <plaes@plaes.org>
+
+	Bug 544140 - fam-helper 64-bit issue?
+
+	* fam/fam-helper.c: Added missing include so compiler doesn't complain.
+
+2008-07-21  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.17.4 ===
+
+2008-07-20  Matthias Clasen  <mclasen@redhat.com>
+
+	* gvolumemonitor.[hc]:
+	* gmountoperation.c:
+	* gioenums.h:
+	* gdrive.c:
+	* gvfs.c:
+	* gmount.c: Documentation fixes
+
+2008-07-19  Matthias Clasen  <mclasen@redhat.com>
+
+	543504 – crash in Epiphany Web Browser: Opening local file
+
+	* gappinfo.c:
+	* gasyncresult.c:
+	* gdesktopappinfo.c:
+	* gdrive.c:
+	* gfile.c:
+	* gicon.c:
+	* gloadableicon.c:
+	* gmount.c:
+	* gseekable.c:
+	* gvolume.c: Register types thread-safely.
+	Patch by Christian Persch
+
+2008-07-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* gcontenttype.c: Remove debug spew
+
+2008-07-18  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 543560 – enable gio-FEN back-end warnings on Solaris will crash
+	any applications
+
+	* fen/fen-kernel.c: Remove a warning that was causing
+	crashes. Reported by Lin Ma.
+
+2008-07-18  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 543040 – async reading on dummy file will crash on
+	GIO_USE_VFS=local
+
+	* gfile.c (open_read_async_thread): Cope with read_fn being
+	NULL. Reported by Lin Ma.  
+
+2008-07-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio.symbols:
+	* gcontenttype.[hc]: Add g_content_type_guess_for_tree().
+
+2008-07-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* gvfs.h:
+	* gdesktopappinfo.h: 
+	* giomodule.c: Rename a chapter id to avoid filename conflict.
+
+2008-07-16  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 540616 – mem leak in filechooser button
+
+	* gunixvolumemonitor.c (get_mount_for_mount_path): Free
+	the mount entry. Reported by Chrisitan Persch
+
+2008-07-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* gfile.c: Small documentation fixes.
+
+2008-07-15  Matthias Clasen  <mclasen@redhat.com>
+
+	* gunixmounts.c: Use g_strcmp0 instead of rolling our own.
+
+2008-07-08  Matthias Clasen  <mclasen@redhat.com>
+
+	* gvolumemonitor.c:
+	* gfile.c:
+	* gvolume.c:
+	* gmount.c: Documentation improvements.
+
+2008-07-08  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio.symbols:
+	* gmount.[hc]: Add g_mount_guess_content_type(). 
+
+2008-07-06  David Zeuthen  <davidz@redhat.com>
+
+	* gio.symbols:
+	* gvolume.[ch]: Add new method g_volume_get_activation_root(). This
+	is needed for easily handling adoption of foreign volumes by
+	out-of-process volume monitors (#541793)
+
+2008-07-06  David Zeuthen  <davidz@redhat.com>
+
+	* gvolumemonitor.[ch]:
+	* gunionvolumemonitor.c: Export the eject-button signal on the
+	volume monitor class (#541794).
+
+2008-07-06  Matthias Clasen  <mclasen@redhat.com>
+
+	* gappinfo.c: More doc tweaks
+
+2008-07-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* gappinfo.c: Clarify some docs
+
+2008-07-03  Matthias Clasen  <mclasen@redhat.com>
+
+	* gdesktopappinfo.c: Fix a stupid mistake.
+
+2008-07-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.17.3 ===
+
+2008-07-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* gfilemonitor.c: Fix the build.
+
+2008-07-02  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 536160 – Add g_file_monitor()
+
+	* gio.symbols:
+	* gfile.[hc]: Add g_file_monitor which can return either
+	a file or a directory monitor.  Proposed by Behdad Esfahbod
+
+2008-07-02  Matthias Clasen  <mclasen@redhat.com>
+
+	536733 – gio build failure on Irix
+
+	* glocalfile.c: Use a configure check for structfs.f_bavail.
+
+2008-07-02  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 534639 – add g_desktop_app_info_new_from_keyfile
+
+	* gio.symbols:
+	* gdesktopappinfo.[hc]: Add a function to create a
+	GDesktopAppInfo from a GKeyFile. Proposed by Josselin Mouette.
+
+2008-07-02  Wouter Bolsterlee  <wbolster@svn.gnome.org>
+
+	* gappinfo.c: Fix ulink in doc to make gtk-doc happy.
+
+2008-07-01  Matthias Clasen  <mclasen@redhat.com>
+
+	* gunixmounts.c: Fix a doc typo.
+
+2008-07-01  Cody Russell  <bratsche@gnome.org>
+
+	* gio/gcontenttype.c:
+	* gio/gwin32appinfo.c:
+	* gio/gwin32volumemonitor.c:
+	* gio/gwin32mount.c: Fixed some include problems.
+
+2008-07-01  Cody Russell  <bratsche@gnome.org>
+
+	* gio/gioenums.h:
+	* gio/giotypes.h:
+	Moved all relevant typedefs into these files.
+
+	* gio/*.[ch]:
+	Updated wrt added files.
+
+	Split types into separate file for easier maintainership. (#538564)
+
+2008-06-30  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 540331 – g_file_append_to () documentation: can return NULL
+
+	* gfile.c (g_file_append_to): Clarify docs.
+	Patch by Jared Moore
+
+2008-06-30  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 539090 – g_content_type_from_mime_type() should unalias
+
+	* gcontentype.c (g_content_type_from_mime_type): Unalias.
+	Patch by Markus Bergman
+
+2008-06-30  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 538836 – make check failure on PPC and ALPHA: pltcheck.sh on
+	g_atomic_pointer_get
+
+	* pltcheck.sh: Allow g_atomic_pointer_get, to fix 'make check'
+	on ppc and alpha. Reported by Mart Raudsepp
+
+2008-06-29  Matthias Clasen  <mclasen@redhat.com>
+
+	* tests/Makefile.am: 
+	* tests/memory-output-stream.c: Add some tests for
+	GMemoryOutputStream. 
+
+2008-06-29  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 540423 – unrecoverable error after g_seekable_truncate(seekable,
+	0, ...)
+
+	* gmemoryoutputstream.c (array_resize): Handle truncation to
+	zero correctly. Reported by Akira Tagoh
+
+2008-06-29  Matthias Clasen  <mclasen@redhat.com>
+
+	* gmemoryoutputstream.c: Trivial doc fixes
+
+2008-06-29  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 540802 – g_list_prepend doesn't concat lists
+
+	* giomodule.c (_g_io_modules_ensure_loaded): Don't g_list_prepend
+	one list to another. Pointed out by Jan Arne Petersen
+
+2008-06-28  Michael Natterer  <mitch@imendio.com>
+
+	* gfileicon.c: remove semicolons from G_IMPLEMENT_INTERFACE().
+
+2008-06-18  Matthias Clasen <mclasen@rdhat.com>
+
+	* glocalfileinfo.c: Don't do fallback for user-home and user-desktop
+	to avoid problems with partial icon themes.
+	
+2008-06-17  Hans Breuer  <hans@breuer.org>
+
+	* gwin32mount.[ch] gwin32volumemonitor.[ch] : bits and pieces from 
+	gtk-2-12 and gunix*.[hc] to make the file chooser show drive letter
+	access again on win32, see bug #538127
+	* giomodule.c : ensure GWin32VolumeMonitor is registered
+	* glocaldireoctorymonitor.c : initial state on win32 is_mounted=TRUE
+	* Makefile.am makefile.msc : updated
+
+2008-06-16  Hans Breuer  <hans@breuer.org>
+
+	* glocalfileenumerator.c(_g_local_file_enumerator_new) : declaration 
+	and initialization in one step avoids c99ism
+
+2008-06-16  Christian Persch  <chpe@gnome.org>
+
+	* gio/gappinfo.c
+	* gio/gbufferedinputstream.c
+	* gio/gcancellable.c
+	* gio/gdatainputstream.c
+	* gio/gdesktopappinfo.c
+	* gio/gfile.c
+	* gio/gfileenumerator.c
+	* gio/gfileinputstream.c
+	* gio/gfileoutputstream.c
+	* gio/ginputstream.c
+	* gio/glocaldirectorymonitor.c
+	* gio/glocalfile.c
+	* gio/glocalfileenumerator.c
+	* gio/glocalfileinfo.c
+	* gio/glocalfilemonitor.c
+	* gio/glocalfileoutputstream.c
+	* gio/gmemoryinputstream.c
+	* gio/gmemoryoutputstream.c
+	* gio/goutputstream.c
+	* gio/gwin32appinfo.c: Use g_set_error_literal where appropriate. Patch from 
+	bug #535947.
+
+2008-06-16  Tor Lillqvist  <tml@novell.com>
+
+	Bug 538362 - Get Win32 icons back in the file chooser
+
+	* gcontenttype.c (g_content_type_get_icon): Look up the icon
+	corresponding to a file extension in the Registry. Patch by Hans
+	Breuer.
+	(get_registry_classes_key): Handle also REG_EXPAND_SZ type values.
+	
+2008-06-16  Tor Lillqvist  <tml@novell.com>
+
+	Patches by Hans Breuer:
+
+	* glocalfile.c (is_xp_or_later): Handle compiling against older
+	SDK headers with missing VerifyVersionInfo().  Conditioned on
+	_MSC_VER, but should probably use some better test.
+	* glocalfile.c (g_local_file_query_filesystem_info): Don't test
+	uninitialised statfs_result variable on Win32.
+
+2008-06-16  Michael Natterer  <mitch@imendio.com>
+
+	* *.c: chain up unconditionally in finalize() and dispose(). Also
+	don't dereference these function pointers when calling them since
+	that has no meaning at all.
+
+2008-06-16  Ross Burton  <ross@burtonini.com>
+
+	* gfileenumerator.c:
+	Remove check for dispose implementation as it annoys Emmanuele.
+	
+2008-06-16  Ross Burton  <ross@burtonini.com>
+
+	Bug 536252 – GFileEnumerator should allow access to the containing
+	GFile
+	
+	* gfileenumerator.c:
+	* gfileenumerator.h:
+	* gfile.h:
+	Add g_file_enumerator_get_container() and a container writeable
+	construct-only property.  Also shuffle around typedefs to make it
+	compile.
+	
+	* glocalfileenumerator.c:
+	* glocalfileenumerator.h:
+	* glocalfile.c:
+	Instead of a string filename take a GFile in the constructor and
+	use it to set the container property.
+	
+	* gio.symbols:
+	Update with new API.
+
+2008-06-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* gfile.c: Make includes more uniform
+
+2008-06-12  Yevgen Muntyan  <muntyan@tamu.edu>
+
+	* tests/live-g-file.c (sample_struct):
+	Use less fancy unicode filenames, so the test doesn't fail
+	on Mac OS X (#531476).
+
+2008-06-12  Matthias Clasen  <mclasen@redhat.com>
+	
+	* === Released 2.17.2 ===
+
+2008-06-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.17.1 ===
+
+2008-06-11  A. Walton  <awalton@gnome.org>
+
+	* tests/g-file.c (test_g_file_new_null):
+	Fix broken test case.
+
+2008-06-11  Matthias Clasen <mclasen@redhat.com>
+
+	* pltcheck.sh: We use g_clear_error now.
+
+2008-06-11  Matthias Clasen <mclasen@redhat.com>
+
+	* glocalfile.c (g_local_file_enumerate_children): Revert
+	an unintended change.
+
+2008-06-11  Matthias Clasen <mclasen@redhat.com>
+
+	* gfile.c (g_file_replace_contents): Don't unref before the last use.
+
+2008-06-10  Matthias Clasen <mclasen@redhat.com>
+
+	Bug 537546 – 'desktop' shortcut in file chooser looks like a generic
+	folder
+	
+	* glocalfileinfo.c (_g_local_file_info_get): Return user-desktop
+	as icon for the desktop directory, also make user-home and
+	user-desktop the preferred icons.
+
+2008-06-10  Matthias Clasen <mclasen@redhat.com>
+
+	* gio.symbols:
+	* gthemedicon.[hc] (g_themed_icon_prepend_name): New function,
+	to add a name to the front of the list.
+
+2008-06-10  Matthias Clasen <mclasen@redhat.com>
+
+	Bug 537392 – Additional colon in xattr name
+
+	* glocalfileinfo.c (set_xattr): Skip the second colon of the prefix,
+	too. Reported by  Alessandro Morandi 
+
+2008-06-10  Matthias Clasen <mclasen@redhat.com>
+
+	Bug 536641 – Filesystem querying in gio does not list AFS and autofs
+	file systems
+
+	* glocalfile.c (get_fs_type): Add afs and autofs.
+	Patch by Danny Baumann.
+
+2008-06-10  Matthias Clasen <mclasen@redhat.com>
+
+	Bug 528600 – g_dummy_file_get_parent("scheme://example.com/")
+
+	* gdummyfile.c (g_dummy_file_get_parent): Return NULL if there
+	is no parent.  (Owen Taylor, patch by Christian Neumair)
+	
+2008-06-10  Paolo Borelli  <pborelli@katamail.com>
+
+	* gfile.c (g_file_replace_contents): do not leak the output stream.
+
+2008-06-10  Michael Natterer  <mitch@imendio.com>
+
+	* gcontenttype.c (g_content_type_get_icon): fix SEGV by not using
+	uninitialized memory as array index.
+
+2008-06-10  Tor Lillqvist  <tml@novell.com>
+
+	* gcontenttype.c (g_content_type_can_be_executable)
+	(g_content_type_get_icon) [Win32]: Add TODO comments.
+
+2008-06-09  Matthias Clasen  <mclasen@redhat.com>
+
+	* xdgmime/Makefile.am: Fix the build
+
+2008-06-09  Matthias Clasen  <mclasen@redhat.com>
+
+	* gcontenttype.c (g_content_type_get_icon): Use icons specified
+	in the shared mime database, if available.
+
+	* xdgmime/*: Sync with upstream. This brings support for
+	glob weights, generic icons, and changes the cache format to 
+	version 1.1.
+
+2008-05-28  Michael Natterer  <mitch@imendio.com>
+
+	* Makefile.am: don't define G_DISABLE_SINGLE_INCLUDES, it's in
+	the global CPPFLAGS now.
+
+	* tests/data-input-stream.c
+	* tests/data-output-stream.c
+	* tests/g-file-info.c
+	* tests/g-file.c
+	* tests/live-g-file.c
+	* tests/memory-input-stream.c: don't include <glib/gtestutils.h>
+
+2008-05-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.17.0 ===
+
+	* tests/live-g-file.c: Clean up after the tests, so make distcheck
+	doesn't complain about leftover files.
+
+2008-05-27  simon.zheng  <simon.zheng@sun.com>
+
+	* glocalfile.c: (g_local_file_query_filesystem_info):
+	Fix #533369. Make G_FILE_ATTRIBUTE_FILESYSTEM_TYPE work on Solaris.
+
+2008-05-26  Michael Natterer  <mitch@imendio.com>
+
+	* gmemoryoutputstream.h: declare
+	g_memory_output_stream_get_data_size().
+
+2008-05-26  Matthias Clasen  <mclasen@redhat.com>
+
+	* tests/*: Make tests work 
+
+2008-05-26  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio.symbols: Add g_memory_output_stream_get_data_size.
+
+2008-05-25  Ross Burton  <ross@burtonini.com>
+
+	* glocalfile.c:
+	Fix typo in error message (#534764).
+
+2008-05-25  Ross Burton  <ross@burtonini.com>
+
+	* Makefile.am:
+	Fix circular dependency loop for gioenumtypes.h (#534759).
+
+2008-05-19  Hans Breuer  <hans@breuer.org>
+
+	* Makefile.am : EXTRA_DIST += makefile.msc
+
+2008-05-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* gcontenttype.h:
+	* gcontenttype.c: (g_content_type_from_mime_type):
+	New function to create a content type from a mime type. (#527175,
+	Milan Crha)
+
+2008-05-17  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 532965 – Should not return filesystem::free for certain file systems
+
+	* glocalfile.c (g_local_file_query_filesystem_info) Don't return
+	free space for ncpfs.
+
+2008-05-17  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 530196 – _g_local_file_has_trash_dir() doesn't handle st_dev == 0
+
+	* glocalfile.c (_g_local_file_has_trash_dir): Handle the case that
+	st_dev might be zero.
+
+2008-05-16  Tor Lillqvist  <tml@novell.com>
+
+	* win32/gwin32directorymonitor.c: #define _WIN32_WINNT 0x0400 to
+	get declaration of ReadDirectoryChangesW() from Platform SDK headers.
+
+2008-05-13  Bastien Nocera  <hadess@hadess.net>
+
+	* gfile.c (has_valid_scheme): A URI scheme must start with a
+	letter, even if later more characters are allowed (#532852)
+
+2008-05-05  Michael Natterer  <mitch@imendio.com>
+
+	* Makefile.am. build with G_DISABLE_SINGLE_INCLUDES to prevent
+	code from being checked in that breaks the build of applications
+	which use G_DISABLE_SINGLE_INCLUDES.
+
+	* makegioalias.pl: make the alias file include "glib.h" instead of
+	"glibconfig.h".
+
+	* gio.symbols: whitespace change to force regeneration of the
+	alias file after above script change.
+
+	* gfileinfo.h: remove inlcusion of <glib/gfileutils.h>.
+
+	* gfilenamecompleter.c: remove inclusion of "gurifuncs.h".
+
+	* gioerror.h: #include <glib.h> instead of <glib/gerror.h>.
+
+	* glocalfileinfo.c: remove inclusion of <glib/gchecksum>.
+
+2008-04-28  David Zeuthen  <davidz@redhat.com>
+
+	* gunixmounts.c (g_unix_mount_guess_should_display): Avoid
+	displaying mounts in a subdirectory not accessible to the
+	user (#526320).
+
+2008-04-22  Michael Natterer  <mitch@imendio.com>
+
+	* Makefile.am: fix library versioning (it was 0.0.0).
+
+2008-04-21  Lin Ma  <Lin.Ma@Sun.COM>
+
+	* fen/fen-data.c, fen/fen-helper.c, fen/fen-missing.c, fen/fen-node.c:
+	Default disable all loggings.
+	* fen/fen-kernel.c: (printevent), (port_add_kevent),
+	(port_fetch_event_cb): Fixed two macro nits.
+
+2008-04-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* xdgmime/xdgmime.c: Rework the timestamp checking code
+	to protect against duplicate directories in XDG_DATA_DIRS.
+	Fixes fd.o bug 12513, reported by Joe Shaw.
+
+2008-04-16  Matthias Clasen  <mclasen@redhat.com>
+
+	Partically revert the last commit after realizing that
+	xdg_mime_media_type_equal doesn't have to init at all.
+
+	* xdgmime/xdgmime.h:
+	* xdgmime/xdgmime.c: Get rid of _xdg_mime_media_type_equal
+
+	* xdgmime/xdgmimecache.c: Use xdg_mime_media_type_equal
+
+2008-04-16  Matthias Clasen  <mclasen@redhat.com>
+
+	Avoid possible memory corruption in xdgmime, fd.o bug 12512,
+	reported by Joe Shaw and Federico Mena Quintero.
+
+	* xdgmime/xdgmime.c(_xdg_mime_media_type_equal): Implement.
+	(xdg_mime_media_type_equal): Turn into a wrapper around the 
+	_-prefixed version.
+
+	* xdgmime/xdgmimecache.c: Use the _-prefixed versions of comparison
+	functions throughout.
+
+2008-04-16  Michael Meeks  <michael.meeks@novell.com>
+
+	* gdesktopappinfo.c (g_desktop_app_info_new_from_filename): 
+	tolerate an empty TryExec= line without failing; nautilus used
+	to create launchers with these in previous versions. Fixes #528433
+
+2008-04-09  Padraig O'Briain  <padraig.obriain@sun.com>
+
+	* gdesktopappinfo.c: In g_app_info_create_from_commandline set comment
+	after name. Fixes #527132.
+
+2008-04-08  Tomas Bzatek  <tbzatek@redhat.com>
+
+	* gfile.c: (g_file_replace):
+	Doc update
+
+2008-04-07  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 526796 – Wrong order of arguments in g_file_copy's fallback
+
+	* gfile.c (file_copy_fallback): Fix the argument order. Patch
+	by Christian Kellner.
+
+2008-04-04  Sebastien Bacher  <seb128@ubuntu.com>
+
+	* gunixmounts.c: (g_unix_mount_guess_should_display):
+	Don't list the user directory as a mount, fix potential issue
+	when other users have a similar naming and don't special case the
+	gvfs mounts there since that's not required (#525866)
+
+2008-03-31  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfile.c (get_parent):
+	Don't leak parent.
+	
+2008-03-31  A. Walton  <awalton@svn.gnome.org>
+
+	* gfile.c (g_file_query_file_type):
+	Always return a GFileType enum value (#520715).
+
+2008-03-31  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfileenumerator.c:
+	Read readdir() info in chunks (of 1000) and sort
+	the chunks by inode before stat:ing.
+	This is a 20% performance increase in testing
+	gvfs-ls on /usr/bin with cold cache.
+
+2008-03-31  Alexander Larsson  <alexl@redhat.com>
+
+	* gmemoryoutputstream.c:
+	Clarify docs for g_memory_output_stream_get_size.
+	Add g_memory_output_stream_get_data_size.
+
+2008-03-30  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio.symbols:
+	* gfile.c:
+	* gfile.h: Add g_file_query_file_type convenience function
+	to query the type of a file.  (#520715, Mikkel Kamstrup Erlandsen)
+
+2008-03-30  Matthias Clasen  <mclasen@redhat.com>
+
+	* gfileenumerator.c:
+	* gfile.c: Fix some documentation typos.  (#524950, Rob Bradford)
+
+2008-03-28  A. Walton  <awalton@svn.gnome.org>
+
+	* giomodule.c (_g_io_modules_ensure_loaded):
+	Adds GIO_EXTRA_MODULES environment variable support, closing bug 
+	#523039.
+
+2008-03-28  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.c:
+	(copy_stream_with_progress):
+	Fix up last commit.
+	
+2008-03-28  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.c:
+	(copy_stream_with_progress):
+	(file_copy_fallback):
+	Fallback to g_file_query_info for source size
+	if g_file_input_stream_query_info fails. (#524579)
+
+2008-03-28  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfile.c (g_local_file_move):
+	Reuse old string instead of adding new one.
+
+2008-03-28  Lin Ma  <Lin.Ma@Sun.COM>
+
+	* fen/*.[hc]: still copyright issue. I hate copyright.
+
+2008-03-27  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfile.c (g_local_file_move):
+	Return G_IO_ERROR_IS_DIRECTORY, not G_IO_ERROR_WOULD_MERGE when moving
+	file over directory. This is according to the docs and what the move via
+	copy+remove fallback does.
+
+2008-03-27  Lin Ma  <Lin.Ma@Sun.COM>
+
+	* fen/*.[hc]: Updated copyright.
+
+2008-03-20  Lin Ma  <Lin.Ma@Sun.COM>
+
+	* fen/fen-data.c: (fdata_adjust_changed): Removed a bad formatted msg.
+
+2008-03-20  Lin Ma  <Lin.Ma@Sun.COM>
+
+	* fen/fen-data.c: (process_events), (fdata_add_event): Fixed FEN does
+	not emit attribute changed events when optimizing changed events.
+	* fen/fen-helper.c, fen/fen-kernel.c: Added ifdef to default disable
+	warning messages.
+
+2008-03-19  Matthias Clasen  <mclasen@redhat.com>
+
+	* gmountoperation.[hc]: Small documentation additions
+
+2008-03-19  Sebastien Bacher  <seb128@ubuntu.com>
+
+	* gunixmounts.c: (guess_mount_type): 
+	consider nfs4 mounts as G_UNIX_MOUNT_TYPE_NFS (Closes: #523338)
+
+2008-03-19  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.c:
+	(copy_stream_with_progress):
+	Bump block side for copy to 64k to minimize
+	overhead for low latency links. (#523015)
+
+2008-03-16  Tor Lillqvist  <tml@novell.com>
+
+	* Makefile.am (libgio_2_0_la_DEPENDENCIES): Make libgio-2.0.la
+	depend on gio.def on Windows.
+
+2008-03-12  David Zeuthen  <davidz@redhat.com>
+
+	* gio.symbols:
+	* gunixmounts.[ch]:
+	Add g_unix_mount_monitor_set_rate_limit() function (#521946)
+
+2008-03-14  Alexander Larsson  <alexl@redhat.com>
+
+	* gunixmounts.c:
+	(guess_mount_type):
+	Avoid redudant tests (#521851)
+	Patch from Josselin Mouette
+
+2008-03-14  Alexander Larsson  <alexl@redhat.com>
+
+	* gfilemonitor.c:
+	(g_file_monitor_is_cancelled):
+	Fix C89 issue (#521672)
+	Patch from Jens Granseuer
+
+2008-03-14  Alexander Larsson  <alexl@redhat.com>
+
+	* fam/fam-helper.[ch]:
+	* fam/fam-module.c:
+	Shut down fam (including removing fam GSource) when
+	module is unloaded (#521513)
+	Patch from Joe Marcus Clarke   
+
+2008-03-14  Alexander Larsson  <alexl@redhat.com>
+
+	* giomodule.c:
+	(_g_io_modules_ensure_loaded):
+	Fix up FEN ifdefs
+
+2008-03-14  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfile.c:
+	(g_local_file_query_filesystem_info):
+	Use right define name for f_fstypename member check
+
+2008-03-14  Alexander Larsson  <alexl@redhat.com>
+
+	* Makefile.am:
+	* fen/Makefile.am: Added.
+	* fen/fen-data.[ch]: Added.
+	* fen/fen-dump.[ch]: Added.
+	* fen/fen-helper.[ch]: Added.
+	* fen/fen-kernel.[ch]: Added.
+	* fen/fen-missing.[ch]: Added.
+	* fen/fen-node.[ch]: Added.
+	* fen/fen-sub.[ch]: Added.
+	* fen/gfendirectorymonitor.[ch]: Added.
+	* fen/gfenfilemonitor.[ch]: Added.
+	* giomodule.c:
+	Added Solaris FEN file notification backend.
+	Patch from Lin Ma <Lin.Ma@Sun.COM>
+
+2008-03-13  Tor Lillqvist  <tml@novell.com>
+
+	* Makefile.am: Actually use the gio.def file when linking the
+	library on Windows. Produce .lib library for Microsoft's toolchain
+	when possible. Install the .lib and .def file like for the other
+	libraries of GLib.
+
+2008-03-13  Tomas Bzatek  <tbzatek@redhat.com>
+
+	* tests/live-g-file.c:
+	Include live-g-file in standard set of tests, making a temporary
+	directory in source structure.
+	
+	Clean target directory before the tests (write mode only)
+
+2008-03-12  Tor Lillqvist  <tml@novell.com>
+
+	Bug 517419 - gio win32 directory monitor
+	Implementation by Vlad Grecescu.
+	
+	* win32/Makefile.am
+	* win32/gwin32directorymonitor.h
+	* win32/gwin32directorymonitor.c: New files.
+
+	* giomodule.c: Set up the GWin32DirectoryMonitor plumbing.
+
+	* Makefile.am: Add the win32 subdirectory.
+
+2008-03-12  Tor Lillqvist  <tml@novell.com>
+
+	* glocalfileinfo.h: Introduce a macro GLocalFileStat that is the
+	normal struct stat on Unix but struct _stati64 on Windows to have
+	access to 64-bit file size information. Use that instead of struct
+	stat in the functions declared here in this private header.
+
+	* glocalfileinfo.c: Corresponding changes. Move some G_OS_WIN32,
+	S_ISLNK and HAVE_UTIMES ifdefs and add some more to avoid compiler
+	warnings about unused functions and variables. Don't set
+	meaningless attributes like inode numbers on Windows.
+
+2008-03-12  Benjamin Otte  <otte@gnome.org>
+
+	* gvfs.h:
+	trim whitespace so gtk-doc groks the function name
+
+2008-03-12  Tor Lillqvist  <tml@novell.com>
+
+	* glocalfile.c (_g_local_file_has_trash_dir): Implement as empty,
+	returning FALSE, on Win32.
+
+2008-03-11  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfile.c:
+	* glocalfileinfo.[ch]:
+	Correctly implement can_trash by actually
+	looking for a trash dir, not just assuming
+	one exists.
+
+2008-03-10  Matthias Clasen  <mclasen@redhat.com>
+	
+	* === Released 2.16.1 ===
+
+2008-03-11  Alexander Larsson  <alexl@redhat.com>
+
+	* gthemedicon.c:
+	Fix crashes in new constructor and properties code
+
+2008-03-10  Murray Cumming  <murrayc@murrayc.com>
+
+	* gfile.c: Minor spelling correction in documentation:
+	existance -> existence.
+
+2008-03-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.16.0 ===
+
+2008-03-10  Matthias Clasen <mclasen@redhat.com>
+
+	* gio.symbols: Remove g_file_contains_file here, too.
+
+2008-03-10  Matthias Clasen <mclasen@redhat.com>
+
+	* gthemedicon.c: Add properties to make bindings happy.  (#517676,
+	Samuel Cormier-Iijima)
+
+2008-03-08  Tor Lillqvist  <tml@novell.com>
+
+	* glocalfile.c: Define FILE_READ_ONLY_VOLUME if it is missing from
+	winnt.h. (#521145)
+
+2008-03-07  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfile.c:
+	(g_local_file_query_filesystem_info):
+	Use struct statfs.f_fstypename if availible (e.g. on OpenBSD)
+	Patch from Jasper Lievisse Adriaanse
+
+2008-03-06  Tor Lillqvist  <tml@novell.com>
+
+	* gfileinfo.h: Correct milliseconds to microseconds in the doc
+	comments for the *_USEC attributes.
+
+2008-03-06  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.c (g_file_query_exists):
+	Add g_return_val_if_fail check (#520700)
+
+2008-03-06  Alexander Larsson  <alexl@redhat.com>
+
+	* gdesktopappinfo.c:
+	* gfilemonitor.c:
+	* gthemedicon.c:
+	* gunionvolumemonitor.c:
+	* gunixmounts.c:
+	* tests/g-file.c:
+	* tests/live-g-file.c:
+	* xdgmime/xdgmimecache.c:
+	Fix sparse warnings (#519489)
+
+2008-03-05  Alexander Larsson  <alexl@redhat.com>
+
+	* gfilemonitor.c:
+	Make cancellation threadsafe (i.e.
+	guarantee its only done once, and always
+	done)
+	
+	* glocaldirectorymonitor.c:
+	Make sure we the monitor lives while the
+	mounts_changed callback is being called (#520484)
+
+2008-03-04  Wouter Bolsterlee  <wbolster@svn.gnome.org>
+
+	* gbufferedinputstream.c: Fix typo in parameter
+	documentation.
+
+2008-03-04  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.c:
+	Remove deprecated symbols we kept for one release.
+
+2008-03-04  Murray Cumming  <murrayc@murrayc.com>
+
+	* ginputstream.c:
+	* goutputstream.c: Tiny documentation corrections.
+
+2008-03-03  Alexander Larsson  <alexl@redhat.com>
+
+	* gunionvolumemonitor.c:
+	* gvolumemonitor.h:
+	Fix the adopt_orphan_mount vfunc to take a
+	volume_monitor reference in an ABI compat way.
+	This change is not API compat, but the added
+	arg is not used in the only user of this vfunc, so
+	all we get is a harmless warning in gvfs (#520169)
+	
+2008-03-01  Benjamin Otte  <otte@gnome.org>
+
+	* gfile.c:
+	clarify docs for g_file_delete().
+
+2008-02-29  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfileinfo.c:
+	(get_content_type):
+	Make sure empty files get text/plain type (#518720)
+
+2008-02-27  Alexander Larsson  <alexl@redhat.com>
+
+	* gcontenttype.c:
+	Fix type warnings
+	
+	* gunixvolume.c:
+	(g_unix_volume_mount):
+	Add missing GMountMountFlags argument
+
+2008-02-26  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfile.c:
+	(g_local_file_delete):
+	Handle filesystems (like ntfs-3g) that return EEXIST instead
+	of ENOTEMPTY (#518816)
+
+2008-02-25  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.15.6 ===
+
+2008-02-25  Wouter Bolsterlee  <wbolster@svn.gnome.org>
+
+	* gfile.c (g_file_find_enclosing_mount):
+	* ginputstream.c (g_input_stream_set_pending):
+	* glocalfile.c (g_local_file_find_enclosing_mount):
+	* gmount.c (g_mount_unmount), (g_mount_eject), (g_mount_remount):
+	* goutputstream.c (g_output_stream_set_pending):
+
+	Fixup translator comments (#518578).
+
+2008-02-25  Wouter Bolsterlee  <wbolster@svn.gnome.org>
+
+	* gfile.c (g_file_find_enclosing_mount):
+	* giomodule.c:
+	* glocalfile.c (g_local_file_find_enclosing_mount):
+	* goutputstream.c:
+
+	Fix a few typos in translator comments and documentation.
+
+2008-02-25  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.c:
+	* ginputstream.c:
+	* glocalfile.c:
+	* gmount.c:
+	* goutputstream.c:
+	Add translator comments (#518578)
+
+2008-02-25  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.c:	
+	Reintroduce g_file_contains_file, keep around for one
+	unstable release cycle to avoid crashing to many apps.
+	Make sure to delete after release.
+
+2008-02-25  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.[ch]:
+	Remove deprecated g_file_contains_file.
+
+2008-02-25  Alexander Larsson  <alexl@redhat.com>
+
+	* gfilemonitor.c:
+	Emit actual change signals in an idle handler.
+	This avoids reentrance and locking problems in
+	the file notification backends.
+	
+2008-02-25  Alexander Larsson  <alexl@redhat.com>
+
+	* gunixmounts.c:
+	(g_unix_mount_guess_should_display):
+	Remove type guessing, instead just display
+	mounts in /media and in ~/.
+
+2008-02-25  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfile.c:
+	Make new strings reuse old ones.
+	
+2008-02-25  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfile.c:
+	Implement trashing and filesystem::readonly for win32 (#517235)
+	Patch from Yevgen Muntyan
+
+2008-02-23  Matthias Clasen  <mclasen@redhat.com>
+
+	* gfileinfo.h: Documentation fixes.
+
+2008-02-22  Alexander Larsson  <alexl@redhat.com>
+
+	* gcontenttype.c (g_content_type_get_icon):
+	Look at old-style gnome mime icon names too, as many
+	have not moved to the new style.
+
+2008-02-21  Matthias Clasen  <mclasen@redhat.com>
+
+	* *.c: Correct the @include in for section docs.
+
+2008-02-21  David Zeuthen  <davidz@redhat.com>
+
+	* glocalfileinfo.c: (_g_local_file_info_get):
+	* gcontenttype.c:
+	(g_content_type_get_icon): Implement this function by
+	moving bits from glocalfileinfo.c
+	(g_content_type_get_description): Unalias before getting
+	description (#517687)
+
+	* gfile.c: (g_file_class_init),
+	(g_file_query_filesystem_info_async),
+	(g_file_query_filesystem_info_finish),
+	(query_filesystem_info_data_free),
+	(query_filesystem_info_async_thread),
+	(g_file_real_query_filesystem_info_async),
+	(g_file_real_query_filesystem_info_finish):
+	* gfile.h: Implement async version of
+	g_file_query_filesystem_info()
+
+	* gfileinfo.h: Add new attributes for filesystem::use-preview
+
+	* gio.symbols: Update
+
+	* gthemedicon.c: (g_themed_icon_append_name):
+	* gthemedicon.h: Add new new convenience function.
+
+	* gunionvolumemonitor.c: (g_union_volume_monitor_dispose),
+	(get_mounts), (get_volumes), (get_connected_drives),
+	(get_volume_for_uuid), (get_mount_for_uuid),
+	(g_union_volume_monitor_init), (populate_union_monitor),
+	(g_volume_monitor_get), (_g_mount_get_for_mount_path),
+	(g_volume_monitor_adopt_orphan_mount):
+	* gvolumemonitor.c:
+	* gvolumemonitor.h: Use recursive locks so it's safe for volume
+	monitor implementations to call into the main volume monitor. Also
+	separate object initialization and volume monitor initialization
+	such that non-native volume monitors can properly adopt their
+	mounts away.
+
+2008-02-21  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.c:
+	Fix doc typo
+	
+2008-02-21  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.c:
+	Add more documentation about how GFiles work (from #517086)
+
+2008-02-21  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.[ch]:
+	* gio.symbols:
+	Add new g_file_has_prefix that does the same as g_file_contains_file.
+	Deprecate g_file_contains_file and add a macro that converts
+	it to g_file_has_prefix.
+	The reason for this change is that the contains_file() name seems to
+	imply that this does more work than what it does, but its really only
+	a name match (from #517086)
+	
+	* gdummyfile.c:
+	* glocalfile.c:
+	* tests/g-file.c:
+	Update to match the above change.
+
+2008-02-20  Benjamin Otte  <otte@gnome.org>
+
+	* gfile.c: (g_file_mount_mountable), (g_file_unmount_mountable),
+	(g_file_eject_mountable):
+	even more cases of not returning in error path
+
+2008-02-20  Benjamin Otte  <otte@gnome.org>
+
+	* gfile.c: (g_file_mount_mountable): 
+	return from function in error path.
+
+2008-02-18  Sylvain Pasche <sylvain.pasche@gmail.com>
+
+	* gfile.h:
+	 Remove trailing coma in GMountMountFlags struct
+
+2008-02-18  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfile.c:
+	* glocalfileinfo.c:
+	* glocalfileoutputstream.c:
+	Use g_unlink/g_rename instead of unlink/rename;
+	do not pass raw filenames to g_set_error. (#517239)
+	Patch from Yevgen Muntyan.
+
+2008-02-18  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfile.c:
+	* glocalfileoutputstream.c:
+	Open files with O_BINARY on windows. (#517140)
+
+2008-02-14  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfileoutputstream.c:
+	Correctly check for HAVE_FCHMOD and HAVE_FCHOWN
+
+2008-02-14  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfile.c:
+	Copy permissions with file on copy (#514084)
+	This is what cp does and makes sure e.g. the
+	exec permissions are kept.
+	Its kinda weird in that it keeps the permission bits
+	the same while the uid and gid are different. However
+	the new uid is the user so its not a security issue,
+	and I've heard no complaints about cp on this issue.
+
+2008-02-13  Ryan Lortie  <desrt@desrt.ca>
+
+	* gfileinfo.h: add G_FILE_ATTRIBUTE_TRASH_ITEM_COUNT
+
+2008-02-13  Alexander Larsson  <alexl@redhat.com>
+
+	* inotify/inotify-path.c:
+	Define IN_ONLYDIR if not in header (#515346)
+
+2008-02-12  Alexander Larsson  <alexl@redhat.com>
+
+	* tests/live-g-file.c:
+	C89 fixes (#515892)
+
+2008-02-11  Matthias Clasen <mclasen@redhat.com>
+
+	* === Released 2.15.5 ===
+
+2008-02-11  Matthias Clasen <mclasen@redhat.com>
+
+	* gio.symbols: Add g_mount_mount_flags_get_type.
+
+2008-02-11  Alexander Larsson  <alexl@redhat.com>
+
+	* gfileinfo.c:
+	(g_file_info_set_attribute_mask):
+	(g_file_attribute_matcher_matches_id):
+	Correctly handle NULL GAttributeMatcher meaning
+	matches nothing. (Fixes #513492)
+
+2008-02-11  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.[ch]:
+	* gmount.[ch]:
+	* gvolume.[ch]:
+	Added GMountMountFlags enum and added a flags
+	argument to all mount calls.
+	
+	This is an API/ABI change for future extensibility,
+	as I think we will need at least an
+	inhibit-autorun flag (the panel needs this).
+	There are no flags defined yet though.
+
+2008-02-11  Alexander Larsson  <alexl@redhat.com>
+
+	* gfileinfo.h:
+	Added new standard::description attribute.
+	Requested by Vincent, and useful for both
+	panel and nautilus
+
+2008-02-11  Alexander Larsson  <alexl@redhat.com>
+
+	* gdesktopappinfo.c:
+	Minor docs cleanup
+
+2008-02-11  Matthias Clasen <mclasen@redhat.com>
+
+	* *.c: Documentation additions
+
+2008-02-10  Matthias Clasen <mclasen@redhat.com>
+
+	* gappinfo.h: Formatting cleanup
+	* gappinfo.c: Fix up docs.
+
+2008-02-09  Matthias Clasen <mclasen@redhat.com>
+
+	* gunixmounts.c: Consistently use getmntent_r() and fall
+	back to getmntent().  (#515492)
+
+2008-02-09  Matthias Clasen <mclasen@redhat.com>
+
+	* gbufferedinputstream.c:
+	* ginputstream.c:
+	* goutputstream.c: Use G_STRFUNC instead of __FUNCTION__.
+
+	* tests/data-input-stream.c:
+	* tests/data-output-stream.c: Portability fixes.
+
+2008-02-08  Alexander Larsson  <alexl@redhat.com>
+
+	* gio.symbols: 
+	* gunixvolume.c:
+	* gvolume.[ch]:
+	Add g_volume_should_automount.
+	Docs needed.
+
+2008-02-07  Tor Lillqvist  <tml@novell.com>
+
+	* tests/Makefile.am (TEST_PROGS): live-g-file won't build on
+	Win32, too Unix-specific.
+
+2008-02-06  Behdad Esfahbod  <behdad@gnome.org>
+
+	* pltcheck.sh: Skip g_bit_*().  Inline functions may end up with
+	a local plt if the compiler doesn't support what we want.  Bug #514702
+
+2008-02-06  Murray Cumming,,,  <murrayc@murrayc.com>
+
+	reviewed by: <delete if not using a buddy>
+
+	* gfile.c:
+	* gunixinputstream.c:
+	* gunixoutputstream.c:
+
+2008-02-06  Tomas Bzatek  <tbzatek@redhat.com>
+
+	* tests/Makefile.am:
+	* tests/live-g-file.c:
+	* tests/live-g-file.txt:
+	New GIO testing module working over real data
+
+2008-02-06  Tomas Bzatek  <tbzatek@redhat.com>
+
+	* glocalfileoutputstream.c (g_local_file_output_stream_close):
+	Fallback to rename() if link() is not available
+	(when no support on target filesystem)
+
+2008-02-06  Michael Natterer  <mitch@imendio.com>
+
+	* gfileinfo.c (g_file_info_get_icon): replace
+	"icon && G_IS_ICON (icon)" by simply "G_IS_ICON (icon)".
+
+2008-02-06  Tomas Bzatek  <tbzatek@redhat.com>
+
+	* gfile.c (g_file_create):
+	Documentation update of error codes
+
+2008-02-06  Alexander Larsson  <alexl@redhat.com>
+
+	* gdesktopappinfo.c:
+	Update to use both mimeapps.list and
+	defaults.list as discussed on xdg list.
+
+2008-02-06  Benjamin Otte  <otte@gnome.org>
+
+	* gasyncresult.c:
+	* gfilenamecompleter.c:
+	Fix some typos in the documentation.
+
+2008-02-06  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfile.c (g_local_file_trash):
+	Don't succeed with trash if newly created
+	trash dir has the wrong owner. (#514696)
+
+2008-02-05  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfile.c (g_local_file_move):
+	Don't spew warnings when destination is not
+	a GLocalFile.
+
+2008-02-03  Hans Breuer  <hans@breuer.org>
+
+	* makefile.msc : update
+
+2008-02-01  Michael Natterer  <mitch@imendio.com>
+
+	* gcontenttype.c (_g_unix_content_type_get_parents): assign the
+	return value of xdg_mime_list_mime_parents() to a variable of the
+	correct type.
+
+2008-02-01  Alexander Larsson  <alexl@redhat.com>
+
+	* gappinfo.c (g_app_info_launch_uris):
+	Actually call the launch_uris method, not
+	launch.
+
+2008-02-01  Alexander Larsson  <alexl@redhat.com>
+
+	* gdesktopappinfo.c (g_desktop_app_info_equal):
+	Ensure appinfos with no id but same pointer value
+	compare equal
+
+2008-02-01  Alexander Larsson  <alexl@redhat.com>
+
+	* gappinfo.c (g_app_info_launch_default_for_uri): 
+	Don't leak appinfo.
+	
+2008-02-01  Alexander Larsson  <alexl@redhat.com>
+
+	* gappinfo.[ch]:
+	* gio.symbols:
+	Add g_app_info_launch_default_for_uri utility
+	function. (#513256)
+
+2008-02-01  Cosimo Cecchi  <cosimoc@svn.gnome.org>
+
+	* gdesktopappinfo.c:
+	Doc fix for g_app_info_get_default_for_uri_scheme ()
+	Bug #513483.
+
+2008-01-30  Alexander Larsson  <alexl@redhat.com>
+
+	* gappinfo.c:
+	Add doc comment about uris vs GFiles to
+	g_app_info_launch()
+	
+	* gdesktopappinfo.c:
+	Ensure uris passed to g_app_info_launch_uris()
+	are not roundtriped through GFile (as that
+	may be slightly destructive for e.g. mailto: links)
+
+2008-01-30  Alexander Larsson  <alexl@redhat.com>
+
+	* tests/data-input-stream.c:
+	* tests/data-output-stream.c:
+	C89 fixes from Jens Granseuer (#512849)
+
+2008-01-30  Alexander Larsson  <alexl@redhat.com>
+
+	* fam/fam-helper.c:
+	Fix gamin/fam difference build issue. (#509419)
+
+2008-01-29  Alexander Larsson  <alexl@redhat.com>
+
+	* gappinfo.h:
+	* gdesktopappinfo.c:
+	Add G_APP_INFO_CREATE_SUPPORTS_URIS flag
+
+2008-01-29  Alexander Larsson  <alexl@redhat.com>
+
+	* gdesktopappinfo.c:
+	* gdesktopappinfo.h:
+	giomodule-priv.h include moved to .c file.
+
+2008-01-29  Alexander Larsson  <alexl@redhat.com>
+
+	* gnativevolumemonitor.h (struct _GNativeVolumeMonitorClass):
+	Remove unused prio/name fields.
+
+2008-01-29  Alexander Larsson  <alexl@redhat.com>
+
+	* gcontenttype.c (looks_like_text):
+	Don't treat whitespace as control chars.
+
+2008-01-29  Alexander Larsson  <alexl@redhat.com>
+
+	* gdesktopappinfo.c:
+	Lazily create the desktop files for appinfos created
+	by g_app_info_create_from_commandline() when needed
+	for mime associations. This allows run-time use
+	of GAppInfo object without creating unnecessary
+	files on disk.
+
+2008-01-29  Alexander Larsson  <alexl@redhat.com>
+
+	* gio.symbols:
+	Added new symbols to gio.symbols
+
+2008-01-29  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.[ch]:
+	Add g_file_query_default_handler utility to easily look up
+	the GAppInfo that handles a file.
+	
+	* gdesktopappinfo.[ch]:
+	* giomodule.c:
+	Set up an extension point for g_app_info_get_default_for_uri_scheme()
+	
+	* gvfs.c:
+	Remove unused function
+
+2008-01-29  Alexander Larsson  <alexl@redhat.com>
+
+	* gfileenumerator.c:
+	Mention need to free returned value in
+	g_file_enumerator_next_files_finish docs.
+	Fix leak if g_file_enumerator_next_files_finish()
+	not called.
+
+2008-01-29  Alexander Larsson  <alexl@redhat.com>
+
+	* gcontenttype.c:
+	(_g_unix_content_type_get_parents):
+	Use list_parents, not get_parents from xdgmime, because
+	the later doesn't use the cache.
+	
+	* xdgmime/xdgmimecache.c:
+	(_xdg_mime_cache_list_mime_parents):
+	Don't list the same type as parent multiple times.
+
+2008-01-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.15.4 ===
+
+2008-01-28  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalvfs.c:
+	Register local vfs with prio 0.
+	
+	* gvfs.h:
+	Remove old name and prio class members
+
+2008-01-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* tests/g-file.c: Disable some tests that are failing in
+	the absence of a http backend.
+
+2008-01-28  Alexander Larsson  <alexl@redhat.com>
+
+	* giomodule.[ch]:
+	* gio.symbols:
+	Add registration hooks for extension points.
+	Register the gio extension points.
+	
+	* fam/gfamdirectorymonitor.c:
+	* fam/gfamfilemonitor.c:
+	* glocaldirectorymonitor.[ch]:
+	* glocalfilemonitor.[ch]:
+	* gnativevolumemonitor.h:
+	* gunionvolumemonitor.c:
+	* gunixvolumemonitor.c:
+	* gvfs.[ch]:
+	* gvolumemonitor.h:
+	* inotify/ginotifydirectorymonitor.c:
+	* inotify/ginotifyfilemonitor.c:
+	Use the extension points registration instead
+	of g_type_children().
+
+2008-01-28  Matthias Clasen  <mclasen@redhat.com>
+	
+	* gdrive.[hc]: 
+	* gvolume.[hc]: Document new API. 
+
+	* gfile.c (g_file_copy_async): Fix docs
+
+2008-01-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* gbufferedinputstream.c:
+	* ginputstream.c:
+	* goutputstream.c: Replace uses of G_GNUC_PRETTY_FUNCTION by
+	__FUNCTION__.
+	
+2008-01-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* glocalfile.c: Avoid trivial differences in translatable strings.
+
+2008-01-25  Matthias Clasen  <mclasen@redhat.com>
+
+	* fam/fam-helper.c (fam_event_to_file_monitor_event): Make this
+	build with gcc 3.4  (#509419)
+
+2008-01-25  Matthias Clasen  <mclasen@redhat.com>
+
+	* gfilemonitor.c: Add references to g_file_monitor_file/directory()
+	(#509994, Murray Cumming)
+
+2008-01-25  Matthias Clasen  <mclasen@redhat.com>
+
+	* gioscheduler.h: Make GIOSchedulerJobFunc return boolean
+	* gioscheduler.c: Keep calling io jobs until they return FALSE;
+	this allows big jobs to be executed in chunks, instead of blocking
+	the main loop for a long time.
+
+	* gsimpleasyncresult.c:
+	* giofile.c: Adapt callers.
+
+2008-01-25  Alexander Larsson  <alexl@redhat.com>
+
+	* gdesktopappinfo.c:
+	Implement changes discussed on xdg list.
+	Now we can add supported mimetypes by just using defaults.list
+	We can also remove associations in defaults.list.
+
+2008-01-25  Alexander Larsson  <alexl@redhat.com>
+
+	* gdesktopappinfo.c:
+	Don't make local copy of desktop file
+	for mimetype changes if the file already
+	supports the new mimetype.
+
+2008-01-25  Matthias Clasen  <mclasen@redhat.com>
+
+	* ginputstream.c:
+	* goutputstream.c:
+	* gbufferedinputstream.c:
+	* glocalfile.c: String improvements.  (#511966, 
+	 Theppitak Karoonboonyanan)
+
+2008-01-24  Matthias Clasen  <mclasen@redhat.com>
+
+	* gioscheduler.h: Expand docs a bit.
+
+2008-01-24  Alexander Larsson  <alexl@redhat.com>
+
+	* gdrive.[ch]:
+	Add g_drive_get_identifier and
+	g_drive_enumerate_identifiers
+
+	* gvolume.[ch]:
+	Add g_volume_get_identifier and
+	g_volume_enumerate_identifiers
+	
+	* gio.symbols:
+	Add symbols
+	
+	* gunixvolume.c:
+	Implement identifiers for unix backend
+
+2008-01-24  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.[ch]:
+	* gfile.h:
+	* gio.symbols:
+	Add g_file_copy_async() (#511580)
+	Based on patch from Carlos Garcia Campos
+
+2008-01-23  Matthias Clasen  <mclasen@redhat.com>
+
+	* gioscheduler.c: Some documentation additions.
+
+2008-01-22  Alexander Larsson  <alexl@redhat.com>
+
+	* gdesktopappinfo.c:
+	(g_desktop_app_info_new):
+	Don't leak basename.
+	
+2008-01-22  Alexander Larsson  <alexl@redhat.com>
+
+	* gdesktopappinfo.c:
+	(g_desktop_app_info_new_from_filename):
+	Don't leak GKeyFile
+
+2008-01-22  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfileinfo.c (get_thumbnail_attributes):
+	Fix leak of uri
+
+2008-01-22  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfile.c:
+	(canonicalize_filename):
+	Canonicalize paths that start with more than
+	two slashes.
+	
+	* tests/g-file.c:
+	(compare_two_files):
+	(test_g_file_new_for_path):
+	Test the above
+
+2008-01-22  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfile.c:
+	Allow UTF-8 in file:// parse names.
+	
+	* tests/Makefile.am:
+	* tests/data-input-stream.c:
+	* tests/data-output-stream.c:
+	* tests/g-file-info.c:
+	* tests/g-file.c:
+	Added a bunch of tests from Tomas Bzatek
+
+2008-01-21  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.15.3 ===
+
+2008-01-21  Alexander Larsson  <alexl@redhat.com>
+
+	* gfileinputstream.[ch]:
+	* gfileoutputstream.[ch]:
+	* gio.symbols:
+	Remove duplicated GSeekable functions. (#509990)
+	Just use the g_seekable_xxx() calls instead.
+
+2008-01-21  Matthias Clasen  <mclasen@redhat.com>
+
+	* glocal*.c:
+	* gvolumemanager.c: Whitespace cleanups.
+
+	* glocalfileoutputsteam.c (_g_local_file_output_stream_create):
+	Use the right mode when creating the file.
+
+2008-01-21  Murray Cumming,,,  <murrayc@murrayc.com>
+
+	* gfileenumerator.c:
+	* gfileinputstream.c:
+	* ginputstream.c:
+	* goutputstream.c: Documentation: Fixed minor typos 
+	and added more mentions of specific _finish() functions.
+
+2008-01-21  Alexander Larsson  <alexl@redhat.com>
+
+	* inotify/Makefile.am:
+	* inotify/inotify-helper.c:
+	* inotify/inotify-kernel.c:
+	* inotify/inotify-path.c:
+	* inotify/local_inotify.h: Removed.
+	* inotify/local_inotify_syscalls.h: Removed.
+	Removed the included copies of the inotify
+	headers. We now only use the <sys/inotify.h>
+	header which exists on modern systems.
+	This fixes problems on ARM and SH5 (#510448)
+	but is also generally much cleaner and future
+	safe. For instance, if other OSes add support
+	for inotify it should "just work".
+
+2008-01-20  Matthias Clasen  <mclasen@redhat.com>
+
+	* inotify/*.c: Coding style fixes.
+	* inotify/inotify-missing.c: Use g_timeout_add_seconds
+	for the 1/4 Hz timer.
+
+2008-01-20  Matthias Clasen  <mclasen@redhat.com>
+
+	* gfile.c:
+	* gfilemonitor.[hc]:
+	* gmemoryinputstream.c:
+	* gmemoryoutputstream.c:
+	* gmountoperation.c:
+	* gthemedicon.c: Documentation updates
+
+2008-01-20  Murray Cumming  <murrayc@murrayc.com>
+
+	* gfile.c: documentation: Fixed more minor 
+	typos.
+
+2008-01-18  Murray Cumming  <murrayc@murrayc.com>
+
+	* gmount.c: (g_mount_remount): documentation: 
+	Mention g_mount_remount_finish() instead of 
+	g_mount_unmount_finish().
+
+2008-01-18  Murray Cumming  <murrayc@murrayc.com>
+
+	* gappinfo.c:
+	* gcancellable.c:
+	* gfile.c: Fixed some minor typos in the 
+	documentation. 
+
+2008-01-18  Murray Cumming  <murrayc@murrayc.com>
+
+	* gio/gvolumemonitor.c: 
+	(g_volume_monitor_get_connected_drives): 
+	(g_volume_monitor_get_volumes): 
+	(g_volume_monitor_get_mounts): Documentation: 
+	Clarify the ownership of the regurn GLists.
+
+2008-01-17  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.h:
+	Add the async find_enclosing_mount version
+	to the header file too.
+
+2008-01-17  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.c:
+	Add async version of find_enclosing_mount
+	with default implementation.
+
+2008-01-17  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.c:
+	(g_file_copy):
+	(g_file_move):
+	Allow calls to implementation of copy and write
+	even if the type of the file implementations is
+	different. This can be used to implement native
+	upload and download calls in a vfs.
+	
+	* glocalfile.c:
+	(g_local_file_move):
+	Protect against the case where move is called
+	with one file not being local.
+	
+	Make sure we call the progress callback once
+	in the native move operation so that the caller
+	knows how many bytes were copied.
+
+2008-01-16  Murray Cumming  <murrayc@murrayc.com>
+
+	* gappinfo.c:
+	* gdatainputstream.c:
+	* gfile.c:
+	* gfileoutputstream.c:
+	* ginputstream.c:
+	* gmount.c:
+	* goutputstream.c:
+	* gseekable.c:
+	* gunixmounts.c: Corrected some typos in the documentation:
+	occured -> occurred.
+	its -> it's (where appropriate).
+
+2008-01-16  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.[ch]:
+	* gio.symbols:
+	Add g_file_query_exists (#508771)
+
+2008-01-15  Murray Cumming  <murrayc@murrayc.com>
+
+	* gdrive.c:
+	* gfile.c:
+	* gmount.c:
+	* gvolume.c: For async functions that have no non-async 
+	version, document that the GAsyncReadyCallback may be NULL.
+	Bug #509626.
+
+2008-01-15  Alexander Larsson  <alexl@redhat.com>
+
+	* gmemoryinputstream.c:
+	* gmemoryoutputstream.c:
+	Don't do pointer arithmetic on void * (#508602)
+	Patch from Kazuki IWAMOTO
+
+2008-01-14  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.15.2 ===
+
+2008-01-14  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.c (g_file_monitor_file):
+	Don't set error here, since we fallback to polling monitor.
+
+2008-01-14  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.[ch]:
+	(g_file_monitor_directory):
+	(g_file_monitor_file):
+	Add GError to file monitor calls
+	
+	* glocaldirectorymonitor.c:
+	* glocaldirectorymonitor.h:
+	* glocalfile.c:
+	* glocalfilemonitor.c:
+	* glocalfilemonitor.h:
+	* gunixmounts.c:
+	Update for above change
+
+2008-01-14  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfile.c:
+	(match_prefix):
+	Handle root correctly in g_file_get_relative_path (#508719)
+
+2008-01-14  Alexander Larsson  <alexl@redhat.com>
+
+	* gasyncresult.c:
+	Clean up docs and example for GAsyncResult (#508074)
+
+2008-01-11  Murray Cumming  <murrayc@murrayc.com>
+
+	* gfile.c: Clarify the sentence about GAsyncReadyCallback, 
+	and correct some spelling mistakes. Bug #508108.
+
+2008-01-11  Matthias Clasen <mclasen@redhat.com>
+
+	* glocalfileinfo.c: Add a comment.
+
+2008-01-10  Murray Cumming  <murrayc@murrayc.com>
+
+	* gfileinfo.c: GFileInfo description: Mention 
+	how to actually set attributes in a GFile and how to discover 
+	which attributes are settable. Bug #508378.
+
+2008-01-10  A. Walton  <awalton@svn.gnome.org>
+
+	* gdesktopappinfo.c: (g_app_info_get_all_for_type),
+	(g_app_info_get_default_for_type):
+	Check for NULL content types.
+
+2008-01-10  Frederic Crozat  <fcrozat@mandriva.com>
+
+	* gunixmounts.c: add rpc_pipefs to systemfs list (#508309).
+
+2008-01-09  Murray Cumming  <murrayc@murrayc.com>
+
+	* gfile.c: *_async() functions: Several small corrections 
+	to the documentation, mostly correcting copy/paste errors 
+	and improving some sentences.
+
+2008-01-09  Dan Winship  <danw@gnome.org>
+
+	* glocalfile.c (get_unique_filename): x86_64 fix
+
+2008-01-09  Alexander Larsson  <alexl@redhat.com>
+
+	* gio.symbols:
+	* gunixmount.c:
+	* gunixmounts.[ch]:
+	Add g_unix_mount_guess_should_display and use
+	for unix volume monitor backend.
+	This means we more or less show what the
+	gnome-vfs backend did.
+	Based on patch from Padraig O'Briain
+
+2008-01-09  Alexander Larsson  <alexl@redhat.com>
+
+	* gio.symbols:
+	* gthemedicon.[ch]:
+	Add g_themed_icon_new_with_default_fallbacks
+	
+	* gunixmounts.c:
+	Use default fallbacks for icons
+
+2008-01-09  Alexander Larsson  <alexl@redhat.com>
+
+	* gio-marshal.list:
+	* gmountoperation.[ch]:
+	Change the API a bit so that unhandled methods
+	get reported via the reply, rather than by
+	the signal emission return value. This is because
+	some handlers can't know this immediately without
+	doing I/O, and this is an async operation that
+	should not block.
+
+2008-01-09  Alexander Larsson  <alexl@redhat.com>
+
+	* fam/fam-helper.c:
+	* fam/gfamdirectorymonitor.c:
+	* fam/gfamfilemonitor.c:
+	Fix double free crash (#508224)
+	Patch from Joe Marcus Clarke
+
+008-01-07  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.15.1 ===
+
+2008-01-07  Alexander Larsson  <alexl@redhat.com>
+
+	* gunixinputstream.c (g_unix_input_stream_skip_finish):
+	Fix warning (#507835)
+
+2008-01-07  Alexander Larsson  <alexl@redhat.com>
+
+	* Makefile.am:
+	Pass --internal to glib-genmarshal
+	
+	* gfilemonitor.c:
+	* gmountoperation.c:
+	* gio-marshal.list:
+	Use better types for signal arguments (#507822)
+
+2008-01-07  Alexander Larsson  <alexl@redhat.com>
+
+	* Makefile.am:
+	Build test subdir after .
+	Remove gdirectorymonitor.[ch]
+	
+	* gdirectorymonitor.[ch]:
+	* gfilemonitor.c:
+	* gfile.[ch]:
+	* gio.h:
+	Remove GDirectoryMonitor and make
+	GFileMonitor the baseclass for both file and
+	directory monitors. Lift the more generic
+	rate limiting code from GDirectoryMonitor
+	into GFileMonitor.
+	
+	* fam/fam-helper.c:
+	* fam/gfamdirectorymonitor.[ch]:
+	* inotify/ginotifydirectorymonitor.[ch]:
+	* inotify/inotify-helper.c:
+	* glocaldirectorymonitor.[ch]:
+	* glocalfile.c:
+	* gvolumemonitor.c:
+	Update for the removed GDirectoryMonitor.
+	
+	* gmemoryoutputstream.c:
+	Remove ununsed variable
+
+2008-01-07  Alexander Larsson  <alexl@redhat.com>
+
+	* gmemoryinputstream.c:
+	Translate error strings
+	
+	* gio.symbols:
+	* gmemoryoutputstream.[ch]:
+	New implementation that avoids using GByteArray
+	in implementation and API. (#506377)
+
+2008-01-06  Matthias Clasen  <mclasen@redhat.com>
+
+	* tests/*: Add a test for memory input streams.
+	
+	* Makefile.am: Add tests to SUBDIRS.
+
+2008-01-06  Matthias Clasen  <mclasen@redhat.com>
+
+	* glocalfilemonitor.c:
+	* glocaldirectorymonitor.c: Mark property nicks and blurbs
+	for translation.
+
+2008-01-06  Matthias Clasen  <mclasen@redhat.com>
+
+	* gdesktopappinfo.c: Fix a docs typo.
+
+	* gfileattribute.c: Add information about extended attributes
+	to the documentation.  (#505058)
+
+2008-01-04  Alexander Larsson  <alexl@redhat.com>
+
+	* gio-marshal.list:
+	* gmountoperation.c:
+	Use the right type (uint) for the ask_password signal.
+
+2008-01-04  Alexander Larsson  <alexl@redhat.com>
+
+	* gappinfo.[ch]:
+	* gwin32appinfo.c:
+	* gio.symbols:
+	Add g_app_info_supports_files() 
+	Remove desktop arg from g_app_info_should_show().
+	
+	* gdesktopappinfo.[ch]:
+	Implement g_app_info_supports_files() and new should_show()
+	Add g_desktop_app_info_set_desktop_env() to set the desktop
+	for should_show(). (This will be set by gtk+ later)
+
+2008-01-04  Alexander Larsson  <alexl@redhat.com>
+
+	* gio.symbols:
+	* gmemoryinputstream.[ch]:
+	Improve API so that you can use multiple chunks
+	of memory and custom destroy functions. (#506374)
+
+2008-01-03  Alexander Larsson  <alexl@redhat.com>
+
+	* gfileinfo.c:
+	Handle NULL attribute matchers safely, as we return this
+	for empty attribute matcher strings.
+
+2008-01-03  Alexander Larsson  <alexl@redhat.com>
+
+	* gunixmounts.c (g_unix_is_mount_path_system_internal):
+	Add /usr/local to list of internal mountpoints
+
+2008-01-03  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfileinfo.c:
+	Check for HAVE_LCHOWN (#505887)
+	
+2008-01-03  Alexander Larsson  <alexl@redhat.com>
+
+	* gfileinfo.h:
+	* glocalfileinfo.c:
+	Add define for selinux context attribute.
+	Fix missing : -> :: namespace separator change
+	Fix missing _ -> - name change for xattr-sys.
+	(#505058)
+
+2008-01-03  Alexander Larsson  <alexl@redhat.com>
+
+	* fam/Makefile.am:
+	Link to libglib and libgobject directly (#504879)
+	Patch from Sebastien Bacher
+
+2008-01-01  Wouter Bolsterlee  <wbolster@svn.gnome.org>
+
+	* gfile.c: Expanded the g_file_new_for_commandline_arg
+	description a bit, based on the code and the docs of the
+	other g_file_new_for_* functions.
+
+2007-12-31  Wouter Bolsterlee  <wbolster@svn.gnome.org>
+
+	* gfilemonitor.h: Fixed typo in docs.
+
+2007-12-31  Mathias Hasselmann  <mathias@openismus.com>
+
+	Updates to GIO documentation. (#506395, Mikael Hermansson)
+
+	* gcontenttype.c: Describe memory management for return value of
+	g_content_types_get_registered(). Missing piece from #505815.
+	* gdrive.c, gmount.c, gvolumemonitor.c: Add more description to
+	GVolume, GDrive, GMounts, which hopefully gives the user less
+	confusions when using this API. Following explainations from
+	Alexander Larsson on gtk-devel-list.
+
+2007-12-30  Matthias Clasen  <mclasen@redhat.com> 
+
+	* gfileinfo.c: Expand the long description.
+
+2007-12-30  Matthias Clasen  <mclasen@redhat.com> 
+
+	* fam/Makefile.am:
+	* inotify/Makefile.am: Use GLIB_DEBUG_FLAGS. This should
+	fix builds with --disable-visibility.  (#500273, Christian Persch)
+
+2007-12-30  Matthias Clasen  <mclasen@redhat.com> 
+
+	* gdesktopfileinfo.c (g_app_info_get_all): Don't include NULLs
+	in the list of returned app infos.
+
+2007-12-30  Matthias Clasen  <mclasen@redhat.com> 
+
+	* gappinfo.c: Fix a cross-reference
+
+2007-12-30  Matthias Clasen  <mclasen@redhat.com> 
+
+	* gfileinputstream.c:
+	* gfileoutputstream.c:
+	* gloadableicon.h:
+	* gunixmounts.c:
+	* gmount.h:
+	* gdesktopappinfo.c:
+	* gvolumemonitor.c: 
+	* gfileinfo.c: Documentation updates.
+
+2007-12-26  Matthias Clasen  <mclasen@redhat.com> 
+
+	* gdesktopappinfo.c: Include crt_externs.h.  (#505730,
+	Tommi Komulainen)
+
+2007-12-26  Matthias Clasen  <mclasen@redhat.com> 
+
+	* gcontenttype.c (g_content_types_get_registered): Don't return
+	freed memory (#505815, Mikael Hermansson)
+
+2007-12-25  Paolo Borelli  <pborelli@katamail.com>
+
+	* glocalfileinfo.c (set_info_from_stat): fix typo in the ifdef
+	used to detect statbuf->st_blocks. (#505042)
+
+2007-12-24  Matthias Clasen  <mclasen@redhat.com>
+
+	* gdesktopappinfo.c (g_desktop_app_info_launch): Fix the
+	environment handling.  (#504829, Cosimo Cecchi)
+
+2007-12-22  Matthias Clasen  <mclasen@redhat.com>
+
+	* gappinfo.c: Doc improvements
+	
+	* gdesktopappinfo.c (g_app_info_get_all): Return app infos,
+	not ids.
+
+2007-12-20  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.15.0 ===
+
+2007-12-20  Hans Breuer  <hans@breuer.org>
+
+	* makefile.msc : don't build gdesktopappinfo.obj, it collides 
+	with symbols gwin32appinfo.obj, added gmount.obj
+	* gio.symbols : mark g_desktop_app_* as G_OS_UNIX
+
+2007-12-20  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.c:
+	* gfileattribute.c:
+	* gfileinfo.c:
+	* gfileinfo.h:
+	* gfilenamecompleter.c:
+	* glocalfile.c:
+	* glocalfileinfo.c:
+	* gpollfilemonitor.c:
+	File attribute renames:
+	std:: -> standard::
+	fs:: -> filesystem::
+	id::fs -> id::filesystem
+	
+2007-12-20  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.[ch]:
+	* gdrive.[ch]:
+	* gmount.[ch]:
+	* gvolume.[ch]:
+	* gunixmount.c:
+	* gunixvolume.c:
+	* gio.symbols:
+	Add GMountUnmountFlags to all unmount and
+	eject calls.
+	Add g_mount_remount() call.
+
+2007-12-20  Alexander Larsson  <alexl@redhat.com>
+
+	* gvfs.c (get_default_vfs):
+	Fix unused variable warning
+
+2007-12-19  Matthias Clasen  <mclasen@redhat.com>
+
+	* pltcheck.sh: Update
+
+2007-12-19  Matthias Clasen  <mclasen@redhat.com>
+
+	* gunionvolumemonitor.c:
+	* gunixmount.c: Remove C99 comments
+
+2007-12-19  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio.symbols: Add some missing symbols
+
+2007-12-19  Alexander Larsson  <alexl@redhat.com>
+
+	* giomodule.c:
+	Make g_io_modules_load_all_in_directory not unuse
+	loaded modules so that users of it can do stuff
+	before unloading.
+	Init internal "module" types.
+	Initialize static prio and name for types so that
+	we don't have to load modules to get it.
+	
+	* gnativevolumemonitor.h:
+	* gvolumemonitor.h:
+	Move is_supported to parent class so that
+	non-native monitors can avoid being initialized
+	too. (For instance GDaemonVolumeMonitor if we're
+	not using GDaemonVfs.)
+	
+	* glocaldirectorymonitor.[ch]:
+	* glocalfilemonitor.[ch]:
+	* gunionvolumemonitor.c:
+	* gunixvolumemonitor.c:
+	* gvfs.c:
+	Find plugins using the static prio+name to
+	avoid unnecessarily loading the modules.
+
+2007-12-19  Alexander Larsson  <alexl@redhat.com>
+
+	* giomodule.c:
+	Remove warnings
+
+2007-12-19  Alexander Larsson  <alexl@redhat.com>
+
+	* gunionvolumemonitor.c:
+	Store the native type as GType, not class so that
+	we can unload it. But still avoid unnecessarily
+	unload modules.
+
+2007-12-19  David Zeuthen  <davidz@redhat.com>
+
+	Introduce g_volume_monitor_adopt_orphan_mount() function. Also
+	add signals 'disconnected' and 'eject-button' on GDrive. Add
+	signal 'removed' on GVolume and 'unmounted' on GMount.
+
+	* gdrive.c: (g_drive_base_init):
+	* gdrive.h:
+	* gfile.c: (g_file_mount_mountable),
+	(g_file_mount_enclosing_volume):
+	* gio.symbols:
+	* gioerror.h:
+	* gmount.c: (g_mount_base_init):
+	* gmount.h:
+	* gunionvolumemonitor.c: (g_volume_monitor_adopt_orphan_mount):
+	* gunixvolumemonitor.c: (update_volumes), (update_mounts):
+	* gvolume.c: (g_volume_base_init), (g_volume_mount):
+	* gvolume.h:
+	* gvolumemonitor.h:
+
+2007-12-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* *.c: Fix up includes in the section docs.
+
+2007-12-17  Alexander Larsson  <alexl@redhat.com>
+
+	* gnativevolumemonitor.h:
+	* gunionvolumemonitor.c:
+	* gunixvolumemonitor.c:
+	Add is_supported() to GNativeVolumeMonitorClass so
+	that we can avoid having to create an object to see
+	if the backend is supported at runtime.
+	Also add name member and an env var to pick a specific
+	volume monitor backend.
+	
+	* gmountprivate.h:
+	* glocalfile.c:
+	Add cancellable to _g_mount_get_for_mount_path()
+	
+	* glocaldirectorymonitor.c:
+	* glocalfilemonitor.c:
+	Avoid loading and unloading modules while sorting.
+
+2007-12-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio.symbols:
+	* gunixmounts.[hc]: Namespace waste reduction, move some
+	g_get_unix_mount functions to the g_unix_mount namespace.
+
+	* gunixmounts.c:
+	* gunixvolumemonitor.c:
+	* glocalfile.c:
+	* glocaldirectorymonitor.c: Update all callers.
+
+	* gunixmounts.h: Remove leftover g_unix_get_canonical_device_path
+
+2007-12-17  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.c:
+	Add doc comments about what GFile operations are
+	guaranteed to not block.
+
+2007-12-17  Alexander Larsson  <alexl@redhat.com>
+
+	* gunixmounts.c:
+	Add missing #ifdef fixing OSX build.
+	(#503334, patch from Richard Hult)
+
+2007-12-14  David Zeuthen  <davidz@redhat.com>
+
+	* Makefile.am:
+	* gio.symbols:
+	* gmount.c: (g_mount_get_uuid), (g_mount_can_eject),
+	(g_mount_eject), (g_mount_eject_finish):
+	* gmount.h:
+	* gunionvolumemonitor.c: (g_union_volume_monitor_finalize),
+	(get_volume_for_uuid), (get_mount_for_uuid),
+	(g_union_volume_monitor_class_init),
+	(get_default_native_type_with_exclude), (get_default_native_type),
+	(get_native_type), (update_native_type),
+	(g_union_volume_monitor_init), (_g_mount_get_for_mount_path):
+	* gunixmount.c: (_g_unix_mount_new), (g_unix_mount_get_uuid),
+	(g_unix_mount_can_eject), (eject_unmount_cb),
+	(eject_unmount_read_error), (eject_unmount_do),
+	(g_unix_mount_unmount), (g_unix_mount_eject),
+	(g_unix_mount_eject_finish), (g_unix_mount_mount_iface_init):
+	* gunixmounts.c: (g_unix_mount_guess_can_eject),
+	(g_unix_mount_point_guess_can_eject):
+	* gunixmounts.h:
+	* gunixvolume.c: (_g_unix_volume_new), (g_unix_volume_get_uuid),
+	(g_unix_volume_can_eject), (g_unix_volume_get_drive),
+	(eject_mount_cb), (eject_mount_read_error), (eject_mount_do),
+	(g_unix_volume_mount), (g_unix_volume_eject),
+	(g_unix_volume_eject_finish), (g_unix_volume_volume_iface_init):
+	* gunixvolumemonitor.c: (get_volume_for_uuid),
+	(get_mount_for_uuid), (g_unix_volume_monitor_class_init),
+	(update_mounts):
+	* gvolume.c: (g_volume_get_uuid), (g_volume_can_eject),
+	(g_volume_eject), (g_volume_eject_finish):
+	* gvolume.h:
+	* gvolumemonitor.c: (g_volume_monitor_get_volume_for_uuid),
+	(g_volume_monitor_get_mount_for_uuid):
+	* gvolumemonitor.h:
+
+	Provide eject() on both GMount and GVolume and utility functions
+	to guess whether a GUnixMountPoint or GUnixMountEntry should be
+	ejected. Introduce the concept of UUID's and wire it into GVolume
+	and GMount and provide API on GVolumeMonitor to find such
+	instances. Also handle the case where an external
+	GNativeVolumeMonitor fails to initialize. Lock around the
+	_g_get_mount_for_mount_path() function such that volume monitor
+	implementations won't have to do locking themselves.
+
+2007-12-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* gdesktopappinfo.c:
+	* gunixmounts.c:
+	* gfileinfo.c:
+	* gvolumemonitor.c:
+	* gfile.h:
+	* gioscheduler.c:
+	* gvolume.h: Documentation updates
+
+2007-12-14  Matthias Clasen  <mclasen@redhat.com>
+
+	* gunixmounts.c:
+	* gfile.h: Doc updates
+
+2007-12-14  Matthias Clasen  <mclasen@redhat.com>
+
+	* gcontenttype.c:
+	* gdesktopappinfo.c: Use hash table iterators.
+
+2007-12-14  Alexander Larsson  <alexl@redhat.com>
+
+	* Makefile.am:
+	* gfileattribute.[ch]:
+	* gfileattribute-priv.h:
+	Move GFileAttributeValue to a private header, as
+	its sort of ugly.
+	
+	* gfile.[ch]:
+	Make set_attribute take a type + a pointer instead
+	of a GFileAttributeValue.
+	
+	* gfileinfo.[ch]:
+	Fix up for above changes.
+	Add g_file_info_get_attribute_data to get
+	all info in one call, g_file_info_get_attribute_status
+	to get the status and g_file_info_get_attribute_as_string.
+	
+	* gio.symbols:
+	* glocalfile.c:
+	* glocalfileinfo.[ch]:
+	Update for changes
+	
+	* gunixmounts.c:
+	Make _guess_type static.
+
+2007-12-14  Yevgen Muntyan  <muntyan@tamu.edu>
+
+	* Makefile.am:
+	* inotify/Makefile.am: Fixed build when srcdir != builddir,
+	made mkenums and friends use temporary files to avoid leaving
+	empty generated files on failure (#503470).
+
+2007-12-14  Alexander Larsson  <alexl@redhat.com>
+
+	* gmountoperation.h:
+	Fix AKS -> ASK typo
+
+2007-12-14  Alexander Larsson  <alexl@redhat.com>
+
+	* gappinfo.h:
+	* gfile.[ch]:
+	* gfileattribute.[ch]:
+	* gio.symbols:
+	* glocalfile.c:
+	* glocalfileoutputstream.c:
+	* gmountoperation.[ch]:
+	* goutputstream.[ch]:
+	Clean up all flags enums to not have _FLAGS in them
+	Make the names of some of the enums better.
+
+	* glocalfileinfo.c:
+	Fix warning
+	
+2007-12-14  Michael Natterer  <mitch@imendio.com>
+
+	* gio.symbols: fix g_io_scheduler symbol names.
+
+2007-12-14  Alexander Larsson  <alexl@redhat.com>
+
+	* Makefile.am:
+	* fam/Makefile.am:
+	* gappinfo.h:
+	* gasyncresult.h:
+	* gbufferedinputstream.h:
+	* gbufferedoutputstream.h:
+	* gcancellable.h:
+	* gcontenttype.h:
+	* gdatainputstream.h:
+	* gdataoutputstream.h:
+	* gdesktopappinfo.h:
+	* gdirectorymonitor.h:
+	* gdrive.h:
+	* gfile.h:
+	* gfileattribute.h:
+	* gfileenumerator.h:
+	* gfileicon.h:
+	* gfileinfo.h:
+	* gfileinputstream.h:
+	* gfilemonitor.h:
+	* gfilenamecompleter.h:
+	* gfileoutputstream.h:
+	* gfilterinputstream.h:
+	* gfilteroutputstream.h:
+	* gicon.h:
+	* ginputstream.h:
+	* gio.h:
+	* gioerror.h:
+	* giomodule.h:
+	* gioscheduler.h:
+	* gloadableicon.h:
+	* gmemoryinputstream.h:
+	* gmemoryoutputstream.h:
+	* gmount.h:
+	* gmountoperation.h:
+	* goutputstream.h:
+	* gseekable.h:
+	* gsimpleasyncresult.h:
+	* gthemedicon.h:
+	* gunixinputstream.h:
+	* gunixmounts.h:
+	* gunixoutputstream.h:
+	* gvfs.h:
+	* gvolume.h:
+	* gvolumemonitor.h:
+	* inotify/Makefile.am:
+	Only allow including <gio/gio.h> from apps
+
+2007-12-14  Alexander Larsson  <alexl@redhat.com>
+
+	* gioscheduler.[ch]:
+	* gsimpleasyncresult.c:
+	Rename gioscheduler calls so they all use the g_io_schedule_ prefix.
+	Split out the send_to_mainloop call into two versions instead
+	of having the block argument.
+
+2007-12-13  Alexander Larsson  <alexl@redhat.com>
+
+	* gcancellable.[ch]:
+	* gio.symbols:
+	* gbufferedinputstream.c:
+	* gfileenumerator.c:
+	* gfileinputstream.c:
+	* gfileoutputstream.c:
+	* ginputstream.c:
+	* gioscheduler.c:
+	* goutputstream.c:
+	g_push/pop_current_cancellable ->
+	g_cancellable_push/pop_current
+
+2007-12-13  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.[ch]:
+	* gio.symbols:
+	Rename g_mount_for_location to g_file_mount_enclosing_volume.
+
+2007-12-13  Alexander Larsson  <alexl@redhat.com>
+
+	* gmountoperation.h:
+	G_PASSWORD_FLAGS_ANON_SUPPORTED -> G_PASSWORD_FLAGS_ANONYMOUS_SUPPORTED
+
+2007-12-12  Alexander Larsson  <alexl@redhat.com>
+
+	* gioscheduler.c:
+	Fix race condition when freeing proxy in
+	g_io_job_send_to_mainloop().
+
+2007-12-12  Alexander Larsson  <alexl@redhat.com>
+
+	* gfileattribute.c:
+	* gfileinfo.[ch]:
+	* glocalfile.c:
+	* glocalfileinfo.c:
+	Make attribute namespace separator "::" instead of ":".
+	Use - instead of _ as separator in attribute names.
+
+2007-12-12  Alexander Larsson  <alexl@redhat.com>
+
+	* gbufferedinputstream.h:
+	* gbufferedoutputstream.h:
+	* gdatainputstream.h:
+	* gdataoutputstream.h:
+	* gdirectorymonitor.h:
+	* gfileenumerator.h:
+	* gfileinputstream.h:
+	* gfilemonitor.h:
+	* gfileoutputstream.h:
+	* gfilterinputstream.h:
+	* gfilteroutputstream.h:
+	* ginputstream.h:
+	* glocalfileinputstream.h:
+	* glocalfileoutputstream.h:
+	* gmemoryinputstream.h:
+	* gmemoryoutputstream.h:
+	* gnativevolumemonitor.h:
+	* goutputstream.h:
+	* gunixinputstream.h:
+	* gunixoutputstream.h:
+	* gvfs.h:
+	* gvolumemonitor.h:
+	s/parent/parent_instance/ in GObjects
+
+2007-12-12  Alexander Larsson  <alexl@redhat.com>
+
+	* gdrive.h:
+	* gmount.h:
+	* gvolume.h:
+	No need for padding for interfaces
+	
+2007-12-12  Alexander Larsson  <alexl@redhat.com>
+
+	* gappinfo.[ch]:
+	* gasyncresult.c:
+	* gbufferedinputstream.c:
+	* gbufferedoutputstream.c:
+	* gcancellable.c:
+	* gcontenttype.c:
+	* gdatainputstream.[ch]:
+	* gdesktopappinfo.c:
+	* gdirectorymonitor.c:
+	* gfile.[ch]:
+	* gfileattribute.[ch]:
+	* gfileicon.[ch]:
+	* gfileinfo.h:
+	* gfileinputstream.h:
+	* gfilemonitor.[ch]:
+	* gfileoutputstream.[ch]:
+	* gfilterinputstream.h:
+	* gfilteroutputstream.h:
+	* gicon.h:
+	* gioscheduler.c:
+	* gloadableicon.[ch]:
+	* gmemoryinputstream.c:
+	* gmountoperation.c:
+	* gthemedicon.c:
+	Fix up a bunch of details in the docs.
+
+	* glocalfileinfo.c:
+	CR/LF -> LF fixups
+	
+2007-12-11  David Zeuthen  <davidz@redhat.com>
+
+	Rework how volumes, drives and volume monitoring is
+	done. Previosly the model was
+
+	 GDrive <1-1> GVolume
+
+	where a GDrive instance represented a mount point and a GVolume
+	instance represented a mounted file system. This patch changes it
+	the model to
+
+		GDrive <1-N> GVolume <1-1> GMount
+
+	where GMount now serves the purpose of the old GVolume and the new
+	GVolume serves the purpose of the old GDrive. In addition the new
+	GDrive interface is used to represent a collection of GVolume
+	instances (typically partitions) and also contains utility to query
+	the state of the physical drive the GDrive object represents (such
+	as checking for media, polling the drive, ejecting the media etc.).
+
+	Also implement mounting and unmounting in the Unix volume monitor
+	backend. A subquent patch will introduce GDrive support for ejection
+	of media.
+
+	* Makefile.am:
+	* gdrive.c: (g_drive_is_media_check_automatic),
+	(g_drive_is_media_removable), (g_drive_has_media),
+	(g_drive_can_poll_for_media), (g_drive_eject),
+	(g_drive_eject_finish), (g_drive_poll_for_media),
+	(g_drive_poll_for_media_finish):
+	* gdrive.h:
+	* gfile.c: (g_file_find_enclosing_mount):
+	* gfile.h:
+	* gio.symbols:
+	* glocaldirectorymonitor.c:
+	(g_local_directory_monitor_constructor), (mounts_changed):
+	* glocalfile.c: (get_mount_info),
+	(g_local_file_find_enclosing_mount),
+	(g_local_file_file_iface_init):
+	* gnativevolumemonitor.h:
+	* gunionvolumemonitor.c: (get_mounts), (get_volumes),
+	(get_connected_drives), (g_union_volume_monitor_class_init),
+	(child_volume_added), (child_volume_removed),
+	(child_volume_changed), (child_mount_added), (child_mount_removed),
+	(child_mount_pre_unmount), (child_mount_changed),
+	(child_drive_changed), (g_union_volume_monitor_add_monitor),
+	(g_union_volume_monitor_remove_monitor),
+	(_g_mount_get_for_mount_path):
+	* gunixmounts.c: (g_unix_is_mount_path_system_internal),
+	(guess_system_internal), (_g_get_unix_mounts),
+	(_g_get_unix_mount_points), (g_get_unix_mount_at),
+	(g_unix_mount_free), (g_unix_mount_compare),
+	(g_unix_mount_get_mount_path), (g_unix_mount_get_device_path),
+	(g_unix_mount_get_fs_type), (g_unix_mount_is_readonly),
+	(g_unix_mount_is_system_internal), (g_unix_mount_guess_type),
+	(type_to_icon), (g_unix_mount_guess_name),
+	(g_unix_mount_guess_icon), (g_unix_mount_point_guess_name),
+	(g_unix_mount_point_guess_icon), (_canonicalize_filename),
+	(_resolve_symlink), (_resolve_dev_root):
+	* gunixmounts.h:
+	* gunixvolume.c: (g_unix_volume_finalize), (_g_unix_volume_new),
+	(_g_unix_volume_disconnected), (_g_unix_volume_set_mount),
+	(_g_unix_volume_unset_mount), (g_unix_volume_get_icon),
+	(g_unix_volume_get_name), (g_unix_volume_can_mount),
+	(g_unix_volume_get_drive), (g_unix_volume_get_mount),
+	(_g_unix_volume_has_mount_path), (mount_cb), (mount_read_error),
+	(g_unix_volume_mount), (g_unix_volume_mount_finish),
+	(g_unix_volume_volume_iface_init):
+	* gunixvolume.h:
+	* gunixvolumemonitor.c: (g_unix_volume_monitor_finalize),
+	(get_mounts), (get_volumes), (get_connected_drives),
+	(get_mount_for_mount_path), (g_unix_volume_monitor_class_init),
+	(mountpoints_changed), (mounts_changed),
+	(g_unix_volume_monitor_init),
+	(_g_unix_volume_monitor_lookup_volume_for_mount_path),
+	(find_mount_by_mountpath), (update_volumes), (update_mounts):
+	* gunixvolumemonitor.h:
+	* gvolume.c: (g_volume_get_mount), (g_volume_can_mount),
+	(g_volume_mount), (g_volume_mount_finish):
+	* gvolume.h:
+	* gvolumemonitor.c: (g_volume_monitor_class_init),
+	(g_volume_monitor_get_connected_drives),
+	(g_volume_monitor_get_volumes), (g_volume_monitor_get_mounts):
+	* gvolumemonitor.h:
+
+2007-12-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* gmountoperation.h (GPasswordFlags): Close the gap
+
+2007-12-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* Makefile.am: Install gdesktopappinfo.h as unix-specific header.
+	* gio.symbols:
+	* gdesktopappinfo.[hc]: Remove _-prefixes
+
+2007-12-10  Tor Lillqvist  <tml@novell.com>
+
+	* glocalfile.c: Add some more G_OS_WIN32 conditionals to silence
+	gcc warnings.
+
+2007-12-10  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.c (g_file_set_display_name):
+	Don't hardcode '/' (#502727)
+
+2007-12-09  Hans Breuer  <hans@breuer.org>
+
+	* makefile.msc : follow lib naming convention
+	* glocalfileinfo.c(win32_get_file_user_info) : working implementation
+	for user and group name, tested with ../tests/gio-ls
+
+2007-12-09  A. Walton  <awalton@svn.gnome.org>
+
+	* gdesktopappinfo.c:
+	* gdrive.c:
+	* gdrive.h:
+	* gfile.c:
+	* gfile.h:
+	* gfileattribute.c:
+	* gfileenumerator.c:
+	* gioerror.c:
+	* gioscheduler.c:
+	* gioscheduler.h:
+	* gloadableicon.c:
+	* gmemoryinputstream.c:
+	* gmemoryoutputstream.c:
+	* goutputstream.h:
+	* gsimpleasyncresult.c:
+	More documentation cleanup and filling in missing information, bringing
+	GIO to 99% symbol coverage.
+
+2007-12-08  Hans Breuer  <hans@breuer.org>
+
+	[gio compiles and links on win32, not sure how much already works]
+	* glocaldirectorymonitor.c : ifdefed out inotify emulation for win32
+	* glocalfile.c : use HAVE_UNISTD_H; implement file system size info 
+	base on win32 API; prefer g_lstat() over lstat(); instead of 
+	localtime_r() use an all GLib implementation on win32;
+	get_mount_info() still needs a win32 specifc implementation
+	* glocalfileinfo.c : use HAVE_*_H; start of implementation of 
+	win32_get_file_user_info to get owner/group info without uid/gid
+	* glocalfileinputstream.c : include <io.h> on win32
+	* glocalfileoutputstream.c : include <io.h> on win32 and some S_IS*
+	definition, use g_win32_ftruncate() for G_OS_WIN32
+	* gwin32appinfo.c : optionalize a bunch on #ifdef AssocQueryString
+	it is available with mingw/w32api but a mess with the M$ Platform SDKs
+	see: http://mail.gnome.org/archives/gtk-devel-list/2007-December/msg00014.html
+	* makefile.msc : updated
+
+2007-12-07  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfileenumerator.c (_g_local_file_enumerator_new):
+	Avoid warning spew if error == NULL
+	
+2007-12-07  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.c:
+	Update docs wrt etags
+
+2007-12-06  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfileinfo.h:
+	Include sys/types.h for dev_t (#501919)
+
+2007-12-06  Behdad Esfahbod  <behdad@gnome.org>
+
+	* gio.symbols:
+	* pltcheck.sh:
+	Make abicheck and pltcheck pass.
+
+2007-12-05  Alexander Larsson  <alexl@redhat.com>
+
+	* Makefile.am:
+	* giomodule-priv.h: Added.
+	* glocaldirectorymonitor.c:
+	* glocalfilemonitor.c:
+	* gunionvolumemonitor.c:
+	* gvfs.c:
+	Actually add the declaration of _g_io_modules_ensure_loaded
+
+2007-12-05  Alexander Larsson  <alexl@redhat.com>
+
+	* gdatainputstream.c:
+	Fix warnings
+	
+	* gio.symbols:
+	* giomodule.[ch]
+	* glocaldirectorymonitor.c:
+	* glocalfilemonitor.c:
+	* gunionvolumemonitor.c:
+	* gvfs.c:
+	Make g_io_modules_ensure_loaded a private function and
+	don't pass in the dirname. This means we can do magic
+	directory finding in the win32 version.
+	Export the actual load-modules-in-directory code so that
+	gvfs can reuse that.
+
+2007-12-05  Alexander Larsson  <alexl@redhat.com>
+
+	* gbufferedinputstream.c:
+	* gbufferedoutputstream.c:
+	* gdrive.[ch]:
+	* gfile.[ch]:
+	* gfileenumerator.[ch]:
+	* gfileinputstream.c:
+	* gfileoutputstream.[ch]:
+	* gfilterinputstream.c:
+	* gfilteroutputstream.c:
+	* ginputstream.[ch]:
+	* glocalfile.c:
+	* glocalfileenumerator.c:
+	* glocalfileinputstream.c:
+	* glocalfileoutputstream.c:
+	* gmemoryinputstream.c:
+	* gmemoryoutputstream.c:
+	* goutputstream.[ch]:
+	* gseekable.[ch]:
+	* gunixdrive.c:
+	* gunixinputstream.c:
+	* gunixoutputstream.c:
+	Rename all struct members named:
+	read, write, close, truncate, or mount
+	to foo_fn, as these are reserved names
+	and could be defined as macros in libc.
+	(#501645)
+
+2007-12-04  Alexander Larsson  <alexl@redhat.com>
+
+	* goutputstream.c:
+	(g_output_stream_close):
+	Only call flush if non-null.
+
+2007-11-30  Dan Winship  <danw@gnome.org>
+
+	* ginputstream.c (g_input_stream_set_pending): Make this take a
+	GError and return a gboolean, and do the "outstanding operation"
+	check (and the "stream is already closed" check) itself.
+	(g_input_stream_clear_pending): Formerly set_pending(FALSE).
+
+	* goutputstream.c (g_output_stream_set_pending)
+	(g_output_stream_clear_pending): Likewise
+
+	* gbufferedinputstream.c: 
+	* gfileinputstream.c: 
+	* gfileoutputstream.c: Update for that
+
+	* gsimpleasyncresult.c (g_simple_async_report_gerror_in_idle):
+	Like g_simple_async_report_error_in_idle, but takes a GError
+	rather than building one.
+
+2007-11-30  Dan Winship  <danw@gnome.org>
+
+	* goutputstream.c: Don't cheat and unset the "pending" flag around
+	inner calls. Instead, call the class method directly rather than
+	the wrapper function that checks "pending"
+
+2007-12-03  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/gnulib/Makefile.am: Fix EXTRA_DIST automake warnings. (#501107)
+
+2007-12-03  Hans Breuer  <hans@breuer.org>
+
+	[start of port to win32/msvc]
+	* gcancellable.c : HAVE_UNIST_H and _pipe()
+	* gcontenttype.c : only include <dirent.h> in the UNIX branch
+	* gdatainputstream.c : pointer arithmetic on void* is a gcc extension
+	* gdummyfile.c glocalfileinputstream.c gsimpleasyncresult.c : use 
+	HAVE_UNIST_H
+	* glocalfileoutputstream.c : use HAVE_UNIST_H and s/ssize_t/gssize/
+	* glocalvfs.c : use HAVE_PWD_H
+	* gio.symbols : ifdef unix specific functions with G_OS_UNIX
+	* makefile.msc : new file (maybe later converted to makefile.msc.in)
+	* Makefile.am : added to EXTRA_DIST
+
+2007-12-03  Matthias Clasen  <mclasen@redhat.com>
+
+	* gfile.c (g_file_copy): Add a cross-reference to g_file_dup().
+	(#499783)
+
+2007-12-03  Alexander Larsson  <alexl@redhat.com>
+
+	* glocalfileinfo.c:
+	Handle OSX style xattrs API (#500506)
+
+2007-12-03  Alexander Larsson  <alexl@redhat.com>
+
+	* gfile.[ch]:
+	* glocalfile.c:
+	Add G_FILE_COPY_NO_FALLBACK_FOR_MOVE flag
+
+2007-12-02  A. Walton  <awalton@svn.gnome.org>
+
+	* gfile.c:
+	* gfileattribute.c:
+	Documentation accuracy fixes.
+
+2007-12-01  Behdad Esfahbod  <behdad@gnome.org>
+
+	* gioenumtypes.c.template: Fix typo.
+
+2007-12-01  Matthias Clasen <mclasen@redhat.com>
+
+	* gioenumtypes.c.template: Make threadsafe get_type() functions.
+
+2007-12-01  Matthias Clasen <mclasen@redhat.com>
+
+	* gdirectorymonitor.c:
+	* gfilemonitor.c: Add properties
+
+	* gbufferedoutputstream.c: Don't mark buffer-size property 
+	as construct-only.
+
+2007-12-01  Matthias Clasen <mclasen@redhat.com>
+
+	* gbufferedoutputstream.c: Add auto-grow property.
+
+2007-11-30  Matthias Clasen <mclasen@redhat.com>
+
+	* *.c: Unify the capitalization of section headings.
+
+2007-11-30  Matthias Clasen <mclasen@redhat.com>
+
+	* gmountoperation.c: Add properties
+	
+	* gdatainputstream.c: Turn byte-order and newline-type into
+	properties.
+
+2007-11-30  Matthias Clasen <mclasen@redhat.com>
+
+	* gioenumtypes.[hc].template: Templates for enum registration
+
+	* Makefile.am: Generate gioenumtypes.[hc]
+
+	* gio.h: Include gioenumtypes.h
+	* gappinfo.h:
+	* gfile.h: Add some explicit nicks.
+
+	* gio.symbols: Add new symbols
+
+	* pltcheck.sh: Adjust
+
+2007-11-30  Matthias Clasen <mclasen@redhat.com>
+
+	* *.c: Explain etags and link to the explanation
+
+2007-11-29  Matthias Clasen <mclasen@redhat.com>
+
+	* *.c: Explain I/O priority.
+
+	* *.c: More coding style fixes.
+
+2007-11-29  Matthias Clasen <mclasen@redhat.com>
+
+	* gasyncresult.c: Add another paragraph to the intro,
+	adjust coding style of example.
+
+2007-11-29  A. Walton <awalton@svn.gnome.org>
+
+	* gappinfo.c:
+	  Fixes unknown meaning in GAppLaunchContext docs.
+	* gfile.c:
+	  Clarify asynchronous ops.
+	* gfileattribute.c:
+	  Fix entity tag docs.
+	* gicon.c:
+	* gthemedicon.c:
+	  Provides missing gtk-doc section, fixes API docs slighly.
+	* gsimpleasyncresult.c:
+	  Fill in missing info in docs.
+	* gunixinputstream.c:
+	* gunixoutputstream.c:
+	  Be more expressive in short description.
+	* gunixvolume.c:
+	  Remove gtk-doc stubs for non-public API.
+
+2007-11-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* *.c: Coding style fixups
+
+2007-11-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* inotify/inotify-helper.c: Don't export the lock from libgio.
+
+2007-11-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* Makefile.am:
+	* abicheck.sh: Fix copy-and-paste leftovers 
+
+2007-11-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* gfile.h: Add G_FILE_COPY_FLAGS_NONE for consistency.
+
+2007-11-28  Alexander Larsson  <alexl@redhat.com>
+
+	* Makefile.am:
+	* gdriveprivate.h:
+	Removed unnecessary file
+	
+	* gdesktopappinfo.[ch]:
+	* gdummyfile.[ch]:
+	* gfile.c:
+	* glocaldirectorymonitor.[ch]:
+	* glocalfile.[ch]:
+	* glocalfileenumerator.[ch]:
+	* glocalfileinputstream.[ch]:
+	* glocalfilemonitor.[ch]:
+	* glocalfileoutputstream.[ch]:
+	* glocalvfs.[ch]:
+	* gnativevolumemonitor.c:
+	* gpollfilemonitor.[ch]:
+	* gunionvolumemonitor.[ch]:
+	* gunixdrive.[ch]:
+	* gunixvolume.[ch]:
+	* gunixvolumemonitor.[ch]:
+	* gvfs.c:
+	* gvolumeprivate.h:
+	* inotify/ginotifydirectorymonitor.[ch]:
+	* inotify/ginotifyfilemonitor.[ch]:
+	* inotify/inotify-helper.c:
+	Append _ to all internal functions
+	
+	* gio.symbols:
+	Add missing symbols
+	Export symbols needed for modules
+
+2007-11-28  Alexander Larsson  <alexl@redhat.com>
+
+	* Makefile.am:
+	* abicheck.sh: Added.
+	* makegioalias.pl: Added.
+	* pltcheck.sh: Added.
+	* gio.symbols: Added.
+	* *.c:
+	* inotify/*.c
+	Initial work on adding symbol handling.
+
+	* gvfs.h:
+	Correct ifdef guard name
+
+	* fam/Makefile.am:
+	* inotify/Makefile.am:
+	* xdgmime/Makefile.am:
+	Include toplevel Makefile.decl
+
+2007-11-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* gcontenttype.c: Move doc comments to the unix section.
+
+	* *.[hc]: More trivial doc corrections.
+
+2007-11-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* gpollfilemonitor.c:
+	* gunixmounts.c:
+	* gvfs.c:
+	* gfile.c:
+	* gdesktopappinfo.c:
+	* gwin32appinfo.c:
+	* gvolume.c:
+	* glocalvfs.c:
+	* gvolumemonitor.c:
+	* gdatainputstream.c:
+	* gdatainputstream.h:
+	* gdataoutputstream.c:
+	* gdataoutputstream.h:
+	* gfileinfo.h: Doc cleanups
+
+2007-11-28  Andre Klapper  <a9016009@gmx.de>
+
+	* gdesktopappinfo.c: Fix a typo.
+
+2007-11-27  Andre Klapper  <a9016009@gmx.de>
+
+	* glocalfileoutputstream.c: Fix a typo.
+
+2007-11-27  Alexander Larsson  <alexl@redhat.com>
+
+	* gio.h:
+	Don't include removed headers
+
+2007-11-27  Alexander Larsson  <alexl@redhat.com>
+
+	* Makefile.am:
+	* gsocketinputstream.[ch]: Removed.
+	* gsocketoutputstream.[ch]: Removed.
+	* gunixinputstream.[ch]: Added.
+	* gunixoutputstream.[ch]: Added.
+	Renamed GSocket*Stream to GUnix*Stream and made
+	it unix-only, since its not really only for sockets
+	and it only works on unix (but is highly useful there).
+
+2007-11-27  Andrew Walton  <awalton@svn.gnome.org>
+	* gappinfo.c:
+	* gappinfo.h:
+	* gasynchelper.c:
+	* gasyncresult.c:
+	* gasyncresult.h:
+	* gbufferedinputstream.c:
+	* gbufferedinputstream.h:
+	* gbufferedoutputstream.c:
+	* gbufferedoutputstream.h:
+	* gcancellable.c: 
+	* gcancellable.h:
+	* gcontenttype.c:
+	* gdatainputstream.c:
+	* gdatainputstream.h:
+	* gdataoutputstream.c:
+	* gdataoutputstream.h:
+	* gdirectorymonitor.c:
+	* gdirectorymonitor.h:
+	* gdrive.c: 
+	* gdrive.h:
+	* gfile.c:
+	* gfile.h:
+	* gfileattribute.c:
+	* gfileattribute.h:
+	* gfileenumerator.c:
+	* gfileenumerator.h:
+	* gfileicon.c:
+	* gfileicon.h:
+	* gfileinfo.c:
+	* gfileinfo.h:
+	* gfileinputstream.c:
+	* gfileinputstream.h:
+	* gfilemonitor.c:
+	* gfilemonitor.h:
+	* gfilenamecompleter.c:
+	* gfilenamecompleter.h:
+	* gfileoutputstream.c:
+	* gfileoutputstream.h:
+	* gfilterinputstream.c:
+	* gfilterinputstream.h:
+	* gfilteroutputstream.c:
+	* gfilteroutputstream.h:
+	* gicon.c:
+	* gicon.h:
+	* ginputstream.c:
+	* ginputstream.h:
+	* gioerror.c:
+	* gioerror.h:
+	* giomodule.c:
+	* giomodule.h:
+	* gioscheduler.c:
+	* gioscheduler.h:
+	* gloadableicon.c:
+	* gloadableicon.h:
+	* glocalfileoutputstream.c:
+	* gmemoryinputstream.c:
+	* gmemoryinputstream.h:
+	* gmemoryoutputstream.c:
+	* gmemoryoutputstream.h:
+	* gmountoperation.c: 
+	* gmountoperation.h:
+	* goutputstream.c:
+	* goutputstream.h:
+	* gpollfilemonitor.c:
+	* gseekable.c:
+	* gseekable.h:
+	* gsimpleasyncresult.c:
+	* gsimpleasyncresult.h:
+	* gsocketinputstream.c:
+	* gsocketinputstream.h:
+	* gsocketoutputstream.c:
+	* gsocketoutputstream.h:
+	* gthemedicon.c:
+	* gthemedicon.h:
+	* gunixdrive.c:
+	* gunixmounts.c: 
+	* gunixmounts.h:
+	* gunixvolume.c:
+	* gunixvolumemonitor.c:
+	* gurifuncs.c:
+	* gurifuncs.h:
+	* gvfs.c:
+	* gvfs.h:
+	* gvolume.c:
+	* gvolume.h:
+	* gvolumemonitor.c: 
+	* gvolumemonitor.h:
+	Bumps documentation to 93% symbol coverage, touching most 
+	of the public files. Fixes broken function documentation prototypes. 
+	Fixes GCancellable inaccuracies. Removes unnecessary incomplete 
+	gtk-doc headers in private files.
+
+2007-11-27  Jürg Billeter  <j@bitron.ch>
+
+	* gbufferedinputstream.c: (g_buffered_input_stream_peek_buffer),
+	(g_buffered_input_stream_read_byte):
+	* gbufferedinputstream.h:
+	New functions for efficient access to buffer and simple single byte
+	reads.
+
+	* gdatainputstream.c: (scan_for_newline), (scan_for_chars),
+	(g_data_input_stream_read_until):
+	* gdatainputstream.h:
+	Use peek_buffer to avoid memcpy in scan_for_newline, implement
+	read_until with multiple stop chars.
+
+2007-11-27  Alexander Larsson  <alexl@redhat.com>
+
+	* Makefile.am:
+	* fam/Makefile.am:
+	* inotify/Makefile.am:
+	Use the user-specified giomoduledir
+
+2007-11-27  Alexander Larsson  <alexl@redhat.com>
+
+	* Makefile.am
+	* gio.h:
+	Add catch-all gio.h header
+	Don't install gdummyfile.h
+
+2007-11-26  Alexander Larsson  <alexl@redhat.com>
+
+	* Makefile.am (gioinclude_HEADERS):
+	Remove trailing whitespace
+	
+2007-11-26  Alexander Larsson  <alexl@redhat.com>
+
+	Merge gio-standalone into glib
+
+2007-11-25  Christian Kellner  <gicmo@gnome.org>
+
+	* gio/goutputstream.c:
+	Fix small mistake in the docs.
+
+2007-11-21  Christian Persch  <chpe@gnome.org>
+
+	* gio/glocalfile.c: (g_local_file_trash):
+	Convert filenames to UTF-8 for GError.
+	Use g_mkdir_with_parent to create the Trash dir, and use mode 0700
+	as per xdg base dir spec.
+
+2007-11-21  Christian Persch  <chpe@gnome.org>
+
+	* gio/gdesktopappinfo.c:
+	Use that g_key_file_to_data cannot fail.
+	Some misc cleanups.
+	Use stock defines for the key file group and key names.
+	Use bitfields.
+
+2007-11-21  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfile.c:
+	(copy_stream_with_progress):
+	Make sure we do a final progress callback with
+	the full total size.
+
+2007-11-21  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfile.[ch]:
+	Export g_file_copy_attributes
+	Remove padding as its not needed for interfaces
+
+2007-11-20  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfile.c:
+	* gio/gioerror.h:
+	* gio/glocalfile.c:
+	Add G_IO_ERROR_WOULD_MERGE for
+	copy/move dir on dir with overwrite.
+
+2007-11-20  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfileinfo.h:
+	* gio/glocalfileinfo.c:
+	Add COPY_NAME (this is an optional
+	non-modified utf8 version of the name) that
+	can roundtrip.
+
+2007-11-20  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/glocalfileenumerator.c:
+	Report errors as GIOError, not GFileError
+
+2007-11-16  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/glocalfileoutputstream.c:
+	* gio/gwin32appinfo.c:
+	Fix typos in strings.
+	Patch from Luca Ferretti <elle.uca@libero.it>
+
+2007-11-15  Alexander Larsson  <alexl@redhat.com>
+
+	* configure.ac:
+	Post release version bump
+
+=== gio-standalone 0.1.2 ===
+
+2007-11-15  Alexander Larsson  <alexl@redhat.com>
+
+	* docs/reference/gio/Makefile.am:
+	Fix up distcheck by removing weird
+	non-needed stuff
+
+	* NEWS:
+	Update for release
+
+2007-11-14  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gdesktopappinfo.c:
+	* gio/glocaldirectorymonitor.c:
+	* gio/glocalfile.c:
+	* gio/glocalfileinfo.c:
+	* gio/inotify/inotify-sub.c:
+	* programs/gio-cat.c:
+	* programs/gio-copy.c:
+	* programs/gio-info.c:
+	* programs/gio-ls.c:
+	* programs/gio-monitor-dir.c:
+	* programs/gio-monitor-file.c:
+	* programs/gio-mount.c:
+	* programs/gio-move.c:
+	* programs/gio-rm.c:
+	* programs/gio-save.c:
+	* programs/gio-trash.c:
+	Leak fixes from Kjartan Maraas
+
+2007-11-14  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/fam/fam-helper.c:
+	* gio/gdrive.[ch]:
+	* gio/glocalfileinfo.c:
+	* gio/gunixdrive.c:
+	* gio/gvfs.c:
+	* gio/gvolume.[ch]:
+	* gio/inotify/inotify-diag.c:
+	* gio/inotify/inotify-kernel.c:
+	Various code cleanups from Kjartan Maraas
+
+2007-11-14  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gioscheduler.c:
+	(init_scheduler):
+	Set up threadpool so that we cache 2 unused
+	idle threads for at 15 secs. This means we
+	will reuse thread-local data (like dbus connections)
+	for them.
+
+2007-11-14  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/fam/fam-helper.c:
+	* gio/fam/gfamdirectorymonitor.c:
+	* gio/fam/gfamfilemonitor.c:
+	* gio/gappinfo.c:
+	* gio/gcontenttype.c:
+	* gio/gdatainputstream.c:
+	* gio/gdataoutputstream.c:
+	* gio/gdummyfile.c:
+	* gio/gfile.c:
+	* gio/gfile.h:
+	* gio/gfileattribute.h:
+	* gio/gfileenumerator.c:
+	* gio/gfileinfo.c:
+	* gio/ginputstream.c:
+	* gio/gioerror.h:
+	* gio/glocalfile.c:
+	* gio/glocalfileinfo.c:
+	* gio/goutputstream.c:
+	* gio/gpollfilemonitor.c:
+	* gio/gsimpleasyncresult.c:
+	* gio/gunixmounts.c:
+	* gio/gunixmounts.h:
+	* gio/inotify/ginotifydirectorymonitor.c:
+	* gio/inotify/ginotifyfilemonitor.c:
+	* gio/inotify/inotify-diag.c:
+	* gio/inotify/inotify-kernel.c:
+	* gio/inotify/inotify-path.c:
+	* gio/test-gio.c:
+	* gio/test-streams.c:
+	* programs/gio-info.c:
+	* programs/gio-monitor-dir.c:
+	* programs/gio-monitor-file.c:
+	Various code cleanups from Kjartan Maraas
+
+2007-11-13  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gdummyfile.c:
+	Handle the uri-scheme calls for dummy files
+
+2007-11-13  Marko Anastasov  <marko@marko.anastasov.name>
+
+	* gio/gio/gfileinfo.[ch]: Use a different parameter name instead of
+	'namespace' for in g_file_attribute_matcher_enumerate_namespace()
+	to avoid clash with the C++ keyword.
+
+2007-11-13  Marko Anastasov  <marko@marko.anastasov.name>
+
+	* gio/glocalfileinfo.c: Build fix, added missing semicolon
+	to an ifdef'ed call to getpwuid() in lookup_uid_data().
+
+2007-11-11  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/glocaldirectorymonitor.c:
+	* gio/glocalfilemonitor.c:
+	* gio/gunionvolumemonitor.c:
+	Don't use g_once_init_*() for initializations that could fail and
+	could leave the initialization variable set to 0 but use GOnce.
+	This prevents a deadlock on the second call when trying to create
+	a monitor and no monitor type is available. Thanks to Sven Herzberg
+	for reporting.
+
+2007-11-11  Sven Herzberg  <sven@imendio.com>
+
+	* gio/glocalfile.c: guard the #include <sys/statfs.h> by the correct
+	#ifdef (make it work on MacOS X again)
+
+2007-11-09  Andrew Walton  <awalton@svn.gnome.org>
+	* Changelog:
+	Fixes Changelog for last two commits (sorry guys).
+
+2007-11-07  Andrew Walton  <awalton@svn.gnome.org>
+	* gio/gappinfo.c:
+	* gio/gbufferedinputstream.c:
+	* gio/gdatainputstream.c:
+	* gio/gfile.c:
+	* gio/gfileoutputstream.c:
+	* gio/gfilterinputstream.c:
+	* gio/glocalfileinputstream.c:
+	* gio/gurifuncs.c:
+	* gio/gvfs.c:
+	More consistency fixes in g*stream.c files. 
+	Significant clean of gfile's documentation, filling in of 
+	asynchronous operations documentation.
+
+2007-11-07  Andrew Walton  <awalton@svn.gnome.org>
+	* gio/gappinfo.c:
+	* gio/gasyncresult.c:
+	* gio/gbufferedinputstream.c:
+	* gio/gbufferedoutputstream.c:
+	* gio/gcancellable.c:
+	* gio/gcontenttype.c:
+	* gio/gdatainputstream.c:
+	* gio/gdataoutputstream.c:
+	* gio/gdesktopappinfo.c:
+	* gio/gdrive.c:
+	* gio/gfile.c:
+	* gio/gfileattribute.c:
+	* gio/gio/gfileenumerator.c:
+	* gio/gfileinfo.c:
+	* gio/gfileinputstream.c:
+	* gio/gfilemonitor.c:
+	* gio/gfileoutputstream.c:
+	* gio/ginputstream.c:
+	* gio/giomodule.c:
+	* gio/gioscheduler.c:
+	* gio/gloadableicon.c:
+	* gio/glocalfileoutputstream.c:
+	* gio/gmemoryoutputstream.c:
+	* gio/gmountoperation.c:
+	* gio/goutputstream.c:
+	* gio/gseekable.c:
+	* gio/gsimpleasyncresult.c:
+	* gio/gunionvolumemonitor.c:
+	* gio/gunixmounts.c:
+	* gio/gunixvolume.c:
+	* gio/gurifuncs.c:
+	* gio/gvfs.c:
+	* gio/gvolume.c:
+	* gio/gvolumemonitor.c:
+	Updated documentation stubs, working towards consistency and 
+	completeness.
+
+2007-11-07  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/gmemoryoutputstream.c:
+	* gio/gmemoryoutputstream.h:
+	Change g_memory_output_stream_set_free_on_close() to
+	g_memory_output_stream_set_free_data() as this makes more sense and
+	is more consistent with GMemoryInputStream.
+
+2007-11-07  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfile.c:
+	Fix some docs
+	
+	* gio/glocalvfs.c:
+	* gio/gvfs.[ch]:
+	Change how we find the default vfs so that
+	we can handle a gvfs failing to init
+
+2007-11-07  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/gbufferedoutputstream.c:
+	* gio/gdatainputstream.c:
+	* gio/gdataoutputstream.c:
+	* gio/gfileinputstream.c:
+	* gio/gfileoutputstream.c:
+	* gio/gfilterinputstream.c:
+	* gio/gfilteroutputstream.c:
+	* gio/ginputstream.c:
+	* gio/gmemoryinputstream.c:
+	* gio/gmemoryoutputstream.c:
+	* gio/goutputstream.c:
+	* gio/gsimpleasyncresult.c:
+	* gio/gsocketinputstream.c:
+	* gio/gsocketoutputstream.c:
+	Add guards to the remaining public functions, add a TODO for
+	an unimplemented function and remove some useless guards.
+
+2007-11-07  Alexander Larsson  <alexl@redhat.com>
+
+	* configure.ac:
+	Autoconf checks for the various types of
+	getpwuid_r and getgrgid_r
+	
+	* gio/glocalfileinfo.c:
+	Use the autoconf checks from above
+
+2007-11-07  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/glocalfile.c:
+	(g_local_file_query_filesystem_info):
+	Some fixes for the statvfs case
+	
+2007-11-07  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/glocalfile.c:
+	(g_local_file_query_filesystem_info):
+	Pick the "best" of statfs / statvfs for the system
+	if both are availible.
+
+2007-11-07  Alexander Larsson  <alexl@redhat.com>
+
+	Solaris fixes from Halton.Huo@Sun.COM:
+	
+	* gio/gdrive.c:
+	* gio/gfile.c:
+	* gio/gvolume.c:
+	Don't return void
+	
+	* gio/glocalfileinfo.c:
+	Fix for solaris definition of getpwuid_r
+	
+	* gio/test-streams.c:
+	Use G_GNUC_PRETTY_FUNCTION
+
+2007-11-07  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gdesktopappinfo.c:
+	(update_default_list):
+	Remove double semicolon.
+	Patch from Jens Granseuer
+
+2007-11-06  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* docs/reference/gio/gio-sections.txt:
+	* gio/gbufferedinputstream.c:
+	* gio/gbufferedinputstream.h:
+	* gio/gdatainputstream.c:
+	* gio/gfileenumerator.c:
+	* gio/gioscheduler.c:
+	* gio/gunionvolumemonitor.c:
+	* gio/gvfs.c:
+	* programs/gio-save.c:
+	Fix typo: availible -> available. Unfortuntely this breaks API
+	and ABI as g_buffered_input_stream_get_available() was renamed.
+	
+	* gio/gunixmounts.c:
+	* gio/gbufferedinputstream.c:
+	Add guards for public functions.
+
+2007-11-06  Ross Burton  <ross@openedhand.com>
+
+	* docs/reference/gio/Makefile.am:
+	Fix invalid += usage which automake 1.10 doesn't like.
+
+2007-11-06  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gappinfo.c:
+	(g_app_launch_context_class_init):
+	Fix warning
+
+	Patch from Ross Burton 
+	
+2007-11-06  Alexander Larsson  <alexl@redhat.com>
+
+	* configure.ac:
+	Post release version bump
+
+=== gio-standalone 0.1.1 ===
+
+2007-11-06  Alexander Larsson  <alexl@redhat.com>
+
+	* configure.ac:
+	Bump version to 0.1.1
+	
+	* gio/gsimpleasyncresult.c:
+	(g_simple_async_result_set_from_error):
+	Remove bogus g_return_if_fail
+
+2007-11-06  Alexander Larsson  <alexl@redhat.com>
+
+	* configure.ac:
+	The name is gio-standalone
+	
+	* gio/Makefile.am:
+	Add top src/builddir to includedir
+
+2007-11-06  Alexander Larsson  <alexl@redhat.com>
+
+	* docs/reference/gio/gio-sections.txt:
+	* gio/gappinfo.c:
+	* gio/gbufferedinputstream.c:
+	* gio/gbufferedoutputstream.c:
+	* gio/gcancellable.c:
+	* gio/gdatainputstream.h:
+	* gio/gdataoutputstream.c:
+	* gio/gdataoutputstream.h:
+	* gio/gdirectorymonitor.c:
+	* gio/gfile.c:
+	* gio/gfileattribute.c:
+	* gio/gfileattribute.h:
+	* gio/gfileenumerator.c:
+	* gio/gfileenumerator.h:
+	* gio/gfileinfo.c:
+	* gio/gfileinfo.h:
+	* gio/gfileinputstream.h:
+	* gio/gfilemonitor.c:
+	* gio/gfileoutputstream.h:
+	* gio/glocalfilemonitor.h:
+	* gio/glocalfileoutputstream.h:
+	* gio/gmemoryinputstream.c:
+	* gio/gmemoryoutputstream.c:
+	* gio/gmountoperation.c:
+	* gio/goutputstream.c:
+	* gio/goutputstream.h:
+	* gio/gseekable.h:
+	* gio/gsimpleasyncresult.c:
+	* gio/gunixmounts.c:
+	* gio/gunixmounts.h:
+	* gio/gurifuncs.h:
+	* gio/inotify/inotify-helper.c:
+	Fix gtk-doc warnings
+
+	Patch from Ross Burton 
+	
+2007-11-06  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfilenamecompleter.c:
+	(g_filename_completer_get_completions):
+	fix warning
+	
+	* gio/gunixvolume.c:
+	Remove unused function
+
+	Patches from Ross Burton 
+
+2007-11-06  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gdrive.h:
+	* gio/gseekable.h:
+	* gio/gvolume.h:
+	Padding not needed for interfaces
+
+2007-11-06  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfilemonitor.c:
+	Remove debug spew
+
+	* gio/Makefile.am:
+	Make giotypes.h an internal file
+	
+	* gio/gappinfo.h:
+	* gio/gbufferedinputstream.h:
+	* gio/gbufferedoutputstream.h:
+	* gio/gcancellable.h:
+	* gio/gdatainputstream.h:
+	* gio/gdataoutputstream.h:
+	* gio/gdirectorymonitor.c:
+	* gio/gdirectorymonitor.h:
+	* gio/gdrive.c:
+	* gio/gdrive.h:
+	* gio/gfile.c:
+	* gio/gfile.h:
+	* gio/gfileattribute.h:
+	* gio/gfileenumerator.h:
+	* gio/gfileicon.c:
+	* gio/gfileicon.h:
+	* gio/gfileinfo.c:
+	* gio/gfileinfo.h:
+	* gio/gfilemonitor.c:
+	* gio/gfilemonitor.h:
+	* gio/gfilenamecompleter.c:
+	* gio/gfilenamecompleter.h:
+	* gio/gfilterinputstream.h:
+	* gio/gfilteroutputstream.h:
+	* gio/ginputstream.h:
+	* gio/gmemoryinputstream.h:
+	* gio/gmemoryoutputstream.h:
+	* gio/gmountoperation.c:
+	* gio/gmountoperation.h:
+	* gio/gnativevolumemonitor.c:
+	* gio/goutputstream.h:
+	* gio/gseekable.c:
+	* gio/gseekable.h:
+	* gio/gsimpleasyncresult.c:
+	* gio/gsimpleasyncresult.h:
+	* gio/gsocketinputstream.h:
+	* gio/gsocketoutputstream.h:
+	* gio/gthemedicon.c:
+	* gio/gthemedicon.h:
+	* gio/gvfs.h:
+	* gio/gvolume.c:
+	* gio/gvolume.h:
+	* gio/gvolumemonitor.c:
+	* gio/gvolumemonitor.h:
+	Add padding in classes where it seems useful
+	Don't include giotypes.h from public headers
+	Move in Class definitions into c file where possible
+	
+	* gio/glocalfile.c:
+	Fix warnings
+
+2007-11-06  Alexander Larsson  <alexl@redhat.com>
+
+	* docs/reference/gio/gio-docs.xml:
+	Better structure for API docs
+
+2007-11-06  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/gfileicon.c:
+	* gio/gloadableicon.c:
+	* gio/gsimpleasyncresult.c:
+	* gio/gthemedicon.c:
+	Add some more guards to public functions. Only files missing are now
+	g*stream*.c.
+
+2007-11-06  Alexander Larsson  <alexl@redhat.com>
+
+	* docs/reference/gio/gio-docs.xml:
+	Remove old files, add missing ones
+
+2007-11-06  Alexander Larsson  <alexl@redhat.com>
+
+	* docs/reference/gio/gio-sections.txt:
+	Restructure
+	Add missing stuff
+	Hide implementation classes
+	
+	* gio/gdriveprivate.h:
+	* gio/gvolumeprivate.h:
+	Remove non-existing function declarations
+
+2007-11-06  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/gappinfo.c:
+	Fix compilation warnings and add guards to the new functions.
+	
+	* gio/gasyncresult.c:
+	* gio/gdummyfile.c:
+	Add guards to the public functions.
+	
+	* gio/gdummyfile.c:
+	Implement get_path().
+
+2007-11-06  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfilenamecompleter.c:
+	Make g_filename_completer_get_completions
+	return char ** instead of GList for
+	typesafety.
+	
+	* docs/reference/gio/gio-docs.xml:
+	* docs/reference/gio/gio-sections.txt:
+	* gio/gappinfo.c:
+	* gio/gasyncresult.c:
+	* gio/gbufferedinputstream.c:
+	* gio/gbufferedoutputstream.c:
+	* gio/gcancellable.c:
+	* gio/gcontenttype.c:
+	* gio/gdatainputstream.c:
+	* gio/gdataoutputstream.c:
+	* gio/gdesktopappinfo.c:
+	* gio/gdirectorymonitor.c:
+	* gio/gdrive.c:
+	* gio/gdummyfile.c:
+	* gio/gfile.c:
+	* gio/gfileattribute.c:
+	* gio/gfileenumerator.c:
+	* gio/gfileicon.c:
+	* gio/gfileinfo.c:
+	* gio/gfileinputstream.c:
+	* gio/gfilemonitor.c:
+	* gio/gfilenamecompleter.c:
+	* gio/gfilenamecompleter.h:
+	* gio/gfileoutputstream.c:
+	* gio/gfilterinputstream.c:
+	* gio/gicon.c:
+	* gio/ginputstream.c:
+	* gio/giomodule.c:
+	* gio/gioscheduler.c:
+	* gio/gloadableicon.c:
+	* gio/glocaldirectorymonitor.c:
+	* gio/glocalfile.c:
+	* gio/glocalfileinputstream.c:
+	* gio/glocalfilemonitor.c:
+	* gio/glocalfileoutputstream.c:
+	* gio/glocalvfs.c:
+	* gio/gmemoryinputstream.c:
+	* gio/gmemoryoutputstream.c:
+	* gio/gmountoperation.c:
+	* gio/goutputstream.c:
+	* gio/gpollfilemonitor.c:
+	* gio/gseekable.c:
+	* gio/gsimpleasyncresult.c:
+	* gio/gsocketinputstream.c:
+	* gio/gsocketoutputstream.c:
+	* gio/gthemedicon.c:
+	* gio/gunionvolumemonitor.c:
+	* gio/gunixdrive.c:
+	* gio/gunixmounts.c:
+	* gio/gunixvolume.c:
+	* gio/gunixvolumemonitor.c:
+	* gio/gurifuncs.c:
+	* gio/gvfs.c:
+	* gio/gvolume.c:
+	* gio/gvolumemonitor.c:
+	* gio/gwin32appinfo.c:
+	Add (mostly stub) doc strings to public functions.
+	Patch from Andrew Walton (awalton@gmail.com)
+
+2007-11-06  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gappinfo.[ch]:
+	Added GAppLaunchContext object and pass that to launch.
+	This allows simple implementation of both
+	launch-on-screen and startup notification via a gtk+
+	subclass of GAppLaunchContext
+	
+	* gio/gdesktopappinfo.c:
+	Implement GAppLaunchContext API
+	
+	* gio/gwin32appinfo.c:
+	Update to new APIs
+
+2007-11-05  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/gmountoperation.c:
+	Add some guards to GMountOperation's public functions.
+
+2007-11-05  Sebastian Dröge  <slomo@circular-chaos.org>
+
+
+	* gio/gappinfo.c:
+	* gio/gcancellable.c:
+	* gio/gdirectorymonitor.c:
+	* gio/gdrive.c:
+	* gio/gfileenumerator.c:
+	* gio/gfilemonitor.c:,
+	* gio/gfilenamecompleter.c:
+	* gio/gicon.c:
+	* gio/giomodule.c:
+	* gio/gioscheduler.c:
+	* gio/gseekable.c:
+	* gio/gurifuncs.c:
+	* gio/gvolume.c:
+	* gio/gvolumemonitor.c:
+	Add even more guards to various public functions.
+
+2007-11-05  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/gappinfo.c:
+	Add guards to the public functions of GAppInfo.
+
+2007-11-05  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/gcontenttype.c:
+	Add some more guards for public functions.
+
+2007-11-05  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/fam/fam-module.c:
+	* gio/fam/gfamdirectorymonitor.c:
+	* gio/fam/gfamdirectorymonitor.h:
+	* gio/fam/gfamfilemonitor.c:
+	* gio/fam/gfamfilemonitor.h:
+	* gio/inotify/ginotifydirectorymonitor.c:
+	* gio/inotify/ginotifydirectorymonitor.h:
+	* gio/inotify/ginotifyfilemonitor.c:
+	* gio/inotify/ginotifyfilemonitor.h:
+	Add proper copyright information and remove an unused variable
+	in the GInotifyFileMonitor constructor.
+
+	* gio/gcancellable.c:
+	Add a guard for a public function and an assertion to prevent
+	an undefined program state.
+
+2007-11-05  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/gfileattribute.c:
+	Don't run into an assertion if the given attribute value is NULL
+	in g_file_attribute_value_get_*() but instead return a fallback
+	value that makes sense in most situations. Passing them a attribute
+	value with the wrong type will still run into an assertion.
+
+2007-11-02  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/gfileattribute.c:
+	* gio/gfileinfo.c:
+	Add even more guards to the public functions. Also fix the refcounting
+	of GFileAttributeInfoList and GFileAttributeMatcher to be atomic and
+	let g_file_info_list_attributes() filter the attributes by namespace
+	instead of simply ignoring the namespace parameter.
+
+2007-11-03  Sven Herzberg  <sven@imendio.com>
+
+	* gio/gdesktopappinfo.c: don't use environ. Use the glib API for that.
+	(This makes gio work on MacOS X again)
+
+2007-11-02  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* Makefile.am:
+	Build the gio subdirectory before the docs. Otherwise the build will
+	fail.
+
+	* gio/gvfs.c: (g_vfs_get_name), (g_vfs_get_priority),
+	(g_vfs_get_file_for_path), (g_vfs_get_file_for_uri),
+	(g_vfs_get_supported_uri_schemes), (g_vfs_parse_name):
+	Add guards to the public functions.
+
+2007-11-02  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/gfileattribute.c: (g_file_attribute_value_as_string):
+	Cast parameter to g_type_name_from_instance() to a GTypeInstance *
+	to prevent a compiler warning.
+
+	* gio/glocalfile.c: (get_mount_info), (find_topdir_for):
+	Set the G_FILE_ATTRIBUTE_FS_READONLY as boolean, not as string and
+	return something in the non-void function find_topdir_for().
+
+2007-11-01  Christian Kellner  <gicmo@gnome.org>,  Ryan Lortie  <desrt@desrt.ca>
+
+	* configure.ac:
+	* Makefile.am:
+	* docs/:
+	Gtkdocify!
+
+2007-11-01  Ryan Lortie  <desrt@desrt.ca>
+
+	* gappinfo.c (g_app_info_launch, g_app_info_launch_uris):
+	* gappinfo.h (g_app_info_launch, g_app_info_launch_uris):
+	* gwin32appinfo.c (g_win32_app_info_launch):
+	* gdesktopappinfo.c (expand_macro, equal_up_to_equals,
+	envp_for_startup_id, g_desktop_app_info_launch,
+	g_desktop_app_info_launch_uris):
+
+	Give an opaque 'startup_id' string instead of 'envp'.
+	Support empty file lists for launching new windows.
+	Fix infinite recursion bug when launching URIs.
+
+2007-11-01  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/gfile.c:
+	Add guard to the new g_file_get_uri_scheme() function.
+
+2007-11-01  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/gfile.c:
+	Convert a g_return_val_if_fail() to setting the GError instead as
+	otherwise applications have to verify the parameter before otherwise
+	and the parameter might come directly from the user.
+
+2007-11-01  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/inotify/ginotify*.[ch]:
+	Add missing copyright information.
+
+2007-11-01  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/gfile.c:
+	Add guards in the beginning of public functions to check for valid
+	parameters and fix a bug in copy_stream_with_progress() that could've
+	caused writing less bytes than reading.
+	* gio/glocalfileinfo.c:
+	Check for a NULL parameter and set the GError accordingly then.
+	* gio/goutputstream.c:
+	Fix the same bug as in gfile.c that could've caused writing less bytes
+	than reading in g_output_stream_real_splice().
+
+2007-11-01  Sebastien Bacher  <seb128@ubuntu.com>
+
+	* gio/Makefile.am:
+	Use the correct gvolumeprivate.h naming
+
+2007-11-01  Christian Kellner  <gicmo@gnome.org>
+
+	* gio/Makefile.am:
+	Remove leftover "$(daemon_sources)" entry.
+
+2007-11-01  Christian Kellner  <gicmo@gnome.org>
+
+	* gio/fam/*.[ch]:
+	* gio/*.[ch]:
+	* programs/*.[ch]:
+	Add copyright information to source files.
+
+2007-11-01  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfile.[ch]:
+	* gio/glocalfile.c:
+	Add g_file_get_uri_scheme
+
+2007-11-01  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gappinfo.h:
+	* gio/gdesktopappinfo.c:
+	* gio/gwin32appinfo.c:
+	Add g_app_info_get_default_for_uri_scheme.
+
+2007-11-01  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/Makefile.am:
+	Correct filename for gdriveprivate.h
+
+2007-10-31  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfileinfo.h:
+	Rename id:value to id:file
+	Add id:fs
+	
+	* gio/glocalfileinfo.c:
+	Implement id:fs
+
+2007-10-31  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gunixvolume.c:
+	* gio/gvolume.[ch]:
+	Remove g_volume_get_platform_id, as thats not
+	needed with the simpler union volume monitor
+
+2007-10-31  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/Makefile.am:
+	* gio/guniondrive.[ch]: Removed.
+	* gio/gunionvolume.[ch]: Removed.
+	Remove GUnionDrive/Volume
+
+	* gio/gunionvolumemonitor.c:
+	Simplify union volume monitor, now we
+	only have one native volume monitor and
+	we use the actual volumes/drives from the
+	child monitors instead of wrapping them
+
+	* gio/gnativevolumemonitor.[ch]:
+	Base class for native volume monitors.
+	Includes priority and get_volume_for_mountpoint
+	
+	* gio/gfile.[ch]:
+	Add g_file_find_enclosing_volume
+
+	* gio/gfileinfo.h:
+	Remove volume name fs attribute
+	Add readonly fs attribute
+	
+	* gio/glocalfile.c:
+	Implement readonly attribute
+	remove volume name attribute
+	Implement find_enclosing volume
+	
+	* gio/gunixmounts.c:
+	Add a volume for "/".
+	
+	* gio/gunixvolume.[ch]:
+	Set better name for /
+	
+	* gio/gunixvolumemonitor.[ch]:
+	Derive from GNativeVolumeMonitor
+	Implement get_volume_for_mountpoint
+	
+	* gio/gvolume.h:
+	GVolume typedef moved to gfile.h
+	
+	* gio/gvolumeprivate.h:
+	Add g_volume_get_for_mount_path
+
+2007-10-31  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gunixmounts.[ch]:
+	Add cache info to unix mount listers
+	Make getmntent use threadsafe
+	Add is_system_internal attribute for GUnixMount
+	
+	* gio/gunixvolume.c:
+	(g_unix_volume_new):
+	Use is_system_internal instead of own code
+	
+	* gio/glocaldirectorymonitor.c:
+	* gio/gunixvolumemonitor.c:
+	Update to new gunixmounts API
+	
+	* gio/glocalfile.c:
+	Fix warning
+
+2007-10-30  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfileinfo.h:
+	Add volume name fsinfo attribute
+	
+	* gio/glocalfile.c:
+	Read volume name info
+	
+	* gio/gunionvolumemonitor.c:
+	Fix infinite loops when finalizing a union volume monitor
+
+2007-10-30  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/goutputstream.[ch]:
+	Add splice() with default implementation
+	
+	* gio/gsocketoutputstream.c:
+	(g_socket_output_stream_write):
+	Return error on cancellation correctly.
+	
+2007-10-26  Paolo Borelli  <pborelli@katamail.com>
+
+	* gio/glocalfile.c (g_local_file_trash):
+	Do not leak a string.
+
+2007-10-26  Paolo Borelli  <pborelli@katamail.com>
+
+	* gio/gfile.c (g_file_load_contents):
+	Unref the stream after closing it.
+
+2007-10-25  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gioscheduler.h:
+	Fix include
+
+2007-10-25  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfile.[ch]:
+	* gio/glocalfile.c:
+	Add g_file_has_uri_scheme and implement for local files
+
+2007-10-25  Paolo Borelli  <pborelli@katamail.com>
+
+	* gio/gdesktopappinfo.c: do not leak a string.
+
+2007-10-24  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/glocaldirectorymonitor.c: (_compare_monitor_class_by_prio),
+	(g_local_directory_monitor_new):
+	* gio/glocalfilemonitor.c: (_compare_monitor_class_by_prio),
+	(g_local_file_monitor_new):
+	Only look for the monitor type that should be used the first time
+	and use g_qsort_with_data() instead of our own bubble sort
+	implementation.
+
+2007-10-24  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/Makefile.am:
+	* gio/fam/Makefile.am:
+	* gio/fam/fam-helper.c: (_fam_sub_startup), (_fam_sub_add):
+	* gio/fam/fam-helper.h:
+	* gio/fam/fam-module.c: (g_io_module_load), (g_io_module_unload):
+	* gio/fam/gfamdirectorymonitor.c:
+	* gio/fam/gfamdirectorymonitor.h:
+	* gio/fam/gfamfilemonitor.c: (g_fam_file_monitor_finalize),
+	* gio/fam/gfamfilemonitor.h:
+	* gio/glocaldirectorymonitor.c:
+	* gio/glocaldirectorymonitor.h:
+	* gio/glocalfilemonitor.c: (g_local_file_monitor_init),
+	* gio/glocalfilemonitor.h:
+	* gio/inotify/Makefile.am:
+	* gio/inotify/ginotifydirectorymonitor.c:
+	* gio/inotify/ginotifydirectorymonitor.h:
+	* gio/inotify/ginotifyfilemonitor.c:
+	* gio/inotify/ginotifyfilemonitor.h:
+	Implement the FAM and Inotify monitors as
+	GLocal(Directory|File)Monitor subclasses and put the FAM monitors into
+	their own GIO module. GLocal(Directory|File)Monitor will use the
+	monitor with the highest rank that is supported on that machine.
+
+2007-10-23  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/Makefile.am:
+	Change GIO module dir to $(libdir)/gio/modules and change
+	the log domain from GVFS to GIO. Also only export symbols starting
+	with g_ in the resulting library.
+	* gio/test-streams.c: (main):
+	Set log handler for the GIO log domain.
+
+2007-10-22  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfilenamecompleter.[ch]:
+	Add g_filename_completer_set_dirs_only
+
+2007-10-22  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/Makefile.am:
+	* gio/gurifuncs.[ch]:
+	Add some simple URI helpers
+	
+	* gio/gfilenamecompleter.[ch]:
+	Added object for filename (parse name actually) completion
+	
+	* gio/glocalvfs.c:
+	Handle ~ in parse names
+
+2007-10-17  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfileinfo.h:
+	* gio/glocalfileinfo.c:
+	Add and implement id:value attribute
+
+2007-10-17  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gdrive.[ch]:
+	* gio/guniondrive.c:
+	* gio/gunixdrive.c:
+	Add and implement g_drive_has_volumes
+	
+2007-10-17  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfileinfo.h:
+	* gio/glocalfileinfo.[ch]:
+	Add unix:is_mountpoint and implement for local files
+
+2007-10-16  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gunionvolumemonitor.c:
+	(g_union_volume_monitor_init):
+	Fix up the unix type getting so that it works with gcc
+	
+2007-10-12  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfileinfo.h:
+	* gio/glocalfileinfo.c:
+	Add thumbnail:failed to file info
+
+2007-10-12  Richard Hult  <richard@imendio.com>
+
+	* gio/gvfs.c (get_default_vfs): Make the type volatile to avoid
+	optimizing away the get_type call (happens with some gcc versions,
+	like the one shipped with OS X 10.4).
+
+2007-10-12  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/glocalfileinfo.c:
+	(_g_local_file_info_set_attribute):
+	Fix build if not HAVE_XATTR
+	Patch from Milosz Derezynski <internalerror@gmail.com>
+
+2007-10-11  Sven Herzberg  <herzi@gnome-de.org>
+
+	* gio/gunixmounts.c: small build fix (sorry, Alex, you haven't been
+	around for review, otherwise I would have asked you before
+	committing)
+
+2007-10-11  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfileinfo.h:
+	Add thumbnail:path attribute
+	
+	* gio/glocalfileinfo.c:
+	Implement thumbnail:path for local files
+
+2007-10-11  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/glocalfileinfo.c:
+	(_g_local_file_info_get):
+	Avoid duplicate icon names
+
+2007-10-11  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gthemedicon.[ch]:
+	Change g_themed_icon_get_names return type to const
+
+2007-10-10  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/glocalfileinfo.c:
+	Don't reference freed memory
+
+2007-10-10  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfileattribute.c:
+	Handle objects
+	
+	* gio/glocalfileinfo.c:
+	Return icon info
+
+2007-10-10  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfileinfo.c:
+	Check for NULL icons
+
+	* gio/gfileattribute.c:
+	Don't dup when getting objects (same as for string attributes)
+
+	* gio/gicon.c (g_icon_equal):
+	Safely handle NULLs in equal
+
+2007-10-10  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfileinfo.h:
+	Fix c++ compilation issues
+	Patch from Milosz Derezynski <internalerror@gmail.com>
+
+2007-10-10  Alexander Larsson  <alexl@redhat.com>
+
+	* programs/gio-monitor-dir.c:
+	Don't crash if dir monitor not supported.
+
+2007-10-09  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gioerror.h:
+	Add missing G_END_DECLS
+
+2007-10-09  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/gfile.c: (g_file_set_display_name),
+	(g_file_query_settable_attributes),
+	(g_file_query_writable_namespaces):
+	Return NULL not FALSE on errors as the return type is a pointer.
+
+2007-10-09  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/glocalfile.c: (g_local_file_monitor_file):
+	Don't call monitor_file on the default interface vtable (which
+	is NULL) but simply return NULL. The caller, GFile, will create a
+	polling monitor if NULL is returned.
+
+2007-10-09  Alexander Larsson  <alexl@redhat.com>
+
+	* Makefile.am:
+	* configure.ac:
+	* gio-unix-2.0.pc.in:
+	Add gio-unix-2.0.pc if OS_UNIX
+	
+	* gio/Makefile.am:
+	Install gunixmounts.h into gio-unix-2.0 if OS_UNIX
+
+2007-10-09  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gunixmounts.[ch]:
+	Make unix mount monitoring API sane.
+	Now its just a object with mounts_changed
+	and mountpoints_changed signals.
+	
+	* gio/glocaldirectorymonitor.c:
+	* gio/gunixvolumemonitor.c:
+	Use new mount monitor api
+
+2007-10-09  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gunixmounts.[ch]:
+	Move guess type into one call for mounts and one for mountpoints
+	
+	* gio/gunixdrive.c:
+	* gio/gunixvolume.c:
+	Update
+
+2007-10-09  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gunixmounts.[ch]:
+	Remove _ prefix in preparation to make this semi-public
+	Hide implementation of structs
+	
+	* gio/glocaldirectorymonitor.c:
+	* gio/gunixdrive.c:
+	* gio/gunixvolume.c:
+	* gio/gunixvolumemonitor.c:
+	Update for above API changes
+
+2007-10-08  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfile.c:
+	Better polling fallback. This also handles the case where we have
+	a monitor_file implementation, but it fails.
+
+2007-10-08  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfile.[ch]:
+	* gio/glocalfile.c:
+	* gio/gunixmounts.c:
+	* programs/gio-monitor-dir.c:
+	* programs/gio-monitor-file.c:
+	Added cancellable to file monitoring calls.
+	These are really sync calls and need this.
+
+2007-10-08  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/glocalvfs.c: (g_local_vfs_get_supported_uri_schemes),
+	(g_local_vfs_class_init):
+	* gio/gvfs.c: (g_vfs_get_supported_uri_schemes):
+	* gio/gvfs.h: Add functions to get a list of supported URI schemes.
+
+2007-10-05  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gdirectorymonitorprivate.h: 
+	* gio/gfilemonitorprivate.h: 
+	* gio/gdirectorymonitor.h:
+	* gio/gfilemonitor.h:
+	Remove *private.h and move to the public API, so that
+	we can do implementations outside gio (such as in gvfs)
+	
+	* gio/gdirectorymonitor.c:
+	* gio/gfilemonitor.c:
+	* gio/glocaldirectorymonitor.c:
+	* gio/gpollfilemonitor.c:
+	* gio/inotify/inotify-helper.c:
+	* gio/fam/fam-helper.c:
+	Update to the new header names
+
+2007-10-05  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/gdirectorymonitor.c:
+	* gio/gfilemonitor.c: Mark the GFileMonitor and GDirectoryMonitor
+	GTypes as abstract.
+
+2007-10-04  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/glocalfileinfo.c (get_access_rights):
+	Set CAN_TRASH when we can move the file.
+	We should really also check for a parent trash dir.
+
+2007-10-04  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfileinfo.h (G_FILE_ATTRIBUTE_ACCESS_CAN_TRASH):
+	Add can_trash access attribute
+
+2007-10-04  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/glocalfile.c:
+	(g_local_file_trash):
+	Create info file first. This is per-spec and allows
+	us to actually trash directories.
+
+2007-10-02  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gdesktopappinfo.c:
+	Implement the new mime support code.
+	Always set app as handling mimetype when being set as default for it
+
+2007-10-01  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/glocalfileinfo.c (_g_local_file_info_set_attribute):
+	Fix up check for xattrs:
+
+2007-10-01  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gappinfo.c:
+	(g_app_info_set_as_default_for_extension):
+	(g_app_info_add_supports_type):
+	(g_app_info_can_remove_supports_type):
+	(g_app_info_remove_supports_type):
+	Make these fail nicely if not implemented
+
+2007-10-01  Paolo Borelli  <pborelli@katamail.com>
+
+	* gio/glocalfileoutputstream.c:
+	* gio/glocalfileoutputstream.h:
+	* gio/test-gio.c:
+	* gio/gfile.c:
+	* gio/gfile.h:
+	* gio/glocalfile.c:
+	* programs/gio-save.c: 
+	Add a GFileCreateFlags argument to operations that can create
+	a new file.
+
+2007-10-01  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gappinfo.[ch]:
+	* gio/gdesktopappinfo.c:
+	Add more (stubbed out) mime API needed for nautilus
+
+2007-10-01  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gappinfo.h:
+	Add GAppInfoCreateFlags flag to g_app_info_create_from_commandline.
+	Add g_app_info_set_as_default_for_extension.
+	
+	* gio/gdesktopappinfo.c:
+	Dummy for g_app_info_set_as_default_for_extension
+	Support flags in g_app_info_create_from_commandline
+
+	* gio/gwin32appinfo.c:
+	* gio/test-gio.c:
+	Update for API changes
+	
+	* gio/gthemedicon.c:
+	Properly NULL-terminate list of icon names
+
+2007-09-28  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gloadableicon.h:
+	Correct G_TYPE_LOADABLE_ICON, it was pointing to the GIcon type...
+
+2007-09-28  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/Makefile.am:
+	Install headers in $includedir/gio-standalone/
+	
+	* gio-2.0.pc.in: Added.
+	* gio-standalone.pc.in: Removed.
+	* configure.ac:
+	* Makefile.am:
+	Renamed pkg-config file to match glib (for future move)
+	Update to the new include dir
+	
+	* gio/gappinfo.h:
+	Add more TODO comments
+
+2007-09-28  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gdesktopappinfo.[ch]:
+	Expose new_from_filename
+	Add getter for is_hidden and handle it better
+
+2007-09-28  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfileinfo.[ch]:
+	Rename g_file_size_format_for_display to
+	g_format_file_size_for_display.
+	Now it doesn't have the g_file prefix, so we
+	can later move it to glib.
+
+2007-09-28  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gappinfo.[ch]:
+	Add g_app_info_get_id and g_app_info_get_executable.
+	Make all getters non-reffing
+	Make g_app_info_launch take GFile arguments.
+	Add must_support_uris argument to g_app_info_get_default_for_type.
+	
+	* gio/gwin32appinfo.c:
+	Update to GAppInfo api changes
+	
+	* gio/gdesktopappinfo.c:
+	Update to GAppInfo api changes
+	Implement supports_xdg_startup_notify
+	
+	* gio/gfileicon.c (g_file_icon_get_file):
+	Make getter non-reffing.
+	
+	* gio/test-gio.c:
+	Update to new API
+
+2007-09-27  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfileinfo.[ch]: 
+	Add g_file_size_format_for_display helper
+	
+2007-09-27  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/glocalfileinfo.c:
+	Set UNIX_GID from gid, not from uid
+
+2007-09-27  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfile.[ch]:
+	Add g_file_set_attributes_async
+
+2007-09-27  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/glocalfile.c (g_local_file_set_display_name):
+	Fix set_display_name to actually rename to the right place.
+	Use lstat to look for existing files so we don't overwrite
+	broken links.
+
+2007-09-26  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfile.[ch]:
+	Add g_file_set_display_name_async()
+
+2007-09-26  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfile.[ch]:
+	Add load_partial_contents async calls
+	
+	* gio/glocalfile.c:
+	Make internal function static
+
+2007-09-26  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/glocalfileinfo.c:
+	Correctly detect broken symlinks
+
+2007-09-26  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gcancellable.c (g_cancellable_cancel):
+	Allow cancel on NULL cancellable
+
+2007-09-25  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gsimpleasyncresult.c:
+	Don't allocate g_error manually.
+	Fixes g_slice/g_new mixup crash
+
+2007-09-25  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/glocaldirectorymonitor.c (g_local_directory_monitor_new):
+	Actually set active_backend.
+	This means the monitor will be cancelled correctly.
+
+2007-09-25  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gdirectorymonitor.c:
+	Set timeout to NULL when destroying
+
+2007-09-25  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gioerror.h:
+	Rename G_IO_ERROR_NOT_MOUNTABLE to G_IO_ERROR_NOT_MOUNTABLE_FILE as
+	that is a better description of the error.
+
+2007-09-25  Sebastian Dröge  <slomo@circular-chaos.org>
+
+	* gio/gvfs.c: (g_vfs_get_local):
+	Make the local vfs variable static. The same instance should
+	always be returned.
+
+2007-09-24  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/glocalfileinfo.c:
+	Pass in actual length read into sniffer, not the length
+	we tried to read.
+
+2007-09-21  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfileenumerator.c:
+	* gio/gfileinfo.c:
+	* gio/gfileinfo.h:
+	* gio/gfileinputstream.c:
+	* gio/gfileoutputstream.c:
+	* gio/ginputstream.c:
+	* gio/goutputstream.c:
+	Don't crash if async callbacks are NULL
+
+2007-09-20  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfile.[ch]:
+	Add async enumerate_children method and default
+	implementation
+
+2007-09-20  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfile.[ch]
+	Add g_file_contains_file & g_file_get_relative_path, since they
+	were needed for nautilus.
+	Renamed g_file_resolve_relative to g_file_resolve_relative_path
+	to make it clearer.
+	
+	* gio/gdummyfile.c:
+	* gio/glocalfile.c:
+	Implement new methods
+
+2007-09-17  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfile.[ch]:
+	* gio/gfileinputstream.[ch]:
+	* gio/gfileoutputstream.[ch]:
+	* gio/glocalfile.c:
+	* gio/glocalfileenumerator.[ch]:
+	* gio/glocalfileinfo.[ch]:
+	* gio/glocalfileinputstream.c:
+	* gio/glocalfileoutputstream.c:
+	* gio/gpollfilemonitor.c:
+	* programs/gio-copy.c:
+	* programs/gio-info.c:
+	* programs/gio-move.c:
+	Rename get_file_info to query_info() to make it clearer
+	that these are not simple getters, but do i/o.
+
+2007-09-17  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gdatainputstream.[ch]:
+	* gio/test-streams.c:
+	Use _read_XXX instead of _get_XXX for the i/o calls
+	in GDataInputStream
+
+2007-09-17  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gappinfo.h:
+	Added needed stuff to TODO comment
+
+2007-09-17  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/glocalfileoutputstream.c (g_local_file_output_stream_close):
+	Don't error out removing the backup copy if it doesn't
+	already exist.
+
+2007-09-14  Alexander Larsson  <alexl@redhat.com>
+
+	* programs/Makefile.am:
+	* programs/gvfs-*.c: 
+	* programs/gio-*.c:
+	Renamed apps from gvfs-xxx to gio-xxx.
+
+2007-09-14  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfile.c:
+	* gio/gfileoutputstream.[ch]:
+	* gio/glocalfileoutputstream.c:
+	* programs/gvfs-save.c:
+	g_file_output_stream_get_etag doesn't do i/o, so remove
+	cancellation and error.
+
+2007-09-14  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfile.[ch]:
+	Add new_etag output to replace_contents functions
+
+2007-09-14  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfileoutputstream.[ch]:
+	Add async get_file_info and default implementation
+
+2007-09-14  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfileinputstream.c:
+	Implement fallback wrapper for async get_file_info
+
+2007-09-14  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfile.[ch]:
+	Add etag out argument to load_contents
+	
+	* gio/test-gio.c:
+	Update to new API
+
+2007-09-14  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gcontenttype.c (looks_like_text):
+	Whitespace like tab, cr and lf do not make the
+	file binary.
+
+2007-09-14  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gfileinputstream.[ch]:
+	Add async get_file_info.
+
+2007-09-13  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/goutputstream.c (g_output_stream_write_all):
+	Allow NULL for bytes_written
+
+2007-09-13  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gmemoryinputstream.[ch]:
+	Add accessors for data
+
+2007-09-13  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/gdatainputstream.c (g_data_input_stream_get_until):
+	Don't crash if length is NULL
+

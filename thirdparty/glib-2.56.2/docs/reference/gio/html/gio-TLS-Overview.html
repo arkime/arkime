@@ -1,0 +1,310 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>TLS Overview: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="tls.html" title="TLS (SSL) support">
+<link rel="prev" href="tls.html" title="TLS (SSL) support">
+<link rel="next" href="GTlsCertificate.html" title="GTlsCertificate">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gio-TLS-Overview.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="tls.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="tls.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GTlsCertificate.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-TLS-Overview"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-TLS-Overview.top_of_page"></a>TLS Overview</span></h2>
+<p>TLS Overview — TLS (aka SSL) support for GSocketConnection</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gio-TLS-Overview.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gio-TLS-Overview.html#G-TLS-ERROR:CAPS" title="G_TLS_ERROR">G_TLS_ERROR</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="gio-TLS-Overview.html#GTlsError" title="enum GTlsError">GTlsError</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="gio-TLS-Overview.html#GTlsAuthenticationMode" title="enum GTlsAuthenticationMode">GTlsAuthenticationMode</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="gio-TLS-Overview.html#GTlsCertificateFlags" title="enum GTlsCertificateFlags">GTlsCertificateFlags</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-TLS-Overview.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-TLS-Overview.description"></a><h2>Description</h2>
+<p><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> and related classes provide TLS (Transport Layer
+Security, previously known as SSL, Secure Sockets Layer) support for
+gio-based network streams.</p>
+<p><a class="link" href="GDtlsConnection.html" title="GDtlsConnection"><span class="type">GDtlsConnection</span></a> and related classes provide DTLS (Datagram TLS) support for
+GIO-based network sockets, using the <a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a> interface. The TLS and
+DTLS APIs are almost identical, except TLS is stream-based and DTLS is
+datagram-based. They share certificate and backend infrastructure.</p>
+<p>In the simplest case, for a client TLS connection, you can just set the
+<a class="link" href="GSocketClient.html#GSocketClient--tls" title="The “tls” property"><span class="type">“tls”</span></a> flag on a <a class="link" href="GSocketClient.html" title="GSocketClient"><span class="type">GSocketClient</span></a>, and then any
+connections created by that client will have TLS negotiated
+automatically, using appropriate default settings, and rejecting
+any invalid or self-signed certificates (unless you change that
+default by setting the <a class="link" href="GSocketClient.html#GSocketClient--tls-validation-flags" title="The “tls-validation-flags” property"><span class="type">“tls-validation-flags”</span></a>
+property). The returned object will be a <a class="link" href="GTcpWrapperConnection.html" title="GTcpWrapperConnection"><span class="type">GTcpWrapperConnection</span></a>,
+which wraps the underlying <a class="link" href="GTlsClientConnection.html" title="GTlsClientConnection"><span class="type">GTlsClientConnection</span></a>.</p>
+<p>For greater control, you can create your own <a class="link" href="GTlsClientConnection.html" title="GTlsClientConnection"><span class="type">GTlsClientConnection</span></a>,
+wrapping a <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a> (or an arbitrary <a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a> with
+pollable input and output streams) and then connect to its signals,
+such as <a class="link" href="GTlsConnection.html#GTlsConnection-accept-certificate" title="The “accept-certificate” signal"><span class="type">“accept-certificate”</span></a>, before starting the
+handshake.</p>
+<p>Server-side TLS is similar, using <a class="link" href="GTlsServerConnection.html" title="GTlsServerConnection"><span class="type">GTlsServerConnection</span></a>. At the
+moment, there is no support for automatically wrapping server-side
+connections in the way <a class="link" href="GSocketClient.html" title="GSocketClient"><span class="type">GSocketClient</span></a> does for client-side
+connections.</p>
+</div>
+<div class="refsect1">
+<a name="gio-TLS-Overview.functions_details"></a><h2>Functions</h2>
+<p></p>
+</div>
+<div class="refsect1">
+<a name="gio-TLS-Overview.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="G-TLS-ERROR:CAPS"></a><h3>G_TLS_ERROR</h3>
+<pre class="programlisting">#define G_TLS_ERROR (g_tls_error_quark ())
+</pre>
+<p>Error domain for TLS. Errors in this domain will be from the
+<a class="link" href="gio-TLS-Overview.html#GTlsError" title="enum GTlsError"><span class="type">GTlsError</span></a> enumeration. See <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for more information on error
+domains.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsError"></a><h3>enum GTlsError</h3>
+<p>An error code used with <a class="link" href="gio-TLS-Overview.html#G-TLS-ERROR:CAPS" title="G_TLS_ERROR"><code class="literal">G_TLS_ERROR</code></a> in a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> returned from a
+TLS-related routine.</p>
+<div class="refsect3">
+<a name="GTlsError.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-ERROR-UNAVAILABLE:CAPS"></a>G_TLS_ERROR_UNAVAILABLE</p></td>
+<td class="enum_member_description">
+<p>No TLS provider is available</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-ERROR-MISC:CAPS"></a>G_TLS_ERROR_MISC</p></td>
+<td class="enum_member_description">
+<p>Miscellaneous TLS error</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-ERROR-BAD-CERTIFICATE:CAPS"></a>G_TLS_ERROR_BAD_CERTIFICATE</p></td>
+<td class="enum_member_description">
+<p>A certificate could not be parsed</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-ERROR-NOT-TLS:CAPS"></a>G_TLS_ERROR_NOT_TLS</p></td>
+<td class="enum_member_description">
+<p>The TLS handshake failed because the
+  peer does not seem to be a TLS server.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-ERROR-HANDSHAKE:CAPS"></a>G_TLS_ERROR_HANDSHAKE</p></td>
+<td class="enum_member_description">
+<p>The TLS handshake failed because the
+  peer's certificate was not acceptable.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-ERROR-CERTIFICATE-REQUIRED:CAPS"></a>G_TLS_ERROR_CERTIFICATE_REQUIRED</p></td>
+<td class="enum_member_description">
+<p>The TLS handshake failed because
+  the server requested a client-side certificate, but none was
+  provided. See <a class="link" href="GTlsConnection.html#g-tls-connection-set-certificate" title="g_tls_connection_set_certificate ()"><code class="function">g_tls_connection_set_certificate()</code></a>.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-ERROR-EOF:CAPS"></a>G_TLS_ERROR_EOF</p></td>
+<td class="enum_member_description">
+<p>The TLS connection was closed without proper
+  notice, which may indicate an attack. See
+  <a class="link" href="GTlsConnection.html#g-tls-connection-set-require-close-notify" title="g_tls_connection_set_require_close_notify ()"><code class="function">g_tls_connection_set_require_close_notify()</code></a>.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsAuthenticationMode"></a><h3>enum GTlsAuthenticationMode</h3>
+<p>The client authentication mode for a <a class="link" href="GTlsServerConnection.html" title="GTlsServerConnection"><span class="type">GTlsServerConnection</span></a>.</p>
+<div class="refsect3">
+<a name="GTlsAuthenticationMode.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-AUTHENTICATION-NONE:CAPS"></a>G_TLS_AUTHENTICATION_NONE</p></td>
+<td class="enum_member_description">
+<p>client authentication not required</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-AUTHENTICATION-REQUESTED:CAPS"></a>G_TLS_AUTHENTICATION_REQUESTED</p></td>
+<td class="enum_member_description">
+<p>client authentication is requested</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-AUTHENTICATION-REQUIRED:CAPS"></a>G_TLS_AUTHENTICATION_REQUIRED</p></td>
+<td class="enum_member_description">
+<p>client authentication is required</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsCertificateFlags"></a><h3>enum GTlsCertificateFlags</h3>
+<p>A set of flags describing TLS certification validation. This can be
+used to set which validation steps to perform (eg, with
+<a class="link" href="GTlsClientConnection.html#g-tls-client-connection-set-validation-flags" title="g_tls_client_connection_set_validation_flags ()"><code class="function">g_tls_client_connection_set_validation_flags()</code></a>), or to describe why
+a particular certificate was rejected (eg, in
+<a class="link" href="GTlsConnection.html#GTlsConnection-accept-certificate" title="The “accept-certificate” signal"><span class="type">“accept-certificate”</span></a>).</p>
+<div class="refsect3">
+<a name="GTlsCertificateFlags.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-CERTIFICATE-UNKNOWN-CA:CAPS"></a>G_TLS_CERTIFICATE_UNKNOWN_CA</p></td>
+<td class="enum_member_description">
+<p>The signing certificate authority is
+  not known.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-CERTIFICATE-BAD-IDENTITY:CAPS"></a>G_TLS_CERTIFICATE_BAD_IDENTITY</p></td>
+<td class="enum_member_description">
+<p>The certificate does not match the
+  expected identity of the site that it was retrieved from.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-CERTIFICATE-NOT-ACTIVATED:CAPS"></a>G_TLS_CERTIFICATE_NOT_ACTIVATED</p></td>
+<td class="enum_member_description">
+<p>The certificate's activation time
+  is still in the future</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-CERTIFICATE-EXPIRED:CAPS"></a>G_TLS_CERTIFICATE_EXPIRED</p></td>
+<td class="enum_member_description">
+<p>The certificate has expired</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-CERTIFICATE-REVOKED:CAPS"></a>G_TLS_CERTIFICATE_REVOKED</p></td>
+<td class="enum_member_description">
+<p>The certificate has been revoked
+  according to the <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a>'s certificate revocation list.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-CERTIFICATE-INSECURE:CAPS"></a>G_TLS_CERTIFICATE_INSECURE</p></td>
+<td class="enum_member_description">
+<p>The certificate's algorithm is
+  considered insecure.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-CERTIFICATE-GENERIC-ERROR:CAPS"></a>G_TLS_CERTIFICATE_GENERIC_ERROR</p></td>
+<td class="enum_member_description">
+<p>Some other error occurred validating
+  the certificate</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-CERTIFICATE-VALIDATE-ALL:CAPS"></a>G_TLS_CERTIFICATE_VALIDATE_ALL</p></td>
+<td class="enum_member_description">
+<p>the combination of all of the above
+  flags</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

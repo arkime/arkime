@@ -1,0 +1,333 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Varargs Value Collection: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="rn01.html" title="API Reference">
+<link rel="prev" href="gobject-GParamSpec.html" title="GParamSpec">
+<link rel="next" href="gobject-Signals.html" title="Signals">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gobject-Varargs-Value-Collection.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="rn01.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gobject-GParamSpec.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gobject-Signals.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gobject-Varargs-Value-Collection"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gobject-Varargs-Value-Collection.top_of_page"></a>Varargs Value Collection</span></h2>
+<p>Varargs Value Collection — Converting varargs to generic values</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gobject-Varargs-Value-Collection.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="gobject-Varargs-Value-Collection.html#G-VALUE-COLLECT-INIT:CAPS" title="G_VALUE_COLLECT_INIT()">G_VALUE_COLLECT_INIT</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="gobject-Varargs-Value-Collection.html#G-VALUE-COLLECT:CAPS" title="G_VALUE_COLLECT()">G_VALUE_COLLECT</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="gobject-Varargs-Value-Collection.html#G-VALUE-COLLECT-SKIP:CAPS" title="G_VALUE_COLLECT_SKIP()">G_VALUE_COLLECT_SKIP</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="gobject-Varargs-Value-Collection.html#G-VALUE-LCOPY:CAPS" title="G_VALUE_LCOPY()">G_VALUE_LCOPY</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gobject-Varargs-Value-Collection.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gobject-Varargs-Value-Collection.html#GTypeCValue" title="GTypeCValue">GTypeCValue</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Varargs-Value-Collection.html#G-VALUE-COLLECT-FORMAT-MAX-LENGTH:CAPS" title="G_VALUE_COLLECT_FORMAT_MAX_LENGTH">G_VALUE_COLLECT_FORMAT_MAX_LENGTH</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gobject-Varargs-Value-Collection.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib-object.h&gt;
+#include &lt;gobject/gvaluecollector.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gobject-Varargs-Value-Collection.description"></a><h2>Description</h2>
+<p>The macros in this section provide the varargs parsing support needed
+in variadic GObject functions such as <a class="link" href="gobject-The-Base-Object-Type.html#g-object-new" title="g_object_new ()"><code class="function">g_object_new()</code></a> or <a class="link" href="gobject-The-Base-Object-Type.html#g-object-set" title="g_object_set ()"><code class="function">g_object_set()</code></a>.
+They currently support the collection of integral types, floating point 
+types and pointers.</p>
+</div>
+<div class="refsect1">
+<a name="gobject-Varargs-Value-Collection.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="G-VALUE-COLLECT-INIT:CAPS"></a><h3>G_VALUE_COLLECT_INIT()</h3>
+<pre class="programlisting">#define             G_VALUE_COLLECT_INIT(value, _value_type, var_args, flags, __error)</pre>
+<p>Collects a variable argument value from a va_list. We have to
+implement the varargs collection as a macro, because on some systems
+va_list variables cannot be passed by reference.</p>
+<div class="refsect3">
+<a name="G-VALUE-COLLECT-INIT.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> return location. <em class="parameter"><code>value</code></em>
+must contain only 0 bytes.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>_value_type</p></td>
+<td class="parameter_description"><p>the <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> to use for <em class="parameter"><code>value</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>var_args</p></td>
+<td class="parameter_description"><p>the va_list variable; it may be evaluated multiple times</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>flags which are passed on to the <code class="function">collect_value()</code> function of
+the <a class="link" href="gobject-Type-Information.html#GTypeValueTable" title="struct GTypeValueTable"><span class="type">GTypeValueTable</span></a> of <em class="parameter"><code>value</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>__error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>** variable that will be modified to hold a <a href="../glib-Memory-Allocation.html#g-new"><code class="function">g_new()</code></a>
+allocated error messages if something fails</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VALUE-COLLECT:CAPS"></a><h3>G_VALUE_COLLECT()</h3>
+<pre class="programlisting">#define             G_VALUE_COLLECT(value, var_args, flags, __error)</pre>
+<p>Collects a variable argument value from a va_list. We have to
+implement the varargs collection as a macro, because on some systems
+va_list variables cannot be passed by reference.</p>
+<p>Note: If you are creating the <em class="parameter"><code>value</code></em>
+ argument just before calling this macro,
+you should use the <a class="link" href="gobject-Varargs-Value-Collection.html#G-VALUE-COLLECT-INIT:CAPS" title="G_VALUE_COLLECT_INIT()"><span class="type">G_VALUE_COLLECT_INIT</span></a> variant and pass the unitialized
+<a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a>. That variant is faster than <a class="link" href="gobject-Varargs-Value-Collection.html#G-VALUE-COLLECT:CAPS" title="G_VALUE_COLLECT()"><span class="type">G_VALUE_COLLECT</span></a>.</p>
+<div class="refsect3">
+<a name="G-VALUE-COLLECT.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> return location. <em class="parameter"><code>value</code></em>
+is supposed to be initialized
+according to the value type to be collected</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>var_args</p></td>
+<td class="parameter_description"><p>the va_list variable; it may be evaluated multiple times</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>flags which are passed on to the <code class="function">collect_value()</code> function of
+the <a class="link" href="gobject-Type-Information.html#GTypeValueTable" title="struct GTypeValueTable"><span class="type">GTypeValueTable</span></a> of <em class="parameter"><code>value</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>__error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>** variable that will be modified to hold a <a href="../glib-Memory-Allocation.html#g-new"><code class="function">g_new()</code></a>
+allocated error messages if something fails</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VALUE-COLLECT-SKIP:CAPS"></a><h3>G_VALUE_COLLECT_SKIP()</h3>
+<pre class="programlisting">#define             G_VALUE_COLLECT_SKIP(_value_type, var_args)</pre>
+<p>Skip an argument of type <em class="parameter"><code>_value_type</code></em>
+ from <em class="parameter"><code>var_args</code></em>
+.</p>
+<div class="refsect3">
+<a name="G-VALUE-COLLECT-SKIP.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>_value_type</p></td>
+<td class="parameter_description"><p>the <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> of the value to skip</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>var_args</p></td>
+<td class="parameter_description"><p>the va_list variable; it may be evaluated multiple times</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VALUE-LCOPY:CAPS"></a><h3>G_VALUE_LCOPY()</h3>
+<pre class="programlisting">#define             G_VALUE_LCOPY(value, var_args, flags, __error)</pre>
+<p>Collects a value's variable argument locations from a va_list. Usage is
+analogous to <a class="link" href="gobject-Varargs-Value-Collection.html#G-VALUE-COLLECT:CAPS" title="G_VALUE_COLLECT()"><code class="function">G_VALUE_COLLECT()</code></a>.</p>
+<div class="refsect3">
+<a name="G-VALUE-LCOPY.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> return location. <em class="parameter"><code>value</code></em>
+is supposed to be initialized
+according to the value type to be collected</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>var_args</p></td>
+<td class="parameter_description"><p>the va_list variable; it may be evaluated multiple times</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>flags which are passed on to the <code class="function">lcopy_value()</code> function of
+the <a class="link" href="gobject-Type-Information.html#GTypeValueTable" title="struct GTypeValueTable"><span class="type">GTypeValueTable</span></a> of <em class="parameter"><code>value</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>__error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>** variable that will be modified to hold a <a href="../glib-Memory-Allocation.html#g-new"><code class="function">g_new()</code></a>
+allocated error messages if something fails</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="gobject-Varargs-Value-Collection.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GTypeCValue"></a><h3>GTypeCValue</h3>
+<p>A union holding one collected value.</p>
+<div class="refsect3">
+<a name="GTypeCValue.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="union_members_name">
+<col class="union_members_description">
+<col width="200px" class="union_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="union_member_name"><p><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> <em class="structfield"><code><a name="GTypeCValue.v-int"></a>v_int</code></em>;</p></td>
+<td class="union_member_description"><p>the field for holding integer values</p></td>
+<td class="union_member_annotations"> </td>
+</tr>
+<tr>
+<td class="union_member_name"><p><a href="../glib-Basic-Types.html#glong"><span class="type">glong</span></a> <em class="structfield"><code><a name="GTypeCValue.v-long"></a>v_long</code></em>;</p></td>
+<td class="union_member_description"><p>the field for holding long integer values</p></td>
+<td class="union_member_annotations"> </td>
+</tr>
+<tr>
+<td class="union_member_name"><p><a href="../glib-Basic-Types.html#gint64"><span class="type">gint64</span></a> <em class="structfield"><code><a name="GTypeCValue.v-int64"></a>v_int64</code></em>;</p></td>
+<td class="union_member_description"><p>the field for holding 64 bit integer values</p></td>
+<td class="union_member_annotations"> </td>
+</tr>
+<tr>
+<td class="union_member_name"><p><a href="../glib-Basic-Types.html#gdouble"><span class="type">gdouble</span></a> <em class="structfield"><code><a name="GTypeCValue.v-double"></a>v_double</code></em>;</p></td>
+<td class="union_member_description"><p>the field for holding floating point values</p></td>
+<td class="union_member_annotations"> </td>
+</tr>
+<tr>
+<td class="union_member_name"><p><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> <em class="structfield"><code><a name="GTypeCValue.v-pointer"></a>v_pointer</code></em>;</p></td>
+<td class="union_member_description"><p>the field for holding pointers</p></td>
+<td class="union_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VALUE-COLLECT-FORMAT-MAX-LENGTH:CAPS"></a><h3>G_VALUE_COLLECT_FORMAT_MAX_LENGTH</h3>
+<pre class="programlisting">#define G_VALUE_COLLECT_FORMAT_MAX_LENGTH (8)
+</pre>
+<p>The maximal number of <a href="gobject-Varargs-Value-Collection.html#GTypeCValue"><span class="type">GTypeCValues</span></a> which can be collected for a 
+single <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a>.</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

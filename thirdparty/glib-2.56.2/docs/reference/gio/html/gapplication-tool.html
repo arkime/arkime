@@ -1,0 +1,287 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>gapplication: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="tools.html" title="GIO Tools">
+<link rel="prev" href="gresource-tool.html" title="gresource">
+<link rel="next" href="gio.html" title="gio">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="tools.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gresource-tool.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gio.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div lang="en" class="refentry">
+<a name="gapplication-tool"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle">gapplication</span></h2>
+<p>gapplication — D-Bus application launcher</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<h2>Synopsis</h2>
+<div class="cmdsynopsis"><p><code class="command">gapplication</code>   help  [<em class="replaceable"><code>COMMAND</code></em>]</p></div>
+<div class="cmdsynopsis"><p><code class="command">gapplication</code>   version </p></div>
+<div class="cmdsynopsis"><p><code class="command">gapplication</code>   list-apps </p></div>
+<div class="cmdsynopsis"><p><code class="command">gapplication</code>   launch   <em class="replaceable"><code>APPID</code></em> </p></div>
+<div class="cmdsynopsis"><p><code class="command">gapplication</code>   launch   <em class="replaceable"><code>APPID</code></em>  [<em class="replaceable"><code>FILE</code></em>...]</p></div>
+<div class="cmdsynopsis"><p><code class="command">gapplication</code>   list-actions   <em class="replaceable"><code>APPID</code></em> </p></div>
+<div class="cmdsynopsis"><p><code class="command">gapplication</code>   action   <em class="replaceable"><code>APPID</code></em>   <em class="replaceable"><code>ACTION</code></em>  [<em class="replaceable"><code>PARAMETER</code></em>]</p></div>
+</div>
+<div class="refsect1">
+<a name="id-1.4.26.9.5"></a><h2>Description</h2>
+<p>
+      <span class="command"><strong>gapplication</strong></span> is a commandline implementation of the client-side of the
+      <code class="interfacename">org.freedesktop.Application</code> interface as specified by the freedesktop.org
+      Desktop Entry Specification.
+    </p>
+<p>
+      <span class="command"><strong>gapplication</strong></span> can be used to start applications that have
+      <code class="varname">DBusActivatable</code> set to <code class="literal">true</code> in their <code class="filename">.desktop</code>
+      files and can be used to send messages to already-running instances of other applications.
+    </p>
+<p>
+      It is possible for applications to refer to <span class="command"><strong>gapplication</strong></span> in the <code class="varname">Exec</code>
+      line of their <code class="filename">.desktop</code> file to maintain backwards compatibility
+      with implementations that do not directly support <code class="varname">DBusActivatable</code>.
+    </p>
+<p>
+      <span class="command"><strong>gapplication</strong></span> ships as part of <span class="application">GLib</span>.
+    </p>
+</div>
+<div class="refsect1">
+<a name="id-1.4.26.9.6"></a><h2>Commands</h2>
+<div class="refsect2">
+<a name="id-1.4.26.9.6.2"></a><h3>Global commands</h3>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term">
+            <span class="command"><strong>help</strong></span>
+             [<em class="replaceable"><code>COMMAND</code></em>]
+          </span></p></td>
+<td><p>
+              Displays a short synopsis of the available commands or provides detailed help on a specific
+              command.
+            </p></td>
+</tr>
+<tr>
+<td><p><span class="term">
+            <span class="command"><strong>version</strong></span>
+          </span></p></td>
+<td><p>
+              Prints the GLib version whence <span class="command"><strong>gapplication</strong></span> came.
+            </p></td>
+</tr>
+<tr>
+<td><p><span class="term">
+            <span class="command"><strong>list-apps</strong></span>
+          </span></p></td>
+<td><p>
+              Prints a list of all application IDs that are known to support D-Bus activation.  This list is
+              generated by scanning <code class="filename">.desktop</code> files as per the current
+              <code class="envar">XDG_DATA_DIRS</code>.
+            </p></td>
+</tr>
+<tr>
+<td><p><span class="term">
+            <span class="command"><strong>launch</strong></span>
+              <em class="replaceable"><code>APPID</code></em> 
+             [<em class="replaceable"><code>FILE</code></em>...]
+          </span></p></td>
+<td>
+<p>
+              Launches an application.
+            </p>
+<p> 
+              The first parameter is the application ID in the familiar "reverse DNS" style (eg:
+              '<code class="literal">org.gnome.app</code>') without the <code class="filename">.desktop</code>
+              suffix.
+            </p>
+<p>
+              Optionally, if additional parameters are given, they are treated as the names of files to open and
+              may be filenames or URIs.  If no files are given then the application is simply activated.
+            </p>
+</td>
+</tr>
+<tr>
+<td><p><span class="term">
+            <span class="command"><strong>list-actions</strong></span>
+              <em class="replaceable"><code>APPID</code></em> 
+          </span></p></td>
+<td><p>
+              List the actions declared in the application's <code class="filename">.desktop</code>
+              file.  The parameter is the application ID, as above.
+            </p></td>
+</tr>
+<tr>
+<td><p><span class="term">
+            <span class="command"><strong>action</strong></span>
+              <em class="replaceable"><code>APPID</code></em> 
+              <em class="replaceable"><code>ACTION</code></em> 
+             [<em class="replaceable"><code>PARAMETER</code></em>]
+          </span></p></td>
+<td>
+<p>
+              Invokes the named action (in the same way as would occur when activating an action specified in
+              the <code class="filename">.desktop</code> file).
+            </p>
+<p>
+              The application ID (as above) is the first parameter.  The action name follows.
+            </p>
+<p>
+              Optionally, following the action name can be one parameter, in GVariant format, given as a single
+              argument.  Make sure to use sufficient quoting.
+            </p>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div class="refsect1">
+<a name="id-1.4.26.9.7"></a><h2>Examples</h2>
+<div class="refsect2">
+<a name="id-1.4.26.9.7.2"></a><h3>From the commandline</h3>
+<p>
+        Launching an application:
+      </p>
+<pre class="programlisting">
+        gapplication launch org.example.fooview
+      </pre>
+<p>
+        Opening a file with an application:
+      </p>
+<pre class="programlisting">
+        gapplication launch org.example.fooview ~/file.foo
+      </pre>
+<p>
+        Opening many files with an application:
+      </p>
+<pre class="programlisting">
+        gapplication launch org.example.fooview ~/foos/*.foo
+      </pre>
+<p>
+        Invoking an action on an application:
+      </p>
+<pre class="programlisting">
+        gapplication action org.example.fooview create
+      </pre>
+<p>
+        Invoking an action on an application, with an action:
+      </p>
+<pre class="programlisting">
+        gapplication action org.example.fooview show-item '"item_id_828739"'
+      </pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.4.26.9.7.3"></a><h3>
+        From the <code class="varname">Exec</code> lines of a <code class="filename">.desktop</code> file
+      </h3>
+<p>
+        The commandline interface of <span class="command"><strong>gapplication</strong></span> was designed so that it could be used
+        directly from the <code class="varname">Exec</code> line of a <code class="filename">.desktop</code>
+        file.
+      </p>
+<p>
+        You might want to do this to allow for backwards compatibility with implementations of the specification
+        that do not understand how to do D-Bus activation, without having to install a separate utility program.
+      </p>
+<p>
+        Consider the following example:
+      </p>
+<pre class="programlisting">
+        [Desktop Entry]
+        Version=1.1
+        Type=Application
+        Name=Foo Viewer
+        DBusActivatable=true
+        MimeType=image/x-foo;
+        Exec=gapplication launch org.example.fooview %F
+        Actions=gallery;create;
+
+        [Desktop Action gallery]
+        Name=Browse Gallery
+        Exec=gapplication action org.example.fooview gallery
+
+        [Desktop Action create]
+        Name=Create a new Foo!
+        Exec=gapplication action org.example.fooview create
+      </pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.4.26.9.7.4"></a><h3>From a script</h3>
+<p>
+        If installing an application that supports D-Bus activation you may still want to put a file in
+        <code class="filename">/usr/bin</code> so that your program can be started from a terminal.
+      </p>
+<p>
+        It is possible for this file to be a shell script.  The script can handle arguments such as --help and
+        --version directly.  It can also parse other command line arguments and convert them to uses of
+        <span class="command"><strong>gapplication</strong></span> to activate the application, open files, or invoke actions.
+      </p>
+<p>
+        Here is a simplified example, as may be installed in <code class="filename">/usr/bin/fooview</code>:
+      </p>
+<pre class="programlisting">
+        #!/bin/sh
+
+        case "$1" in
+          --help)
+            echo "see 'man fooview' for more information"
+            ;;
+
+          --version)
+            echo "fooview 1.2"
+            ;;
+
+          --gallery)
+            gapplication action org.example.fooview gallery
+            ;;
+
+          --create)
+            gapplication action org.example.fooview create
+            ;;
+
+          -*)
+            echo "unrecognised commandline argument"
+            exit 1
+            ;;
+
+          *)
+            gapplication launch org.example.fooview "$@"
+            ;;
+        esac
+      </pre>
+</div>
+</div>
+<div class="refsect1">
+<a name="id-1.4.26.9.8"></a><h2>See also</h2>
+<p>
+      <a class="ulink" href="http://standards.freedesktop.org/desktop-entry-spec/latest/" target="_top">Desktop Entry Specification</a>,
+      <span class="citerefentry"><span class="refentrytitle">gdbus</span>(1)</span>,
+      <span class="citerefentry"><span class="refentrytitle">xdg-open</span>(1)</span>,
+      <span class="citerefentry"><span class="refentrytitle">desktop-file-validate</span>(1)</span>
+    </p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

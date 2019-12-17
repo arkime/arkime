@@ -1,0 +1,26 @@
+[Desktop Entry]
+Name=Contacts
+Name[bn_IN]=পরিচিতি-সমূহ
+Name[ca]=Contactes
+Name[ca@valencia]=Contactes
+Name[en_CA]=Contacts
+Name[en_GB]=Contacts
+Name[eo]=Kontaktaro
+Name[pt]=Contactos
+Name[pt_BR]=Contatos
+Comment=A contacts manager for GNOME
+Keywords=friends;address book;
+Keywords[bn_IN]=বন্ধু; ঠিকানা বই;
+Keywords[ca]=amics;llibreta d'adreces;
+Keywords[ca@valencia]=amics;llibreta d'adreces;
+Keywords[eo]=amikoj;adreslibro;
+Keywords[pt]=amigos;livro de endereços;
+Keywords[pt_BR]=amigos;catálogo de endereços;
+Icon=x-office-address-book
+Exec=true
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=GNOME;GTK;Utility;
+OnlyShowIn=GNOME;Unity;
+Implements=org.gnome.Shell.SearchProvider2

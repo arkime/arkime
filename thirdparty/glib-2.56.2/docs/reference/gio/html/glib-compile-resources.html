@@ -1,0 +1,235 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>glib-compile-resources: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="tools.html" title="GIO Tools">
+<link rel="prev" href="glib-compile-schemas.html" title="glib-compile-schemas">
+<link rel="next" href="gdbus.html" title="gdbus">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="tools.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-compile-schemas.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gdbus.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div lang="en" class="refentry">
+<a name="glib-compile-resources"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle">glib-compile-resources</span></h2>
+<p>glib-compile-resources — GLib resource compiler</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<h2>Synopsis</h2>
+<div class="cmdsynopsis"><p><code class="command">glib-compile-resources</code>  [OPTION...] {FILE}</p></div>
+</div>
+<div class="refsect1">
+<a name="id-1.4.26.5.5"></a><h2>Description</h2>
+<p><span class="command"><strong>glib-compile-resources</strong></span> reads the resource description from
+<em class="replaceable"><code>FILE</code></em> and the files that it references
+and creates a binary resource bundle that is suitable for use with the
+<a class="link" href="GResource.html" title="GResource"><span class="type">GResource</span></a> API.
+The resulting bundle is then written out as-is, or as C source for linking into
+an application.
+</p>
+<p>
+The XML resource files normally have the filename extension <code class="filename">.gresource.xml</code>.
+For a detailed description of the XML file format, see the
+<a class="link" href="GResource.html" title="GResource"><span class="type">GResource</span></a> documentation.
+</p>
+</div>
+<div class="refsect1">
+<a name="id-1.4.26.5.6"></a><h2>Options</h2>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><code class="option">-h</code>, <code class="option">--help</code></span></p></td>
+<td><p>
+Print help and exit
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--version</code></span></p></td>
+<td><p>
+Print program version and exit
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--target=<em class="replaceable"><code>TARGET</code></em></code></span></p></td>
+<td><p>
+Store the compiled resources in the file <em class="replaceable"><code>TARGET</code></em>.
+If not specified a filename based on the <em class="replaceable"><code>FILE</code></em>
+basename is used.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--sourcedir=<em class="replaceable"><code>DIRECTORY</code></em></code></span></p></td>
+<td><p>
+The files referenced in <em class="replaceable"><code>FILE</code></em> are loaded from
+this directory. If not specified, the current directory is used.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--generate</code></span></p></td>
+<td>
+<p>
+Write the output file in the format selected for by its filename extension:
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><code class="literal">.c</code></span></p></td>
+<td><p>C source</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="literal">.h</code></span></p></td>
+<td><p>C header</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="literal">.gresource</code></span></p></td>
+<td><p>resource bundle</p></td>
+</tr>
+</tbody>
+</table></div>
+<p>
+</p>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--generate-source</code></span></p></td>
+<td><p>
+Instead of a writing the resource bundle in binary form create a C source file
+that contains the resource bundle. This can then be compiled into an
+application for easy access.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--generate-header</code></span></p></td>
+<td><p>
+Generate a header file for use with C code generated by
+<code class="option">--generate-source</code>.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--generate-dependencies</code></span></p></td>
+<td>
+<p>
+Prints the list of files that the resource bundle references to standard output.
+This can be used to track dependencies in the build system. For example, the
+following make rule would mark <em class="replaceable"><code>test.gresource</code></em> as
+depending on all the files that <em class="replaceable"><code>test.gresource.xml</code></em>
+includes, so that is is automatically rebuilt if any of them change:
+</p>
+<pre class="programlisting">
+test.gresource: test.gresource.xml $(shell $(GLIB_COMPILE_RESOURCES) --generate-dependencies test.gresource.xml)
+</pre>
+<p>
+Note that this may or may not be portable to non-GNU <span class="command"><strong>make</strong></span>.
+</p>
+<p>
+Also see <code class="option">--dependency-file</code>.
+</p>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--c-name</code></span></p></td>
+<td><p>
+Specify the prefix used for the C identifiers in the code generated by
+<code class="option">--generate-source</code> and <code class="option">--generate-header</code>.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--manual-register</code></span></p></td>
+<td><p>
+By default code generated by <code class="option">--generate-source</code> uses automatic
+initialization of the resource. This works on most systems by using the
+compiler support for constructors. However, some (uncommon) compilers may not
+support this, you can then specify <code class="option">--manual-register</code>,
+which will generate custom register and unregister functions that your code
+can manually call at initialization and uninitialization time.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--internal</code></span></p></td>
+<td><p>
+By default code generated by <code class="option">--generate-source</code> declares all
+initialization functions as <span class="type">extern</span>.  So they are exported
+unless this is prevented by a link script or other means.  Since libraries
+usually want to use the functions only internally it can be more useful to
+declare them as
+<a href="../glib-Miscellaneous-Macros.html#G-GNUC-INTERNAL:CAPS"><code class="literal">G_GNUC_INTERNAL</code></a>
+which is what <code class="option">--internal</code> does.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--dependency-file=<em class="replaceable"><code>FILE</code></em></code></span></p></td>
+<td><p>
+Write dependencies in the same style as gcc -M -MF to the given file.
+If <code class="option">FILE</code> is -, the dependencies are written to the standard
+output. Unlike <code class="option">--generate-dependencies</code>, this option can be
+combined with other <code class="option">--generate</code> options to generate dependencies
+as a side-effect of generating sources.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--generate-phony-targets</code></span></p></td>
+<td><p>
+When creating a dependency file with <code class="option">--dependency-file</code>
+include phony targets in the same style as gcc -MP. This would typically
+be used with <code class="literal">make</code>.
+</p></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="id-1.4.26.5.7"></a><h2>Environment</h2>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><code class="envar">XMLLINT</code></span></p></td>
+<td><p>
+The full path to the xmllint executable. This is used to preprocess resources
+with the <code class="literal">xml-stripblanks</code> preprocessing option. If this
+environment variable is not set, xmllint is searched in the
+<code class="envar">PATH</code>.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="envar">GDK_PIXBUF_PIXDATA</code></span></p></td>
+<td><p>
+The full path to the gdk-pixbuf-pixdata executable. This is used to preprocess
+resources with the <code class="literal">to-pixdata</code> preprocessing option. If this
+environment variable is not set, gdk-pixbuf-pixdata is searched in the
+<code class="envar">PATH</code>.
+</p></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

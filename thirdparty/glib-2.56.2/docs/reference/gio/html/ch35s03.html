@@ -1,0 +1,201 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Owning bus names: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="ch35.html" title="Migrating to GDBus">
+<link rel="prev" href="ch35s02.html" title="API comparison">
+<link rel="next" href="ch35s04.html" title="Creating proxies for well-known names">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch35.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="ch35s02.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="ch35s04.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="id-1.5.5.4"></a>Owning bus names</h2></div></div></div>
+<p>
+      Using dbus-glib, you typically call RequestName manually
+      to own a name, like in the following excerpt:
+      </p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal">error </span><span class="symbol">=</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="normal">res </span><span class="symbol">=</span><span class="normal"> </span><span class="function">dbus_g_proxy_call</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">system_bus_proxy</span><span class="symbol">,</span>
+<span class="normal">                         </span><span class="string">"RequestName"</span><span class="symbol">,</span>
+<span class="normal">                         </span><span class="symbol">&amp;</span><span class="normal">error</span><span class="symbol">,</span>
+<span class="normal">                         <a href="../gobject-Type-Information.html#G-TYPE-STRING:CAPS">G_TYPE_STRING</a></span><span class="symbol">,</span><span class="normal"> NAME_TO_CLAIM</span><span class="symbol">,</span>
+<span class="normal">                         <a href="../gobject-Type-Information.html#G-TYPE-UINT:CAPS">G_TYPE_UINT</a></span><span class="symbol">,</span><span class="normal">   DBUS_NAME_FLAG_ALLOW_REPLACEMENT</span><span class="symbol">,</span>
+<span class="normal">                         <a href="../gobject-Type-Information.html#G-TYPE-INVALID:CAPS">G_TYPE_INVALID</a></span><span class="symbol">,</span>
+<span class="normal">                         <a href="../gobject-Type-Information.html#G-TYPE-UINT:CAPS">G_TYPE_UINT</a></span><span class="symbol">,</span><span class="normal">   </span><span class="symbol">&amp;</span><span class="normal">result</span><span class="symbol">,</span>
+<span class="normal">                         <a href="../gobject-Type-Information.html#G-TYPE-INVALID:CAPS">G_TYPE_INVALID</a></span><span class="symbol">);</span>
+<span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">res</span><span class="symbol">)</span>
+<span class="normal">  </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">error </span><span class="symbol">!=</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span>
+<span class="normal">      </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function"><a href="../glib-Message-Logging.html#g-warning">g_warning</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Failed to acquire %s: %s"</span><span class="symbol">,</span>
+<span class="normal">                   NAME_TO_CLAIM</span><span class="symbol">,</span><span class="normal"> error</span><span class="symbol">-&gt;</span><span class="normal">message</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="function"><a href="../glib-Error-Reporting.html#g-error-free">g_error_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">error</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="keyword">else</span>
+<span class="normal">      </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function"><a href="../glib-Message-Logging.html#g-warning">g_warning</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Failed to acquire %s"</span><span class="symbol">,</span><span class="normal"> NAME_TO_CLAIM</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="keyword">goto</span><span class="normal"> out</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="cbracket">}</span>
+
+<span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">result </span><span class="symbol">!=</span><span class="normal"> DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER</span><span class="symbol">)</span>
+<span class="normal">  </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">error </span><span class="symbol">!=</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span>
+<span class="normal">      </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function"><a href="../glib-Message-Logging.html#g-warning">g_warning</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Failed to acquire %s: %s"</span><span class="symbol">,</span>
+<span class="normal">                   NAME_TO_CLAIM</span><span class="symbol">,</span><span class="normal"> error</span><span class="symbol">-&gt;</span><span class="normal">message</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="function"><a href="../glib-Error-Reporting.html#g-error-free">g_error_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">error</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="keyword">else</span>
+<span class="normal">      </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function"><a href="../glib-Message-Logging.html#g-warning">g_warning</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Failed to acquire %s"</span><span class="symbol">,</span><span class="normal"> NAME_TO_CLAIM</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="function">exit</span><span class="normal"> </span><span class="symbol">(</span><span class="number">1</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="cbracket">}</span>
+
+<span class="function">dbus_g_proxy_add_signal</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">system_bus_proxy</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"NameLost"</span><span class="symbol">,</span>
+<span class="normal">                         <a href="../gobject-Type-Information.html#G-TYPE-STRING:CAPS">G_TYPE_STRING</a></span><span class="symbol">,</span><span class="normal"> <a href="../gobject-Type-Information.html#G-TYPE-INVALID:CAPS">G_TYPE_INVALID</a></span><span class="symbol">);</span>
+<span class="function">dbus_g_proxy_connect_signal</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">system_bus_proxy</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"NameLost"</span><span class="symbol">,</span>
+<span class="normal">                             </span><span class="function"><a href="../gobject-Closures.html#G-CALLBACK:CAPS">G_CALLBACK</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">on_name_lost</span><span class="symbol">),</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="comment">/* further setup ... */</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+    </p>
+<p>
+    While you can do things this way with GDBus too, using
+    <a class="link" href="GDBusProxy.html#g-dbus-proxy-call-sync" title="g_dbus_proxy_call_sync ()"><code class="function">g_dbus_proxy_call_sync()</code></a>, it is much nicer to use the high-level API
+    for this:
+    </p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">on_name_acquired</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GDBusConnection</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">connection</span><span class="symbol">,</span>
+<span class="normal">                  </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">     </span><span class="symbol">*</span><span class="normal">name</span><span class="symbol">,</span>
+<span class="normal">                  </span><span class="usertype">gpointer</span><span class="normal">         user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="comment">/* further setup ... */</span>
+<span class="cbracket">}</span>
+
+<span class="comment">/* ... */</span>
+
+<span class="normal">  owner_id </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gio-Owning-Bus-Names.html#g-bus-own-name">g_bus_own_name</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="GDBusConnection.html#G-BUS-TYPE-SYSTEM:CAPS">G_BUS_TYPE_SYSTEM</a></span><span class="symbol">,</span>
+<span class="normal">                             NAME_TO_CLAIM</span><span class="symbol">,</span>
+<span class="normal">                             <a href="gio-Owning-Bus-Names.html#G-BUS-NAME-OWNER-FLAGS-ALLOW-REPLACEMENT:CAPS">G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT</a></span><span class="symbol">,</span>
+<span class="normal">                             on_bus_acquired</span><span class="symbol">,</span>
+<span class="normal">                             on_name_acquired</span><span class="symbol">,</span>
+<span class="normal">                             on_name_lost</span><span class="symbol">,</span>
+<span class="normal">                             <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span>
+<span class="normal">                             <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="../glib-The-Main-Event-Loop.html#g-main-loop-run">g_main_loop_run</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">loop</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="gio-Owning-Bus-Names.html#g-bus-unown-name">g_bus_unown_name</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">owner_id</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+    Note that <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a> works asynchronously and requires
+    you to enter your mainloop to await the <code class="function">on_name_aquired()</code>
+    callback. Also note that in order to avoid race conditions (e.g.
+    when your service is activated by a method call), you have to export
+    your manager object <span class="emphasis"><em>before</em></span> acquiring the
+    name. The <code class="function">on_bus_acquired()</code> callback is the right place to do
+    such preparations.
+    </p>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,7 @@
+<schemalist>
+  <schema id="no-default" path="/tests/">
+    <key name="" type="s">
+      <default></default>
+    </key>
+  </schema>
+</schemalist>

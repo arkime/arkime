@@ -1,0 +1,688 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GDataOutputStream: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="streaming.html" title="Streaming I/O">
+<link rel="prev" href="GDataInputStream.html" title="GDataInputStream">
+<link rel="next" href="GUnixInputStream.html" title="GUnixInputStream">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GDataOutputStream.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GDataOutputStream.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_interfaces">  <span class="dim">|</span> 
+                  <a href="#GDataOutputStream.implemented-interfaces" class="shortcut">Implemented Interfaces</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GDataOutputStream.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="streaming.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GDataInputStream.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GUnixInputStream.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GDataOutputStream"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GDataOutputStream.top_of_page"></a>GDataOutputStream</span></h2>
+<p>GDataOutputStream — Data Output Stream</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GDataOutputStream.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="returnvalue">GDataOutputStream</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDataOutputStream.html#g-data-output-stream-new" title="g_data_output_stream_new ()">g_data_output_stream_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDataOutputStream.html#g-data-output-stream-set-byte-order" title="g_data_output_stream_set_byte_order ()">g_data_output_stream_set_byte_order</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDataInputStream.html#GDataStreamByteOrder" title="enum GDataStreamByteOrder"><span class="returnvalue">GDataStreamByteOrder</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDataOutputStream.html#g-data-output-stream-get-byte-order" title="g_data_output_stream_get_byte_order ()">g_data_output_stream_get_byte_order</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDataOutputStream.html#g-data-output-stream-put-byte" title="g_data_output_stream_put_byte ()">g_data_output_stream_put_byte</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDataOutputStream.html#g-data-output-stream-put-int16" title="g_data_output_stream_put_int16 ()">g_data_output_stream_put_int16</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDataOutputStream.html#g-data-output-stream-put-uint16" title="g_data_output_stream_put_uint16 ()">g_data_output_stream_put_uint16</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDataOutputStream.html#g-data-output-stream-put-int32" title="g_data_output_stream_put_int32 ()">g_data_output_stream_put_int32</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDataOutputStream.html#g-data-output-stream-put-uint32" title="g_data_output_stream_put_uint32 ()">g_data_output_stream_put_uint32</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDataOutputStream.html#g-data-output-stream-put-int64" title="g_data_output_stream_put_int64 ()">g_data_output_stream_put_int64</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDataOutputStream.html#g-data-output-stream-put-uint64" title="g_data_output_stream_put_uint64 ()">g_data_output_stream_put_uint64</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDataOutputStream.html#g-data-output-stream-put-string" title="g_data_output_stream_put_string ()">g_data_output_stream_put_string</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDataOutputStream.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody><tr>
+<td class="property_type"><a class="link" href="GDataInputStream.html#GDataStreamByteOrder" title="enum GDataStreamByteOrder"><span class="type">GDataStreamByteOrder</span></a></td>
+<td class="property_name"><a class="link" href="GDataOutputStream.html#GDataOutputStream--byte-order" title="The “byte-order” property">byte-order</a></td>
+<td class="property_flags">Read / Write</td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDataOutputStream.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GDataOutputStream.html#GDataOutputStream-struct" title="struct GDataOutputStream">GDataOutputStream</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDataOutputStream.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> <a class="link" href="GOutputStream.html" title="GOutputStream">GOutputStream</a>
+        <span class="lineart">╰──</span> <a class="link" href="GFilterOutputStream.html" title="GFilterOutputStream">GFilterOutputStream</a>
+            <span class="lineart">╰──</span> GDataOutputStream
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDataOutputStream.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GDataOutputStream implements
+ <a class="link" href="GSeekable.html" title="GSeekable">GSeekable</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GDataOutputStream.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDataOutputStream.description"></a><h2>Description</h2>
+<p>Data output stream implements <a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a> and includes functions for 
+writing data directly to an output stream.</p>
+</div>
+<div class="refsect1">
+<a name="GDataOutputStream.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-data-output-stream-new"></a><h3>g_data_output_stream_new ()</h3>
+<pre class="programlisting"><a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="returnvalue">GDataOutputStream</span></a> *
+g_data_output_stream_new (<em class="parameter"><code><a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a> *base_stream</code></em>);</pre>
+<p>Creates a new data output stream for <em class="parameter"><code>base_stream</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-data-output-stream-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>base_stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-data-output-stream-new.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a>.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-data-output-stream-set-byte-order"></a><h3>g_data_output_stream_set_byte_order ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_data_output_stream_set_byte_order (<em class="parameter"><code><a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a> *stream</code></em>,
+                                     <em class="parameter"><code><a class="link" href="GDataInputStream.html#GDataStreamByteOrder" title="enum GDataStreamByteOrder"><span class="type">GDataStreamByteOrder</span></a> order</code></em>);</pre>
+<p>Sets the byte order of the data output stream to <em class="parameter"><code>order</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-data-output-stream-set-byte-order.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>order</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDataInputStream.html#GDataStreamByteOrder" title="enum GDataStreamByteOrder"><code class="literal">GDataStreamByteOrder</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-data-output-stream-get-byte-order"></a><h3>g_data_output_stream_get_byte_order ()</h3>
+<pre class="programlisting"><a class="link" href="GDataInputStream.html#GDataStreamByteOrder" title="enum GDataStreamByteOrder"><span class="returnvalue">GDataStreamByteOrder</span></a>
+g_data_output_stream_get_byte_order (<em class="parameter"><code><a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a> *stream</code></em>);</pre>
+<p>Gets the byte order for the stream.</p>
+<div class="refsect3">
+<a name="g-data-output-stream-get-byte-order.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-data-output-stream-get-byte-order.returns"></a><h4>Returns</h4>
+<p> the <a class="link" href="GDataInputStream.html#GDataStreamByteOrder" title="enum GDataStreamByteOrder"><span class="type">GDataStreamByteOrder</span></a> for the <em class="parameter"><code>stream</code></em>
+.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-data-output-stream-put-byte"></a><h3>g_data_output_stream_put_byte ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_data_output_stream_put_byte (<em class="parameter"><code><a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a> *stream</code></em>,
+                               <em class="parameter"><code><a href="../glib-Basic-Types.html#guchar"><span class="type">guchar</span></a> data</code></em>,
+                               <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                               <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Puts a byte into the output stream.</p>
+<div class="refsect3">
+<a name="g-data-output-stream-put-byte.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Basic-Types.html#guchar"><span class="type">guchar</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-data-output-stream-put-byte.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>data</code></em>
+was successfully added to the <em class="parameter"><code>stream</code></em>
+.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-data-output-stream-put-int16"></a><h3>g_data_output_stream_put_int16 ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_data_output_stream_put_int16 (<em class="parameter"><code><a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a> *stream</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gint16"><span class="type">gint16</span></a> data</code></em>,
+                                <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Puts a signed 16-bit integer into the output stream.</p>
+<div class="refsect3">
+<a name="g-data-output-stream-put-int16.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Basic-Types.html#gint16"><span class="type">gint16</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-data-output-stream-put-int16.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>data</code></em>
+was successfully added to the <em class="parameter"><code>stream</code></em>
+.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-data-output-stream-put-uint16"></a><h3>g_data_output_stream_put_uint16 ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_data_output_stream_put_uint16 (<em class="parameter"><code><a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a> *stream</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Basic-Types.html#guint16"><span class="type">guint16</span></a> data</code></em>,
+                                 <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Puts an unsigned 16-bit integer into the output stream.</p>
+<div class="refsect3">
+<a name="g-data-output-stream-put-uint16.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Basic-Types.html#guint16"><span class="type">guint16</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-data-output-stream-put-uint16.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>data</code></em>
+was successfully added to the <em class="parameter"><code>stream</code></em>
+.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-data-output-stream-put-int32"></a><h3>g_data_output_stream_put_int32 ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_data_output_stream_put_int32 (<em class="parameter"><code><a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a> *stream</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gint32"><span class="type">gint32</span></a> data</code></em>,
+                                <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Puts a signed 32-bit integer into the output stream.</p>
+<div class="refsect3">
+<a name="g-data-output-stream-put-int32.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Basic-Types.html#gint32"><span class="type">gint32</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-data-output-stream-put-int32.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>data</code></em>
+was successfully added to the <em class="parameter"><code>stream</code></em>
+.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-data-output-stream-put-uint32"></a><h3>g_data_output_stream_put_uint32 ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_data_output_stream_put_uint32 (<em class="parameter"><code><a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a> *stream</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> data</code></em>,
+                                 <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Puts an unsigned 32-bit integer into the stream.</p>
+<div class="refsect3">
+<a name="g-data-output-stream-put-uint32.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Basic-Types.html#guint32"><span class="type">guint32</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-data-output-stream-put-uint32.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>data</code></em>
+was successfully added to the <em class="parameter"><code>stream</code></em>
+.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-data-output-stream-put-int64"></a><h3>g_data_output_stream_put_int64 ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_data_output_stream_put_int64 (<em class="parameter"><code><a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a> *stream</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gint64"><span class="type">gint64</span></a> data</code></em>,
+                                <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Puts a signed 64-bit integer into the stream.</p>
+<div class="refsect3">
+<a name="g-data-output-stream-put-int64.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Basic-Types.html#gint64"><span class="type">gint64</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-data-output-stream-put-int64.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>data</code></em>
+was successfully added to the <em class="parameter"><code>stream</code></em>
+.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-data-output-stream-put-uint64"></a><h3>g_data_output_stream_put_uint64 ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_data_output_stream_put_uint64 (<em class="parameter"><code><a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a> *stream</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Basic-Types.html#guint64"><span class="type">guint64</span></a> data</code></em>,
+                                 <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Puts an unsigned 64-bit integer into the stream.</p>
+<div class="refsect3">
+<a name="g-data-output-stream-put-uint64.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Basic-Types.html#guint64"><span class="type">guint64</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-data-output-stream-put-uint64.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>data</code></em>
+was successfully added to the <em class="parameter"><code>stream</code></em>
+.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-data-output-stream-put-string"></a><h3>g_data_output_stream_put_string ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_data_output_stream_put_string (<em class="parameter"><code><a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a> *stream</code></em>,
+                                 <em class="parameter"><code>const <span class="type">char</span> *str</code></em>,
+                                 <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Puts a string into the output stream.</p>
+<div class="refsect3">
+<a name="g-data-output-stream-put-string.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDataOutputStream.html" title="GDataOutputStream"><span class="type">GDataOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>str</p></td>
+<td class="parameter_description"><p>a string.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-data-output-stream-put-string.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>string</code></em>
+was successfully added to the <em class="parameter"><code>stream</code></em>
+.</p>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDataOutputStream.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GDataOutputStream-struct"></a><h3>struct GDataOutputStream</h3>
+<pre class="programlisting">struct GDataOutputStream;</pre>
+<p>An implementation of <a class="link" href="GBufferedOutputStream.html" title="GBufferedOutputStream"><span class="type">GBufferedOutputStream</span></a> that allows for high-level
+data manipulation of arbitrary data (including binary operations).</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDataOutputStream.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GDataOutputStream--byte-order"></a><h3>The <code class="literal">“byte-order”</code> property</h3>
+<pre class="programlisting">  “byte-order”               <a class="link" href="GDataInputStream.html#GDataStreamByteOrder" title="enum GDataStreamByteOrder"><span class="type">GDataStreamByteOrder</span></a></pre>
+<p>Determines the byte ordering that is used when writing
+
+multi-byte entities (such as integers) to the stream.</p>
+<p>Flags: Read / Write</p>
+<p>Default value: G_DATA_STREAM_BYTE_ORDER_BIG_ENDIAN</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDataOutputStream.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,2629 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>IO Channels: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-core.html" title="GLib Core Application Support">
+<link rel="prev" href="glib-Memory-Slices.html" title="Memory Slices">
+<link rel="next" href="glib-Error-Reporting.html" title="Error Reporting">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-IO-Channels.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-core.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Memory-Slices.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-Error-Reporting.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-IO-Channels"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-IO-Channels.top_of_page"></a>IO Channels</span></h2>
+<p>IO Channels — portable support for using files, pipes and sockets</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-IO-Channels.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="returnvalue">GIOChannel</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-unix-new" title="g_io_channel_unix_new ()">g_io_channel_unix_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-unix-get-fd" title="g_io_channel_unix_get_fd ()">g_io_channel_unix_get_fd</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="returnvalue">GIOChannel</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-win32-new-fd" title="g_io_channel_win32_new_fd ()">g_io_channel_win32_new_fd</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="returnvalue">GIOChannel</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-win32-new-socket" title="g_io_channel_win32_new_socket ()">g_io_channel_win32_new_socket</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="returnvalue">GIOChannel</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-win32-new-messages" title="g_io_channel_win32_new_messages ()">g_io_channel_win32_new_messages</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-init" title="g_io_channel_init ()">g_io_channel_init</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="returnvalue">GIOChannel</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-new-file" title="g_io_channel_new_file ()">g_io_channel_new_file</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-read-chars" title="g_io_channel_read_chars ()">g_io_channel_read_chars</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-read-unichar" title="g_io_channel_read_unichar ()">g_io_channel_read_unichar</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-read-line" title="g_io_channel_read_line ()">g_io_channel_read_line</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-read-line-string" title="g_io_channel_read_line_string ()">g_io_channel_read_line_string</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-read-to-end" title="g_io_channel_read_to_end ()">g_io_channel_read_to_end</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-write-chars" title="g_io_channel_write_chars ()">g_io_channel_write_chars</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-write-unichar" title="g_io_channel_write_unichar ()">g_io_channel_write_unichar</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-flush" title="g_io_channel_flush ()">g_io_channel_flush</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-seek-position" title="g_io_channel_seek_position ()">g_io_channel_seek_position</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-shutdown" title="g_io_channel_shutdown ()">g_io_channel_shutdown</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOChannelError" title="enum GIOChannelError"><span class="returnvalue">GIOChannelError</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-error-from-errno" title="g_io_channel_error_from_errno ()">g_io_channel_error_from_errno</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="returnvalue">GIOChannel</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-ref" title="g_io_channel_ref ()">g_io_channel_ref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-unref" title="g_io_channel_unref ()">g_io_channel_unref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-The-Main-Event-Loop.html#GSource" title="struct GSource"><span class="returnvalue">GSource</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-create-watch" title="g_io_create_watch ()">g_io_create_watch</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-add-watch" title="g_io_add_watch ()">g_io_add_watch</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-add-watch-full" title="g_io_add_watch_full ()">g_io_add_watch_full</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="glib-IO-Channels.html#GIOFunc" title="GIOFunc ()">*GIOFunc</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-get-buffer-size" title="g_io_channel_get_buffer_size ()">g_io_channel_get_buffer_size</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-set-buffer-size" title="g_io_channel_set_buffer_size ()">g_io_channel_set_buffer_size</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOCondition" title="enum GIOCondition"><span class="returnvalue">GIOCondition</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-get-buffer-condition" title="g_io_channel_get_buffer_condition ()">g_io_channel_get_buffer_condition</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOFlags" title="enum GIOFlags"><span class="returnvalue">GIOFlags</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-get-flags" title="g_io_channel_get_flags ()">g_io_channel_get_flags</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-set-flags" title="g_io_channel_set_flags ()">g_io_channel_set_flags</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-get-line-term" title="g_io_channel_get_line_term ()">g_io_channel_get_line_term</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-set-line-term" title="g_io_channel_set_line_term ()">g_io_channel_set_line_term</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-get-buffered" title="g_io_channel_get_buffered ()">g_io_channel_get_buffered</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-set-buffered" title="g_io_channel_set_buffered ()">g_io_channel_set_buffered</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-get-encoding" title="g_io_channel_get_encoding ()">g_io_channel_get_encoding</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-set-encoding" title="g_io_channel_set_encoding ()">g_io_channel_set_encoding</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-get-close-on-unref" title="g_io_channel_get_close_on_unref ()">g_io_channel_get_close_on_unref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-set-close-on-unref" title="g_io_channel_set_close_on_unref ()">g_io_channel_set_close_on_unref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOError" title="enum GIOError"><span class="returnvalue">GIOError</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-read" title="g_io_channel_read ()">g_io_channel_read</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOError" title="enum GIOError"><span class="returnvalue">GIOError</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-write" title="g_io_channel_write ()">g_io_channel_write</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-IO-Channels.html#GIOError" title="enum GIOError"><span class="returnvalue">GIOError</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-seek" title="g_io_channel_seek ()">g_io_channel_seek</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-IO-Channels.html#g-io-channel-close" title="g_io_channel_close ()">g_io_channel_close</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-IO-Channels.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel">GIOChannel</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="glib-IO-Channels.html#GSeekType" title="enum GSeekType">GSeekType</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus">GIOStatus</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="glib-IO-Channels.html#GIOChannelError" title="enum GIOChannelError">GIOChannelError</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-IO-Channels.html#G-IO-CHANNEL-ERROR:CAPS" title="G_IO_CHANNEL_ERROR">G_IO_CHANNEL_ERROR</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="glib-IO-Channels.html#GIOCondition" title="enum GIOCondition">GIOCondition</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="glib-IO-Channels.html#GIOFuncs" title="struct GIOFuncs">GIOFuncs</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="glib-IO-Channels.html#GIOFlags" title="enum GIOFlags">GIOFlags</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="glib-IO-Channels.html#GIOError" title="enum GIOError">GIOError</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-IO-Channels.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-IO-Channels.description"></a><h2>Description</h2>
+<p>The <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> data type aims to provide a portable method for
+using file descriptors, pipes, and sockets, and integrating them
+into the <a class="link" href="glib-The-Main-Event-Loop.html" title="The Main Event Loop">main event loop</a>. Currently,
+full support is available on UNIX platforms, support for Windows
+is only partially complete.</p>
+<p>To create a new <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> on UNIX systems use
+<a class="link" href="glib-IO-Channels.html#g-io-channel-unix-new" title="g_io_channel_unix_new ()"><code class="function">g_io_channel_unix_new()</code></a>. This works for plain file descriptors,
+pipes and sockets. Alternatively, a channel can be created for a
+file in a system independent manner using <a class="link" href="glib-IO-Channels.html#g-io-channel-new-file" title="g_io_channel_new_file ()"><code class="function">g_io_channel_new_file()</code></a>.</p>
+<p>Once a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> has been created, it can be used in a generic
+manner with the functions <a class="link" href="glib-IO-Channels.html#g-io-channel-read-chars" title="g_io_channel_read_chars ()"><code class="function">g_io_channel_read_chars()</code></a>,
+<a class="link" href="glib-IO-Channels.html#g-io-channel-write-chars" title="g_io_channel_write_chars ()"><code class="function">g_io_channel_write_chars()</code></a>, <a class="link" href="glib-IO-Channels.html#g-io-channel-seek-position" title="g_io_channel_seek_position ()"><code class="function">g_io_channel_seek_position()</code></a>, and
+<a class="link" href="glib-IO-Channels.html#g-io-channel-shutdown" title="g_io_channel_shutdown ()"><code class="function">g_io_channel_shutdown()</code></a>.</p>
+<p>To add a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> to the <a class="link" href="glib-The-Main-Event-Loop.html" title="The Main Event Loop">main event loop</a>,
+use <a class="link" href="glib-IO-Channels.html#g-io-add-watch" title="g_io_add_watch ()"><code class="function">g_io_add_watch()</code></a> or <a class="link" href="glib-IO-Channels.html#g-io-add-watch-full" title="g_io_add_watch_full ()"><code class="function">g_io_add_watch_full()</code></a>. Here you specify which
+events you are interested in on the <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>, and provide a
+function to be called whenever these events occur.</p>
+<p><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> instances are created with an initial reference count of 1.
+<a class="link" href="glib-IO-Channels.html#g-io-channel-ref" title="g_io_channel_ref ()"><code class="function">g_io_channel_ref()</code></a> and <a class="link" href="glib-IO-Channels.html#g-io-channel-unref" title="g_io_channel_unref ()"><code class="function">g_io_channel_unref()</code></a> can be used to
+increment or decrement the reference count respectively. When the
+reference count falls to 0, the <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> is freed. (Though it
+isn't closed automatically, unless it was created using
+<a class="link" href="glib-IO-Channels.html#g-io-channel-new-file" title="g_io_channel_new_file ()"><code class="function">g_io_channel_new_file()</code></a>.) Using <a class="link" href="glib-IO-Channels.html#g-io-add-watch" title="g_io_add_watch ()"><code class="function">g_io_add_watch()</code></a> or
+<a class="link" href="glib-IO-Channels.html#g-io-add-watch-full" title="g_io_add_watch_full ()"><code class="function">g_io_add_watch_full()</code></a> increments a channel's reference count.</p>
+<p>The new functions <a class="link" href="glib-IO-Channels.html#g-io-channel-read-chars" title="g_io_channel_read_chars ()"><code class="function">g_io_channel_read_chars()</code></a>,
+<a class="link" href="glib-IO-Channels.html#g-io-channel-read-line" title="g_io_channel_read_line ()"><code class="function">g_io_channel_read_line()</code></a>, <a class="link" href="glib-IO-Channels.html#g-io-channel-read-line-string" title="g_io_channel_read_line_string ()"><code class="function">g_io_channel_read_line_string()</code></a>,
+<a class="link" href="glib-IO-Channels.html#g-io-channel-read-to-end" title="g_io_channel_read_to_end ()"><code class="function">g_io_channel_read_to_end()</code></a>, <a class="link" href="glib-IO-Channels.html#g-io-channel-write-chars" title="g_io_channel_write_chars ()"><code class="function">g_io_channel_write_chars()</code></a>,
+<a class="link" href="glib-IO-Channels.html#g-io-channel-seek-position" title="g_io_channel_seek_position ()"><code class="function">g_io_channel_seek_position()</code></a>, and <a class="link" href="glib-IO-Channels.html#g-io-channel-flush" title="g_io_channel_flush ()"><code class="function">g_io_channel_flush()</code></a> should not be
+mixed with the deprecated functions <a class="link" href="glib-IO-Channels.html#g-io-channel-read" title="g_io_channel_read ()"><code class="function">g_io_channel_read()</code></a>,
+<a class="link" href="glib-IO-Channels.html#g-io-channel-write" title="g_io_channel_write ()"><code class="function">g_io_channel_write()</code></a>, and <a class="link" href="glib-IO-Channels.html#g-io-channel-seek" title="g_io_channel_seek ()"><code class="function">g_io_channel_seek()</code></a> on the same channel.</p>
+</div>
+<div class="refsect1">
+<a name="glib-IO-Channels.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-io-channel-unix-new"></a><h3>g_io_channel_unix_new ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="returnvalue">GIOChannel</span></a> *
+g_io_channel_unix_new (<em class="parameter"><code><span class="type">int</span> fd</code></em>);</pre>
+<p>Creates a new <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> given a file descriptor. On UNIX systems
+this works for plain files, pipes, and sockets.</p>
+<p>The returned <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> has a reference count of 1.</p>
+<p>The default encoding for <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> is UTF-8. If your application
+is reading output from a command using via pipe, you may need to set
+the encoding to the encoding of the current locale (see
+<a class="link" href="glib-Character-Set-Conversion.html#g-get-charset" title="g_get_charset ()"><code class="function">g_get_charset()</code></a>) with the <a class="link" href="glib-IO-Channels.html#g-io-channel-set-encoding" title="g_io_channel_set_encoding ()"><code class="function">g_io_channel_set_encoding()</code></a> function.
+By default, the fd passed will not be closed when the final reference
+to the <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> data structure is dropped.</p>
+<p>If you want to read raw binary data without interpretation, then
+call the <a class="link" href="glib-IO-Channels.html#g-io-channel-set-encoding" title="g_io_channel_set_encoding ()"><code class="function">g_io_channel_set_encoding()</code></a> function with <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> for the
+encoding argument.</p>
+<p>This function is available in GLib on Windows, too, but you should
+avoid using it on Windows. The domain of file descriptors and
+sockets overlap. There is no way for GLib to know which one you mean
+in case the argument you pass to this function happens to be both a
+valid file descriptor and socket. If that happens a warning is
+issued, and GLib assumes that it is the file descriptor you mean.</p>
+<div class="refsect3">
+<a name="g-io-channel-unix-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>fd</p></td>
+<td class="parameter_description"><p>a file descriptor.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-unix-new.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-unix-get-fd"></a><h3>g_io_channel_unix_get_fd ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+g_io_channel_unix_get_fd (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>);</pre>
+<p>Returns the file descriptor of the <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>.</p>
+<p>On Windows this function returns the file descriptor or socket of
+the <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>.</p>
+<div class="refsect3">
+<a name="g-io-channel-unix-get-fd.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>, created with <a class="link" href="glib-IO-Channels.html#g-io-channel-unix-new" title="g_io_channel_unix_new ()"><code class="function">g_io_channel_unix_new()</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-unix-get-fd.returns"></a><h4>Returns</h4>
+<p> the file descriptor of the <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-win32-new-fd"></a><h3>g_io_channel_win32_new_fd ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="returnvalue">GIOChannel</span></a> *
+g_io_channel_win32_new_fd (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> fd</code></em>);</pre>
+<p>Creates a new <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> given a file descriptor on Windows. This
+works for file descriptors from the C runtime.</p>
+<p>This function works for file descriptors as returned by the <code class="function">open()</code>,
+<code class="function">creat()</code>, <code class="function">pipe()</code> and <code class="function">fileno()</code> calls in the Microsoft C runtime. In
+order to meaningfully use this function your code should use the
+same C runtime as GLib uses, which is msvcrt.dll. Note that in
+current Microsoft compilers it is near impossible to convince it to
+build code that would use msvcrt.dll. The last Microsoft compiler
+version that supported using msvcrt.dll as the C runtime was version 6.
+The GNU compiler and toolchain for Windows, also known as Mingw,
+fully supports msvcrt.dll.</p>
+<p>If you have created a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> for a file descriptor and started
+watching (polling) it, you shouldn't call <code class="function">read()</code> on the file
+descriptor. This is because adding polling for a file descriptor is
+implemented in GLib on Windows by starting a thread that sits
+blocked in a <code class="function">read()</code> from the file descriptor most of the time. All
+reads from the file descriptor should be done by this internal GLib
+thread. Your code should call only <a class="link" href="glib-IO-Channels.html#g-io-channel-read" title="g_io_channel_read ()"><code class="function">g_io_channel_read()</code></a>.</p>
+<p>This function is available only in GLib on Windows.</p>
+<div class="refsect3">
+<a name="g-io-channel-win32-new-fd.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>fd</p></td>
+<td class="parameter_description"><p>a C library file descriptor.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-win32-new-fd.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-win32-new-socket"></a><h3>g_io_channel_win32_new_socket ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="returnvalue">GIOChannel</span></a> *
+g_io_channel_win32_new_socket (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> socket</code></em>);</pre>
+<p>Creates a new <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> given a socket on Windows.</p>
+<p>This function works for sockets created by Winsock. It's available
+only in GLib on Windows.</p>
+<p>Polling a <a class="link" href="glib-The-Main-Event-Loop.html#GSource" title="struct GSource"><span class="type">GSource</span></a> created to watch a channel for a socket puts the
+socket in non-blocking mode. This is a side-effect of the
+implementation and unavoidable.</p>
+<div class="refsect3">
+<a name="g-io-channel-win32-new-socket.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>socket</p></td>
+<td class="parameter_description"><p>a Winsock socket</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-win32-new-socket.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-win32-new-messages"></a><h3>g_io_channel_win32_new_messages ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="returnvalue">GIOChannel</span></a> *
+g_io_channel_win32_new_messages (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> hwnd</code></em>);</pre>
+<p>Creates a new <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> given a window handle on Windows.</p>
+<p>This function creates a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> that can be used to poll for
+Windows messages for the window in question.</p>
+<div class="refsect3">
+<a name="g-io-channel-win32-new-messages.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>hwnd</p></td>
+<td class="parameter_description"><p>a window handle.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-win32-new-messages.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-init"></a><h3>g_io_channel_init ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_io_channel_init (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>);</pre>
+<p>Initializes a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> struct. </p>
+<p>This is called by each of the above functions when creating a 
+<a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>, and so is not often needed by the application 
+programmer (unless you are creating a new type of <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>).</p>
+<div class="refsect3">
+<a name="g-io-channel-init.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-new-file"></a><h3>g_io_channel_new_file ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="returnvalue">GIOChannel</span></a> *
+g_io_channel_new_file (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *filename</code></em>,
+                       <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *mode</code></em>,
+                       <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Open a file <em class="parameter"><code>filename</code></em>
+ as a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> using mode <em class="parameter"><code>mode</code></em>
+. This
+channel will be closed when the last reference to it is dropped,
+so there is no need to call <a class="link" href="glib-IO-Channels.html#g-io-channel-close" title="g_io_channel_close ()"><code class="function">g_io_channel_close()</code></a> (though doing
+so will not cause problems, as long as no attempt is made to
+access the channel after it is closed).</p>
+<div class="refsect3">
+<a name="g-io-channel-new-file.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>filename</p></td>
+<td class="parameter_description"><p>A string containing the name of a file. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mode</p></td>
+<td class="parameter_description"><p>One of "r", "w", "a", "r+", "w+", "a+". These have
+the same meaning as in <code class="function">fopen()</code></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>A location to return an error of type <a class="link" href="glib-File-Utilities.html#G-FILE-ERROR:CAPS" title="G_FILE_ERROR"><code class="literal">G_FILE_ERROR</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-new-file.returns"></a><h4>Returns</h4>
+<p> A <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> on success, <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> on failure.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-read-chars"></a><h3>g_io_channel_read_chars ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+g_io_channel_read_chars (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *buf</code></em>,
+                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> count</code></em>,
+                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *bytes_read</code></em>,
+                         <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Replacement for <a class="link" href="glib-IO-Channels.html#g-io-channel-read" title="g_io_channel_read ()"><code class="function">g_io_channel_read()</code></a> with the new API.</p>
+<div class="refsect3">
+<a name="g-io-channel-read-chars.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>buf</p></td>
+<td class="parameter_description"><p>a buffer to read data into. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Out parameter, where caller must allocate storage."><span class="acronym">out caller-allocates</span></acronym>][<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=count][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>count</p></td>
+<td class="parameter_description"><p>the size of the buffer. Note that the buffer may not be
+complelely filled even if there is data in the buffer if the
+remaining data is not a complete character. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_read</p></td>
+<td class="parameter_description"><p>The number of bytes read. This may be
+zero even on success if count &lt; 6 and the channel's encoding
+is non-<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>. This indicates that the next UTF-8 character is
+too wide for the buffer. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a location to return an error of type <a class="link" href="glib-Character-Set-Conversion.html#GConvertError" title="enum GConvertError"><span class="type">GConvertError</span></a>
+or <a class="link" href="glib-IO-Channels.html#GIOChannelError" title="enum GIOChannelError"><span class="type">GIOChannelError</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-read-chars.returns"></a><h4>Returns</h4>
+<p> the status of the operation.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-read-unichar"></a><h3>g_io_channel_read_unichar ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+g_io_channel_read_unichar (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                           <em class="parameter"><code><a class="link" href="glib-Unicode-Manipulation.html#gunichar" title="gunichar"><span class="type">gunichar</span></a> *thechar</code></em>,
+                           <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Reads a Unicode character from <em class="parameter"><code>channel</code></em>
+.
+This function cannot be called on a channel with <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> encoding.</p>
+<div class="refsect3">
+<a name="g-io-channel-read-unichar.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>thechar</p></td>
+<td class="parameter_description"><p>a location to return a character. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a location to return an error of type <a class="link" href="glib-Character-Set-Conversion.html#GConvertError" title="enum GConvertError"><span class="type">GConvertError</span></a>
+or <a class="link" href="glib-IO-Channels.html#GIOChannelError" title="enum GIOChannelError"><span class="type">GIOChannelError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-read-unichar.returns"></a><h4>Returns</h4>
+<p> a <a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="type">GIOStatus</span></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-read-line"></a><h3>g_io_channel_read_line ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+g_io_channel_read_line (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> **str_return</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *length</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *terminator_pos</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Reads a line, including the terminating character(s),
+from a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> into a newly-allocated string.
+<em class="parameter"><code>str_return</code></em>
+ will contain allocated memory if the return
+is <a class="link" href="glib-IO-Channels.html#G-IO-STATUS-NORMAL:CAPS"><code class="literal">G_IO_STATUS_NORMAL</code></a>.</p>
+<div class="refsect3">
+<a name="g-io-channel-read-line.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>str_return</p></td>
+<td class="parameter_description"><p>The line read from the <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>, including the
+line terminator. This data should be freed with <a class="link" href="glib-Memory-Allocation.html#g-free" title="g_free ()"><code class="function">g_free()</code></a>
+when no longer needed. This is a nul-terminated string.
+If a <em class="parameter"><code>length</code></em>
+of zero is returned, this will be <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> instead. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>length</p></td>
+<td class="parameter_description"><p>location to store length of the read data, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>terminator_pos</p></td>
+<td class="parameter_description"><p>location to store position of line terminator, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>A location to return an error of type <a class="link" href="glib-Character-Set-Conversion.html#GConvertError" title="enum GConvertError"><span class="type">GConvertError</span></a>
+or <a class="link" href="glib-IO-Channels.html#GIOChannelError" title="enum GIOChannelError"><span class="type">GIOChannelError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-read-line.returns"></a><h4>Returns</h4>
+<p> the status of the operation.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-read-line-string"></a><h3>g_io_channel_read_line_string ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+g_io_channel_read_line_string (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                               <em class="parameter"><code><a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> *buffer</code></em>,
+                               <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *terminator_pos</code></em>,
+                               <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Reads a line from a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>, using a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> as a buffer.</p>
+<div class="refsect3">
+<a name="g-io-channel-read-line-string.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>buffer</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Strings.html#GString" title="struct GString"><span class="type">GString</span></a> into which the line will be written.
+If <em class="parameter"><code>buffer</code></em>
+already contains data, the old data will
+be overwritten.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>terminator_pos</p></td>
+<td class="parameter_description"><p>location to store position of line terminator, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a location to store an error of type <a class="link" href="glib-Character-Set-Conversion.html#GConvertError" title="enum GConvertError"><span class="type">GConvertError</span></a>
+or <a class="link" href="glib-IO-Channels.html#GIOChannelError" title="enum GIOChannelError"><span class="type">GIOChannelError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-read-line-string.returns"></a><h4>Returns</h4>
+<p> the status of the operation.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-read-to-end"></a><h3>g_io_channel_read_to_end ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+g_io_channel_read_to_end (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                          <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> **str_return</code></em>,
+                          <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *length</code></em>,
+                          <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Reads all the remaining data from the file.</p>
+<div class="refsect3">
+<a name="g-io-channel-read-to-end.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>str_return</p></td>
+<td class="parameter_description"><p>Location to
+store a pointer to a string holding the remaining data in the
+<a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>. This data should be freed with <a class="link" href="glib-Memory-Allocation.html#g-free" title="g_free ()"><code class="function">g_free()</code></a> when no
+longer needed. This data is terminated by an extra nul
+character, but there may be other nuls in the intervening data. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=length][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>length</p></td>
+<td class="parameter_description"><p>location to store length of the data. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location to return an error of type <a class="link" href="glib-Character-Set-Conversion.html#GConvertError" title="enum GConvertError"><span class="type">GConvertError</span></a>
+or <a class="link" href="glib-IO-Channels.html#GIOChannelError" title="enum GIOChannelError"><span class="type">GIOChannelError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-read-to-end.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-IO-Channels.html#G-IO-STATUS-NORMAL:CAPS"><code class="literal">G_IO_STATUS_NORMAL</code></a> on success.
+This function never returns <a class="link" href="glib-IO-Channels.html#G-IO-STATUS-EOF:CAPS"><code class="literal">G_IO_STATUS_EOF</code></a>.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-write-chars"></a><h3>g_io_channel_write_chars ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+g_io_channel_write_chars (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                          <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *buf</code></em>,
+                          <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> count</code></em>,
+                          <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *bytes_written</code></em>,
+                          <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Replacement for <a class="link" href="glib-IO-Channels.html#g-io-channel-write" title="g_io_channel_write ()"><code class="function">g_io_channel_write()</code></a> with the new API.</p>
+<p>On seekable channels with encodings other than <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> or UTF-8, generic
+mixing of reading and writing is not allowed. A call to <a class="link" href="glib-IO-Channels.html#g-io-channel-write-chars" title="g_io_channel_write_chars ()"><code class="function">g_io_channel_write_chars()</code></a>
+may only be made on a channel from which data has been read in the
+cases described in the documentation for <a class="link" href="glib-IO-Channels.html#g-io-channel-set-encoding" title="g_io_channel_set_encoding ()"><code class="function">g_io_channel_set_encoding()</code></a>.</p>
+<div class="refsect3">
+<a name="g-io-channel-write-chars.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>buf</p></td>
+<td class="parameter_description"><p>a buffer to write data from. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>count</p></td>
+<td class="parameter_description"><p>the size of the buffer. If -1, the buffer
+is taken to be a nul-terminated string.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_written</p></td>
+<td class="parameter_description"><p>The number of bytes written. This can be nonzero
+even if the return value is not <a class="link" href="glib-IO-Channels.html#G-IO-STATUS-NORMAL:CAPS"><code class="literal">G_IO_STATUS_NORMAL</code></a>.
+If the return value is <a class="link" href="glib-IO-Channels.html#G-IO-STATUS-NORMAL:CAPS"><code class="literal">G_IO_STATUS_NORMAL</code></a> and the
+channel is blocking, this will always be equal
+to <em class="parameter"><code>count</code></em>
+if <em class="parameter"><code>count</code></em>
+&gt;= 0. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a location to return an error of type <a class="link" href="glib-Character-Set-Conversion.html#GConvertError" title="enum GConvertError"><span class="type">GConvertError</span></a>
+or <a class="link" href="glib-IO-Channels.html#GIOChannelError" title="enum GIOChannelError"><span class="type">GIOChannelError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-write-chars.returns"></a><h4>Returns</h4>
+<p> the status of the operation.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-write-unichar"></a><h3>g_io_channel_write_unichar ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+g_io_channel_write_unichar (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                            <em class="parameter"><code><a class="link" href="glib-Unicode-Manipulation.html#gunichar" title="gunichar"><span class="type">gunichar</span></a> thechar</code></em>,
+                            <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Writes a Unicode character to <em class="parameter"><code>channel</code></em>
+.
+This function cannot be called on a channel with <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> encoding.</p>
+<div class="refsect3">
+<a name="g-io-channel-write-unichar.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>thechar</p></td>
+<td class="parameter_description"><p>a character</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location to return an error of type <a class="link" href="glib-Character-Set-Conversion.html#GConvertError" title="enum GConvertError"><span class="type">GConvertError</span></a>
+or <a class="link" href="glib-IO-Channels.html#GIOChannelError" title="enum GIOChannelError"><span class="type">GIOChannelError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-write-unichar.returns"></a><h4>Returns</h4>
+<p> a <a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="type">GIOStatus</span></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-flush"></a><h3>g_io_channel_flush ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+g_io_channel_flush (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Flushes the write buffer for the GIOChannel.</p>
+<div class="refsect3">
+<a name="g-io-channel-flush.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location to store an error of type <a class="link" href="glib-IO-Channels.html#GIOChannelError" title="enum GIOChannelError"><span class="type">GIOChannelError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-flush.returns"></a><h4>Returns</h4>
+<p> the status of the operation: One of
+<a class="link" href="glib-IO-Channels.html#G-IO-STATUS-NORMAL:CAPS"><span class="type">G_IO_STATUS_NORMAL</span></a>, <a class="link" href="glib-IO-Channels.html#G-IO-STATUS-AGAIN:CAPS"><span class="type">G_IO_STATUS_AGAIN</span></a>, or
+<a class="link" href="glib-IO-Channels.html#G-IO-STATUS-ERROR:CAPS"><span class="type">G_IO_STATUS_ERROR</span></a>.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-seek-position"></a><h3>g_io_channel_seek_position ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+g_io_channel_seek_position (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                            <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint64" title="gint64"><span class="type">gint64</span></a> offset</code></em>,
+                            <em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GSeekType" title="enum GSeekType"><span class="type">GSeekType</span></a> type</code></em>,
+                            <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Replacement for <a class="link" href="glib-IO-Channels.html#g-io-channel-seek" title="g_io_channel_seek ()"><code class="function">g_io_channel_seek()</code></a> with the new API.</p>
+<div class="refsect3">
+<a name="g-io-channel-seek-position.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>offset</p></td>
+<td class="parameter_description"><p>The offset in bytes from the position specified by <em class="parameter"><code>type</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GSeekType" title="enum GSeekType"><span class="type">GSeekType</span></a>. The type <a class="link" href="glib-IO-Channels.html#G-SEEK-CUR:CAPS"><code class="literal">G_SEEK_CUR</code></a> is only allowed in those
+cases where a call to <a class="link" href="glib-IO-Channels.html#g-io-channel-set-encoding" title="g_io_channel_set_encoding ()"><code class="function">g_io_channel_set_encoding()</code></a>
+is allowed. See the documentation for
+<a class="link" href="glib-IO-Channels.html#g-io-channel-set-encoding" title="g_io_channel_set_encoding ()"><code class="function">g_io_channel_set_encoding()</code></a> for details.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>A location to return an error of type <a class="link" href="glib-IO-Channels.html#GIOChannelError" title="enum GIOChannelError"><span class="type">GIOChannelError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-seek-position.returns"></a><h4>Returns</h4>
+<p> the status of the operation.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-shutdown"></a><h3>g_io_channel_shutdown ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+g_io_channel_shutdown (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                       <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="type">gboolean</span></a> flush</code></em>,
+                       <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **err</code></em>);</pre>
+<p>Close an IO channel. Any pending data to be written will be
+flushed if <em class="parameter"><code>flush</code></em>
+ is <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>. The channel will not be freed until the
+last reference is dropped using <a class="link" href="glib-IO-Channels.html#g-io-channel-unref" title="g_io_channel_unref ()"><code class="function">g_io_channel_unref()</code></a>.</p>
+<div class="refsect3">
+<a name="g-io-channel-shutdown.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flush</p></td>
+<td class="parameter_description"><p>if <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>, flush pending</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>err</p></td>
+<td class="parameter_description"><p>location to store a <a class="link" href="glib-IO-Channels.html#GIOChannelError" title="enum GIOChannelError"><span class="type">GIOChannelError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-shutdown.returns"></a><h4>Returns</h4>
+<p> the status of the operation.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-error-from-errno"></a><h3>g_io_channel_error_from_errno ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOChannelError" title="enum GIOChannelError"><span class="returnvalue">GIOChannelError</span></a>
+g_io_channel_error_from_errno (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> en</code></em>);</pre>
+<p>Converts an <code class="literal">errno</code> error number to a <a class="link" href="glib-IO-Channels.html#GIOChannelError" title="enum GIOChannelError"><span class="type">GIOChannelError</span></a>.</p>
+<div class="refsect3">
+<a name="g-io-channel-error-from-errno.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>en</p></td>
+<td class="parameter_description"><p>an <code class="literal">errno</code> error number, e.g. <code class="literal">EINVAL</code></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-error-from-errno.returns"></a><h4>Returns</h4>
+<p> a <a class="link" href="glib-IO-Channels.html#GIOChannelError" title="enum GIOChannelError"><span class="type">GIOChannelError</span></a> error number, e.g.
+<a class="link" href="glib-IO-Channels.html#G-IO-CHANNEL-ERROR-INVAL:CAPS"><code class="literal">G_IO_CHANNEL_ERROR_INVAL</code></a>.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-ref"></a><h3>g_io_channel_ref ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="returnvalue">GIOChannel</span></a> *
+g_io_channel_ref (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>);</pre>
+<p>Increments the reference count of a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>.</p>
+<div class="refsect3">
+<a name="g-io-channel-ref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-ref.returns"></a><h4>Returns</h4>
+<p> the <em class="parameter"><code>channel</code></em>
+that was passed in (since 2.6)</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-unref"></a><h3>g_io_channel_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_io_channel_unref (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>);</pre>
+<p>Decrements the reference count of a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>.</p>
+<div class="refsect3">
+<a name="g-io-channel-unref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-create-watch"></a><h3>g_io_create_watch ()</h3>
+<pre class="programlisting"><a class="link" href="glib-The-Main-Event-Loop.html#GSource" title="struct GSource"><span class="returnvalue">GSource</span></a> *
+g_io_create_watch (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOCondition" title="enum GIOCondition"><span class="type">GIOCondition</span></a> condition</code></em>);</pre>
+<p>Creates a <a class="link" href="glib-The-Main-Event-Loop.html#GSource" title="struct GSource"><span class="type">GSource</span></a> that's dispatched when <em class="parameter"><code>condition</code></em>
+ is met for the 
+given <em class="parameter"><code>channel</code></em>
+. For example, if condition is <a class="link" href="glib-IO-Channels.html#G-IO-IN:CAPS"><span class="type">G_IO_IN</span></a>, the source will 
+be dispatched when there's data available for reading.</p>
+<p>g_io_add_watch() is a simpler interface to this same functionality, for 
+the case where you want to add the source to the default main loop context 
+at the default priority.</p>
+<p>On Windows, polling a <a class="link" href="glib-The-Main-Event-Loop.html#GSource" title="struct GSource"><span class="type">GSource</span></a> created to watch a channel for a socket
+puts the socket in non-blocking mode. This is a side-effect of the
+implementation and unavoidable.</p>
+<div class="refsect3">
+<a name="g-io-create-watch.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> to watch</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>condition</p></td>
+<td class="parameter_description"><p>conditions to watch for</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-create-watch.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="glib-The-Main-Event-Loop.html#GSource" title="struct GSource"><span class="type">GSource</span></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-add-watch"></a><h3>g_io_add_watch ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_io_add_watch (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                <em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOCondition" title="enum GIOCondition"><span class="type">GIOCondition</span></a> condition</code></em>,
+                <em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOFunc" title="GIOFunc ()"><span class="type">GIOFunc</span></a> func</code></em>,
+                <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Adds the <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> into the default main loop context
+with the default priority.</p>
+<div class="refsect3">
+<a name="g-io-add-watch.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>condition</p></td>
+<td class="parameter_description"><p>the condition to watch for</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>func</p></td>
+<td class="parameter_description"><p>the function to call when the condition is satisfied</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data to pass to <em class="parameter"><code>func</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-add-watch.returns"></a><h4>Returns</h4>
+<p> the event source id</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-add-watch-full"></a><h3>g_io_add_watch_full ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_io_add_watch_full (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                     <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> priority</code></em>,
+                     <em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOCondition" title="enum GIOCondition"><span class="type">GIOCondition</span></a> condition</code></em>,
+                     <em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOFunc" title="GIOFunc ()"><span class="type">GIOFunc</span></a> func</code></em>,
+                     <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                     <em class="parameter"><code><a class="link" href="glib-Datasets.html#GDestroyNotify" title="GDestroyNotify ()"><span class="type">GDestroyNotify</span></a> notify</code></em>);</pre>
+<p>Adds the <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> into the default main loop context
+with the given priority.</p>
+<p>This internally creates a main loop source using <a class="link" href="glib-IO-Channels.html#g-io-create-watch" title="g_io_create_watch ()"><code class="function">g_io_create_watch()</code></a>
+and attaches it to the main loop context with <a class="link" href="glib-The-Main-Event-Loop.html#g-source-attach" title="g_source_attach ()"><code class="function">g_source_attach()</code></a>.
+You can do these steps manually if you need greater control.</p>
+<p><span class="annotation">[<acronym title="Rename the original symbol's name to SYMBOL."><span class="acronym">rename-to</span></acronym> g_io_add_watch]</span></p>
+<div class="refsect3">
+<a name="g-io-add-watch-full.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>priority</p></td>
+<td class="parameter_description"><p>the priority of the <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> source</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>condition</p></td>
+<td class="parameter_description"><p>the condition to watch for</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>func</p></td>
+<td class="parameter_description"><p>the function to call when the condition is satisfied</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data to pass to <em class="parameter"><code>func</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>notify</p></td>
+<td class="parameter_description"><p>the function to call when the source is removed</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-add-watch-full.returns"></a><h4>Returns</h4>
+<p> the event source id</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GIOFunc"></a><h3>GIOFunc ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+<span class="c_punctuation">(</span>*GIOFunc<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *source</code></em>,
+            <em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOCondition" title="enum GIOCondition"><span class="type">GIOCondition</span></a> condition</code></em>,
+            <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);</pre>
+<p>Specifies the type of function passed to <a class="link" href="glib-IO-Channels.html#g-io-add-watch" title="g_io_add_watch ()"><code class="function">g_io_add_watch()</code></a> or
+<a class="link" href="glib-IO-Channels.html#g-io-add-watch-full" title="g_io_add_watch_full ()"><code class="function">g_io_add_watch_full()</code></a>, which is called when the requested condition
+on a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> is satisfied.</p>
+<div class="refsect3">
+<a name="GIOFunc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>source</p></td>
+<td class="parameter_description"><p>the <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> event source</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>condition</p></td>
+<td class="parameter_description"><p>the condition which has been satisfied</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>user data set in <a class="link" href="glib-IO-Channels.html#g-io-add-watch" title="g_io_add_watch ()"><code class="function">g_io_add_watch()</code></a> or <a class="link" href="glib-IO-Channels.html#g-io-add-watch-full" title="g_io_add_watch_full ()"><code class="function">g_io_add_watch_full()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="GIOFunc.returns"></a><h4>Returns</h4>
+<p> the function should return <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> if the event source
+should be removed</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-get-buffer-size"></a><h3>g_io_channel_get_buffer_size ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>
+g_io_channel_get_buffer_size (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>);</pre>
+<p>Gets the buffer size.</p>
+<div class="refsect3">
+<a name="g-io-channel-get-buffer-size.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-get-buffer-size.returns"></a><h4>Returns</h4>
+<p> the size of the buffer.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-set-buffer-size"></a><h3>g_io_channel_set_buffer_size ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_io_channel_set_buffer_size (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                              <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> size</code></em>);</pre>
+<p>Sets the buffer size.</p>
+<div class="refsect3">
+<a name="g-io-channel-set-buffer-size.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>size</p></td>
+<td class="parameter_description"><p>the size of the buffer, or 0 to let GLib pick a good size</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-get-buffer-condition"></a><h3>g_io_channel_get_buffer_condition ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOCondition" title="enum GIOCondition"><span class="returnvalue">GIOCondition</span></a>
+g_io_channel_get_buffer_condition (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>);</pre>
+<p>This function returns a <a class="link" href="glib-IO-Channels.html#GIOCondition" title="enum GIOCondition"><span class="type">GIOCondition</span></a> depending on whether there
+is data to be read/space to write data in the internal buffers in 
+the <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>. Only the flags <a class="link" href="glib-IO-Channels.html#G-IO-IN:CAPS"><code class="literal">G_IO_IN</code></a> and <a class="link" href="glib-IO-Channels.html#G-IO-OUT:CAPS"><code class="literal">G_IO_OUT</code></a> may be set.</p>
+<div class="refsect3">
+<a name="g-io-channel-get-buffer-condition.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>A <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-get-buffer-condition.returns"></a><h4>Returns</h4>
+<p> A <a class="link" href="glib-IO-Channels.html#GIOCondition" title="enum GIOCondition"><span class="type">GIOCondition</span></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-get-flags"></a><h3>g_io_channel_get_flags ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOFlags" title="enum GIOFlags"><span class="returnvalue">GIOFlags</span></a>
+g_io_channel_get_flags (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>);</pre>
+<p>Gets the current flags for a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>, including read-only
+flags such as <a class="link" href="glib-IO-Channels.html#G-IO-FLAG-IS-READABLE:CAPS"><code class="literal">G_IO_FLAG_IS_READABLE</code></a>.</p>
+<p>The values of the flags <a class="link" href="glib-IO-Channels.html#G-IO-FLAG-IS-READABLE:CAPS"><code class="literal">G_IO_FLAG_IS_READABLE</code></a> and <a class="link" href="glib-IO-Channels.html#G-IO-FLAG-IS-WRITABLE:CAPS"><code class="literal">G_IO_FLAG_IS_WRITABLE</code></a>
+are cached for internal use by the channel when it is created.
+If they should change at some later point (e.g. partial shutdown
+of a socket with the UNIX <code class="function">shutdown()</code> function), the user
+should immediately call <a class="link" href="glib-IO-Channels.html#g-io-channel-get-flags" title="g_io_channel_get_flags ()"><code class="function">g_io_channel_get_flags()</code></a> to update
+the internal values of these flags.</p>
+<div class="refsect3">
+<a name="g-io-channel-get-flags.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-get-flags.returns"></a><h4>Returns</h4>
+<p> the flags which are set on the channel</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-set-flags"></a><h3>g_io_channel_set_flags ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+g_io_channel_set_flags (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOFlags" title="enum GIOFlags"><span class="type">GIOFlags</span></a> flags</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Sets the (writeable) flags in <em class="parameter"><code>channel</code></em>
+ to (<em class="parameter"><code>flags</code></em>
+ &amp; <a class="link" href="glib-IO-Channels.html#G-IO-FLAG-SET-MASK:CAPS"><code class="literal">G_IO_FLAG_SET_MASK</code></a>).</p>
+<div class="refsect3">
+<a name="g-io-channel-set-flags.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>the flags to set on the IO channel</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>A location to return an error of type <a class="link" href="glib-IO-Channels.html#GIOChannelError" title="enum GIOChannelError"><span class="type">GIOChannelError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-set-flags.returns"></a><h4>Returns</h4>
+<p> the status of the operation. </p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-get-line-term"></a><h3>g_io_channel_get_line_term ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_io_channel_get_line_term (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                            <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> *length</code></em>);</pre>
+<p>This returns the string that <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> uses to determine
+where in the file a line break occurs. A value of <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>
+indicates autodetection.</p>
+<div class="refsect3">
+<a name="g-io-channel-get-line-term.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>length</p></td>
+<td class="parameter_description"><p>a location to return the length of the line terminator</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-get-line-term.returns"></a><h4>Returns</h4>
+<p> The line termination string. This value
+is owned by GLib and must not be freed.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-set-line-term"></a><h3>g_io_channel_set_line_term ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_io_channel_set_line_term (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                            <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *line_term</code></em>,
+                            <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> length</code></em>);</pre>
+<p>This sets the string that <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> uses to determine
+where in the file a line break occurs.</p>
+<div class="refsect3">
+<a name="g-io-channel-set-line-term.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>line_term</p></td>
+<td class="parameter_description"><p>The line termination string. Use <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> for
+autodetect.  Autodetection breaks on "\n", "\r\n", "\r", "\0",
+and the Unicode paragraph separator. Autodetection should not be
+used for anything other than file-based channels. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>length</p></td>
+<td class="parameter_description"><p>The length of the termination string. If -1 is passed, the
+string is assumed to be nul-terminated. This option allows
+termination strings with embedded nuls.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-get-buffered"></a><h3>g_io_channel_get_buffered ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_io_channel_get_buffered (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>);</pre>
+<p>Returns whether <em class="parameter"><code>channel</code></em>
+ is buffered.</p>
+<div class="refsect3">
+<a name="g-io-channel-get-buffered.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-get-buffered.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the <em class="parameter"><code>channel</code></em>
+is buffered. </p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-set-buffered"></a><h3>g_io_channel_set_buffered ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_io_channel_set_buffered (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                           <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="type">gboolean</span></a> buffered</code></em>);</pre>
+<p>The buffering state can only be set if the channel's encoding
+is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>. For any other encoding, the channel must be buffered.</p>
+<p>A buffered channel can only be set unbuffered if the channel's
+internal buffers have been flushed. Newly created channels or
+channels which have returned <a class="link" href="glib-IO-Channels.html#G-IO-STATUS-EOF:CAPS"><code class="literal">G_IO_STATUS_EOF</code></a>
+not require such a flush. For write-only channels, a call to
+<a class="link" href="glib-IO-Channels.html#g-io-channel-flush" title="g_io_channel_flush ()"><code class="function">g_io_channel_flush()</code></a> is sufficient. For all other channels,
+the buffers may be flushed by a call to <a class="link" href="glib-IO-Channels.html#g-io-channel-seek-position" title="g_io_channel_seek_position ()"><code class="function">g_io_channel_seek_position()</code></a>.
+This includes the possibility of seeking with seek type <a class="link" href="glib-IO-Channels.html#G-SEEK-CUR:CAPS"><code class="literal">G_SEEK_CUR</code></a>
+and an offset of zero. Note that this means that socket-based
+channels cannot be set unbuffered once they have had data
+read from them.</p>
+<p>On unbuffered channels, it is safe to mix read and write
+calls from the new and old APIs, if this is necessary for
+maintaining old code.</p>
+<p>The default state of the channel is buffered.</p>
+<div class="refsect3">
+<a name="g-io-channel-set-buffered.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>buffered</p></td>
+<td class="parameter_description"><p>whether to set the channel buffered or unbuffered</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-get-encoding"></a><h3>g_io_channel_get_encoding ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_io_channel_get_encoding (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>);</pre>
+<p>Gets the encoding for the input/output of the channel. 
+The internal encoding is always UTF-8. The encoding <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> 
+makes the channel safe for binary data.</p>
+<div class="refsect3">
+<a name="g-io-channel-get-encoding.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-get-encoding.returns"></a><h4>Returns</h4>
+<p> A string containing the encoding, this string is
+owned by GLib and must not be freed.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-set-encoding"></a><h3>g_io_channel_set_encoding ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOStatus" title="enum GIOStatus"><span class="returnvalue">GIOStatus</span></a>
+g_io_channel_set_encoding (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                           <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *encoding</code></em>,
+                           <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Sets the encoding for the input/output of the channel. 
+The internal encoding is always UTF-8. The default encoding 
+for the external file is UTF-8.</p>
+<p>The encoding <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> is safe to use with binary data.</p>
+<p>The encoding can only be set if one of the following conditions
+is true:</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>The channel was just created, and has not been written to or read from yet.</p></li>
+<li class="listitem"><p>The channel is write-only.</p></li>
+<li class="listitem"><p>The channel is a file, and the file pointer was just repositioned
+by a call to <a class="link" href="glib-IO-Channels.html#g-io-channel-seek-position" title="g_io_channel_seek_position ()"><code class="function">g_io_channel_seek_position()</code></a>. (This flushes all the
+internal buffers.)</p></li>
+<li class="listitem"><p>The current encoding is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> or UTF-8.</p></li>
+<li class="listitem"><p>One of the (new API) read functions has just returned <a class="link" href="glib-IO-Channels.html#G-IO-STATUS-EOF:CAPS"><code class="literal">G_IO_STATUS_EOF</code></a>
+(or, in the case of <a class="link" href="glib-IO-Channels.html#g-io-channel-read-to-end" title="g_io_channel_read_to_end ()"><code class="function">g_io_channel_read_to_end()</code></a>, <a class="link" href="glib-IO-Channels.html#G-IO-STATUS-NORMAL:CAPS"><code class="literal">G_IO_STATUS_NORMAL</code></a>).</p></li>
+<li class="listitem"><p>One of the functions <a class="link" href="glib-IO-Channels.html#g-io-channel-read-chars" title="g_io_channel_read_chars ()"><code class="function">g_io_channel_read_chars()</code></a> or 
+<a class="link" href="glib-IO-Channels.html#g-io-channel-read-unichar" title="g_io_channel_read_unichar ()"><code class="function">g_io_channel_read_unichar()</code></a> has returned <a class="link" href="glib-IO-Channels.html#G-IO-STATUS-AGAIN:CAPS"><code class="literal">G_IO_STATUS_AGAIN</code></a> or 
+<a class="link" href="glib-IO-Channels.html#G-IO-STATUS-ERROR:CAPS"><code class="literal">G_IO_STATUS_ERROR</code></a>. This may be useful in the case of 
+<a class="link" href="glib-Character-Set-Conversion.html#G-CONVERT-ERROR-ILLEGAL-SEQUENCE:CAPS"><code class="literal">G_CONVERT_ERROR_ILLEGAL_SEQUENCE</code></a>.
+Returning one of these statuses from <a class="link" href="glib-IO-Channels.html#g-io-channel-read-line" title="g_io_channel_read_line ()"><code class="function">g_io_channel_read_line()</code></a>,
+<a class="link" href="glib-IO-Channels.html#g-io-channel-read-line-string" title="g_io_channel_read_line_string ()"><code class="function">g_io_channel_read_line_string()</code></a>, or <a class="link" href="glib-IO-Channels.html#g-io-channel-read-to-end" title="g_io_channel_read_to_end ()"><code class="function">g_io_channel_read_to_end()</code></a>
+does not guarantee that the encoding can be changed.</p></li>
+</ul></div>
+<p>Channels which do not meet one of the above conditions cannot call
+<a class="link" href="glib-IO-Channels.html#g-io-channel-seek-position" title="g_io_channel_seek_position ()"><code class="function">g_io_channel_seek_position()</code></a> with an offset of <a class="link" href="glib-IO-Channels.html#G-SEEK-CUR:CAPS"><code class="literal">G_SEEK_CUR</code></a>, and, if 
+they are "seekable", cannot call <a class="link" href="glib-IO-Channels.html#g-io-channel-write-chars" title="g_io_channel_write_chars ()"><code class="function">g_io_channel_write_chars()</code></a> after 
+calling one of the API "read" functions.</p>
+<div class="refsect3">
+<a name="g-io-channel-set-encoding.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>encoding</p></td>
+<td class="parameter_description"><p>the encoding type. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location to store an error of type <a class="link" href="glib-Character-Set-Conversion.html#GConvertError" title="enum GConvertError"><span class="type">GConvertError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-set-encoding.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-IO-Channels.html#G-IO-STATUS-NORMAL:CAPS"><code class="literal">G_IO_STATUS_NORMAL</code></a> if the encoding was successfully set</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-get-close-on-unref"></a><h3>g_io_channel_get_close_on_unref ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_io_channel_get_close_on_unref (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>);</pre>
+<p>Returns whether the file/socket/whatever associated with <em class="parameter"><code>channel</code></em>
+
+will be closed when <em class="parameter"><code>channel</code></em>
+ receives its final unref and is
+destroyed. The default value of this is <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> for channels created
+by <a class="link" href="glib-IO-Channels.html#g-io-channel-new-file" title="g_io_channel_new_file ()"><code class="function">g_io_channel_new_file()</code></a>, and <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> for all other channels.</p>
+<div class="refsect3">
+<a name="g-io-channel-get-close-on-unref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-get-close-on-unref.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the channel will be closed, <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-set-close-on-unref"></a><h3>g_io_channel_set_close_on_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_io_channel_set_close_on_unref (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                                 <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="type">gboolean</span></a> do_close</code></em>);</pre>
+<p>Whether to close the channel on the final unref of the <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>
+data structure. The default value of this is <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> for channels
+created by <a class="link" href="glib-IO-Channels.html#g-io-channel-new-file" title="g_io_channel_new_file ()"><code class="function">g_io_channel_new_file()</code></a>, and <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> for all other channels.</p>
+<p>Setting this flag to <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> for a channel you have already closed
+can cause problems when the final reference to the <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> is dropped.</p>
+<div class="refsect3">
+<a name="g-io-channel-set-close-on-unref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>do_close</p></td>
+<td class="parameter_description"><p>Whether to close the channel on the final unref of
+the GIOChannel data structure.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-read"></a><h3>g_io_channel_read ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOError" title="enum GIOError"><span class="returnvalue">GIOError</span></a>
+g_io_channel_read (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *buf</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> count</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *bytes_read</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_io_channel_read</code> has been deprecated since version 2.2 and should not be used in newly-written code.</p>
+<p>Use <a class="link" href="glib-IO-Channels.html#g-io-channel-read-chars" title="g_io_channel_read_chars ()"><code class="function">g_io_channel_read_chars()</code></a> instead.</p>
+</div>
+<p>Reads data from a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>.</p>
+<div class="refsect3">
+<a name="g-io-channel-read.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>buf</p></td>
+<td class="parameter_description"><p>a buffer to read the data into (which should be at least
+count bytes long)</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>count</p></td>
+<td class="parameter_description"><p>the number of bytes to read from the <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_read</p></td>
+<td class="parameter_description"><p>returns the number of bytes actually read</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-read.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-IO-Channels.html#G-IO-ERROR-NONE:CAPS"><code class="literal">G_IO_ERROR_NONE</code></a> if the operation was successful. </p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-write"></a><h3>g_io_channel_write ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOError" title="enum GIOError"><span class="returnvalue">GIOError</span></a>
+g_io_channel_write (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                    <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *buf</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> count</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *bytes_written</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_io_channel_write</code> has been deprecated since version 2.2 and should not be used in newly-written code.</p>
+<p>Use <a class="link" href="glib-IO-Channels.html#g-io-channel-write-chars" title="g_io_channel_write_chars ()"><code class="function">g_io_channel_write_chars()</code></a> instead.</p>
+</div>
+<p>Writes data to a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>.</p>
+<div class="refsect3">
+<a name="g-io-channel-write.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>buf</p></td>
+<td class="parameter_description"><p>the buffer containing the data to write</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>count</p></td>
+<td class="parameter_description"><p>the number of bytes to write</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_written</p></td>
+<td class="parameter_description"><p>the number of bytes actually written</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-write.returns"></a><h4>Returns</h4>
+<p>  <a class="link" href="glib-IO-Channels.html#G-IO-ERROR-NONE:CAPS"><code class="literal">G_IO_ERROR_NONE</code></a> if the operation was successful.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-seek"></a><h3>g_io_channel_seek ()</h3>
+<pre class="programlisting"><a class="link" href="glib-IO-Channels.html#GIOError" title="enum GIOError"><span class="returnvalue">GIOError</span></a>
+g_io_channel_seek (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint64" title="gint64"><span class="type">gint64</span></a> offset</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GSeekType" title="enum GSeekType"><span class="type">GSeekType</span></a> type</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_io_channel_seek</code> has been deprecated since version 2.2 and should not be used in newly-written code.</p>
+<p>Use <a class="link" href="glib-IO-Channels.html#g-io-channel-seek-position" title="g_io_channel_seek_position ()"><code class="function">g_io_channel_seek_position()</code></a> instead.</p>
+</div>
+<p>Sets the current position in the <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>, similar to the standard 
+library function <code class="function">fseek()</code>.</p>
+<div class="refsect3">
+<a name="g-io-channel-seek.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>offset</p></td>
+<td class="parameter_description"><p>an offset, in bytes, which is added to the position specified
+by <em class="parameter"><code>type</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>the position in the file, which can be <a class="link" href="glib-IO-Channels.html#G-SEEK-CUR:CAPS"><code class="literal">G_SEEK_CUR</code></a> (the current
+position), <a class="link" href="glib-IO-Channels.html#G-SEEK-SET:CAPS"><code class="literal">G_SEEK_SET</code></a> (the start of the file), or <a class="link" href="glib-IO-Channels.html#G-SEEK-END:CAPS"><code class="literal">G_SEEK_END</code></a>
+(the end of the file)</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-channel-seek.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-IO-Channels.html#G-IO-ERROR-NONE:CAPS"><code class="literal">G_IO_ERROR_NONE</code></a> if the operation was successful.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-channel-close"></a><h3>g_io_channel_close ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_io_channel_close (<em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> *channel</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_io_channel_close</code> has been deprecated since version 2.2 and should not be used in newly-written code.</p>
+<p>Use <a class="link" href="glib-IO-Channels.html#g-io-channel-shutdown" title="g_io_channel_shutdown ()"><code class="function">g_io_channel_shutdown()</code></a> instead.</p>
+</div>
+<p>Close an IO channel. Any pending data to be written will be
+flushed, ignoring errors. The channel will not be freed until the
+last reference is dropped using <a class="link" href="glib-IO-Channels.html#g-io-channel-unref" title="g_io_channel_unref ()"><code class="function">g_io_channel_unref()</code></a>.</p>
+<div class="refsect3">
+<a name="g-io-channel-close.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>channel</p></td>
+<td class="parameter_description"><p>A <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-IO-Channels.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GIOChannel"></a><h3>struct GIOChannel</h3>
+<pre class="programlisting">struct GIOChannel {
+};
+</pre>
+<p>A data structure representing an IO Channel. The fields should be
+considered private and should only be accessed with the following
+functions.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSeekType"></a><h3>enum GSeekType</h3>
+<p>An enumeration specifying the base position for a
+<a class="link" href="glib-IO-Channels.html#g-io-channel-seek-position" title="g_io_channel_seek_position ()"><code class="function">g_io_channel_seek_position()</code></a> operation.</p>
+<div class="refsect3">
+<a name="GSeekType.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-SEEK-CUR:CAPS"></a>G_SEEK_CUR</p></td>
+<td class="enum_member_description">
+<p>the current position in the file.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-SEEK-SET:CAPS"></a>G_SEEK_SET</p></td>
+<td class="enum_member_description">
+<p>the start of the file.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-SEEK-END:CAPS"></a>G_SEEK_END</p></td>
+<td class="enum_member_description">
+<p>the end of the file.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GIOStatus"></a><h3>enum GIOStatus</h3>
+<p>Stati returned by most of the <a class="link" href="glib-IO-Channels.html#GIOFuncs" title="struct GIOFuncs"><span class="type">GIOFuncs</span></a> functions.</p>
+<div class="refsect3">
+<a name="GIOStatus.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-STATUS-ERROR:CAPS"></a>G_IO_STATUS_ERROR</p></td>
+<td class="enum_member_description">
+<p>An error occurred.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-STATUS-NORMAL:CAPS"></a>G_IO_STATUS_NORMAL</p></td>
+<td class="enum_member_description">
+<p>Success.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-STATUS-EOF:CAPS"></a>G_IO_STATUS_EOF</p></td>
+<td class="enum_member_description">
+<p>End of file.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-STATUS-AGAIN:CAPS"></a>G_IO_STATUS_AGAIN</p></td>
+<td class="enum_member_description">
+<p>Resource temporarily unavailable.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GIOChannelError"></a><h3>enum GIOChannelError</h3>
+<p>Error codes returned by <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> operations.</p>
+<div class="refsect3">
+<a name="GIOChannelError.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-CHANNEL-ERROR-FBIG:CAPS"></a>G_IO_CHANNEL_ERROR_FBIG</p></td>
+<td class="enum_member_description">
+<p>File too large.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-CHANNEL-ERROR-INVAL:CAPS"></a>G_IO_CHANNEL_ERROR_INVAL</p></td>
+<td class="enum_member_description">
+<p>Invalid argument.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-CHANNEL-ERROR-IO:CAPS"></a>G_IO_CHANNEL_ERROR_IO</p></td>
+<td class="enum_member_description">
+<p>IO error.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-CHANNEL-ERROR-ISDIR:CAPS"></a>G_IO_CHANNEL_ERROR_ISDIR</p></td>
+<td class="enum_member_description">
+<p>File is a directory.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-CHANNEL-ERROR-NOSPC:CAPS"></a>G_IO_CHANNEL_ERROR_NOSPC</p></td>
+<td class="enum_member_description">
+<p>No space left on device.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-CHANNEL-ERROR-NXIO:CAPS"></a>G_IO_CHANNEL_ERROR_NXIO</p></td>
+<td class="enum_member_description">
+<p>No such device or address.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-CHANNEL-ERROR-OVERFLOW:CAPS"></a>G_IO_CHANNEL_ERROR_OVERFLOW</p></td>
+<td class="enum_member_description">
+<p>Value too large for defined datatype.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-CHANNEL-ERROR-PIPE:CAPS"></a>G_IO_CHANNEL_ERROR_PIPE</p></td>
+<td class="enum_member_description">
+<p>Broken pipe.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-CHANNEL-ERROR-FAILED:CAPS"></a>G_IO_CHANNEL_ERROR_FAILED</p></td>
+<td class="enum_member_description">
+<p>Some other error.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-IO-CHANNEL-ERROR:CAPS"></a><h3>G_IO_CHANNEL_ERROR</h3>
+<pre class="programlisting">#define G_IO_CHANNEL_ERROR g_io_channel_error_quark()
+</pre>
+<p>Error domain for <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a> operations. Errors in this domain will
+be from the <a class="link" href="glib-IO-Channels.html#GIOChannelError" title="enum GIOChannelError"><span class="type">GIOChannelError</span></a> enumeration. See <a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> for
+information on error domains.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GIOCondition"></a><h3>enum GIOCondition</h3>
+<p>A bitwise combination representing a condition to watch for on an
+event source.</p>
+<div class="refsect3">
+<a name="GIOCondition.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-IN:CAPS"></a>G_IO_IN</p></td>
+<td class="enum_member_description">
+<p>There is data to read.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-OUT:CAPS"></a>G_IO_OUT</p></td>
+<td class="enum_member_description">
+<p>Data can be written (without blocking).</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-PRI:CAPS"></a>G_IO_PRI</p></td>
+<td class="enum_member_description">
+<p>There is urgent data to read.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERR:CAPS"></a>G_IO_ERR</p></td>
+<td class="enum_member_description">
+<p>Error condition.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-HUP:CAPS"></a>G_IO_HUP</p></td>
+<td class="enum_member_description">
+<p>Hung up (the connection has been broken, usually for
+           pipes and sockets).</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-NVAL:CAPS"></a>G_IO_NVAL</p></td>
+<td class="enum_member_description">
+<p>Invalid request. The file descriptor is not open.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GIOFuncs"></a><h3>struct GIOFuncs</h3>
+<pre class="programlisting">struct GIOFuncs {
+  GIOStatus (*io_read)           (GIOChannel   *channel, 
+			          gchar        *buf, 
+				  gsize         count,
+				  gsize        *bytes_read,
+				  GError      **err);
+  GIOStatus (*io_write)          (GIOChannel   *channel, 
+				  const gchar  *buf, 
+				  gsize         count,
+				  gsize        *bytes_written,
+				  GError      **err);
+  GIOStatus (*io_seek)           (GIOChannel   *channel, 
+				  gint64        offset, 
+				  GSeekType     type,
+				  GError      **err);
+  GIOStatus  (*io_close)         (GIOChannel   *channel,
+				  GError      **err);
+  GSource*   (*io_create_watch)  (GIOChannel   *channel,
+				  GIOCondition  condition);
+  void       (*io_free)          (GIOChannel   *channel);
+  GIOStatus  (*io_set_flags)     (GIOChannel   *channel,
+                                  GIOFlags      flags,
+				  GError      **err);
+  GIOFlags   (*io_get_flags)     (GIOChannel   *channel);
+};
+</pre>
+<p>A table of functions used to handle different types of <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>
+in a generic way.</p>
+<div class="refsect3">
+<a name="GIOFuncs.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GIOFuncs.io-read"></a>io_read</code></em> ()</p></td>
+<td class="struct_member_description"><p>reads raw bytes from the channel.  This is called from
+various functions such as <a class="link" href="glib-IO-Channels.html#g-io-channel-read-chars" title="g_io_channel_read_chars ()"><code class="function">g_io_channel_read_chars()</code></a> to
+read raw bytes from the channel.  Encoding and buffering
+issues are dealt with at a higher level.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GIOFuncs.io-write"></a>io_write</code></em> ()</p></td>
+<td class="struct_member_description"><p>writes raw bytes to the channel.  This is called from
+various functions such as <a class="link" href="glib-IO-Channels.html#g-io-channel-write-chars" title="g_io_channel_write_chars ()"><code class="function">g_io_channel_write_chars()</code></a> to
+write raw bytes to the channel.  Encoding and buffering
+issues are dealt with at a higher level.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GIOFuncs.io-seek"></a>io_seek</code></em> ()</p></td>
+<td class="struct_member_description"><p>(optional) seeks the channel.  This is called from
+<a class="link" href="glib-IO-Channels.html#g-io-channel-seek" title="g_io_channel_seek ()"><code class="function">g_io_channel_seek()</code></a> on channels that support it.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GIOFuncs.io-close"></a>io_close</code></em> ()</p></td>
+<td class="struct_member_description"><p>closes the channel.  This is called from
+<a class="link" href="glib-IO-Channels.html#g-io-channel-close" title="g_io_channel_close ()"><code class="function">g_io_channel_close()</code></a> after flushing the buffers.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GIOFuncs.io-create-watch"></a>io_create_watch</code></em> ()</p></td>
+<td class="struct_member_description"><p>creates a watch on the channel.  This call
+corresponds directly to <a class="link" href="glib-IO-Channels.html#g-io-create-watch" title="g_io_create_watch ()"><code class="function">g_io_create_watch()</code></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GIOFuncs.io-free"></a>io_free</code></em> ()</p></td>
+<td class="struct_member_description"><p>called from <a class="link" href="glib-IO-Channels.html#g-io-channel-unref" title="g_io_channel_unref ()"><code class="function">g_io_channel_unref()</code></a> when the channel needs to
+be freed.  This function must free the memory associated
+with the channel, including freeing the <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>
+structure itself.  The channel buffers have been flushed
+and possibly <em class="parameter"><code>io_close</code></em>
+has been called by the time this
+function is called.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GIOFuncs.io-set-flags"></a>io_set_flags</code></em> ()</p></td>
+<td class="struct_member_description"><p>sets the <a class="link" href="glib-IO-Channels.html#GIOFlags" title="enum GIOFlags"><span class="type">GIOFlags</span></a> on the channel.  This is called
+from <a class="link" href="glib-IO-Channels.html#g-io-channel-set-flags" title="g_io_channel_set_flags ()"><code class="function">g_io_channel_set_flags()</code></a> with all flags except
+for <a class="link" href="glib-IO-Channels.html#G-IO-FLAG-APPEND:CAPS"><code class="literal">G_IO_FLAG_APPEND</code></a> and <a class="link" href="glib-IO-Channels.html#G-IO-FLAG-NONBLOCK:CAPS"><code class="literal">G_IO_FLAG_NONBLOCK</code></a> masked
+out.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GIOFuncs.io-get-flags"></a>io_get_flags</code></em> ()</p></td>
+<td class="struct_member_description"><p>gets the <a class="link" href="glib-IO-Channels.html#GIOFlags" title="enum GIOFlags"><span class="type">GIOFlags</span></a> for the channel.  This function
+need only return the <a class="link" href="glib-IO-Channels.html#G-IO-FLAG-APPEND:CAPS"><code class="literal">G_IO_FLAG_APPEND</code></a> and
+<a class="link" href="glib-IO-Channels.html#G-IO-FLAG-NONBLOCK:CAPS"><code class="literal">G_IO_FLAG_NONBLOCK</code></a> flags; <a class="link" href="glib-IO-Channels.html#g-io-channel-get-flags" title="g_io_channel_get_flags ()"><code class="function">g_io_channel_get_flags()</code></a>
+automatically adds the others as appropriate.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GIOFlags"></a><h3>enum GIOFlags</h3>
+<p>Specifies properties of a <a class="link" href="glib-IO-Channels.html#GIOChannel" title="struct GIOChannel"><span class="type">GIOChannel</span></a>. Some of the flags can only be
+read with <a class="link" href="glib-IO-Channels.html#g-io-channel-get-flags" title="g_io_channel_get_flags ()"><code class="function">g_io_channel_get_flags()</code></a>, but not changed with
+<a class="link" href="glib-IO-Channels.html#g-io-channel-set-flags" title="g_io_channel_set_flags ()"><code class="function">g_io_channel_set_flags()</code></a>.</p>
+<div class="refsect3">
+<a name="GIOFlags.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-FLAG-APPEND:CAPS"></a>G_IO_FLAG_APPEND</p></td>
+<td class="enum_member_description">
+<p>turns on append mode, corresponds to <code class="literal">O_APPEND</code>
+    (see the documentation of the UNIX <code class="function">open()</code> syscall)</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-FLAG-NONBLOCK:CAPS"></a>G_IO_FLAG_NONBLOCK</p></td>
+<td class="enum_member_description">
+<p>turns on nonblocking mode, corresponds to
+    <code class="literal">O_NONBLOCK</code>/<code class="literal">O_NDELAY</code> (see the documentation of the UNIX <code class="function">open()</code>
+    syscall)</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-FLAG-IS-READABLE:CAPS"></a>G_IO_FLAG_IS_READABLE</p></td>
+<td class="enum_member_description">
+<p>indicates that the io channel is readable.
+    This flag cannot be changed.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-FLAG-IS-WRITABLE:CAPS"></a>G_IO_FLAG_IS_WRITABLE</p></td>
+<td class="enum_member_description">
+<p>indicates that the io channel is writable.
+    This flag cannot be changed.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-FLAG-IS-WRITEABLE:CAPS"></a>G_IO_FLAG_IS_WRITEABLE</p></td>
+<td class="enum_member_description">
+<p>a misspelled version of <em class="parameter"><code>G_IO_FLAG_IS_WRITABLE</code></em>
+
+    that existed before the spelling was fixed in GLib 2.30. It is kept
+    here for compatibility reasons. Deprecated since 2.30</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-FLAG-IS-SEEKABLE:CAPS"></a>G_IO_FLAG_IS_SEEKABLE</p></td>
+<td class="enum_member_description">
+<p>indicates that the io channel is seekable,
+    i.e. that <a class="link" href="glib-IO-Channels.html#g-io-channel-seek-position" title="g_io_channel_seek_position ()"><code class="function">g_io_channel_seek_position()</code></a> can be used on it.
+    This flag cannot be changed.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-FLAG-MASK:CAPS"></a>G_IO_FLAG_MASK</p></td>
+<td class="enum_member_description">
+<p>the mask that specifies all the valid flags.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-FLAG-GET-MASK:CAPS"></a>G_IO_FLAG_GET_MASK</p></td>
+<td class="enum_member_description">
+<p>the mask of the flags that are returned from
+    <a class="link" href="glib-IO-Channels.html#g-io-channel-get-flags" title="g_io_channel_get_flags ()"><code class="function">g_io_channel_get_flags()</code></a></p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-FLAG-SET-MASK:CAPS"></a>G_IO_FLAG_SET_MASK</p></td>
+<td class="enum_member_description">
+<p>the mask of the flags that the user can modify
+    with <a class="link" href="glib-IO-Channels.html#g-io-channel-set-flags" title="g_io_channel_set_flags ()"><code class="function">g_io_channel_set_flags()</code></a></p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GIOError"></a><h3>enum GIOError</h3>
+<p><a class="link" href="glib-IO-Channels.html#GIOError" title="enum GIOError"><span class="type">GIOError</span></a> is only used by the deprecated functions
+<a class="link" href="glib-IO-Channels.html#g-io-channel-read" title="g_io_channel_read ()"><code class="function">g_io_channel_read()</code></a>, <a class="link" href="glib-IO-Channels.html#g-io-channel-write" title="g_io_channel_write ()"><code class="function">g_io_channel_write()</code></a>, and <a class="link" href="glib-IO-Channels.html#g-io-channel-seek" title="g_io_channel_seek ()"><code class="function">g_io_channel_seek()</code></a>.</p>
+<div class="refsect3">
+<a name="GIOError.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-NONE:CAPS"></a>G_IO_ERROR_NONE</p></td>
+<td class="enum_member_description">
+<p>no error</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-AGAIN:CAPS"></a>G_IO_ERROR_AGAIN</p></td>
+<td class="enum_member_description">
+<p>an EAGAIN error occurred</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-INVAL:CAPS"></a>G_IO_ERROR_INVAL</p></td>
+<td class="enum_member_description">
+<p>an EINVAL error occurred</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-UNKNOWN:CAPS"></a>G_IO_ERROR_UNKNOWN</p></td>
+<td class="enum_member_description">
+<p>another error occurred</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-IO-Channels.see-also"></a><h2>See Also</h2>
+<p>g_io_add_watch(), <a class="link" href="glib-IO-Channels.html#g-io-add-watch-full" title="g_io_add_watch_full ()"><code class="function">g_io_add_watch_full()</code></a>, <a class="link" href="glib-The-Main-Event-Loop.html#g-source-remove" title="g_source_remove ()"><code class="function">g_source_remove()</code></a>,
+    <a class="link" href="glib-The-Main-Event-Loop.html#GMainLoop" title="GMainLoop"><span class="type">GMainLoop</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

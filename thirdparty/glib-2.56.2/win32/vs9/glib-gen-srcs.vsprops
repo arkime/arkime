@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="glibgensrcsprops"
+	InheritedPropertySheets=".\glib-build-defines.vsprops"
+	>
+	<UserMacro
+		Name="GenConfigH"
+		Value="copy ..\..\config.h.win32 ..\..\config.h"
+	/>
+	<UserMacro
+		Name="GenGLibConfigH"
+		Value="copy ..\..\glib\glibconfig.h.win32 ..\..\glib\glibconfig.h"
+	/>
+	<UserMacro
+		Name="GenGModuleConfH"
+		Value="copy ..\..\gmodule\gmoduleconf.h.win32 ..\..\gmodule\gmoduleconf.h"
+	/>
+	<UserMacro
+		Name="GenGNetworkingH"
+		Value="copy ..\..\gio\gnetworking.h.win32 ..\..\gio\gnetworking.h"
+	/>
+</VisualStudioPropertySheet>

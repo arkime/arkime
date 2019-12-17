@@ -1,0 +1,5 @@
+# This file contains a table of character encoding aliases,
+# suitable for operating system 'linux-gnu'.
+# It was automatically generated from config.charset.
+# Packages using this file: 
+ISO_646.IRV:1983 ASCII

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+]>
+<refentry id="gdbus-org.project.Bat">
+  <refmeta>    <refentrytitle role="top_of_page" id="gdbus-interface-org-project-Bat.top_of_page">org.project.Bat</refentrytitle>
+  <indexterm zone="gdbus-interface-org-project-Bat.top_of_page"><primary sortas="Bat">org.project.Bat</primary></indexterm>
+  </refmeta>  <refnamediv>    <refname>org.project.Bat</refname>    <refpurpose></refpurpose>  </refnamediv>  <refsynopsisdiv role="synopsis">
+    <title role="synopsis.title">Methods</title>
+    <synopsis>
+<link linkend="gdbus-method-org-project-Bat.ForceMethod">ForceMethod</link> (IN  i   force_in_i,
+             IN  s   force_in_s,
+             IN  ay  force_in_ay,
+             IN  (i) force_in_struct,
+             OUT i   force_out_i,
+             OUT s   force_out_s,
+             OUT ay  force_out_ay,
+             OUT (i) force_out_struct);
+</synopsis>
+  </refsynopsisdiv>
+  <refsect1 role="signal_proto">
+    <title role="signal_proto.title">Signals</title>
+    <synopsis>
+<link linkend="gdbus-signal-org-project-Bat.ForceSignal">ForceSignal</link> (i   force_i,
+             s   force_s,
+             ay  force_ay,
+             (i) force_struct);
+</synopsis>
+  </refsect1>
+  <refsect1 role="properties">
+    <title role="properties.title">Properties</title>
+    <synopsis>
+<link linkend="gdbus-property-org-project-Bat.force_i">force_i</link>       readwrite  i
+<link linkend="gdbus-property-org-project-Bat.force_s">force_s</link>       readwrite  s
+<link linkend="gdbus-property-org-project-Bat.force_ay">force_ay</link>      readwrite  ay
+<link linkend="gdbus-property-org-project-Bat.force_struct">force_struct</link>  readwrite  (i)
+</synopsis>
+  </refsect1>
+<refsect1 role="desc" id="gdbus-interface-org-project-Bat">
+  <title role="desc.title">Description</title>
+  <para></para>
+</refsect1>
+<refsect1 role="details" id="gdbus-methods-org.project.Bat">
+  <title role="details.title">Method Details</title>
+<refsect2 role="method" id="gdbus-method-org-project-Bat.ForceMethod">
+  <title>The ForceMethod() method</title>
+  <indexterm zone="gdbus-method-org-project-Bat.ForceMethod"><primary sortas="Bat.ForceMethod">org.project.Bat.ForceMethod()</primary></indexterm>
+<programlisting>
+ForceMethod (IN  i   force_in_i,
+             IN  s   force_in_s,
+             IN  ay  force_in_ay,
+             IN  (i) force_in_struct,
+             OUT i   force_out_i,
+             OUT s   force_out_s,
+             OUT ay  force_out_ay,
+             OUT (i) force_out_struct);
+</programlisting>
+<para></para>
+<variablelist role="params">
+<varlistentry>
+  <term><literal>IN i <parameter>force_in_i</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN s <parameter>force_in_s</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN ay <parameter>force_in_ay</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN (i) <parameter>force_in_struct</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT i <parameter>force_out_i</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT s <parameter>force_out_s</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT ay <parameter>force_out_ay</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT (i) <parameter>force_out_struct</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+</refsect1>
+<refsect1 role="details" id="gdbus-signals-org.project.Bat">
+  <title role="details.title">Signal Details</title>
+<refsect2 role="signal" id="gdbus-signal-org-project-Bat.ForceSignal">
+  <title>The "ForceSignal" signal</title>
+  <indexterm zone="gdbus-signal-org-project-Bat.ForceSignal"><primary sortas="Bat::ForceSignal">org.project.Bat::ForceSignal</primary></indexterm>
+<programlisting>
+ForceSignal (i   force_i,
+             s   force_s,
+             ay  force_ay,
+             (i) force_struct);
+</programlisting>
+<para></para>
+<variablelist role="params">
+<varlistentry>
+  <term><literal>i <parameter>force_i</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>s <parameter>force_s</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>ay <parameter>force_ay</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>(i) <parameter>force_struct</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+</refsect1>
+<refsect1 role="details" id="gdbus-properties-org.project.Bat">
+  <title role="details.title">Property Details</title>
+<refsect2 role="property" id="gdbus-property-org-project-Bat.force_i">
+  <title>The "force_i" property</title>
+  <indexterm zone="gdbus-property-org-project-Bat.force_i"><primary sortas="Bat:force_i">org.project.Bat:force_i</primary></indexterm>
+<programlisting>
+force_i  readwrite  i
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bat.force_s">
+  <title>The "force_s" property</title>
+  <indexterm zone="gdbus-property-org-project-Bat.force_s"><primary sortas="Bat:force_s">org.project.Bat:force_s</primary></indexterm>
+<programlisting>
+force_s  readwrite  s
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bat.force_ay">
+  <title>The "force_ay" property</title>
+  <indexterm zone="gdbus-property-org-project-Bat.force_ay"><primary sortas="Bat:force_ay">org.project.Bat:force_ay</primary></indexterm>
+<programlisting>
+force_ay  readwrite  ay
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-Bat.force_struct">
+  <title>The "force_struct" property</title>
+  <indexterm zone="gdbus-property-org-project-Bat.force_struct"><primary sortas="Bat:force_struct">org.project.Bat:force_struct</primary></indexterm>
+<programlisting>
+force_struct  readwrite  (i)
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+</refentry>
+

@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Extending GIO: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="pt01.html" title="Part I. GIO Overview">
+<link rel="prev" href="running-gio-apps.html" title="Running GIO applications">
+<link rel="next" href="pt02.html" title="Part II. API Reference">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="pt01.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="running-gio-apps.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="pt02.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="chapter">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="extending-gio"></a>Extending GIO</h2></div></div></div>
+<p>
+      A lot of the functionality that is accessible through GIO
+      is implemented in loadable modules, and modules provide a convenient
+      way to extend GIO. In addition to the <a class="link" href="GIOModule.html" title="GIOModule"><span class="type">GIOModule</span></a> API which supports
+      writing such modules, GIO has a mechanism to define extension points,
+      and register implementations thereof, see <a class="link" href="gio-Extension-Points.html#GIOExtensionPoint" title="GIOExtensionPoint"><span class="type">GIOExtensionPoint</span></a>.
+    </p>
+<p>
+      The following extension points are currently defined by GIO:
+    </p>
+<p><b>G_VFS_EXTENSION_POINT_NAME. </b>
+          Allows to override the functionality of the <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> class.
+          Implementations of this extension point must be derived from <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a>.
+          GIO uses the implementation with the highest priority that is active,
+          see <a class="link" href="GVfs.html#g-vfs-is-active" title="g_vfs_is_active ()"><code class="function">g_vfs_is_active()</code></a>.
+       
+          GIO implements this extension point for local files, gvfs contains
+          an implementation that supports all the backends in gvfs.
+       </p>
+<p><b>G_VOLUME_MONITOR_EXTENSION_POINT_NAME. </b>
+         Allows to add more volume monitors.
+         Implementations of this extension point must be derived from
+         <a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a>. GIO uses all registered extensions.
+      
+        gvfs contains an implementation that works together with the <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a>
+        implementation in gvfs.
+      </p>
+<p><b>G_NATIVE_VOLUME_MONITOR_EXTENSION_POINT_NAME. </b>
+         Allows to override the 'native' volume monitor.
+         Implementations of this extension point must be derived from
+         <span class="type">GNativeVolumeMonitor</span>. GIO uses the implementation with
+         the highest priority that is supported, as determined by the
+         <code class="function">is_supported()</code> vfunc in <span class="type">GVolumeMonitorClass</span>.
+      
+         GIO implements this extension point for local mounts,
+         gvfs contains a udisks2-based implementation.
+      </p>
+<p><b>G_LOCAL_FILE_MONITOR_EXTENSION_POINT_NAME. </b>
+        Allows to override the file monitor implementation for
+        local files. Implementations of this extension point must
+        be derived from <span class="type">GLocalFileMonitor</span>. GIO uses the implementation
+        with the highest priority that is supported, as determined by the
+        <code class="function">is_supported()</code> vfunc in <span class="type">GLocalFileMonitorClass</span>.
+      
+        GIO uses this extension point internally, to switch between
+        its fam-based and inotify-based file monitoring implementations.
+      </p>
+<p><b>G_LOCAL_DIRECTORY_MONITOR_EXTENSION_POINT_NAME. </b>
+        Allows to override the directory monitor implementation for
+        local files. Implementations of this extension point must be
+        derived from <span class="type">GLocalDirectoryMonitor</span>. GIO uses the implementation
+        with the highest priority that is supported, as determined by the
+        <code class="function">is_supported()</code> vfunc in <span class="type">GLocalDirectoryMonitorClass</span>.
+      
+        GIO uses this extension point internally, to switch between
+        its fam-based and inotify-based directory monitoring implementations.
+      </p>
+<p><b>G_DESKTOP_APP_INFO_LOOKUP_EXTENSION_POINT_NAME. </b>
+        Unix-only. Allows to provide a way to associate default handlers
+        with URI schemes. Implementations of this extension point must
+        implement the <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfoLookup"><span class="type">GDesktopAppInfoLookup</span></a> interface. GIO uses the
+        implementation with the highest priority.
+      
+        This extension point has been discontinued in GLib 2.28. It is
+        still available to keep API and ABI stability, but GIO is no
+        longer using it for default handlers. Instead, the mime handler
+        mechanism is used, together with x-scheme-handler pseudo-mimetypes.
+      </p>
+<p><b>G_SETTINGS_BACKEND_EXTENSION_POINT_NAME. </b>
+        Allows to provide an alternative storage for <a class="link" href="GSettings.html" title="GSettings"><span class="type">GSettings</span></a>.
+        Implementations of this extension point must derive from the
+        <a class="link" href="GSettingsBackend.html" title="GSettingsBackend"><span class="type">GSettingsBackend</span></a> type. GIO contains a keyfile-based
+        implementation of this extension point, another one is provided
+        by dconf.
+      </p>
+<p><b>G_PROXY_EXTENSION_POINT_NAME. </b>
+       Allows to provide implementations for network proxying.
+       Implementations of this extension point must provide the
+       <a class="link" href="GProxy.html" title="GProxy"><span class="type">GProxy</span></a> interface, and must be named after the network
+       protocol they are proxying.
+     
+       glib-networking contains an implementation of this extension
+       point based on libproxy.
+     </p>
+<p><b>G_TLS_BACKEND_EXTENSION_POINT_NAME. </b>
+       Allows to provide implementations for TLS support.
+       Implementations of this extension point must implement
+       the <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> interface.
+     
+       glib-networking contains an implementation of this extension
+       point.
+     </p>
+<p><b>G_NETWORK_MONITOR_EXTENSION_POINT_NAME. </b>
+       Allows to provide implementations for network connectivity
+       monitoring.
+       Implementations of this extension point must implement
+       the <a class="link" href="GNetworkMonitor.html#GNetworkMonitorInterface" title="struct GNetworkMonitorInterface"><span class="type">GNetworkMonitorInterface</span></a> interface.
+     
+       GIO contains an implementation of this extension point
+       that is using the netlink interface of the Linux kernel.
+     </p>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

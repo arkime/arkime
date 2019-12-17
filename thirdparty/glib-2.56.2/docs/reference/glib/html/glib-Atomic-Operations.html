@@ -1,0 +1,930 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Atomic Operations: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-fundamentals.html" title="GLib Fundamentals">
+<link rel="prev" href="glib-Miscellaneous-Macros.html" title="Miscellaneous Macros">
+<link rel="next" href="glib-core.html" title="GLib Core Application Support">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-Atomic-Operations.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-fundamentals.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Miscellaneous-Macros.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-core.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Atomic-Operations"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Atomic-Operations.top_of_page"></a>Atomic Operations</span></h2>
+<p>Atomic Operations — basic atomic integer and pointer operations</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-Atomic-Operations.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Atomic-Operations.html#g-atomic-int-get" title="g_atomic_int_get ()">g_atomic_int_get</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Atomic-Operations.html#g-atomic-int-set" title="g_atomic_int_set ()">g_atomic_int_set</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Atomic-Operations.html#g-atomic-int-inc" title="g_atomic_int_inc ()">g_atomic_int_inc</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Atomic-Operations.html#g-atomic-int-dec-and-test" title="g_atomic_int_dec_and_test ()">g_atomic_int_dec_and_test</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Atomic-Operations.html#g-atomic-int-compare-and-exchange" title="g_atomic_int_compare_and_exchange ()">g_atomic_int_compare_and_exchange</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Atomic-Operations.html#g-atomic-int-add" title="g_atomic_int_add ()">g_atomic_int_add</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Atomic-Operations.html#g-atomic-int-and" title="g_atomic_int_and ()">g_atomic_int_and</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Atomic-Operations.html#g-atomic-int-or" title="g_atomic_int_or ()">g_atomic_int_or</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Atomic-Operations.html#g-atomic-int-xor" title="g_atomic_int_xor ()">g_atomic_int_xor</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Atomic-Operations.html#g-atomic-pointer-get" title="g_atomic_pointer_get ()">g_atomic_pointer_get</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Atomic-Operations.html#g-atomic-pointer-set" title="g_atomic_pointer_set ()">g_atomic_pointer_set</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Atomic-Operations.html#g-atomic-pointer-compare-and-exchange" title="g_atomic_pointer_compare_and_exchange ()">g_atomic_pointer_compare_and_exchange</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="returnvalue">gssize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Atomic-Operations.html#g-atomic-pointer-add" title="g_atomic_pointer_add ()">g_atomic_pointer_add</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Atomic-Operations.html#g-atomic-pointer-and" title="g_atomic_pointer_and ()">g_atomic_pointer_and</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Atomic-Operations.html#g-atomic-pointer-or" title="g_atomic_pointer_or ()">g_atomic_pointer_or</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Atomic-Operations.html#g-atomic-pointer-xor" title="g_atomic_pointer_xor ()">g_atomic_pointer_xor</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Atomic-Operations.html#g-atomic-int-exchange-and-add" title="g_atomic_int_exchange_and_add ()">g_atomic_int_exchange_and_add</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Atomic-Operations.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Atomic-Operations.html#G-ATOMIC-LOCK-FREE:CAPS" title="G_ATOMIC_LOCK_FREE">G_ATOMIC_LOCK_FREE</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Atomic-Operations.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Atomic-Operations.description"></a><h2>Description</h2>
+<p>The following is a collection of compiler macros to provide atomic
+access to integer and pointer-sized values.</p>
+<p>The macros that have 'int' in the name will operate on pointers to
+<a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> and <a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a>.  The macros with 'pointer' in the name will operate
+on pointers to any pointer-sized value, including <a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a>.  There is
+no support for 64bit operations on platforms with 32bit pointers
+because it is not generally possible to perform these operations
+atomically.</p>
+<p>The get, set and exchange operations for integers and pointers
+nominally operate on <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> and <a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a>, respectively.  Of the
+arithmetic operations, the 'add' operation operates on (and returns)
+signed integer values (<a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> and <a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a>) and the 'and', 'or', and
+'xor' operations operate on (and return) unsigned integer values
+(<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> and <a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a>).</p>
+<p>All of the operations act as a full compiler and (where appropriate)
+hardware memory barrier.  Acquire and release or producer and
+consumer barrier semantics are not available through this API.</p>
+<p>It is very important that all accesses to a particular integer or
+pointer be performed using only this API and that different sizes of
+operation are not mixed or used on overlapping memory regions.  Never
+read or assign directly from or to a value -- always use this API.</p>
+<p>For simple reference counting purposes you should use
+<a class="link" href="glib-Atomic-Operations.html#g-atomic-int-inc" title="g_atomic_int_inc ()"><code class="function">g_atomic_int_inc()</code></a> and <a class="link" href="glib-Atomic-Operations.html#g-atomic-int-dec-and-test" title="g_atomic_int_dec_and_test ()"><code class="function">g_atomic_int_dec_and_test()</code></a>.  Other uses that
+fall outside of simple reference counting patterns are prone to
+subtle bugs and occasionally undefined behaviour.  It is also worth
+noting that since all of these operations require global
+synchronisation of the entire machine, they can be quite slow.  In
+the case of performing multiple atomic operations it can often be
+faster to simply acquire a mutex lock around the critical area,
+perform the operations normally and then release the lock.</p>
+</div>
+<div class="refsect1">
+<a name="glib-Atomic-Operations.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-atomic-int-get"></a><h3>g_atomic_int_get ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+g_atomic_int_get (<em class="parameter"><code>const volatile <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> *atomic</code></em>);</pre>
+<p>Gets the current value of <em class="parameter"><code>atomic</code></em>
+.</p>
+<p>This call acts as a full compiler and hardware
+memory barrier (before the get).</p>
+<div class="refsect3">
+<a name="g-atomic-int-get.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>atomic</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> or <a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-atomic-int-get.returns"></a><h4>Returns</h4>
+<p> the value of the integer</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-atomic-int-set"></a><h3>g_atomic_int_set ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_atomic_int_set (<em class="parameter"><code>volatile <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> *atomic</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> newval</code></em>);</pre>
+<p>Sets the value of <em class="parameter"><code>atomic</code></em>
+ to <em class="parameter"><code>newval</code></em>
+.</p>
+<p>This call acts as a full compiler and hardware
+memory barrier (after the set).</p>
+<div class="refsect3">
+<a name="g-atomic-int-set.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>atomic</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> or <a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>newval</p></td>
+<td class="parameter_description"><p>a new value to store</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-atomic-int-inc"></a><h3>g_atomic_int_inc ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_atomic_int_inc (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> *atomic</code></em>);</pre>
+<p>Increments the value of <em class="parameter"><code>atomic</code></em>
+ by 1.</p>
+<p>Think of this operation as an atomic version of <code class="literal">{ *atomic += 1; }</code>.</p>
+<p>This call acts as a full compiler and hardware memory barrier.</p>
+<div class="refsect3">
+<a name="g-atomic-int-inc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>atomic</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> or <a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-atomic-int-dec-and-test"></a><h3>g_atomic_int_dec_and_test ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_atomic_int_dec_and_test (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> *atomic</code></em>);</pre>
+<p>Decrements the value of <em class="parameter"><code>atomic</code></em>
+ by 1.</p>
+<p>Think of this operation as an atomic version of
+<code class="literal">{ *atomic -= 1; return (*atomic == 0); }</code>.</p>
+<p>This call acts as a full compiler and hardware memory barrier.</p>
+<div class="refsect3">
+<a name="g-atomic-int-dec-and-test.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>atomic</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> or <a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-atomic-int-dec-and-test.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the resultant value is zero</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-atomic-int-compare-and-exchange"></a><h3>g_atomic_int_compare_and_exchange ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_atomic_int_compare_and_exchange (<em class="parameter"><code>volatile <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> *atomic</code></em>,
+                                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> oldval</code></em>,
+                                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> newval</code></em>);</pre>
+<p>Compares <em class="parameter"><code>atomic</code></em>
+ to <em class="parameter"><code>oldval</code></em>
+ and, if equal, sets it to <em class="parameter"><code>newval</code></em>
+.
+If <em class="parameter"><code>atomic</code></em>
+ was not equal to <em class="parameter"><code>oldval</code></em>
+ then no change occurs.</p>
+<p>This compare and exchange is done atomically.</p>
+<p>Think of this operation as an atomic version of
+<code class="literal">{ if (*atomic == oldval) { *atomic = newval; return TRUE; } else return FALSE; }</code>.</p>
+<p>This call acts as a full compiler and hardware memory barrier.</p>
+<div class="refsect3">
+<a name="g-atomic-int-compare-and-exchange.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>atomic</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> or <a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>oldval</p></td>
+<td class="parameter_description"><p>the value to compare with</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>newval</p></td>
+<td class="parameter_description"><p>the value to conditionally replace with</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-atomic-int-compare-and-exchange.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the exchange took place</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-atomic-int-add"></a><h3>g_atomic_int_add ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+g_atomic_int_add (<em class="parameter"><code>volatile <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> *atomic</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> val</code></em>);</pre>
+<p>Atomically adds <em class="parameter"><code>val</code></em>
+ to the value of <em class="parameter"><code>atomic</code></em>
+.</p>
+<p>Think of this operation as an atomic version of
+<code class="literal">{ tmp = *atomic; *atomic += val; return tmp; }</code>.</p>
+<p>This call acts as a full compiler and hardware memory barrier.</p>
+<p>Before version 2.30, this function did not return a value
+(but <a class="link" href="glib-Atomic-Operations.html#g-atomic-int-exchange-and-add" title="g_atomic_int_exchange_and_add ()"><code class="function">g_atomic_int_exchange_and_add()</code></a> did, and had the same meaning).</p>
+<div class="refsect3">
+<a name="g-atomic-int-add.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>atomic</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> or <a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>the value to add</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-atomic-int-add.returns"></a><h4>Returns</h4>
+<p> the value of <em class="parameter"><code>atomic</code></em>
+before the add, signed</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-atomic-int-and"></a><h3>g_atomic_int_and ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_atomic_int_and (<em class="parameter"><code>volatile <a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> *atomic</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> val</code></em>);</pre>
+<p>Performs an atomic bitwise 'and' of the value of <em class="parameter"><code>atomic</code></em>
+ and <em class="parameter"><code>val</code></em>
+,
+storing the result back in <em class="parameter"><code>atomic</code></em>
+.</p>
+<p>This call acts as a full compiler and hardware memory barrier.</p>
+<p>Think of this operation as an atomic version of
+<code class="literal">{ tmp = *atomic; *atomic &amp;amp;= val; return tmp; }</code>.</p>
+<div class="refsect3">
+<a name="g-atomic-int-and.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>atomic</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> or <a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>the value to 'and'</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-atomic-int-and.returns"></a><h4>Returns</h4>
+<p> the value of <em class="parameter"><code>atomic</code></em>
+before the operation, unsigned</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-atomic-int-or"></a><h3>g_atomic_int_or ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_atomic_int_or (<em class="parameter"><code>volatile <a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> *atomic</code></em>,
+                 <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> val</code></em>);</pre>
+<p>Performs an atomic bitwise 'or' of the value of <em class="parameter"><code>atomic</code></em>
+ and <em class="parameter"><code>val</code></em>
+,
+storing the result back in <em class="parameter"><code>atomic</code></em>
+.</p>
+<p>Think of this operation as an atomic version of
+<code class="literal">{ tmp = *atomic; *atomic |= val; return tmp; }</code>.</p>
+<p>This call acts as a full compiler and hardware memory barrier.</p>
+<div class="refsect3">
+<a name="g-atomic-int-or.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>atomic</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> or <a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>the value to 'or'</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-atomic-int-or.returns"></a><h4>Returns</h4>
+<p> the value of <em class="parameter"><code>atomic</code></em>
+before the operation, unsigned</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-atomic-int-xor"></a><h3>g_atomic_int_xor ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_atomic_int_xor (<em class="parameter"><code>volatile <a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> *atomic</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> val</code></em>);</pre>
+<p>Performs an atomic bitwise 'xor' of the value of <em class="parameter"><code>atomic</code></em>
+ and <em class="parameter"><code>val</code></em>
+,
+storing the result back in <em class="parameter"><code>atomic</code></em>
+.</p>
+<p>Think of this operation as an atomic version of
+<code class="literal">{ tmp = *atomic; *atomic ^= val; return tmp; }</code>.</p>
+<p>This call acts as a full compiler and hardware memory barrier.</p>
+<div class="refsect3">
+<a name="g-atomic-int-xor.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>atomic</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> or <a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>the value to 'xor'</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-atomic-int-xor.returns"></a><h4>Returns</h4>
+<p> the value of <em class="parameter"><code>atomic</code></em>
+before the operation, unsigned</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-atomic-pointer-get"></a><h3>g_atomic_pointer_get ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+g_atomic_pointer_get (<em class="parameter"><code>const volatile <span class="type">void</span> *atomic</code></em>);</pre>
+<p>Gets the current value of <em class="parameter"><code>atomic</code></em>
+.</p>
+<p>This call acts as a full compiler and hardware
+memory barrier (before the get).</p>
+<div class="refsect3">
+<a name="g-atomic-pointer-get.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>atomic</p></td>
+<td class="parameter_description"><p>a pointer to a <span class="type">gpointer-sized</span> value. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-atomic-pointer-get.returns"></a><h4>Returns</h4>
+<p> the value of the pointer</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-atomic-pointer-set"></a><h3>g_atomic_pointer_set ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_atomic_pointer_set (<em class="parameter"><code>volatile <span class="type">void</span> *atomic</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> newval</code></em>);</pre>
+<p>Sets the value of <em class="parameter"><code>atomic</code></em>
+ to <em class="parameter"><code>newval</code></em>
+.</p>
+<p>This call acts as a full compiler and hardware
+memory barrier (after the set).</p>
+<div class="refsect3">
+<a name="g-atomic-pointer-set.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>atomic</p></td>
+<td class="parameter_description"><p>a pointer to a <span class="type">gpointer-sized</span> value. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>newval</p></td>
+<td class="parameter_description"><p>a new value to store</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-atomic-pointer-compare-and-exchange"></a><h3>g_atomic_pointer_compare_and_exchange ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_atomic_pointer_compare_and_exchange (<em class="parameter"><code>volatile <span class="type">void</span> *atomic</code></em>,
+                                       <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> oldval</code></em>,
+                                       <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> newval</code></em>);</pre>
+<p>Compares <em class="parameter"><code>atomic</code></em>
+ to <em class="parameter"><code>oldval</code></em>
+ and, if equal, sets it to <em class="parameter"><code>newval</code></em>
+.
+If <em class="parameter"><code>atomic</code></em>
+ was not equal to <em class="parameter"><code>oldval</code></em>
+ then no change occurs.</p>
+<p>This compare and exchange is done atomically.</p>
+<p>Think of this operation as an atomic version of
+<code class="literal">{ if (*atomic == oldval) { *atomic = newval; return TRUE; } else return FALSE; }</code>.</p>
+<p>This call acts as a full compiler and hardware memory barrier.</p>
+<div class="refsect3">
+<a name="g-atomic-pointer-compare-and-exchange.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>atomic</p></td>
+<td class="parameter_description"><p>a pointer to a <span class="type">gpointer-sized</span> value. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>oldval</p></td>
+<td class="parameter_description"><p>the value to compare with</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>newval</p></td>
+<td class="parameter_description"><p>the value to conditionally replace with</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-atomic-pointer-compare-and-exchange.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the exchange took place</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-atomic-pointer-add"></a><h3>g_atomic_pointer_add ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="returnvalue">gssize</span></a>
+g_atomic_pointer_add (<em class="parameter"><code>volatile <span class="type">void</span> *atomic</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> val</code></em>);</pre>
+<p>Atomically adds <em class="parameter"><code>val</code></em>
+ to the value of <em class="parameter"><code>atomic</code></em>
+.</p>
+<p>Think of this operation as an atomic version of
+<code class="literal">{ tmp = *atomic; *atomic += val; return tmp; }</code>.</p>
+<p>This call acts as a full compiler and hardware memory barrier.</p>
+<div class="refsect3">
+<a name="g-atomic-pointer-add.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>atomic</p></td>
+<td class="parameter_description"><p>a pointer to a <span class="type">gpointer-sized</span> value. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>the value to add</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-atomic-pointer-add.returns"></a><h4>Returns</h4>
+<p> the value of <em class="parameter"><code>atomic</code></em>
+before the add, signed</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-atomic-pointer-and"></a><h3>g_atomic_pointer_and ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>
+g_atomic_pointer_and (<em class="parameter"><code>volatile <span class="type">void</span> *atomic</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> val</code></em>);</pre>
+<p>Performs an atomic bitwise 'and' of the value of <em class="parameter"><code>atomic</code></em>
+ and <em class="parameter"><code>val</code></em>
+,
+storing the result back in <em class="parameter"><code>atomic</code></em>
+.</p>
+<p>Think of this operation as an atomic version of
+<code class="literal">{ tmp = *atomic; *atomic &amp;amp;= val; return tmp; }</code>.</p>
+<p>This call acts as a full compiler and hardware memory barrier.</p>
+<div class="refsect3">
+<a name="g-atomic-pointer-and.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>atomic</p></td>
+<td class="parameter_description"><p>a pointer to a <span class="type">gpointer-sized</span> value. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>the value to 'and'</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-atomic-pointer-and.returns"></a><h4>Returns</h4>
+<p> the value of <em class="parameter"><code>atomic</code></em>
+before the operation, unsigned</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-atomic-pointer-or"></a><h3>g_atomic_pointer_or ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>
+g_atomic_pointer_or (<em class="parameter"><code>volatile <span class="type">void</span> *atomic</code></em>,
+                     <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> val</code></em>);</pre>
+<p>Performs an atomic bitwise 'or' of the value of <em class="parameter"><code>atomic</code></em>
+ and <em class="parameter"><code>val</code></em>
+,
+storing the result back in <em class="parameter"><code>atomic</code></em>
+.</p>
+<p>Think of this operation as an atomic version of
+<code class="literal">{ tmp = *atomic; *atomic |= val; return tmp; }</code>.</p>
+<p>This call acts as a full compiler and hardware memory barrier.</p>
+<div class="refsect3">
+<a name="g-atomic-pointer-or.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>atomic</p></td>
+<td class="parameter_description"><p>a pointer to a <span class="type">gpointer-sized</span> value. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>the value to 'or'</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-atomic-pointer-or.returns"></a><h4>Returns</h4>
+<p> the value of <em class="parameter"><code>atomic</code></em>
+before the operation, unsigned</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-atomic-pointer-xor"></a><h3>g_atomic_pointer_xor ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>
+g_atomic_pointer_xor (<em class="parameter"><code>volatile <span class="type">void</span> *atomic</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> val</code></em>);</pre>
+<p>Performs an atomic bitwise 'xor' of the value of <em class="parameter"><code>atomic</code></em>
+ and <em class="parameter"><code>val</code></em>
+,
+storing the result back in <em class="parameter"><code>atomic</code></em>
+.</p>
+<p>Think of this operation as an atomic version of
+<code class="literal">{ tmp = *atomic; *atomic ^= val; return tmp; }</code>.</p>
+<p>This call acts as a full compiler and hardware memory barrier.</p>
+<div class="refsect3">
+<a name="g-atomic-pointer-xor.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>atomic</p></td>
+<td class="parameter_description"><p>a pointer to a <span class="type">gpointer-sized</span> value. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>the value to 'xor'</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-atomic-pointer-xor.returns"></a><h4>Returns</h4>
+<p> the value of <em class="parameter"><code>atomic</code></em>
+before the operation, unsigned</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-atomic-int-exchange-and-add"></a><h3>g_atomic_int_exchange_and_add ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+g_atomic_int_exchange_and_add (<em class="parameter"><code>volatile <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> *atomic</code></em>,
+                               <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> val</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_atomic_int_exchange_and_add</code> has been deprecated since version 2.30 and should not be used in newly-written code.</p>
+<p>Use <a class="link" href="glib-Atomic-Operations.html#g-atomic-int-add" title="g_atomic_int_add ()"><code class="function">g_atomic_int_add()</code></a> instead.</p>
+</div>
+<p>This function existed before <a class="link" href="glib-Atomic-Operations.html#g-atomic-int-add" title="g_atomic_int_add ()"><code class="function">g_atomic_int_add()</code></a> returned the prior
+value of the integer (which it now does).  It is retained only for
+compatibility reasons.  Don't use this function in new code.</p>
+<div class="refsect3">
+<a name="g-atomic-int-exchange-and-add.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>atomic</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>val</p></td>
+<td class="parameter_description"><p>the value to add</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-atomic-int-exchange-and-add.returns"></a><h4>Returns</h4>
+<p> the value of <em class="parameter"><code>atomic</code></em>
+before the add, signed</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Atomic-Operations.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="G-ATOMIC-LOCK-FREE:CAPS"></a><h3>G_ATOMIC_LOCK_FREE</h3>
+<pre class="programlisting">#define G_ATOMIC_LOCK_FREE
+</pre>
+<p>This macro is defined if the atomic operations of GLib are
+implemented using real hardware atomic operations.  This means that
+the GLib atomic API can be used between processes and safely mixed
+with other (hardware) atomic APIs.</p>
+<p>If this macro is not defined, the atomic operations may be
+emulated using a mutex.  In that case, the GLib atomic operations are
+only atomic relative to themselves and within a single process.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Atomic-Operations.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

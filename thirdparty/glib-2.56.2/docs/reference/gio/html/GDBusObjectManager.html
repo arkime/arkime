@@ -1,0 +1,592 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GDBusObjectManager: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="gdbus-convenience.html" title="High-level D-Bus Support">
+<link rel="prev" href="GDBusObjectProxy.html" title="GDBusObjectProxy">
+<link rel="next" href="GDBusObjectManagerServer.html" title="GDBusObjectManagerServer">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GDBusObjectManager.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GDBusObjectManager.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_prerequisites">  <span class="dim">|</span> 
+                  <a href="#GDBusObjectManager.prerequisites" class="shortcut">Prerequisites</a></span><span id="nav_implementations">  <span class="dim">|</span> 
+                  <a href="#GDBusObjectManager.implementations" class="shortcut">Known Implementations</a></span><span id="nav_signals">  <span class="dim">|</span> 
+                  <a href="#GDBusObjectManager.signals" class="shortcut">Signals</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="gdbus-convenience.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GDBusObjectProxy.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GDBusObjectManagerServer.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GDBusObjectManager"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GDBusObjectManager.top_of_page"></a>GDBusObjectManager</span></h2>
+<p>GDBusObjectManager — Base type for D-Bus object managers</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GDBusObjectManager.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusObjectManager.html#g-dbus-object-manager-get-object-path" title="g_dbus_object_manager_get_object_path ()">g_dbus_object_manager_get_object_path</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusObjectManager.html#g-dbus-object-manager-get-objects" title="g_dbus_object_manager_get_objects ()">g_dbus_object_manager_get_objects</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusObject.html" title="GDBusObject"><span class="returnvalue">GDBusObject</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusObjectManager.html#g-dbus-object-manager-get-object" title="g_dbus_object_manager_get_object ()">g_dbus_object_manager_get_object</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusInterface.html" title="GDBusInterface"><span class="returnvalue">GDBusInterface</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusObjectManager.html#g-dbus-object-manager-get-interface" title="g_dbus_object_manager_get_interface ()">g_dbus_object_manager_get_interface</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDBusObjectManager.signals"></a><h2>Signals</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="signals_return">
+<col width="300px" class="signals_name">
+<col width="200px" class="signals_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GDBusObjectManager.html#GDBusObjectManager-interface-added" title="The “interface-added” signal">interface-added</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GDBusObjectManager.html#GDBusObjectManager-interface-removed" title="The “interface-removed” signal">interface-removed</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GDBusObjectManager.html#GDBusObjectManager-object-added" title="The “object-added” signal">object-added</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GDBusObjectManager.html#GDBusObjectManager-object-removed" title="The “object-removed” signal">object-removed</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDBusObjectManager.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GDBusObjectManager.html#GDBusObjectManager-struct" title="GDBusObjectManager">GDBusObjectManager</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GDBusObjectManager.html#GDBusObjectManagerIface" title="struct GDBusObjectManagerIface">GDBusObjectManagerIface</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDBusObjectManager.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/GTypeModule.html">GInterface</a>
+    <span class="lineart">╰──</span> GDBusObjectManager
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusObjectManager.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GDBusObjectManager requires
+ <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GDBusObjectManager.implementations"></a><h2>Known Implementations</h2>
+<p>
+GDBusObjectManager is implemented by
+ <a class="link" href="GDBusObjectManagerClient.html" title="GDBusObjectManagerClient">GDBusObjectManagerClient</a> and  <a class="link" href="GDBusObjectManagerServer.html" title="GDBusObjectManagerServer">GDBusObjectManagerServer</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GDBusObjectManager.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusObjectManager.description"></a><h2>Description</h2>
+<p>The <a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager"><span class="type">GDBusObjectManager</span></a> type is the base type for service- and
+client-side implementations of the standardized
+<a class="ulink" href="http://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-objectmanager" target="_top">org.freedesktop.DBus.ObjectManager</a>
+interface.</p>
+<p>See <a class="link" href="GDBusObjectManagerClient.html" title="GDBusObjectManagerClient"><span class="type">GDBusObjectManagerClient</span></a> for the client-side implementation
+and <a class="link" href="GDBusObjectManagerServer.html" title="GDBusObjectManagerServer"><span class="type">GDBusObjectManagerServer</span></a> for the service-side implementation.</p>
+</div>
+<div class="refsect1">
+<a name="GDBusObjectManager.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-dbus-object-manager-get-object-path"></a><h3>g_dbus_object_manager_get_object_path ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_object_manager_get_object_path (<em class="parameter"><code><a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager"><span class="type">GDBusObjectManager</span></a> *manager</code></em>);</pre>
+<p>Gets the object path that <em class="parameter"><code>manager</code></em>
+ is for.</p>
+<div class="refsect3">
+<a name="g-dbus-object-manager-get-object-path.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>manager</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager"><span class="type">GDBusObjectManager</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-object-manager-get-object-path.returns"></a><h4>Returns</h4>
+<p> A string owned by <em class="parameter"><code>manager</code></em>
+. Do not free.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-object-manager-get-objects"></a><h3>g_dbus_object_manager_get_objects ()</h3>
+<pre class="programlisting"><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+g_dbus_object_manager_get_objects (<em class="parameter"><code><a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager"><span class="type">GDBusObjectManager</span></a> *manager</code></em>);</pre>
+<p>Gets all <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a> objects known to <em class="parameter"><code>manager</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-object-manager-get-objects.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>manager</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager"><span class="type">GDBusObjectManager</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-object-manager-get-objects.returns"></a><h4>Returns</h4>
+<p>A list of
+<a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a> objects. The returned list should be freed with
+<a href="../glib-Doubly-Linked-Lists.html#g-list-free"><code class="function">g_list_free()</code></a> after each element has been freed with
+<a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GDBusObject]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-object-manager-get-object"></a><h3>g_dbus_object_manager_get_object ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusObject.html" title="GDBusObject"><span class="returnvalue">GDBusObject</span></a> *
+g_dbus_object_manager_get_object (<em class="parameter"><code><a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager"><span class="type">GDBusObjectManager</span></a> *manager</code></em>,
+                                  <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>);</pre>
+<p>Gets the <a class="link" href="GDBusObjectProxy.html" title="GDBusObjectProxy"><span class="type">GDBusObjectProxy</span></a> at <em class="parameter"><code>object_path</code></em>
+, if any.</p>
+<div class="refsect3">
+<a name="g-dbus-object-manager-get-object.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>manager</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager"><span class="type">GDBusObjectManager</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>object_path</p></td>
+<td class="parameter_description"><p>Object path to lookup.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-object-manager-get-object.returns"></a><h4>Returns</h4>
+<p>A <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. Free with
+<a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-object-manager-get-interface"></a><h3>g_dbus_object_manager_get_interface ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusInterface.html" title="GDBusInterface"><span class="returnvalue">GDBusInterface</span></a> *
+g_dbus_object_manager_get_interface (<em class="parameter"><code><a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager"><span class="type">GDBusObjectManager</span></a> *manager</code></em>,
+                                     <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>,
+                                     <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *interface_name</code></em>);</pre>
+<p>Gets the interface proxy for <em class="parameter"><code>interface_name</code></em>
+ at <em class="parameter"><code>object_path</code></em>
+, if
+any.</p>
+<div class="refsect3">
+<a name="g-dbus-object-manager-get-interface.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>manager</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager"><span class="type">GDBusObjectManager</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>object_path</p></td>
+<td class="parameter_description"><p>Object path to lookup.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>interface_name</p></td>
+<td class="parameter_description"><p>D-Bus interface name to lookup.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-object-manager-get-interface.returns"></a><h4>Returns</h4>
+<p>A <a class="link" href="GDBusInterface.html" title="GDBusInterface"><span class="type">GDBusInterface</span></a> instance or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. Free
+with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusObjectManager.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GDBusObjectManager-struct"></a><h3>GDBusObjectManager</h3>
+<pre class="programlisting">typedef struct _GDBusObjectManager GDBusObjectManager;</pre>
+<p><a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager"><span class="type">GDBusObjectManager</span></a> is an opaque data structure and can only be accessed
+using the following functions.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusObjectManagerIface"></a><h3>struct GDBusObjectManagerIface</h3>
+<pre class="programlisting">struct GDBusObjectManagerIface {
+  GTypeInterface parent_iface;
+
+  /* Virtual Functions */
+  const gchar     *(*get_object_path) (GDBusObjectManager    *manager);
+  GList           *(*get_objects)     (GDBusObjectManager    *manager);
+  GDBusObject     *(*get_object)      (GDBusObjectManager    *manager,
+                                       const gchar           *object_path);
+  GDBusInterface  *(*get_interface)   (GDBusObjectManager    *manager,
+                                       const gchar           *object_path,
+                                       const gchar           *interface_name);
+
+  /* Signals */
+  void    (*object_added)                 (GDBusObjectManager   *manager,
+                                           GDBusObject          *object);
+  void    (*object_removed)               (GDBusObjectManager   *manager,
+                                           GDBusObject          *object);
+
+  void    (*interface_added)              (GDBusObjectManager   *manager,
+                                           GDBusObject          *object,
+                                           GDBusInterface       *interface_);
+  void    (*interface_removed)            (GDBusObjectManager   *manager,
+                                           GDBusObject          *object,
+                                           GDBusInterface       *interface_);
+};
+</pre>
+<p>Base type for D-Bus object managers.</p>
+<div class="refsect3">
+<a name="GDBusObjectManagerIface.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><a href="../gobject-Type-Information.html#GTypeInterface"><span class="type">GTypeInterface</span></a> <em class="structfield"><code><a name="GDBusObjectManagerIface.parent-iface"></a>parent_iface</code></em>;</p></td>
+<td class="struct_member_description"><p>The parent interface.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDBusObjectManagerIface.get-object-path"></a>get_object_path</code></em> ()</p></td>
+<td class="struct_member_description"><p>Virtual function for <a class="link" href="GDBusObjectManager.html#g-dbus-object-manager-get-object-path" title="g_dbus_object_manager_get_object_path ()"><code class="function">g_dbus_object_manager_get_object_path()</code></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDBusObjectManagerIface.get-objects"></a>get_objects</code></em> ()</p></td>
+<td class="struct_member_description"><p>Virtual function for <a class="link" href="GDBusObjectManager.html#g-dbus-object-manager-get-objects" title="g_dbus_object_manager_get_objects ()"><code class="function">g_dbus_object_manager_get_objects()</code></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDBusObjectManagerIface.get-object"></a>get_object</code></em> ()</p></td>
+<td class="struct_member_description"><p>Virtual function for <a class="link" href="GDBusObjectManager.html#g-dbus-object-manager-get-object" title="g_dbus_object_manager_get_object ()"><code class="function">g_dbus_object_manager_get_object()</code></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDBusObjectManagerIface.get-interface"></a>get_interface</code></em> ()</p></td>
+<td class="struct_member_description"><p>Virtual function for <a class="link" href="GDBusObjectManager.html#g-dbus-object-manager-get-interface" title="g_dbus_object_manager_get_interface ()"><code class="function">g_dbus_object_manager_get_interface()</code></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDBusObjectManagerIface.object-added"></a>object_added</code></em> ()</p></td>
+<td class="struct_member_description"><p>Signal handler for the <a class="link" href="GDBusObjectManager.html#GDBusObjectManager-object-added" title="The “object-added” signal"><span class="type">“object-added”</span></a> signal.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDBusObjectManagerIface.object-removed"></a>object_removed</code></em> ()</p></td>
+<td class="struct_member_description"><p>Signal handler for the <a class="link" href="GDBusObjectManager.html#GDBusObjectManager-object-removed" title="The “object-removed” signal"><span class="type">“object-removed”</span></a> signal.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDBusObjectManagerIface.interface-added"></a>interface_added</code></em> ()</p></td>
+<td class="struct_member_description"><p>Signal handler for the <a class="link" href="GDBusObjectManager.html#GDBusObjectManager-interface-added" title="The “interface-added” signal"><span class="type">“interface-added”</span></a> signal.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDBusObjectManagerIface.interface-removed"></a>interface_removed</code></em> ()</p></td>
+<td class="struct_member_description"><p>Signal handler for the <a class="link" href="GDBusObjectManager.html#GDBusObjectManager-interface-removed" title="The “interface-removed” signal"><span class="type">“interface-removed”</span></a> signal.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusObjectManager.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="GDBusObjectManager-interface-added"></a><h3>The <code class="literal">“interface-added”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager"><span class="type">GDBusObjectManager</span></a> *manager,
+               <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a>        *object,
+               <a class="link" href="GDBusInterface.html" title="GDBusInterface"><span class="type">GDBusInterface</span></a>     *interface,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>            user_data)</pre>
+<p>Emitted when <em class="parameter"><code>interface</code></em>
+ is added to <em class="parameter"><code>object</code></em>
+.</p>
+<p>This signal exists purely as a convenience to avoid having to
+connect signals to all objects managed by <em class="parameter"><code>manager</code></em>
+.</p>
+<div class="refsect3">
+<a name="GDBusObjectManager-interface-added.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>manager</p></td>
+<td class="parameter_description"><p>The <a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager"><span class="type">GDBusObjectManager</span></a> emitting the signal.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>object</p></td>
+<td class="parameter_description"><p>The <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a> on which an interface was added.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>interface</p></td>
+<td class="parameter_description"><p>The <a class="link" href="GDBusInterface.html" title="GDBusInterface"><span class="type">GDBusInterface</span></a> that was added.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusObjectManager-interface-removed"></a><h3>The <code class="literal">“interface-removed”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager"><span class="type">GDBusObjectManager</span></a> *manager,
+               <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a>        *object,
+               <a class="link" href="GDBusInterface.html" title="GDBusInterface"><span class="type">GDBusInterface</span></a>     *interface,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>            user_data)</pre>
+<p>Emitted when <em class="parameter"><code>interface</code></em>
+ has been removed from <em class="parameter"><code>object</code></em>
+.</p>
+<p>This signal exists purely as a convenience to avoid having to
+connect signals to all objects managed by <em class="parameter"><code>manager</code></em>
+.</p>
+<div class="refsect3">
+<a name="GDBusObjectManager-interface-removed.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>manager</p></td>
+<td class="parameter_description"><p>The <a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager"><span class="type">GDBusObjectManager</span></a> emitting the signal.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>object</p></td>
+<td class="parameter_description"><p>The <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a> on which an interface was removed.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>interface</p></td>
+<td class="parameter_description"><p>The <a class="link" href="GDBusInterface.html" title="GDBusInterface"><span class="type">GDBusInterface</span></a> that was removed.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusObjectManager-object-added"></a><h3>The <code class="literal">“object-added”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager"><span class="type">GDBusObjectManager</span></a> *manager,
+               <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a>        *object,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>            user_data)</pre>
+<p>Emitted when <em class="parameter"><code>object</code></em>
+ is added to <em class="parameter"><code>manager</code></em>
+.</p>
+<div class="refsect3">
+<a name="GDBusObjectManager-object-added.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>manager</p></td>
+<td class="parameter_description"><p>The <a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager"><span class="type">GDBusObjectManager</span></a> emitting the signal.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>object</p></td>
+<td class="parameter_description"><p>The <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a> that was added.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusObjectManager-object-removed"></a><h3>The <code class="literal">“object-removed”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager"><span class="type">GDBusObjectManager</span></a> *manager,
+               <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a>        *object,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>            user_data)</pre>
+<p>Emitted when <em class="parameter"><code>object</code></em>
+ is removed from <em class="parameter"><code>manager</code></em>
+.</p>
+<div class="refsect3">
+<a name="GDBusObjectManager-object-removed.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>manager</p></td>
+<td class="parameter_description"><p>The <a class="link" href="GDBusObjectManager.html" title="GDBusObjectManager"><span class="type">GDBusObjectManager</span></a> emitting the signal.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>object</p></td>
+<td class="parameter_description"><p>The <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a> that was removed.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

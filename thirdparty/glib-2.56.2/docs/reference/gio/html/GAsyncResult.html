@@ -1,0 +1,512 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GAsyncResult: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="async.html" title="Asynchronous I/O">
+<link rel="prev" href="GCancellable.html" title="GCancellable">
+<link rel="next" href="GTask.html" title="GTask">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GAsyncResult.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GAsyncResult.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_prerequisites">  <span class="dim">|</span> 
+                  <a href="#GAsyncResult.prerequisites" class="shortcut">Prerequisites</a></span><span id="nav_implementations">  <span class="dim">|</span> 
+                  <a href="#GAsyncResult.implementations" class="shortcut">Known Implementations</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="async.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GCancellable.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GTask.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GAsyncResult"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GAsyncResult.top_of_page"></a>GAsyncResult</span></h2>
+<p>GAsyncResult — Asynchronous Function Results</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GAsyncResult.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()">*GAsyncReadyCallback</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GAsyncResult.html#g-async-result-get-user-data" title="g_async_result_get_user_data ()">g_async_result_get_user_data</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="returnvalue">GObject</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GAsyncResult.html#g-async-result-get-source-object" title="g_async_result_get_source_object ()">g_async_result_get_source_object</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GAsyncResult.html#g-async-result-is-tagged" title="g_async_result_is_tagged ()">g_async_result_is_tagged</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GAsyncResult.html#g-async-result-legacy-propagate-error" title="g_async_result_legacy_propagate_error ()">g_async_result_legacy_propagate_error</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GAsyncResult.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GAsyncResult.html#GAsyncResult-struct" title="GAsyncResult">GAsyncResult</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GAsyncResult.html#GAsyncResultIface" title="struct GAsyncResultIface">GAsyncResultIface</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GAsyncResult.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/GTypeModule.html">GInterface</a>
+    <span class="lineart">╰──</span> GAsyncResult
+</pre>
+</div>
+<div class="refsect1">
+<a name="GAsyncResult.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GAsyncResult requires
+ <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GAsyncResult.implementations"></a><h2>Known Implementations</h2>
+<p>
+GAsyncResult is implemented by
+ <a class="link" href="GSimpleAsyncResult.html" title="GSimpleAsyncResult">GSimpleAsyncResult</a> and  <a class="link" href="GTask.html" title="GTask">GTask</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GAsyncResult.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GAsyncResult.description"></a><h2>Description</h2>
+<p>Provides a base class for implementing asynchronous function results.</p>
+<p>Asynchronous operations are broken up into two separate operations
+which are chained together by a <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a>. To begin
+an asynchronous operation, provide a <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> to the
+asynchronous function. This callback will be triggered when the
+operation has completed, and must be run in a later iteration of
+the <a href="../glib-The-Main-Event-Loop.html#g-main-context-push-thread-default">thread-default main context</a>
+from where the operation was initiated. It will be passed a
+<a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> instance filled with the details of the operation's
+success or failure, the object the asynchronous function was
+started for and any error codes returned. The asynchronous callback
+function is then expected to call the corresponding "<code class="function">_finish()</code>"
+function, passing the object the function was called for, the
+<a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> instance, and (optionally) an <em class="parameter"><code>error</code></em>
+ to grab any
+error conditions that may have occurred.</p>
+<p>The "<code class="function">_finish()</code>" function for an operation takes the generic result
+(of type <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a>) and returns the specific result that the
+operation in question yields (e.g. a <a class="link" href="GFileEnumerator.html" title="GFileEnumerator"><span class="type">GFileEnumerator</span></a> for a
+"enumerate children" operation). If the result or error status of the
+operation is not needed, there is no need to call the "<code class="function">_finish()</code>"
+function; GIO will take care of cleaning up the result and error
+information after the <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> returns. You can pass
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> for the <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> if you don't need to take any
+action at all after the operation completes. Applications may also
+take a reference to the <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> and call "<code class="function">_finish()</code>" later;
+however, the "<code class="function">_finish()</code>" function may be called at most once.</p>
+<p>Example of a typical asynchronous operation flow:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="type">void</span><span class="normal"> </span><span class="function">_theoretical_frobnitz_async</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">Theoretical</span><span class="normal">         </span><span class="symbol">*</span><span class="normal">t</span><span class="symbol">,</span>
+<span class="normal">                                  </span><span class="usertype">GCancellable</span><span class="normal">        </span><span class="symbol">*</span><span class="normal">c</span><span class="symbol">,</span>
+<span class="normal">                                  </span><span class="usertype">GAsyncReadyCallback</span><span class="normal">  cb</span><span class="symbol">,</span>
+<span class="normal">                                  </span><span class="usertype">gpointer</span><span class="normal">             u</span><span class="symbol">);</span>
+
+<span class="usertype">gboolean</span><span class="normal"> </span><span class="function">_theoretical_frobnitz_finish</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">Theoretical</span><span class="normal">   </span><span class="symbol">*</span><span class="normal">t</span><span class="symbol">,</span>
+<span class="normal">                                       </span><span class="usertype">GAsyncResult</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">res</span><span class="symbol">,</span>
+<span class="normal">                                       </span><span class="usertype">GError</span><span class="normal">       </span><span class="symbol">**</span><span class="normal">e</span><span class="symbol">);</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">frobnitz_result_func</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GObject</span><span class="normal">      </span><span class="symbol">*</span><span class="normal">source_object</span><span class="symbol">,</span>
+<span class="normal">         </span><span class="usertype">GAsyncResult</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">res</span><span class="symbol">,</span>
+<span class="normal">         </span><span class="usertype">gpointer</span><span class="normal">      user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">gboolean</span><span class="normal"> success </span><span class="symbol">=</span><span class="normal"> <a href="../glib-Standard-Macros.html#FALSE:CAPS">FALSE</a></span><span class="symbol">;</span>
+
+<span class="normal">  success </span><span class="symbol">=</span><span class="normal"> </span><span class="function">_theoretical_frobnitz_finish</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">source_object</span><span class="symbol">,</span><span class="normal"> res</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">success</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="function"><a href="../glib-String-Utility-Functions.html#g-printf">g_printf</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Hurray!</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="keyword">else</span>
+<span class="normal">    </span><span class="function"><a href="../glib-String-Utility-Functions.html#g-printf">g_printf</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Uh oh!</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="symbol">...</span>
+
+<span class="cbracket">}</span>
+
+<span class="type">int</span><span class="normal"> </span><span class="function">main</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> argc</span><span class="symbol">,</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">argv</span><span class="symbol">[])</span>
+<span class="cbracket">{</span>
+<span class="normal">   </span><span class="symbol">...</span>
+
+<span class="normal">   </span><span class="function">_theoretical_frobnitz_async</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">theoretical_data</span><span class="symbol">,</span>
+<span class="normal">                                <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span>
+<span class="normal">                                frobnitz_result_func</span><span class="symbol">,</span>
+<span class="normal">                                <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="normal">   </span><span class="symbol">...</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>The callback for an asynchronous operation is called only once, and is
+always called, even in the case of a cancelled operation. On cancellation
+the result is a <a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a> error.</p>
+<div class="refsect3">
+<a name="io-priority"></a><h4>I/O Priority</h4>
+<p>Many I/O-related asynchronous operations have a priority parameter,
+which is used in certain cases to determine the order in which
+operations are executed. They are not used to determine system-wide
+I/O scheduling. Priorities are integers, with lower numbers indicating
+higher priority. It is recommended to choose priorities between
+<a href="../glib-The-Main-Event-Loop.html#G-PRIORITY-LOW:CAPS"><code class="literal">G_PRIORITY_LOW</code></a> and <a href="../glib-The-Main-Event-Loop.html#G-PRIORITY-HIGH:CAPS"><code class="literal">G_PRIORITY_HIGH</code></a>, with <a href="../glib-The-Main-Event-Loop.html#G-PRIORITY-DEFAULT:CAPS"><code class="literal">G_PRIORITY_DEFAULT</code></a>
+as a default.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GAsyncResult.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="GAsyncReadyCallback"></a><h3>GAsyncReadyCallback ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+<span class="c_punctuation">(</span>*GAsyncReadyCallback<span class="c_punctuation">)</span> (<em class="parameter"><code><a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> *source_object</code></em>,
+                        <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *res</code></em>,
+                        <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Type definition for a function that will be called back when an asynchronous
+operation within GIO has been completed. <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a>
+callbacks from <a class="link" href="GTask.html" title="GTask"><span class="type">GTask</span></a> are guaranteed to be invoked in a later
+iteration of the
+<a href="../glib-The-Main-Event-Loop.html#g-main-context-push-thread-default">thread-default main context</a>
+where the <a class="link" href="GTask.html" title="GTask"><span class="type">GTask</span></a> was created. All other users of
+<a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> must likewise call it asynchronously in a
+later iteration of the main context.</p>
+<div class="refsect3">
+<a name="GAsyncReadyCallback.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>source_object</p></td>
+<td class="parameter_description"><p>the object the asynchronous operation was started with. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>res</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data passed to the callback.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-async-result-get-user-data"></a><h3>g_async_result_get_user_data ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gpointer"><span class="returnvalue">gpointer</span></a>
+g_async_result_get_user_data (<em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *res</code></em>);</pre>
+<p>Gets the user data from a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a>.</p>
+<div class="refsect3">
+<a name="g-async-result-get-user-data.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>res</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-async-result-get-user-data.returns"></a><h4>Returns</h4>
+<p>the user data for <em class="parameter"><code>res</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-async-result-get-source-object"></a><h3>g_async_result_get_source_object ()</h3>
+<pre class="programlisting"><a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="returnvalue">GObject</span></a> *
+g_async_result_get_source_object (<em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *res</code></em>);</pre>
+<p>Gets the source object from a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a>.</p>
+<div class="refsect3">
+<a name="g-async-result-get-source-object.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>res</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-async-result-get-source-object.returns"></a><h4>Returns</h4>
+<p>a new reference to the source
+object for the <em class="parameter"><code>res</code></em>
+, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there is none. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-async-result-is-tagged"></a><h3>g_async_result_is_tagged ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_async_result_is_tagged (<em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *res</code></em>,
+                          <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> source_tag</code></em>);</pre>
+<p>Checks if <em class="parameter"><code>res</code></em>
+ has the given <em class="parameter"><code>source_tag</code></em>
+ (generally a function
+pointer indicating the function <em class="parameter"><code>res</code></em>
+ was created by).</p>
+<div class="refsect3">
+<a name="g-async-result-is-tagged.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>res</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>source_tag</p></td>
+<td class="parameter_description"><p>an application-defined tag</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-async-result-is-tagged.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>res</code></em>
+has the indicated <em class="parameter"><code>source_tag</code></em>
+, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if
+not.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-async-result-legacy-propagate-error"></a><h3>g_async_result_legacy_propagate_error ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_async_result_legacy_propagate_error (<em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *res</code></em>,
+                                       <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>If <em class="parameter"><code>res</code></em>
+ is a <a class="link" href="GSimpleAsyncResult.html" title="GSimpleAsyncResult"><span class="type">GSimpleAsyncResult</span></a>, this is equivalent to
+<a class="link" href="GSimpleAsyncResult.html#g-simple-async-result-propagate-error" title="g_simple_async_result_propagate_error ()"><code class="function">g_simple_async_result_propagate_error()</code></a>. Otherwise it returns
+<a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a>.</p>
+<p>This can be used for legacy error handling in async *_finish()
+wrapper functions that traditionally handled <a class="link" href="GSimpleAsyncResult.html" title="GSimpleAsyncResult"><span class="type">GSimpleAsyncResult</span></a>
+error returns themselves rather than calling into the virtual method.
+This should not be used in new code; <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> errors that are
+set by virtual methods should also be extracted by virtual methods,
+to enable subclasses to chain up correctly.</p>
+<div class="refsect3">
+<a name="g-async-result-legacy-propagate-error.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>res</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a location to propagate the error to. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-async-result-legacy-propagate-error.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>error</code></em>
+is has been filled in with an error from
+<em class="parameter"><code>res</code></em>
+, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if not.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GAsyncResult.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GAsyncResult-struct"></a><h3>GAsyncResult</h3>
+<pre class="programlisting">typedef struct _GAsyncResult GAsyncResult;</pre>
+<p>Holds results information for an asynchronous operation,
+usually passed directly to a asynchronous <code class="function">_finish()</code> operation.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GAsyncResultIface"></a><h3>struct GAsyncResultIface</h3>
+<pre class="programlisting">struct GAsyncResultIface {
+  GTypeInterface g_iface;
+
+  /* Virtual Table */
+
+  gpointer  (* get_user_data)     (GAsyncResult *res);
+  GObject * (* get_source_object) (GAsyncResult *res);
+
+  gboolean  (* is_tagged)         (GAsyncResult *res,
+				   gpointer      source_tag);
+};
+</pre>
+<p>Interface definition for <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a>.</p>
+<div class="refsect3">
+<a name="GAsyncResultIface.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GAsyncResultIface.get-user-data"></a>get_user_data</code></em> ()</p></td>
+<td class="struct_member_description"><p>Gets the user data passed to the callback.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GAsyncResultIface.get-source-object"></a>get_source_object</code></em> ()</p></td>
+<td class="struct_member_description"><p>Gets the source object that issued the asynchronous operation.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GAsyncResultIface.is-tagged"></a>is_tagged</code></em> ()</p></td>
+<td class="struct_member_description"><p>Checks if a result is tagged with a particular source.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GAsyncResult.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="GTask.html" title="GTask"><span class="type">GTask</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=appinfo-test
+Name[de]=appinfo-test-de
+X-GNOME-FullName=example
+X-GNOME-FullName[de]=Beispiel
+Comment=GAppInfo example
+Comment[de]=GAppInfo Beispiel
+Exec=./appinfo-test --option
+TryExec=does-not-exist
+Icon=testicon

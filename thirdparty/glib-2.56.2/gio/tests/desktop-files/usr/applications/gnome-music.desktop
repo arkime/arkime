@@ -1,0 +1,23 @@
+[Desktop Entry]
+Name=Music
+Name[ca]=Música
+Name[en_GB]=Music
+Name[pt]=Música
+Name[pt_BR]=Músicas
+GenericName=Music Player
+GenericName[ca]=Reproductor de música
+GenericName[en_GB]=Music Player
+GenericName[pt]=Reprodutor de Música
+GenericName[pt_BR]=Reprodutor de músicas
+Comment=Play and organize your music collection
+Comment[ca]=Reproduïu i organitzeu la col·lecció de música
+Comment[en_GB]=Play and organise your music collection
+Comment[pt]=Reproduz e organiza a sua coleção de media
+Comment[pt_BR]=Reproduza e organize sua coleção de músicas
+Icon=gnome-music
+Exec=true
+Terminal=false
+Type=Application
+Categories=GNOME;GTK;AudioVideo;Player;Audio;
+StartupNotify=true
+Implements=org.gnome.Shell.SearchProvider2

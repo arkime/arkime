@@ -1,0 +1,4 @@
+PASS '<?xml version="1.0" ?>'
+ELEMENT 'foo'
+  TEXT ''
+END 'foo'

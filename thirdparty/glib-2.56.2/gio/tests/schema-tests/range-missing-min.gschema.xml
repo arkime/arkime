@@ -1,0 +1,8 @@
+<schemalist>
+    <schema id="test">
+      <key name="test" type="i">
+        <range max="100" />
+        <default>2</default>
+      </key>
+    </schema>
+</schemalist>

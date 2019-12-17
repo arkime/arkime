@@ -1,0 +1,8 @@
+<schemalist>
+  <schema id='y'/>
+  <schema id='x' list-of='y'/>
+
+  <schema id='z' extends='x'>
+    <key name='foo' type='s'/>
+  </schema>
+</schemalist>

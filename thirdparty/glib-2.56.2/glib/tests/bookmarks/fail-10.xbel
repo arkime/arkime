@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE xbel
+  PUBLIC "+//IDN python.org//DTD XML Bookmark Exchange Language 1.0//EN//XML"
+         "http://www.python.org/topics/xml/dtds/xbel-1.0.dtd">
+<xbel version="1.0"
+      xmlns:bookmark="http://www.freedesktop.org/standards/desktop-bookmarks"
+      xmlns:mime="http://www.freedesktop.org/standards/shared-mime-info"
+>
+  <title>Singleton</title>
+  <desc>A file containing a single bookmark element</desc>
+  <bookmark href="file:///home/zefram/Documents/milan-stuttgart.ps" added="20050930T23:05:28Z" modified="20050930T23:05:28Z" visited="20050930T23:05:28Z">
+    <info>
+      <metadata owner="http://freedesktop.org">
+        <mime:mime-type type="application/postscript"/>
+        <bookmark:applications>
+          <bookmark:application exec="populate-recent --info %u" timestamp="1128121528" count="1"/>
+        </bookmark:applications>
+      </metadata>
+    </info>
+  </bookmark>
+</xbel>

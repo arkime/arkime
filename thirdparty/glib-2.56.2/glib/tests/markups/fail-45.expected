@@ -1,0 +1,3 @@
+ELEMENT 'foo'
+  TEXT ''
+ERROR Error on line 1 char 12: '≻' is not a valid character following the close element name 'foo'; the allowed character is '>'

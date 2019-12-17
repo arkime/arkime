@@ -1,0 +1,484 @@
+<node>
+  <!-- Fully Loaded Interface -->
+  <interface name="org.project.Bar">
+    <annotation name="org.gtk.GDBus.DocString" value="The org.project.Bar interface is very complicated."/>
+    <annotation name="org.gtk.GDBus.DocString.Short" value="Brief interface doc string"/>
+
+    <method name="HelloWorld">
+      <annotation name="org.gtk.GDBus.DocString" value="Method &lt;emphasis&gt;documentation&lt;/emphasis&gt; blablablabla."/>
+      <annotation name="ExistingAnnotation" value="blah"/>
+      <annotation name="org.gtk.GDBus.ExistingInternalAnnotation" value="booh"/>
+      <arg name="greeting" direction="in" type="s">
+        <annotation name="org.gtk.GDBus.DocString" value="in param doc"/>
+      </arg>
+      <arg name="response" direction="out" type="s">
+        <annotation name="org.gtk.GDBus.DocString" value="out param doc"/>
+      </arg>
+    </method>
+
+    <method name="TestPrimitiveTypes">
+      <arg direction="in"  type="y" name="val_byte" />
+      <arg direction="in"  type="b" name="val_boolean" />
+      <arg direction="in"  type="n" name="val_int16" />
+      <arg direction="in"  type="q" name="val_uint16" />
+      <arg direction="in"  type="i" name="val_int32" />
+      <arg direction="in"  type="u" name="val_uint32" />
+      <arg direction="in"  type="x" name="val_int64" />
+      <arg direction="in"  type="t" name="val_uint64" />
+      <arg direction="in"  type="d" name="val_double" />
+      <arg direction="in"  type="s" name="val_string" />
+      <arg direction="in"  type="o" name="val_objpath" />
+      <arg direction="in"  type="g" name="val_signature" />
+      <arg direction="in"  type="ay" name="val_bytestring" />
+      <arg direction="out" type="y" name="ret_byte" />
+      <arg direction="out" type="b" name="ret_boolean" />
+      <arg direction="out" type="n" name="ret_int16" />
+      <arg direction="out" type="q" name="ret_uint16" />
+      <arg direction="out" type="i" name="ret_int32" />
+      <arg direction="out" type="u" name="ret_uint32" />
+      <arg direction="out" type="x" name="ret_int64" />
+      <arg direction="out" type="t" name="ret_uint64" />
+      <arg direction="out" type="d" name="ret_double" />
+      <arg direction="out" type="s" name="ret_string" />
+      <arg direction="out" type="o" name="ret_objpath" />
+      <arg direction="out" type="g" name="ret_signature" />
+      <arg direction="out" type="ay" name="ret_bytestring" />
+    </method>
+
+    <method name="TestNonPrimitiveTypes">
+      <arg direction="in" type="a{ss}" name="dict_s_to_s" />
+      <arg direction="in" type="a{s(ii)}" name="dict_s_to_pairs" />
+      <arg direction="in" type="(iss)" name="a_struct" />
+      <arg direction="in" type="as" name="array_of_strings" />
+      <arg direction="out" type="as" name="ret_array_of_strings" />
+      <arg direction="in" type="ao" name="array_of_objpaths" />
+      <arg direction="out" type="ao" name="ret_array_of_objpaths" />
+      <arg direction="in" type="ag" name="array_of_signatures" />
+      <arg direction="out" type="ag" name="ret_array_of_signatures" />
+      <arg direction="in" type="aay" name="array_of_bytestrings" />
+      <arg direction="out" type="aay" name="ret_array_of_bytestrings" />
+      <arg direction="out" type="ay" name="result" />
+    </method>
+
+    <method name="RequestSignalEmission">
+      <arg direction="in" type="i" name="which_one" />
+    </method>
+
+    <method name="RequestMultiPropertyMods"/>
+
+    <method name="UnimplementedMethod"/>
+
+    <method name="PropertyCancellation"/>
+
+    <signal name="TestSignal">
+      <annotation name="org.gtk.GDBus.DocString" value="Signal documentation."/>
+      <arg type="i" name="val_int32">
+        <annotation name="org.gtk.GDBus.DocString" value="Signal param docs"/>
+      </arg>
+      <arg type="as" name="array_of_strings" />
+      <arg type="aay" name="array_of_bytestrings" />
+      <arg type="a{s(ii)}" name="dict_s_to_pairs" />
+    </signal>
+
+    <signal name="AnotherSignal">
+      <arg type="s" name="word" />
+    </signal>
+
+    <property name="y" type="y" access="readwrite">
+      <annotation name="org.gtk.GDBus.DocString" value="&lt;para&gt;Property docs, yah...&lt;/para&gt;&lt;para&gt;Second paragraph.&lt;/para&gt;"/>
+    </property>
+    <property name="b" type="b" access="readwrite"/>
+    <property name="n" type="n" access="readwrite"/>
+    <property name="q" type="q" access="readwrite"/>
+    <property name="i" type="i" access="readwrite"/>
+    <property name="u" type="u" access="readwrite"/>
+    <property name="x" type="x" access="readwrite"/>
+    <property name="t" type="t" access="readwrite"/>
+    <property name="d" type="d" access="readwrite"/>
+    <property name="s" type="s" access="readwrite"/>
+    <property name="o" type="o" access="readwrite"/>
+    <property name="g" type="g" access="readwrite"/>
+    <property name="ay" type="ay" access="readwrite"/>
+    <property name="as" type="as" access="readwrite"/>
+    <property name="aay" type="aay" access="readwrite"/>
+    <property name="ao" type="ao" access="readwrite"/>
+    <property name="ag" type="ag" access="readwrite"/>
+    <property name="FinallyNormalName" type="s" access="readwrite"/>
+    <property name="ReadonlyProperty" type="s" access="read"/>
+    <property name="WriteonlyProperty" type="s" access="write"/>
+
+    <!-- unset properties -->
+    <property name="unset_i" type="i" access="readwrite"/>
+    <property name="unset_d" type="d" access="readwrite"/>
+    <property name="unset_s" type="s" access="readwrite"/>
+    <property name="unset_o" type="o" access="readwrite"/>
+    <property name="unset_g" type="g" access="readwrite"/>
+    <property name="unset_ay" type="ay" access="readwrite"/>
+    <property name="unset_as" type="as" access="readwrite"/>
+    <property name="unset_ao" type="ao" access="readwrite"/>
+    <property name="unset_ag" type="ag" access="readwrite"/>
+    <property name="unset_struct" type="(idsogayasaoag)" access="readwrite"/>
+  </interface> <!-- End org.project.Bar -->
+
+  <!-- Namespaced -->
+  <interface name="org.project.Bar.Frobnicator">
+    <method name="RandomMethod"/>
+  </interface>
+
+  <!-- Empty -->
+  <interface name="org.project.Baz">
+  </interface>
+
+  <!-- Outside D-Bus prefix -->
+  <interface name="com.acme.Coyote">
+    <method name="Run"/>
+    <method name="Sleep"/>
+    <method name="Attack"/>
+    <signal name="Surprised"/>
+    <property name="Mood" type="s" access="read"/>
+  </interface>
+
+  <!-- force various names -->
+  <interface name="com.acme.Rocket">
+    <!-- Forcing the typename via an annotation -->
+    <annotation name="org.gtk.GDBus.C.Name" value="Rocket123"/>
+
+    <!-- ditto method -->
+    <method name="Ignite">
+      <annotation name="org.gtk.GDBus.C.Name" value="ignite_xyz"/>
+    </method>
+
+    <!-- ditto signal -->
+    <signal name="Exploded">
+      <annotation name="org.gtk.GDBus.C.Name" value="exploded-xyz"/>
+    </signal>
+
+    <!-- ditto property -->
+    <property name="Speed" type="d" access="read">
+      <annotation name="org.gtk.GDBus.C.Name" value="speed-xyz"/>
+    </property>
+
+    <property name="Direction" type="(ddd)" access="read"/>
+
+    <!-- Check there's no conflict with the GType iface_name_get_type() function -->
+    <property name="Type" type="s" access="read"/>
+  </interface>
+
+  <!-- Test interface for forcing use of GVariant -->
+  <interface name="org.project.Bat">
+
+    <!-- Forcing GVariant for types that would be mapped -->
+    <method name="ForceMethod">
+      <arg name="force_in_i" type="i" direction="in">
+        <annotation name="org.gtk.GDBus.C.ForceGVariant" value="true"/>
+      </arg>
+      <arg name="force_in_s" type="s" direction="in">
+        <annotation name="org.gtk.GDBus.C.ForceGVariant" value="true"/>
+      </arg>
+      <arg name="force_in_ay" type="ay" direction="in">
+        <annotation name="org.gtk.GDBus.C.ForceGVariant" value="true"/>
+      </arg>
+      <arg name="force_in_struct" type="(i)" direction="in">
+        <annotation name="org.gtk.GDBus.C.ForceGVariant" value="true"/>
+      </arg>
+      <arg name="force_out_i" type="i" direction="out">
+        <annotation name="org.gtk.GDBus.C.ForceGVariant" value="true"/>
+      </arg>
+      <arg name="force_out_s" type="s" direction="out">
+        <annotation name="org.gtk.GDBus.C.ForceGVariant" value="true"/>
+      </arg>
+      <arg name="force_out_ay" type="ay" direction="out">
+        <annotation name="org.gtk.GDBus.C.ForceGVariant" value="true"/>
+      </arg>
+      <arg name="force_out_struct" type="(i)" direction="out">
+        <annotation name="org.gtk.GDBus.C.ForceGVariant" value="true"/>
+      </arg>
+    </method>
+
+    <signal name="ForceSignal">
+      <arg name="force_i" type="i">
+        <annotation name="org.gtk.GDBus.C.ForceGVariant" value="true"/>
+      </arg>
+      <arg name="force_s" type="s">
+        <annotation name="org.gtk.GDBus.C.ForceGVariant" value="true"/>
+      </arg>
+      <arg name="force_ay" type="ay">
+        <annotation name="org.gtk.GDBus.C.ForceGVariant" value="true"/>
+      </arg>
+      <arg name="force_struct" type="(i)">
+        <annotation name="org.gtk.GDBus.C.ForceGVariant" value="true"/>
+      </arg>
+    </signal>
+
+    <property name="force_i" type="i" access="readwrite">
+      <annotation name="org.gtk.GDBus.C.ForceGVariant" value="true"/>
+    </property>
+    <property name="force_s" type="s" access="readwrite">
+      <annotation name="org.gtk.GDBus.C.ForceGVariant" value="true"/>
+    </property>
+    <property name="force_ay" type="ay" access="readwrite">
+      <annotation name="org.gtk.GDBus.C.ForceGVariant" value="true"/>
+    </property>
+    <property name="force_struct" type="(i)" access="readwrite">
+      <annotation name="org.gtk.GDBus.C.ForceGVariant" value="true"/>
+    </property>
+
+  </interface> <!-- End org.project.Bat -->
+
+  <!-- Test interface for g-authorized-method -->
+  <interface name="org.project.Authorize">
+    <method name="CheckNotAuthorized"/>
+    <method name="CheckAuthorized"/>
+    <method name="CheckNotAuthorizedFromObject"/>
+  </interface> <!-- End org.project.Authorize -->
+
+  <!-- Test interfaces for handling methods in a thread -->
+  <interface name="org.project.MethodThreads">
+    <method name="GetSelf">
+      <arg name="self_pointer" direction="out" type="s"/>
+    </method>
+  </interface> <!-- End org.project.MethodThreads -->
+
+  <!--
+    org.project.InlineDocs:
+    @short_description: The short description
+
+    Here is the <emphasis>longer</emphasis> description.
+
+    With lots of stuff.
+  -->
+  <interface name="org.project.InlineDocs">
+
+    <!--
+      FooMethod:
+      @greeting: The docs for greeting parameter.
+      @response: The docs for response parameter.
+
+      The docs for the actual method.
+
+      Multi-paragraph.
+
+      Test of inline links: The #org.project.Bar D-Bus interface,
+      org.project.Bar.HelloWorld() method, the
+      #org.project.Bar::TestSignal, the
+      #org.project.InlineDocs:Property3 property.
+    -->
+    <method name="FooMethod">
+      <arg name="greeting" direction="in" type="s"/>
+      <arg name="response" direction="out" type="s"/>
+    </method>
+
+    <!-- Method2: foo -->
+    <method name="Method2">
+      <arg name="greeting" direction="in" type="s"/>
+      <arg name="response" direction="out" type="s"/>
+    </method>
+
+    <!--
+      BarSignal:
+      @blah: The docs for blah parameter.
+      @boo: The docs for boo parameter.
+
+      The docs for the actual signal.
+    -->
+    <signal name="BarSignal">
+      <!-- Non-Doc comment -->
+      <arg name="blah" type="s"/>
+      <arg name="boo" type="s"/>
+    </signal>
+
+    <!-- BazProperty: The docs for the property. -->
+    <property name="BazProperty" type="s" access="read"/>
+
+    <!-- Property2: Another property
+         This should be a new paragraph.
+    -->
+    <property name="Property2" type="s" access="read"/>
+
+    <!-- Property3:
+         First line.
+         This should NOT be a new paragraph.
+    -->
+    <property name="Property3" type="s" access="read"/>
+
+    <!-- Property4:  
+         First line. With trailing whitespace.  
+         Second line (same paragraph).  
+    -->
+    <property name="Property4" type="s" access="read"/>
+
+    <!-- Property5: Foo  
+         First line (second paragraph). With trailing whitespace.  
+         Second line (same paragraph).  
+<programlisting>
+1 program listing
+ 2 should include indented space
+  3
+   4
+    5
+</programlisting>
+    -->
+    <property name="Property5" type="s" access="read"/>
+
+
+    <!--
+      FancyProperty:
+      Here's some fancy use of XML inside the comment.
+      <variablelist>
+        <varlistentry>
+          <term><option>namespace</option></term>
+          <listitem>
+            <para>The namespace to use for generated code. In CamelCase format.</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>output-prefix</option></term>
+          <listitem>
+            <para>
+              A prefix to use for all generated files. Defaults to <filename>generated</filename>.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    -->
+    <property name="FancyProperty" type="s" access="read"/>
+  </interface>
+
+  <interface name="ChangingInterfaceV1">
+    <method name="FooMethod"/>
+    <method name="BarMethod"/>
+    <method name="BazMethod"/>
+    <signal name="FooSignal"/>
+    <signal name="BarSignal"/>
+    <signal name="BazSignal"/>
+  </interface>
+
+  <!-- ChangingInterfaceV2:
+  -->
+  <interface name="ChangingInterfaceV2">
+    <!--
+      NewSignalIn2:
+      @since: 2.0
+    -->
+    <signal name="NewSignalIn2"/>
+    <!--
+      NewMethodIn2:
+      @since: 2.0
+    -->
+    <method name="NewMethodIn2"/>
+
+    <!-- reverse order -->
+    <signal name="BazSignal"/>
+    <signal name="BarSignal"/>
+    <signal name="FooSignal"/>
+    <method name="BazMethod"/>
+    <method name="BarMethod"/>
+    <method name="FooMethod"/>
+  </interface>
+
+  <!-- ChangingInterfaceV10:
+  -->
+  <interface name="ChangingInterfaceV10">
+    <!--
+      AddedSignalIn10:
+      @since: 10.0
+    -->
+    <signal name="AddedSignalIn10"/>
+    <method name="AddedMethodIn10">
+      <annotation name="org.gtk.GDBus.Since" value="10.0"/>
+    </method>
+
+    <!--
+      NewSignalIn2:
+      @since: 2.0
+    -->
+    <signal name="NewSignalIn2"/>
+    <!--
+      NewMethodIn2:
+      @since: 2.0
+    -->
+    <method name="NewMethodIn2"/>
+
+    <!-- reverse order -->
+    <signal name="BazSignal"/>
+    <signal name="BarSignal"/>
+    <signal name="FooSignal"/>
+    <method name="BazMethod"/>
+    <method name="BarMethod"/>
+    <method name="FooMethod"/>
+  </interface>
+
+  <interface name="TestUglyCaseInterface">
+    <annotation name="org.gtk.GDBus.C.Name" value="TesT_ugly_CASE_Interface"/>
+
+    <method name="GetiSCSIServers">
+      <annotation name="org.gtk.GDBus.C.Name" value="Get_iSCSI_Servers"/>
+    </method>
+
+    <signal name="serversUPDATEDNOW">
+      <annotation name="org.gtk.GDBus.C.Name" value="Servers_UPDATED_NOW"/>
+    </signal>
+
+    <property name="UGLYNAME" type="i" access="readwrite">
+      <annotation name="org.gtk.GDBus.C.Name" value="UGLY_NAME"/>
+    </property>
+  </interface>
+
+  <!--
+    OldieInterface:
+    @short_description: A an example of an deprecated interface
+
+    This is an example of a deprecated interface.
+    -->
+  <interface name="OldieInterface">
+    <annotation name="org.freedesktop.DBus.Deprecated" value="true"/>
+
+    <method name="Foo">
+      <annotation name="org.freedesktop.DBus.Deprecated" value="true"/>
+    </method>
+
+    <signal name="Bar">
+      <annotation name="org.freedesktop.DBus.Deprecated" value="true"/>
+    </signal>
+
+    <property name="Bat" type="i" access="readwrite">
+      <annotation name="org.freedesktop.DBus.Deprecated" value="true"/>
+    </property>
+  </interface>
+
+  <!-- ensure we don't choke on unknown/unexpected XML tags or unknown/unexpected attribyutes (#650874) -->
+  <interface name="UnknownXmlTags" unexpected="boo">
+    <someUnknownTag>
+      <anotherTagWeIgnore>yadaydaydaydayda</anotherTagWeIgnore>
+    </someUnknownTag>
+    <method name="CanSetTimezone" also_unexpected="1">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value="" also_unexpected="1">
+        <unknownTag/>
+      </annotation>
+      <arg name="value" direction="out" type="i" also_unexpected="1">
+        <unknownTag/>
+      </arg>
+      <unknownTag/>
+    </method>
+    <signal name="SomeSignal" also_unexpected="1">
+      <unknownTag/>
+    </signal>
+    <property name="SomeProperty" type="s" access="readwrite" also_unexpected="1">
+      <unknownTag/>
+    </property>
+  </interface>
+  <unknownTag/>
+
+  <interface name="FDPassing">
+    <method name="HelloFD">
+      <annotation name="org.gtk.GDBus.C.UnixFD" value="1"/>
+      <arg name="greeting" direction="in" type="s"/>
+      <arg name="response" direction="out" type="s"/>
+    </method>
+  </interface>
+
+  <interface name="Naming">
+    <property name="Type" type="i" access="readwrite"/>
+  </interface>
+
+</node>

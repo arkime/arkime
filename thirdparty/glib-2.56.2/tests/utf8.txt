@@ -1,0 +1,291 @@
+# This file is derived from 
+#
+#    http://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt
+#    
+# Which was created by   Markus Kuhn <mkuhn@acm.org> - 2000-09-02 
+#
+# lines begining with # and blank lines are ignored
+#
+# Beyond that, this file consists of a series of test cases. Each test case consists of
+# 2 or 3 lines:
+#
+#  1. A UTF-8 string
+#  2. A status
+#      VALID      : The string is a valid UTF-8 representation of valid Unicode
+#      INCOMPLETE : The string has a partial character at the end
+#      NOTUNICODE : The string is valid UTF-8, but the characters represented
+#                   are not valid unicode (
+#      OVERLONG   : The string includes overlong sequences
+#      MALFORMED  : The string is not valid UTF-8
+# 3. If the status is VALID or NOTUNICODE, the UCS-4 representation of the string,
+#    as a series of hex numbers.
+
+# 1  Some correct UTF-8 text
+Îºá½¹ÏƒÎ¼Îµ
+VALID
+03ba 1f79 03c3 03bc 03b5
+
+# 2.1  First possible sequence of a certain length
+#
+# FIXME - handle NULLS?
+#
+# [ NULL BYTE ]
+#VALID
+#0000
+
+Â€
+VALID
+0080
+
+à €
+VALID
+0800
+
+ğ€€
+VALID
+00010000
+
+øˆ€€€
+NOTUNICODE
+00200000
+
+ü„€€€€
+NOTUNICODE
+04000000
+
+
+VALID
+0000007f
+
+ß¿
+VALID
+000007ff
+
+ï¿¿
+VALID
+0000ffff
+
+÷¿¿¿
+NOTUNICODE
+001fffff
+
+û¿¿¿¿
+NOTUNICODE
+03ffffff
+
+ı¿¿¿¿¿
+NOTUNICODE
+7fffffff
+
+# 2.3  Other boundary conditions
+
+íŸ¿
+VALID
+d7ff
+
+î€€
+VALID
+e000
+
+ï¿½
+VALID
+fffd
+
+ô¿½
+VALID
+0010fffd
+
+ô¿¿
+VALID
+0010ffff
+
+ô€€
+NOTUNICODE
+00110000
+
+# 3.1  Unexpected continuation bytes
+
+€
+MALFORMED
+¿
+MALFORMED
+€¿
+MALFORMED
+€¿€
+MALFORMED
+€¿€¿
+MALFORMED
+€¿€¿€
+MALFORMED
+€¿€¿€¿
+MALFORMED
+€¿€¿€¿€
+MALFORMED
+€‚ƒ„…†‡ˆ‰Š‹Œ‘’“”•–—˜™š›œŸ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿
+MALFORMED
+
+# 3.2  Lonely start characters
+
+À Á Â Ã Ä Å Æ Ç È É Ê Ë Ì Í Î Ï Ğ Ñ Ò Ó Ô Õ Ö × Ø Ù Ú Û Ü İ Ş ß 
+MALFORMED
+à á â ã ä å æ ç è é ê ë ì í î ï 
+MALFORMED
+ğ ñ ò ó ô õ ö ÷ 
+MALFORMED
+ø ù ú û 
+MALFORMED
+ü ı 
+MALFORMED
+
+# 3.3  Sequences with last continuation byte missing
+
+À
+INCOMPLETE
+à€
+INCOMPLETE
+ğ€€
+INCOMPLETE
+ø€€€
+INCOMPLETE
+ü€€€€
+INCOMPLETE
+ß
+INCOMPLETE
+ï¿
+INCOMPLETE
+÷¿¿
+INCOMPLETE
+û¿¿¿
+INCOMPLETE
+ı¿¿¿¿
+INCOMPLETE
+
+# 3.4  Concatenation of incomplete sequences
+
+Àà€ğ€€ø€€€ü€€€€ßï¿÷¿¿û¿¿¿ı¿¿¿¿
+MALFORMED
+
+# 3.5  Impossible bytes
+
+ş
+MALFORMED
+ÿ
+MALFORMED
+şşÿÿ
+MALFORMED
+
+#  Examples of an overlong ASCII character
+
+À¯
+OVERLONG
+à€¯
+OVERLONG
+ğ€€¯
+OVERLONG
+ø€€€¯
+OVERLONG
+ü€€€€¯
+OVERLONG
+
+#  Maximum overlong sequences
+
+Á¿
+OVERLONG
+àŸ¿
+OVERLONG
+ğ¿¿
+OVERLONG
+ø‡¿¿¿
+OVERLONG
+üƒ¿¿¿¿
+OVERLONG
+
+# Overlong representation of the NUL character
+
+À€
+OVERLONG
+à€€
+OVERLONG
+ğ€€€
+OVERLONG
+ø€€€€
+OVERLONG
+ü€€€€€
+OVERLONG
+
+# Illegal code positions
+
+# Single UTF-16 surrogates
+
+í €
+NOTUNICODE
+d800
+
+í­¿
+NOTUNICODE
+db7f
+
+í®€
+NOTUNICODE
+db80
+
+í¯¿
+NOTUNICODE
+dbff
+
+í°€
+NOTUNICODE
+dc00
+
+í¾€
+NOTUNICODE
+df80
+
+í¿¿
+NOTUNICODE
+dfff
+
+# Paired UTF-16 surrogates
+
+í €í°€
+NOTUNICODE
+d800 dc00
+
+í €í¿¿
+NOTUNICODE
+d800 dfff
+
+í­¿í°€
+NOTUNICODE
+db7f dc00
+
+í­¿í¿¿
+NOTUNICODE
+db7f dfff
+
+í®€í°€
+NOTUNICODE
+db80 dc00
+
+í®€í¿¿
+NOTUNICODE
+db80 dfff
+
+í¯¿í°€
+NOTUNICODE
+dbff dc00
+
+í¯¿í¿¿
+NOTUNICODE
+dbff dfff
+
+################
+#
+# Some more tests, not from Markus Kuhn's file
+#
+
+# Mixed plane 0 and higher planes
+
+Ağ€€Bô¿½C
+VALID
+41 00010000 42 10fffd 43

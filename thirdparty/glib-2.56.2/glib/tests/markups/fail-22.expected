@@ -1,0 +1,2 @@
+ELEMENT 'foo'
+ERROR Error on line 1 char 6: Document ended unexpectedly with elements still open - 'foo' was the last element opened

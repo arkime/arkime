@@ -1,0 +1,619 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<refentry id='gvariant-text'>
+ <refmeta>
+  <refentrytitle>GVariant Text Format</refentrytitle>
+ </refmeta>
+ <refnamediv>
+  <refname>GVariant Text Format</refname>
+  <refpurpose>textual representation of GVariants</refpurpose>
+ </refnamediv>
+
+ <refsect1>
+  <title>GVariant Text Format</title>
+
+  <para>
+   This page attempts to document the GVariant text format as produced by
+   <link linkend='g-variant-print'><function>g_variant_print()</function></link> and parsed by the
+   <link linkend='g-variant-parse'><function>g_variant_parse()</function></link> family of functions.  In most
+   cases the style closely resembles the formatting of literals in Python but there are some additions and
+   exceptions.
+  </para>
+
+  <para>
+   The functions that deal with GVariant text format absolutely always deal in utf-8.  Conceptually, GVariant
+   text format is a string of Unicode characters -- not bytes.  Non-ASCII but otherwise printable Unicode
+   characters are not treated any differently from normal ASCII characters.
+  </para>
+
+  <para>
+   The parser makes two passes.  The purpose of the first pass is to determine the type of the value being
+   parsed.  The second pass does the actual parsing.  Based on the fact that all elements in an array have to
+   have the same type, GVariant is able to make some deductions that would not otherwise be possible.  As an
+   example:
+
+   <informalexample><programlisting>[[1, 2, 3], [4, 5, 6]]</programlisting></informalexample>
+
+   is parsed as an array of arrays of integers (type '<literal>aai</literal>'), but
+
+   <informalexample><programlisting>[[1, 2, 3], [4, 5, 6.0]]</programlisting></informalexample>
+
+   is parsed as a array of arrays of doubles (type '<literal>aad</literal>').
+  </para>
+
+  <para>
+   As another example, GVariant is able to determine that
+
+   <informalexample><programlisting>["hello", nothing]</programlisting></informalexample>
+
+   is an array of maybe strings (type '<literal>ams</literal>').
+  </para>
+
+  <para>
+   What the parser accepts as valid input is dependent on context.  The API permits for out-of-band type
+   information to be supplied to the parser (which will change its behaviour).  This can be seen in the
+   GSettings and GDBus command line utilities where the type information is available from the schema or the
+   remote introspection information.  The additional information can cause parses to succeed when they would not
+   otherwise have been able to (by resolving ambiguous type information) or can cause them to fail (due to
+   conflicting type information).  Unless stated otherwise, the examples given in this section assume that no
+   out-of-band type data has been given to the parser.
+  </para>
+ </refsect1>
+
+ <refsect1>
+  <title>Syntax Summary</title>
+
+  <para>
+   The following table describes the rough meaning of symbols that may appear inside GVariant text format.
+   Each symbol is described in detail in its own section, including usage examples.
+  </para>
+
+  <informaltable>
+   <tgroup cols='2'>
+    <colspec colname='col_0'/>
+    <colspec colname='col_1'/>
+    <tbody>
+
+     <row rowsep='1'>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <emphasis role='strong'>Symbol</emphasis>
+       </para>
+      </entry>
+      <entry colsep='1' rowsep='1'>
+       <para>
+         <emphasis role='strong'>Meaning</emphasis>
+       </para>
+      </entry>
+     </row>
+
+     <row rowsep='1'>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <emphasis role='strong'><literal>true</literal></emphasis>,
+        <emphasis role='strong'><literal>false</literal></emphasis>
+       </para>
+      </entry>
+      <entry colsep='1' rowsep='1'>
+       <para>
+         <link linkend='gvariant-text-booleans'>Booleans</link>.
+       </para>
+      </entry>
+     </row>
+
+     <row rowsep='1'>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <emphasis role='strong'><literal>""</literal></emphasis>,
+        <emphasis role='strong'><literal>''</literal></emphasis>
+       </para>
+      </entry>
+      <entry colsep='1' rowsep='1'>
+       <para>
+         String literal.  See <link linkend='gvariant-text-strings'>Strings</link> below.
+       </para>
+      </entry>
+     </row>
+
+     <row rowsep='1'>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        numbers
+       </para>
+      </entry>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        See <link linkend='gvariant-text-numbers'>Numbers</link> below.
+       </para>
+      </entry>
+     </row>
+
+     <row rowsep='1'>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <emphasis role='strong'><literal>()</literal></emphasis>
+       </para>
+      </entry>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <link linkend='gvariant-text-tuples'>Tuples</link>.
+       </para>
+      </entry>
+     </row>
+
+     <row rowsep='1'>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <emphasis role='strong'><literal>[]</literal></emphasis>
+       </para>
+      </entry>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <link linkend='gvariant-text-arrays'>Arrays</link>.
+       </para>
+      </entry>
+     </row>
+
+     <row rowsep='1'>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <emphasis role='strong'><literal>{}</literal></emphasis>
+       </para>
+      </entry>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <link linkend='gvariant-text-dictionaries'>Dictionaries and Dictionary Entries</link>.
+       </para>
+      </entry>
+     </row>
+
+     <row rowsep='1'>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <emphasis role='strong'><literal>&lt;&gt;</literal></emphasis>
+       </para>
+      </entry>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <link linkend='gvariant-text-variants'>Variants</link>.
+       </para>
+      </entry>
+     </row>
+
+     <row rowsep='1'>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <emphasis role='strong'><literal>just</literal></emphasis>,
+        <emphasis role='strong'><literal>nothing</literal></emphasis>
+       </para>
+      </entry>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <link linkend='gvariant-text-maybe-types'>Maybe Types</link>.
+       </para>
+      </entry>
+     </row>
+
+     <row rowsep='1'>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <emphasis role='strong'><literal>@</literal></emphasis>
+       </para>
+      </entry>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <link linkend='gvariant-text-type-annotations'>Type Annotations</link>.
+       </para>
+      </entry>
+     </row>
+
+     <row rowsep='1'>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        type keywords
+       </para>
+      </entry>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <literal>boolean</literal>,
+        <literal>byte</literal>,
+        <literal>int16</literal>,
+        <literal>uint16</literal>,
+        <literal>int32</literal>,
+        <literal>uint32</literal>,
+        <literal>handle</literal>,
+        <literal>int64</literal>,
+        <literal>uint64</literal>,
+        <literal>double</literal>,
+        <literal>string</literal>,
+        <literal>objectpath</literal>,
+        <literal>signature</literal>
+       </para>
+       <para>
+        See <link linkend='gvariant-text-type-annotations'>Type Annotations</link> below.
+       </para>
+      </entry>
+     </row>
+
+     <row rowsep='1'>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <emphasis role='strong'><literal>b""</literal></emphasis>,
+        <emphasis role='strong'><literal>b''</literal></emphasis>
+       </para>
+      </entry>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <link linkend='gvariant-text-bytestrings'>Bytestrings</link>.
+       </para>
+      </entry>
+     </row>
+
+     <row rowsep='1'>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <emphasis role='strong'><literal>%</literal></emphasis>
+       </para>
+      </entry>
+      <entry colsep='1' rowsep='1'>
+       <para>
+        <link linkend='gvariant-text-positional'>Positional Parameters</link>.
+       </para>
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
+
+  <refsect2 id='gvariant-text-booleans'>
+   <title>Booleans</title>
+   <para>
+    The strings <literal>true</literal> and <literal>false</literal> are parsed as booleans.  This is the only
+    way to specify a boolean value.
+   </para>
+  </refsect2>
+
+  <refsect2 id='gvariant-text-strings'>
+   <title>Strings</title>
+   <para>
+    Strings literals must be quoted using <literal>""</literal> or <literal>''</literal>.  The two are
+    completely equivalent (except for the fact that each one is unable to contain itself unescaped).
+   </para>
+   <para>
+    Strings are Unicode strings with no particular encoding.  For example, to specify the character
+    <literal>é</literal>, you just write <literal>'é'</literal>.  You could also give the Unicode codepoint of
+    that character (U+E9) as the escape sequence <literal>'\u00e9'</literal>.  Since the strings are pure
+    Unicode, you should not attempt to encode the utf-8 byte sequence corresponding to the string using escapes;
+    it won't work and you'll end up with the individual characters corresponding to each byte.
+   </para>
+   <para>
+    Unicode escapes of the form <literal>\uxxxx</literal> and <literal>\Uxxxxxxxx</literal> are supported, in
+    hexidecimal.  The usual control sequence escapes <literal>\a</literal>, <literal>\b</literal>,
+    <literal>\f</literal>, <literal>\n</literal>, <literal>\r</literal>, <literal>\t</literal> and
+    <literal>\v</literal> are supported.  Additionally, a <literal>\</literal> before a newline character causes
+    the newline to be ignored.  Finally, any other character following <literal>\</literal> is copied literally
+    (for example, <literal>\"</literal> or <literal>\\</literal>) but for forwards compatibility with future
+    additions you should only use this feature when necessary for escaping backslashes or quotes.
+   </para>
+   <para>
+    The usual octal and hexidecimal escapes <literal>\0nnn</literal> and <literal>\xnn</literal> are not
+    supported here.  Those escapes are used to encode byte values and GVariant strings are Unicode.
+   </para>
+   <para>
+    Single-character strings are not interpreted as bytes.  Bytes must be specified by their numerical value.
+   </para>
+  </refsect2>
+
+  <refsect2 id='gvariant-text-numbers'>
+   <title>Numbers</title>
+   <para>
+    Numbers are given by default as decimal values.  Octal and hex values can be given in the usual way (by
+    prefixing with <literal>0</literal> or <literal>0x</literal>).  Note that GVariant considers bytes to be
+    unsigned integers and will print them as a two digit hexidecimal number by default.
+   </para>
+   <para>
+    Floating point numbers can also be given in the usual ways, including scientific and hexidecimal notations.
+   </para>
+   <para>
+    For lack of additional information, integers will be parsed as int32 values by default.  If the number has a
+    point or an 'e' in it, then it will be parsed as a double precision floating point number by default.  If
+    type information is available (either explicitly or inferred) then that type will be used instead.
+   </para>
+   <para>
+    Some examples:
+   </para>
+   <para>
+    <literal>5</literal> parses as the int32 value five.
+   </para>
+   <para>
+    <literal>37.5</literal> parses as a floating point value.
+   </para>
+   <para>
+    <literal>3.75e1</literal> parses the same as the value above.
+   </para>
+   <para>
+    <literal>uint64 7</literal> parses seven as a uint64.
+    See <link linkend='gvariant-text-type-annotations'>Type Annotations</link>.
+   </para>
+  </refsect2>
+
+  <refsect2 id='gvariant-text-tuples'>
+   <title>Tuples</title>
+   <para>
+    Tuples are formed using the same syntax as Python.  Here are some examples:
+   </para>
+   <para>
+    <literal>()</literal> parses as the empty tuple.
+   </para>
+   <para>
+    <literal>(5,)</literal> is a tuple containing a single value.
+   </para>
+   <para>
+    <literal>("hello", 42)</literal> is a pair.  Note that values of different types are permitted.
+   </para>
+  </refsect2>
+
+  <refsect2 id='gvariant-text-arrays'>
+   <title>Arrays</title>
+   <para>
+    Arrays are formed using the same syntax as Python uses for lists (which is arguably the term that GVariant
+    should have used).  Note that, unlike Python lists, GVariant arrays are statically typed.  This has two
+    implications.
+   </para>
+   <para>
+    First, all items in the array must have the same type.  Second, the type of the array must be known, even in
+    the case that it is empty.  This means that (unless there is some other way to infer it) type information
+    will need to be given explicitly for empty arrays.
+   </para>
+   <para>
+    The parser is able to infer some types based on the fact that all items in an array must have the same type.
+    See the examples below:
+   </para>
+   <para>
+    <literal>[1]</literal> parses (without additional type information) as a one-item array of signed integers.
+   </para>
+   <para>
+    <literal>[1, 2, 3]</literal> parses (similarly) as a three-item array.
+   </para>
+   <para>
+    <literal>[1, 2, 3.0]</literal> parses as an array of doubles.  This is the most simple case of the type
+    inferencing in action.
+   </para>
+   <para>
+    <literal>[(1, 2), (3, 4.0)]</literal> causes the 2 to also be parsed as a double (but the 1 and 4 are still
+    integers).
+   </para>
+   <para>
+    <literal>["", nothing]</literal> parses as an array of maybe strings.  The presence of
+    "<literal>nothing</literal>" clearly implies that the array elements are nullable.
+   </para>
+   <para>
+    <literal>[[], [""]]</literal> will parse properly because the type of the first (empty) array can be
+    inferred to be equal to the type of the second array (both are arrays of strings).
+   </para>
+   <para>
+    <literal>[b'hello', []]</literal> looks odd but will parse properly.
+    See <link linkend='gvariant-text-bytestrings'>Bytestrings</link>
+   </para>
+   <para>
+    And some examples of errors:
+   </para>
+   <para>
+    <literal>["hello", 42]</literal> fails to parse due to conflicting types.
+   </para>
+   <para>
+    <literal>[]</literal> will fail to parse without additional type information.
+   </para>
+  </refsect2>
+
+  <refsect2 id='gvariant-text-dictionaries'>
+   <title>Dictionaries and Dictionary Entries</title>
+   <para>
+    Dictionaries and dictionary entries are both specified using the <literal>{}</literal> characters.
+   </para>
+   <para>
+    The dictionary syntax is more commonly used.  This is what the printer elects to use in the normal case of
+    dictionary entries appearing in an array (aka "a dictionary").  The separate syntax for dictionary entries
+    is typically only used for when the entries appear on their own, outside of an array (which is valid but
+    unusual).  Of course, you are free to use the dictionary entry syntax within arrays but there is no good
+    reason to do so (and the printer itself will never do so).  Note that, as with arrays, the type of empty
+    dictionaries must be established (either explicitly or through inference).
+   </para>
+   <para>
+    The dictionary syntax is the same as Python's syntax for dictionaries.  Some examples:
+   </para>
+   <para>
+    <literal>@a{sv} {}</literal> parses as the empty dictionary of everyone's favourite type.
+   </para>
+   <para>
+    <literal>@a{sv} []</literal> is the same as above (owing to the fact that dictionaries are really arrays).
+   </para>
+   <para>
+    <literal>{1: "one", 2: "two", 3: "three"}</literal> parses as a dictionary mapping integers to strings.
+   </para>
+   <para>
+    The dictionary entry syntax looks just like a pair (2-tuple) that uses braces instead of parens.  The
+    presence of a comma immediately following the key differentiates it from the dictionary syntax (which
+    features a colon after the first key).  Some examples:
+   </para>
+   <para>
+    <literal>{1, "one"}</literal> is a free-standing dictionary entry that can be parsed on its own or as part
+    of another container value.
+   </para>
+   <para>
+    <literal>[{1, "one"}, {2, "two"}, {3, "three"}]</literal> is exactly equivalent to the dictionary example
+    given above.
+   </para>
+  </refsect2>
+
+  <refsect2 id='gvariant-text-variants'>
+   <title>Variants</title>
+   <para>
+    Variants are denoted using angle brackets (aka "XML brackets"), <literal>&lt;&gt;</literal>.  They may not
+    be omitted.
+   </para>
+   <para>
+    Using <literal>&lt;&gt;</literal> effectively disrupts the type inferencing that occurs between array
+    elements.  This can have positive and negative effects.
+   </para>
+   <para>
+    <literal>[&lt;"hello"&gt;, &lt;42&gt;]</literal> will parse whereas <literal>["hello", 42]</literal> would
+    not.
+   </para>
+   <para>
+    <literal>[&lt;['']&gt;, &lt;[]&gt;]</literal> will fail to parse even though <literal>[[''], []]</literal>
+    parses successfully.  You would need to specify <literal>[&lt;['']&gt;, &lt;@as []&gt;]</literal>.
+   </para>
+   <para>
+    <literal>{"title": &lt;"frobit"&gt;, "enabled": &lt;true&gt;, width: &lt;800&gt;}</literal> is an example of
+    perhaps the most pervasive use of both dictionaries and variants.
+   </para>
+  </refsect2>
+
+  <refsect2 id='gvariant-text-maybe-types'>
+   <title>Maybe Types</title>
+   <para>
+    The syntax for specifying maybe types is inspired by Haskell.
+   </para>
+   <para>
+    The null case is specified using the keyword <literal>nothing</literal> and the non-null case is explicitly
+    specified using the keyword <literal>just</literal>.  GVariant allows <literal>just</literal> to be omitted
+    in every case that it is able to unambiguously determine the intention of the writer.  There are two cases
+    where it must be specified:
+   </para>
+   <itemizedlist>
+    <listitem>
+     <para>when using nested maybes, in order to specify the <literal>just nothing</literal> case</para>
+    </listitem>
+    <listitem>
+     <para>
+      to establish the nullability of the type of a value without explicitly specifying its full type
+     </para>
+    </listitem>
+   </itemizedlist>
+   <para>
+    Some examples:
+   </para>
+   <para>
+    <literal>just 'hello'</literal> parses as a non-null nullable string.
+   </para>
+   <para>
+    <literal>@ms 'hello'</literal> is the same (demonstrating how <literal>just</literal> can be dropped if the type is already
+    known).
+   </para>
+   <para>
+    <literal>nothing</literal> will not parse wtihout extra type information.
+   </para>
+   <para>
+    <literal>@ms nothing</literal> parses as a null nullable string.
+   </para>
+   <para>
+    <literal>[just 3, nothing]</literal> is an array of nullable integers
+   </para>
+   <para>
+    <literal>[3, nothing]</literal> is the same as the above (demonstrating another place were
+    <literal>just</literal> can be dropped).
+   </para>
+   <para>
+    <literal>[3, just nothing]</literal> parses as an array of maybe maybe integers (type
+    <literal>'ammi'</literal>).
+   </para>
+  </refsect2>
+
+  <refsect2 id='gvariant-text-type-annotations'>
+   <title>Type Annotations</title>
+   <para>
+    Type annotations allow additional type information to be given to the parser.  Depending on the context,
+    this type information can change the output of the parser, cause an error when parsing would otherwise have
+    succeeded or resolve an error when parsing would have otherwise failed.
+   </para>
+   <para>
+    Type annotations come in two forms: type codes and type keywords.
+   </para>
+   <para>
+    Type keywords can be seen as more verbose (and more legible) versions of a common subset of the type codes.
+    The type keywords <literal>boolean</literal>, <literal>byte</literal>, <literal>int16</literal>,
+    <literal>uint16</literal>, <literal>int32</literal>, <literal>uint32</literal>, <literal>handle</literal>,
+    <literal>int64</literal>, <literal>uint64</literal>, <literal>double</literal>, <literal>string</literal>,
+    <literal>objectpath</literal> and literal <literal>signature</literal> are each exactly equivalent to their
+    corresponding type code.
+   </para>
+   <para>
+    Type codes are an <literal>@</literal> ("at" sign) followed by a definite GVariant type string.  Some
+    examples:
+   </para>
+   <para>
+    <literal>uint32 5</literal> causes the number to be parsed unsigned instead of signed (the default).
+   </para>
+   <para>
+    <literal>@u 5</literal> is the same
+   </para>
+   <para>
+    <literal>objectpath "/org/gnome/xyz"</literal> creates an object path instead of a normal string
+   </para>
+   <para>
+    <literal>@au []</literal> specifies the type of the empty array (which would not parse otherwise)
+   </para>
+   <para>
+    <literal>@ms ""</literal> indicates that a string value is meant to have a maybe type
+   </para>
+  </refsect2>
+
+  <refsect2 id='gvariant-text-bytestrings'>
+   <title>Bytestrings</title>
+   <para>
+    The bytestring syntax is a piece of syntactic sugar meant to complement the bytestring APIs in GVariant.  It
+    constructs arrays of non-nul bytes (type '<literal>ay</literal>') with a nul terminator at the end.
+   </para>
+   <para>
+    Bytestrings are specified with either <literal>b""</literal> or <literal>b''</literal>.  As with strings,
+    there is no fundamental difference between the two different types of quotes.
+   </para>
+   <para>
+    Bytestrings support the full range of escapes that you would expect (ie: those supported by
+    <link linkend='g-strcompress'><function>g_strcompress()</function></link>.  This includes the normal control
+    sequence escapes (as mentioned in the section on strings) as well as octal and hexidecimal escapes of the
+    forms <literal>\0nnn</literal> and <literal>\xnn</literal>.
+   </para>
+   <para>
+    <literal>b'abc'</literal> is equivalent to <literal>[byte 0x97, 0x98, 0x99, 0]</literal>.
+   </para>
+   <para>
+    When formatting arrays of bytes, the printer will choose to display the array as a bytestring if it contains
+    a nul character at the end and no other nul bytes within.  Otherwise, it is formatted as a normal array.
+   </para>
+  </refsect2>
+
+  <refsect2 id='gvariant-text-positional'>
+   <title>Positional Parameters</title>
+   <para>
+    Positional parameters are not a part of the normal GVariant text format, but they are mentioned here because
+    they can be used with <link linkend='g-variant-new-parsed'><function>g_variant_new_parsed()</function></link>.
+   </para>
+   <para>
+    A positional parameter is indicated with a <literal>%</literal> followed by any valid
+    <link linkend='gvariant-format-strings'>GVariant Format String</link>.  Variable arguments are collected as
+    specified by the format string and the resulting value is inserted at the current position.
+   </para>
+   <para>
+    This feature is best explained by example:
+   </para>
+   <informalexample><programlisting><![CDATA[char *t = "xyz";
+gboolean en = false;
+GVariant *value;
+
+value = g_variant_new_parsed ("{'title': <%s>, 'enabled': <%b>}", t, en);]]></programlisting></informalexample>
+   <para>
+    This constructs a dictionary mapping strings to variants (type '<literal>a{sv}</literal>') with two items in
+    it.  The key names are parsed from the string and the values for those keys are taken as variable arguments
+    parameters.
+   </para>
+   <para>
+    The arguments are always collected in the order that they appear in the string to be parsed.  Format strings
+    that collect multiple arguments are permitted, so you may require more varargs parameters than the number of
+    <literal>%</literal> signs that appear.  You can also give format strings that collect no arguments, but
+    there's no good reason to do so.
+   </para>
+  </refsect2>
+ </refsect1>
+</refentry>

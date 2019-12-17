@@ -1,0 +1,216 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Migrating from GnomeVFS to GIO: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="migrating.html" title="Part III. Migrating to GIO">
+<link rel="prev" href="ch32.html" title="Migrating from POSIX to GIO">
+<link rel="next" href="ch33s02.html" title="Operations on multiple files">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="migrating.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="ch32.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="ch33s02.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="chapter">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="id-1.5.3"></a>Migrating from GnomeVFS to GIO</h2></div></div></div>
+<div class="toc"><dl class="toc">
+<dt><span class="section"><a href="ch33.html#id-1.5.3.3">Trash handling</a></span></dt>
+<dt><span class="section"><a href="ch33s02.html">Operations on multiple files</a></span></dt>
+<dt><span class="section"><a href="ch33s03.html">Mime monitoring</a></span></dt>
+</dl></div>
+<div class="table">
+<a name="gnome-vfs-vs-gio"></a><p class="title"><b>Table 2. Comparison of GnomeVFS and GIO concepts</b></p>
+<div class="table-contents"><table class="table" summary="Comparison of GnomeVFS and GIO concepts" border="1">
+<colgroup>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>GnomeVFS</th>
+<th>GIO</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>GnomeVFSURI</td>
+<td>GFile</td>
+</tr>
+<tr>
+<td>GnomeVFSFileInfo</td>
+<td>GFileInfo</td>
+</tr>
+<tr>
+<td>GnomeVFSResult</td>
+<td>GError, with G_IO_ERROR values</td>
+</tr>
+<tr>
+<td>GnomeVFSHandle &amp; GnomeVFSAsyncHandle</td>
+<td>GInputStream or GOutputStream</td>
+</tr>
+<tr>
+<td>GnomeVFSDirectoryHandle</td>
+<td>GFileEnumerator</td>
+</tr>
+<tr>
+<td>mime type</td>
+<td>content type</td>
+</tr>
+<tr>
+<td>GnomeVFSMonitor</td>
+<td>GFileMonitor</td>
+</tr>
+<tr>
+<td>GnomeVFSVolumeMonitor</td>
+<td>GVolumeMonitor</td>
+</tr>
+<tr>
+<td>GnomeVFSVolume</td>
+<td>GMount</td>
+</tr>
+<tr>
+<td>GnomeVFSDrive</td>
+<td>GVolume</td>
+</tr>
+<tr>
+<td>-</td>
+<td>GDrive</td>
+</tr>
+<tr>
+<td>GnomeVFSContext</td>
+<td>GCancellable</td>
+</tr>
+<tr>
+<td>gnome_vfs_async_cancel</td>
+<td>g_cancellable_cancel</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<br class="table-break"><div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="id-1.5.3.3"></a>Trash handling</h2></div></div></div>
+<p>
+        The handling of trashed files has been changed in GIO, compared
+        to gnome-vfs. gnome-vfs has a home-grown trash implementation that 
+        predates the freedesktop.org <a class="ulink" href="http://www.freedesktop.org/wiki/Specifications/trash-spec" target="_top">Desktop Trash Can</a> specification
+        that is implemented in GIO. The location for storing trashed files 
+        has changed from <code class="filename">$HOME/.Trash</code> to 
+        <code class="filename">$HOME/.local/share/Trash</code> (or more correctly
+        <code class="filename">$XDG_DATA_HOME/Trash</code>), which means that 
+        there is a need for migrating files that have been trashed by 
+        gnome-vfs to the new location.
+      </p>
+<p>
+        In gnome-vfs, the <code class="filename">trash://</code> scheme offering a 
+        merged view of all trash directories was implemented in nautilus,
+        and trash-handling applications had to find and monitor all trash 
+        directories themselves. With GIO, the <code class="filename">trash://</code>
+        implementation has been moved to gvfs and applications can simply
+        monitor that location:
+      </p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">file_changed</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GFileMonitor</span><span class="normal">      </span><span class="symbol">*</span><span class="normal">file_monitor</span><span class="symbol">,</span>
+<span class="normal">              </span><span class="usertype">GFile</span><span class="normal">             </span><span class="symbol">*</span><span class="normal">child</span><span class="symbol">,</span>
+<span class="normal">              </span><span class="usertype">GFile</span><span class="normal">             </span><span class="symbol">*</span><span class="normal">other_file</span><span class="symbol">,</span>
+<span class="normal">              </span><span class="usertype">GFileMonitorEvent</span><span class="normal">  event_type</span><span class="symbol">,</span>
+<span class="normal">              </span><span class="usertype">gpointer</span><span class="normal">           user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">switch</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">event_type</span><span class="symbol">)</span>
+<span class="normal">  </span><span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">case</span><span class="normal"> <a href="GFileMonitor.html#G-FILE-MONITOR-EVENT-DELETED:CAPS">G_FILE_MONITOR_EVENT_DELETED</a></span><span class="symbol">:</span>
+<span class="normal">    </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"'%s' removed from trash</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="GFile.html#g-file-get-basename">g_file_get_basename</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">child</span><span class="symbol">));</span>
+<span class="normal">    </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="keyword">case</span><span class="normal"> <a href="GFileMonitor.html#G-FILE-MONITOR-EVENT-CREATED:CAPS">G_FILE_MONITOR_EVENT_CREATED</a></span><span class="symbol">:</span>
+<span class="normal">    </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"'%s' added to trash</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="GFile.html#g-file-get-basename">g_file_get_basename</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">child</span><span class="symbol">));</span>
+<span class="normal">    </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="keyword">default</span><span class="symbol">:</span><span class="normal"> </span><span class="symbol">;</span>
+<span class="normal">  </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">start_monitoring_trash</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GFile</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">file</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GFileMonitor</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">monitor</span><span class="symbol">;</span>
+
+<span class="normal">  file </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GFile.html#g-file-new-for-uri">g_file_new_for_uri</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"trash://"</span><span class="symbol">);</span>
+<span class="normal">  monitor </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GFile.html#g-file-monitor-directory">g_file_monitor_directory</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">file</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="../gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">file</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="../gobject-Signals.html#g-signal-connect">g_signal_connect</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">monitor</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"changed"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="../gobject-Closures.html#G-CALLBACK:CAPS">G_CALLBACK</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">file_changed</span><span class="symbol">),</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">/* ... */</span>
+
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+        GIO exposes some useful metadata about trashed files. There are
+        trash::orig-path and trash::deletion-date attributes. The 
+        standard::icon attribute of the <code class="filename">trash://</code> 
+        itself provides a suitable icon for displaying the trash can on 
+        the desktop. If you are using this icon, make sure to monitor
+        this attribute for changes, since the icon may be updated to
+        reflect that state of the trash can.
+      </p>
+<p>
+        Moving a file to the trash is much simpler with GIO. Instead of
+        using <code class="function">gnome_vfs_find_directory()</code> with <code class="literal">GNOME_VFS_DIRECTORY_KIND_TRASH</code> 
+        to find out where to move the trashed file, just use the <a class="link" href="GFile.html#g-file-trash" title="g_file_trash ()"><code class="function">g_file_trash()</code></a>
+        function.
+      </p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>gdbus: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="tools.html" title="GIO Tools">
+<link rel="prev" href="glib-compile-resources.html" title="glib-compile-resources">
+<link rel="next" href="gdbus-codegen.html" title="gdbus-codegen">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="tools.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-compile-resources.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gdbus-codegen.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div lang="en" class="refentry">
+<a name="gdbus"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle">gdbus</span></h2>
+<p>gdbus — Tool for working with D-Bus objects</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<h2>Synopsis</h2>
+<div class="cmdsynopsis"><p><code class="command">gdbus</code>   introspect  [ --system  |   --session  |   --address <em class="replaceable"><code>address</code></em> ]  --dest <em class="replaceable"><code>bus_name</code></em>   --object-path <em class="replaceable"><code>/path/to/object</code></em>  [ --xml ] [ --recurse ] [ --only-properties ]</p></div>
+<div class="cmdsynopsis"><p><code class="command">gdbus</code>   monitor  [ --system  |   --session  |   --address <em class="replaceable"><code>address</code></em> ]  --dest <em class="replaceable"><code>bus_name</code></em>  [ --object-path <em class="replaceable"><code>/path/to/object</code></em> ]</p></div>
+<div class="cmdsynopsis"><p><code class="command">gdbus</code>   call  [ --system  |   --session  |   --address <em class="replaceable"><code>address</code></em> ]  --dest <em class="replaceable"><code>bus_name</code></em>   --object-path <em class="replaceable"><code>/path/to/object</code></em>   --method <em class="replaceable"><code>org.project.InterfaceName.MethodName</code></em>  [ --timeout <em class="replaceable"><code>seconds</code></em> ]  ARG1   ARG2... </p></div>
+<div class="cmdsynopsis"><p><code class="command">gdbus</code>   emit  [ --system  |   --session  |   --address <em class="replaceable"><code>address</code></em> ]  --object-path <em class="replaceable"><code>/path/to/object</code></em>   --signal <em class="replaceable"><code>org.project.InterfaceName.SignalName</code></em>  [ --dest <em class="replaceable"><code>unique_bus_name</code></em> ]  ARG1   ARG2... </p></div>
+<div class="cmdsynopsis"><p><code class="command">gdbus</code>   wait  [ --system  |   --session  |   --address <em class="replaceable"><code>address</code></em> ]  --activate <em class="replaceable"><code>bus_name</code></em>  [ --timeout <em class="replaceable"><code>seconds</code></em> ]  <em class="replaceable"><code>bus_name</code></em> </p></div>
+<div class="cmdsynopsis"><p><code class="command">gdbus</code>   help </p></div>
+</div>
+<div class="refsect1">
+<a name="id-1.4.26.6.5"></a><h2>Description</h2>
+<p>
+    <span class="command"><strong>gdbus</strong></span> is a simple tool for working with D-Bus objects.
+  </p>
+</div>
+<div class="refsect1">
+<a name="id-1.4.26.6.6"></a><h2>Commands</h2>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><code class="option">introspect</code></span></p></td>
+<td><p>
+          Prints out interfaces and property values for a remote object.
+          For this to work, the owner of the object needs to implement the
+          <code class="literal">org.freedesktop.DBus.Introspectable</code> interface.
+          If the <code class="option">--xml</code> option is used, the returned
+          introspection XML is printed, otherwise a parsed pretty
+          representation is printed.
+          The <code class="option">--recurse</code> option can be used to
+          introspect children (and their children and so on) and the
+          <code class="option">--only-properties</code> option can be used to
+          only print the interfaces with properties.
+          </p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">monitor</code></span></p></td>
+<td><p>
+          Monitors one or all objects owned by the owner of
+          <em class="replaceable"><code>bus_name</code></em>.
+        </p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">call</code></span></p></td>
+<td><p>
+          Invokes a method on a remote object.  Each argument to pass to the
+          method must be specified as a serialized
+          <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> except that strings do
+          not need explicit quotes. The return values are printed out as
+          serialized <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a>
+          values.
+        </p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">emit</code></span></p></td>
+<td><p>
+          Emits a signal. Each argument to include in the signal must be specified as a serialized
+          <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> except that strings do
+          not need explicit quotes.
+        </p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">wait</code></span></p></td>
+<td><p>
+          Waits until <em class="replaceable"><code>bus_name</code></em> is owned by some
+          process on the bus. If the <code class="option">--activate</code> is specified,
+          that bus name will be auto-started first. It may be the same as the
+          bus name being waited for, or different.
+        </p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">help</code></span></p></td>
+<td><p>
+          Prints help and exit.
+        </p></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="id-1.4.26.6.7"></a><h2>Bash Completion</h2>
+<p>
+    <span class="command"><strong>gdbus</strong></span> ships with a bash completion script to
+    complete commands, destinations, bus names, object paths and
+    interface/method names.
+  </p>
+</div>
+<div class="refsect1">
+<a name="id-1.4.26.6.8"></a><h2>Examples</h2>
+  This shows how to introspect an object - note that the value of each
+  property is displayed:
+<pre class="programlisting">
+$ gdbus introspect --system \
+        --dest org.freedesktop.NetworkManager \
+        --object-path /org/freedesktop/NetworkManager/Devices/0
+node /org/freedesktop/NetworkManager/Devices/0 {
+  interface org.freedesktop.DBus.Introspectable {
+    methods:
+      Introspect(out s data);
+  };
+  interface org.freedesktop.DBus.Properties {
+    methods:
+      Get(in  s interface,
+          in  s propname,
+          out v value);
+      Set(in  s interface,
+          in  s propname,
+          in  v value);
+      GetAll(in  s interface,
+             out a{sv} props);
+  };
+  interface org.freedesktop.NetworkManager.Device.Wired {
+    signals:
+      PropertiesChanged(a{sv} arg_0);
+    properties:
+      readonly b Carrier = false;
+      readonly u Speed = 0;
+      readonly s HwAddress = '00:1D:72:88:BE:97';
+  };
+  interface org.freedesktop.NetworkManager.Device {
+    methods:
+      Disconnect();
+    signals:
+      StateChanged(u arg_0,
+                   u arg_1,
+                   u arg_2);
+    properties:
+      readonly u DeviceType = 1;
+      readonly b Managed = true;
+      readwrite o Ip6Config = '/';
+      readwrite o Dhcp4Config = '/';
+      readwrite o Ip4Config = '/';
+      readonly u State = 2;
+      readwrite u Ip4Address = 0;
+      readonly u Capabilities = 3;
+      readonly s Driver = 'e1000e';
+      readwrite s Interface = 'eth0';
+      readonly s Udi = '/sys/devices/pci0000:00/0000:00:19.0/net/eth0';
+  };
+};
+</pre>
+<p>
+  The <code class="option">--recurse</code> and <code class="option">--only-properties</code> options can be useful when wanting to inspect all objects owned by a particular process:
+</p>
+<pre class="programlisting">
+$ gdbus introspect --system --dest org.freedesktop.UPower --object-path / --recurse  --only-properties 
+node / {
+  node /org {
+    node /org/freedesktop {
+      node /org/freedesktop/UPower {
+        interface org.freedesktop.UPower {
+          properties:
+            readonly b IsDocked = true;
+            readonly b LidForceSleep = false;
+            readonly b LidIsPresent = false;
+            readonly b LidIsClosed = false;
+            readonly b OnLowBattery = false;
+            readonly b OnBattery = false;
+            readonly b CanHibernate = true;
+            readonly b CanSuspend = true;
+            readonly s DaemonVersion = '0.9.10';
+        };
+        node /org/freedesktop/UPower/Policy {
+        };
+        node /org/freedesktop/UPower/Wakeups {
+          interface org.freedesktop.UPower.Wakeups {
+            properties:
+              readonly b HasCapability = true;
+          };
+        };
+      };
+    };
+  };
+};
+</pre>
+<p>
+  In a similar fashion, the <code class="option">introspect</code> command can be
+  used to learn details about the <code class="literal">Notify</code> method:
+</p>
+<pre class="programlisting">
+[...]
+  interface org.freedesktop.Notifications {
+    methods:
+      GetServerInformation(out s return_name,
+                           out s return_vendor,
+                           out s return_version,
+                           out s return_spec_version);
+      GetCapabilities(out as return_caps);
+      CloseNotification(in  u id);
+      Notify(in  s app_name,
+             in  u id,
+             in  s icon,
+             in  s summary,
+             in  s body,
+             in  as actions,
+             in  a{sv} hints,
+             in  i timeout,
+             out u return_id);
+  };
+[...]
+</pre>
+<p>
+  With this information, it's easy to use the <code class="option">call</code>
+  command to display a notification
+</p>
+<pre class="programlisting">
+$ gdbus call --session \
+             --dest org.freedesktop.Notifications \
+             --object-path /org/freedesktop/Notifications \
+             --method org.freedesktop.Notifications.Notify \
+             my_app_name \
+             42 \
+             gtk-dialog-info \
+             "The Summary" \
+             "Here's the body of the notification" \
+             [] \
+             {} \
+             5000
+(uint32 12,)
+</pre>
+<p>
+  Monitoring all objects on a service:
+</p>
+<pre class="programlisting">
+$ gdbus monitor --system --dest org.freedesktop.ConsoleKit
+Monitoring signals from all objects owned by org.freedesktop.ConsoleKit
+The name org.freedesktop.ConsoleKit is owned by :1.15
+/org/freedesktop/ConsoleKit/Session2: org.freedesktop.ConsoleKit.Session.ActiveChanged (false,)
+/org/freedesktop/ConsoleKit/Seat1: org.freedesktop.ConsoleKit.Seat.ActiveSessionChanged ('',)
+/org/freedesktop/ConsoleKit/Session2: org.freedesktop.ConsoleKit.Session.ActiveChanged (true,)
+/org/freedesktop/ConsoleKit/Seat1: org.freedesktop.ConsoleKit.Seat.ActiveSessionChanged ('/org/freedesktop/ConsoleKit/Session2',)
+</pre>
+<p>
+  Monitoring a single object on a service:
+</p>
+<pre class="programlisting">
+$ gdbus monitor --system --dest org.freedesktop.NetworkManager --object-path /org/freedesktop/NetworkManager/AccessPoint/4141
+Monitoring signals on object /org/freedesktop/NetworkManager/AccessPoint/4141 owned by org.freedesktop.NetworkManager
+The name org.freedesktop.NetworkManager is owned by :1.5
+/org/freedesktop/NetworkManager/AccessPoint/4141: org.freedesktop.NetworkManager.AccessPoint.PropertiesChanged ({'Strength': &lt;byte 0x5c&gt;},)
+/org/freedesktop/NetworkManager/AccessPoint/4141: org.freedesktop.NetworkManager.AccessPoint.PropertiesChanged ({'Strength': &lt;byte 0x64&gt;},)
+/org/freedesktop/NetworkManager/AccessPoint/4141: org.freedesktop.NetworkManager.AccessPoint.PropertiesChanged ({'Strength': &lt;byte 0x5e&gt;},)
+/org/freedesktop/NetworkManager/AccessPoint/4141: org.freedesktop.NetworkManager.AccessPoint.PropertiesChanged ({'Strength': &lt;byte 0x64&gt;},)
+</pre>
+<p>
+  Emitting a signal:
+</p>
+<pre class="programlisting">
+$ gdbus emit --session --object-path /foo --signal org.bar.Foo "['foo', 'bar', 'baz']"
+</pre>
+<p>
+  Emitting a signal to a specific process:
+</p>
+<pre class="programlisting">
+$ gdbus emit --session --object-path /bar --signal org.bar.Bar someString --dest :1.42
+</pre>
+<p>
+  Waiting for a well-known name to be owned on the bus; this will
+  <span class="emphasis"><em>not</em></span> auto-start the service:
+</p>
+<pre class="programlisting">
+$ gdbus wait --session org.bar.SomeName
+</pre>
+<p>
+  Auto-starting then waiting for a well-known name to be owned on the bus:
+</p>
+<pre class="programlisting">
+$ gdbus wait --session --activate org.bar.SomeName
+</pre>
+<p>
+  Auto-starting a different service, then waiting for a well-known name to be
+  owned on the bus. This is useful in situations where
+  <em class="replaceable"><code>SomeName</code></em> is not directly activatable:
+</p>
+<pre class="programlisting">
+$ gdbus wait --session --activate org.bar.PrerequisiteName org.bar.SomeName
+</pre>
+<p>
+  Waiting for a well-known name and giving up after 30 seconds. By default,
+  the timeout is disabled; or set <code class="option">--timeout</code> to 0 to disable it:
+</p>
+<pre class="programlisting">
+$ gdbus wait --session --timeout 30 org.bar.SomeName
+</pre>
+</div>
+<div class="refsect1">
+<a name="id-1.4.26.6.9"></a><h2>Bugs</h2>
+<p>
+    Please send bug reports to either the distribution bug tracker
+    or the upstream bug tracker at
+    <a class="ulink" href="https://bugzilla.gnome.org/enter_bug.cgi?product=glib" target="_top">https://bugzilla.gnome.org/enter_bug.cgi?product=glib</a>.
+  </p>
+</div>
+<div class="refsect1">
+<a name="id-1.4.26.6.10"></a><h2>See Also</h2>
+<p>
+    <span class="citerefentry"><span class="refentrytitle">dbus-send</span>(1)</span>
+  </p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

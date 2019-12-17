@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+]>
+<refentry id="gdbus-ChangingInterfaceV10">
+  <refmeta>    <refentrytitle role="top_of_page" id="gdbus-interface-ChangingInterfaceV10.top_of_page">ChangingInterfaceV10</refentrytitle>
+  <indexterm zone="gdbus-interface-ChangingInterfaceV10.top_of_page"><primary sortas="ChangingInterfaceV10">ChangingInterfaceV10</primary></indexterm>
+  </refmeta>  <refnamediv>    <refname>ChangingInterfaceV10</refname>    <refpurpose></refpurpose>  </refnamediv>  <refsynopsisdiv role="synopsis">
+    <title role="synopsis.title">Methods</title>
+    <synopsis>
+<link linkend="gdbus-method-ChangingInterfaceV10.AddedMethodIn10">AddedMethodIn10</link> ();
+<link linkend="gdbus-method-ChangingInterfaceV10.NewMethodIn2">NewMethodIn2</link>    ();
+<link linkend="gdbus-method-ChangingInterfaceV10.BazMethod">BazMethod</link>       ();
+<link linkend="gdbus-method-ChangingInterfaceV10.BarMethod">BarMethod</link>       ();
+<link linkend="gdbus-method-ChangingInterfaceV10.FooMethod">FooMethod</link>       ();
+</synopsis>
+  </refsynopsisdiv>
+  <refsect1 role="signal_proto">
+    <title role="signal_proto.title">Signals</title>
+    <synopsis>
+<link linkend="gdbus-signal-ChangingInterfaceV10.AddedSignalIn10">AddedSignalIn10</link> ();
+<link linkend="gdbus-signal-ChangingInterfaceV10.NewSignalIn2">NewSignalIn2</link>    ();
+<link linkend="gdbus-signal-ChangingInterfaceV10.BazSignal">BazSignal</link>       ();
+<link linkend="gdbus-signal-ChangingInterfaceV10.BarSignal">BarSignal</link>       ();
+<link linkend="gdbus-signal-ChangingInterfaceV10.FooSignal">FooSignal</link>       ();
+</synopsis>
+  </refsect1>
+<refsect1 role="desc" id="gdbus-interface-ChangingInterfaceV10">
+  <title role="desc.title">Description</title>
+  <para></para>
+</refsect1>
+<refsect1 role="details" id="gdbus-methods-ChangingInterfaceV10">
+  <title role="details.title">Method Details</title>
+<refsect2 role="method" id="gdbus-method-ChangingInterfaceV10.AddedMethodIn10">
+  <title>The AddedMethodIn10() method</title>
+  <indexterm zone="gdbus-method-ChangingInterfaceV10.AddedMethodIn10"><primary sortas="ChangingInterfaceV10.AddedMethodIn10">ChangingInterfaceV10.AddedMethodIn10()</primary></indexterm>
+<programlisting>
+AddedMethodIn10 ();
+</programlisting>
+<para></para>
+<para role="since">Since 10.0</para>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-ChangingInterfaceV10.NewMethodIn2">
+  <title>The NewMethodIn2() method</title>
+  <indexterm zone="gdbus-method-ChangingInterfaceV10.NewMethodIn2"><primary sortas="ChangingInterfaceV10.NewMethodIn2">ChangingInterfaceV10.NewMethodIn2()</primary></indexterm>
+<programlisting>
+NewMethodIn2 ();
+</programlisting>
+<para></para>
+<para role="since">Since 2.0</para>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-ChangingInterfaceV10.BazMethod">
+  <title>The BazMethod() method</title>
+  <indexterm zone="gdbus-method-ChangingInterfaceV10.BazMethod"><primary sortas="ChangingInterfaceV10.BazMethod">ChangingInterfaceV10.BazMethod()</primary></indexterm>
+<programlisting>
+BazMethod ();
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-ChangingInterfaceV10.BarMethod">
+  <title>The BarMethod() method</title>
+  <indexterm zone="gdbus-method-ChangingInterfaceV10.BarMethod"><primary sortas="ChangingInterfaceV10.BarMethod">ChangingInterfaceV10.BarMethod()</primary></indexterm>
+<programlisting>
+BarMethod ();
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-ChangingInterfaceV10.FooMethod">
+  <title>The FooMethod() method</title>
+  <indexterm zone="gdbus-method-ChangingInterfaceV10.FooMethod"><primary sortas="ChangingInterfaceV10.FooMethod">ChangingInterfaceV10.FooMethod()</primary></indexterm>
+<programlisting>
+FooMethod ();
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+<refsect1 role="details" id="gdbus-signals-ChangingInterfaceV10">
+  <title role="details.title">Signal Details</title>
+<refsect2 role="signal" id="gdbus-signal-ChangingInterfaceV10.AddedSignalIn10">
+  <title>The "AddedSignalIn10" signal</title>
+  <indexterm zone="gdbus-signal-ChangingInterfaceV10.AddedSignalIn10"><primary sortas="ChangingInterfaceV10::AddedSignalIn10">ChangingInterfaceV10::AddedSignalIn10</primary></indexterm>
+<programlisting>
+AddedSignalIn10 ();
+</programlisting>
+<para></para>
+<para role="since">Since 10.0</para>
+</refsect2>
+<refsect2 role="signal" id="gdbus-signal-ChangingInterfaceV10.NewSignalIn2">
+  <title>The "NewSignalIn2" signal</title>
+  <indexterm zone="gdbus-signal-ChangingInterfaceV10.NewSignalIn2"><primary sortas="ChangingInterfaceV10::NewSignalIn2">ChangingInterfaceV10::NewSignalIn2</primary></indexterm>
+<programlisting>
+NewSignalIn2 ();
+</programlisting>
+<para></para>
+<para role="since">Since 2.0</para>
+</refsect2>
+<refsect2 role="signal" id="gdbus-signal-ChangingInterfaceV10.BazSignal">
+  <title>The "BazSignal" signal</title>
+  <indexterm zone="gdbus-signal-ChangingInterfaceV10.BazSignal"><primary sortas="ChangingInterfaceV10::BazSignal">ChangingInterfaceV10::BazSignal</primary></indexterm>
+<programlisting>
+BazSignal ();
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="signal" id="gdbus-signal-ChangingInterfaceV10.BarSignal">
+  <title>The "BarSignal" signal</title>
+  <indexterm zone="gdbus-signal-ChangingInterfaceV10.BarSignal"><primary sortas="ChangingInterfaceV10::BarSignal">ChangingInterfaceV10::BarSignal</primary></indexterm>
+<programlisting>
+BarSignal ();
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="signal" id="gdbus-signal-ChangingInterfaceV10.FooSignal">
+  <title>The "FooSignal" signal</title>
+  <indexterm zone="gdbus-signal-ChangingInterfaceV10.FooSignal"><primary sortas="ChangingInterfaceV10::FooSignal">ChangingInterfaceV10::FooSignal</primary></indexterm>
+<programlisting>
+FooSignal ();
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+</refentry>
+

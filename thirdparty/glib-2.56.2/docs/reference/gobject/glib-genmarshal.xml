@@ -1,0 +1,520 @@
+<refentry id="glib-genmarshal" lang="en">
+
+<refentryinfo>
+  <title>glib-genmarshal</title>
+  <productname>GObject</productname>
+  <authorgroup>
+    <author>
+      <contrib>Developer</contrib>
+      <firstname>Emmanuele</firstname>
+      <surname>Bassi</surname>
+    </author>
+    <author>
+      <contrib>Original developer</contrib>
+      <firstname>Tim</firstname>
+      <surname>Janik</surname>
+    </author>
+  </authorgroup>
+</refentryinfo>
+
+<refmeta>
+<refentrytitle>glib-genmarshal</refentrytitle>
+<manvolnum>1</manvolnum>
+<refmiscinfo class="manual">User Commands</refmiscinfo>
+</refmeta>
+
+<refnamediv>
+<refname>glib-genmarshal</refname>
+<refpurpose>C code marshaller generation utility for GLib closures</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>glib-genmarshal</command>
+<arg choice="opt" rep="repeat">OPTION</arg>
+<arg choice="opt" rep="repeat">FILE</arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+<para><command>glib-genmarshal</command> is a small utility that generates C code
+marshallers for callback functions of the GClosure mechanism in the GObject
+sublibrary of GLib. The marshaller functions have a standard signature,
+they get passed in the invoking closure, an array of value structures holding
+the callback function parameters and a value structure for the return value
+of the callback. The marshaller is then responsible to call the respective C
+code function of the closure with all the parameters on the stack and to
+collect its return value.
+</para>
+
+<para><command>glib-genmarshal</command> takes a list of marshallers to generate as
+input. The marshaller list is either read from files passed as additional arguments
+on the command line; or from standard input, by using <literal>-</literal> as the
+input file.
+</para>
+
+<refsect2><title>Marshaller list format</title>
+<para>
+The marshaller lists are processed line by line, a line can contain a
+comment in the form of
+<informalexample><programlisting>
+# this is a comment
+</programlisting></informalexample>
+or a marshaller specification of the form
+<programlisting>
+<replaceable>RTYPE</replaceable>:<replaceable>PTYPE</replaceable>
+<replaceable>RTYPE</replaceable>:<replaceable>PTYPE</replaceable>,<replaceable>PTYPE</replaceable>
+<replaceable>RTYPE</replaceable>:<replaceable>PTYPE</replaceable>,<replaceable>PTYPE</replaceable>,<replaceable>PTYPE</replaceable>
+</programlisting>
+</para>
+<para>
+The <replaceable>RTYPE</replaceable> part specifies the callback's return
+type and the <replaceable>PTYPE</replaceable>s right to the colon specify
+the callback's parameter list, except for the first and the last arguments
+which are always pointers.
+</para>
+</refsect2>
+<refsect2><title>Parameter types</title>
+<para>
+Currently, the following types are supported:
+<variablelist>
+<varlistentry>
+<term><replaceable>VOID</replaceable></term>
+<listitem><para>
+indicates no return type, or no extra parameters.
+If <replaceable>VOID</replaceable> is used as the parameter list, no
+additional parameters may be present.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>BOOLEAN</replaceable></term>
+<listitem><para>
+for boolean types (gboolean)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>CHAR</replaceable></term>
+<listitem><para>
+for signed char types (gchar)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>UCHAR</replaceable></term>
+<listitem><para>
+for unsigned char types (guchar)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>INT</replaceable></term>
+<listitem><para>
+for signed integer types (gint)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>UINT</replaceable></term>
+<listitem><para>
+for unsigned integer types (guint)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>LONG</replaceable></term>
+<listitem><para>
+for signed long integer types (glong)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>ULONG</replaceable></term>
+<listitem><para>
+for unsigned long integer types (gulong)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>INT64</replaceable></term>
+<listitem><para>
+for signed 64bit integer types (gint64)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>UINT64</replaceable></term>
+<listitem><para>
+for unsigned 64bit integer types (guint64)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>ENUM</replaceable></term>
+<listitem><para>
+for enumeration types (gint)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>FLAGS</replaceable></term>
+<listitem><para>
+for flag enumeration types (guint)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>FLOAT</replaceable></term>
+<listitem><para>
+for single-precision float types (gfloat)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>DOUBLE</replaceable></term>
+<listitem><para>
+for double-precision float types (gdouble)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>STRING</replaceable></term>
+<listitem><para>
+for string types (gchar*)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>BOXED</replaceable></term>
+<listitem><para>
+for boxed (anonymous but reference counted) types (GBoxed*)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>PARAM</replaceable></term>
+<listitem><para>
+for GParamSpec or derived types (GParamSpec*)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>POINTER</replaceable></term>
+<listitem><para>
+for anonymous pointer types (gpointer)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>OBJECT</replaceable></term>
+<listitem><para>
+for GObject or derived types (GObject*)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>VARIANT</replaceable></term>
+<listitem><para>
+for GVariant types (GVariant*)
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>NONE</replaceable></term>
+<listitem><para>
+deprecated alias for <replaceable>VOID</replaceable>
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><replaceable>BOOL</replaceable></term>
+<listitem><para>
+deprecated alias for <replaceable>BOOLEAN</replaceable>
+</para></listitem>
+</varlistentry>
+</variablelist>
+</para>
+</refsect2>
+</refsect1>
+
+<refsect1><title>Options</title>
+<variablelist>
+
+<varlistentry>
+<term><option>--header</option></term>
+<listitem><para>
+Generate header file contents of the marshallers. This option is mutually
+exclusive with the <option>--body</option> option.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--body</option></term>
+<listitem><para>
+Generate C code file contents of the marshallers. This option is mutually
+exclusive with the <option>--header</option> option.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--prefix=<replaceable>PREFIX</replaceable></option></term>
+<listitem><para>
+Specify marshaller prefix. The default prefix is <literal>`g_cclosure_user_marshal'</literal>.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--skip-source</option></term>
+<listitem><para>
+Skip source location remarks in generated comments.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--stdinc</option></term>
+<listitem><para>
+Use the standard marshallers of the GObject library, and include
+<filename>glib-object.h</filename> in generated header files. This
+option is mutually exclusive with the <option>--nostdinc</option>
+option.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--nostdinc</option></term>
+<listitem><para>
+Do not use the standard marshallers of the GObject library, and skip
+<filename>glib-object.h</filename> include directive in generated header files.
+This option is mutually exclusive with the <option>--stdinc</option> option.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--internal</option></term>
+<listitem><para>
+Mark generated functions as internal, using <literal>G_GNUC_INTERNAL</literal>.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--valist-marshallers</option></term>
+<listitem><para>
+Generate valist marshallers, for use with <function>g_signal_set_va_marshaller()</function>.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-v</option>, <option>--version</option></term>
+<listitem><para>
+Print version information.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--g-fatal-warnings</option></term>
+<listitem><para>
+Make warnings fatal, that is, exit immediately once a warning occurs.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-h</option>, <option>--help</option></term>
+<listitem><para>
+Print brief help and exit.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-v</option>, <option>--version</option></term>
+<listitem><para>
+Print version and exit.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--output=FILE</option></term>
+<listitem><para>
+Write output to <replaceable>FILE</replaceable> instead of the standard output.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--prototypes</option></term>
+<listitem><para>
+Generate function prototypes before the function definition in the C source
+file, in order to avoid a <literal>missing-prototypes</literal> compiler
+warning. This option is only useful when using the <option>--body</option>
+option.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--pragma-once</option></term>
+<listitem><para>
+Use the <literal>once</literal> pragma instead of an old style header guard
+when generating the C header file. This option is only useful when using the
+<option>--header</option> option.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--include-header=<replaceable>HEADER</replaceable></option></term>
+<listitem><para>
+Adds a <literal>#include</literal> directive for the given file in the C
+source file. This option is only useful when using the <option>--body</option>
+option.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-D <replaceable>SYMBOL[=VALUE]</replaceable></option></term>
+<listitem><para>
+Adds a <literal>#define</literal> C pre-processor directive for
+<replaceable>SYMBOL</replaceable> and its given <replaceable>VALUE</replaceable>,
+or "1" if the value is unset. You can use this option multiple times; if you do,
+all the symbols will be defined in the same order given on the command line, before
+the symbols undefined using the <option>-U</option> option. This option is only
+useful when using the <option>--body</option> option.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-U <replaceable>SYMBOL</replaceable></option></term>
+<listitem><para>
+Adds a <literal>#undef</literal> C pre-processor directive to undefine the
+given <replaceable>SYMBOL</replaceable>. You can use this option multiple times;
+if you do, all the symbols will be undefined in the same order given on the
+command line, after the symbols defined using the <option>-D</option> option.
+This option is only useful when using the <option>--body</option> option.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--quiet</option></term>
+<listitem><para>
+Minimizes the output of <command>glib-genmarshal</command>, by printing only
+warnings and errors. This option is mutually exclusive with the
+<option>--verbose</option> option.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--verbose</option></term>
+<listitem><para>
+Increases the verbosity of <command>glib-genmarshal</command>, by printing
+debugging information. This option is mutually exclusive with the
+<option>--quiet</option> option.
+</para></listitem>
+</varlistentry>
+
+</variablelist>
+</refsect1>
+
+<refsect1><title>Using glib-genmarshal with Autotools</title>
+<para>
+In order to use <command>glib-genmarshal</command> in your project when using
+Autotools as the build system, you will first need to modify your
+<filename>configure.ac</filename> file to ensure you find the appropriate
+command using <command>pkg-config</command>, similarly as to how you discover
+the compiler and linker flags for GLib.
+</para>
+<informalexample><programlisting>
+PKG_PROG_PKG_CONFIG([0.28])
+
+PKG_CHECK_VAR([GLIB_GENMARSHAL], [glib-2.0], [glib_genmarshal])
+</programlisting></informalexample>
+<para>
+In your <filename>Makefile.am</filename> file you will typically need very
+simple rules to generate the C files needed for the build.
+</para>
+<informalexample><programlisting>
+marshal.h: marshal.list
+        $(AM_V_GEN)$(GLIB_GENMARSHAL) \
+                --header \
+                --output=$@ \
+                $&lt;
+
+marshal.c: marshal.list marshal.h
+        $(AM_V_GEN)$(GLIB_GENMARSHAL) \
+                --include-header=marshal.h \
+                --body \
+                --output=$@ \
+                $&lt;
+
+BUILT_SOURCES += marshal.h marshal.c
+CLEANFILES += marshal.h marshal.c
+EXTRA_DIST += marshal.list
+</programlisting></informalexample>
+<para>
+In the example above, the first rule generates the header file and depends on
+a <filename>marshal.list</filename> file in order to regenerate the result in
+case the marshallers list is updated. The second rule generates the source file
+for the same <filename>marshal.list</filename>, and includes the file generated
+by the header rule.
+</para>
+</refsect1>
+
+<refsect1><title>Example</title>
+<para>
+To generate marshallers for the following callback functions:
+</para>
+<informalexample><programlisting>
+void   foo (gpointer data1,
+            gpointer data2);
+void   bar (gpointer data1,
+            gint     param1,
+            gpointer data2);
+gfloat baz (gpointer data1,
+            gboolean param1,
+            guchar   param2,
+            gpointer data2);
+</programlisting></informalexample>
+<para>
+The <filename>marshaller.list</filename> file has to look like this:
+</para>
+<programlisting>
+VOID:VOID
+VOID:INT
+FLOAT:BOOLEAN,UCHAR
+</programlisting>
+<para>
+and you call glib-genmarshal like this:
+</para>
+<programlisting>
+glib-genmarshal --header marshaller.list > marshaller.h
+glib-genmarshal --body marshaller.list > marshaller.c
+</programlisting>
+<para>
+The generated marshallers have the arguments encoded in their function name.
+For this particular list, they are
+</para>
+<programlisting>
+g_cclosure_user_marshal_VOID__VOID(...),
+g_cclosure_user_marshal_VOID__INT(...),
+g_cclosure_user_marshal_FLOAT__BOOLEAN_UCHAR(...).
+</programlisting>
+<para>
+They can be used directly for GClosures or be passed in as the
+GSignalCMarshaller c_marshaller; argument upon creation of signals:
+</para>
+<informalexample><programlisting>
+GClosure *cc_foo, *cc_bar, *cc_baz;
+
+cc_foo = g_cclosure_new (NULL, foo, NULL);
+g_closure_set_marshal (cc_foo, g_cclosure_user_marshal_VOID__VOID);
+cc_bar = g_cclosure_new (NULL, bar, NULL);
+g_closure_set_marshal (cc_bar, g_cclosure_user_marshal_VOID__INT);
+cc_baz = g_cclosure_new (NULL, baz, NULL);
+g_closure_set_marshal (cc_baz, g_cclosure_user_marshal_FLOAT__BOOLEAN_UCHAR);
+</programlisting></informalexample>
+</refsect1>
+<refsect1><title>See also</title>
+<para>
+<citerefentry>
+<refentrytitle>glib-mkenums</refentrytitle>
+<manvolnum>1</manvolnum>
+</citerefentry>
+</para>
+</refsect1>
+</refentry>

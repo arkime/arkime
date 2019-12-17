@@ -1,0 +1,11 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: GIO unix specific APIs
+Description: unix specific headers for glib I/O library
+Version: @VERSION@
+Requires: gobject-2.0,gio-2.0
+Libs: -L${libdir} -lgio-2.0
+Cflags: -I${includedir}/gio-unix-2.0/

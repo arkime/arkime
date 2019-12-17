@@ -1,0 +1,29 @@
+MODULE(tests)
+MODULE(pe)
+MODULE(elf)
+MODULE(math)
+MODULE(time)
+
+#ifdef DOTNET_MODULE
+MODULE(dotnet)
+#endif
+
+#ifdef CUCKOO_MODULE
+MODULE(cuckoo)
+#endif
+
+#ifdef MAGIC_MODULE
+MODULE(magic)
+#endif
+
+#ifdef HASH_MODULE
+MODULE(hash)
+#endif
+
+#ifdef MACHO_MODULE
+MODULE(macho)
+#endif
+
+#ifdef DEX_MODULE
+MODULE(dex)
+#endif

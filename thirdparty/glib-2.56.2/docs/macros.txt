@@ -1,0 +1,81 @@
+
+
+GLib's configure options and corresponding macros
+=================================================
+
+--enable-debug=no
+	-DG_DISABLE_ASSERT -DG_DISABLE_CHECKS
+--enable-debug=minimum	[default for stable branches]
+	none
+--enable-debug=yes	[default for development branches]
+	-DG_ENABLE_DEBUG -g
+--enable-gc-friendly=yes
+	#define ENABLE_GC_FRIENDLY_DEFAULT 1
+--disable-mem-pools=yes
+	#define DISABLE_MEM_POOLS 1
+
+Besides these, there are some local feature specific options, but my main
+focus here is to concentrate on macros that affect overall GLib behaviour
+and/or third party code.
+
+
+Notes on GLib's internal and global macros
+==========================================
+
+
+ENABLE_GC_FRIENDLY_DEFAULT
+	Newly allocated memory that isn't directly initialized, as well
+	as memory being freed should be reset to 0. The point here is to
+	allow memory checkers and similar programs that use bohem GC alike
+	algorithms to produce more accurate results.
+	This can also be accomplished by setting the environment variable
+	G_DEBUG=gc-friendly.
+DISABLE_MEM_POOLS
+	Many small chunks of memory are often allocated via collective pools
+	in GLib and are cached after release to speed up reallocations.
+	For sparse memory systems this behaviour is often inferior, so
+	memory pools can be disabled to avoid excessive caching and force
+	atomic maintenance of chunks through the g_malloc/g_free.
+	Code currently affected by this macro:
+	- GList, GSList, GNode allocations
+	- GMemChunks become basically non-effective
+	- GSignal disables all caching (potentially very slow)
+	- GType doesn't honour the GTypeInfo n_preallocs field anymore
+	- the GBSearchArray flag G_BSEARCH_ALIGN_POWER2 becomes non-functional
+G_DISABLE_ASSERT
+	The g_assert() and g_assert_not_reached() become non-functional
+	with this define. The motivation is to speed up end-user apps by
+	avoiding expensive checks.
+	This macro can affect third-party code. --enable-debug=no will only
+	disable the assertion macros for GLib itself, but third-party code
+	that passes -DG_DISABLE_ASSERT to the compiler upon its own build
+	will end up with the non-functional variants after including glib.h
+	as well.
+	NOTE: Code inside the assertion macros should not have side effects
+	that affect the operation of the program.
+G_DISABLE_CHECKS
+	This macro is similar to G_DISABLE_ASSERT, it affects third-party
+	code as mentioned above and the NOTE about G_DISABLE_ASSERT applies
+	too. The macros that become non-functional here are
+	g_return_if_fail(), g_return_val_if_fail(), g_return_if_reached() and
+	g_return_val_if_reached().
+	Additionally the glib_mem_profiler_table and g_mem_profile() from
+	gmem.h become non-functional if this macro is supplied.
+	This macro also switches off certain checks in the GSignal code.
+G_ENABLE_DEBUG
+	Quite a bit of additional debugging code is compiled into GLib for this
+	macro, and since it is a globally visible define, third-party code may
+	be affected by it similar to G_DISABLE_ASSERT.
+	The additional code executed/compiled for this macro currently involve:
+	- extra validity checks for GDate
+	- memory profiling traps in gmem.c (consult debugging.txt for details)
+	- BREAKPOINT abortion for fatal log levels in gmessage.c instead of
+	  plain abort() to allow debuggers trapping and overriding them
+	- added verbosity of gscanner.c to catch deprecated code paths
+	- added verbosity of gutils.c to catch deprecated code paths
+	- object ref/unref traps (consult debugging.txt) and object bookkeeping
+	  in gobject.c
+	- extra validity checks in gsignal.c
+
+
+2000/12/28	Tim Janik

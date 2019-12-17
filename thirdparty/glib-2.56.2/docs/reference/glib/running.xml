@@ -1,0 +1,346 @@
+<?xml version="1.0"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+]>
+<refentry id="glib-running">
+<refmeta>
+<refentrytitle>Running GLib Applications</refentrytitle>
+<manvolnum>3</manvolnum>
+<refmiscinfo>GLib Library</refmiscinfo>
+</refmeta>
+
+<refnamediv>
+<refname>Running GLib Applications</refname>
+<refpurpose>
+How to run and debug your GLib application
+</refpurpose>
+</refnamediv>
+
+<refsect1>
+<title>Running and debugging GLib Applications</title>
+
+<refsect2>
+<title>Environment variables</title>
+
+<para>
+  The runtime behaviour of GLib applications can be influenced by a
+  number of environment variables.
+</para>
+
+<formalpara>
+  <title>Standard variables</title>
+
+  <para>
+    GLib reads standard environment variables like <envar>LANG</envar>,
+    <envar>PATH</envar>, <envar>HOME</envar>, <envar>TMPDIR</envar>,
+    <envar>TZ</envar> and <envar>LOGNAME</envar>.
+  </para>
+</formalpara>
+
+<formalpara>
+  <title>XDG directories</title>
+
+  <para>
+    GLib consults the environment variables <envar>XDG_DATA_HOME</envar>,
+    <envar>XDG_DATA_DIRS</envar>, <envar>XDG_CONFIG_HOME</envar>,
+    <envar>XDG_CONFIG_DIRS</envar>, <envar>XDG_CACHE_HOME</envar> and
+    <envar>XDG_RUNTIME_DIR</envar> for the various XDG directories.
+    For more information, see the <ulink url="http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html">XDG basedir spec</ulink>.
+  </para>
+</formalpara>
+
+<formalpara id="G_FILENAME_ENCODING">
+  <title><envar>G_FILENAME_ENCODING</envar></title>
+
+  <para>
+    This environment variable can be set to a comma-separated list of character
+    set names. GLib assumes that filenames are encoded in the first character
+    set from that list rather than in UTF-8. The special token "@locale" can be
+    used to specify the character set for the current locale.
+  </para>
+</formalpara>
+
+<formalpara id="G_BROKEN_FILENAMES">
+  <title><envar>G_BROKEN_FILENAMES</envar></title>
+
+  <para>
+    If this environment variable is set, GLib assumes that filenames are in
+    the locale encoding rather than in UTF-8. G_FILENAME_ENCODING takes
+    priority over G_BROKEN_FILENAMES.
+  </para>
+</formalpara>
+
+<formalpara id="G_MESSAGES_PREFIXED">
+  <title><envar>G_MESSAGES_PREFIXED</envar></title>
+
+  <para>
+    A list of log levels for which messages should be prefixed by the
+    program name and PID of the application. The default is to prefix
+    everything except <literal>G_LOG_LEVEL_MESSAGE</literal> and
+    <literal>G_LOG_LEVEL_INFO</literal>.
+    The possible values are
+    <literal>error</literal>,
+    <literal>warning</literal>,
+    <literal>critical</literal>,
+    <literal>message</literal>,
+    <literal>info</literal> and
+    <literal>debug</literal>.
+    You can also use the special values
+    <literal>all</literal> and
+    <literal>help</literal>.
+  </para>
+  <para>
+    This environment variable only affects the default log handler,
+    g_log_default_handler().
+  </para>
+</formalpara>
+
+<formalpara id="G_MESSAGES_DEBUG">
+  <title><envar>G_MESSAGES_DEBUG</envar></title>
+
+  <para>
+    A space-separated list of log domains for which informational
+    and debug messages should be printed. By default, these
+    messages are not printed.
+  </para>
+  <para>
+    You can also use the special value <literal>all</literal>.
+  </para>
+  <para>
+    This environment variable only affects the default log handler,
+    g_log_default_handler().
+  </para>
+</formalpara>
+
+<formalpara id="G-DEBUG:CAPS">
+  <title><envar>G_DEBUG</envar></title>
+
+  <para>
+    This environment variable can be set to a list of debug options,
+    which cause GLib to print out different types of debugging information.
+    <variablelist>
+      <varlistentry>
+        <term>fatal-warnings</term>
+        <listitem><para>Causes GLib to abort the program at the first call
+           to g_warning() or g_critical().</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>fatal-criticals</term>
+        <listitem><para>Causes GLib to abort the program at the first call
+           to g_critical().</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>gc-friendly</term>
+        <listitem><para>Newly allocated memory that isn't directly initialized,
+          as well as memory being freed will be reset to 0. The point here is
+          to allow memory checkers and similar programs that use Boehm GC alike
+          algorithms to produce more accurate results.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>resident-modules</term>
+        <listitem><para>All modules loaded by GModule will be made resident.
+          This can be useful for tracking memory leaks in modules which are
+          later unloaded; but it can also hide bugs where code is accessed
+          after the module would have normally been unloaded.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>bind-now-modules</term>
+        <listitem><para>All modules loaded by GModule will bind their symbols
+          at load time, even when the code uses %G_MODULE_BIND_LAZY.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+    The special value all can be used to turn on all debug options.
+    The special value help can be used to print all available options.
+  </para>
+</formalpara>
+
+<formalpara id="G_SLICE">
+  <title><envar>G_SLICE</envar></title>
+
+  <para>
+    This environment variable allows reconfiguration of the GSlice
+    memory allocator.
+    <variablelist>
+      <varlistentry>
+        <term>always-malloc</term>
+        <listitem><para>This will cause all slices allocated through
+          g_slice_alloc() and released by g_slice_free1() to be actually
+          allocated via direct calls to g_malloc() and g_free().
+          This is most useful for memory checkers and similar programs that
+          use Boehm GC alike algorithms to produce more accurate results.
+          It can also be in conjunction with debugging features of the system's
+          malloc() implementation such as glibc's MALLOC_CHECK_=2 to debug
+          erroneous slice allocation code, although
+          <literal>debug-blocks</literal> is usually a better suited debugging
+          tool.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>debug-blocks</term>
+        <listitem><para>Using this option (present since GLib 2.13) engages
+          extra code which performs sanity checks on the released memory
+          slices. Invalid slice addresses or slice sizes will be reported and
+          lead to a program halt. This option is for debugging scenarios.
+          In particular, client packages sporting their own test suite should
+          <emphasis>always enable this option when running tests</emphasis>.
+          Global slice validation is ensured by storing size and address
+          information for each allocated chunk, and maintaining a global
+          hash table of that data. That way, multi-thread scalability is
+          given up, and memory consumption is increased. However, the
+          resulting code usually performs acceptably well, possibly better
+          than with comparable memory checking carried out using external
+          tools.</para>
+          <para>An example of a memory corruption scenario that cannot be
+          reproduced with <literal>G_SLICE=always-malloc</literal>, but will
+          be caught by <literal>G_SLICE=debug-blocks</literal> is as follows:
+          <programlisting>
+            void *slist = g_slist_alloc (); /* void* gives up type-safety */
+            g_list_free (slist);            /* corruption: sizeof (GSList) != sizeof (GList) */
+          </programlisting></para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+    The special value all can be used to turn on all options.
+    The special value help can be used to print all available options.
+  </para>
+</formalpara>
+
+<formalpara id="G_RANDOM_VERSION">
+  <title><envar>G_RANDOM_VERSION</envar></title>
+
+  <para>
+    If this environment variable is set to '2.0', the outdated
+    pseudo-random number seeding and generation algorithms from
+    GLib 2.0 are used instead of the newer, better ones. You should
+    only set this variable if you have sequences of numbers that were
+    generated with Glib 2.0 that you need to reproduce exactly.
+  </para>
+</formalpara>
+
+<formalpara id="LIBCHARSET_ALIAS_DIR">
+  <title><envar>LIBCHARSET_ALIAS_DIR</envar></title>
+
+  <para>
+    Allows to specify a nonstandard location for the
+    <filename>charset.aliases</filename> file that is used by the
+    character set conversion routines. The default location is the
+    <replaceable>libdir</replaceable> specified at compilation time.
+  </para>
+</formalpara>
+
+<formalpara id="TZDIR">
+  <title><envar>TZDIR</envar></title>
+
+  <para>
+    Allows to specify a nonstandard location for the timezone data files
+    that are used by the #GDateTime API. The default location is under
+    <filename>/usr/share/zoneinfo</filename>. For more information,
+    also look at the <command>tzset</command> manual page.
+  </para>
+</formalpara>
+
+<formalpara id="G_ENABLE_DIAGNOSTIC">
+  <title><envar>G_ENABLE_DIAGNOSTIC</envar></title>
+
+  <para>
+    If set to a non-zero value, this environment variable enables
+    diagnostic messages, like deprecation messages for GObject properties
+    and signals.
+  </para>
+</formalpara>
+
+</refsect2>
+
+<refsect2 id="setlocale">
+<title>Locale</title>
+
+<para>
+A number of interfaces in GLib depend on the current locale in which
+an application is running. Therefore, most GLib-using applications should
+call <function>setlocale (LC_ALL, "")</function> to set up the current
+locale.
+</para>
+
+<para>
+On Windows, in a C program there are several locale concepts
+that not necessarily are synchronized. On one hand, there is the
+system default ANSI code-page, which determines what encoding is used
+for file names handled by the C library's functions and the Win32
+API. (We are talking about the "narrow" functions here that take
+character pointers, not the "wide" ones.)
+</para>
+
+<para>
+On the other hand, there is the C library's current locale. The
+character set (code-page) used by that is not necessarily the same as
+the system default ANSI code-page. Strings in this character set are
+returned by functions like <function>strftime()</function>.
+</para>
+
+</refsect2>
+
+<para>
+GLib ships with a set of Python macros for the GDB debugger. These includes pretty
+printers for lists, hashtables and GObject types. It also has a backtrace filter
+that makes backtraces with signal emissions easier to read.
+</para>
+
+<para>
+To use this you need a version of GDB that supports Python scripting; anything
+from 7.0 should be fine. You then need to install GLib in the same prefix as
+GDB so that the Python GDB autoloaded files get installed in the right place
+for GDB to pick up.
+</para>
+
+<para>
+General pretty printing should just happen without having to do anything special.
+To get the signal emission filtered backtrace you must use the "new-backtrace" command
+instead of the standard one.
+</para>
+
+<para>
+There is also a new command called gforeach that can be used to apply a command
+on each item in a list. E.g. you can do
+<programlisting>
+gforeach i in some_list_variable: print *(GtkWidget *)l
+</programlisting>
+Which would print the contents of each widget in a list of widgets.
+</para>
+
+<refsect2>
+<title>SystemTap</title>
+
+<para>
+<ulink url="http://sourceware.org/systemtap/">SystemTap</ulink> is a dynamic whole-system
+analysis toolkit.  GLib ships with a file <filename>libglib-2.0.so.*.stp</filename> which defines a
+set of probe points, which you can hook into with custom SystemTap scripts.
+See the files <filename>libglib-2.0.so.*.stp</filename>, <filename>libgobject-2.0.so.*.stp</filename>
+and <filename>libgio-2.0.so.*.stp</filename> which
+are in your shared SystemTap scripts directory.
+</para>
+
+</refsect2>
+
+<refsect2>
+<title>Memory statistics</title>
+
+<para>
+g_mem_profile() will output a summary g_malloc() memory usage, if memory
+profiling has been enabled by calling
+<literal>g_mem_set_vtable (glib_mem_profiler_table)</literal> upon startup.
+</para>
+
+<para>
+If GLib has been configured with <option>--enable-debug=yes</option>,
+then g_slice_debug_tree_statistics() can be called in a debugger to
+output details about the memory usage of the slice allocator.
+</para>
+
+</refsect2>
+</refsect1>
+</refentry>

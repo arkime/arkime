@@ -1,0 +1,34 @@
+<schemalist>
+  <!-- from the GSettings docs.  Should work, I guess :) -->
+
+  <enum id="myenum">
+    <value nick="first" value="1"/>
+    <value nick="second" value="2"/>
+  </enum>
+
+  <schema id="org.gtk.test">
+
+    <key name="key-with-range" type="i">
+      <range min="1" max="100"/>
+      <default>10</default>
+    </key>
+
+    <key name="key-with-choices" type="s">
+      <choices>
+        <choice value='Elisabeth'/>
+        <choice value='Annabeth'/>
+        <choice value='Joe'/>
+      </choices>
+      <aliases>
+        <alias value='Anna' target='Annabeth'/>
+        <alias value='Beth' target='Elisabeth'/>
+      </aliases>
+      <default>'Joe'</default>
+    </key>
+
+    <key name='enumerated-key' enum='myenum'>
+      <default>'first'</default>
+    </key>
+
+  </schema>
+</schemalist>

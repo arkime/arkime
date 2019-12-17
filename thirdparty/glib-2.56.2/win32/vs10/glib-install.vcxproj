@@ -1,0 +1,188 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{2093D218-190E-4194-9421-3BA7CBF33B10}</ProjectGuid>
+    <RootNamespace>glibinstall</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v100</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v100</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v100</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v100</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="glib-install.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="glib-install.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="glib-install.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="glib-install.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir Condition="'$(Configuration)'=='Debug'">$(GlibEtcInstallRoot)\</OutDir>
+    <ExtensionsToDeleteOnClean Condition="'$(Configuration)'=='Debug'" />
+    <OutDir Condition="'$(Configuration)'=='Release'">$(GlibEtcInstallRoot)\</OutDir>
+    <ExtensionsToDeleteOnClean Condition="'$(Configuration)'=='Release'" />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\glibpc.py">
+      <Message Condition="'$(Configuration)'=='Debug'">Generating .pc files...</Message>
+      <Command Condition="'$(Configuration)'=='Debug'">$(GlibGenPC)</Command>
+      <Outputs Condition="'$(Configuration)'=='Debug'">$(GlibPCFiles);%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)'=='Release'">Generating .pc files...</Message>
+      <Command Condition="'$(Configuration)'=='Release'">$(GlibGenPC)</Command>
+      <Outputs Condition="'$(Configuration)'=='Release'">$(GlibPCFiles);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\gobject\glib-mkenums.in">
+      <Message Condition="'$(Configuration)'=='Debug'">Generating glib-mkenums...</Message>
+      <Command Condition="'$(Configuration)'=='Debug'">$(GenGLibMKEnums)</Command>
+      <Outputs Condition="'$(Configuration)'=='Debug'">..\..\gobject\glib-mkenums;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)'=='Release'">Generating glib-mkenums...</Message>
+      <Command Condition="'$(Configuration)'=='Release'">$(GenGLibMKEnums)</Command>
+      <Outputs Condition="'$(Configuration)'=='Release'">..\..\gobject\glib-mkenums;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\gobject\glib-genmarshal.in">
+      <Message Condition="'$(Configuration)'=='Debug'">Generating glib-genmarshal...</Message>
+      <Command Condition="'$(Configuration)'=='Debug'">$(GenGLibGenmarshal)</Command>
+      <Outputs Condition="'$(Configuration)'=='Debug'">..\..\gobject\glib-genmarshal;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)'=='Release'">Generating glib-genmarshal...</Message>
+      <Command Condition="'$(Configuration)'=='Release'">$(GenGLibGenmarshal)</Command>
+      <Outputs Condition="'$(Configuration)'=='Release'">..\..\gobject\glib-genmarshal;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\gio\gdbus-2.0\codegen\gdbus-codegen.in">
+      <Message Condition="'$(Configuration)'=='Debug'">Generating gdbus-codegen...</Message>
+      <Command Condition="'$(Configuration)'=='Debug'">$(GenGDBusCodegen)</Command>
+      <Outputs Condition="'$(Configuration)'=='Debug'">..\..\gio\gdbus-2.0\codegen\gdbus-codegen;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)'=='Release'">Generating gdbus-codegen...</Message>
+      <Command Condition="'$(Configuration)'=='Release'">$(GenGDBusCodegen)</Command>
+      <Outputs Condition="'$(Configuration)'=='Release'">..\..\gio\gdbus-2.0\codegen\gdbus-codegen;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="glib_install_placeholder">
+      <Message Condition="'$(Configuration)'=='Debug'">Installing Build Results...</Message>
+      <AdditionalInputs Condition="'$(Configuration)'=='Debug'">$(GlibPCFiles);$(GlibUtilScripts)</AdditionalInputs>
+      <Command Condition="'$(Configuration)'=='Debug'">$(GlibDoInstall)</Command>
+      <Outputs Condition="'$(Configuration)'=='Debug'">blah;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)'=='Release'">Installing Build Results...</Message>
+      <AdditionalInputs Condition="'$(Configuration)'=='Release'">$(GlibPCFiles);$(GlibUtilScripts)</AdditionalInputs>
+      <Command Condition="'$(Configuration)'=='Release'">$(GlibDoInstall)</Command>
+      <Outputs Condition="'$(Configuration)'=='Release'">blah;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="gio.vcxproj">
+      <Project>{f3d1583c-5613-4809-bd98-7cc1c1276f92}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="glib.vcxproj">
+      <Project>{12bca020-eabf-429e-876a-a476bc9c10c0}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="gmodule.vcxproj">
+      <Project>{4214047c-f5c1-40b3-8369-5dced8c32770}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="gobject.vcxproj">
+      <Project>{f172effc-e30f-4593-809e-db2024b1e753}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="gspawn-win32-helper-console.vcxproj">
+      <Project>{e40e8a7e-7cae-4659-9b8b-bc38898e3074}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="gspawn-win32-helper.vcxproj">
+      <Project>{289240e7-e167-47ce-a20c-58d852e520ba}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="gthread.vcxproj">
+      <Project>{c8afb8c3-fffd-460f-bc13-9ac25d7b117c}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="glib-compile-schemas.vcxproj">
+      <Project>{015d69d0-8b42-438a-adae-052ac036e065}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="gsettings.vcxproj">
+      <Project>{05041c63-f1c5-49ba-a7de-61ebb5307eaa}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="glib-compile-resources.vcxproj">
+      <Project>{b0cdec7f-dce1-4f7e-b8a4-a3009c18fb2a}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="gresource.vcxproj">
+      <Project>{95a1571f-61be-4c51-be53-2f2dab280685}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="gio-querymodules.vcxproj">
+      <Project>{95a1571f-61be-4c51-be53-2f2dab280686}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="gdbus.vcxproj">
+      <Project>{95a1571f-61be-4c51-be53-2f2dab280687}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="gio-tool.vcxproj">
+      <Project>{d0403e9a-2b00-4fd3-b3dd-3c8f9cb9a338}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

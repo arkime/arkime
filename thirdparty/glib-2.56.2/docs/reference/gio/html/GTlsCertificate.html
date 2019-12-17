@@ -1,0 +1,614 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GTlsCertificate: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="tls.html" title="TLS (SSL) support">
+<link rel="prev" href="gio-TLS-Overview.html" title="TLS Overview">
+<link rel="next" href="GTlsConnection.html" title="GTlsConnection">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GTlsCertificate.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GTlsCertificate.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GTlsCertificate.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="tls.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gio-TLS-Overview.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GTlsConnection.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GTlsCertificate"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GTlsCertificate.top_of_page"></a>GTlsCertificate</span></h2>
+<p>GTlsCertificate — TLS certificate</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GTlsCertificate.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="returnvalue">GTlsCertificate</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GTlsCertificate.html#g-tls-certificate-new-from-pem" title="g_tls_certificate_new_from_pem ()">g_tls_certificate_new_from_pem</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="returnvalue">GTlsCertificate</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GTlsCertificate.html#g-tls-certificate-new-from-file" title="g_tls_certificate_new_from_file ()">g_tls_certificate_new_from_file</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="returnvalue">GTlsCertificate</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GTlsCertificate.html#g-tls-certificate-new-from-files" title="g_tls_certificate_new_from_files ()">g_tls_certificate_new_from_files</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GTlsCertificate.html#g-tls-certificate-list-new-from-file" title="g_tls_certificate_list_new_from_file ()">g_tls_certificate_list_new_from_file</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="returnvalue">GTlsCertificate</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GTlsCertificate.html#g-tls-certificate-get-issuer" title="g_tls_certificate_get_issuer ()">g_tls_certificate_get_issuer</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-TLS-Overview.html#GTlsCertificateFlags" title="enum GTlsCertificateFlags"><span class="returnvalue">GTlsCertificateFlags</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsCertificate.html#g-tls-certificate-verify" title="g_tls_certificate_verify ()">g_tls_certificate_verify</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsCertificate.html#g-tls-certificate-is-same" title="g_tls_certificate_is_same ()">g_tls_certificate_is_same</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GTlsCertificate.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="property_type">
+<a href="../glib-Byte-Arrays.html#GByteArray"><span class="type">GByteArray</span></a> *</td>
+<td class="property_name"><a class="link" href="GTlsCertificate.html#GTlsCertificate--certificate" title="The “certificate” property">certificate</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<td class="property_name"><a class="link" href="GTlsCertificate.html#GTlsCertificate--certificate-pem" title="The “certificate-pem” property">certificate-pem</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type">
+<a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> *</td>
+<td class="property_name"><a class="link" href="GTlsCertificate.html#GTlsCertificate--issuer" title="The “issuer” property">issuer</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-Byte-Arrays.html#GByteArray"><span class="type">GByteArray</span></a> *</td>
+<td class="property_name"><a class="link" href="GTlsCertificate.html#GTlsCertificate--private-key" title="The “private-key” property">private-key</a></td>
+<td class="property_flags">Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<td class="property_name"><a class="link" href="GTlsCertificate.html#GTlsCertificate--private-key-pem" title="The “private-key-pem” property">private-key-pem</a></td>
+<td class="property_flags">Write / Construct Only</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GTlsCertificate.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GTlsCertificate.html#GTlsCertificate-struct" title="GTlsCertificate">GTlsCertificate</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GTlsCertificate.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GTlsCertificate
+</pre>
+</div>
+<div class="refsect1">
+<a name="GTlsCertificate.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GTlsCertificate.description"></a><h2>Description</h2>
+<p>A certificate used for TLS authentication and encryption.
+This can represent either a certificate only (eg, the certificate
+received by a client from a server), or the combination of
+a certificate and a private key (which is needed when acting as a
+<a class="link" href="GTlsServerConnection.html" title="GTlsServerConnection"><span class="type">GTlsServerConnection</span></a>).</p>
+</div>
+<div class="refsect1">
+<a name="GTlsCertificate.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-tls-certificate-new-from-pem"></a><h3>g_tls_certificate_new_from_pem ()</h3>
+<pre class="programlisting"><a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="returnvalue">GTlsCertificate</span></a> *
+g_tls_certificate_new_from_pem (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *data</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gssize"><span class="type">gssize</span></a> length</code></em>,
+                                <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Creates a <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> from the PEM-encoded data in <em class="parameter"><code>data</code></em>
+. If
+<em class="parameter"><code>data</code></em>
+ includes both a certificate and a private key, then the
+returned certificate will include the private key data as well. (See
+the <a class="link" href="GTlsCertificate.html#GTlsCertificate--private-key-pem" title="The “private-key-pem” property"><span class="type">“private-key-pem”</span></a> property for information about
+supported formats.)</p>
+<p>The returned certificate will be the first certificate found in
+<em class="parameter"><code>data</code></em>
+. As of GLib 2.44, if <em class="parameter"><code>data</code></em>
+ contains more certificates it will
+try to load a certificate chain. All certificates will be verified in
+the order found (top-level certificate should be the last one in the
+file) and the <a class="link" href="GTlsCertificate.html#GTlsCertificate--issuer" title="The “issuer” property"><span class="type">“issuer”</span></a> property of each certificate
+will be set accordingly if the verification succeeds. If any
+certificate in the chain cannot be verified, the first certificate in
+the file will still be returned.</p>
+<div class="refsect3">
+<a name="g-tls-certificate-new-from-pem.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>PEM-encoded certificate data</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>length</p></td>
+<td class="parameter_description"><p>the length of <em class="parameter"><code>data</code></em>
+, or -1 if it's 0-terminated.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for error reporting, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-certificate-new-from-pem.returns"></a><h4>Returns</h4>
+<p> the new certificate, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>data</code></em>
+is invalid</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-certificate-new-from-file"></a><h3>g_tls_certificate_new_from_file ()</h3>
+<pre class="programlisting"><a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="returnvalue">GTlsCertificate</span></a> *
+g_tls_certificate_new_from_file (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *file</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Creates a <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> from the PEM-encoded data in <em class="parameter"><code>file</code></em>
+. The
+returned certificate will be the first certificate found in <em class="parameter"><code>file</code></em>
+. As
+of GLib 2.44, if <em class="parameter"><code>file</code></em>
+ contains more certificates it will try to load
+a certificate chain. All certificates will be verified in the order
+found (top-level certificate should be the last one in the file) and
+the <a class="link" href="GTlsCertificate.html#GTlsCertificate--issuer" title="The “issuer” property"><span class="type">“issuer”</span></a> property of each certificate will be set
+accordingly if the verification succeeds. If any certificate in the
+chain cannot be verified, the first certificate in the file will
+still be returned.</p>
+<p>If <em class="parameter"><code>file</code></em>
+ cannot be read or parsed, the function will return <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> and
+set <em class="parameter"><code>error</code></em>
+. Otherwise, this behaves like
+<a class="link" href="GTlsCertificate.html#g-tls-certificate-new-from-pem" title="g_tls_certificate_new_from_pem ()"><code class="function">g_tls_certificate_new_from_pem()</code></a>.</p>
+<div class="refsect3">
+<a name="g-tls-certificate-new-from-file.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>file</p></td>
+<td class="parameter_description"><p>file containing a PEM-encoded certificate to import. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for error reporting, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-certificate-new-from-file.returns"></a><h4>Returns</h4>
+<p> the new certificate, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-certificate-new-from-files"></a><h3>g_tls_certificate_new_from_files ()</h3>
+<pre class="programlisting"><a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="returnvalue">GTlsCertificate</span></a> *
+g_tls_certificate_new_from_files (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *cert_file</code></em>,
+                                  <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *key_file</code></em>,
+                                  <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Creates a <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> from the PEM-encoded data in <em class="parameter"><code>cert_file</code></em>
+
+and <em class="parameter"><code>key_file</code></em>
+. The returned certificate will be the first certificate
+found in <em class="parameter"><code>cert_file</code></em>
+. As of GLib 2.44, if <em class="parameter"><code>cert_file</code></em>
+ contains more
+certificates it will try to load a certificate chain. All
+certificates will be verified in the order found (top-level
+certificate should be the last one in the file) and the
+<a class="link" href="GTlsCertificate.html#GTlsCertificate--issuer" title="The “issuer” property"><span class="type">“issuer”</span></a> property of each certificate will be set
+accordingly if the verification succeeds. If any certificate in the
+chain cannot be verified, the first certificate in the file will
+still be returned.</p>
+<p>If either file cannot be read or parsed, the function will return
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> and set <em class="parameter"><code>error</code></em>
+. Otherwise, this behaves like
+<a class="link" href="GTlsCertificate.html#g-tls-certificate-new-from-pem" title="g_tls_certificate_new_from_pem ()"><code class="function">g_tls_certificate_new_from_pem()</code></a>.</p>
+<div class="refsect3">
+<a name="g-tls-certificate-new-from-files.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>cert_file</p></td>
+<td class="parameter_description"><p>file containing one or more PEM-encoded
+certificates to import. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key_file</p></td>
+<td class="parameter_description"><p>file containing a PEM-encoded private key
+to import. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for error reporting, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-certificate-new-from-files.returns"></a><h4>Returns</h4>
+<p> the new certificate, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-certificate-list-new-from-file"></a><h3>g_tls_certificate_list_new_from_file ()</h3>
+<pre class="programlisting"><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+g_tls_certificate_list_new_from_file (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *file</code></em>,
+                                      <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Creates one or more <a href="GTlsCertificate.html#GTlsCertificate-struct"><span class="type">GTlsCertificates</span></a> from the PEM-encoded
+data in <em class="parameter"><code>file</code></em>
+. If <em class="parameter"><code>file</code></em>
+ cannot be read or parsed, the function will
+return <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> and set <em class="parameter"><code>error</code></em>
+. If <em class="parameter"><code>file</code></em>
+ does not contain any
+PEM-encoded certificates, this will return an empty list and not
+set <em class="parameter"><code>error</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-tls-certificate-list-new-from-file.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>file</p></td>
+<td class="parameter_description"><p>file containing PEM-encoded certificates to import. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for error reporting, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-certificate-list-new-from-file.returns"></a><h4>Returns</h4>
+<p>a
+<a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> containing <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> objects. You must free the list
+and its contents when you are done with it. </p>
+<p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> Gio.TlsCertificate][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-certificate-get-issuer"></a><h3>g_tls_certificate_get_issuer ()</h3>
+<pre class="programlisting"><a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="returnvalue">GTlsCertificate</span></a> *
+g_tls_certificate_get_issuer (<em class="parameter"><code><a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> *cert</code></em>);</pre>
+<p>Gets the <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> representing <em class="parameter"><code>cert</code></em>
+'s issuer, if known</p>
+<div class="refsect3">
+<a name="g-tls-certificate-get-issuer.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>cert</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-certificate-get-issuer.returns"></a><h4>Returns</h4>
+<p>The certificate of <em class="parameter"><code>cert</code></em>
+'s issuer,
+or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>cert</code></em>
+is self-signed or signed with an unknown
+certificate. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-certificate-verify"></a><h3>g_tls_certificate_verify ()</h3>
+<pre class="programlisting"><a class="link" href="gio-TLS-Overview.html#GTlsCertificateFlags" title="enum GTlsCertificateFlags"><span class="returnvalue">GTlsCertificateFlags</span></a>
+g_tls_certificate_verify (<em class="parameter"><code><a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> *cert</code></em>,
+                          <em class="parameter"><code><a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a> *identity</code></em>,
+                          <em class="parameter"><code><a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> *trusted_ca</code></em>);</pre>
+<p>This verifies <em class="parameter"><code>cert</code></em>
+ and returns a set of <a class="link" href="gio-TLS-Overview.html#GTlsCertificateFlags" title="enum GTlsCertificateFlags"><span class="type">GTlsCertificateFlags</span></a>
+indicating any problems found with it. This can be used to verify a
+certificate outside the context of making a connection, or to
+check a certificate against a CA that is not part of the system
+CA database.</p>
+<p>If <em class="parameter"><code>identity</code></em>
+ is not <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, <em class="parameter"><code>cert</code></em>
+'s name(s) will be compared against
+it, and <a class="link" href="gio-TLS-Overview.html#G-TLS-CERTIFICATE-BAD-IDENTITY:CAPS"><code class="literal">G_TLS_CERTIFICATE_BAD_IDENTITY</code></a> will be set in the return
+value if it does not match. If <em class="parameter"><code>identity</code></em>
+ is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, that bit will
+never be set in the return value.</p>
+<p>If <em class="parameter"><code>trusted_ca</code></em>
+ is not <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, then <em class="parameter"><code>cert</code></em>
+ (or one of the certificates
+in its chain) must be signed by it, or else
+<a class="link" href="gio-TLS-Overview.html#G-TLS-CERTIFICATE-UNKNOWN-CA:CAPS"><code class="literal">G_TLS_CERTIFICATE_UNKNOWN_CA</code></a> will be set in the return value. If
+<em class="parameter"><code>trusted_ca</code></em>
+ is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, that bit will never be set in the return
+value.</p>
+<p>(All other <a class="link" href="gio-TLS-Overview.html#GTlsCertificateFlags" title="enum GTlsCertificateFlags"><span class="type">GTlsCertificateFlags</span></a> values will always be set or unset
+as appropriate.)</p>
+<div class="refsect3">
+<a name="g-tls-certificate-verify.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>cert</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>identity</p></td>
+<td class="parameter_description"><p>the expected peer identity. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>trusted_ca</p></td>
+<td class="parameter_description"><p>the certificate of a trusted authority. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-certificate-verify.returns"></a><h4>Returns</h4>
+<p> the appropriate <a class="link" href="gio-TLS-Overview.html#GTlsCertificateFlags" title="enum GTlsCertificateFlags"><span class="type">GTlsCertificateFlags</span></a></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-certificate-is-same"></a><h3>g_tls_certificate_is_same ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_tls_certificate_is_same (<em class="parameter"><code><a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> *cert_one</code></em>,
+                           <em class="parameter"><code><a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> *cert_two</code></em>);</pre>
+<p>Check if two <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> objects represent the same certificate.
+The raw DER byte data of the two certificates are checked for equality.
+This has the effect that two certificates may compare equal even if
+their <a class="link" href="GTlsCertificate.html#GTlsCertificate--issuer" title="The “issuer” property"><span class="type">“issuer”</span></a>, <a class="link" href="GTlsCertificate.html#GTlsCertificate--private-key" title="The “private-key” property"><span class="type">“private-key”</span></a>, or
+<a class="link" href="GTlsCertificate.html#GTlsCertificate--private-key-pem" title="The “private-key-pem” property"><span class="type">“private-key-pem”</span></a> properties differ.</p>
+<div class="refsect3">
+<a name="g-tls-certificate-is-same.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>cert_one</p></td>
+<td class="parameter_description"><p>first certificate to compare</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cert_two</p></td>
+<td class="parameter_description"><p>second certificate to compare</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-certificate-is-same.returns"></a><h4>Returns</h4>
+<p> whether the same or not</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GTlsCertificate.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GTlsCertificate-struct"></a><h3>GTlsCertificate</h3>
+<pre class="programlisting">typedef struct _GTlsCertificate GTlsCertificate;</pre>
+<p>Abstract base class for TLS certificate types.</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GTlsCertificate.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GTlsCertificate--certificate"></a><h3>The <code class="literal">“certificate”</code> property</h3>
+<pre class="programlisting">  “certificate”              <a href="../glib-Byte-Arrays.html#GByteArray"><span class="type">GByteArray</span></a> *</pre>
+<p>The DER (binary) encoded representation of the certificate.
+This property and the <a class="link" href="GTlsCertificate.html#GTlsCertificate--certificate-pem" title="The “certificate-pem” property"><span class="type">“certificate-pem”</span></a> property
+represent the same data, just in different forms.</p>
+<p>Flags: Read / Write / Construct Only</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsCertificate--certificate-pem"></a><h3>The <code class="literal">“certificate-pem”</code> property</h3>
+<pre class="programlisting">  “certificate-pem”          <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>The PEM (ASCII) encoded representation of the certificate.
+This property and the <a class="link" href="GTlsCertificate.html#GTlsCertificate--certificate" title="The “certificate” property"><span class="type">“certificate”</span></a>
+property represent the same data, just in different forms.</p>
+<p>Flags: Read / Write / Construct Only</p>
+<p>Default value: NULL</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsCertificate--issuer"></a><h3>The <code class="literal">“issuer”</code> property</h3>
+<pre class="programlisting">  “issuer”                   <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> *</pre>
+<p>A <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> representing the entity that issued this
+certificate. If <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, this means that the certificate is either
+self-signed, or else the certificate of the issuer is not
+available.</p>
+<p>Flags: Read / Write / Construct Only</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsCertificate--private-key"></a><h3>The <code class="literal">“private-key”</code> property</h3>
+<pre class="programlisting">  “private-key”              <a href="../glib-Byte-Arrays.html#GByteArray"><span class="type">GByteArray</span></a> *</pre>
+<p>The DER (binary) encoded representation of the certificate's
+private key, in either PKCS#1 format or unencrypted PKCS#8
+format. This property (or the <a class="link" href="GTlsCertificate.html#GTlsCertificate--private-key-pem" title="The “private-key-pem” property"><span class="type">“private-key-pem”</span></a>
+property) can be set when constructing a key (eg, from a file),
+but cannot be read.</p>
+<p>PKCS#8 format is supported since 2.32; earlier releases only
+support PKCS#1. You can use the <code class="literal">openssl rsa</code>
+tool to convert PKCS#8 keys to PKCS#1.</p>
+<p>Flags: Write / Construct Only</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsCertificate--private-key-pem"></a><h3>The <code class="literal">“private-key-pem”</code> property</h3>
+<pre class="programlisting">  “private-key-pem”          <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>The PEM (ASCII) encoded representation of the certificate's
+private key in either PKCS#1 format ("<code class="literal">BEGIN RSA PRIVATE
+KEY</code>") or unencrypted PKCS#8 format ("<code class="literal">BEGIN
+PRIVATE KEY</code>"). This property (or the
+<a class="link" href="GTlsCertificate.html#GTlsCertificate--private-key" title="The “private-key” property"><span class="type">“private-key”</span></a> property) can be set when
+constructing a key (eg, from a file), but cannot be read.</p>
+<p>PKCS#8 format is supported since 2.32; earlier releases only
+support PKCS#1. You can use the <code class="literal">openssl rsa</code>
+tool to convert PKCS#8 keys to PKCS#1.</p>
+<p>Flags: Write / Construct Only</p>
+<p>Default value: NULL</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GTlsCertificate.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

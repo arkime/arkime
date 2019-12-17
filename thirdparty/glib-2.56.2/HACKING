@@ -1,0 +1,37 @@
+If you want to hack on the GLib project, you'll need to have the
+following packages installed:
+
+        - GNU autoconf 2.62
+        - GNU automake 1.11
+        - GNU libtool 2.2
+        - GNU gettext 0.10.40
+        - pkg-config 0.16
+        - gtk-doc
+        - libffi 3.0.0
+
+These should be available by ftp from ftp.gnu.org or any of the
+fine GNU mirrors.  Beta software can be found at alpha.gnu.org.
+
+To compile a GIT version of glib on your system, you will need to take
+several steps to setup the tree for compilation.  You can do all these
+steps at once by running:
+
+        checkout/glib# ./autogen.sh
+
+Basically this does the following for you:
+
+        checkout/glib# aclocal; automake; autoconf
+
+        The above commands create the "configure" script.  Now you
+        can run the configure script in checkout/glib to create all
+        the Makefiles.
+
+Before running autogen.sh or configure, make sure you have libtool
+in your path.
+
+Note that autogen.sh runs configure for you.  If you wish to pass
+options like --prefix=/usr to configure you can give those options
+to autogen.sh and they will be passed on to configure.
+
+For information about submitting patches see the README.commits file. For
+information about major design decisions, see the README.rationale file.

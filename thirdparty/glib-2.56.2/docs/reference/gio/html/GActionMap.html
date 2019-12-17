@@ -1,0 +1,503 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GActionMap: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="application.html" title="Application support">
+<link rel="prev" href="GActionGroup.html" title="GActionGroup">
+<link rel="next" href="GSimpleActionGroup.html" title="GSimpleActionGroup">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GActionMap.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GActionMap.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_prerequisites">  <span class="dim">|</span> 
+                  <a href="#GActionMap.prerequisites" class="shortcut">Prerequisites</a></span><span id="nav_implementations">  <span class="dim">|</span> 
+                  <a href="#GActionMap.implementations" class="shortcut">Known Implementations</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="application.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GActionGroup.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GSimpleActionGroup.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GActionMap"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GActionMap.top_of_page"></a>GActionMap</span></h2>
+<p>GActionMap — Interface for action containers</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GActionMap.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GAction.html" title="GAction"><span class="returnvalue">GAction</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GActionMap.html#g-action-map-lookup-action" title="g_action_map_lookup_action ()">g_action_map_lookup_action</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GActionMap.html#g-action-map-add-action-entries" title="g_action_map_add_action_entries ()">g_action_map_add_action_entries</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GActionMap.html#g-action-map-add-action" title="g_action_map_add_action ()">g_action_map_add_action</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GActionMap.html#g-action-map-remove-action" title="g_action_map_remove_action ()">g_action_map_remove_action</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GActionMap.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GActionMap.html#GActionMap-struct" title="GActionMap">GActionMap</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GActionMap.html#GActionMapInterface" title="struct GActionMapInterface">GActionMapInterface</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GActionMap.html#GActionEntry" title="struct GActionEntry">GActionEntry</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GActionMap.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/GTypeModule.html">GInterface</a>
+    <span class="lineart">╰──</span> GActionMap
+</pre>
+</div>
+<div class="refsect1">
+<a name="GActionMap.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GActionMap requires
+ <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GActionMap.implementations"></a><h2>Known Implementations</h2>
+<p>
+GActionMap is implemented by
+ <a class="link" href="GApplication.html" title="GApplication">GApplication</a> and  <a class="link" href="GSimpleActionGroup.html" title="GSimpleActionGroup">GSimpleActionGroup</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GActionMap.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GActionMap.description"></a><h2>Description</h2>
+<p>The GActionMap interface is implemented by <a class="link" href="GActionGroup.html" title="GActionGroup"><span class="type">GActionGroup</span></a>
+implementations that operate by containing a number of
+named <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> instances, such as <a class="link" href="GSimpleActionGroup.html" title="GSimpleActionGroup"><span class="type">GSimpleActionGroup</span></a>.</p>
+<p>One useful application of this interface is to map the
+names of actions from various action groups to unique,
+prefixed names (e.g. by prepending "app." or "win.").
+This is the motivation for the 'Map' part of the interface
+name.</p>
+</div>
+<div class="refsect1">
+<a name="GActionMap.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-action-map-lookup-action"></a><h3>g_action_map_lookup_action ()</h3>
+<pre class="programlisting"><a class="link" href="GAction.html" title="GAction"><span class="returnvalue">GAction</span></a> *
+g_action_map_lookup_action (<em class="parameter"><code><a class="link" href="GActionMap.html" title="GActionMap"><span class="type">GActionMap</span></a> *action_map</code></em>,
+                            <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *action_name</code></em>);</pre>
+<p>Looks up the action with the name <em class="parameter"><code>action_name</code></em>
+ in <em class="parameter"><code>action_map</code></em>
+.</p>
+<p>If no such action exists, returns <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p>
+<div class="refsect3">
+<a name="g-action-map-lookup-action.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>action_map</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GActionMap.html" title="GActionMap"><span class="type">GActionMap</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>action_name</p></td>
+<td class="parameter_description"><p>the name of an action</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-action-map-lookup-action.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-action-map-add-action-entries"></a><h3>g_action_map_add_action_entries ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_action_map_add_action_entries (<em class="parameter"><code><a class="link" href="GActionMap.html" title="GActionMap"><span class="type">GActionMap</span></a> *action_map</code></em>,
+                                 <em class="parameter"><code>const <a class="link" href="GActionMap.html#GActionEntry" title="struct GActionEntry"><span class="type">GActionEntry</span></a> *entries</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> n_entries</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>A convenience function for creating multiple <a class="link" href="GSimpleAction.html" title="GSimpleAction"><span class="type">GSimpleAction</span></a> instances
+and adding them to a <a class="link" href="GActionMap.html" title="GActionMap"><span class="type">GActionMap</span></a>.</p>
+<p>Each action is constructed as per one <a class="link" href="GActionMap.html#GActionEntry" title="struct GActionEntry"><span class="type">GActionEntry</span></a>.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">activate_quit</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GSimpleAction</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">simple</span><span class="symbol">,</span>
+<span class="normal">               </span><span class="usertype">GVariant</span><span class="normal">      </span><span class="symbol">*</span><span class="normal">parameter</span><span class="symbol">,</span>
+<span class="normal">               </span><span class="usertype">gpointer</span><span class="normal">       user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function">exit</span><span class="normal"> </span><span class="symbol">(</span><span class="number">0</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">activate_print_string</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GSimpleAction</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">simple</span><span class="symbol">,</span>
+<span class="normal">                       </span><span class="usertype">GVariant</span><span class="normal">      </span><span class="symbol">*</span><span class="normal">parameter</span><span class="symbol">,</span>
+<span class="normal">                       </span><span class="usertype">gpointer</span><span class="normal">       user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"%s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="../glib-GVariant.html#g-variant-get-string">g_variant_get_string</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">parameter</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">));</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> <a href="GActionGroup.html#GActionGroup-struct">GActionGroup</a> </span><span class="symbol">*</span>
+<span class="function">create_action_group</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">GActionEntry</span><span class="normal"> entries</span><span class="symbol">[]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="cbracket">{</span><span class="normal"> </span><span class="string">"quit"</span><span class="symbol">,</span><span class="normal">         activate_quit              </span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="normal">    </span><span class="cbracket">{</span><span class="normal"> </span><span class="string">"print-string"</span><span class="symbol">,</span><span class="normal"> activate_print_string</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"s"</span><span class="normal"> </span><span class="cbracket">}</span>
+<span class="normal">  </span><span class="cbracket">}</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GSimpleActionGroup</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">group</span><span class="symbol">;</span>
+
+<span class="normal">  group </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GSimpleActionGroup.html#g-simple-action-group-new">g_simple_action_group_new</a></span><span class="normal"> </span><span class="symbol">();</span>
+<span class="normal">  </span><span class="function"><a href="GActionMap.html#g-action-map-add-action-entries">g_action_map_add_action_entries</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">G_ACTION_MAP</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">group</span><span class="symbol">),</span><span class="normal"> entries</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="../glib-Standard-Macros.html#G-N-ELEMENTS:CAPS">G_N_ELEMENTS</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">entries</span><span class="symbol">),</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> </span><span class="function">G_ACTION_GROUP</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">group</span><span class="symbol">);</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="g-action-map-add-action-entries.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>action_map</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GActionMap.html" title="GActionMap"><span class="type">GActionMap</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>entries</p></td>
+<td class="parameter_description"><p>a pointer to
+the first item in an array of <a class="link" href="GActionMap.html#GActionEntry" title="struct GActionEntry"><span class="type">GActionEntry</span></a> structs. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=n_entries][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GActionEntry]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n_entries</p></td>
+<td class="parameter_description"><p>the length of <em class="parameter"><code>entries</code></em>
+, or -1 if <em class="parameter"><code>entries</code></em>
+is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>the user data for signal connections</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-action-map-add-action"></a><h3>g_action_map_add_action ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_action_map_add_action (<em class="parameter"><code><a class="link" href="GActionMap.html" title="GActionMap"><span class="type">GActionMap</span></a> *action_map</code></em>,
+                         <em class="parameter"><code><a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> *action</code></em>);</pre>
+<p>Adds an action to the <em class="parameter"><code>action_map</code></em>
+.</p>
+<p>If the action map already contains an action with the same name
+as <em class="parameter"><code>action</code></em>
+ then the old action is dropped from the action map.</p>
+<p>The action map takes its own reference on <em class="parameter"><code>action</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-action-map-add-action.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>action_map</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GActionMap.html" title="GActionMap"><span class="type">GActionMap</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>action</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-action-map-remove-action"></a><h3>g_action_map_remove_action ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_action_map_remove_action (<em class="parameter"><code><a class="link" href="GActionMap.html" title="GActionMap"><span class="type">GActionMap</span></a> *action_map</code></em>,
+                            <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *action_name</code></em>);</pre>
+<p>Removes the named action from the action map.</p>
+<p>If no action of this name is in the map then nothing happens.</p>
+<div class="refsect3">
+<a name="g-action-map-remove-action.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>action_map</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GActionMap.html" title="GActionMap"><span class="type">GActionMap</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>action_name</p></td>
+<td class="parameter_description"><p>the name of the action</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GActionMap.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GActionMap-struct"></a><h3>GActionMap</h3>
+<pre class="programlisting">typedef struct _GActionMap GActionMap;</pre>
+<p><a class="link" href="GActionMap.html" title="GActionMap"><span class="type">GActionMap</span></a> is an opaque data structure and can only be accessed
+using the following functions.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GActionMapInterface"></a><h3>struct GActionMapInterface</h3>
+<pre class="programlisting">struct GActionMapInterface {
+  GTypeInterface g_iface;
+
+  GAction * (* lookup_action) (GActionMap  *action_map,
+                               const gchar *action_name);
+  void      (* add_action)    (GActionMap  *action_map,
+                               GAction     *action);
+  void      (* remove_action) (GActionMap  *action_map,
+                               const gchar *action_name);
+};
+</pre>
+<p>The virtual function table for <a class="link" href="GActionMap.html" title="GActionMap"><span class="type">GActionMap</span></a>.</p>
+<div class="refsect3">
+<a name="GActionMapInterface.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GActionMapInterface.lookup-action"></a>lookup_action</code></em> ()</p></td>
+<td class="struct_member_description"><p>the virtual function pointer for <a class="link" href="GActionMap.html#g-action-map-lookup-action" title="g_action_map_lookup_action ()"><code class="function">g_action_map_lookup_action()</code></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GActionMapInterface.add-action"></a>add_action</code></em> ()</p></td>
+<td class="struct_member_description"><p>the virtual function pointer for <a class="link" href="GActionMap.html#g-action-map-add-action" title="g_action_map_add_action ()"><code class="function">g_action_map_add_action()</code></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GActionMapInterface.remove-action"></a>remove_action</code></em> ()</p></td>
+<td class="struct_member_description"><p>the virtual function pointer for <a class="link" href="GActionMap.html#g-action-map-remove-action" title="g_action_map_remove_action ()"><code class="function">g_action_map_remove_action()</code></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GActionEntry"></a><h3>struct GActionEntry</h3>
+<pre class="programlisting">struct GActionEntry {
+  const gchar *name;
+
+  void (* activate) (GSimpleAction *action,
+                     GVariant      *parameter,
+                     gpointer       user_data);
+
+  const gchar *parameter_type;
+
+  const gchar *state;
+
+  void (* change_state) (GSimpleAction *action,
+                         GVariant      *value,
+                         gpointer       user_data);
+};
+</pre>
+<p>This struct defines a single action.  It is for use with
+<a class="link" href="GActionMap.html#g-action-map-add-action-entries" title="g_action_map_add_action_entries ()"><code class="function">g_action_map_add_action_entries()</code></a>.</p>
+<p>The order of the items in the structure are intended to reflect
+frequency of use.  It is permissible to use an incomplete initialiser
+in order to leave some of the later values as <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.  All values
+after <em class="parameter"><code>name</code></em>
+ are optional.  Additional optional fields may be added in
+the future.</p>
+<p>See <a class="link" href="GActionMap.html#g-action-map-add-action-entries" title="g_action_map_add_action_entries ()"><code class="function">g_action_map_add_action_entries()</code></a> for an example.</p>
+<div class="refsect3">
+<a name="GActionEntry.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GActionEntry.name"></a>name</code></em>;</p></td>
+<td class="struct_member_description"><p>the name of the action</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GActionEntry.activate"></a>activate</code></em> ()</p></td>
+<td class="struct_member_description"><p>the callback to connect to the "activate" signal of the
+action.  Since GLib 2.40, this can be <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> for stateful
+actions, in which case the default handler is used.  For
+boolean-stated actions with no parameter, this is a
+toggle.  For other state types (and parameter type equal
+to the state type) this will be a function that
+just calls <em class="parameter"><code>change_state</code></em>
+(which you should provide).</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GActionEntry.parameter-type"></a>parameter_type</code></em>;</p></td>
+<td class="struct_member_description"><p>the type of the parameter that must be passed to the
+activate function for this action, given as a single
+GVariant type string (or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> for no parameter)</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GActionEntry.state"></a>state</code></em>;</p></td>
+<td class="struct_member_description"><p>the initial state for this action, given in
+GVariant text format.  The state is parsed
+with no extra type information, so type tags must be added to
+the string if they are necessary.  Stateless actions should
+give <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> here.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GActionEntry.change-state"></a>change_state</code></em> ()</p></td>
+<td class="struct_member_description"><p>the callback to connect to the "change-state" signal
+of the action.  All stateful actions should provide a
+handler here; stateless actions should not.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

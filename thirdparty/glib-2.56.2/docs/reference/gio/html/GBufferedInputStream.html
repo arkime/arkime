@@ -1,0 +1,696 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GBufferedInputStream: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="streaming.html" title="Streaming I/O">
+<link rel="prev" href="GMemoryOutputStream.html" title="GMemoryOutputStream">
+<link rel="next" href="GBufferedOutputStream.html" title="GBufferedOutputStream">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GBufferedInputStream.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GBufferedInputStream.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_interfaces">  <span class="dim">|</span> 
+                  <a href="#GBufferedInputStream.implemented-interfaces" class="shortcut">Implemented Interfaces</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GBufferedInputStream.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="streaming.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GMemoryOutputStream.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GBufferedOutputStream.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GBufferedInputStream"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GBufferedInputStream.top_of_page"></a>GBufferedInputStream</span></h2>
+<p>GBufferedInputStream — Buffered Input Stream</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GBufferedInputStream.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GInputStream.html" title="GInputStream"><span class="returnvalue">GInputStream</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GBufferedInputStream.html#g-buffered-input-stream-new" title="g_buffered_input_stream_new ()">g_buffered_input_stream_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GInputStream.html" title="GInputStream"><span class="returnvalue">GInputStream</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GBufferedInputStream.html#g-buffered-input-stream-new-sized" title="g_buffered_input_stream_new_sized ()">g_buffered_input_stream_new_sized</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gsize"><span class="returnvalue">gsize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GBufferedInputStream.html#g-buffered-input-stream-get-buffer-size" title="g_buffered_input_stream_get_buffer_size ()">g_buffered_input_stream_get_buffer_size</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GBufferedInputStream.html#g-buffered-input-stream-set-buffer-size" title="g_buffered_input_stream_set_buffer_size ()">g_buffered_input_stream_set_buffer_size</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gsize"><span class="returnvalue">gsize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GBufferedInputStream.html#g-buffered-input-stream-get-available" title="g_buffered_input_stream_get_available ()">g_buffered_input_stream_get_available</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">void</span> *
+</td>
+<td class="function_name">
+<a class="link" href="GBufferedInputStream.html#g-buffered-input-stream-peek-buffer" title="g_buffered_input_stream_peek_buffer ()">g_buffered_input_stream_peek_buffer</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gsize"><span class="returnvalue">gsize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GBufferedInputStream.html#g-buffered-input-stream-peek" title="g_buffered_input_stream_peek ()">g_buffered_input_stream_peek</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gssize"><span class="returnvalue">gssize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GBufferedInputStream.html#g-buffered-input-stream-fill" title="g_buffered_input_stream_fill ()">g_buffered_input_stream_fill</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GBufferedInputStream.html#g-buffered-input-stream-fill-async" title="g_buffered_input_stream_fill_async ()">g_buffered_input_stream_fill_async</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gssize"><span class="returnvalue">gssize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GBufferedInputStream.html#g-buffered-input-stream-fill-finish" title="g_buffered_input_stream_fill_finish ()">g_buffered_input_stream_fill_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">int</span>
+</td>
+<td class="function_name">
+<a class="link" href="GBufferedInputStream.html#g-buffered-input-stream-read-byte" title="g_buffered_input_stream_read_byte ()">g_buffered_input_stream_read_byte</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GBufferedInputStream.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody><tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a></td>
+<td class="property_name"><a class="link" href="GBufferedInputStream.html#GBufferedInputStream--buffer-size" title="The “buffer-size” property">buffer-size</a></td>
+<td class="property_flags">Read / Write / Construct</td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GBufferedInputStream.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GBufferedInputStream.html#GBufferedInputStream-struct" title="GBufferedInputStream">GBufferedInputStream</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GBufferedInputStream.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> <a class="link" href="GInputStream.html" title="GInputStream">GInputStream</a>
+        <span class="lineart">╰──</span> <a class="link" href="GFilterInputStream.html" title="GFilterInputStream">GFilterInputStream</a>
+            <span class="lineart">╰──</span> GBufferedInputStream
+                <span class="lineart">╰──</span> <a class="link" href="GDataInputStream.html" title="GDataInputStream">GDataInputStream</a>
+</pre>
+</div>
+<div class="refsect1">
+<a name="GBufferedInputStream.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GBufferedInputStream implements
+ <a class="link" href="GSeekable.html" title="GSeekable">GSeekable</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GBufferedInputStream.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GBufferedInputStream.description"></a><h2>Description</h2>
+<p>Buffered input stream implements <a class="link" href="GFilterInputStream.html" title="GFilterInputStream"><span class="type">GFilterInputStream</span></a> and provides
+for buffered reads.</p>
+<p>By default, <a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a>'s buffer size is set at 4 kilobytes.</p>
+<p>To create a buffered input stream, use <a class="link" href="GBufferedInputStream.html#g-buffered-input-stream-new" title="g_buffered_input_stream_new ()"><code class="function">g_buffered_input_stream_new()</code></a>,
+or <a class="link" href="GBufferedInputStream.html#g-buffered-input-stream-new-sized" title="g_buffered_input_stream_new_sized ()"><code class="function">g_buffered_input_stream_new_sized()</code></a> to specify the buffer's size at
+construction.</p>
+<p>To get the size of a buffer within a buffered input stream, use
+<a class="link" href="GBufferedInputStream.html#g-buffered-input-stream-get-buffer-size" title="g_buffered_input_stream_get_buffer_size ()"><code class="function">g_buffered_input_stream_get_buffer_size()</code></a>. To change the size of a
+buffered input stream's buffer, use
+<a class="link" href="GBufferedInputStream.html#g-buffered-input-stream-set-buffer-size" title="g_buffered_input_stream_set_buffer_size ()"><code class="function">g_buffered_input_stream_set_buffer_size()</code></a>. Note that the buffer's size
+cannot be reduced below the size of the data within the buffer.</p>
+</div>
+<div class="refsect1">
+<a name="GBufferedInputStream.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-buffered-input-stream-new"></a><h3>g_buffered_input_stream_new ()</h3>
+<pre class="programlisting"><a class="link" href="GInputStream.html" title="GInputStream"><span class="returnvalue">GInputStream</span></a> *
+g_buffered_input_stream_new (<em class="parameter"><code><a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a> *base_stream</code></em>);</pre>
+<p>Creates a new <a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a> from the given <em class="parameter"><code>base_stream</code></em>
+, with
+a buffer set to the default size (4 kilobytes).</p>
+<div class="refsect3">
+<a name="g-buffered-input-stream-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>base_stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-buffered-input-stream-new.returns"></a><h4>Returns</h4>
+<p> a <a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a> for the given <em class="parameter"><code>base_stream</code></em>
+.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-buffered-input-stream-new-sized"></a><h3>g_buffered_input_stream_new_sized ()</h3>
+<pre class="programlisting"><a class="link" href="GInputStream.html" title="GInputStream"><span class="returnvalue">GInputStream</span></a> *
+g_buffered_input_stream_new_sized (<em class="parameter"><code><a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a> *base_stream</code></em>,
+                                   <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> size</code></em>);</pre>
+<p>Creates a new <a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a> from the given <em class="parameter"><code>base_stream</code></em>
+,
+with a buffer set to <em class="parameter"><code>size</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-buffered-input-stream-new-sized.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>base_stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>size</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-buffered-input-stream-new-sized.returns"></a><h4>Returns</h4>
+<p> a <a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a>.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-buffered-input-stream-get-buffer-size"></a><h3>g_buffered_input_stream_get_buffer_size ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gsize"><span class="returnvalue">gsize</span></a>
+g_buffered_input_stream_get_buffer_size
+                               (<em class="parameter"><code><a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a> *stream</code></em>);</pre>
+<p>Gets the size of the input buffer.</p>
+<div class="refsect3">
+<a name="g-buffered-input-stream-get-buffer-size.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-buffered-input-stream-get-buffer-size.returns"></a><h4>Returns</h4>
+<p> the current buffer size.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-buffered-input-stream-set-buffer-size"></a><h3>g_buffered_input_stream_set_buffer_size ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_buffered_input_stream_set_buffer_size
+                               (<em class="parameter"><code><a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a> *stream</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> size</code></em>);</pre>
+<p>Sets the size of the internal buffer of <em class="parameter"><code>stream</code></em>
+ to <em class="parameter"><code>size</code></em>
+, or to the
+size of the contents of the buffer. The buffer can never be resized
+smaller than its current contents.</p>
+<div class="refsect3">
+<a name="g-buffered-input-stream-set-buffer-size.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>size</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-buffered-input-stream-get-available"></a><h3>g_buffered_input_stream_get_available ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gsize"><span class="returnvalue">gsize</span></a>
+g_buffered_input_stream_get_available (<em class="parameter"><code><a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a> *stream</code></em>);</pre>
+<p>Gets the size of the available data within the stream.</p>
+<div class="refsect3">
+<a name="g-buffered-input-stream-get-available.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p><a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-buffered-input-stream-get-available.returns"></a><h4>Returns</h4>
+<p> size of the available stream.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-buffered-input-stream-peek-buffer"></a><h3>g_buffered_input_stream_peek_buffer ()</h3>
+<pre class="programlisting">const <span class="returnvalue">void</span> *
+g_buffered_input_stream_peek_buffer (<em class="parameter"><code><a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a> *stream</code></em>,
+                                     <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> *count</code></em>);</pre>
+<p>Returns the buffer with the currently available bytes. The returned
+buffer must not be modified and will become invalid when reading from
+the stream or filling the buffer.</p>
+<div class="refsect3">
+<a name="g-buffered-input-stream-peek-buffer.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>count</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> to get the number of bytes available in the buffer. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-buffered-input-stream-peek-buffer.returns"></a><h4>Returns</h4>
+<p>read-only buffer. </p>
+<p><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=count][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-buffered-input-stream-peek"></a><h3>g_buffered_input_stream_peek ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gsize"><span class="returnvalue">gsize</span></a>
+g_buffered_input_stream_peek (<em class="parameter"><code><a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a> *stream</code></em>,
+                              <em class="parameter"><code><span class="type">void</span> *buffer</code></em>,
+                              <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> offset</code></em>,
+                              <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> count</code></em>);</pre>
+<p>Peeks in the buffer, copying data of size <em class="parameter"><code>count</code></em>
+ into <em class="parameter"><code>buffer</code></em>
+,
+offset <em class="parameter"><code>offset</code></em>
+ bytes.</p>
+<div class="refsect3">
+<a name="g-buffered-input-stream-peek.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>buffer</p></td>
+<td class="parameter_description"><p>a pointer to
+an allocated chunk of memory. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=count][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>offset</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>count</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-buffered-input-stream-peek.returns"></a><h4>Returns</h4>
+<p> a <a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> of the number of bytes peeked, or -1 on error.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-buffered-input-stream-fill"></a><h3>g_buffered_input_stream_fill ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gssize"><span class="returnvalue">gssize</span></a>
+g_buffered_input_stream_fill (<em class="parameter"><code><a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a> *stream</code></em>,
+                              <em class="parameter"><code><a href="../glib-Basic-Types.html#gssize"><span class="type">gssize</span></a> count</code></em>,
+                              <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                              <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Tries to read <em class="parameter"><code>count</code></em>
+ bytes from the stream into the buffer.
+Will block during this read.</p>
+<p>If <em class="parameter"><code>count</code></em>
+ is zero, returns zero and does nothing. A value of <em class="parameter"><code>count</code></em>
+
+larger than <a href="../glib-Basic-Types.html#G-MAXSSIZE:CAPS"><code class="literal">G_MAXSSIZE</code></a> will cause a <a class="link" href="gio-GIOError.html#G-IO-ERROR-INVALID-ARGUMENT:CAPS"><code class="literal">G_IO_ERROR_INVALID_ARGUMENT</code></a> error.</p>
+<p>On success, the number of bytes read into the buffer is returned.
+It is not an error if this is not the same as the requested size, as it
+can happen e.g. near the end of a file. Zero is returned on end of file
+(or if <em class="parameter"><code>count</code></em>
+ is zero),  but never otherwise.</p>
+<p>If <em class="parameter"><code>count</code></em>
+ is -1 then the attempted read size is equal to the number of
+bytes that are required to fill the buffer.</p>
+<p>If <em class="parameter"><code>cancellable</code></em>
+ is not <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, then the operation can be cancelled by
+triggering the cancellable object from another thread. If the operation
+was cancelled, the error <a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a> will be returned. If an
+operation was partially finished when the operation was cancelled the
+partial result will be returned, without an error.</p>
+<p>On error -1 is returned and <em class="parameter"><code>error</code></em>
+ is set accordingly.</p>
+<p>For the asynchronous, non-blocking, version of this function, see
+<a class="link" href="GBufferedInputStream.html#g-buffered-input-stream-fill-async" title="g_buffered_input_stream_fill_async ()"><code class="function">g_buffered_input_stream_fill_async()</code></a>.</p>
+<div class="refsect3">
+<a name="g-buffered-input-stream-fill.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>count</p></td>
+<td class="parameter_description"><p>the number of bytes that will be read from the stream</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location to store the error occurring, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-buffered-input-stream-fill.returns"></a><h4>Returns</h4>
+<p> the number of bytes read into <em class="parameter"><code>stream</code></em>
+'s buffer, up to <em class="parameter"><code>count</code></em>
+,
+or -1 on error.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-buffered-input-stream-fill-async"></a><h3>g_buffered_input_stream_fill_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_buffered_input_stream_fill_async (<em class="parameter"><code><a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a> *stream</code></em>,
+                                    <em class="parameter"><code><a href="../glib-Basic-Types.html#gssize"><span class="type">gssize</span></a> count</code></em>,
+                                    <em class="parameter"><code><span class="type">int</span> io_priority</code></em>,
+                                    <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                    <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                    <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Reads data into <em class="parameter"><code>stream</code></em>
+'s buffer asynchronously, up to <em class="parameter"><code>count</code></em>
+ size.
+<em class="parameter"><code>io_priority</code></em>
+ can be used to prioritize reads. For the synchronous
+version of this function, see <a class="link" href="GBufferedInputStream.html#g-buffered-input-stream-fill" title="g_buffered_input_stream_fill ()"><code class="function">g_buffered_input_stream_fill()</code></a>.</p>
+<p>If <em class="parameter"><code>count</code></em>
+ is -1 then the attempted read size is equal to the number
+of bytes that are required to fill the buffer.</p>
+<div class="refsect3">
+<a name="g-buffered-input-stream-fill-async.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>count</p></td>
+<td class="parameter_description"><p>the number of bytes that will be read from the stream</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>io_priority</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GAsyncResult.html#io-priority" title="I/O Priority">I/O priority</a> of the request</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-buffered-input-stream-fill-finish"></a><h3>g_buffered_input_stream_fill_finish ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gssize"><span class="returnvalue">gssize</span></a>
+g_buffered_input_stream_fill_finish (<em class="parameter"><code><a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a> *stream</code></em>,
+                                     <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                     <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Finishes an asynchronous read.</p>
+<div class="refsect3">
+<a name="g-buffered-input-stream-fill-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-buffered-input-stream-fill-finish.returns"></a><h4>Returns</h4>
+<p> a <a href="../glib-Basic-Types.html#gssize"><span class="type">gssize</span></a> of the read stream, or <code class="literal">-1</code> on an error.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-buffered-input-stream-read-byte"></a><h3>g_buffered_input_stream_read_byte ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>
+g_buffered_input_stream_read_byte (<em class="parameter"><code><a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a> *stream</code></em>,
+                                   <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                   <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Tries to read a single byte from the stream or the buffer. Will block
+during this read.</p>
+<p>On success, the byte read from the stream is returned. On end of stream
+-1 is returned but it's not an exceptional error and <em class="parameter"><code>error</code></em>
+ is not set.</p>
+<p>If <em class="parameter"><code>cancellable</code></em>
+ is not <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, then the operation can be cancelled by
+triggering the cancellable object from another thread. If the operation
+was cancelled, the error <a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a> will be returned. If an
+operation was partially finished when the operation was cancelled the
+partial result will be returned, without an error.</p>
+<p>On error -1 is returned and <em class="parameter"><code>error</code></em>
+ is set accordingly.</p>
+<div class="refsect3">
+<a name="g-buffered-input-stream-read-byte.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream"><span class="type">GBufferedInputStream</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location to store the error occurring, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-buffered-input-stream-read-byte.returns"></a><h4>Returns</h4>
+<p> the byte read from the <em class="parameter"><code>stream</code></em>
+, or -1 on end of stream or error.</p>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GBufferedInputStream.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GBufferedInputStream-struct"></a><h3>GBufferedInputStream</h3>
+<pre class="programlisting">typedef struct _GBufferedInputStream GBufferedInputStream;</pre>
+<p>Implements <a class="link" href="GFilterInputStream.html" title="GFilterInputStream"><span class="type">GFilterInputStream</span></a> with a sized input buffer.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GBufferedInputStream.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GBufferedInputStream--buffer-size"></a><h3>The <code class="literal">“buffer-size”</code> property</h3>
+<pre class="programlisting">  “buffer-size”              <a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a></pre>
+<p>The size of the backend buffer.</p>
+<p>Flags: Read / Write / Construct</p>
+<p>Allowed values: &gt;= 1</p>
+<p>Default value: 4096</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GBufferedInputStream.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="GFilterInputStream.html" title="GFilterInputStream"><span class="type">GFilterInputStream</span></a>, <a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

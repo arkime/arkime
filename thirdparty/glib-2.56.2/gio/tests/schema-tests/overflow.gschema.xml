@@ -1,0 +1,7 @@
+<schemalist>
+    <schema id="test">
+      <key name="test" type="y">
+        <default>512</default>
+      </key>
+    </schema>
+</schemalist>

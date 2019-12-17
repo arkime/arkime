@@ -1,0 +1,107 @@
+/**
+ * probe gio.task_new - Called when a new #GTask is created
+ * @task: the new #GTask object
+ * @source_object: the source object
+ * @cancellable: the #GCancellable
+ * @callback: the task’s callback
+ * @callback_data: data for @callback
+ */
+probe gio.task_new = process("@ABS_GLIB_RUNTIME_LIBDIR@/libgio-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("task__new")
+{
+  task = $arg1;
+  source_object = $arg2;
+  cancellable = $arg3;
+  callback = $arg4;
+  callback_data = $arg5;
+  probestr = sprintf("gio.task_new(%p, %p, %p, %p) -> %p", source_object, cancellable, callback, callback_data, task);
+}
+
+/**
+ * probe gio.task_set_task_data - Called when the task data is set on a #GTask
+ * @task: the #GTask object
+ * @task_data: the task data
+ * @task_data_destroy: the destroy notify function for the data
+ */
+probe gio.task_set_task_data = process("@ABS_GLIB_RUNTIME_LIBDIR@/libgio-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("task__set_task_data")
+{
+  task = $arg1;
+  task_data = $arg2;
+  task_data_destroy = $arg3;
+  probestr = sprintf("gio.task_set_task_data(%p, %p, %p)", task, task_data, task_data_destroy);
+}
+
+/**
+ * probe gio.task_set_priority - Called when the priority of a #GTask is set
+ * @task: the #GTask object
+ * @priority: the priority
+ */
+probe gio.task_set_priority = process("@ABS_GLIB_RUNTIME_LIBDIR@/libgio-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("task__set_priority")
+{
+  task = $arg1;
+  priority = $arg2;
+  probestr = sprintf("gio.task_set_priority(%p, %i)", task, priority);
+}
+
+/**
+ * probe gio.task_set_source_tag - Called when the source tag of a #GTask is set
+ * @task: the #GTask object
+ * @source_tag: the source tag
+ */
+probe gio.task_set_source_tag = process("@ABS_GLIB_RUNTIME_LIBDIR@/libgio-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("task__set_source_tag")
+{
+  task = $arg1;
+  source_tag = $arg2;
+  probestr = sprintf("gio.task_set_source_tag(%p, %p)", task, source_tag);
+}
+
+/**
+ * probe gio.task_before_return - Called before a #GTask invokes its callback or returns from g_task_run_in_thread_sync()
+ * @task: the #GTask object
+ * @source_object: the source object passed to the callback
+ * @callback: the callback about to be invoked
+ * @callback_data: data passed to @callback
+ */
+probe gio.task_before_return = process("@ABS_GLIB_RUNTIME_LIBDIR@/libgio-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("task__before_return")
+{
+  task = $arg1;
+  source_object = $arg2;
+  callback = $arg3;
+  callback_data = $arg4;
+  probestr = sprintf("gio.task_before_return(%p, %p, %p, %p)", task, source_object, callback, callback_data);
+}
+
+/**
+ * probe gio.task_propagate - Called when a #GTask’s result is propagated
+ * @task: the #GTask object
+ * @error_set: %TRUE if propagating an error, %FALSE otherwise
+ */
+probe gio.task_propagate = process("@ABS_GLIB_RUNTIME_LIBDIR@/libgio-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("task__propagate")
+{
+  task = $arg1;
+  error_set = $arg2;
+  probestr = sprintf("gio.task_propagate(%p) -> %u", task, error_set);
+}
+
+/**
+ * probe gio.task_before_run_in_thread - Called before a #GTask’s function is run in a thread
+ * @task: the #GTask object
+ * @task_func: the task function being run
+ */
+probe gio.task_before_run_in_thread = process("@ABS_GLIB_RUNTIME_LIBDIR@/libgio-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("task__before_run_in_thread")
+{
+  task = $arg1;
+  task_func = $arg2;
+  probestr = sprintf("gio.task_before_run_in_thread(%p, %p)", task, task_func);
+}
+
+/**
+ * probe gio.task_after_run_in_thread - Called after a #GTask’s function is run in a thread
+ * @task: the #GTask object
+ * @thread_cancelled: %TRUE if the thread was cancelled, %FALSE otherwise
+ */
+probe gio.task_after_run_in_thread = process("@ABS_GLIB_RUNTIME_LIBDIR@/libgio-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("task__after_run_in_thread")
+{
+  task = $arg1;
+  thread_cancelled = $arg2;
+  probestr = sprintf("gio.task_after_run_in_thread(%p) -> %u", task, thread_cancelled);
+}

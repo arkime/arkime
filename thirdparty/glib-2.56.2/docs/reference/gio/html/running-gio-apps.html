@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Running GIO applications: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="pt01.html" title="Part I. GIO Overview">
+<link rel="prev" href="ch03.html" title="Compiling GIO applications">
+<link rel="next" href="extending-gio.html" title="Extending GIO">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="pt01.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="ch03.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="extending-gio.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="chapter">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="running-gio-apps"></a>Running GIO applications</h2></div></div></div>
+<p>
+      GIO inspects a few environment variables in addition to the
+      ones used by GLib.
+    </p>
+<p><b><code class="envar">XDG_DATA_HOME</code>, <code class="envar">XDG_DATA_DIRS</code>. </b>
+        GIO uses these environment variables to locate MIME information.
+        For more information, see the <a class="ulink" href="http://freedesktop.org/Standards/shared-mime-info-spec" target="_top">Shared MIME-info Database</a>
+        and the <a class="ulink" href="http://freedesktop.org/Standards/basedir-spec" target="_top">Base Directory Specification</a>.
+      </p>
+<p><b><code class="envar">GVFS_DISABLE_FUSE</code>. </b>
+        This variable can be set to keep <span class="type">Gvfs</span> from starting the fuse backend,
+        which may be unwanted or unnecessary in certain situations.
+      </p>
+<p><b><code class="envar">GIO_USE_VFS</code>. </b>
+        This environment variable can be set to the name of a <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a>
+        implementation to override the default for debugging purposes.
+        The <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> implementation for local files that is included in GIO
+        has the name "local", the implementation in the gvfs module has
+        the name "gvfs".  Most commonly, system software will set this to "local"
+	to avoid having `GFile` APIs perform unnecessary DBus calls.
+      </p>
+<p>
+      The following environment variables are only useful for debugging
+      GIO itself or modules that it loads. They should not be set in a
+      production environment.
+    </p>
+<p><b><code class="envar">GIO_USE_FILE_MONITOR</code>. </b>
+        This variable can be set to the name of a <a class="link" href="GFileMonitor.html" title="GFileMonitor"><span class="type">GFileMonitor</span></a>
+        implementation to override the default for debugging purposes.
+        The <a class="link" href="GFileMonitor.html" title="GFileMonitor"><span class="type">GFileMonitor</span></a> implementation for local files that is included
+        in GIO on Linux has the name "inotify", others that are built
+        are built as modules (depending on the platform) are called
+        "fam" and "fen".
+      </p>
+<p><b><code class="envar">GIO_USE_VOLUME_MONITOR</code>. </b>
+        This variable can be set to the name of a <a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a>
+        implementation to override the default for debugging purposes.
+        The <a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> implementation for local files that is included
+        in GIO has the name "unix", the udisks2-based implementation in the
+        gvfs module has the name "udisks2".
+      </p>
+<p><b><code class="envar">GIO_USE_TLS</code>. </b>
+        This variable can be set to the name of a <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a>
+        implementation to override the default for debugging purposes.
+        GIO does not include a <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> implementation, the gnutls-based
+        implementation in the glib-networking module has the name "gnutls".
+      </p>
+<p><b><code class="envar">GIO_MODULE_DIR</code>. </b>
+        When this environment variable is set to a path, GIO will load
+	modules from this alternate directory instead of the directory
+	built into GIO. This is useful when running tests, for example.
+      </p>
+<p><b><code class="envar">GIO_EXTRA_MODULES</code>. </b>
+        When this environment variable is set to a path, or a set of
+        paths separated by a colon, GIO will attempt to load
+        additional modules from within the path.
+      </p>
+<p><b><code class="envar">GSETTINGS_BACKEND</code>. </b>
+        This variable can be set to the name of a <a class="link" href="GSettingsBackend.html" title="GSettingsBackend"><span class="type">GSettingsBackend</span></a>
+        implementation to override the default for debugging purposes.
+        The memory-based implementation that is included in GIO has
+        the name "memory", the one in dconf has the name "dconf-settings".
+      </p>
+<p><b><code class="envar">GSETTINGS_SCHEMA_DIR</code>. </b>
+        This variable can be set to the name of a directory that is
+        considered in addition to the <code class="filename">glib-2.0/schemas</code>
+        subdirectories of the XDG system data dirs when looking
+        for compiled schemas for <a class="link" href="GSettings.html" title="GSettings"><span class="type">GSettings</span></a>.
+      </p>
+<p><b><code class="envar">DBUS_SYSTEM_BUS_ADDRESS</code>. </b>
+        This variable is consulted to find the address of the D-Bus system
+        bus. For the format of D-Bus addresses, see the D-Bus
+        <a class="ulink" href="http://dbus.freedesktop.org/doc/dbus-specification.html#addresses" target="_top">specification</a>.
+      
+        Setting this variable overrides platform-specific ways of determining
+        the system bus address.
+      </p>
+<p><b><code class="envar">DBUS_SESSION_BUS_ADDRESS</code>. </b>
+        This variable is consulted to find the address of the D-Bus session bus.
+      
+        Setting this variable overrides platform-specific ways of determining
+        the session bus address.
+      </p>
+<p><b><code class="envar">DBUS_STARTER_BUS_TYPE</code>. </b>
+        This variable is consulted to find out the 'starter' bus for an
+        application that has been started via D-Bus activation. The possible
+        values are 'system' or 'session'.
+      </p>
+<p><b><code class="envar">G_DBUS_DEBUG</code>. </b>
+         This variable can be set to a list of debug options, which
+         cause GLib to print out different types of debugging
+         information when using the D-Bus routines.
+         </p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term">transport</span></p></td>
+<td><p>Show IO activity (e.g. reads and writes)</p></td>
+</tr>
+<tr>
+<td><p><span class="term">message</span></p></td>
+<td><p>Show all sent and received D-Bus messages</p></td>
+</tr>
+<tr>
+<td><p><span class="term">payload</span></p></td>
+<td><p>Show payload for all sent and received D-Bus messages (implies message)</p></td>
+</tr>
+<tr>
+<td><p><span class="term">call</span></p></td>
+<td><p>Trace <a class="link" href="GDBusConnection.html#g-dbus-connection-call" title="g_dbus_connection_call ()"><code class="function">g_dbus_connection_call()</code></a> and <a class="link" href="GDBusConnection.html#g-dbus-connection-call-sync" title="g_dbus_connection_call_sync ()"><code class="function">g_dbus_connection_call_sync()</code></a> API usage</p></td>
+</tr>
+<tr>
+<td><p><span class="term">signal</span></p></td>
+<td><p>Show when a D-Bus signal is received</p></td>
+</tr>
+<tr>
+<td><p><span class="term">incoming</span></p></td>
+<td><p>Show when an incoming D-Bus method call is received</p></td>
+</tr>
+<tr>
+<td><p><span class="term">return</span></p></td>
+<td><p>Show when a reply is returned via the <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> API</p></td>
+</tr>
+<tr>
+<td><p><span class="term">emission</span></p></td>
+<td><p>Trace <a class="link" href="GDBusConnection.html#g-dbus-connection-emit-signal" title="g_dbus_connection_emit_signal ()"><code class="function">g_dbus_connection_emit_signal()</code></a> API usage</p></td>
+</tr>
+<tr>
+<td><p><span class="term">authentication</span></p></td>
+<td><p>Show information about connection authentication</p></td>
+</tr>
+<tr>
+<td><p><span class="term">address</span></p></td>
+<td><p>Show information about D-Bus address lookups and autolaunching</p></td>
+</tr>
+</tbody>
+</table></div>
+<p>
+         The special value <code class="literal">all</code> can be used to turn
+         on all debug options. The special value
+         <code class="literal">help</code> can be used to print a list of
+         supported options to standard output.
+      </p>
+<p><b><code class="envar">G_DBUS_COOKIE_SHA1_KEYRING_DIR</code>. </b>
+        Can be used to override the directory used to store the
+        keyring used in the <code class="literal">DBUS_COOKIE_SHA1</code>
+        authentication mechanism. Normally the directory used is
+        <code class="filename">.dbus-keyrings</code> in the user's home
+        directory.
+      </p>
+<p><b><code class="envar">G_DBUS_COOKIE_SHA1_KEYRING_DIR_IGNORE_PERMISSION</code>. </b>
+        If set, the permissions of the directory used to store the
+        keyring used in the <code class="literal">DBUS_COOKIE_SHA1</code>
+        authentication mechanism won't be checked. Normally the
+        directory must be readable only by the user.
+      </p>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

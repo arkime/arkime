@@ -1,0 +1,501 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GNetworkAddress: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="resolver.html" title="DNS resolution">
+<link rel="prev" href="GProxyAddressEnumerator.html" title="GProxyAddressEnumerator">
+<link rel="next" href="GNetworkService.html" title="GNetworkService">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GNetworkAddress.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GNetworkAddress.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_interfaces">  <span class="dim">|</span> 
+                  <a href="#GNetworkAddress.implemented-interfaces" class="shortcut">Implemented Interfaces</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GNetworkAddress.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="resolver.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GProxyAddressEnumerator.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GNetworkService.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GNetworkAddress"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GNetworkAddress.top_of_page"></a>GNetworkAddress</span></h2>
+<p>GNetworkAddress — A GSocketConnectable for resolving hostnames</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GNetworkAddress.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="returnvalue">GSocketConnectable</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GNetworkAddress.html#g-network-address-new" title="g_network_address_new ()">g_network_address_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="returnvalue">GSocketConnectable</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GNetworkAddress.html#g-network-address-new-loopback" title="g_network_address_new_loopback ()">g_network_address_new_loopback</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="returnvalue">GSocketConnectable</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GNetworkAddress.html#g-network-address-parse" title="g_network_address_parse ()">g_network_address_parse</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="returnvalue">GSocketConnectable</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GNetworkAddress.html#g-network-address-parse-uri" title="g_network_address_parse_uri ()">g_network_address_parse_uri</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GNetworkAddress.html#g-network-address-get-hostname" title="g_network_address_get_hostname ()">g_network_address_get_hostname</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GNetworkAddress.html#g-network-address-get-port" title="g_network_address_get_port ()">g_network_address_get_port</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GNetworkAddress.html#g-network-address-get-scheme" title="g_network_address_get_scheme ()">g_network_address_get_scheme</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GNetworkAddress.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="property_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<td class="property_name"><a class="link" href="GNetworkAddress.html#GNetworkAddress--hostname" title="The “hostname” property">hostname</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a></td>
+<td class="property_name"><a class="link" href="GNetworkAddress.html#GNetworkAddress--port" title="The “port” property">port</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<td class="property_name"><a class="link" href="GNetworkAddress.html#GNetworkAddress--scheme" title="The “scheme” property">scheme</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GNetworkAddress.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GNetworkAddress.html#GNetworkAddress-struct" title="GNetworkAddress">GNetworkAddress</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GNetworkAddress.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GNetworkAddress
+</pre>
+</div>
+<div class="refsect1">
+<a name="GNetworkAddress.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GNetworkAddress implements
+ <a class="link" href="GSocketConnectable.html" title="GSocketConnectable">GSocketConnectable</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GNetworkAddress.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GNetworkAddress.description"></a><h2>Description</h2>
+<p><a class="link" href="GNetworkAddress.html" title="GNetworkAddress"><span class="type">GNetworkAddress</span></a> provides an easy way to resolve a hostname and
+then attempt to connect to that host, handling the possibility of
+multiple IP addresses and multiple address families.</p>
+<p>See <a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a> for and example of using the connectable
+interface.</p>
+</div>
+<div class="refsect1">
+<a name="GNetworkAddress.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-network-address-new"></a><h3>g_network_address_new ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="returnvalue">GSocketConnectable</span></a> *
+g_network_address_new (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *hostname</code></em>,
+                       <em class="parameter"><code><a href="../glib-Basic-Types.html#guint16"><span class="type">guint16</span></a> port</code></em>);</pre>
+<p>Creates a new <a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a> for connecting to the given
+<em class="parameter"><code>hostname</code></em>
+ and <em class="parameter"><code>port</code></em>
+.</p>
+<p>Note that depending on the configuration of the machine, a
+<em class="parameter"><code>hostname</code></em>
+ of <code class="literal">localhost</code> may refer to the IPv4 loopback address
+only, or to both IPv4 and IPv6; use
+<a class="link" href="GNetworkAddress.html#g-network-address-new-loopback" title="g_network_address_new_loopback ()"><code class="function">g_network_address_new_loopback()</code></a> to create a <a class="link" href="GNetworkAddress.html" title="GNetworkAddress"><span class="type">GNetworkAddress</span></a> that
+is guaranteed to resolve to both addresses.</p>
+<div class="refsect3">
+<a name="g-network-address-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>hostname</p></td>
+<td class="parameter_description"><p>the hostname</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>port</p></td>
+<td class="parameter_description"><p>the port</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-network-address-new.returns"></a><h4>Returns</h4>
+<p>the new <a class="link" href="GNetworkAddress.html" title="GNetworkAddress"><span class="type">GNetworkAddress</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GNetworkAddress]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-network-address-new-loopback"></a><h3>g_network_address_new_loopback ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="returnvalue">GSocketConnectable</span></a> *
+g_network_address_new_loopback (<em class="parameter"><code><a href="../glib-Basic-Types.html#guint16"><span class="type">guint16</span></a> port</code></em>);</pre>
+<p>Creates a new <a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a> for connecting to the local host
+over a loopback connection to the given <em class="parameter"><code>port</code></em>
+. This is intended for
+use in connecting to local services which may be running on IPv4 or
+IPv6.</p>
+<p>The connectable will return IPv4 and IPv6 loopback addresses,
+regardless of how the host resolves <code class="literal">localhost</code>. By contrast,
+<a class="link" href="GNetworkAddress.html#g-network-address-new" title="g_network_address_new ()"><code class="function">g_network_address_new()</code></a> will often only return an IPv4 address when
+resolving <code class="literal">localhost</code>, and an IPv6 address for <code class="literal">localhost6</code>.</p>
+<p>g_network_address_get_hostname() will always return <code class="literal">localhost</code> for
+<span class="type">GNetworkAddresses</span> created with this constructor.</p>
+<div class="refsect3">
+<a name="g-network-address-new-loopback.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>port</p></td>
+<td class="parameter_description"><p>the port</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-network-address-new-loopback.returns"></a><h4>Returns</h4>
+<p>the new <a class="link" href="GNetworkAddress.html" title="GNetworkAddress"><span class="type">GNetworkAddress</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GNetworkAddress]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-network-address-parse"></a><h3>g_network_address_parse ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="returnvalue">GSocketConnectable</span></a> *
+g_network_address_parse (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *host_and_port</code></em>,
+                         <em class="parameter"><code><a href="../glib-Basic-Types.html#guint16"><span class="type">guint16</span></a> default_port</code></em>,
+                         <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Creates a new <a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a> for connecting to the given
+<em class="parameter"><code>hostname</code></em>
+ and <em class="parameter"><code>port</code></em>
+. May fail and return <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> in case
+parsing <em class="parameter"><code>host_and_port</code></em>
+ fails.</p>
+<p><em class="parameter"><code>host_and_port</code></em>
+ may be in any of a number of recognised formats; an IPv6
+address, an IPv4 address, or a domain name (in which case a DNS
+lookup is performed). Quoting with [] is supported for all address
+types. A port override may be specified in the usual way with a
+colon.</p>
+<p>If no port is specified in <em class="parameter"><code>host_and_port</code></em>
+ then <em class="parameter"><code>default_port</code></em>
+ will be
+used as the port number to connect to.</p>
+<p>In general, <em class="parameter"><code>host_and_port</code></em>
+ is expected to be provided by the user
+(allowing them to give the hostname, and a port override if necessary)
+and <em class="parameter"><code>default_port</code></em>
+ is expected to be provided by the application.</p>
+<p>(The port component of <em class="parameter"><code>host_and_port</code></em>
+ can also be specified as a
+service name rather than as a numeric port, but this functionality
+is deprecated, because it depends on the contents of /etc/services,
+which is generally quite sparse on platforms other than Linux.)</p>
+<div class="refsect3">
+<a name="g-network-address-parse.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>host_and_port</p></td>
+<td class="parameter_description"><p>the hostname and optionally a port</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>default_port</p></td>
+<td class="parameter_description"><p>the default port if not in <em class="parameter"><code>host_and_port</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-network-address-parse.returns"></a><h4>Returns</h4>
+<p>the new
+<a class="link" href="GNetworkAddress.html" title="GNetworkAddress"><span class="type">GNetworkAddress</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GNetworkAddress]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-network-address-parse-uri"></a><h3>g_network_address_parse_uri ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="returnvalue">GSocketConnectable</span></a> *
+g_network_address_parse_uri (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *uri</code></em>,
+                             <em class="parameter"><code><a href="../glib-Basic-Types.html#guint16"><span class="type">guint16</span></a> default_port</code></em>,
+                             <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Creates a new <a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a> for connecting to the given
+<em class="parameter"><code>uri</code></em>
+. May fail and return <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> in case parsing <em class="parameter"><code>uri</code></em>
+ fails.</p>
+<p>Using this rather than <a class="link" href="GNetworkAddress.html#g-network-address-new" title="g_network_address_new ()"><code class="function">g_network_address_new()</code></a> or
+<a class="link" href="GNetworkAddress.html#g-network-address-parse" title="g_network_address_parse ()"><code class="function">g_network_address_parse()</code></a> allows <a class="link" href="GSocketClient.html" title="GSocketClient"><span class="type">GSocketClient</span></a> to determine
+when to use application-specific proxy protocols.</p>
+<div class="refsect3">
+<a name="g-network-address-parse-uri.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>uri</p></td>
+<td class="parameter_description"><p>the hostname and optionally a port</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>default_port</p></td>
+<td class="parameter_description"><p>The default port if none is found in the URI</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-network-address-parse-uri.returns"></a><h4>Returns</h4>
+<p>the new
+<a class="link" href="GNetworkAddress.html" title="GNetworkAddress"><span class="type">GNetworkAddress</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GNetworkAddress]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-network-address-get-hostname"></a><h3>g_network_address_get_hostname ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_network_address_get_hostname (<em class="parameter"><code><a class="link" href="GNetworkAddress.html" title="GNetworkAddress"><span class="type">GNetworkAddress</span></a> *addr</code></em>);</pre>
+<p>Gets <em class="parameter"><code>addr</code></em>
+'s hostname. This might be either UTF-8 or ASCII-encoded,
+depending on what <em class="parameter"><code>addr</code></em>
+ was created with.</p>
+<div class="refsect3">
+<a name="g-network-address-get-hostname.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>addr</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GNetworkAddress.html" title="GNetworkAddress"><span class="type">GNetworkAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-network-address-get-hostname.returns"></a><h4>Returns</h4>
+<p> <em class="parameter"><code>addr</code></em>
+'s hostname</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-network-address-get-port"></a><h3>g_network_address_get_port ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>
+g_network_address_get_port (<em class="parameter"><code><a class="link" href="GNetworkAddress.html" title="GNetworkAddress"><span class="type">GNetworkAddress</span></a> *addr</code></em>);</pre>
+<p>Gets <em class="parameter"><code>addr</code></em>
+'s port number</p>
+<div class="refsect3">
+<a name="g-network-address-get-port.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>addr</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GNetworkAddress.html" title="GNetworkAddress"><span class="type">GNetworkAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-network-address-get-port.returns"></a><h4>Returns</h4>
+<p> <em class="parameter"><code>addr</code></em>
+'s port (which may be 0)</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-network-address-get-scheme"></a><h3>g_network_address_get_scheme ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_network_address_get_scheme (<em class="parameter"><code><a class="link" href="GNetworkAddress.html" title="GNetworkAddress"><span class="type">GNetworkAddress</span></a> *addr</code></em>);</pre>
+<p>Gets <em class="parameter"><code>addr</code></em>
+'s scheme</p>
+<div class="refsect3">
+<a name="g-network-address-get-scheme.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>addr</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GNetworkAddress.html" title="GNetworkAddress"><span class="type">GNetworkAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-network-address-get-scheme.returns"></a><h4>Returns</h4>
+<p> <em class="parameter"><code>addr</code></em>
+'s scheme (<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if not built from URI)</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GNetworkAddress.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GNetworkAddress-struct"></a><h3>GNetworkAddress</h3>
+<pre class="programlisting">typedef struct _GNetworkAddress GNetworkAddress;</pre>
+<p>A <a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a> for resolving a hostname and connecting to
+that host.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GNetworkAddress.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GNetworkAddress--hostname"></a><h3>The <code class="literal">“hostname”</code> property</h3>
+<pre class="programlisting">  “hostname”                 <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>Hostname to resolve.</p>
+<p>Flags: Read / Write / Construct Only</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GNetworkAddress--port"></a><h3>The <code class="literal">“port”</code> property</h3>
+<pre class="programlisting">  “port”                     <a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a></pre>
+<p>Network port.</p>
+<p>Flags: Read / Write / Construct Only</p>
+<p>Allowed values: &lt;= 65535</p>
+<p>Default value: 0</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GNetworkAddress--scheme"></a><h3>The <code class="literal">“scheme”</code> property</h3>
+<pre class="programlisting">  “scheme”                   <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>URI Scheme.</p>
+<p>Flags: Read / Write / Construct Only</p>
+<p>Default value: NULL</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

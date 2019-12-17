@@ -1,0 +1,40 @@
+Below are just a few of the people who have contributed
+to GLib. Please don't mail these people about problems you
+have with GTK+; see the README file for information about
+filing bugs and submitting patches.
+
+GLib-2.0 Team
+-------------
+Hans Breuer        <hans@breuer.org>
+Matthias Clasen    <mclasen@redhat.com>
+Tor Lillqvist      <tml@iki.fi>
+Tim Janik          <timj@gtk.org>
+Havoc Pennington   <hp@redhat.com> 
+Ron Steinke        <rsteinke@w-link.net>
+Owen Taylor        <otaylor@redhat.com>
+Sebastian Wilhelmi <seppi@seppi.de>
+
+GLib-1.2 Team
+-------------
+Shawn T. Amundson  <amundson@gimp.org>
+Jeff Garzik        <jgarzik@pobox.com>
+Raja R Harinath    <harinath@cs.umn.edu>
+Tim Janik          <timj@gtk.org>
+Elliot Lee         <sopwith@redhat.com>
+Tor Lillqvist      <tml@iki.fi>
+Paolo Molaro       <lupus@debian.org>
+Havoc Pennington   <hp@pobox.com>
+Manish Singh       <yosh@gimp.org>
+Owen Taylor        <otaylor@gtk.org>
+Sebastian Wilhelmi <wilhelmi@ira.uka.de>
+
+The random number generator "Mersenne Twister", which is used by GLib,
+was developed and originally coded by:
+Makoto Matsumoto   <matumoto@math.keio.ac.jp>
+Takuji Nishimura   <nisimura@math.keio.ac.jp>
+
+Original Authors
+----------------
+Peter Mattis       <petm@xcf.berkeley.edu>
+Spencer Kimball    <spencer@xcf.berkeley.edu>
+Josh MacDonald     <jmacd@xcf.berkeley.edu>

@@ -1,0 +1,286 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GRemoteActionGroup: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="application.html" title="Application support">
+<link rel="prev" href="GPropertyAction.html" title="GPropertyAction">
+<link rel="next" href="gio-GActionGroup-exporter.html" title="GActionGroup exporter">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GRemoteActionGroup.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GRemoteActionGroup.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_prerequisites">  <span class="dim">|</span> 
+                  <a href="#GRemoteActionGroup.prerequisites" class="shortcut">Prerequisites</a></span><span id="nav_implementations">  <span class="dim">|</span> 
+                  <a href="#GRemoteActionGroup.implementations" class="shortcut">Known Implementations</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="application.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GPropertyAction.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gio-GActionGroup-exporter.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GRemoteActionGroup"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GRemoteActionGroup.top_of_page"></a>GRemoteActionGroup</span></h2>
+<p>GRemoteActionGroup — A GActionGroup that interacts with other processes</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GRemoteActionGroup.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GRemoteActionGroup.html#g-remote-action-group-activate-action-full" title="g_remote_action_group_activate_action_full ()">g_remote_action_group_activate_action_full</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GRemoteActionGroup.html#g-remote-action-group-change-action-state-full" title="g_remote_action_group_change_action_state_full ()">g_remote_action_group_change_action_state_full</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GRemoteActionGroup.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GRemoteActionGroup.html#GRemoteActionGroup-struct" title="GRemoteActionGroup">GRemoteActionGroup</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GRemoteActionGroup.html#GRemoteActionGroupInterface" title="struct GRemoteActionGroupInterface">GRemoteActionGroupInterface</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GRemoteActionGroup.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/GTypeModule.html">GInterface</a>
+    <span class="lineart">╰──</span> GRemoteActionGroup
+</pre>
+</div>
+<div class="refsect1">
+<a name="GRemoteActionGroup.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GRemoteActionGroup requires
+ <a class="link" href="GActionGroup.html" title="GActionGroup">GActionGroup</a> and  <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GRemoteActionGroup.implementations"></a><h2>Known Implementations</h2>
+<p>
+GRemoteActionGroup is implemented by
+ <a class="link" href="GDBusActionGroup.html" title="GDBusActionGroup">GDBusActionGroup</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GRemoteActionGroup.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GRemoteActionGroup.description"></a><h2>Description</h2>
+<p>The GRemoteActionGroup interface is implemented by <a class="link" href="GActionGroup.html" title="GActionGroup"><span class="type">GActionGroup</span></a>
+instances that either transmit action invocations to other processes
+or receive action invocations in the local process from other
+processes.</p>
+<p>The interface has <code class="literal">_full</code> variants of the two
+methods on <a class="link" href="GActionGroup.html" title="GActionGroup"><span class="type">GActionGroup</span></a> used to activate actions:
+<a class="link" href="GActionGroup.html#g-action-group-activate-action" title="g_action_group_activate_action ()"><code class="function">g_action_group_activate_action()</code></a> and
+<a class="link" href="GActionGroup.html#g-action-group-change-action-state" title="g_action_group_change_action_state ()"><code class="function">g_action_group_change_action_state()</code></a>. These variants allow a
+"platform data" <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> to be specified: a dictionary providing
+context for the action invocation (for example: timestamps, startup
+notification IDs, etc).</p>
+<p><a class="link" href="GDBusActionGroup.html" title="GDBusActionGroup"><span class="type">GDBusActionGroup</span></a> implements <a class="link" href="GRemoteActionGroup.html" title="GRemoteActionGroup"><span class="type">GRemoteActionGroup</span></a>.  This provides a
+mechanism to send platform data for action invocations over D-Bus.</p>
+<p>Additionally, <a class="link" href="gio-GActionGroup-exporter.html#g-dbus-connection-export-action-group" title="g_dbus_connection_export_action_group ()"><code class="function">g_dbus_connection_export_action_group()</code></a> will check if
+the exported <a class="link" href="GActionGroup.html" title="GActionGroup"><span class="type">GActionGroup</span></a> implements <a class="link" href="GRemoteActionGroup.html" title="GRemoteActionGroup"><span class="type">GRemoteActionGroup</span></a> and use the
+<code class="literal">_full</code> variants of the calls if available.  This
+provides a mechanism by which to receive platform data for action
+invocations that arrive by way of D-Bus.</p>
+</div>
+<div class="refsect1">
+<a name="GRemoteActionGroup.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-remote-action-group-activate-action-full"></a><h3>g_remote_action_group_activate_action_full ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_remote_action_group_activate_action_full
+                               (<em class="parameter"><code><a class="link" href="GRemoteActionGroup.html" title="GRemoteActionGroup"><span class="type">GRemoteActionGroup</span></a> *remote</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *action_name</code></em>,
+                                <em class="parameter"><code><a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *parameter</code></em>,
+                                <em class="parameter"><code><a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *platform_data</code></em>);</pre>
+<p>Activates the remote action.</p>
+<p>This is the same as <a class="link" href="GActionGroup.html#g-action-group-activate-action" title="g_action_group_activate_action ()"><code class="function">g_action_group_activate_action()</code></a> except that it
+allows for provision of "platform data" to be sent along with the
+activation request.  This typically contains details such as the user
+interaction timestamp or startup notification information.</p>
+<p><em class="parameter"><code>platform_data</code></em>
+ must be non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> and must have the type
+<a href="../glib-GVariantType.html#G-VARIANT-TYPE-VARDICT:CAPS"><code class="literal">G_VARIANT_TYPE_VARDICT</code></a>.  If it is floating, it will be consumed.</p>
+<div class="refsect3">
+<a name="g-remote-action-group-activate-action-full.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>remote</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDBusActionGroup.html" title="GDBusActionGroup"><span class="type">GDBusActionGroup</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>action_name</p></td>
+<td class="parameter_description"><p>the name of the action to activate</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>parameter</p></td>
+<td class="parameter_description"><p>the optional parameter to the activation. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>platform_data</p></td>
+<td class="parameter_description"><p>the platform data to send</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-remote-action-group-change-action-state-full"></a><h3>g_remote_action_group_change_action_state_full ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_remote_action_group_change_action_state_full
+                               (<em class="parameter"><code><a class="link" href="GRemoteActionGroup.html" title="GRemoteActionGroup"><span class="type">GRemoteActionGroup</span></a> *remote</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *action_name</code></em>,
+                                <em class="parameter"><code><a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *value</code></em>,
+                                <em class="parameter"><code><a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *platform_data</code></em>);</pre>
+<p>Changes the state of a remote action.</p>
+<p>This is the same as <a class="link" href="GActionGroup.html#g-action-group-change-action-state" title="g_action_group_change_action_state ()"><code class="function">g_action_group_change_action_state()</code></a> except that
+it allows for provision of "platform data" to be sent along with the
+state change request.  This typically contains details such as the
+user interaction timestamp or startup notification information.</p>
+<p><em class="parameter"><code>platform_data</code></em>
+ must be non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> and must have the type
+<a href="../glib-GVariantType.html#G-VARIANT-TYPE-VARDICT:CAPS"><code class="literal">G_VARIANT_TYPE_VARDICT</code></a>.  If it is floating, it will be consumed.</p>
+<div class="refsect3">
+<a name="g-remote-action-group-change-action-state-full.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>remote</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GRemoteActionGroup.html" title="GRemoteActionGroup"><span class="type">GRemoteActionGroup</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>action_name</p></td>
+<td class="parameter_description"><p>the name of the action to change the state of</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>the new requested value for the state</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>platform_data</p></td>
+<td class="parameter_description"><p>the platform data to send</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GRemoteActionGroup.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GRemoteActionGroup-struct"></a><h3>GRemoteActionGroup</h3>
+<pre class="programlisting">typedef struct _GRemoteActionGroup GRemoteActionGroup;</pre>
+<p><a class="link" href="GRemoteActionGroup.html" title="GRemoteActionGroup"><span class="type">GRemoteActionGroup</span></a> is an opaque data structure and can only be accessed
+using the following functions.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GRemoteActionGroupInterface"></a><h3>struct GRemoteActionGroupInterface</h3>
+<pre class="programlisting">struct GRemoteActionGroupInterface {
+  GTypeInterface g_iface;
+
+  void (* activate_action_full)     (GRemoteActionGroup *remote,
+                                     const gchar        *action_name,
+                                     GVariant           *parameter,
+                                     GVariant           *platform_data);
+
+  void (* change_action_state_full) (GRemoteActionGroup *remote,
+                                     const gchar        *action_name,
+                                     GVariant           *value,
+                                     GVariant           *platform_data);
+};
+</pre>
+<p>The virtual function table for <a class="link" href="GRemoteActionGroup.html" title="GRemoteActionGroup"><span class="type">GRemoteActionGroup</span></a>.</p>
+<div class="refsect3">
+<a name="GRemoteActionGroupInterface.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GRemoteActionGroupInterface.activate-action-full"></a>activate_action_full</code></em> ()</p></td>
+<td class="struct_member_description"><p>the virtual function pointer for <a class="link" href="GRemoteActionGroup.html#g-remote-action-group-activate-action-full" title="g_remote_action_group_activate_action_full ()"><code class="function">g_remote_action_group_activate_action_full()</code></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GRemoteActionGroupInterface.change-action-state-full"></a>change_action_state_full</code></em> ()</p></td>
+<td class="struct_member_description"><p>the virtual function pointer for <a class="link" href="GRemoteActionGroup.html#g-remote-action-group-change-action-state-full" title="g_remote_action_group_change_action_state_full ()"><code class="function">g_remote_action_group_change_action_state_full()</code></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

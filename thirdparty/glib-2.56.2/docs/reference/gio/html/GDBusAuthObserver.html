@@ -1,0 +1,384 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GDBusAuthObserver: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="gdbus-lowlevel.html" title="Low-level D-Bus Support">
+<link rel="prev" href="GDBusServer.html" title="GDBusServer">
+<link rel="next" href="gdbus-convenience.html" title="High-level D-Bus Support">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GDBusAuthObserver.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GDBusAuthObserver.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_signals">  <span class="dim">|</span> 
+                  <a href="#GDBusAuthObserver.signals" class="shortcut">Signals</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="gdbus-lowlevel.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GDBusServer.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gdbus-convenience.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GDBusAuthObserver"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GDBusAuthObserver.top_of_page"></a>GDBusAuthObserver</span></h2>
+<p>GDBusAuthObserver — Object used for authenticating connections</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GDBusAuthObserver.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="returnvalue">GDBusAuthObserver</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusAuthObserver.html#g-dbus-auth-observer-new" title="g_dbus_auth_observer_new ()">g_dbus_auth_observer_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusAuthObserver.html#g-dbus-auth-observer-authorize-authenticated-peer" title="g_dbus_auth_observer_authorize_authenticated_peer ()">g_dbus_auth_observer_authorize_authenticated_peer</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusAuthObserver.html#g-dbus-auth-observer-allow-mechanism" title="g_dbus_auth_observer_allow_mechanism ()">g_dbus_auth_observer_allow_mechanism</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDBusAuthObserver.signals"></a><h2>Signals</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="signals_return">
+<col width="300px" class="signals_name">
+<col width="200px" class="signals_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="signal_type"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a></td>
+<td class="signal_name"><a class="link" href="GDBusAuthObserver.html#GDBusAuthObserver-allow-mechanism" title="The “allow-mechanism” signal">allow-mechanism</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a></td>
+<td class="signal_name"><a class="link" href="GDBusAuthObserver.html#GDBusAuthObserver-authorize-authenticated-peer" title="The “authorize-authenticated-peer” signal">authorize-authenticated-peer</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDBusAuthObserver.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GDBusAuthObserver.html#GDBusAuthObserver-struct" title="GDBusAuthObserver">GDBusAuthObserver</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDBusAuthObserver.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GDBusAuthObserver
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusAuthObserver.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusAuthObserver.description"></a><h2>Description</h2>
+<p>The <a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a> type provides a mechanism for participating
+in how a <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> (or a <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>) authenticates remote
+peers. Simply instantiate a <a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a> and connect to the
+signals you are interested in. Note that new signals may be added
+in the future</p>
+<div class="refsect3">
+<a name="auth-observer"></a><h4>Controlling Authentication</h4>
+<p>For example, if you only want to allow D-Bus connections from
+processes owned by the same uid as the server, you would use a
+signal handler like the following:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">static</span><span class="normal"> <a href="../glib-Basic-Types.html#gboolean">gboolean</a></span>
+<span class="function">on_authorize_authenticated_peer</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GDBusAuthObserver</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">observer</span><span class="symbol">,</span>
+<span class="normal">                                 </span><span class="usertype">GIOStream</span><span class="normal">         </span><span class="symbol">*</span><span class="normal">stream</span><span class="symbol">,</span>
+<span class="normal">                                 </span><span class="usertype">GCredentials</span><span class="normal">      </span><span class="symbol">*</span><span class="normal">credentials</span><span class="symbol">,</span>
+<span class="normal">                                 </span><span class="usertype">gpointer</span><span class="normal">           user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">gboolean</span><span class="normal"> authorized</span><span class="symbol">;</span>
+
+<span class="normal">  authorized </span><span class="symbol">=</span><span class="normal"> <a href="../glib-Standard-Macros.html#FALSE:CAPS">FALSE</a></span><span class="symbol">;</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">credentials </span><span class="symbol">!=</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="usertype">GCredentials</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">own_credentials</span><span class="symbol">;</span>
+<span class="normal">      own_credentials </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GCredentials.html#g-credentials-new">g_credentials_new</a></span><span class="normal"> </span><span class="symbol">();</span>
+<span class="normal">      </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="GCredentials.html#g-credentials-is-same-user">g_credentials_is_same_user</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">credentials</span><span class="symbol">,</span><span class="normal"> own_credentials</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">))</span>
+<span class="normal">        authorized </span><span class="symbol">=</span><span class="normal"> <a href="../glib-Standard-Macros.html#TRUE:CAPS">TRUE</a></span><span class="symbol">;</span>
+<span class="normal">      </span><span class="function"><a href="../gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">own_credentials</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> authorized</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusAuthObserver.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-dbus-auth-observer-new"></a><h3>g_dbus_auth_observer_new ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="returnvalue">GDBusAuthObserver</span></a> *
+g_dbus_auth_observer_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Creates a new <a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a> object.</p>
+<div class="refsect3">
+<a name="g-dbus-auth-observer-new.returns"></a><h4>Returns</h4>
+<p> A <a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a>. Free with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-auth-observer-authorize-authenticated-peer"></a><h3>g_dbus_auth_observer_authorize_authenticated_peer ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_dbus_auth_observer_authorize_authenticated_peer
+                               (<em class="parameter"><code><a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a> *observer</code></em>,
+                                <em class="parameter"><code><a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a> *stream</code></em>,
+                                <em class="parameter"><code><a class="link" href="GCredentials.html" title="GCredentials"><span class="type">GCredentials</span></a> *credentials</code></em>);</pre>
+<p>Emits the <a class="link" href="GDBusAuthObserver.html#GDBusAuthObserver-authorize-authenticated-peer" title="The “authorize-authenticated-peer” signal"><span class="type">“authorize-authenticated-peer”</span></a> signal on <em class="parameter"><code>observer</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-auth-observer-authorize-authenticated-peer.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>observer</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a> for the <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>credentials</p></td>
+<td class="parameter_description"><p>Credentials received from the peer or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-auth-observer-authorize-authenticated-peer.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the peer is authorized, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if not.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-auth-observer-allow-mechanism"></a><h3>g_dbus_auth_observer_allow_mechanism ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_dbus_auth_observer_allow_mechanism (<em class="parameter"><code><a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a> *observer</code></em>,
+                                      <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *mechanism</code></em>);</pre>
+<p>Emits the <a class="link" href="GDBusAuthObserver.html#GDBusAuthObserver-allow-mechanism" title="The “allow-mechanism” signal"><span class="type">“allow-mechanism”</span></a> signal on <em class="parameter"><code>observer</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-auth-observer-allow-mechanism.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>observer</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mechanism</p></td>
+<td class="parameter_description"><p>The name of the mechanism, e.g. <code class="literal">DBUS_COOKIE_SHA1</code>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-auth-observer-allow-mechanism.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>mechanism</code></em>
+can be used to authenticate the other peer, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if not.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusAuthObserver.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GDBusAuthObserver-struct"></a><h3>GDBusAuthObserver</h3>
+<pre class="programlisting">typedef struct _GDBusAuthObserver GDBusAuthObserver;</pre>
+<p>The <a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a> structure contains only private data and
+should only be accessed using the provided API.</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusAuthObserver.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="GDBusAuthObserver-allow-mechanism"></a><h3>The <code class="literal">“allow-mechanism”</code> signal</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+user_function (<a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a> *observer,
+               <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>             *mechanism,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>           user_data)</pre>
+<p>Emitted to check if <em class="parameter"><code>mechanism</code></em>
+ is allowed to be used.</p>
+<div class="refsect3">
+<a name="GDBusAuthObserver-allow-mechanism.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>observer</p></td>
+<td class="parameter_description"><p>The <a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a> emitting the signal.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mechanism</p></td>
+<td class="parameter_description"><p>The name of the mechanism, e.g. <code class="literal">DBUS_COOKIE_SHA1</code>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="GDBusAuthObserver-allow-mechanism.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>mechanism</code></em>
+can be used to authenticate the other peer, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if not.</p>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusAuthObserver-authorize-authenticated-peer"></a><h3>The <code class="literal">“authorize-authenticated-peer”</code> signal</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+user_function (<a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a> *observer,
+               <a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a>         *stream,
+               <a class="link" href="GCredentials.html" title="GCredentials"><span class="type">GCredentials</span></a>      *credentials,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>           user_data)</pre>
+<p>Emitted to check if a peer that is successfully authenticated
+is authorized.</p>
+<div class="refsect3">
+<a name="GDBusAuthObserver-authorize-authenticated-peer.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>observer</p></td>
+<td class="parameter_description"><p>The <a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a> emitting the signal.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a> for the <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>credentials</p></td>
+<td class="parameter_description"><p>Credentials received from the peer or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="GDBusAuthObserver-authorize-authenticated-peer.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the peer is authorized, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if not.</p>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

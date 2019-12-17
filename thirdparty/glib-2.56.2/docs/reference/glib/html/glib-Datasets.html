@@ -1,0 +1,668 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Datasets: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-data-types.html" title="GLib Data Types">
+<link rel="prev" href="glib-Keyed-Data-Lists.html" title="Keyed Data Lists">
+<link rel="next" href="glib-GVariantType.html" title="GVariantType">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-Datasets.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-data-types.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Keyed-Data-Lists.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-GVariantType.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Datasets"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Datasets.top_of_page"></a>Datasets</span></h2>
+<p>Datasets — associate groups of data elements with
+                    particular memory locations</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-Datasets.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Datasets.html#g-dataset-id-set-data" title="g_dataset_id_set_data()">g_dataset_id_set_data</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Datasets.html#g-dataset-id-set-data-full" title="g_dataset_id_set_data_full ()">g_dataset_id_set_data_full</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="glib-Datasets.html#GDestroyNotify" title="GDestroyNotify ()">*GDestroyNotify</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Datasets.html#g-dataset-id-get-data" title="g_dataset_id_get_data ()">g_dataset_id_get_data</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Datasets.html#g-dataset-id-remove-data" title="g_dataset_id_remove_data()">g_dataset_id_remove_data</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Datasets.html#g-dataset-id-remove-no-notify" title="g_dataset_id_remove_no_notify ()">g_dataset_id_remove_no_notify</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Datasets.html#g-dataset-set-data" title="g_dataset_set_data()">g_dataset_set_data</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Datasets.html#g-dataset-set-data-full" title="g_dataset_set_data_full()">g_dataset_set_data_full</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Datasets.html#g-dataset-get-data" title="g_dataset_get_data()">g_dataset_get_data</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Datasets.html#g-dataset-remove-data" title="g_dataset_remove_data()">g_dataset_remove_data</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Datasets.html#g-dataset-remove-no-notify" title="g_dataset_remove_no_notify()">g_dataset_remove_no_notify</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Datasets.html#g-dataset-foreach" title="g_dataset_foreach ()">g_dataset_foreach</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="glib-Datasets.html#GDataForeachFunc" title="GDataForeachFunc ()">*GDataForeachFunc</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Datasets.html#g-dataset-destroy" title="g_dataset_destroy ()">g_dataset_destroy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Datasets.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gmodule.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Datasets.description"></a><h2>Description</h2>
+<p>Datasets associate groups of data elements with particular memory
+locations. These are useful if you need to associate data with a
+structure returned from an external library. Since you cannot modify
+the structure, you use its location in memory as the key into a
+dataset, where you can associate any number of data elements with it.</p>
+<p>There are two forms of most of the dataset functions. The first form
+uses strings to identify the data elements associated with a
+location. The second form uses <a class="link" href="glib-Quarks.html#GQuark" title="GQuark"><span class="type">GQuark</span></a> identifiers, which are
+created with a call to <a class="link" href="glib-Quarks.html#g-quark-from-string" title="g_quark_from_string ()"><code class="function">g_quark_from_string()</code></a> or
+<a class="link" href="glib-Quarks.html#g-quark-from-static-string" title="g_quark_from_static_string ()"><code class="function">g_quark_from_static_string()</code></a>. The second form is quicker, since it
+does not require looking up the string in the hash table of <a class="link" href="glib-Quarks.html#GQuark" title="GQuark"><span class="type">GQuark</span></a>
+identifiers.</p>
+<p>There is no function to create a dataset. It is automatically
+created as soon as you add elements to it.</p>
+<p>To add data elements to a dataset use <a class="link" href="glib-Datasets.html#g-dataset-id-set-data" title="g_dataset_id_set_data()"><code class="function">g_dataset_id_set_data()</code></a>,
+<a class="link" href="glib-Datasets.html#g-dataset-id-set-data-full" title="g_dataset_id_set_data_full ()"><code class="function">g_dataset_id_set_data_full()</code></a>, <a class="link" href="glib-Datasets.html#g-dataset-set-data" title="g_dataset_set_data()"><code class="function">g_dataset_set_data()</code></a> and
+<a class="link" href="glib-Datasets.html#g-dataset-set-data-full" title="g_dataset_set_data_full()"><code class="function">g_dataset_set_data_full()</code></a>.</p>
+<p>To get data elements from a dataset use <a class="link" href="glib-Datasets.html#g-dataset-id-get-data" title="g_dataset_id_get_data ()"><code class="function">g_dataset_id_get_data()</code></a> and
+<a class="link" href="glib-Datasets.html#g-dataset-get-data" title="g_dataset_get_data()"><code class="function">g_dataset_get_data()</code></a>.</p>
+<p>To iterate over all data elements in a dataset use
+<a class="link" href="glib-Datasets.html#g-dataset-foreach" title="g_dataset_foreach ()"><code class="function">g_dataset_foreach()</code></a> (not thread-safe).</p>
+<p>To remove data elements from a dataset use
+<a class="link" href="glib-Datasets.html#g-dataset-id-remove-data" title="g_dataset_id_remove_data()"><code class="function">g_dataset_id_remove_data()</code></a> and <a class="link" href="glib-Datasets.html#g-dataset-remove-data" title="g_dataset_remove_data()"><code class="function">g_dataset_remove_data()</code></a>.</p>
+<p>To destroy a dataset, use <a class="link" href="glib-Datasets.html#g-dataset-destroy" title="g_dataset_destroy ()"><code class="function">g_dataset_destroy()</code></a>.</p>
+</div>
+<div class="refsect1">
+<a name="glib-Datasets.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-dataset-id-set-data"></a><h3>g_dataset_id_set_data()</h3>
+<pre class="programlisting">#define             g_dataset_id_set_data(l, k, d)</pre>
+<p>Sets the data element associated with the given <a class="link" href="glib-Quarks.html#GQuark" title="GQuark"><span class="type">GQuark</span></a> id. Any
+previous data with the same key is removed, and its destroy function
+is called.</p>
+<div class="refsect3">
+<a name="g-dataset-id-set-data.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>l</p></td>
+<td class="parameter_description"><p>the location identifying the dataset.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>k</p></td>
+<td class="parameter_description"><p>the <a class="link" href="glib-Quarks.html#GQuark" title="GQuark"><span class="type">GQuark</span></a> id to identify the data element.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>d</p></td>
+<td class="parameter_description"><p>the data element.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dataset-id-set-data-full"></a><h3>g_dataset_id_set_data_full ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dataset_id_set_data_full (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> dataset_location</code></em>,
+                            <em class="parameter"><code><a class="link" href="glib-Quarks.html#GQuark" title="GQuark"><span class="type">GQuark</span></a> key_id</code></em>,
+                            <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>,
+                            <em class="parameter"><code><a class="link" href="glib-Datasets.html#GDestroyNotify" title="GDestroyNotify ()"><span class="type">GDestroyNotify</span></a> destroy_func</code></em>);</pre>
+<p>Sets the data element associated with the given <a class="link" href="glib-Quarks.html#GQuark" title="GQuark"><span class="type">GQuark</span></a> id, and also
+the function to call when the data element is destroyed. Any
+previous data with the same key is removed, and its destroy function
+is called.</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-dataset-id-set-data-full.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>dataset_location</p></td>
+<td class="parameter_description"><p>the location identifying the dataset. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key_id</p></td>
+<td class="parameter_description"><p>the <a class="link" href="glib-Quarks.html#GQuark" title="GQuark"><span class="type">GQuark</span></a> id to identify the data element.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>the data element.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>destroy_func</p></td>
+<td class="parameter_description"><p>the function to call when the data element is
+removed. This function will be called with the data
+element and can be used to free any memory allocated
+for it.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDestroyNotify"></a><h3>GDestroyNotify ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+<span class="c_punctuation">(</span>*GDestroyNotify<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);</pre>
+<p>Specifies the type of function which is called when a data element
+is destroyed. It is passed the pointer to the data element and
+should free any memory and resources allocated for it.</p>
+<div class="refsect3">
+<a name="GDestroyNotify.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>the data element.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dataset-id-get-data"></a><h3>g_dataset_id_get_data ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+g_dataset_id_get_data (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> dataset_location</code></em>,
+                       <em class="parameter"><code><a class="link" href="glib-Quarks.html#GQuark" title="GQuark"><span class="type">GQuark</span></a> key_id</code></em>);</pre>
+<p>Gets the data element corresponding to a <a class="link" href="glib-Quarks.html#GQuark" title="GQuark"><span class="type">GQuark</span></a>.</p>
+<div class="refsect3">
+<a name="g-dataset-id-get-data.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>dataset_location</p></td>
+<td class="parameter_description"><p>the location identifying the dataset. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key_id</p></td>
+<td class="parameter_description"><p>the <a class="link" href="glib-Quarks.html#GQuark" title="GQuark"><span class="type">GQuark</span></a> id to identify the data element.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dataset-id-get-data.returns"></a><h4>Returns</h4>
+<p>the data element corresponding to
+the <a class="link" href="glib-Quarks.html#GQuark" title="GQuark"><span class="type">GQuark</span></a>, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if it is not found. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dataset-id-remove-data"></a><h3>g_dataset_id_remove_data()</h3>
+<pre class="programlisting">#define             g_dataset_id_remove_data(l, k)</pre>
+<p>Removes a data element from a dataset. The data element's destroy
+function is called if it has been set.</p>
+<div class="refsect3">
+<a name="g-dataset-id-remove-data.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>l</p></td>
+<td class="parameter_description"><p>the location identifying the dataset.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>k</p></td>
+<td class="parameter_description"><p>the <a class="link" href="glib-Quarks.html#GQuark" title="GQuark"><span class="type">GQuark</span></a> id identifying the data element.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dataset-id-remove-no-notify"></a><h3>g_dataset_id_remove_no_notify ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+g_dataset_id_remove_no_notify (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> dataset_location</code></em>,
+                               <em class="parameter"><code><a class="link" href="glib-Quarks.html#GQuark" title="GQuark"><span class="type">GQuark</span></a> key_id</code></em>);</pre>
+<p>Removes an element, without calling its destroy notification
+function.</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-dataset-id-remove-no-notify.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>dataset_location</p></td>
+<td class="parameter_description"><p>the location identifying the dataset. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key_id</p></td>
+<td class="parameter_description"><p>the <a class="link" href="glib-Quarks.html#GQuark" title="GQuark"><span class="type">GQuark</span></a> ID identifying the data element.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dataset-id-remove-no-notify.returns"></a><h4>Returns</h4>
+<p>the data previously stored at <em class="parameter"><code>key_id</code></em>
+,
+or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if none. </p>
+<p><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dataset-set-data"></a><h3>g_dataset_set_data()</h3>
+<pre class="programlisting">#define             g_dataset_set_data(l, k, d)</pre>
+<p>Sets the data corresponding to the given string identifier.</p>
+<div class="refsect3">
+<a name="g-dataset-set-data.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>l</p></td>
+<td class="parameter_description"><p>the location identifying the dataset.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>k</p></td>
+<td class="parameter_description"><p>the string to identify the data element.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>d</p></td>
+<td class="parameter_description"><p>the data element.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dataset-set-data-full"></a><h3>g_dataset_set_data_full()</h3>
+<pre class="programlisting">#define             g_dataset_set_data_full(l, k, d, f)</pre>
+<p>Sets the data corresponding to the given string identifier, and the
+function to call when the data element is destroyed.</p>
+<div class="refsect3">
+<a name="g-dataset-set-data-full.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>l</p></td>
+<td class="parameter_description"><p>the location identifying the dataset.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>k</p></td>
+<td class="parameter_description"><p>the string to identify the data element.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>d</p></td>
+<td class="parameter_description"><p>the data element.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>f</p></td>
+<td class="parameter_description"><p>the function to call when the data element is removed. This
+function will be called with the data element and can be used to
+free any memory allocated for it.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dataset-get-data"></a><h3>g_dataset_get_data()</h3>
+<pre class="programlisting">#define             g_dataset_get_data(l, k)</pre>
+<p>Gets the data element corresponding to a string.</p>
+<div class="refsect3">
+<a name="g-dataset-get-data.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>l</p></td>
+<td class="parameter_description"><p>the location identifying the dataset.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>k</p></td>
+<td class="parameter_description"><p>the string identifying the data element.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dataset-get-data.returns"></a><h4>Returns</h4>
+<p>the data element corresponding to
+the string, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if it is not found. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dataset-remove-data"></a><h3>g_dataset_remove_data()</h3>
+<pre class="programlisting">#define             g_dataset_remove_data(l, k)</pre>
+<p>Removes a data element corresponding to a string. Its destroy
+function is called if it has been set.</p>
+<div class="refsect3">
+<a name="g-dataset-remove-data.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>l</p></td>
+<td class="parameter_description"><p>the location identifying the dataset.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>k</p></td>
+<td class="parameter_description"><p>the string identifying the data element.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dataset-remove-no-notify"></a><h3>g_dataset_remove_no_notify()</h3>
+<pre class="programlisting">#define             g_dataset_remove_no_notify(l, k)</pre>
+<p>Removes an element, without calling its destroy notifier.</p>
+<div class="refsect3">
+<a name="g-dataset-remove-no-notify.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>l</p></td>
+<td class="parameter_description"><p>the location identifying the dataset.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>k</p></td>
+<td class="parameter_description"><p>the string identifying the data element.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dataset-foreach"></a><h3>g_dataset_foreach ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dataset_foreach (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> dataset_location</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Datasets.html#GDataForeachFunc" title="GDataForeachFunc ()"><span class="type">GDataForeachFunc</span></a> func</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Calls the given function for each data element which is associated
+with the given location. Note that this function is NOT thread-safe.
+So unless <em class="parameter"><code>dataset_location</code></em>
+ can be protected from any modifications
+during invocation of this function, it should not be called.</p>
+<p><em class="parameter"><code>func</code></em>
+ can make changes to the dataset, but the iteration will not
+reflect changes made during the <a class="link" href="glib-Datasets.html#g-dataset-foreach" title="g_dataset_foreach ()"><code class="function">g_dataset_foreach()</code></a> call, other
+than skipping over elements that are removed.</p>
+<div class="refsect3">
+<a name="g-dataset-foreach.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>dataset_location</p></td>
+<td class="parameter_description"><p>the location identifying the dataset. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>func</p></td>
+<td class="parameter_description"><p>the function to call for each data element. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid only during the call to the method."><span class="acronym">scope call</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data to pass to the function. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDataForeachFunc"></a><h3>GDataForeachFunc ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+<span class="c_punctuation">(</span>*GDataForeachFunc<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="glib-Quarks.html#GQuark" title="GQuark"><span class="type">GQuark</span></a> key_id</code></em>,
+                     <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>,
+                     <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Specifies the type of function passed to <a class="link" href="glib-Datasets.html#g-dataset-foreach" title="g_dataset_foreach ()"><code class="function">g_dataset_foreach()</code></a>. It is
+called with each <a class="link" href="glib-Quarks.html#GQuark" title="GQuark"><span class="type">GQuark</span></a> id and associated data element, together
+with the <em class="parameter"><code>user_data</code></em>
+ parameter supplied to <a class="link" href="glib-Datasets.html#g-dataset-foreach" title="g_dataset_foreach ()"><code class="function">g_dataset_foreach()</code></a>.</p>
+<div class="refsect3">
+<a name="GDataForeachFunc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>key_id</p></td>
+<td class="parameter_description"><p>the <a class="link" href="glib-Quarks.html#GQuark" title="GQuark"><span class="type">GQuark</span></a> id to identifying the data element.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>the data element.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data passed to <a class="link" href="glib-Datasets.html#g-dataset-foreach" title="g_dataset_foreach ()"><code class="function">g_dataset_foreach()</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dataset-destroy"></a><h3>g_dataset_destroy ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dataset_destroy (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> dataset_location</code></em>);</pre>
+<p>Destroys the dataset, freeing all memory allocated, and calling any
+destroy functions set for data elements.</p>
+<div class="refsect3">
+<a name="g-dataset-destroy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>dataset_location</p></td>
+<td class="parameter_description"><p>the location identifying the dataset. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Datasets.other_details"></a><h2>Types and Values</h2>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

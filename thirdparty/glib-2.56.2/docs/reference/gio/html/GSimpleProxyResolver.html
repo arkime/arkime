@@ -1,0 +1,373 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GSimpleProxyResolver: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="resolver.html" title="DNS resolution">
+<link rel="prev" href="GProxyResolver.html" title="GProxyResolver">
+<link rel="next" href="GSocketConnectable.html" title="GSocketConnectable">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GSimpleProxyResolver.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GSimpleProxyResolver.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_interfaces">  <span class="dim">|</span> 
+                  <a href="#GSimpleProxyResolver.implemented-interfaces" class="shortcut">Implemented Interfaces</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GSimpleProxyResolver.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="resolver.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GProxyResolver.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GSocketConnectable.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GSimpleProxyResolver"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GSimpleProxyResolver.top_of_page"></a>GSimpleProxyResolver</span></h2>
+<p>GSimpleProxyResolver — Simple proxy resolver implementation</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GSimpleProxyResolver.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GProxyResolver.html" title="GProxyResolver"><span class="returnvalue">GProxyResolver</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSimpleProxyResolver.html#g-simple-proxy-resolver-new" title="g_simple_proxy_resolver_new ()">g_simple_proxy_resolver_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSimpleProxyResolver.html#g-simple-proxy-resolver-set-default-proxy" title="g_simple_proxy_resolver_set_default_proxy ()">g_simple_proxy_resolver_set_default_proxy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSimpleProxyResolver.html#g-simple-proxy-resolver-set-ignore-hosts" title="g_simple_proxy_resolver_set_ignore_hosts ()">g_simple_proxy_resolver_set_ignore_hosts</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSimpleProxyResolver.html#g-simple-proxy-resolver-set-uri-proxy" title="g_simple_proxy_resolver_set_uri_proxy ()">g_simple_proxy_resolver_set_uri_proxy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSimpleProxyResolver.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="property_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<td class="property_name"><a class="link" href="GSimpleProxyResolver.html#GSimpleProxyResolver--default-proxy" title="The “default-proxy” property">default-proxy</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-String-Utility-Functions.html#GStrv"><span class="type">GStrv</span></a></td>
+<td class="property_name"><a class="link" href="GSimpleProxyResolver.html#GSimpleProxyResolver--ignore-hosts" title="The “ignore-hosts” property">ignore-hosts</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSimpleProxyResolver.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GSimpleProxyResolver.html#GSimpleProxyResolver-struct" title="struct GSimpleProxyResolver">GSimpleProxyResolver</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSimpleProxyResolver.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GSimpleProxyResolver
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSimpleProxyResolver.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GSimpleProxyResolver implements
+ <a class="link" href="GProxyResolver.html" title="GProxyResolver">GProxyResolver</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GSimpleProxyResolver.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSimpleProxyResolver.description"></a><h2>Description</h2>
+<p><a class="link" href="GSimpleProxyResolver.html" title="GSimpleProxyResolver"><span class="type">GSimpleProxyResolver</span></a> is a simple <a class="link" href="GProxyResolver.html" title="GProxyResolver"><span class="type">GProxyResolver</span></a> implementation
+that handles a single default proxy, multiple URI-scheme-specific
+proxies, and a list of hosts that proxies should not be used for.</p>
+<p><a class="link" href="GSimpleProxyResolver.html" title="GSimpleProxyResolver"><span class="type">GSimpleProxyResolver</span></a> is never the default proxy resolver, but it
+can be used as the base class for another proxy resolver
+implementation, or it can be created and used manually, such as
+with <a class="link" href="GSocketClient.html#g-socket-client-set-proxy-resolver" title="g_socket_client_set_proxy_resolver ()"><code class="function">g_socket_client_set_proxy_resolver()</code></a>.</p>
+</div>
+<div class="refsect1">
+<a name="GSimpleProxyResolver.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-simple-proxy-resolver-new"></a><h3>g_simple_proxy_resolver_new ()</h3>
+<pre class="programlisting"><a class="link" href="GProxyResolver.html" title="GProxyResolver"><span class="returnvalue">GProxyResolver</span></a> *
+g_simple_proxy_resolver_new (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *default_proxy</code></em>,
+                             <em class="parameter"><code><a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> **ignore_hosts</code></em>);</pre>
+<p>Creates a new <a class="link" href="GSimpleProxyResolver.html" title="GSimpleProxyResolver"><span class="type">GSimpleProxyResolver</span></a>. See
+<a class="link" href="GSimpleProxyResolver.html#GSimpleProxyResolver--default-proxy" title="The “default-proxy” property"><span class="type">“default-proxy”</span></a> and
+<a class="link" href="GSimpleProxyResolver.html#GSimpleProxyResolver--ignore-hosts" title="The “ignore-hosts” property"><span class="type">“ignore-hosts”</span></a> for more details on how the
+arguments are interpreted.</p>
+<div class="refsect3">
+<a name="g-simple-proxy-resolver-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>default_proxy</p></td>
+<td class="parameter_description"><p>the default proxy to use, eg
+"socks://192.168.1.1". </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>ignore_hosts</p></td>
+<td class="parameter_description"><p>an optional list of hosts/IP addresses
+to not use a proxy for. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-simple-proxy-resolver-new.returns"></a><h4>Returns</h4>
+<p> (transfer full) a new <a class="link" href="GSimpleProxyResolver.html" title="GSimpleProxyResolver"><span class="type">GSimpleProxyResolver</span></a></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-36.html#api-index-2.36">2.36</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-simple-proxy-resolver-set-default-proxy"></a><h3>g_simple_proxy_resolver_set_default_proxy ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_simple_proxy_resolver_set_default_proxy
+                               (<em class="parameter"><code><a class="link" href="GSimpleProxyResolver.html" title="GSimpleProxyResolver"><span class="type">GSimpleProxyResolver</span></a> *resolver</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *default_proxy</code></em>);</pre>
+<p>Sets the default proxy on <em class="parameter"><code>resolver</code></em>
+, to be used for any URIs that
+don't match <a class="link" href="GSimpleProxyResolver.html#GSimpleProxyResolver--ignore-hosts" title="The “ignore-hosts” property"><span class="type">“ignore-hosts”</span></a> or a proxy set
+via <a class="link" href="GSimpleProxyResolver.html#g-simple-proxy-resolver-set-uri-proxy" title="g_simple_proxy_resolver_set_uri_proxy ()"><code class="function">g_simple_proxy_resolver_set_uri_proxy()</code></a>.</p>
+<p>If <em class="parameter"><code>default_proxy</code></em>
+ starts with "socks://",
+<a class="link" href="GSimpleProxyResolver.html" title="GSimpleProxyResolver"><span class="type">GSimpleProxyResolver</span></a> will treat it as referring to all three of
+the socks5, socks4a, and socks4 proxy types.</p>
+<div class="refsect3">
+<a name="g-simple-proxy-resolver-set-default-proxy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>resolver</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSimpleProxyResolver.html" title="GSimpleProxyResolver"><span class="type">GSimpleProxyResolver</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>default_proxy</p></td>
+<td class="parameter_description"><p>the default proxy to use</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-36.html#api-index-2.36">2.36</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-simple-proxy-resolver-set-ignore-hosts"></a><h3>g_simple_proxy_resolver_set_ignore_hosts ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_simple_proxy_resolver_set_ignore_hosts
+                               (<em class="parameter"><code><a class="link" href="GSimpleProxyResolver.html" title="GSimpleProxyResolver"><span class="type">GSimpleProxyResolver</span></a> *resolver</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> **ignore_hosts</code></em>);</pre>
+<p>Sets the list of ignored hosts.</p>
+<p>See <a class="link" href="GSimpleProxyResolver.html#GSimpleProxyResolver--ignore-hosts" title="The “ignore-hosts” property"><span class="type">“ignore-hosts”</span></a> for more details on how the
+<em class="parameter"><code>ignore_hosts</code></em>
+ argument is interpreted.</p>
+<div class="refsect3">
+<a name="g-simple-proxy-resolver-set-ignore-hosts.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>resolver</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSimpleProxyResolver.html" title="GSimpleProxyResolver"><span class="type">GSimpleProxyResolver</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>ignore_hosts</p></td>
+<td class="parameter_description"><p><a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated list of hosts/IP addresses
+to not use a proxy for</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-36.html#api-index-2.36">2.36</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-simple-proxy-resolver-set-uri-proxy"></a><h3>g_simple_proxy_resolver_set_uri_proxy ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_simple_proxy_resolver_set_uri_proxy (<em class="parameter"><code><a class="link" href="GSimpleProxyResolver.html" title="GSimpleProxyResolver"><span class="type">GSimpleProxyResolver</span></a> *resolver</code></em>,
+                                       <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *uri_scheme</code></em>,
+                                       <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *proxy</code></em>);</pre>
+<p>Adds a URI-scheme-specific proxy to <em class="parameter"><code>resolver</code></em>
+; URIs whose scheme
+matches <em class="parameter"><code>uri_scheme</code></em>
+ (and which don't match
+<a class="link" href="GSimpleProxyResolver.html#GSimpleProxyResolver--ignore-hosts" title="The “ignore-hosts” property"><span class="type">“ignore-hosts”</span></a>) will be proxied via <em class="parameter"><code>proxy</code></em>
+.</p>
+<p>As with <a class="link" href="GSimpleProxyResolver.html#GSimpleProxyResolver--default-proxy" title="The “default-proxy” property"><span class="type">“default-proxy”</span></a>, if <em class="parameter"><code>proxy</code></em>
+ starts with
+"socks://", <a class="link" href="GSimpleProxyResolver.html" title="GSimpleProxyResolver"><span class="type">GSimpleProxyResolver</span></a> will treat it
+as referring to all three of the socks5, socks4a, and socks4 proxy
+types.</p>
+<div class="refsect3">
+<a name="g-simple-proxy-resolver-set-uri-proxy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>resolver</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSimpleProxyResolver.html" title="GSimpleProxyResolver"><span class="type">GSimpleProxyResolver</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>uri_scheme</p></td>
+<td class="parameter_description"><p>the URI scheme to add a proxy for</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>proxy</p></td>
+<td class="parameter_description"><p>the proxy to use for <em class="parameter"><code>uri_scheme</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-36.html#api-index-2.36">2.36</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GSimpleProxyResolver.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GSimpleProxyResolver-struct"></a><h3>struct GSimpleProxyResolver</h3>
+<pre class="programlisting">struct GSimpleProxyResolver;</pre>
+<p>A <a class="link" href="GProxyResolver.html" title="GProxyResolver"><span class="type">GProxyResolver</span></a> implementation for using a fixed set of proxies.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GSimpleProxyResolver.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GSimpleProxyResolver--default-proxy"></a><h3>The <code class="literal">“default-proxy”</code> property</h3>
+<pre class="programlisting">  “default-proxy”            <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>The default proxy URI that will be used for any URI that doesn't
+match <a class="link" href="GSimpleProxyResolver.html#GSimpleProxyResolver--ignore-hosts" title="The “ignore-hosts” property"><span class="type">“ignore-hosts”</span></a>, and doesn't match any
+of the schemes set with <a class="link" href="GSimpleProxyResolver.html#g-simple-proxy-resolver-set-uri-proxy" title="g_simple_proxy_resolver_set_uri_proxy ()"><code class="function">g_simple_proxy_resolver_set_uri_proxy()</code></a>.</p>
+<p>Note that as a special case, if this URI starts with
+"socks://", <a class="link" href="GSimpleProxyResolver.html" title="GSimpleProxyResolver"><span class="type">GSimpleProxyResolver</span></a> will treat it as referring
+to all three of the socks5, socks4a, and socks4 proxy types.</p>
+<p>Flags: Read / Write</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSimpleProxyResolver--ignore-hosts"></a><h3>The <code class="literal">“ignore-hosts”</code> property</h3>
+<pre class="programlisting">  “ignore-hosts”             <a href="../glib-String-Utility-Functions.html#GStrv"><span class="type">GStrv</span></a></pre>
+<p>A list of hostnames and IP addresses that the resolver should
+allow direct connections to.</p>
+<p>Entries can be in one of 4 formats:</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>A hostname, such as "example.com", ".example.com", or
+"*.example.com", any of which match "example.com" or
+any subdomain of it.</p></li>
+<li class="listitem"><p>An IPv4 or IPv6 address, such as "192.168.1.1",
+which matches only that address.</p></li>
+<li class="listitem"><p>A hostname or IP address followed by a port, such as
+"example.com:80", which matches whatever the hostname or IP
+address would match, but only for URLs with the (explicitly)
+indicated port. In the case of an IPv6 address, the address
+part must appear in brackets: "[::1]:443"</p></li>
+<li class="listitem"><p>An IP address range, given by a base address and prefix length,
+such as "fe80::/10", which matches any address in that range.</p></li>
+</ul></div>
+<p>Note that when dealing with Unicode hostnames, the matching is
+done against the ASCII form of the name.</p>
+<p>Also note that hostname exclusions apply only to connections made
+to hosts identified by name, and IP address exclusions apply only
+to connections made to hosts identified by address. That is, if
+example.com has an address of 192.168.1.1, and the :ignore-hosts list
+contains only "192.168.1.1", then a connection to "example.com"
+(eg, via a <a class="link" href="GNetworkAddress.html" title="GNetworkAddress"><span class="type">GNetworkAddress</span></a>) will use the proxy, and a connection to
+"192.168.1.1" (eg, via a <a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress"><span class="type">GInetSocketAddress</span></a>) will not.</p>
+<p>These rules match the "ignore-hosts"/"noproxy" rules most
+commonly used by other applications.</p>
+<p>Flags: Read / Write</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GSimpleProxyResolver.see-also"></a><h2>See Also</h2>
+<p>g_socket_client_set_proxy_resolver()</p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,18 @@
+[Desktop Entry]
+Type=Application
+Name=Test
+Actions=frob;tweak;twiddle;quit;
+StartupNotify=true
+DBusActivatable=true
+
+[Desktop Action frob]
+Name=Frobnicate
+
+[Desktop Action tweak]
+Name=Tweak
+
+[Desktop Action twiddle]
+Name=Twiddle
+
+[Desktop Action quit]
+Name=Quit

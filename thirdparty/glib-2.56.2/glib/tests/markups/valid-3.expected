@@ -1,0 +1,61 @@
+ELEMENT 'foo'
+  TEXT '
+'
+  ELEMENT 'bar'
+  a="1"
+  END 'bar'
+  TEXT '
+'
+  ELEMENT 'bar'
+  a="1"
+  b="2"
+  END 'bar'
+  TEXT '
+'
+  ELEMENT 'bar'
+  a="1"
+  b="2"
+  c="3"
+  END 'bar'
+  TEXT '
+'
+  ELEMENT 'bar'
+  a="1"
+  b="2"
+  c="3"
+  d="4"
+  END 'bar'
+  TEXT '
+'
+  ELEMENT 'bar'
+  a="1"
+  b="2"
+  c="3"
+  d="4"
+  e="5"
+  END 'bar'
+  TEXT '
+'
+  ELEMENT 'bar'
+  a="1"
+  b="2"
+  c="3"
+  d="4"
+  e="5"
+  f="6"
+  END 'bar'
+  TEXT '
+'
+  ELEMENT 'bar'
+  a="1"
+  b="2"
+  c="3"
+  END 'bar'
+  TEXT '
+'
+  ELEMENT 'bar'
+  a="1"
+  END 'bar'
+  TEXT '
+'
+END 'foo'

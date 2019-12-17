@@ -1,0 +1,6 @@
+PASS '<!DOCTYPE foo "foo" [
+<!ELEMENT foo ANY >
+]>'
+ELEMENT 'foo'
+  TEXT ''
+END 'foo'

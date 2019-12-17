@@ -1,0 +1,262 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC '-//OASIS//DTD DocBook XML V4.5//EN'
+                      'http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd' [
+<!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
+<!ENTITY version SYSTEM "version.xml">
+]>
+<book id="index" xmlns:xi="http://www.w3.org/2003/XInclude">
+  <bookinfo>
+    <title>GLib Reference Manual</title>
+    <releaseinfo>
+      for GLib &version;
+      The latest version of this documentation can be found on-line at
+      <ulink role="online-location" url="https://developer.gnome.org/glib/unstable/">https://developer.gnome.org/glib/unstable/</ulink>.
+    </releaseinfo>
+  </bookinfo>
+
+  <chapter id="glib">
+    <title>GLib Overview</title>
+    <para>
+      GLib is a general-purpose utility library, which provides many useful
+      data types, macros, type conversions, string utilities, file utilities,
+      a mainloop abstraction, and so on. It works on many UNIX-like platforms,
+      as well as Windows and OS X. GLib is released under the GNU Lesser
+      General Public License (GNU LGPL).
+    </para>
+
+    <xi:include href="building.xml" />
+    <xi:include href="cross.xml" />
+    <xi:include href="programming.xml" />
+    <xi:include href="xml/compiling.xml" />
+    <xi:include href="running.xml" />
+    <xi:include href="changes.xml" />
+    <xi:include href="resources.xml" />
+
+  </chapter>
+
+  <chapter id="glib-fundamentals">
+    <title>GLib Fundamentals</title>
+    <xi:include href="xml/version.xml" />
+    <xi:include href="xml/types.xml" />
+    <xi:include href="xml/macros.xml" />
+    <xi:include href="xml/type_conversion.xml" />
+    <xi:include href="xml/byte_order.xml" />
+    <xi:include href="xml/checkedmath.xml" />
+    <xi:include href="xml/numerical.xml" />
+    <xi:include href="xml/macros_misc.xml" />
+    <xi:include href="xml/atomic_operations.xml" />
+  </chapter>
+
+  <chapter id="glib-core">
+    <title>GLib Core Application Support</title>
+    <xi:include href="xml/main.xml" />
+    <xi:include href="xml/threads.xml" />
+    <xi:include href="xml/thread_pools.xml" />
+    <xi:include href="xml/async_queues.xml" />
+    <xi:include href="xml/modules.xml" />
+    <xi:include href="xml/memory.xml" />
+    <xi:include href="xml/memory_slices.xml" />
+    <xi:include href="xml/iochannels.xml" />
+    <xi:include href="xml/error_reporting.xml" />
+    <xi:include href="xml/warnings.xml" />
+    <xi:include href="xml/messages.xml" />
+  </chapter>
+
+  <chapter id="glib-utilities">
+    <title>GLib Utilities</title>
+    <xi:include href="xml/string_utils.xml" />
+    <xi:include href="xml/conversions.xml" />
+    <xi:include href="xml/unicode.xml" />
+    <xi:include href="xml/base64.xml" />
+    <xi:include href="xml/checksum.xml" />
+    <xi:include href="xml/hmac.xml" />
+    <xi:include href="xml/i18n.xml" />
+    <xi:include href="xml/date.xml" />
+    <xi:include href="xml/timezone.xml" />
+    <xi:include href="xml/date-time.xml" />
+    <xi:include href="xml/random_numbers.xml" />
+    <xi:include href="xml/hooks.xml" />
+    <xi:include href="xml/misc_utils.xml" />
+    <xi:include href="xml/scanner.xml" />
+    <xi:include href="xml/timers.xml" />
+    <xi:include href="xml/spawn.xml" />
+    <xi:include href="xml/fileutils.xml" />
+    <xi:include href="xml/gurifuncs.xml" />
+    <xi:include href="xml/ghostutils.xml" />
+    <xi:include href="xml/shell.xml" />
+    <xi:include href="xml/option.xml" />
+    <xi:include href="xml/patterns.xml" />
+    <xi:include href="xml/gregex.xml" />
+    <xi:include href="regex-syntax.xml" />
+    <xi:include href="xml/markup.xml" />
+    <xi:include href="xml/keyfile.xml" />
+    <xi:include href="xml/bookmarkfile.xml" />
+    <xi:include href="xml/testing.xml" />
+    <xi:include href="xml/gunix.xml" />
+    <xi:include href="xml/windows.xml" />
+    <xi:include href="xml/uuid.xml" />
+  </chapter>
+
+  <chapter id="glib-data-types">
+    <title>GLib Data Types</title>
+    <xi:include href="xml/linked_lists_double.xml" />
+    <xi:include href="xml/linked_lists_single.xml" />
+    <xi:include href="xml/queue.xml" />
+    <xi:include href="xml/sequence.xml" />
+    <xi:include href="xml/trash_stack.xml" />
+    <xi:include href="xml/hash_tables.xml" />
+    <xi:include href="xml/strings.xml" />
+    <xi:include href="xml/string_chunks.xml" />
+    <xi:include href="xml/arrays.xml" />
+    <xi:include href="xml/arrays_pointer.xml" />
+    <xi:include href="xml/arrays_byte.xml" />
+    <xi:include href="xml/trees-binary.xml" />
+    <xi:include href="xml/trees-nary.xml" />
+    <xi:include href="xml/quarks.xml" />
+    <xi:include href="xml/datalist.xml" />
+    <xi:include href="xml/datasets.xml" />
+    <xi:include href="xml/gvarianttype.xml"/>
+    <xi:include href="xml/gvariant.xml"/>
+    <xi:include href="gvariant-varargs.xml"/>
+    <xi:include href="gvariant-text.xml"/>
+  </chapter>
+
+  <chapter id="deprecated">
+    <title>Deprecated APIs</title>
+    <xi:include href="xml/threads-deprecated.xml"/>
+    <xi:include href="xml/caches.xml" />
+    <xi:include href="xml/relations.xml" />
+    <xi:include href="xml/completion.xml" />
+  </chapter>
+
+  <chapter id="tools">
+    <title>GLib Tools</title>
+    <xi:include href="glib-gettextize.xml" />
+    <xi:include href="gtester.xml" />
+    <xi:include href="gtester-report.xml" />
+  </chapter>
+
+  <index id="api-index-full">
+    <title>Index</title>
+    <xi:include href="xml/api-index-full.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-deprecated" role="deprecated">
+    <title>Index of deprecated symbols</title>
+    <xi:include href="xml/api-index-deprecated.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-2" role="2.2">
+    <title>Index of new symbols in 2.2</title>
+    <xi:include href="xml/api-index-2.2.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-4" role="2.4">
+    <title>Index of new symbols in 2.4</title>
+    <xi:include href="xml/api-index-2.4.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-6" role="2.6">
+    <title>Index of new symbols in 2.6</title>
+    <xi:include href="xml/api-index-2.6.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-8" role="2.8">
+    <title>Index of new symbols in 2.8</title>
+    <xi:include href="xml/api-index-2.8.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-10" role="2.10">
+    <title>Index of new symbols in 2.10</title>
+    <xi:include href="xml/api-index-2.10.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-12" role="2.12">
+    <title>Index of new symbols in 2.12</title>
+    <xi:include href="xml/api-index-2.12.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-14" role="2.14">
+    <title>Index of new symbols in 2.14</title>
+    <xi:include href="xml/api-index-2.14.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-16" role="2.16">
+    <title>Index of new symbols in 2.16</title>
+    <xi:include href="xml/api-index-2.16.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-18" role="2.18">
+    <title>Index of new symbols in 2.18</title>
+    <xi:include href="xml/api-index-2.18.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-20" role="2.20">
+    <title>Index of new symbols in 2.20</title>
+    <xi:include href="xml/api-index-2.20.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-22" role="2.22">
+    <title>Index of new symbols in 2.22</title>
+    <xi:include href="xml/api-index-2.22.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-24" role="2.24">
+    <title>Index of new symbols in 2.24</title>
+    <xi:include href="xml/api-index-2.24.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-26" role="2.26">
+    <title>Index of new symbols in 2.26</title>
+    <xi:include href="xml/api-index-2.26.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-28" role="2.28">
+    <title>Index of new symbols in 2.28</title>
+    <xi:include href="xml/api-index-2.28.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-30" role="2.30">
+    <title>Index of new symbols in 2.30</title>
+    <xi:include href="xml/api-index-2.30.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-32" role="2.32">
+    <title>Index of new symbols in 2.32</title>
+    <xi:include href="xml/api-index-2.32.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-34" role="2.34">
+    <title>Index of new symbols in 2.34</title>
+    <xi:include href="xml/api-index-2.34.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-36" role="2.36">
+    <title>Index of new symbols in 2.36</title>
+    <xi:include href="xml/api-index-2.36.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-38" role="2.38">
+    <title>Index of new symbols in 2.38</title>
+    <xi:include href="xml/api-index-2.38.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-40" role="2.40">
+    <title>Index of new symbols in 2.40</title>
+    <xi:include href="xml/api-index-2.40.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-42" role="2.42">
+    <title>Index of new symbols in 2.42</title>
+    <xi:include href="xml/api-index-2.42.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-44" role="2.44">
+    <title>Index of new symbols in 2.44</title>
+    <xi:include href="xml/api-index-2.44.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-46" role="2.46">
+    <title>Index of new symbols in 2.46</title>
+    <xi:include href="xml/api-index-2.46.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-48" role="2.48">
+    <title>Index of new symbols in 2.48</title>
+    <xi:include href="xml/api-index-2.48.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-50" role="2.50">
+    <title>Index of new symbols in 2.50</title>
+    <xi:include href="xml/api-index-2.50.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-52" role="2.52">
+    <title>Index of new symbols in 2.52</title>
+    <xi:include href="xml/api-index-2.52.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-54" role="2.54">
+    <title>Index of new symbols in 2.54</title>
+    <xi:include href="xml/api-index-2.54.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-56" role="2.56">
+    <title>Index of new symbols in 2.56</title>
+    <xi:include href="xml/api-index-2.56.xml"><xi:fallback /></xi:include>
+  </index>
+
+  <xi:include href="xml/annotation-glossary.xml"><xi:fallback /></xi:include>
+
+</book>

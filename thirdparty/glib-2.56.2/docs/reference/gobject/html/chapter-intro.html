@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Background: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="pt01.html" title="Part I. Concepts">
+<link rel="prev" href="pt01.html" title="Part I. Concepts">
+<link rel="next" href="ch01s02.html" title="Exporting a C API">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="pt01.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="pt01.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="ch01s02.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="chapter">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="chapter-intro"></a>Background</h2></div></div></div>
+<div class="toc"><dl class="toc">
+<dt><span class="sect1"><a href="chapter-intro.html#id-1.3.2.5">Data types and programming</a></span></dt>
+<dt><span class="sect1"><a href="ch01s02.html">Exporting a C API</a></span></dt>
+</dl></div>
+<p>
+    GObject, and its lower-level type system, GType, are used by GTK+ and most GNOME libraries to
+    provide:
+    </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>object-oriented C-based APIs and</p></li>
+<li class="listitem"><p>automatic transparent API bindings to other compiled 
+      or interpreted languages.</p></li>
+</ul></div>
+<p>
+  </p>
+<p>
+    A lot of programmers are used to working with compiled-only or dynamically interpreted-only
+    languages and do not understand the challenges associated with cross-language interoperability.
+    This introduction tries to provide an insight into these challenges and briefly describes
+    the solution chosen by GLib.
+  </p>
+<p>
+    The following chapters go into greater detail into how GType and GObject work and
+    how you can use them as a C programmer. It is useful to keep in mind that
+    allowing access to C objects from other interpreted languages was one of the major design
+    goals: this can often explain the sometimes rather convoluted APIs and features present
+    in this library.
+  </p>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="id-1.3.2.5"></a>Data types and programming</h2></div></div></div>
+<p>
+      One could say
+      that a programming language is merely a way to create data types and manipulate them. Most languages
+      provide a number of language-native types and a few primitives to create more complex types based
+      on these primitive types.
+    </p>
+<p>
+      In C, the language provides types such as <span class="emphasis"><em>char</em></span>, <span class="emphasis"><em>long</em></span>, 
+      <span class="emphasis"><em>pointer</em></span>. During compilation of C code, the compiler maps these
+      language types to the compiler's target architecture machine types. If you are using a C interpreter
+      (assuming one exists), the interpreter (the program which interprets 
+      the source code and executes it) maps the language types to the machine types of the target machine at 
+      runtime, during the program execution (or just before execution if it uses a Just In Time compiler engine).
+    </p>
+<p>
+      Perl and Python are interpreted languages which do not really provide type definitions similar
+      to those used by C. Perl and Python programmers manipulate variables and the type of the variables
+      is decided only upon the first assignment or upon the first use which forces a type on the variable.
+      The interpreter also often provides a lot of automatic conversions from one type to the other. For example,
+      in Perl, a variable which holds an integer can be automatically converted to a string given the
+      required context:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal">my $tmp </span><span class="symbol">=</span><span class="normal"> </span><span class="number">10</span><span class="symbol">;</span>
+<span class="normal">print </span><span class="string">"this is an integer converted to a string:"</span><span class="normal"> </span><span class="symbol">.</span><span class="normal"> $tmp </span><span class="symbol">.</span><span class="normal"> </span><span class="string">"</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">;</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+      Of course, it is also often possible to explicitly specify conversions when the default conversions provided
+      by the language are not intuitive.
+    </p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

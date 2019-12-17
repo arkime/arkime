@@ -1,0 +1,1870 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GMenu: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="application.html" title="Application support">
+<link rel="prev" href="GMenuModel.html" title="GMenuModel">
+<link rel="next" href="gio-GMenuModel-exporter.html" title="GMenuModel exporter">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GMenu.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GMenu.object-hierarchy" class="shortcut">Object Hierarchy</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="application.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GMenuModel.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gio-GMenuModel-exporter.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GMenu"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GMenu.top_of_page"></a>GMenu</span></h2>
+<p>GMenu — A simple implementation of GMenuModel</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GMenu.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GMenu.html" title="GMenu"><span class="returnvalue">GMenu</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-new" title="g_menu_new ()">g_menu_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-freeze" title="g_menu_freeze ()">g_menu_freeze</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-insert" title="g_menu_insert ()">g_menu_insert</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-prepend" title="g_menu_prepend ()">g_menu_prepend</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-append" title="g_menu_append ()">g_menu_append</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-insert-item" title="g_menu_insert_item ()">g_menu_insert_item</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-append-item" title="g_menu_append_item ()">g_menu_append_item</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-prepend-item" title="g_menu_prepend_item ()">g_menu_prepend_item</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-insert-section" title="g_menu_insert_section ()">g_menu_insert_section</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-prepend-section" title="g_menu_prepend_section ()">g_menu_prepend_section</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-append-section" title="g_menu_append_section ()">g_menu_append_section</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-append-submenu" title="g_menu_append_submenu ()">g_menu_append_submenu</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-insert-submenu" title="g_menu_insert_submenu ()">g_menu_insert_submenu</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-prepend-submenu" title="g_menu_prepend_submenu ()">g_menu_prepend_submenu</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-remove" title="g_menu_remove ()">g_menu_remove</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-remove-all" title="g_menu_remove_all ()">g_menu_remove_all</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GMenu.html#GMenuItem"><span class="returnvalue">GMenuItem</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-item-new" title="g_menu_item_new ()">g_menu_item_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GMenu.html#GMenuItem"><span class="returnvalue">GMenuItem</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-item-new-section" title="g_menu_item_new_section ()">g_menu_item_new_section</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GMenu.html#GMenuItem"><span class="returnvalue">GMenuItem</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-item-new-submenu" title="g_menu_item_new_submenu ()">g_menu_item_new_submenu</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GMenu.html#GMenuItem"><span class="returnvalue">GMenuItem</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-item-new-from-model" title="g_menu_item_new_from_model ()">g_menu_item_new_from_model</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-item-set-label" title="g_menu_item_set_label ()">g_menu_item_set_label</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-item-set-icon" title="g_menu_item_set_icon ()">g_menu_item_set_icon</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-item-set-action-and-target-value" title="g_menu_item_set_action_and_target_value ()">g_menu_item_set_action_and_target_value</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-item-set-action-and-target" title="g_menu_item_set_action_and_target ()">g_menu_item_set_action_and_target</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-item-set-detailed-action" title="g_menu_item_set_detailed_action ()">g_menu_item_set_detailed_action</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-item-set-section" title="g_menu_item_set_section ()">g_menu_item_set_section</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-item-set-submenu" title="g_menu_item_set_submenu ()">g_menu_item_set_submenu</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-item-get-attribute-value" title="g_menu_item_get_attribute_value ()">g_menu_item_get_attribute_value</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-item-get-attribute" title="g_menu_item_get_attribute ()">g_menu_item_get_attribute</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GMenuModel.html" title="GMenuModel"><span class="returnvalue">GMenuModel</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-item-get-link" title="g_menu_item_get_link ()">g_menu_item_get_link</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-item-set-attribute-value" title="g_menu_item_set_attribute_value ()">g_menu_item_set_attribute_value</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-item-set-attribute" title="g_menu_item_set_attribute ()">g_menu_item_set_attribute</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMenu.html#g-menu-item-set-link" title="g_menu_item_set_link ()">g_menu_item_set_link</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<a name="GMenuItem"></a><div class="refsect1">
+<a name="GMenu.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GMenu.html#GMenu-struct" title="GMenu">GMenu</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GMenu.html#GMenuItem-struct" title="GMenuItem">GMenuItem</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GMenu.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">├──</span> GMenuItem
+    <span class="lineart">╰──</span> <a class="link" href="GMenuModel.html" title="GMenuModel">GMenuModel</a>
+        <span class="lineart">╰──</span> GMenu
+</pre>
+</div>
+<div class="refsect1">
+<a name="GMenu.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GMenu.description"></a><h2>Description</h2>
+<p><a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> is a simple implementation of <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a>.
+You populate a <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> by adding <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> instances to it.</p>
+<p>There are some convenience functions to allow you to directly
+add items (avoiding <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a>) for the common cases. To add
+a regular item, use <a class="link" href="GMenu.html#g-menu-insert" title="g_menu_insert ()"><code class="function">g_menu_insert()</code></a>. To add a section, use
+<a class="link" href="GMenu.html#g-menu-insert-section" title="g_menu_insert_section ()"><code class="function">g_menu_insert_section()</code></a>. To add a submenu, use
+<a class="link" href="GMenu.html#g-menu-insert-submenu" title="g_menu_insert_submenu ()"><code class="function">g_menu_insert_submenu()</code></a>.</p>
+</div>
+<div class="refsect1">
+<a name="GMenu.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-menu-new"></a><h3>g_menu_new ()</h3>
+<pre class="programlisting"><a class="link" href="GMenu.html" title="GMenu"><span class="returnvalue">GMenu</span></a> *
+g_menu_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Creates a new <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a>.</p>
+<p>The new menu has no items.</p>
+<div class="refsect3">
+<a name="g-menu-new.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-freeze"></a><h3>g_menu_freeze ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_freeze (<em class="parameter"><code><a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> *menu</code></em>);</pre>
+<p>Marks <em class="parameter"><code>menu</code></em>
+ as frozen.</p>
+<p>After the menu is frozen, it is an error to attempt to make any
+changes to it.  In effect this means that the <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> API must no
+longer be used.</p>
+<p>This function causes <a class="link" href="GMenuModel.html#g-menu-model-is-mutable" title="g_menu_model_is_mutable ()"><code class="function">g_menu_model_is_mutable()</code></a> to begin returning
+<a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a>, which has some positive performance implications.</p>
+<div class="refsect3">
+<a name="g-menu-freeze.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>menu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-insert"></a><h3>g_menu_insert ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_insert (<em class="parameter"><code><a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> *menu</code></em>,
+               <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> position</code></em>,
+               <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+               <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *detailed_action</code></em>);</pre>
+<p>Convenience function for inserting a normal menu item into <em class="parameter"><code>menu</code></em>
+.
+Combine <a class="link" href="GMenu.html#g-menu-item-new" title="g_menu_item_new ()"><code class="function">g_menu_item_new()</code></a> and <a class="link" href="GMenu.html#g-menu-insert-item" title="g_menu_insert_item ()"><code class="function">g_menu_insert_item()</code></a> for a more flexible
+alternative.</p>
+<div class="refsect3">
+<a name="g-menu-insert.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>position</p></td>
+<td class="parameter_description"><p>the position at which to insert the item</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>label</p></td>
+<td class="parameter_description"><p>the section label, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>detailed_action</p></td>
+<td class="parameter_description"><p>the detailed action string, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-prepend"></a><h3>g_menu_prepend ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_prepend (<em class="parameter"><code><a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> *menu</code></em>,
+                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *detailed_action</code></em>);</pre>
+<p>Convenience function for prepending a normal menu item to the start
+of <em class="parameter"><code>menu</code></em>
+.  Combine <a class="link" href="GMenu.html#g-menu-item-new" title="g_menu_item_new ()"><code class="function">g_menu_item_new()</code></a> and <a class="link" href="GMenu.html#g-menu-insert-item" title="g_menu_insert_item ()"><code class="function">g_menu_insert_item()</code></a> for a more
+flexible alternative.</p>
+<div class="refsect3">
+<a name="g-menu-prepend.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>label</p></td>
+<td class="parameter_description"><p>the section label, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>detailed_action</p></td>
+<td class="parameter_description"><p>the detailed action string, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-append"></a><h3>g_menu_append ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_append (<em class="parameter"><code><a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> *menu</code></em>,
+               <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+               <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *detailed_action</code></em>);</pre>
+<p>Convenience function for appending a normal menu item to the end of
+<em class="parameter"><code>menu</code></em>
+.  Combine <a class="link" href="GMenu.html#g-menu-item-new" title="g_menu_item_new ()"><code class="function">g_menu_item_new()</code></a> and <a class="link" href="GMenu.html#g-menu-insert-item" title="g_menu_insert_item ()"><code class="function">g_menu_insert_item()</code></a> for a more
+flexible alternative.</p>
+<div class="refsect3">
+<a name="g-menu-append.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>label</p></td>
+<td class="parameter_description"><p>the section label, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>detailed_action</p></td>
+<td class="parameter_description"><p>the detailed action string, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-insert-item"></a><h3>g_menu_insert_item ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_insert_item (<em class="parameter"><code><a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> *menu</code></em>,
+                    <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> position</code></em>,
+                    <em class="parameter"><code><a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> *item</code></em>);</pre>
+<p>Inserts <em class="parameter"><code>item</code></em>
+ into <em class="parameter"><code>menu</code></em>
+.</p>
+<p>The "insertion" is actually done by copying all of the attribute and
+link values of <em class="parameter"><code>item</code></em>
+ and using them to form a new item within <em class="parameter"><code>menu</code></em>
+.
+As such, <em class="parameter"><code>item</code></em>
+ itself is not really inserted, but rather, a menu item
+that is exactly the same as the one presently described by <em class="parameter"><code>item</code></em>
+.</p>
+<p>This means that <em class="parameter"><code>item</code></em>
+ is essentially useless after the insertion
+occurs.  Any changes you make to it are ignored unless it is inserted
+again (at which point its updated values will be copied).</p>
+<p>You should probably just free <em class="parameter"><code>item</code></em>
+ once you're done.</p>
+<p>There are many convenience functions to take care of common cases.
+See <a class="link" href="GMenu.html#g-menu-insert" title="g_menu_insert ()"><code class="function">g_menu_insert()</code></a>, <a class="link" href="GMenu.html#g-menu-insert-section" title="g_menu_insert_section ()"><code class="function">g_menu_insert_section()</code></a> and
+<a class="link" href="GMenu.html#g-menu-insert-submenu" title="g_menu_insert_submenu ()"><code class="function">g_menu_insert_submenu()</code></a> as well as "prepend" and "append" variants of
+each of these functions.</p>
+<div class="refsect3">
+<a name="g-menu-insert-item.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>position</p></td>
+<td class="parameter_description"><p>the position at which to insert the item</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>item</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> to insert</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-append-item"></a><h3>g_menu_append_item ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_append_item (<em class="parameter"><code><a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> *menu</code></em>,
+                    <em class="parameter"><code><a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> *item</code></em>);</pre>
+<p>Appends <em class="parameter"><code>item</code></em>
+ to the end of <em class="parameter"><code>menu</code></em>
+.</p>
+<p>See <a class="link" href="GMenu.html#g-menu-insert-item" title="g_menu_insert_item ()"><code class="function">g_menu_insert_item()</code></a> for more information.</p>
+<div class="refsect3">
+<a name="g-menu-append-item.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>item</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> to append</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-prepend-item"></a><h3>g_menu_prepend_item ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_prepend_item (<em class="parameter"><code><a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> *menu</code></em>,
+                     <em class="parameter"><code><a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> *item</code></em>);</pre>
+<p>Prepends <em class="parameter"><code>item</code></em>
+ to the start of <em class="parameter"><code>menu</code></em>
+.</p>
+<p>See <a class="link" href="GMenu.html#g-menu-insert-item" title="g_menu_insert_item ()"><code class="function">g_menu_insert_item()</code></a> for more information.</p>
+<div class="refsect3">
+<a name="g-menu-prepend-item.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>item</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> to prepend</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-insert-section"></a><h3>g_menu_insert_section ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_insert_section (<em class="parameter"><code><a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> *menu</code></em>,
+                       <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> position</code></em>,
+                       <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                       <em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *section</code></em>);</pre>
+<p>Convenience function for inserting a section menu item into <em class="parameter"><code>menu</code></em>
+.
+Combine <a class="link" href="GMenu.html#g-menu-item-new-section" title="g_menu_item_new_section ()"><code class="function">g_menu_item_new_section()</code></a> and <a class="link" href="GMenu.html#g-menu-insert-item" title="g_menu_insert_item ()"><code class="function">g_menu_insert_item()</code></a> for a more
+flexible alternative.</p>
+<div class="refsect3">
+<a name="g-menu-insert-section.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>position</p></td>
+<td class="parameter_description"><p>the position at which to insert the item</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>label</p></td>
+<td class="parameter_description"><p>the section label, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>section</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> with the items of the section</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-prepend-section"></a><h3>g_menu_prepend_section ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_prepend_section (<em class="parameter"><code><a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> *menu</code></em>,
+                        <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                        <em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *section</code></em>);</pre>
+<p>Convenience function for prepending a section menu item to the start
+of <em class="parameter"><code>menu</code></em>
+.  Combine <a class="link" href="GMenu.html#g-menu-item-new-section" title="g_menu_item_new_section ()"><code class="function">g_menu_item_new_section()</code></a> and <a class="link" href="GMenu.html#g-menu-insert-item" title="g_menu_insert_item ()"><code class="function">g_menu_insert_item()</code></a> for
+a more flexible alternative.</p>
+<div class="refsect3">
+<a name="g-menu-prepend-section.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>label</p></td>
+<td class="parameter_description"><p>the section label, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>section</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> with the items of the section</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-append-section"></a><h3>g_menu_append_section ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_append_section (<em class="parameter"><code><a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> *menu</code></em>,
+                       <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                       <em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *section</code></em>);</pre>
+<p>Convenience function for appending a section menu item to the end of
+<em class="parameter"><code>menu</code></em>
+.  Combine <a class="link" href="GMenu.html#g-menu-item-new-section" title="g_menu_item_new_section ()"><code class="function">g_menu_item_new_section()</code></a> and <a class="link" href="GMenu.html#g-menu-insert-item" title="g_menu_insert_item ()"><code class="function">g_menu_insert_item()</code></a> for a
+more flexible alternative.</p>
+<div class="refsect3">
+<a name="g-menu-append-section.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>label</p></td>
+<td class="parameter_description"><p>the section label, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>section</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> with the items of the section</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-append-submenu"></a><h3>g_menu_append_submenu ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_append_submenu (<em class="parameter"><code><a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> *menu</code></em>,
+                       <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                       <em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *submenu</code></em>);</pre>
+<p>Convenience function for appending a submenu menu item to the end of
+<em class="parameter"><code>menu</code></em>
+.  Combine <a class="link" href="GMenu.html#g-menu-item-new-submenu" title="g_menu_item_new_submenu ()"><code class="function">g_menu_item_new_submenu()</code></a> and <a class="link" href="GMenu.html#g-menu-insert-item" title="g_menu_insert_item ()"><code class="function">g_menu_insert_item()</code></a> for a
+more flexible alternative.</p>
+<div class="refsect3">
+<a name="g-menu-append-submenu.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>label</p></td>
+<td class="parameter_description"><p>the section label, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>submenu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> with the items of the submenu</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-insert-submenu"></a><h3>g_menu_insert_submenu ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_insert_submenu (<em class="parameter"><code><a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> *menu</code></em>,
+                       <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> position</code></em>,
+                       <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                       <em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *submenu</code></em>);</pre>
+<p>Convenience function for inserting a submenu menu item into <em class="parameter"><code>menu</code></em>
+.
+Combine <a class="link" href="GMenu.html#g-menu-item-new-submenu" title="g_menu_item_new_submenu ()"><code class="function">g_menu_item_new_submenu()</code></a> and <a class="link" href="GMenu.html#g-menu-insert-item" title="g_menu_insert_item ()"><code class="function">g_menu_insert_item()</code></a> for a more
+flexible alternative.</p>
+<div class="refsect3">
+<a name="g-menu-insert-submenu.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>position</p></td>
+<td class="parameter_description"><p>the position at which to insert the item</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>label</p></td>
+<td class="parameter_description"><p>the section label, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>submenu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> with the items of the submenu</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-prepend-submenu"></a><h3>g_menu_prepend_submenu ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_prepend_submenu (<em class="parameter"><code><a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> *menu</code></em>,
+                        <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                        <em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *submenu</code></em>);</pre>
+<p>Convenience function for prepending a submenu menu item to the start
+of <em class="parameter"><code>menu</code></em>
+.  Combine <a class="link" href="GMenu.html#g-menu-item-new-submenu" title="g_menu_item_new_submenu ()"><code class="function">g_menu_item_new_submenu()</code></a> and <a class="link" href="GMenu.html#g-menu-insert-item" title="g_menu_insert_item ()"><code class="function">g_menu_insert_item()</code></a> for
+a more flexible alternative.</p>
+<div class="refsect3">
+<a name="g-menu-prepend-submenu.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>label</p></td>
+<td class="parameter_description"><p>the section label, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>submenu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> with the items of the submenu</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-remove"></a><h3>g_menu_remove ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_remove (<em class="parameter"><code><a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> *menu</code></em>,
+               <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> position</code></em>);</pre>
+<p>Removes an item from the menu.</p>
+<p><em class="parameter"><code>position</code></em>
+ gives the index of the item to remove.</p>
+<p>It is an error if position is not in range the range from 0 to one
+less than the number of items in the menu.</p>
+<p>It is not possible to remove items by identity since items are added
+to the menu simply by copying their links and attributes (ie:
+identity of the item itself is not preserved).</p>
+<div class="refsect3">
+<a name="g-menu-remove.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>position</p></td>
+<td class="parameter_description"><p>the position of the item to remove</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-remove-all"></a><h3>g_menu_remove_all ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_remove_all (<em class="parameter"><code><a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> *menu</code></em>);</pre>
+<p>Removes all items in the menu.</p>
+<div class="refsect3">
+<a name="g-menu-remove-all.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>menu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-item-new"></a><h3>g_menu_item_new ()</h3>
+<pre class="programlisting"><a class="link" href="GMenu.html#GMenuItem"><span class="returnvalue">GMenuItem</span></a> *
+g_menu_item_new (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                 <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *detailed_action</code></em>);</pre>
+<p>Creates a new <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a>.</p>
+<p>If <em class="parameter"><code>label</code></em>
+ is non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> it is used to set the "label" attribute of the
+new item.</p>
+<p>If <em class="parameter"><code>detailed_action</code></em>
+ is non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> it is used to set the "action" and
+possibly the "target" attribute of the new item.  See
+<a class="link" href="GMenu.html#g-menu-item-set-detailed-action" title="g_menu_item_set_detailed_action ()"><code class="function">g_menu_item_set_detailed_action()</code></a> for more information.</p>
+<div class="refsect3">
+<a name="g-menu-item-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>label</p></td>
+<td class="parameter_description"><p>the section label, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>detailed_action</p></td>
+<td class="parameter_description"><p>the detailed action string, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-menu-item-new.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-item-new-section"></a><h3>g_menu_item_new_section ()</h3>
+<pre class="programlisting"><a class="link" href="GMenu.html#GMenuItem"><span class="returnvalue">GMenuItem</span></a> *
+g_menu_item_new_section (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                         <em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *section</code></em>);</pre>
+<p>Creates a new <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> representing a section.</p>
+<p>This is a convenience API around <a class="link" href="GMenu.html#g-menu-item-new" title="g_menu_item_new ()"><code class="function">g_menu_item_new()</code></a> and
+<a class="link" href="GMenu.html#g-menu-item-set-section" title="g_menu_item_set_section ()"><code class="function">g_menu_item_set_section()</code></a>.</p>
+<p>The effect of having one menu appear as a section of another is
+exactly as it sounds: the items from <em class="parameter"><code>section</code></em>
+ become a direct part of
+the menu that <em class="parameter"><code>menu_item</code></em>
+ is added to.</p>
+<p>Visual separation is typically displayed between two non-empty
+sections.  If <em class="parameter"><code>label</code></em>
+ is non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then it will be encorporated into
+this visual indication.  This allows for labeled subsections of a
+menu.</p>
+<p>As a simple example, consider a typical "Edit" menu from a simple
+program.  It probably contains an "Undo" and "Redo" item, followed by
+a separator, followed by "Cut", "Copy" and "Paste".</p>
+<p>This would be accomplished by creating three <a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> instances.  The
+first would be populated with the "Undo" and "Redo" items, and the
+second with the "Cut", "Copy" and "Paste" items.  The first and
+second menus would then be added as submenus of the third.  In XML
+format, this would look something like the following:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="symbol">&lt;</span><span class="usertype">menu</span><span class="normal"> id</span><span class="symbol">=</span><span class="string">'edit-menu'</span><span class="symbol">&gt;</span>
+<span class="normal">  </span><span class="symbol">&lt;</span><span class="normal">section</span><span class="symbol">&gt;</span>
+<span class="normal">    </span><span class="symbol">&lt;</span><span class="usertype">item</span><span class="normal"> label</span><span class="symbol">=</span><span class="string">'Undo'</span><span class="symbol">/&gt;</span>
+<span class="normal">    </span><span class="symbol">&lt;</span><span class="usertype">item</span><span class="normal"> label</span><span class="symbol">=</span><span class="string">'Redo'</span><span class="symbol">/&gt;</span>
+<span class="normal">  </span><span class="symbol">&lt;/</span><span class="normal">section</span><span class="symbol">&gt;</span>
+<span class="normal">  </span><span class="symbol">&lt;</span><span class="normal">section</span><span class="symbol">&gt;</span>
+<span class="normal">    </span><span class="symbol">&lt;</span><span class="usertype">item</span><span class="normal"> label</span><span class="symbol">=</span><span class="string">'Cut'</span><span class="symbol">/&gt;</span>
+<span class="normal">    </span><span class="symbol">&lt;</span><span class="usertype">item</span><span class="normal"> label</span><span class="symbol">=</span><span class="string">'Copy'</span><span class="symbol">/&gt;</span>
+<span class="normal">    </span><span class="symbol">&lt;</span><span class="usertype">item</span><span class="normal"> label</span><span class="symbol">=</span><span class="string">'Paste'</span><span class="symbol">/&gt;</span>
+<span class="normal">  </span><span class="symbol">&lt;/</span><span class="normal">section</span><span class="symbol">&gt;</span>
+<span class="symbol">&lt;/</span><span class="normal">menu</span><span class="symbol">&gt;</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>The following example is exactly equivalent.  It is more illustrative
+of the exact relationship between the menus and items (keeping in
+mind that the 'link' element defines a new menu that is linked to the
+containing one).  The style of the second example is more verbose and
+difficult to read (and therefore not recommended except for the
+purpose of understanding what is really going on).</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="symbol">&lt;</span><span class="usertype">menu</span><span class="normal"> id</span><span class="symbol">=</span><span class="string">'edit-menu'</span><span class="symbol">&gt;</span>
+<span class="normal">  </span><span class="symbol">&lt;</span><span class="normal">item</span><span class="symbol">&gt;</span>
+<span class="normal">    </span><span class="symbol">&lt;</span><span class="usertype">link</span><span class="normal"> name</span><span class="symbol">=</span><span class="string">'section'</span><span class="symbol">&gt;</span>
+<span class="normal">      </span><span class="symbol">&lt;</span><span class="usertype">item</span><span class="normal"> label</span><span class="symbol">=</span><span class="string">'Undo'</span><span class="symbol">/&gt;</span>
+<span class="normal">      </span><span class="symbol">&lt;</span><span class="usertype">item</span><span class="normal"> label</span><span class="symbol">=</span><span class="string">'Redo'</span><span class="symbol">/&gt;</span>
+<span class="normal">    </span><span class="symbol">&lt;/</span><span class="normal">link</span><span class="symbol">&gt;</span>
+<span class="normal">  </span><span class="symbol">&lt;/</span><span class="normal">item</span><span class="symbol">&gt;</span>
+<span class="normal">  </span><span class="symbol">&lt;</span><span class="normal">item</span><span class="symbol">&gt;</span>
+<span class="normal">    </span><span class="symbol">&lt;</span><span class="usertype">link</span><span class="normal"> name</span><span class="symbol">=</span><span class="string">'section'</span><span class="symbol">&gt;</span>
+<span class="normal">      </span><span class="symbol">&lt;</span><span class="usertype">item</span><span class="normal"> label</span><span class="symbol">=</span><span class="string">'Cut'</span><span class="symbol">/&gt;</span>
+<span class="normal">      </span><span class="symbol">&lt;</span><span class="usertype">item</span><span class="normal"> label</span><span class="symbol">=</span><span class="string">'Copy'</span><span class="symbol">/&gt;</span>
+<span class="normal">      </span><span class="symbol">&lt;</span><span class="usertype">item</span><span class="normal"> label</span><span class="symbol">=</span><span class="string">'Paste'</span><span class="symbol">/&gt;</span>
+<span class="normal">    </span><span class="symbol">&lt;/</span><span class="normal">link</span><span class="symbol">&gt;</span>
+<span class="normal">  </span><span class="symbol">&lt;/</span><span class="normal">item</span><span class="symbol">&gt;</span>
+<span class="symbol">&lt;/</span><span class="normal">menu</span><span class="symbol">&gt;</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="g-menu-item-new-section.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>label</p></td>
+<td class="parameter_description"><p>the section label, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>section</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> with the items of the section</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-menu-item-new-section.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-item-new-submenu"></a><h3>g_menu_item_new_submenu ()</h3>
+<pre class="programlisting"><a class="link" href="GMenu.html#GMenuItem"><span class="returnvalue">GMenuItem</span></a> *
+g_menu_item_new_submenu (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                         <em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *submenu</code></em>);</pre>
+<p>Creates a new <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> representing a submenu.</p>
+<p>This is a convenience API around <a class="link" href="GMenu.html#g-menu-item-new" title="g_menu_item_new ()"><code class="function">g_menu_item_new()</code></a> and
+<a class="link" href="GMenu.html#g-menu-item-set-submenu" title="g_menu_item_set_submenu ()"><code class="function">g_menu_item_set_submenu()</code></a>.</p>
+<div class="refsect3">
+<a name="g-menu-item-new-submenu.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>label</p></td>
+<td class="parameter_description"><p>the section label, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>submenu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> with the items of the submenu</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-menu-item-new-submenu.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-item-new-from-model"></a><h3>g_menu_item_new_from_model ()</h3>
+<pre class="programlisting"><a class="link" href="GMenu.html#GMenuItem"><span class="returnvalue">GMenuItem</span></a> *
+g_menu_item_new_from_model (<em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *model</code></em>,
+                            <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> item_index</code></em>);</pre>
+<p>Creates a <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> as an exact copy of an existing menu item in a
+<a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a>.</p>
+<p><em class="parameter"><code>item_index</code></em>
+ must be valid (ie: be sure to call
+<a class="link" href="GMenuModel.html#g-menu-model-get-n-items" title="g_menu_model_get_n_items ()"><code class="function">g_menu_model_get_n_items()</code></a> first).</p>
+<div class="refsect3">
+<a name="g-menu-item-new-from-model.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>model</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>item_index</p></td>
+<td class="parameter_description"><p>the index of an item in <em class="parameter"><code>model</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-menu-item-new-from-model.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-item-set-label"></a><h3>g_menu_item_set_label ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_item_set_label (<em class="parameter"><code><a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> *menu_item</code></em>,
+                       <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>);</pre>
+<p>Sets or unsets the "label" attribute of <em class="parameter"><code>menu_item</code></em>
+.</p>
+<p>If <em class="parameter"><code>label</code></em>
+ is non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> it is used as the label for the menu item.  If
+it is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then the label attribute is unset.</p>
+<div class="refsect3">
+<a name="g-menu-item-set-label.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu_item</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>label</p></td>
+<td class="parameter_description"><p>the label to set, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to unset. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-item-set-icon"></a><h3>g_menu_item_set_icon ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_item_set_icon (<em class="parameter"><code><a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> *menu_item</code></em>,
+                      <em class="parameter"><code><a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> *icon</code></em>);</pre>
+<p>Sets (or unsets) the icon on <em class="parameter"><code>menu_item</code></em>
+.</p>
+<p>This call is the same as calling <a class="link" href="GIcon.html#g-icon-serialize" title="g_icon_serialize ()"><code class="function">g_icon_serialize()</code></a> and using the
+result as the value to <a class="link" href="GMenu.html#g-menu-item-set-attribute-value" title="g_menu_item_set_attribute_value ()"><code class="function">g_menu_item_set_attribute_value()</code></a> for
+<a class="link" href="GMenuModel.html#G-MENU-ATTRIBUTE-ICON:CAPS" title="G_MENU_ATTRIBUTE_ICON"><code class="literal">G_MENU_ATTRIBUTE_ICON</code></a>.</p>
+<p>This API is only intended for use with "noun" menu items; things like
+bookmarks or applications in an "Open With" menu.  Don't use it on
+menu items corresponding to verbs (eg: stock icons for 'Save' or
+'Quit').</p>
+<p>If <em class="parameter"><code>icon</code></em>
+ is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then the icon is unset.</p>
+<div class="refsect3">
+<a name="g-menu-item-set-icon.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu_item</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>icon</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-item-set-action-and-target-value"></a><h3>g_menu_item_set_action_and_target_value ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_item_set_action_and_target_value
+                               (<em class="parameter"><code><a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> *menu_item</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *action</code></em>,
+                                <em class="parameter"><code><a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *target_value</code></em>);</pre>
+<p>Sets or unsets the "action" and "target" attributes of <em class="parameter"><code>menu_item</code></em>
+.</p>
+<p>If <em class="parameter"><code>action</code></em>
+ is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then both the "action" and "target" attributes
+are unset (and <em class="parameter"><code>target_value</code></em>
+ is ignored).</p>
+<p>If <em class="parameter"><code>action</code></em>
+ is non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then the "action" attribute is set.  The
+"target" attribute is then set to the value of <em class="parameter"><code>target_value</code></em>
+ if it is
+non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> or unset otherwise.</p>
+<p>Normal menu items (ie: not submenu, section or other custom item
+types) are expected to have the "action" attribute set to identify
+the action that they are associated with.  The state type of the
+action help to determine the disposition of the menu item.  See
+<a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> and <a class="link" href="GActionGroup.html" title="GActionGroup"><span class="type">GActionGroup</span></a> for an overview of actions.</p>
+<p>In general, clicking on the menu item will result in activation of
+the named action with the "target" attribute given as the parameter
+to the action invocation.  If the "target" attribute is not set then
+the action is invoked with no parameter.</p>
+<p>If the action has no state then the menu item is usually drawn as a
+plain menu item (ie: with no additional decoration).</p>
+<p>If the action has a boolean state then the menu item is usually drawn
+as a toggle menu item (ie: with a checkmark or equivalent
+indication).  The item should be marked as 'toggled' or 'checked'
+when the boolean state is <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>.</p>
+<p>If the action has a string state then the menu item is usually drawn
+as a radio menu item (ie: with a radio bullet or equivalent
+indication).  The item should be marked as 'selected' when the string
+state is equal to the value of the <em class="parameter"><code>target</code></em>
+ property.</p>
+<p>See <a class="link" href="GMenu.html#g-menu-item-set-action-and-target" title="g_menu_item_set_action_and_target ()"><code class="function">g_menu_item_set_action_and_target()</code></a> or
+<a class="link" href="GMenu.html#g-menu-item-set-detailed-action" title="g_menu_item_set_detailed_action ()"><code class="function">g_menu_item_set_detailed_action()</code></a> for two equivalent calls that are
+probably more convenient for most uses.</p>
+<div class="refsect3">
+<a name="g-menu-item-set-action-and-target-value.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu_item</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>action</p></td>
+<td class="parameter_description"><p>the name of the action for this item. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>target_value</p></td>
+<td class="parameter_description"><p>a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> to use as the action target. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-item-set-action-and-target"></a><h3>g_menu_item_set_action_and_target ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_item_set_action_and_target (<em class="parameter"><code><a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> *menu_item</code></em>,
+                                   <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *action</code></em>,
+                                   <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *format_string</code></em>,
+                                   <em class="parameter"><code>...</code></em>);</pre>
+<p>Sets or unsets the "action" and "target" attributes of <em class="parameter"><code>menu_item</code></em>
+.</p>
+<p>If <em class="parameter"><code>action</code></em>
+ is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then both the "action" and "target" attributes
+are unset (and <em class="parameter"><code>format_string</code></em>
+ is ignored along with the positional
+parameters).</p>
+<p>If <em class="parameter"><code>action</code></em>
+ is non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then the "action" attribute is set.
+<em class="parameter"><code>format_string</code></em>
+ is then inspected.  If it is non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then the proper
+position parameters are collected to create a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> instance to
+use as the target value.  If it is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then the positional
+parameters are ignored and the "target" attribute is unset.</p>
+<p>See also <a class="link" href="GMenu.html#g-menu-item-set-action-and-target-value" title="g_menu_item_set_action_and_target_value ()"><code class="function">g_menu_item_set_action_and_target_value()</code></a> for an equivalent
+call that directly accepts a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a>.  See
+<a class="link" href="GMenu.html#g-menu-item-set-detailed-action" title="g_menu_item_set_detailed_action ()"><code class="function">g_menu_item_set_detailed_action()</code></a> for a more convenient version that
+works with string-typed targets.</p>
+<p>See also <a class="link" href="GMenu.html#g-menu-item-set-action-and-target-value" title="g_menu_item_set_action_and_target_value ()"><code class="function">g_menu_item_set_action_and_target_value()</code></a> for a
+description of the semantics of the action and target attributes.</p>
+<div class="refsect3">
+<a name="g-menu-item-set-action-and-target.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu_item</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>action</p></td>
+<td class="parameter_description"><p>the name of the action for this item. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>format_string</p></td>
+<td class="parameter_description"><p>a GVariant format string. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>positional parameters, as per <em class="parameter"><code>format_string</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-item-set-detailed-action"></a><h3>g_menu_item_set_detailed_action ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_item_set_detailed_action (<em class="parameter"><code><a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> *menu_item</code></em>,
+                                 <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *detailed_action</code></em>);</pre>
+<p>Sets the "action" and possibly the "target" attribute of <em class="parameter"><code>menu_item</code></em>
+.</p>
+<p>The format of <em class="parameter"><code>detailed_action</code></em>
+ is the same format parsed by
+<a class="link" href="GAction.html#g-action-parse-detailed-name" title="g_action_parse_detailed_name ()"><code class="function">g_action_parse_detailed_name()</code></a>.</p>
+<p>See <a class="link" href="GMenu.html#g-menu-item-set-action-and-target" title="g_menu_item_set_action_and_target ()"><code class="function">g_menu_item_set_action_and_target()</code></a> or
+<a class="link" href="GMenu.html#g-menu-item-set-action-and-target-value" title="g_menu_item_set_action_and_target_value ()"><code class="function">g_menu_item_set_action_and_target_value()</code></a> for more flexible (but
+slightly less convenient) alternatives.</p>
+<p>See also <a class="link" href="GMenu.html#g-menu-item-set-action-and-target-value" title="g_menu_item_set_action_and_target_value ()"><code class="function">g_menu_item_set_action_and_target_value()</code></a> for a description of
+the semantics of the action and target attributes.</p>
+<div class="refsect3">
+<a name="g-menu-item-set-detailed-action.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu_item</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>detailed_action</p></td>
+<td class="parameter_description"><p>the "detailed" action string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-item-set-section"></a><h3>g_menu_item_set_section ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_item_set_section (<em class="parameter"><code><a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> *menu_item</code></em>,
+                         <em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *section</code></em>);</pre>
+<p>Sets or unsets the "section" link of <em class="parameter"><code>menu_item</code></em>
+ to <em class="parameter"><code>section</code></em>
+.</p>
+<p>The effect of having one menu appear as a section of another is
+exactly as it sounds: the items from <em class="parameter"><code>section</code></em>
+ become a direct part of
+the menu that <em class="parameter"><code>menu_item</code></em>
+ is added to.  See <a class="link" href="GMenu.html#g-menu-item-new-section" title="g_menu_item_new_section ()"><code class="function">g_menu_item_new_section()</code></a>
+for more information about what it means for a menu item to be a
+section.</p>
+<div class="refsect3">
+<a name="g-menu-item-set-section.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu_item</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>section</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-item-set-submenu"></a><h3>g_menu_item_set_submenu ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_item_set_submenu (<em class="parameter"><code><a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> *menu_item</code></em>,
+                         <em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *submenu</code></em>);</pre>
+<p>Sets or unsets the "submenu" link of <em class="parameter"><code>menu_item</code></em>
+ to <em class="parameter"><code>submenu</code></em>
+.</p>
+<p>If <em class="parameter"><code>submenu</code></em>
+ is non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, it is linked to.  If it is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then the
+link is unset.</p>
+<p>The effect of having one menu appear as a submenu of another is
+exactly as it sounds.</p>
+<div class="refsect3">
+<a name="g-menu-item-set-submenu.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu_item</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>submenu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-item-get-attribute-value"></a><h3>g_menu_item_get_attribute_value ()</h3>
+<pre class="programlisting"><a href="../glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+g_menu_item_get_attribute_value (<em class="parameter"><code><a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> *menu_item</code></em>,
+                                 <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *attribute</code></em>,
+                                 <em class="parameter"><code>const <a href="../glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a> *expected_type</code></em>);</pre>
+<p>Queries the named <em class="parameter"><code>attribute</code></em>
+ on <em class="parameter"><code>menu_item</code></em>
+.</p>
+<p>If <em class="parameter"><code>expected_type</code></em>
+ is specified and the attribute does not have this
+type, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> is returned.  <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> is also returned if the attribute
+simply does not exist.</p>
+<div class="refsect3">
+<a name="g-menu-item-get-attribute-value.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu_item</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>attribute</p></td>
+<td class="parameter_description"><p>the attribute name to query</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>expected_type</p></td>
+<td class="parameter_description"><p>the expected type of the attribute. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-menu-item-get-attribute-value.returns"></a><h4>Returns</h4>
+<p>the attribute value, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-item-get-attribute"></a><h3>g_menu_item_get_attribute ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_menu_item_get_attribute (<em class="parameter"><code><a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> *menu_item</code></em>,
+                           <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *attribute</code></em>,
+                           <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *format_string</code></em>,
+                           <em class="parameter"><code>...</code></em>);</pre>
+<p>Queries the named <em class="parameter"><code>attribute</code></em>
+ on <em class="parameter"><code>menu_item</code></em>
+.</p>
+<p>If the attribute exists and matches the <a href="../glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a> corresponding
+to <em class="parameter"><code>format_string</code></em>
+ then <em class="parameter"><code>format_string</code></em>
+ is used to deconstruct the
+value into the positional parameters and <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> is returned.</p>
+<p>If the attribute does not exist, or it does exist but has the wrong
+type, then the positional parameters are ignored and <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> is
+returned.</p>
+<div class="refsect3">
+<a name="g-menu-item-get-attribute.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu_item</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>attribute</p></td>
+<td class="parameter_description"><p>the attribute name to query</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>format_string</p></td>
+<td class="parameter_description"><p>a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> format string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>positional parameters, as per <em class="parameter"><code>format_string</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-menu-item-get-attribute.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the named attribute was found with the expected
+type</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-item-get-link"></a><h3>g_menu_item_get_link ()</h3>
+<pre class="programlisting"><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="returnvalue">GMenuModel</span></a> *
+g_menu_item_get_link (<em class="parameter"><code><a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> *menu_item</code></em>,
+                      <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *link</code></em>);</pre>
+<p>Queries the named <em class="parameter"><code>link</code></em>
+ on <em class="parameter"><code>menu_item</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-menu-item-get-link.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu_item</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>link</p></td>
+<td class="parameter_description"><p>the link name to query</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-menu-item-get-link.returns"></a><h4>Returns</h4>
+<p>the link, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-item-set-attribute-value"></a><h3>g_menu_item_set_attribute_value ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_item_set_attribute_value (<em class="parameter"><code><a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> *menu_item</code></em>,
+                                 <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *attribute</code></em>,
+                                 <em class="parameter"><code><a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *value</code></em>);</pre>
+<p>Sets or unsets an attribute on <em class="parameter"><code>menu_item</code></em>
+.</p>
+<p>The attribute to set or unset is specified by <em class="parameter"><code>attribute</code></em>
+. This
+can be one of the standard attribute names <a class="link" href="GMenuModel.html#G-MENU-ATTRIBUTE-LABEL:CAPS" title="G_MENU_ATTRIBUTE_LABEL"><code class="literal">G_MENU_ATTRIBUTE_LABEL</code></a>,
+<a class="link" href="GMenuModel.html#G-MENU-ATTRIBUTE-ACTION:CAPS" title="G_MENU_ATTRIBUTE_ACTION"><code class="literal">G_MENU_ATTRIBUTE_ACTION</code></a>, <a class="link" href="GMenuModel.html#G-MENU-ATTRIBUTE-TARGET:CAPS" title="G_MENU_ATTRIBUTE_TARGET"><code class="literal">G_MENU_ATTRIBUTE_TARGET</code></a>, or a custom
+attribute name.
+Attribute names are restricted to lowercase characters, numbers
+and '-'. Furthermore, the names must begin with a lowercase character,
+must not end with a '-', and must not contain consecutive dashes.</p>
+<p>must consist only of lowercase
+ASCII characters, digits and '-'.</p>
+<p>If <em class="parameter"><code>value</code></em>
+ is non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then it is used as the new value for the
+attribute.  If <em class="parameter"><code>value</code></em>
+ is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then the attribute is unset. If
+the <em class="parameter"><code>value</code></em>
+ <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> is floating, it is consumed.</p>
+<p>See also <a class="link" href="GMenu.html#g-menu-item-set-attribute" title="g_menu_item_set_attribute ()"><code class="function">g_menu_item_set_attribute()</code></a> for a more convenient way to do
+the same.</p>
+<div class="refsect3">
+<a name="g-menu-item-set-attribute-value.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu_item</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>attribute</p></td>
+<td class="parameter_description"><p>the attribute to set</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> to use as the value, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-item-set-attribute"></a><h3>g_menu_item_set_attribute ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_item_set_attribute (<em class="parameter"><code><a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> *menu_item</code></em>,
+                           <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *attribute</code></em>,
+                           <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *format_string</code></em>,
+                           <em class="parameter"><code>...</code></em>);</pre>
+<p>Sets or unsets an attribute on <em class="parameter"><code>menu_item</code></em>
+.</p>
+<p>The attribute to set or unset is specified by <em class="parameter"><code>attribute</code></em>
+. This
+can be one of the standard attribute names <a class="link" href="GMenuModel.html#G-MENU-ATTRIBUTE-LABEL:CAPS" title="G_MENU_ATTRIBUTE_LABEL"><code class="literal">G_MENU_ATTRIBUTE_LABEL</code></a>,
+<a class="link" href="GMenuModel.html#G-MENU-ATTRIBUTE-ACTION:CAPS" title="G_MENU_ATTRIBUTE_ACTION"><code class="literal">G_MENU_ATTRIBUTE_ACTION</code></a>, <a class="link" href="GMenuModel.html#G-MENU-ATTRIBUTE-TARGET:CAPS" title="G_MENU_ATTRIBUTE_TARGET"><code class="literal">G_MENU_ATTRIBUTE_TARGET</code></a>, or a custom
+attribute name.
+Attribute names are restricted to lowercase characters, numbers
+and '-'. Furthermore, the names must begin with a lowercase character,
+must not end with a '-', and must not contain consecutive dashes.</p>
+<p>If <em class="parameter"><code>format_string</code></em>
+ is non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then the proper position parameters
+are collected to create a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> instance to use as the attribute
+value.  If it is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then the positional parameterrs are ignored
+and the named attribute is unset.</p>
+<p>See also <a class="link" href="GMenu.html#g-menu-item-set-attribute-value" title="g_menu_item_set_attribute_value ()"><code class="function">g_menu_item_set_attribute_value()</code></a> for an equivalent call
+that directly accepts a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a>.</p>
+<div class="refsect3">
+<a name="g-menu-item-set-attribute.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu_item</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>attribute</p></td>
+<td class="parameter_description"><p>the attribute to set</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>format_string</p></td>
+<td class="parameter_description"><p>a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> format string, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>positional parameters, as per <em class="parameter"><code>format_string</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-menu-item-set-link"></a><h3>g_menu_item_set_link ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_menu_item_set_link (<em class="parameter"><code><a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> *menu_item</code></em>,
+                      <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *link</code></em>,
+                      <em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *model</code></em>);</pre>
+<p>Creates a link from <em class="parameter"><code>menu_item</code></em>
+ to <em class="parameter"><code>model</code></em>
+ if non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, or unsets it.</p>
+<p>Links are used to establish a relationship between a particular menu
+item and another menu.  For example, <a class="link" href="GMenuModel.html#G-MENU-LINK-SUBMENU:CAPS" title="G_MENU_LINK_SUBMENU"><code class="literal">G_MENU_LINK_SUBMENU</code></a> is used to
+associate a submenu with a particular menu item, and <a class="link" href="GMenuModel.html#G-MENU-LINK-SECTION:CAPS" title="G_MENU_LINK_SECTION"><code class="literal">G_MENU_LINK_SECTION</code></a>
+is used to create a section. Other types of link can be used, but there
+is no guarantee that clients will be able to make sense of them.
+Link types are restricted to lowercase characters, numbers
+and '-'. Furthermore, the names must begin with a lowercase character,
+must not end with a '-', and must not contain consecutive dashes.</p>
+<div class="refsect3">
+<a name="g-menu-item-set-link.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>menu_item</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>link</p></td>
+<td class="parameter_description"><p>type of link to establish or unset</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>model</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> to link to (or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to unset). </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GMenu.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GMenu-struct"></a><h3>GMenu</h3>
+<pre class="programlisting">typedef struct _GMenu GMenu;</pre>
+<p><a class="link" href="GMenu.html" title="GMenu"><span class="type">GMenu</span></a> is an opaque structure type.  You must access it using the
+functions below.</p>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMenuItem-struct"></a><h3>GMenuItem</h3>
+<pre class="programlisting">typedef struct _GMenuItem GMenuItem;</pre>
+<p><a class="link" href="GMenu.html#GMenuItem"><span class="type">GMenuItem</span></a> is an opaque structure type.  You must access it using the
+functions below.</p>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

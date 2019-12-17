@@ -1,0 +1,4 @@
+ELEMENT 'foo'
+bar="a b c d e𝐀"
+  TEXT ''
+END 'foo'

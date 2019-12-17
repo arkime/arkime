@@ -1,0 +1,972 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GDBusMethodInvocation: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="gdbus-lowlevel.html" title="Low-level D-Bus Support">
+<link rel="prev" href="GDBusConnection.html" title="GDBusConnection">
+<link rel="next" href="GDBusServer.html" title="GDBusServer">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GDBusMethodInvocation.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GDBusMethodInvocation.object-hierarchy" class="shortcut">Object Hierarchy</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="gdbus-lowlevel.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GDBusConnection.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GDBusServer.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GDBusMethodInvocation"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GDBusMethodInvocation.top_of_page"></a>GDBusMethodInvocation</span></h2>
+<p>GDBusMethodInvocation — Object for handling remote calls</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GDBusMethodInvocation.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-get-sender" title="g_dbus_method_invocation_get_sender ()">g_dbus_method_invocation_get_sender</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-get-object-path" title="g_dbus_method_invocation_get_object_path ()">g_dbus_method_invocation_get_object_path</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-get-interface-name" title="g_dbus_method_invocation_get_interface_name ()">g_dbus_method_invocation_get_interface_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-get-method-name" title="g_dbus_method_invocation_get_method_name ()">g_dbus_method_invocation_get_method_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusMethodInfo"><span class="returnvalue">GDBusMethodInfo</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-get-method-info" title="g_dbus_method_invocation_get_method_info ()">g_dbus_method_invocation_get_method_info</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo"><span class="returnvalue">GDBusPropertyInfo</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-get-property-info" title="g_dbus_method_invocation_get_property_info ()">g_dbus_method_invocation_get_property_info</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="returnvalue">GDBusConnection</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-get-connection" title="g_dbus_method_invocation_get_connection ()">g_dbus_method_invocation_get_connection</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-get-message" title="g_dbus_method_invocation_get_message ()">g_dbus_method_invocation_get_message</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-get-parameters" title="g_dbus_method_invocation_get_parameters ()">g_dbus_method_invocation_get_parameters</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-get-user-data" title="g_dbus_method_invocation_get_user_data ()">g_dbus_method_invocation_get_user_data</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-value" title="g_dbus_method_invocation_return_value ()">g_dbus_method_invocation_return_value</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-error" title="g_dbus_method_invocation_return_error ()">g_dbus_method_invocation_return_error</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-error-valist" title="g_dbus_method_invocation_return_error_valist ()">g_dbus_method_invocation_return_error_valist</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-error-literal" title="g_dbus_method_invocation_return_error_literal ()">g_dbus_method_invocation_return_error_literal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-gerror" title="g_dbus_method_invocation_return_gerror ()">g_dbus_method_invocation_return_gerror</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-dbus-error" title="g_dbus_method_invocation_return_dbus_error ()">g_dbus_method_invocation_return_dbus_error</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-take-error" title="g_dbus_method_invocation_take_error ()">g_dbus_method_invocation_take_error</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-value-with-unix-fd-list" title="g_dbus_method_invocation_return_value_with_unix_fd_list ()">g_dbus_method_invocation_return_value_with_unix_fd_list</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDBusMethodInvocation.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GDBusMethodInvocation.html#GDBusMethodInvocation-struct" title="GDBusMethodInvocation">GDBusMethodInvocation</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDBusMethodInvocation.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GDBusMethodInvocation
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusMethodInvocation.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusMethodInvocation.description"></a><h2>Description</h2>
+<p>Instances of the <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> class are used when
+handling D-Bus method calls. It provides a way to asynchronously
+return results and errors.</p>
+<p>The normal way to obtain a <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> object is to receive
+it as an argument to the <code class="function">handle_method_call()</code> function in a
+<a class="link" href="GDBusConnection.html#GDBusInterfaceVTable" title="GDBusInterfaceVTable"><span class="type">GDBusInterfaceVTable</span></a> that was passed to <a class="link" href="GDBusConnection.html#g-dbus-connection-register-object" title="g_dbus_connection_register_object ()"><code class="function">g_dbus_connection_register_object()</code></a>.</p>
+</div>
+<div class="refsect1">
+<a name="GDBusMethodInvocation.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-dbus-method-invocation-get-sender"></a><h3>g_dbus_method_invocation_get_sender ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_method_invocation_get_sender (<em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>);</pre>
+<p>Gets the bus name that invoked the method.</p>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-sender.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>invocation</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-sender.returns"></a><h4>Returns</h4>
+<p> A string. Do not free, it is owned by <em class="parameter"><code>invocation</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-method-invocation-get-object-path"></a><h3>g_dbus_method_invocation_get_object_path ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_method_invocation_get_object_path
+                               (<em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>);</pre>
+<p>Gets the object path the method was invoked on.</p>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-object-path.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>invocation</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-object-path.returns"></a><h4>Returns</h4>
+<p> A string. Do not free, it is owned by <em class="parameter"><code>invocation</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-method-invocation-get-interface-name"></a><h3>g_dbus_method_invocation_get_interface_name ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_method_invocation_get_interface_name
+                               (<em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>);</pre>
+<p>Gets the name of the D-Bus interface the method was invoked on.</p>
+<p>If this method call is a property Get, Set or GetAll call that has
+been redirected to the method call handler then
+"org.freedesktop.DBus.Properties" will be returned.  See
+<a class="link" href="GDBusConnection.html#GDBusInterfaceVTable" title="GDBusInterfaceVTable"><span class="type">GDBusInterfaceVTable</span></a> for more information.</p>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-interface-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>invocation</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-interface-name.returns"></a><h4>Returns</h4>
+<p> A string. Do not free, it is owned by <em class="parameter"><code>invocation</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-method-invocation-get-method-name"></a><h3>g_dbus_method_invocation_get_method_name ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_method_invocation_get_method_name
+                               (<em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>);</pre>
+<p>Gets the name of the method that was invoked.</p>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-method-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>invocation</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-method-name.returns"></a><h4>Returns</h4>
+<p> A string. Do not free, it is owned by <em class="parameter"><code>invocation</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-method-invocation-get-method-info"></a><h3>g_dbus_method_invocation_get_method_info ()</h3>
+<pre class="programlisting">const <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusMethodInfo"><span class="returnvalue">GDBusMethodInfo</span></a> *
+g_dbus_method_invocation_get_method_info
+                               (<em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>);</pre>
+<p>Gets information about the method call, if any.</p>
+<p>If this method invocation is a property Get, Set or GetAll call that
+has been redirected to the method call handler then <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> will be
+returned.  See <a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-get-property-info" title="g_dbus_method_invocation_get_property_info ()"><code class="function">g_dbus_method_invocation_get_property_info()</code></a> and
+<a class="link" href="GDBusConnection.html#GDBusInterfaceVTable" title="GDBusInterfaceVTable"><span class="type">GDBusInterfaceVTable</span></a> for more information.</p>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-method-info.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>invocation</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-method-info.returns"></a><h4>Returns</h4>
+<p> A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusMethodInfo"><span class="type">GDBusMethodInfo</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. Do not free, it is owned by <em class="parameter"><code>invocation</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-method-invocation-get-property-info"></a><h3>g_dbus_method_invocation_get_property_info ()</h3>
+<pre class="programlisting">const <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo"><span class="returnvalue">GDBusPropertyInfo</span></a> *
+g_dbus_method_invocation_get_property_info
+                               (<em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>);</pre>
+<p>Gets information about the property that this method call is for, if
+any.</p>
+<p>This will only be set in the case of an invocation in response to a
+property Get or Set call that has been directed to the method call
+handler for an object on account of its <code class="function">property_get()</code> or
+<code class="function">property_set()</code> vtable pointers being unset.</p>
+<p>See <a class="link" href="GDBusConnection.html#GDBusInterfaceVTable" title="GDBusInterfaceVTable"><span class="type">GDBusInterfaceVTable</span></a> for more information.</p>
+<p>If the call was GetAll, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> will be returned.</p>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-property-info.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>invocation</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-property-info.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo"><span class="type">GDBusPropertyInfo</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-method-invocation-get-connection"></a><h3>g_dbus_method_invocation_get_connection ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="returnvalue">GDBusConnection</span></a> *
+g_dbus_method_invocation_get_connection
+                               (<em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>);</pre>
+<p>Gets the <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> the method was invoked on.</p>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-connection.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>invocation</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-connection.returns"></a><h4>Returns</h4>
+<p>A <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a>. Do not free, it is owned by <em class="parameter"><code>invocation</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-method-invocation-get-message"></a><h3>g_dbus_method_invocation_get_message ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="returnvalue">GDBusMessage</span></a> *
+g_dbus_method_invocation_get_message (<em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>);</pre>
+<p>Gets the <a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a> for the method invocation. This is useful if
+you need to use low-level protocol features, such as UNIX file
+descriptor passing, that cannot be properly expressed in the
+<a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> API.</p>
+<p>See this <a class="link" href="GDBusConnection.html#gdbus-server" title="An example D-Bus server">server</a> and <a class="link" href="GDBusConnection.html#gdbus-unix-fd-client" title="An example for file descriptor passing">client</a>
+for an example of how to use this low-level API to send and receive
+UNIX file descriptors.</p>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-message.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>invocation</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-message.returns"></a><h4>Returns</h4>
+<p><a class="link" href="GDBusMessage.html" title="GDBusMessage"><span class="type">GDBusMessage</span></a>. Do not free, it is owned by <em class="parameter"><code>invocation</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-method-invocation-get-parameters"></a><h3>g_dbus_method_invocation_get_parameters ()</h3>
+<pre class="programlisting"><a href="../glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+g_dbus_method_invocation_get_parameters
+                               (<em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>);</pre>
+<p>Gets the parameters of the method invocation. If there are no input
+parameters then this will return a GVariant with 0 children rather than NULL.</p>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-parameters.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>invocation</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-parameters.returns"></a><h4>Returns</h4>
+<p>A <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> tuple. Do not unref this because it is owned by <em class="parameter"><code>invocation</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-method-invocation-get-user-data"></a><h3>g_dbus_method_invocation_get_user_data ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gpointer"><span class="returnvalue">gpointer</span></a>
+g_dbus_method_invocation_get_user_data
+                               (<em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>);</pre>
+<p>Gets the <em class="parameter"><code>user_data</code></em>
+ <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> passed to <a class="link" href="GDBusConnection.html#g-dbus-connection-register-object" title="g_dbus_connection_register_object ()"><code class="function">g_dbus_connection_register_object()</code></a>.</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-user-data.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>invocation</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-get-user-data.returns"></a><h4>Returns</h4>
+<p> A <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-method-invocation-return-value"></a><h3>g_dbus_method_invocation_return_value ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_method_invocation_return_value (<em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>,
+                                       <em class="parameter"><code><a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *parameters</code></em>);</pre>
+<p>Finishes handling a D-Bus method call by returning <em class="parameter"><code>parameters</code></em>
+.
+If the <em class="parameter"><code>parameters</code></em>
+ GVariant is floating, it is consumed.</p>
+<p>It is an error if <em class="parameter"><code>parameters</code></em>
+ is not of the right format: it must be a tuple
+containing the out-parameters of the D-Bus method. Even if the method has a
+single out-parameter, it must be contained in a tuple. If the method has no
+out-parameters, <em class="parameter"><code>parameters</code></em>
+ may be <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> or an empty tuple.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">GDBusMethodInvocation</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">invocation </span><span class="symbol">=</span><span class="normal"> some_invocation</span><span class="symbol">;</span>
+<span class="usertype">g_autofree</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">result_string </span><span class="symbol">=</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="function"><a href="../glib-Miscellaneous-Macros.html#g-autoptr">g_autoptr</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="../glib-Error-Reporting.html#GError">GError</a></span><span class="symbol">)</span><span class="normal"> error </span><span class="symbol">=</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+
+<span class="normal">result_string </span><span class="symbol">=</span><span class="normal"> </span><span class="function">calculate_result</span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">error</span><span class="symbol">);</span>
+
+<span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">error </span><span class="symbol">!=</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">)</span>
+<span class="normal">  </span><span class="function"><a href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-gerror">g_dbus_method_invocation_return_gerror</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">invocation</span><span class="symbol">,</span><span class="normal"> error</span><span class="symbol">);</span>
+<span class="keyword">else</span>
+<span class="normal">  </span><span class="function"><a href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-value">g_dbus_method_invocation_return_value</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">invocation</span><span class="symbol">,</span>
+<span class="normal">                                         </span><span class="function"><a href="../glib-GVariant.html#g-variant-new">g_variant_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"(s)"</span><span class="symbol">,</span><span class="normal"> result_string</span><span class="symbol">));</span>
+
+<span class="comment">// Do not free @invocation here; returning a value does that</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>This method will take ownership of <em class="parameter"><code>invocation</code></em>
+. See
+<a class="link" href="GDBusConnection.html#GDBusInterfaceVTable" title="GDBusInterfaceVTable"><span class="type">GDBusInterfaceVTable</span></a> for more information about the ownership of
+<em class="parameter"><code>invocation</code></em>
+.</p>
+<p>Since 2.48, if the method call requested for a reply not to be sent
+then this call will sink <em class="parameter"><code>parameters</code></em>
+ and free <em class="parameter"><code>invocation</code></em>
+, but
+otherwise do nothing (as per the recommendations of the D-Bus
+specification).</p>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-return-value.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>invocation</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>parameters</p></td>
+<td class="parameter_description"><p>A <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> tuple with out parameters for the method or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if not passing any parameters. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-method-invocation-return-error"></a><h3>g_dbus_method_invocation_return_error ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_method_invocation_return_error (<em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>,
+                                       <em class="parameter"><code><a href="../glib-Quarks.html#GQuark"><span class="type">GQuark</span></a> domain</code></em>,
+                                       <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> code</code></em>,
+                                       <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *format</code></em>,
+                                       <em class="parameter"><code>...</code></em>);</pre>
+<p>Finishes handling a D-Bus method call by returning an error.</p>
+<p>See <a class="link" href="gio-GDBusError.html#g-dbus-error-encode-gerror" title="g_dbus_error_encode_gerror ()"><code class="function">g_dbus_error_encode_gerror()</code></a> for details about what error name
+will be returned on the wire. In a nutshell, if the given error is
+registered using <a class="link" href="gio-GDBusError.html#g-dbus-error-register-error" title="g_dbus_error_register_error ()"><code class="function">g_dbus_error_register_error()</code></a> the name given
+during registration is used. Otherwise, a name of the form
+<code class="literal">org.gtk.GDBus.UnmappedGError.Quark...</code> is used. This provides
+transparent mapping of <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> between applications using GDBus.</p>
+<p>If you are writing an application intended to be portable,
+always register errors with <a class="link" href="gio-GDBusError.html#g-dbus-error-register-error" title="g_dbus_error_register_error ()"><code class="function">g_dbus_error_register_error()</code></a>
+or use <a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-dbus-error" title="g_dbus_method_invocation_return_dbus_error ()"><code class="function">g_dbus_method_invocation_return_dbus_error()</code></a>.</p>
+<p>This method will take ownership of <em class="parameter"><code>invocation</code></em>
+. See
+<a class="link" href="GDBusConnection.html#GDBusInterfaceVTable" title="GDBusInterfaceVTable"><span class="type">GDBusInterfaceVTable</span></a> for more information about the ownership of
+<em class="parameter"><code>invocation</code></em>
+.</p>
+<p>Since 2.48, if the method call requested for a reply not to be sent
+then this call will free <em class="parameter"><code>invocation</code></em>
+ but otherwise do nothing (as per
+the recommendations of the D-Bus specification).</p>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-return-error.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>invocation</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>domain</p></td>
+<td class="parameter_description"><p>A <a href="../glib-Quarks.html#GQuark"><span class="type">GQuark</span></a> for the <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> error domain.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>code</p></td>
+<td class="parameter_description"><p>The error code.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>format</p></td>
+<td class="parameter_description"><p>printf()-style format.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>Parameters for <em class="parameter"><code>format</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-method-invocation-return-error-valist"></a><h3>g_dbus_method_invocation_return_error_valist ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_method_invocation_return_error_valist
+                               (<em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>,
+                                <em class="parameter"><code><a href="../glib-Quarks.html#GQuark"><span class="type">GQuark</span></a> domain</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> code</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *format</code></em>,
+                                <em class="parameter"><code><span class="type">va_list</span> var_args</code></em>);</pre>
+<p>Like <a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-error" title="g_dbus_method_invocation_return_error ()"><code class="function">g_dbus_method_invocation_return_error()</code></a> but intended for
+language bindings.</p>
+<p>This method will take ownership of <em class="parameter"><code>invocation</code></em>
+. See
+<a class="link" href="GDBusConnection.html#GDBusInterfaceVTable" title="GDBusInterfaceVTable"><span class="type">GDBusInterfaceVTable</span></a> for more information about the ownership of
+<em class="parameter"><code>invocation</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-return-error-valist.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>invocation</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>domain</p></td>
+<td class="parameter_description"><p>A <a href="../glib-Quarks.html#GQuark"><span class="type">GQuark</span></a> for the <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> error domain.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>code</p></td>
+<td class="parameter_description"><p>The error code.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>format</p></td>
+<td class="parameter_description"><p>printf()-style format.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>var_args</p></td>
+<td class="parameter_description"><p><span class="type">va_list</span> of parameters for <em class="parameter"><code>format</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-method-invocation-return-error-literal"></a><h3>g_dbus_method_invocation_return_error_literal ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_method_invocation_return_error_literal
+                               (<em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>,
+                                <em class="parameter"><code><a href="../glib-Quarks.html#GQuark"><span class="type">GQuark</span></a> domain</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> code</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *message</code></em>);</pre>
+<p>Like <a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-error" title="g_dbus_method_invocation_return_error ()"><code class="function">g_dbus_method_invocation_return_error()</code></a> but without <code class="function">printf()</code>-style formatting.</p>
+<p>This method will take ownership of <em class="parameter"><code>invocation</code></em>
+. See
+<a class="link" href="GDBusConnection.html#GDBusInterfaceVTable" title="GDBusInterfaceVTable"><span class="type">GDBusInterfaceVTable</span></a> for more information about the ownership of
+<em class="parameter"><code>invocation</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-return-error-literal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>invocation</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>domain</p></td>
+<td class="parameter_description"><p>A <a href="../glib-Quarks.html#GQuark"><span class="type">GQuark</span></a> for the <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> error domain.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>code</p></td>
+<td class="parameter_description"><p>The error code.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>The error message.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-method-invocation-return-gerror"></a><h3>g_dbus_method_invocation_return_gerror ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_method_invocation_return_gerror
+                               (<em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> *error</code></em>);</pre>
+<p>Like <a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-error" title="g_dbus_method_invocation_return_error ()"><code class="function">g_dbus_method_invocation_return_error()</code></a> but takes a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>
+instead of the error domain, error code and message.</p>
+<p>This method will take ownership of <em class="parameter"><code>invocation</code></em>
+. See
+<a class="link" href="GDBusConnection.html#GDBusInterfaceVTable" title="GDBusInterfaceVTable"><span class="type">GDBusInterfaceVTable</span></a> for more information about the ownership of
+<em class="parameter"><code>invocation</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-return-gerror.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>invocation</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>A <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-method-invocation-return-dbus-error"></a><h3>g_dbus_method_invocation_return_dbus_error ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_method_invocation_return_dbus_error
+                               (<em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *error_name</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *error_message</code></em>);</pre>
+<p>Finishes handling a D-Bus method call by returning an error.</p>
+<p>This method will take ownership of <em class="parameter"><code>invocation</code></em>
+. See
+<a class="link" href="GDBusConnection.html#GDBusInterfaceVTable" title="GDBusInterfaceVTable"><span class="type">GDBusInterfaceVTable</span></a> for more information about the ownership of
+<em class="parameter"><code>invocation</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-return-dbus-error.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>invocation</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error_name</p></td>
+<td class="parameter_description"><p>A valid D-Bus error name.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error_message</p></td>
+<td class="parameter_description"><p>A valid D-Bus error message.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-method-invocation-take-error"></a><h3>g_dbus_method_invocation_take_error ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_method_invocation_take_error (<em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>,
+                                     <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> *error</code></em>);</pre>
+<p>Like <a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-gerror" title="g_dbus_method_invocation_return_gerror ()"><code class="function">g_dbus_method_invocation_return_gerror()</code></a> but takes ownership
+of <em class="parameter"><code>error</code></em>
+ so the caller does not need to free it.</p>
+<p>This method will take ownership of <em class="parameter"><code>invocation</code></em>
+. See
+<a class="link" href="GDBusConnection.html#GDBusInterfaceVTable" title="GDBusInterfaceVTable"><span class="type">GDBusInterfaceVTable</span></a> for more information about the ownership of
+<em class="parameter"><code>invocation</code></em>
+.</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-take-error.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>invocation</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>A <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-method-invocation-return-value-with-unix-fd-list"></a><h3>g_dbus_method_invocation_return_value_with_unix_fd_list ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_method_invocation_return_value_with_unix_fd_list
+                               (<em class="parameter"><code><a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> *invocation</code></em>,
+                                <em class="parameter"><code><a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *parameters</code></em>,
+                                <em class="parameter"><code><a class="link" href="GUnixFDList.html" title="GUnixFDList"><span class="type">GUnixFDList</span></a> *fd_list</code></em>);</pre>
+<p>Like <a class="link" href="GDBusMethodInvocation.html#g-dbus-method-invocation-return-value" title="g_dbus_method_invocation_return_value ()"><code class="function">g_dbus_method_invocation_return_value()</code></a> but also takes a <a class="link" href="GUnixFDList.html" title="GUnixFDList"><span class="type">GUnixFDList</span></a>.</p>
+<p>This method is only available on UNIX.</p>
+<p>This method will take ownership of <em class="parameter"><code>invocation</code></em>
+. See
+<a class="link" href="GDBusConnection.html#GDBusInterfaceVTable" title="GDBusInterfaceVTable"><span class="type">GDBusInterfaceVTable</span></a> for more information about the ownership of
+<em class="parameter"><code>invocation</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-method-invocation-return-value-with-unix-fd-list.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>invocation</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>parameters</p></td>
+<td class="parameter_description"><p>A <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> tuple with out parameters for the method or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if not passing any parameters. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>fd_list</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GUnixFDList.html" title="GUnixFDList"><span class="type">GUnixFDList</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusMethodInvocation.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GDBusMethodInvocation-struct"></a><h3>GDBusMethodInvocation</h3>
+<pre class="programlisting">typedef struct _GDBusMethodInvocation GDBusMethodInvocation;</pre>
+<p>The <a class="link" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation"><span class="type">GDBusMethodInvocation</span></a> structure contains only private data and
+should only be accessed using the provided API.</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

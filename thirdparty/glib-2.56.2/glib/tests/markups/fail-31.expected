@@ -1,0 +1,2 @@
+ELEMENT 'foo'
+ERROR Error on line 1: Failed to parse '34592348345343453453455645765736575865767', which should have been a digit inside a character reference (&#234; for example) - perhaps the digit is too large

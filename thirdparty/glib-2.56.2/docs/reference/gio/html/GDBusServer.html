@@ -1,0 +1,627 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GDBusServer: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="gdbus-lowlevel.html" title="Low-level D-Bus Support">
+<link rel="prev" href="GDBusMethodInvocation.html" title="GDBusMethodInvocation">
+<link rel="next" href="GDBusAuthObserver.html" title="GDBusAuthObserver">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GDBusServer.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GDBusServer.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_interfaces">  <span class="dim">|</span> 
+                  <a href="#GDBusServer.implemented-interfaces" class="shortcut">Implemented Interfaces</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GDBusServer.properties" class="shortcut">Properties</a></span><span id="nav_signals">  <span class="dim">|</span> 
+                  <a href="#GDBusServer.signals" class="shortcut">Signals</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="gdbus-lowlevel.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GDBusMethodInvocation.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GDBusAuthObserver.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GDBusServer"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GDBusServer.top_of_page"></a>GDBusServer</span></h2>
+<p>GDBusServer — Helper for accepting connections</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GDBusServer.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusServer.html" title="GDBusServer"><span class="returnvalue">GDBusServer</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusServer.html#g-dbus-server-new-sync" title="g_dbus_server_new_sync ()">g_dbus_server_new_sync</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusServer.html#g-dbus-server-start" title="g_dbus_server_start ()">g_dbus_server_start</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusServer.html#g-dbus-server-stop" title="g_dbus_server_stop ()">g_dbus_server_stop</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusServer.html#g-dbus-server-is-active" title="g_dbus_server_is_active ()">g_dbus_server_is_active</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusServer.html#g-dbus-server-get-guid" title="g_dbus_server_get_guid ()">g_dbus_server_get_guid</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusServer.html#GDBusServerFlags" title="enum GDBusServerFlags"><span class="returnvalue">GDBusServerFlags</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusServer.html#g-dbus-server-get-flags" title="g_dbus_server_get_flags ()">g_dbus_server_get_flags</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusServer.html#g-dbus-server-get-client-address" title="g_dbus_server_get_client_address ()">g_dbus_server_get_client_address</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDBusServer.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GDBusServer.html#GDBusServer--active" title="The “active” property">active</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<td class="property_name"><a class="link" href="GDBusServer.html#GDBusServer--address" title="The “address” property">address</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type">
+<a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a> *</td>
+<td class="property_name"><a class="link" href="GDBusServer.html#GDBusServer--authentication-observer" title="The “authentication-observer” property">authentication-observer</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<td class="property_name"><a class="link" href="GDBusServer.html#GDBusServer--client-address" title="The “client-address” property">client-address</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a class="link" href="GDBusServer.html#GDBusServerFlags" title="enum GDBusServerFlags"><span class="type">GDBusServerFlags</span></a></td>
+<td class="property_name"><a class="link" href="GDBusServer.html#GDBusServer--flags" title="The “flags” property">flags</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<td class="property_name"><a class="link" href="GDBusServer.html#GDBusServer--guid" title="The “guid” property">guid</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDBusServer.signals"></a><h2>Signals</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="signals_return">
+<col width="300px" class="signals_name">
+<col width="200px" class="signals_flags">
+</colgroup>
+<tbody><tr>
+<td class="signal_type"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a></td>
+<td class="signal_name"><a class="link" href="GDBusServer.html#GDBusServer-new-connection" title="The “new-connection” signal">new-connection</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDBusServer.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GDBusServer.html#GDBusServer-struct" title="GDBusServer">GDBusServer</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="GDBusServer.html#GDBusServerFlags" title="enum GDBusServerFlags">GDBusServerFlags</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDBusServer.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GDBusServer
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusServer.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GDBusServer implements
+ <a class="link" href="GInitable.html" title="GInitable">GInitable</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GDBusServer.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusServer.description"></a><h2>Description</h2>
+<p><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> is a helper for listening to and accepting D-Bus
+connections. This can be used to create a new D-Bus server, allowing two
+peers to use the D-Bus protocol for their own specialized communication.
+A server instance provided in this way will not perform message routing or
+implement the org.freedesktop.DBus interface.</p>
+<p>To just export an object on a well-known name on a message bus, such as the
+session or system bus, you should instead use <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a>.</p>
+<p>An example of peer-to-peer communication with G-DBus can be found
+in <a class="ulink" href="https://git.gnome.org/browse/glib/tree/gio/tests/gdbus-example-peer.c" target="_top">gdbus-example-peer.c</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GDBusServer.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-dbus-server-new-sync"></a><h3>g_dbus_server_new_sync ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="returnvalue">GDBusServer</span></a> *
+g_dbus_server_new_sync (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *address</code></em>,
+                        <em class="parameter"><code><a class="link" href="GDBusServer.html#GDBusServerFlags" title="enum GDBusServerFlags"><span class="type">GDBusServerFlags</span></a> flags</code></em>,
+                        <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *guid</code></em>,
+                        <em class="parameter"><code><a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a> *observer</code></em>,
+                        <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                        <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Creates a new D-Bus server that listens on the first address in
+<em class="parameter"><code>address</code></em>
+ that works.</p>
+<p>Once constructed, you can use <a class="link" href="GDBusServer.html#g-dbus-server-get-client-address" title="g_dbus_server_get_client_address ()"><code class="function">g_dbus_server_get_client_address()</code></a> to
+get a D-Bus address string that clients can use to connect.</p>
+<p>Connect to the <a class="link" href="GDBusServer.html#GDBusServer-new-connection" title="The “new-connection” signal"><span class="type">“new-connection”</span></a> signal to handle
+incoming connections.</p>
+<p>The returned <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> isn't active - you have to start it with
+<a class="link" href="GDBusServer.html#g-dbus-server-start" title="g_dbus_server_start ()"><code class="function">g_dbus_server_start()</code></a>.</p>
+<p><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> is used in this example.</p>
+<p>This is a synchronous failable constructor. See
+<code class="function">g_dbus_server_new()</code> for the asynchronous version.</p>
+<div class="refsect3">
+<a name="g-dbus-server-new-sync.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>A D-Bus address.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>Flags from the <a class="link" href="GDBusServer.html#GDBusServerFlags" title="enum GDBusServerFlags"><span class="type">GDBusServerFlags</span></a> enumeration.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>guid</p></td>
+<td class="parameter_description"><p>A D-Bus GUID.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>observer</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>Return location for server or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-server-new-sync.returns"></a><h4>Returns</h4>
+<p> A <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>error</code></em>
+is set. Free with
+<a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-server-start"></a><h3>g_dbus_server_start ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_server_start (<em class="parameter"><code><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> *server</code></em>);</pre>
+<p>Starts <em class="parameter"><code>server</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-server-start.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>server</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-server-stop"></a><h3>g_dbus_server_stop ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_server_stop (<em class="parameter"><code><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> *server</code></em>);</pre>
+<p>Stops <em class="parameter"><code>server</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-server-stop.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>server</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-server-is-active"></a><h3>g_dbus_server_is_active ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_dbus_server_is_active (<em class="parameter"><code><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> *server</code></em>);</pre>
+<p>Gets whether <em class="parameter"><code>server</code></em>
+ is active.</p>
+<div class="refsect3">
+<a name="g-dbus-server-is-active.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>server</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-server-is-active.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if server is active, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-server-get-guid"></a><h3>g_dbus_server_get_guid ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_server_get_guid (<em class="parameter"><code><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> *server</code></em>);</pre>
+<p>Gets the GUID for <em class="parameter"><code>server</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-server-get-guid.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>server</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-server-get-guid.returns"></a><h4>Returns</h4>
+<p> A D-Bus GUID. Do not free this string, it is owned by <em class="parameter"><code>server</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-server-get-flags"></a><h3>g_dbus_server_get_flags ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusServer.html#GDBusServerFlags" title="enum GDBusServerFlags"><span class="returnvalue">GDBusServerFlags</span></a>
+g_dbus_server_get_flags (<em class="parameter"><code><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> *server</code></em>);</pre>
+<p>Gets the flags for <em class="parameter"><code>server</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-server-get-flags.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>server</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-server-get-flags.returns"></a><h4>Returns</h4>
+<p> A set of flags from the <a class="link" href="GDBusServer.html#GDBusServerFlags" title="enum GDBusServerFlags"><span class="type">GDBusServerFlags</span></a> enumeration.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-server-get-client-address"></a><h3>g_dbus_server_get_client_address ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_server_get_client_address (<em class="parameter"><code><a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> *server</code></em>);</pre>
+<p>Gets a
+<a class="ulink" href="https://dbus.freedesktop.org/doc/dbus-specification.html#addresses" target="_top">D-Bus address</a>
+string that can be used by clients to connect to <em class="parameter"><code>server</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-server-get-client-address.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>server</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-server-get-client-address.returns"></a><h4>Returns</h4>
+<p> A D-Bus address string. Do not free, the string is owned
+by <em class="parameter"><code>server</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusServer.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GDBusServer-struct"></a><h3>GDBusServer</h3>
+<pre class="programlisting">typedef struct _GDBusServer GDBusServer;</pre>
+<p>The <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> structure contains only private data and
+should only be accessed using the provided API.</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusServerFlags"></a><h3>enum GDBusServerFlags</h3>
+<p>Flags used when creating a <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a>.</p>
+<div class="refsect3">
+<a name="GDBusServerFlags.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-SERVER-FLAGS-NONE:CAPS"></a>G_DBUS_SERVER_FLAGS_NONE</p></td>
+<td class="enum_member_description">
+<p>No flags set.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-SERVER-FLAGS-RUN-IN-THREAD:CAPS"></a>G_DBUS_SERVER_FLAGS_RUN_IN_THREAD</p></td>
+<td class="enum_member_description">
+<p>All <a class="link" href="GDBusServer.html#GDBusServer-new-connection" title="The “new-connection” signal"><span class="type">“new-connection”</span></a>
+signals will run in separated dedicated threads (see signal for
+details).</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-SERVER-FLAGS-AUTHENTICATION-ALLOW-ANONYMOUS:CAPS"></a>G_DBUS_SERVER_FLAGS_AUTHENTICATION_ALLOW_ANONYMOUS</p></td>
+<td class="enum_member_description">
+<p>Allow the anonymous
+authentication method.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusServer.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GDBusServer--active"></a><h3>The <code class="literal">“active”</code> property</h3>
+<pre class="programlisting">  “active”                   <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether the server is currently active.</p>
+<p>Flags: Read</p>
+<p>Default value: FALSE</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusServer--address"></a><h3>The <code class="literal">“address”</code> property</h3>
+<pre class="programlisting">  “address”                  <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>The D-Bus address to listen on.</p>
+<p>Flags: Read / Write / Construct Only</p>
+<p>Default value: NULL</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusServer--authentication-observer"></a><h3>The <code class="literal">“authentication-observer”</code> property</h3>
+<pre class="programlisting">  “authentication-observer”  <a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a> *</pre>
+<p>A <a class="link" href="GDBusAuthObserver.html" title="GDBusAuthObserver"><span class="type">GDBusAuthObserver</span></a> object to assist in the authentication process or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p>
+<p>Flags: Read / Write / Construct Only</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusServer--client-address"></a><h3>The <code class="literal">“client-address”</code> property</h3>
+<pre class="programlisting">  “client-address”           <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>The D-Bus address that clients can use.</p>
+<p>Flags: Read</p>
+<p>Default value: NULL</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusServer--flags"></a><h3>The <code class="literal">“flags”</code> property</h3>
+<pre class="programlisting">  “flags”                    <a class="link" href="GDBusServer.html#GDBusServerFlags" title="enum GDBusServerFlags"><span class="type">GDBusServerFlags</span></a></pre>
+<p>Flags from the <a class="link" href="GDBusServer.html#GDBusServerFlags" title="enum GDBusServerFlags"><span class="type">GDBusServerFlags</span></a> enumeration.</p>
+<p>Flags: Read / Write / Construct Only</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusServer--guid"></a><h3>The <code class="literal">“guid”</code> property</h3>
+<pre class="programlisting">  “guid”                     <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>The guid of the server.</p>
+<p>Flags: Read / Write / Construct Only</p>
+<p>Default value: NULL</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusServer.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="GDBusServer-new-connection"></a><h3>The <code class="literal">“new-connection”</code> signal</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+user_function (<a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a>     *server,
+               <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>         user_data)</pre>
+<p>Emitted when a new authenticated connection has been made. Use
+<a class="link" href="GDBusConnection.html#g-dbus-connection-get-peer-credentials" title="g_dbus_connection_get_peer_credentials ()"><code class="function">g_dbus_connection_get_peer_credentials()</code></a> to figure out what
+identity (if any), was authenticated.</p>
+<p>If you want to accept the connection, take a reference to the
+<em class="parameter"><code>connection</code></em>
+ object and return <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>. When you are done with the
+connection call <a class="link" href="GDBusConnection.html#g-dbus-connection-close" title="g_dbus_connection_close ()"><code class="function">g_dbus_connection_close()</code></a> and give up your
+reference. Note that the other peer may disconnect at any time -
+a typical thing to do when accepting a connection is to listen to
+the <a class="link" href="GDBusConnection.html#GDBusConnection-closed" title="The “closed” signal"><span class="type">“closed”</span></a> signal.</p>
+<p>If <a class="link" href="GDBusServer.html#GDBusServer--flags" title="The “flags” property"><span class="type">“flags”</span></a> contains <a class="link" href="GDBusServer.html#G-DBUS-SERVER-FLAGS-RUN-IN-THREAD:CAPS"><code class="literal">G_DBUS_SERVER_FLAGS_RUN_IN_THREAD</code></a>
+then the signal is emitted in a new thread dedicated to the
+connection. Otherwise the signal is emitted in the
+<a href="../glib-The-Main-Event-Loop.html#g-main-context-push-thread-default">thread-default main context</a>
+of the thread that <em class="parameter"><code>server</code></em>
+ was constructed in.</p>
+<p>You are guaranteed that signal handlers for this signal runs
+before incoming messages on <em class="parameter"><code>connection</code></em>
+ are processed. This means
+that it's suitable to call <a class="link" href="GDBusConnection.html#g-dbus-connection-register-object" title="g_dbus_connection_register_object ()"><code class="function">g_dbus_connection_register_object()</code></a> or
+similar from the signal handler.</p>
+<div class="refsect3">
+<a name="GDBusServer-new-connection.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>server</p></td>
+<td class="parameter_description"><p>The <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a> emitting the signal.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> for the new connection.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="GDBusServer-new-connection.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> to claim <em class="parameter"><code>connection</code></em>
+, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> to let other handlers
+run.</p>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

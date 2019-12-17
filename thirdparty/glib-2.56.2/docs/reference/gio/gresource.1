@@ -1,0 +1,95 @@
+'\" t
+.\"     Title: gresource
+.\"    Author: Matthias Clasen
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 08/17/2018
+.\"    Manual: User Commands
+.\"    Source: GIO
+.\"  Language: English
+.\"
+.TH "GRESOURCE" "1" "" "GIO" "User Commands"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+gresource \- GResource tool
+.SH "SYNOPSIS"
+.HP \w'\fBgresource\fR\ 'u
+\fBgresource\fR [\-\-section\ \fISECTION\fR] list \fIFILE\fR [\fIPATH\fR]
+.HP \w'\fBgresource\fR\ 'u
+\fBgresource\fR [\-\-section\ \fISECTION\fR] details \fIFILE\fR [\fIPATH\fR]
+.HP \w'\fBgresource\fR\ 'u
+\fBgresource\fR [\-\-section\ \fISECTION\fR] extract \fIFILE\fR \fIPATH\fR
+.HP \w'\fBgresource\fR\ 'u
+\fBgresource\fR sections \fIFILE\fR
+.HP \w'\fBgresource\fR\ 'u
+\fBgresource\fR help [\fICOMMAND\fR]
+.SH "DESCRIPTION"
+.PP
+\fBgresource\fR
+offers a simple commandline interface to
+\fBGResource\fR\&. It lets you list and extract resources that have been compiled into a resource file or included in an elf file (a binary or a shared library)\&.
+.PP
+The file to operate on is specified by the
+\fIFILE\fR
+argument\&.
+.PP
+If an elf file includes multiple sections with resources, it is possible to select which one to operate on with the
+\-\-section
+option\&. Use the
+sections
+command to find available sections\&.
+.SH "COMMANDS"
+.PP
+\fBlist\fR
+.RS 4
+Lists resources\&. If
+\fISECTION\fR
+is given, only list resources in this section\&. If
+\fIPATH\fR
+is given, only list matching resources\&.
+.RE
+.PP
+\fBdetails\fR
+.RS 4
+Lists resources with details\&. If
+\fISECTION\fR
+is given, only list resources in this section\&. If
+\fIPATH\fR
+is given, only list matching resources\&. Details include the section, size and compression of each resource\&.
+.RE
+.PP
+\fBextract\fR
+.RS 4
+Extracts the resource named by
+\fIPATH\fR
+to stdout\&. Note that resources may contain binary data\&.
+.RE
+.PP
+\fBsections\fR
+.RS 4
+Lists sections containing resources\&. This is only interesting if
+\fIFILE\fR
+is an elf file\&.
+.RE
+.PP
+\fBhelp\fR
+.RS 4
+Prints help and exits\&.
+.RE

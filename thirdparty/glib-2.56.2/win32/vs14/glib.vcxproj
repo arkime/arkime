@@ -1,0 +1,606 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug_BundledPCRE|Win32">
+      <Configuration>Debug_BundledPCRE</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug_BundledPCRE|x64">
+      <Configuration>Debug_BundledPCRE</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_BundledPCRE|Win32">
+      <Configuration>Release_BundledPCRE</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_BundledPCRE|x64">
+      <Configuration>Release_BundledPCRE</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{12BCA020-EABF-429E-876A-A476BC9C10C0}</ProjectGuid>
+    <RootNamespace>glib</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_BundledPCRE|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_BundledPCRE|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_BundledPCRE|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_BundledPCRE|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="glib-gen-srcs.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_BundledPCRE|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="glib-gen-srcs.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="glib-gen-srcs.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug_BundledPCRE|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="glib-gen-srcs.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="glib-gen-srcs.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_BundledPCRE|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="glib-gen-srcs.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="glib-gen-srcs.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug_BundledPCRE|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="glib-gen-srcs.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <LinkIncremental Condition="'$(Configuration)'=='Debug_BundledPCRE'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)'=='Debug_BundledPCRE'">Debug\$(Platform)\bin\</OutDir>
+    <LinkIncremental Condition="'$(Configuration)'=='Debug'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)'=='Release_BundledPCRE'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)'=='Release_BundledPCRE'">Release\$(Platform)\bin\</OutDir>
+    <LinkIncremental Condition="'$(Configuration)'=='Release'">false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_BundledPCRE|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;$(GLibBuildDefines);G_ENABLE_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).dll</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).pdb</ProgramDatabaseFile>
+      <ImportLibrary>$(TargetDir)$(ProjectName)-$(ApiVersion).lib</ImportLibrary>
+      <SubSystem>Windows</SubSystem>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;$(GLibBuildDefines);G_ENABLE_DEBUG;$(UseSystemPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;pcred.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).dll</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).pdb</ProgramDatabaseFile>
+      <ImportLibrary>$(TargetDir)$(ProjectName)-$(ApiVersion).lib</ImportLibrary>
+      <SubSystem>Windows</SubSystem>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_BundledPCRE|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;$(GLibBuildDefines);G_ENABLE_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).dll</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).pdb</ProgramDatabaseFile>
+      <ImportLibrary>$(TargetDir)$(ProjectName)-$(ApiVersion).lib</ImportLibrary>
+      <SubSystem>Windows</SubSystem>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;$(GLibBuildDefines);G_ENABLE_DEBUG;$(UseSystemPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;pcred.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).dll</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).pdb</ProgramDatabaseFile>
+      <ImportLibrary>$(TargetDir)$(ProjectName)-$(ApiVersion).lib</ImportLibrary>
+      <SubSystem>Windows</SubSystem>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_BundledPCRE|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>$(GLibBuildDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).dll</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).pdb</ProgramDatabaseFile>
+      <ImportLibrary>$(TargetDir)$(ProjectName)-$(ApiVersion).lib</ImportLibrary>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>$(GLibBuildDefines);$(UseSystemPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;pcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).dll</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).pdb</ProgramDatabaseFile>
+      <ImportLibrary>$(TargetDir)$(ProjectName)-$(ApiVersion).lib</ImportLibrary>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_BundledPCRE|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>$(GLibBuildDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).dll</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).pdb</ProgramDatabaseFile>
+      <ImportLibrary>$(TargetDir)$(ProjectName)-$(ApiVersion).lib</ImportLibrary>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>$(GLibBuildDefines);$(UseSystemPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;pcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).dll</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).pdb</ProgramDatabaseFile>
+      <ImportLibrary>$(TargetDir)$(ProjectName)-$(ApiVersion).lib</ImportLibrary>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+   <ClCompile Include="..\..\glib\deprecated\gallocator.c" />
+   <ClCompile Include="..\..\glib\deprecated\gcache.c" />
+   <ClCompile Include="..\..\glib\deprecated\gcompletion.c" />
+   <ClCompile Include="..\..\glib\deprecated\grel.c" />
+   <ClCompile Include="..\..\glib\deprecated\gthread-deprecated.c" />
+   <ClCompile Include="..\..\glib\garray.c" />
+   <ClCompile Include="..\..\glib\gasyncqueue.c" />
+   <ClCompile Include="..\..\glib\gatomic.c" />
+   <ClCompile Include="..\..\glib\gbacktrace.c" />
+   <ClCompile Include="..\..\glib\gbase64.c" />
+   <ClCompile Include="..\..\glib\gbitlock.c" />
+   <ClCompile Include="..\..\glib\gbookmarkfile.c" />
+   <ClCompile Include="..\..\glib\gbytes.c" />
+   <ClCompile Include="..\..\glib\gcharset.c" />
+   <ClCompile Include="..\..\glib\gchecksum.c" />
+   <ClCompile Include="..\..\glib\gconvert.c" />
+   <ClCompile Include="..\..\glib\gdataset.c" />
+   <ClCompile Include="..\..\glib\gdate.c" />
+   <ClCompile Include="..\..\glib\gdatetime.c" />
+   <ClCompile Include="..\..\glib\gdir.c" />
+   <ClCompile Include="..\..\glib\genviron.c" />
+   <ClCompile Include="..\..\glib\gerror.c" />
+   <ClCompile Include="..\..\glib\gfileutils.c" />
+   <ClCompile Include="..\..\glib\ggettext.c" />
+   <ClCompile Include="..\..\glib\ghash.c" />
+   <ClCompile Include="..\..\glib\ghmac.c" />
+   <ClCompile Include="..\..\glib\ghook.c" />
+   <ClCompile Include="..\..\glib\ghostutils.c" />
+   <ClCompile Include="..\..\glib\giochannel.c" />
+   <ClCompile Include="..\..\glib\gkeyfile.c" />
+   <ClCompile Include="..\..\glib\glib-init.c" />
+   <ClCompile Include="..\..\glib\glib-private.c" />
+   <ClCompile Include="..\..\glib\glist.c" />
+   <ClCompile Include="..\..\glib\gmain.c" />
+   <ClCompile Include="..\..\glib\gmappedfile.c" />
+   <ClCompile Include="..\..\glib\gmarkup.c" />
+   <ClCompile Include="..\..\glib\gmem.c" />
+   <ClCompile Include="..\..\glib\gmessages.c" />
+   <ClCompile Include="..\..\glib\gnode.c" />
+   <ClCompile Include="..\..\glib\goption.c" />
+   <ClCompile Include="..\..\glib\gpattern.c" />
+   <ClCompile Include="..\..\glib\gpoll.c" />
+   <ClCompile Include="..\..\glib\gprimes.c" />
+   <ClCompile Include="..\..\glib\gqsort.c" />
+   <ClCompile Include="..\..\glib\gquark.c" />
+   <ClCompile Include="..\..\glib\gqueue.c" />
+   <ClCompile Include="..\..\glib\grand.c" />
+   <ClCompile Include="..\..\glib\gregex.c" />
+   <ClCompile Include="..\..\glib\gscanner.c" />
+   <ClCompile Include="..\..\glib\gsequence.c" />
+   <ClCompile Include="..\..\glib\gshell.c" />
+   <ClCompile Include="..\..\glib\gslice.c" />
+   <ClCompile Include="..\..\glib\gslist.c" />
+   <ClCompile Include="..\..\glib\gstdio.c" />
+   <ClCompile Include="..\..\glib\gstrfuncs.c" />
+   <ClCompile Include="..\..\glib\gstring.c" />
+   <ClCompile Include="..\..\glib\gstringchunk.c" />
+   <ClCompile Include="..\..\glib\gtestutils.c" />
+   <ClCompile Include="..\..\glib\gthread.c" />
+   <ClCompile Include="..\..\glib\gthreadpool.c" />
+   <ClCompile Include="..\..\glib\gtimer.c" />
+   <ClCompile Include="..\..\glib\gtimezone.c" />
+   <ClCompile Include="..\..\glib\gtranslit.c" />
+   <ClCompile Include="..\..\glib\gtrashstack.c" />
+   <ClCompile Include="..\..\glib\gtree.c" />
+   <ClCompile Include="..\..\glib\guniprop.c" />
+   <ClCompile Include="..\..\glib\gutf8.c" />
+   <ClCompile Include="..\..\glib\gunibreak.c" />
+   <ClCompile Include="..\..\glib\gunicollate.c" />
+   <ClCompile Include="..\..\glib\gunidecomp.c" />
+   <ClCompile Include="..\..\glib\gurifuncs.c" />
+   <ClCompile Include="..\..\glib\gutils.c" />
+   <ClCompile Include="..\..\glib\guuid.c" />
+   <ClCompile Include="..\..\glib\gvariant.c" />
+   <ClCompile Include="..\..\glib\gvariant-core.c" />
+   <ClCompile Include="..\..\glib\gvariant-parser.c" />
+   <ClCompile Include="..\..\glib\gvariant-serialiser.c" />
+   <ClCompile Include="..\..\glib\gvarianttypeinfo.c" />
+   <ClCompile Include="..\..\glib\gvarianttype.c" />
+   <ClCompile Include="..\..\glib\gversion.c" />
+   <ClCompile Include="..\..\glib\gwakeup.c" />
+   <ClCompile Include="..\..\glib\gprintf.c" />
+    <ClCompile Include="..\..\glib\giowin32.c" />
+    <ClCompile Include="..\..\glib\gspawn-win32.c" />
+    <ClCompile Include="..\..\glib\gthread-win32.c" />
+    <ClCompile Include="..\..\glib\gwin32.c" />
+    <ClCompile Include="..\..\glib\libcharset\localcharset.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">$(LocalCharsetDefs);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(LocalCharsetDefs);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release'">$(LocalCharsetDefs);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(LocalCharsetDefs);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="..\..\glib\gnulib\asnprintf.c" />
+    <ClCompile Include="..\..\glib\gnulib\printf-args.c" />
+    <ClCompile Include="..\..\glib\gnulib\printf-parse.c" />
+    <ClCompile Include="..\..\glib\gnulib\printf.c" />
+    <ClCompile Include="..\..\glib\gnulib\vasnprintf.c" />
+    <ClCompile Include="..\..\glib\pcre\pcre_byte_order.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\glib\pcre\pcre_chartables.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\glib\pcre\pcre_compile.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\glib\pcre\pcre_config.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\glib\pcre\pcre_dfa_exec.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\glib\pcre\pcre_exec.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\glib\pcre\pcre_fullinfo.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\glib\pcre\pcre_get.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\glib\pcre\pcre_globals.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\glib\pcre\pcre_jit_compile.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\glib\pcre\pcre_newline.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\glib\pcre\pcre_ord2utf8.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\glib\pcre\pcre_string_utils.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\glib\pcre\pcre_study.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\glib\pcre\pcre_tables.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\glib\pcre\pcre_valid_utf8.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\glib\pcre\pcre_version.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREDefines);$(GlibBundledPCREExportDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREDefines);$(GlibBundledPCREExportDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\glib\pcre\pcre_xclass.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREDefines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GLibBundledPCREUndefs) %(AdditionalOptions)</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\config.h.win32">
+      <Message Condition="'$(Configuration)'=='Debug_BundledPCRE'">Copying config.h from config.h.win32...</Message>
+      <Command Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GenConfigH)</Command>
+      <Outputs Condition="'$(Configuration)'=='Debug_BundledPCRE'">..\..\config.h;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)'=='Debug'">Copying config.h from config.h.win32...</Message>
+      <Command Condition="'$(Configuration)'=='Debug'">$(GenConfigH)</Command>
+      <Outputs Condition="'$(Configuration)'=='Debug'">..\..\config.h;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)'=='Release_BundledPCRE'">Copying config.h from config.h.win32...</Message>
+      <Command Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GenConfigH)</Command>
+      <Outputs Condition="'$(Configuration)'=='Release_BundledPCRE'">..\..\config.h;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)'=='Release'">Copying config.h from config.h.win32...</Message>
+      <Command Condition="'$(Configuration)'=='Release'">$(GenConfigH)</Command>
+      <Outputs Condition="'$(Configuration)'=='Release'">..\..\config.h;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\glib\glibconfig.h.win32">
+      <Message Condition="'$(Configuration)'=='Debug_BundledPCRE'">Copying glibconfig.h from glibconfig.h.win32...</Message>
+      <Command Condition="'$(Configuration)'=='Debug_BundledPCRE'">$(GenGLibConfigH)</Command>
+      <Outputs Condition="'$(Configuration)'=='Debug_BundledPCRE'">..\..\glib\glibconfig.h;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)'=='Debug'">Copying glibconfig.h from glibconfig.h.win32...</Message>
+      <Command Condition="'$(Configuration)'=='Debug'">$(GenGLibConfigH)</Command>
+      <Outputs Condition="'$(Configuration)'=='Debug'">..\..\glib\glibconfig.h;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)'=='Release_BundledPCRE'">Copying glibconfig.h from glibconfig.h.win32...</Message>
+      <Command Condition="'$(Configuration)'=='Release_BundledPCRE'">$(GenGLibConfigH)</Command>
+      <Outputs Condition="'$(Configuration)'=='Release_BundledPCRE'">..\..\glib\glibconfig.h;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)'=='Release'">Copying glibconfig.h from glibconfig.h.win32...</Message>
+      <Command Condition="'$(Configuration)'=='Release'">$(GenGLibConfigH)</Command>
+      <Outputs Condition="'$(Configuration)'=='Release'">..\..\glib\glibconfig.h;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\glib\glib.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

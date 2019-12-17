@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource>
+    <file >test-generated.txt</file>
+    <file compressed="true">test1.txt</file>
+    <file preprocess="xml-stripblanks">test.gresource.xml</file>
+  </gresource>
+  <gresource prefix="/a_prefix">
+    <file alias="test2-alias.txt">test2.txt</file>
+    <file>test2.txt</file>
+  </gresource>
+</gresources>

@@ -1,0 +1,647 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIO Reference Manual: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="next" href="pt01.html" title="Part I. GIO Overview">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<div lang="en" class="book">
+<div class="titlepage">
+<div>
+<div><table class="navigation" id="top" width="100%" cellpadding="2" cellspacing="0"><tr><th valign="middle"><p class="title">GIO Reference Manual</p></th></tr></table></div>
+<div><p class="releaseinfo">
+      for GIO 2.56.2
+
+      The latest version of this documentation can be found on-line at
+      <a class="ulink" href="https://developer.gnome.org/gio/unstable/" target="_top">https://developer.gnome.org/gio/unstable/</a>.
+    </p></div>
+</div>
+<hr>
+</div>
+<div class="toc"><dl class="toc">
+<dt><span class="part"><a href="pt01.html">I. GIO Overview</a></span></dt>
+<dd><dl>
+<dt><span class="chapter"><a href="ch01.html">Introduction</a></span></dt>
+<dt><span class="chapter"><a href="ch02.html">Writing GIO applications</a></span></dt>
+<dt><span class="chapter"><a href="ch03.html">Compiling GIO applications</a></span></dt>
+<dt><span class="chapter"><a href="running-gio-apps.html">Running GIO applications</a></span></dt>
+<dt><span class="chapter"><a href="extending-gio.html">Extending GIO</a></span></dt>
+</dl></dd>
+<dt><span class="part"><a href="pt02.html">II. API Reference</a></span></dt>
+<dd><dl>
+<dt><span class="chapter"><a href="file_ops.html">File Operations</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GFile.html">GFile</a></span><span class="refpurpose"> — File and Directory Handling</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio-GFileAttribute.html">GFileAttribute</a></span><span class="refpurpose"> — Key-Value Paired File Attributes</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GFileInfo.html">GFileInfo</a></span><span class="refpurpose"> — File Information and Attributes</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GFileEnumerator.html">GFileEnumerator</a></span><span class="refpurpose"> — Enumerated Files Routines</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio-GIOError.html">GIOError</a></span><span class="refpurpose"> — Error helper functions</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GMountOperation.html">GMountOperation</a></span><span class="refpurpose"> — Object used for authentication and user interaction</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="file_mon.html">File System Monitoring</a></span></dt>
+<dd><dl><dt>
+<span class="refentrytitle"><a href="GFileMonitor.html">GFileMonitor</a></span><span class="refpurpose"> — File Monitor</span>
+</dt></dl></dd>
+<dt><span class="chapter"><a href="utils.html">File-related Utilities</a></span></dt>
+<dd><dl><dt>
+<span class="refentrytitle"><a href="GFilenameCompleter.html">GFilenameCompleter</a></span><span class="refpurpose"> — Filename Completer</span>
+</dt></dl></dd>
+<dt><span class="chapter"><a href="async.html">Asynchronous I/O</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GCancellable.html">GCancellable</a></span><span class="refpurpose"> — Thread-safe Operation Cancellation Stack</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GAsyncResult.html">GAsyncResult</a></span><span class="refpurpose"> — Asynchronous Function Results</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GTask.html">GTask</a></span><span class="refpurpose"> — Cancellable synchronous or asynchronous task
+    and result</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio-GIOScheduler.html">GIOScheduler</a></span><span class="refpurpose"> — I/O Scheduler</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSimpleAsyncResult.html">GSimpleAsyncResult</a></span><span class="refpurpose"> — Simple asynchronous results implementation</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="conversion.html">Data conversion</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GConverter.html">GConverter</a></span><span class="refpurpose"> — Data conversion interface</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GCharsetConverter.html">GCharsetConverter</a></span><span class="refpurpose"> — Convert between charsets</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GZlibCompressor.html">GZlibCompressor</a></span><span class="refpurpose"> — Zlib compressor</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GZlibDecompressor.html">GZlibDecompressor</a></span><span class="refpurpose"> — Zlib decompressor</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="streaming.html">Streaming I/O</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GSeekable.html">GSeekable</a></span><span class="refpurpose"> — Stream seeking interface</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GInputStream.html">GInputStream</a></span><span class="refpurpose"> — Base class for implementing streaming input</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GOutputStream.html">GOutputStream</a></span><span class="refpurpose"> — Base class for implementing streaming output</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GIOStream.html">GIOStream</a></span><span class="refpurpose"> — Base class for implementing read/write streams</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSimpleIOStream.html">GSimpleIOStream</a></span><span class="refpurpose"> — A wrapper around an input and an output stream.</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GFileInputStream.html">GFileInputStream</a></span><span class="refpurpose"> — File input streaming operations</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GFileOutputStream.html">GFileOutputStream</a></span><span class="refpurpose"> — File output streaming operations</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GFileIOStream.html">GFileIOStream</a></span><span class="refpurpose"> — File read and write streaming operations</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GFileDescriptorBased.html">GFileDescriptorBased</a></span><span class="refpurpose"> — Interface for file descriptor based IO</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GFilterInputStream.html">GFilterInputStream</a></span><span class="refpurpose"> — Filter Input Stream</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GFilterOutputStream.html">GFilterOutputStream</a></span><span class="refpurpose"> — Filter Output Stream</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GMemoryInputStream.html">GMemoryInputStream</a></span><span class="refpurpose"> — Streaming input operations on memory chunks</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GMemoryOutputStream.html">GMemoryOutputStream</a></span><span class="refpurpose"> — Streaming output operations on memory chunks</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GBufferedInputStream.html">GBufferedInputStream</a></span><span class="refpurpose"> — Buffered Input Stream</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GBufferedOutputStream.html">GBufferedOutputStream</a></span><span class="refpurpose"> — Buffered Output Stream</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDataInputStream.html">GDataInputStream</a></span><span class="refpurpose"> — Data Input Stream</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDataOutputStream.html">GDataOutputStream</a></span><span class="refpurpose"> — Data Output Stream</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GUnixInputStream.html">GUnixInputStream</a></span><span class="refpurpose"> — Streaming input operations for UNIX file descriptors</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GUnixOutputStream.html">GUnixOutputStream</a></span><span class="refpurpose"> — Streaming output operations for UNIX file descriptors</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio-GWin32InputStream.html">GWin32InputStream</a></span><span class="refpurpose"> — Streaming input operations for Windows file handles</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio-GWin32OutputStream.html">GWin32OutputStream</a></span><span class="refpurpose"> — Streaming output operations for Windows file handles</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio-GConverterInputstream.html">GConverterInputstream</a></span><span class="refpurpose"> — Converter Input Stream</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio-GConverterOutputstream.html">GConverterOutputstream</a></span><span class="refpurpose"> — Converter Output Stream</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GPollableInputStream.html">GPollableInputStream</a></span><span class="refpurpose"> — Interface for pollable input streams</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GPollableOutputStream.html">GPollableOutputStream</a></span><span class="refpurpose"> — Interface for pollable output streams</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio-gpollableutils.html">gpollableutils</a></span><span class="refpurpose"> — Utilities for pollable streams</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="types.html">File types and applications</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="gio-GContentType.html">GContentType</a></span><span class="refpurpose"> — Platform-specific content typing</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GAppInfo.html">GAppInfo</a></span><span class="refpurpose"> — Application information and launch contexts</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GAppInfoMonitor.html">GAppInfoMonitor</a></span><span class="refpurpose"> — Monitor application information for changes</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio-Desktop-file-based-GAppInfo.html">GDesktopAppInfo</a></span><span class="refpurpose"> — Application information from desktop files</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="volume_mon.html">Volumes and Drives</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GVolumeMonitor.html">GVolumeMonitor</a></span><span class="refpurpose"> — Volume Monitor</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GVolume.html">GVolume</a></span><span class="refpurpose"> — Volume management</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GMount.html">GMount</a></span><span class="refpurpose"> — Mount management</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDrive.html">GDrive</a></span><span class="refpurpose"> — Drive management</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio-Unix-Mounts.html">Unix Mounts</a></span><span class="refpurpose"> — UNIX mounts</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="icons.html">Icons</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GIcon.html">GIcon</a></span><span class="refpurpose"> — Interface for icons</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GFileIcon.html">GFileIcon</a></span><span class="refpurpose"> — Icons pointing to an image file</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GBytesIcon.html">GBytesIcon</a></span><span class="refpurpose"> — An icon stored in memory as a GBytes</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GLoadableIcon.html">GLoadableIcon</a></span><span class="refpurpose"> — Loadable Icons</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GThemedIcon.html">GThemedIcon</a></span><span class="refpurpose"> — Icon theming support</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GEmblemedIcon.html">GEmblemedIcon</a></span><span class="refpurpose"> — Icon with emblems</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GEmblem.html">GEmblem</a></span><span class="refpurpose"> — An object for emblems</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="failable_initialization.html">Failable Initialization</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GInitable.html">GInitable</a></span><span class="refpurpose"> — Failable object initialization interface</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GAsyncInitable.html">GAsyncInitable</a></span><span class="refpurpose"> — Asynchronously failable object initialization interface</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="subprocesses.html">Subprocesses</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GSubprocess.html">GSubprocess</a></span><span class="refpurpose"> — Child processes</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSubprocessLauncher.html">GSubprocess Launcher</a></span><span class="refpurpose"> — Environment options for launching a child process</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="networking.html">Low-level network support</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GSocket.html">GSocket</a></span><span class="refpurpose"> — Low-level socket object</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDatagramBased.html">GDatagramBased</a></span><span class="refpurpose"> — Low-level datagram communications interface</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GInetAddress.html">GInetAddress</a></span><span class="refpurpose"> — An IPv4/IPv6 address</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GInetAddressMask.html">GInetAddressMask</a></span><span class="refpurpose"> — An IPv4/IPv6 address mask</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSocketAddress.html">GSocketAddress</a></span><span class="refpurpose"> — Abstract base class representing endpoints
+    for socket communication</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GInetSocketAddress.html">GInetSocketAddress</a></span><span class="refpurpose"> — Internet GSocketAddress</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GUnixSocketAddress.html">GUnixSocketAddress</a></span><span class="refpurpose"> — UNIX GSocketAddress</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSocketControlMessage.html">GSocketControlMessage</a></span><span class="refpurpose"> — A GSocket control message</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GUnixFDList.html">GUnixFDList</a></span><span class="refpurpose"> — An object containing a set of UNIX file descriptors</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GUnixFDMessage.html">GUnixFDMessage</a></span><span class="refpurpose"> — A GSocketControlMessage containing a GUnixFDList</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GCredentials.html">GCredentials</a></span><span class="refpurpose"> — An object containing credentials</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GUnixCredentialsMessage.html">GUnixCredentialsMessage</a></span><span class="refpurpose"> — A GSocketControlMessage containing credentials</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GProxy.html">GProxy</a></span><span class="refpurpose"> — Interface for proxy handling</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GProxyAddress.html">GProxyAddress</a></span><span class="refpurpose"> — An internet address with proxy information</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio-gnetworking.h.html">gnetworking.h</a></span><span class="refpurpose"> — System networking includes</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="highlevel-socket.html">High-level network functionallity</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GSocketClient.html">GSocketClient</a></span><span class="refpurpose"> — Helper for connecting to a network service</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSocketConnection.html">GSocketConnection</a></span><span class="refpurpose"> — A socket connection</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GUnixConnection.html">GUnixConnection</a></span><span class="refpurpose"> — A UNIX domain GSocketConnection</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GTcpConnection.html">GTcpConnection</a></span><span class="refpurpose"> — A TCP GSocketConnection</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GTcpWrapperConnection.html">GTcpWrapperConnection</a></span><span class="refpurpose"> — Wrapper for non-GSocketConnection-based,
+    GSocket-based GIOStreams</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSocketListener.html">GSocketListener</a></span><span class="refpurpose"> — Helper for accepting network client connections</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSocketService.html">GSocketService</a></span><span class="refpurpose"> — Make it easy to implement a network service</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GThreadedSocketService.html">GThreadedSocketService</a></span><span class="refpurpose"> — A threaded GSocketService</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GNetworkMonitor.html">GNetworkMonitor</a></span><span class="refpurpose"> — Network status monitor</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="tls.html">TLS (SSL) support</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="gio-TLS-Overview.html">TLS Overview</a></span><span class="refpurpose"> — TLS (aka SSL) support for GSocketConnection</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GTlsCertificate.html">GTlsCertificate</a></span><span class="refpurpose"> — TLS certificate</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GTlsConnection.html">GTlsConnection</a></span><span class="refpurpose"> — TLS connection type</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GTlsClientConnection.html">GTlsClientConnection</a></span><span class="refpurpose"> — TLS client-side connection</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GTlsServerConnection.html">GTlsServerConnection</a></span><span class="refpurpose"> — TLS server-side connection</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDtlsConnection.html">GDtlsConnection</a></span><span class="refpurpose"> — DTLS connection type</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDtlsClientConnection.html">GDtlsClientConnection</a></span><span class="refpurpose"> — DTLS client-side connection</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDtlsServerConnection.html">GDtlsServerConnection</a></span><span class="refpurpose"> — DTLS server-side connection</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GTlsBackend.html">GTlsBackend</a></span><span class="refpurpose"> — TLS backend implementation</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GTlsDatabase.html">GTlsDatabase</a></span><span class="refpurpose"> — TLS database type</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GTlsFileDatabase.html">GTlsFileDatabase</a></span><span class="refpurpose"> — TLS file based database type</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GTlsInteraction.html">GTlsInteraction</a></span><span class="refpurpose"> — Interaction with the user during TLS operations.</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GTlsPassword.html">GTlsPassword</a></span><span class="refpurpose"> — TLS Passwords for prompting</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="resolver.html">DNS resolution</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GResolver.html">GResolver</a></span><span class="refpurpose"> — Asynchronous and cancellable DNS resolver</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GProxyResolver.html">GProxyResolver</a></span><span class="refpurpose"> — Asynchronous and cancellable network proxy resolver</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSimpleProxyResolver.html">GSimpleProxyResolver</a></span><span class="refpurpose"> — Simple proxy resolver implementation</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSocketConnectable.html">GSocketConnectable</a></span><span class="refpurpose"> — Interface for potential socket endpoints</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSocketAddressEnumerator.html">GSocketAddressEnumerator</a></span><span class="refpurpose"></span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GProxyAddressEnumerator.html">GProxyAddressEnumerator</a></span><span class="refpurpose"></span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GNetworkAddress.html">GNetworkAddress</a></span><span class="refpurpose"> — A GSocketConnectable for resolving hostnames</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GNetworkService.html">GNetworkService</a></span><span class="refpurpose"> — A GSocketConnectable for resolving SRV records</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSrvTarget.html">GSrvTarget</a></span><span class="refpurpose"> — DNS SRV record target</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="gdbus-lowlevel.html">Low-level D-Bus Support</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="gio-D-Bus-Utilities.html">D-Bus Utilities</a></span><span class="refpurpose"> — Various utilities related to D-Bus</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio-D-Bus-Addresses.html">D-Bus Addresses</a></span><span class="refpurpose"> — D-Bus connection endpoints</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio-D-Bus-Introspection-Data.html">D-Bus Introspection Data</a></span><span class="refpurpose"> — Node and interface description data structures</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio-GDBusError.html">GDBusError</a></span><span class="refpurpose"> — Mapping D-Bus errors to and from GError</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDBusMessage.html">GDBusMessage</a></span><span class="refpurpose"> — D-Bus Message</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDBusConnection.html">GDBusConnection</a></span><span class="refpurpose"> — D-Bus Connections</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDBusMethodInvocation.html">GDBusMethodInvocation</a></span><span class="refpurpose"> — Object for handling remote calls</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDBusServer.html">GDBusServer</a></span><span class="refpurpose"> — Helper for accepting connections</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDBusAuthObserver.html">GDBusAuthObserver</a></span><span class="refpurpose"> — Object used for authenticating connections</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="gdbus-convenience.html">High-level D-Bus Support</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="gio-Owning-Bus-Names.html">Owning Bus Names</a></span><span class="refpurpose"> — Simple API for owning bus names</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio-Watching-Bus-Names.html">Watching Bus Names</a></span><span class="refpurpose"> — Simple API for watching bus names</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDBusInterface.html">GDBusInterface</a></span><span class="refpurpose"> — Base type for D-Bus interfaces</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDBusInterfaceSkeleton.html">GDBusInterfaceSkeleton</a></span><span class="refpurpose"> — Service-side D-Bus interface</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDBusProxy.html">GDBusProxy</a></span><span class="refpurpose"> — Client-side D-Bus interface proxy</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDBusObject.html">GDBusObject</a></span><span class="refpurpose"> — Base type for D-Bus objects</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDBusObjectSkeleton.html">GDBusObjectSkeleton</a></span><span class="refpurpose"> — Service-side D-Bus object</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDBusObjectProxy.html">GDBusObjectProxy</a></span><span class="refpurpose"> — Client-side D-Bus object</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDBusObjectManager.html">GDBusObjectManager</a></span><span class="refpurpose"> — Base type for D-Bus object managers</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDBusObjectManagerServer.html">GDBusObjectManagerServer</a></span><span class="refpurpose"> — Service-side object manager</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDBusObjectManagerClient.html">GDBusObjectManagerClient</a></span><span class="refpurpose"> — Client-side object manager</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="settings.html">Settings</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GSettings.html">GSettings</a></span><span class="refpurpose"> — High-level API for application settings</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSettingsBackend.html">GSettingsBackend</a></span><span class="refpurpose"> — Interface for settings backend implementations</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio-GSettingsSchema-GSettingsSchemaSource.html">GSettingsSchema, GSettingsSchemaSource</a></span><span class="refpurpose"> — Introspecting and controlling the loading
+    of GSettings schemas</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="resources.html">Resources</a></span></dt>
+<dd><dl><dt>
+<span class="refentrytitle"><a href="GResource.html">GResource</a></span><span class="refpurpose"> — Resource framework</span>
+</dt></dl></dd>
+<dt><span class="chapter"><a href="permissions.html">Permissions</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GPermission.html">GPermission</a></span><span class="refpurpose"> — An object representing the permission
+    to perform a certain action</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSimplePermission.html">GSimplePermission</a></span><span class="refpurpose"> — A GPermission that doesn't change value</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="data-models.html">Data Models</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GListModel.html">GListModel</a></span><span class="refpurpose"> — An interface describing a dynamic list of objects</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GListStore.html">GListStore</a></span><span class="refpurpose"> — A simple implementation of <span class="type">GListModel</span></span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="registry.html">Win32 registry support</a></span></dt>
+<dd><dl><dt>
+<span class="refentrytitle"><a href="gio-GWin32RegistryKey.html">GWin32RegistryKey</a></span><span class="refpurpose"> — W32 registry access helper</span>
+</dt></dl></dd>
+<dt><span class="chapter"><a href="application.html">Application support</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GApplication.html">GApplication</a></span><span class="refpurpose"> — Core application class</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GApplicationCommandLine.html">GApplicationCommandLine</a></span><span class="refpurpose"> — A command-line invocation of an application</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GActionGroup.html">GActionGroup</a></span><span class="refpurpose"> — A group of actions</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GActionMap.html">GActionMap</a></span><span class="refpurpose"> — Interface for action containers</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSimpleActionGroup.html">GSimpleActionGroup</a></span><span class="refpurpose"> — A simple GActionGroup implementation</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GAction.html">GAction</a></span><span class="refpurpose"> — An action interface</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSimpleAction.html">GSimpleAction</a></span><span class="refpurpose"> — A simple GAction implementation</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GPropertyAction.html">GPropertyAction</a></span><span class="refpurpose"> — A GAction reflecting a GObject property</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GRemoteActionGroup.html">GRemoteActionGroup</a></span><span class="refpurpose"> — A GActionGroup that interacts with other processes</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio-GActionGroup-exporter.html">GActionGroup exporter</a></span><span class="refpurpose"> — Export GActionGroups on D-Bus</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDBusActionGroup.html">GDBusActionGroup</a></span><span class="refpurpose"> — A D-Bus GActionGroup implementation</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GMenuModel.html">GMenuModel</a></span><span class="refpurpose"> — An abstract class representing the contents of a menu</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GMenu.html">GMenu</a></span><span class="refpurpose"> — A simple implementation of GMenuModel</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio-GMenuModel-exporter.html">GMenuModel exporter</a></span><span class="refpurpose"> — Export GMenuModels on D-Bus</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GDBusMenuModel.html">GDBusMenuModel</a></span><span class="refpurpose"> — A D-Bus GMenuModel implementation</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GNotification.html">GNotification</a></span><span class="refpurpose"> — User Notifications (pop up messages)</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="extending.html">Extending GIO</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GVfs.html">GVfs</a></span><span class="refpurpose"> — Virtual File System</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GIOModule.html">GIOModule</a></span><span class="refpurpose"> — Loadable GIO Modules</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio-Extension-Points.html">Extension Points</a></span><span class="refpurpose"> — Extension Points</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="tools.html">GIO Tools</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="gio-querymodules.html">gio-querymodules</a></span><span class="refpurpose"> — GIO module cache creation</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gsettings-tool.html">gsettings</a></span><span class="refpurpose"> — GSettings configuration tool</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-compile-schemas.html">glib-compile-schemas</a></span><span class="refpurpose"> — GSettings schema compiler</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-compile-resources.html">glib-compile-resources</a></span><span class="refpurpose"> — GLib resource compiler</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gdbus.html">gdbus</a></span><span class="refpurpose"> — Tool for working with D-Bus objects</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gdbus-codegen.html">gdbus-codegen</a></span><span class="refpurpose"> — D-Bus code and documentation generator</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gresource-tool.html">gresource</a></span><span class="refpurpose"> — GResource tool</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gapplication-tool.html">gapplication</a></span><span class="refpurpose"> — D-Bus application launcher</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gio.html">gio</a></span><span class="refpurpose"> — GIO commandline tool</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="testing.html">GIO Testing</a></span></dt>
+<dd><dl><dt>
+<span class="refentrytitle"><a href="GTestDBus.html">GTestDBus</a></span><span class="refpurpose"> — D-Bus testing helper</span>
+</dt></dl></dd>
+</dl></dd>
+<dt><span class="part"><a href="migrating.html">III. Migrating to GIO</a></span></dt>
+<dd><dl>
+<dt><span class="chapter"><a href="ch33.html">Migrating from GnomeVFS to GIO</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="ch33.html#id-1.5.3.3">Trash handling</a></span></dt>
+<dt><span class="section"><a href="ch33s02.html">Operations on multiple files</a></span></dt>
+<dt><span class="section"><a href="ch33s03.html">Mime monitoring</a></span></dt>
+</dl></dd>
+<dt><span class="chapter"><a href="ch34.html">Migrating from GConf to GSettings</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="ch34.html#id-1.5.4.2">Before you start</a></span></dt>
+<dt><span class="section"><a href="ch34s02.html">Conceptual differences</a></span></dt>
+<dt><span class="section"><a href="ch34s03.html">GConfClient (and GConfBridge) API conversion</a></span></dt>
+<dt><span class="section"><a href="ch34s04.html">Change notification</a></span></dt>
+<dt><span class="section"><a href="ch34s05.html">Change sets</a></span></dt>
+<dt><span class="section"><a href="ch34s06.html">Schema conversion</a></span></dt>
+<dt><span class="section"><a href="ch34s07.html">Data conversion</a></span></dt>
+</dl></dd>
+<dt><span class="chapter"><a href="ch35.html">Migrating to GDBus</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="ch35.html#id-1.5.5.2">Conceptual differences</a></span></dt>
+<dt><span class="section"><a href="ch35s02.html">API comparison</a></span></dt>
+<dt><span class="section"><a href="ch35s03.html">Owning bus names</a></span></dt>
+<dt><span class="section"><a href="ch35s04.html">Creating proxies for well-known names</a></span></dt>
+<dt><span class="section"><a href="gdbus-example-gdbus-codegen.html">Using gdbus-codegen</a></span></dt>
+</dl></dd>
+</dl></dd>
+<dt><span class="chapter"><a href="gio-hierarchy.html">Object Hierarchy</a></span></dt>
+<dt><span class="index"><a href="api-index-full.html">Index</a></span></dt>
+<dt><span class="glossary"><a href="annotation-glossary.html">Annotation Glossary</a></span></dt>
+</dl></div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

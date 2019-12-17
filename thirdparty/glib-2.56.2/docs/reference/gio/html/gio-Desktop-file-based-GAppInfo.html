@@ -1,0 +1,1239 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GDesktopAppInfo: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="types.html" title="File types and applications">
+<link rel="prev" href="GAppInfoMonitor.html" title="GAppInfoMonitor">
+<link rel="next" href="volume_mon.html" title="Volumes and Drives">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gio-Desktop-file-based-GAppInfo.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#gio-Desktop-file-based-GAppInfo.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_interfaces">  <span class="dim">|</span> 
+                  <a href="#gio-Desktop-file-based-GAppInfo.implemented-interfaces" class="shortcut">Implemented Interfaces</a></span><span id="nav_prerequisites">  <span class="dim">|</span> 
+                  <a href="#gio-Desktop-file-based-GAppInfo.prerequisites" class="shortcut">Prerequisites</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#gio-Desktop-file-based-GAppInfo.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="types.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GAppInfoMonitor.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="volume_mon.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-Desktop-file-based-GAppInfo"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-Desktop-file-based-GAppInfo.top_of_page"></a>GDesktopAppInfo</span></h2>
+<p>GDesktopAppInfo — Application information from desktop files</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gio-Desktop-file-based-GAppInfo.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="returnvalue">GDesktopAppInfo</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-new-from-filename" title="g_desktop_app_info_new_from_filename ()">g_desktop_app_info_new_from_filename</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="returnvalue">GDesktopAppInfo</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-new-from-keyfile" title="g_desktop_app_info_new_from_keyfile ()">g_desktop_app_info_new_from_keyfile</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="returnvalue">GDesktopAppInfo</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-new" title="g_desktop_app_info_new ()">g_desktop_app_info_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-get-filename" title="g_desktop_app_info_get_filename ()">g_desktop_app_info_get_filename</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-get-is-hidden" title="g_desktop_app_info_get_is_hidden ()">g_desktop_app_info_get_is_hidden</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-get-nodisplay" title="g_desktop_app_info_get_nodisplay ()">g_desktop_app_info_get_nodisplay</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-get-show-in" title="g_desktop_app_info_get_show_in ()">g_desktop_app_info_get_show_in</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-get-generic-name" title="g_desktop_app_info_get_generic_name ()">g_desktop_app_info_get_generic_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-get-categories" title="g_desktop_app_info_get_categories ()">g_desktop_app_info_get_categories</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> * const *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-get-keywords" title="g_desktop_app_info_get_keywords ()">g_desktop_app_info_get_keywords</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-get-startup-wm-class" title="g_desktop_app_info_get_startup_wm_class ()">g_desktop_app_info_get_startup_wm_class</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-set-desktop-env" title="g_desktop_app_info_set_desktop_env ()">g_desktop_app_info_set_desktop_env</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-get-string" title="g_desktop_app_info_get_string ()">g_desktop_app_info_get_string</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-get-locale-string" title="g_desktop_app_info_get_locale_string ()">g_desktop_app_info_get_locale_string</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-get-boolean" title="g_desktop_app_info_get_boolean ()">g_desktop_app_info_get_boolean</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-has-key" title="g_desktop_app_info_has_key ()">g_desktop_app_info_has_key</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppLaunchCallback" title="GDesktopAppLaunchCallback ()">*GDesktopAppLaunchCallback</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-launch-uris-as-manager" title="g_desktop_app_info_launch_uris_as_manager ()">g_desktop_app_info_launch_uris_as_manager</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> * const *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-list-actions" title="g_desktop_app_info_list_actions ()">g_desktop_app_info_list_actions</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-get-action-name" title="g_desktop_app_info_get_action_name ()">g_desktop_app_info_get_action_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-launch-action" title="g_desktop_app_info_launch_action ()">g_desktop_app_info_launch_action</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> ***
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-search" title="g_desktop_app_info_search ()">g_desktop_app_info_search</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-get-implementations" title="g_desktop_app_info_get_implementations ()">g_desktop_app_info_get_implementations</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-Desktop-file-based-GAppInfo.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody><tr>
+<td class="property_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<td class="property_name"><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo--filename" title="The “filename” property">filename</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr></tbody>
+</table></div>
+</div>
+<a name="GDesktopAppInfo"></a><a name="GDesktopAppInfoLookup"></a><div class="refsect1">
+<a name="gio-Desktop-file-based-GAppInfo.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo-struct" title="GDesktopAppInfo">GDesktopAppInfo</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfoLookup-struct" title="GDesktopAppInfoLookup">GDesktopAppInfoLookup</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfoLookupIface" title="struct GDesktopAppInfoLookupIface">GDesktopAppInfoLookupIface</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gio-Desktop-file-based-GAppInfo.html#G-DESKTOP-APP-INFO-LOOKUP-EXTENSION-POINT-NAME:CAPS" title="G_DESKTOP_APP_INFO_LOOKUP_EXTENSION_POINT_NAME">G_DESKTOP_APP_INFO_LOOKUP_EXTENSION_POINT_NAME</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-Desktop-file-based-GAppInfo.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/GTypeModule.html">GInterface</a>
+    <span class="lineart">╰──</span> GDesktopAppInfoLookup
+    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GDesktopAppInfo
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-Desktop-file-based-GAppInfo.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GDesktopAppInfoLookup requires
+ <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="gio-Desktop-file-based-GAppInfo.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GDesktopAppInfo implements
+ <a class="link" href="GAppInfo.html" title="GAppInfo">GAppInfo</a>.</p>
+</div>
+<div class="refsect1">
+<a name="gio-Desktop-file-based-GAppInfo.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gdesktopappinfo.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-Desktop-file-based-GAppInfo.description"></a><h2>Description</h2>
+<p><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> is an implementation of <a class="link" href="GAppInfo.html" title="GAppInfo"><span class="type">GAppInfo</span></a> based on
+desktop files.</p>
+<p>Note that <code class="literal">&amp;lt;gio/gdesktopappinfo.h&gt;</code> belongs to the UNIX-specific
+GIO interfaces, thus you have to use the <code class="literal">gio-unix-2.0.pc</code> pkg-config
+file when using it.</p>
+</div>
+<div class="refsect1">
+<a name="gio-Desktop-file-based-GAppInfo.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-desktop-app-info-new-from-filename"></a><h3>g_desktop_app_info_new_from_filename ()</h3>
+<pre class="programlisting"><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="returnvalue">GDesktopAppInfo</span></a> *
+g_desktop_app_info_new_from_filename (<em class="parameter"><code>const <span class="type">char</span> *filename</code></em>);</pre>
+<p>Creates a new <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a>.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-new-from-filename.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>filename</p></td>
+<td class="parameter_description"><p>the path of a desktop file, in the GLib
+filename encoding. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-new-from-filename.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-new-from-keyfile"></a><h3>g_desktop_app_info_new_from_keyfile ()</h3>
+<pre class="programlisting"><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="returnvalue">GDesktopAppInfo</span></a> *
+g_desktop_app_info_new_from_keyfile (<em class="parameter"><code><a href="../glib-Key-value-file-parser.html#GKeyFile"><span class="type">GKeyFile</span></a> *key_file</code></em>);</pre>
+<p>Creates a new <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a>.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-new-from-keyfile.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>key_file</p></td>
+<td class="parameter_description"><p>an opened <a href="../glib-Key-value-file-parser.html#GKeyFile"><span class="type">GKeyFile</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-new-from-keyfile.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-18.html#api-index-2.18">2.18</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-new"></a><h3>g_desktop_app_info_new ()</h3>
+<pre class="programlisting"><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="returnvalue">GDesktopAppInfo</span></a> *
+g_desktop_app_info_new (<em class="parameter"><code>const <span class="type">char</span> *desktop_id</code></em>);</pre>
+<p>Creates a new <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> based on a desktop file id.</p>
+<p>A desktop file id is the basename of the desktop file, including the
+.desktop extension. GIO is looking for a desktop file with this name
+in the <code class="literal">applications</code> subdirectories of the XDG
+data directories (i.e. the directories specified in the <code class="literal">XDG_DATA_HOME</code>
+and <code class="literal">XDG_DATA_DIRS</code> environment variables). GIO also supports the
+prefix-to-subdirectory mapping that is described in the
+<a class="ulink" href="http://standards.freedesktop.org/menu-spec/latest/" target="_top">Menu Spec</a>
+(i.e. a desktop id of kde-foo.desktop will match
+<code class="literal">/usr/share/applications/kde/foo.desktop</code>).</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>desktop_id</p></td>
+<td class="parameter_description"><p>the desktop file id</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-new.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if no desktop file with that id</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-get-filename"></a><h3>g_desktop_app_info_get_filename ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+g_desktop_app_info_get_filename (<em class="parameter"><code><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> *info</code></em>);</pre>
+<p>When <em class="parameter"><code>info</code></em>
+ was created from a known filename, return it.  In some
+situations such as the <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> returned from
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-new-from-keyfile" title="g_desktop_app_info_new_from_keyfile ()"><code class="function">g_desktop_app_info_new_from_keyfile()</code></a>, this function will return <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-filename.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-filename.returns"></a><h4>Returns</h4>
+<p>The full path to the file for <em class="parameter"><code>info</code></em>
+,
+or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if not known. </p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-get-is-hidden"></a><h3>g_desktop_app_info_get_is_hidden ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_desktop_app_info_get_is_hidden (<em class="parameter"><code><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> *info</code></em>);</pre>
+<p>A desktop file is hidden if the Hidden key in it is
+set to True.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-is-hidden.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-is-hidden.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if hidden, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-get-nodisplay"></a><h3>g_desktop_app_info_get_nodisplay ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_desktop_app_info_get_nodisplay (<em class="parameter"><code><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> *info</code></em>);</pre>
+<p>Gets the value of the NoDisplay key, which helps determine if the
+application info should be shown in menus. See
+<a href="../glib-Key-value-file-parser.html#G-KEY-FILE-DESKTOP-KEY-NO-DISPLAY:CAPS"><span class="type">G_KEY_FILE_DESKTOP_KEY_NO_DISPLAY</span></a> and <a class="link" href="GAppInfo.html#g-app-info-should-show" title="g_app_info_should_show ()"><code class="function">g_app_info_should_show()</code></a>.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-nodisplay.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-nodisplay.returns"></a><h4>Returns</h4>
+<p> The value of the NoDisplay key</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-get-show-in"></a><h3>g_desktop_app_info_get_show_in ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_desktop_app_info_get_show_in (<em class="parameter"><code><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> *info</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *desktop_env</code></em>);</pre>
+<p>Checks if the application info should be shown in menus that list available
+applications for a specific name of the desktop, based on the
+<code class="literal">OnlyShowIn</code> and <code class="literal">NotShowIn</code> keys.</p>
+<p><em class="parameter"><code>desktop_env</code></em>
+ should typically be given as <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, in which case the
+<code class="literal">XDG_CURRENT_DESKTOP</code> environment variable is consulted.  If you want
+to override the default mechanism then you may specify <em class="parameter"><code>desktop_env</code></em>
+,
+but this is not recommended.</p>
+<p>Note that <a class="link" href="GAppInfo.html#g-app-info-should-show" title="g_app_info_should_show ()"><code class="function">g_app_info_should_show()</code></a> for <em class="parameter"><code>info</code></em>
+ will include this check (with
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> for <em class="parameter"><code>desktop_env</code></em>
+) as well as additional checks.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-show-in.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>desktop_env</p></td>
+<td class="parameter_description"><p>a string specifying a desktop name. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-show-in.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <em class="parameter"><code>info</code></em>
+should be shown in <em class="parameter"><code>desktop_env</code></em>
+according to the
+<code class="literal">OnlyShowIn</code> and <code class="literal">NotShowIn</code> keys, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a>
+otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-get-generic-name"></a><h3>g_desktop_app_info_get_generic_name ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+g_desktop_app_info_get_generic_name (<em class="parameter"><code><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> *info</code></em>);</pre>
+<p>Gets the generic name from the destkop file.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-generic-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-generic-name.returns"></a><h4>Returns</h4>
+<p> The value of the GenericName key</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-get-categories"></a><h3>g_desktop_app_info_get_categories ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+g_desktop_app_info_get_categories (<em class="parameter"><code><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> *info</code></em>);</pre>
+<p>Gets the categories from the desktop file.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-categories.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-categories.returns"></a><h4>Returns</h4>
+<p> The unparsed Categories key from the desktop file;
+i.e. no attempt is made to split it by ';' or validate it.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-get-keywords"></a><h3>g_desktop_app_info_get_keywords ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> * const *
+g_desktop_app_info_get_keywords (<em class="parameter"><code><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> *info</code></em>);</pre>
+<p>Gets the keywords from the desktop file.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-keywords.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-keywords.returns"></a><h4>Returns</h4>
+<p>The value of the Keywords key. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-get-startup-wm-class"></a><h3>g_desktop_app_info_get_startup_wm_class ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+g_desktop_app_info_get_startup_wm_class
+                               (<em class="parameter"><code><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> *info</code></em>);</pre>
+<p>Retrieves the StartupWMClass field from <em class="parameter"><code>info</code></em>
+. This represents the
+WM_CLASS property of the main window of the application, if launched
+through <em class="parameter"><code>info</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-startup-wm-class.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> that supports startup notify</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-startup-wm-class.returns"></a><h4>Returns</h4>
+<p>the startup WM class, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if none is set
+in the desktop file. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-set-desktop-env"></a><h3>g_desktop_app_info_set_desktop_env ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_desktop_app_info_set_desktop_env (<em class="parameter"><code>const <span class="type">char</span> *desktop_env</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_desktop_app_info_set_desktop_env</code> has been deprecated since version 2.42 and should not be used in newly-written code.</p>
+<p>do not use this API.  Since 2.42 the value of the
+<code class="literal">XDG_CURRENT_DESKTOP</code> environment variable will be used.</p>
+</div>
+<p>Sets the name of the desktop that the application is running in.
+This is used by <a class="link" href="GAppInfo.html#g-app-info-should-show" title="g_app_info_should_show ()"><code class="function">g_app_info_should_show()</code></a> and
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-get-show-in" title="g_desktop_app_info_get_show_in ()"><code class="function">g_desktop_app_info_get_show_in()</code></a> to evaluate the
+<code class="literal">OnlyShowIn</code> and <code class="literal">NotShowIn</code>
+desktop entry fields.</p>
+<p>Should be called only once; subsequent calls are ignored.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-set-desktop-env.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>desktop_env</p></td>
+<td class="parameter_description"><p>a string specifying what desktop this is</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-get-string"></a><h3>g_desktop_app_info_get_string ()</h3>
+<pre class="programlisting"><span class="returnvalue">char</span> *
+g_desktop_app_info_get_string (<em class="parameter"><code><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> *info</code></em>,
+                               <em class="parameter"><code>const <span class="type">char</span> *key</code></em>);</pre>
+<p>Looks up a string value in the keyfile backing <em class="parameter"><code>info</code></em>
+.</p>
+<p>The <em class="parameter"><code>key</code></em>
+ is looked up in the "Desktop Entry" group.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-string.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>the key to look up</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-string.returns"></a><h4>Returns</h4>
+<p> a newly allocated string, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the key
+is not found</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-36.html#api-index-2.36">2.36</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-get-locale-string"></a><h3>g_desktop_app_info_get_locale_string ()</h3>
+<pre class="programlisting"><span class="returnvalue">char</span> *
+g_desktop_app_info_get_locale_string (<em class="parameter"><code><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> *info</code></em>,
+                                      <em class="parameter"><code>const <span class="type">char</span> *key</code></em>);</pre>
+<p>Looks up a localized string value in the keyfile backing <em class="parameter"><code>info</code></em>
+
+translated to the current locale.</p>
+<p>The <em class="parameter"><code>key</code></em>
+ is looked up in the "Desktop Entry" group.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-locale-string.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>the key to look up</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-locale-string.returns"></a><h4>Returns</h4>
+<p>a newly allocated string, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the key
+is not found. </p>
+<p><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></p>
+</div>
+<p class="since">Since: 2.56</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-get-boolean"></a><h3>g_desktop_app_info_get_boolean ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_desktop_app_info_get_boolean (<em class="parameter"><code><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> *info</code></em>,
+                                <em class="parameter"><code>const <span class="type">char</span> *key</code></em>);</pre>
+<p>Looks up a boolean value in the keyfile backing <em class="parameter"><code>info</code></em>
+.</p>
+<p>The <em class="parameter"><code>key</code></em>
+ is looked up in the "Desktop Entry" group.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-boolean.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>the key to look up</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-boolean.returns"></a><h4>Returns</h4>
+<p> the boolean value, or <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if the key
+is not found</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-36.html#api-index-2.36">2.36</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-has-key"></a><h3>g_desktop_app_info_has_key ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_desktop_app_info_has_key (<em class="parameter"><code><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> *info</code></em>,
+                            <em class="parameter"><code>const <span class="type">char</span> *key</code></em>);</pre>
+<p>Returns whether <em class="parameter"><code>key</code></em>
+ exists in the "Desktop Entry" group
+of the keyfile backing <em class="parameter"><code>info</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-has-key.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>the key to look up</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-has-key.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <em class="parameter"><code>key</code></em>
+exists</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-36.html#api-index-2.36">2.36</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDesktopAppLaunchCallback"></a><h3>GDesktopAppLaunchCallback ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+<span class="c_punctuation">(</span>*GDesktopAppLaunchCallback<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> *appinfo</code></em>,
+                              <em class="parameter"><code><a href="../glib-The-Main-Event-Loop.html#GPid"><span class="type">GPid</span></a> pid</code></em>,
+                              <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>During invocation, <a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-launch-uris-as-manager" title="g_desktop_app_info_launch_uris_as_manager ()"><code class="function">g_desktop_app_info_launch_uris_as_manager()</code></a> may
+create one or more child processes.  This callback is invoked once
+for each, providing the process ID.</p>
+<div class="refsect3">
+<a name="GDesktopAppLaunchCallback.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>appinfo</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>pid</p></td>
+<td class="parameter_description"><p>Process identifier</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>User data</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-launch-uris-as-manager"></a><h3>g_desktop_app_info_launch_uris_as_manager ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_desktop_app_info_launch_uris_as_manager
+                               (<em class="parameter"><code><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> *appinfo</code></em>,
+                                <em class="parameter"><code><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> *uris</code></em>,
+                                <em class="parameter"><code><a class="link" href="GAppInfo.html#GAppLaunchContext"><span class="type">GAppLaunchContext</span></a> *launch_context</code></em>,
+                                <em class="parameter"><code><a href="../glib-Spawning-Processes.html#GSpawnFlags"><span class="type">GSpawnFlags</span></a> spawn_flags</code></em>,
+                                <em class="parameter"><code><a href="../glib-Spawning-Processes.html#GSpawnChildSetupFunc"><span class="type">GSpawnChildSetupFunc</span></a> user_setup</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_setup_data</code></em>,
+                                <em class="parameter"><code><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppLaunchCallback" title="GDesktopAppLaunchCallback ()"><span class="type">GDesktopAppLaunchCallback</span></a> pid_callback</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> pid_callback_data</code></em>,
+                                <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>This function performs the equivalent of <a class="link" href="GAppInfo.html#g-app-info-launch-uris" title="g_app_info_launch_uris ()"><code class="function">g_app_info_launch_uris()</code></a>,
+but is intended primarily for operating system components that
+launch applications.  Ordinary applications should use
+<a class="link" href="GAppInfo.html#g-app-info-launch-uris" title="g_app_info_launch_uris ()"><code class="function">g_app_info_launch_uris()</code></a>.</p>
+<p>If the application is launched via traditional UNIX <code class="function">fork()</code>/<code class="function">exec()</code>
+then <em class="parameter"><code>spawn_flags</code></em>
+, <em class="parameter"><code>user_setup</code></em>
+ and <em class="parameter"><code>user_setup_data</code></em>
+ are used for the
+call to <a href="../glib-Spawning-Processes.html#g-spawn-async"><code class="function">g_spawn_async()</code></a>.  Additionally, <em class="parameter"><code>pid_callback</code></em>
+ (with
+<em class="parameter"><code>pid_callback_data</code></em>
+) will be called to inform about the PID of the
+created process.</p>
+<p>If application launching occurs via some other mechanism (eg: D-Bus
+activation) then <em class="parameter"><code>spawn_flags</code></em>
+, <em class="parameter"><code>user_setup</code></em>
+, <em class="parameter"><code>user_setup_data</code></em>
+,
+<em class="parameter"><code>pid_callback</code></em>
+ and <em class="parameter"><code>pid_callback_data</code></em>
+ are ignored.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-launch-uris-as-manager.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>appinfo</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>uris</p></td>
+<td class="parameter_description"><p>List of URIs. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>launch_context</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAppInfo.html#GAppLaunchContext"><span class="type">GAppLaunchContext</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>spawn_flags</p></td>
+<td class="parameter_description"><p><a href="../glib-Spawning-Processes.html#GSpawnFlags"><span class="type">GSpawnFlags</span></a>, used for each process</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_setup</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Spawning-Processes.html#GSpawnChildSetupFunc"><span class="type">GSpawnChildSetupFunc</span></a>, used once
+for each process. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_setup_data</p></td>
+<td class="parameter_description"><p>User data for <em class="parameter"><code>user_setup</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym> user_setup][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>pid_callback</p></td>
+<td class="parameter_description"><p>Callback for child processes. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid only during the call to the method."><span class="acronym">scope call</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>pid_callback_data</p></td>
+<td class="parameter_description"><p>User data for <em class="parameter"><code>callback</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym> pid_callback][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-launch-uris-as-manager.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on successful launch, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-list-actions"></a><h3>g_desktop_app_info_list_actions ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> * const *
+g_desktop_app_info_list_actions (<em class="parameter"><code><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> *info</code></em>);</pre>
+<p>Returns the list of "additional application actions" supported on the
+desktop file, as per the desktop file specification.</p>
+<p>As per the specification, this is the list of actions that are
+explicitly listed in the "Actions" key of the [Desktop Entry] group.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-list-actions.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-list-actions.returns"></a><h4>Returns</h4>
+<p>a list of strings, always non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p>
+<p><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-get-action-name"></a><h3>g_desktop_app_info_get_action_name ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_desktop_app_info_get_action_name (<em class="parameter"><code><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> *info</code></em>,
+                                    <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *action_name</code></em>);</pre>
+<p>Gets the user-visible display name of the "additional application
+action" specified by <em class="parameter"><code>action_name</code></em>
+.</p>
+<p>This corresponds to the "Name" key within the keyfile group for the
+action.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-action-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>action_name</p></td>
+<td class="parameter_description"><p>the name of the action as from
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-list-actions" title="g_desktop_app_info_list_actions ()"><code class="function">g_desktop_app_info_list_actions()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-action-name.returns"></a><h4>Returns</h4>
+<p>the locale-specific action name. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-launch-action"></a><h3>g_desktop_app_info_launch_action ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_desktop_app_info_launch_action (<em class="parameter"><code><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a> *info</code></em>,
+                                  <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *action_name</code></em>,
+                                  <em class="parameter"><code><a class="link" href="GAppInfo.html#GAppLaunchContext"><span class="type">GAppLaunchContext</span></a> *launch_context</code></em>);</pre>
+<p>Activates the named application action.</p>
+<p>You may only call this function on action names that were
+returned from <a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-list-actions" title="g_desktop_app_info_list_actions ()"><code class="function">g_desktop_app_info_list_actions()</code></a>.</p>
+<p>Note that if the main entry of the desktop file indicates that the
+application supports startup notification, and <em class="parameter"><code>launch_context</code></em>
+ is
+non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, then startup notification will be used when activating the
+action (and as such, invocation of the action on the receiving side
+must signal the end of startup notification when it is completed).
+This is the expected behaviour of applications declaring additional
+actions, as per the desktop file specification.</p>
+<p>As with <a class="link" href="GAppInfo.html#g-app-info-launch" title="g_app_info_launch ()"><code class="function">g_app_info_launch()</code></a> there is no way to detect failures that
+occur while using this function.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-launch-action.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>action_name</p></td>
+<td class="parameter_description"><p>the name of the action as from
+<a class="link" href="gio-Desktop-file-based-GAppInfo.html#g-desktop-app-info-list-actions" title="g_desktop_app_info_list_actions ()"><code class="function">g_desktop_app_info_list_actions()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>launch_context</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAppInfo.html#GAppLaunchContext"><span class="type">GAppLaunchContext</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-search"></a><h3>g_desktop_app_info_search ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> ***
+g_desktop_app_info_search (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *search_string</code></em>);</pre>
+<p>Searches desktop files for ones that match <em class="parameter"><code>search_string</code></em>
+.</p>
+<p>The return value is an array of strvs.  Each strv contains a list of
+applications that matched <em class="parameter"><code>search_string</code></em>
+ with an equal score.  The
+outer list is sorted by score so that the first strv contains the
+best-matching applications, and so on.
+The algorithm for determining matches is undefined and may change at
+any time.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-search.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>search_string</p></td>
+<td class="parameter_description"><p>the search string to use</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-search.returns"></a><h4>Returns</h4>
+<p>a
+list of strvs.  Free each item with <a href="../glib-String-Utility-Functions.html#g-strfreev"><code class="function">g_strfreev()</code></a> and free the outer
+list with <a href="../glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GStrv][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-desktop-app-info-get-implementations"></a><h3>g_desktop_app_info_get_implementations ()</h3>
+<pre class="programlisting"><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+g_desktop_app_info_get_implementations
+                               (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *interface</code></em>);</pre>
+<p>Gets all applications that implement <em class="parameter"><code>interface</code></em>
+.</p>
+<p>An application implements an interface if that interface is listed in
+the Implements= line of the desktop file of the application.</p>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-implementations.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>interface</p></td>
+<td class="parameter_description"><p>the name of the interface</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-desktop-app-info-get-implementations.returns"></a><h4>Returns</h4>
+<p>a list of <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a>
+objects. </p>
+<p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GDesktopAppInfo][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-42.html#api-index-2.42">2.42</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-Desktop-file-based-GAppInfo.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GDesktopAppInfo-struct"></a><h3>GDesktopAppInfo</h3>
+<pre class="programlisting">typedef struct _GDesktopAppInfo GDesktopAppInfo;</pre>
+<p>Information about an installed application from a desktop file.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDesktopAppInfoLookup-struct"></a><h3>GDesktopAppInfoLookup</h3>
+<pre class="programlisting">typedef struct _GDesktopAppInfoLookup GDesktopAppInfoLookup;</pre>
+<div class="warning"><p><code class="literal">GDesktopAppInfoLookup</code> is deprecated and should not be used in newly-written code.</p></div>
+<p><a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfoLookup"><span class="type">GDesktopAppInfoLookup</span></a> is an opaque data structure and can only be accessed
+using the following functions.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDesktopAppInfoLookupIface"></a><h3>struct GDesktopAppInfoLookupIface</h3>
+<pre class="programlisting">struct GDesktopAppInfoLookupIface {
+  GTypeInterface g_iface;
+
+  GAppInfo * (* get_default_for_uri_scheme) (GDesktopAppInfoLookup *lookup,
+                                             const char            *uri_scheme);
+};
+</pre>
+<div class="warning"><p><code class="literal">GDesktopAppInfoLookupIface</code> is deprecated and should not be used in newly-written code.</p></div>
+<p>Interface that is used by backends to associate default
+handlers with URI schemes.</p>
+<div class="refsect3">
+<a name="GDesktopAppInfoLookupIface.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody><tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDesktopAppInfoLookupIface.get-default-for-uri-scheme"></a>get_default_for_uri_scheme</code></em> ()</p></td>
+<td class="struct_member_description"><p>Virtual method for
+<code class="function">g_desktop_app_info_lookup_get_default_for_uri_scheme()</code>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-DESKTOP-APP-INFO-LOOKUP-EXTENSION-POINT-NAME:CAPS"></a><h3>G_DESKTOP_APP_INFO_LOOKUP_EXTENSION_POINT_NAME</h3>
+<pre class="programlisting">#define G_DESKTOP_APP_INFO_LOOKUP_EXTENSION_POINT_NAME "gio-desktop-app-info-lookup"
+</pre>
+<div class="warning"><p><code class="literal">G_DESKTOP_APP_INFO_LOOKUP_EXTENSION_POINT_NAME</code> is deprecated and should not be used in newly-written code.</p></div>
+<p>Extension point for default handler to URI association. See
+Extending GIO.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-Desktop-file-based-GAppInfo.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GDesktopAppInfo--filename"></a><h3>The <code class="literal">“filename”</code> property</h3>
+<pre class="programlisting">  “filename”                 <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>The origin filename of this <a class="link" href="gio-Desktop-file-based-GAppInfo.html#GDesktopAppInfo"><span class="type">GDesktopAppInfo</span></a></p>
+<p>Flags: Read / Write / Construct Only</p>
+<p>Default value: NULL</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

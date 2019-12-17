@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="9.00"
+	Name="gio"
+	ProjectGUID="{F3D1583C-5613-4809-BD98-7CC1C1276F92}"
+	RootNamespace="gio"
+	TargetFrameworkVersion="131072"
+	>
+	<Platforms>
+		<Platform
+			Name="Win32"
+		/>
+		<Platform
+			Name="x64"
+		/>
+	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			InheritedPropertySheets=".\glib-gen-srcs.vsprops"
+			ConfigurationType="2"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="..\..\gio,..\..\gmodule"
+				PreprocessorDefinitions="_DEBUG;$(GioBuildDefines)"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				DebugInformationFormat="4"
+				CompileAs="1"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="zlib1.lib $(WindowsNetworkingLibs)"
+				OutputFile="$(OutDir)\$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).dll"
+				LinkIncremental="2"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				DataExecutionPrevention="0"
+				ImportLibrary="$(TargetDir)$(ProjectName)-$(ApiVersion).lib"
+				TargetMachine="1"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			InheritedPropertySheets=".\glib-gen-srcs.vsprops"
+			ConfigurationType="2"
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="..\..\gio,..\..\gmodule"
+				PreprocessorDefinitions="$(GioBuildDefines)"
+				RuntimeLibrary="2"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+				CompileAs="1"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="zlib1.lib $(WindowsNetworkingLibs)"
+				OutputFile="$(OutDir)\$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).dll"
+				LinkIncremental="1"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				DataExecutionPrevention="0"
+				ImportLibrary="$(TargetDir)$(ProjectName)-$(ApiVersion).lib"
+				TargetMachine="1"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug|x64"
+			InheritedPropertySheets=".\glib-gen-srcs.vsprops"
+			ConfigurationType="2"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="..\..\gio,..\..\gmodule"
+				PreprocessorDefinitions="_DEBUG;$(GioBuildDefines)"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+				CompileAs="1"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="zlib1.lib $(WindowsNetworkingLibs)"
+				OutputFile="$(OutDir)\$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).dll"
+				LinkIncremental="2"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				DataExecutionPrevention="0"
+				ImportLibrary="$(TargetDir)$(ProjectName)-$(ApiVersion).lib"
+				TargetMachine="17"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|x64"
+			InheritedPropertySheets=".\glib-gen-srcs.vsprops"
+			ConfigurationType="2"
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="..\..\gio,..\..\gmodule"
+				PreprocessorDefinitions="$(GioBuildDefines)"
+				RuntimeLibrary="2"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+				CompileAs="1"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="zlib1.lib $(WindowsNetworkingLibs)"
+				OutputFile="$(OutDir)\$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).dll"
+				LinkIncremental="1"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				DataExecutionPrevention="0"
+				ImportLibrary="$(TargetDir)$(ProjectName)-$(ApiVersion).lib"
+				TargetMachine="17"
+			/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+	<Files>
+		<Filter
+			Name="Source Files"
+			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			>
+#include "gio.sourcefiles"
+		</Filter>
+		<Filter
+			Name="Header Files"
+			Filter="h;hpp;hxx;hm;inl;inc;xsd"
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+			>
+		</Filter>
+		<Filter
+			Name="Resource Files"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+			>
+			<File RelativePath="..\..\gio\gnetworking.h.win32">
+				<FileConfiguration Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Copying gnetworking.h from gnetworking.h.win32..."
+						CommandLine="$(GenGNetworkingH)"
+						Outputs="..\..\gio\gnetworking.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Copying gnetworking.h from gnetworking.h.win32..."
+						CommandLine="$(GenGNetworkingH)"
+						Outputs="..\..\gio\gnetworking.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration Name="Debug|x64">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Copying gnetworking.h from gnetworking.h.win32..."
+						CommandLine="$(GenGNetworkingH)"
+						Outputs="..\..\gio\gnetworking.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration Name="Release|x64">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Copying gnetworking.h from gnetworking.h.win32..."
+						CommandLine="$(GenGNetworkingH)"
+						Outputs="..\..\gio\gnetworking.h"
+					/>
+				</FileConfiguration>
+			</File>
+			<File RelativePath="..\..\gio\gio.rc" />
+		</Filter>
+	</Files>
+</VisualStudioProject>

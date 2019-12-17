@@ -724,9 +724,11 @@ LOCAL gboolean writer_s3_file_time_gfunc (gpointer UNUSED(user_data))
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME_COARSE, &ts);
 
+    MOLOCH_LOCK(output);
     if (currentFile && outputFilePos > 24 && (ts.tv_sec - currentFile->outputFileTime.tv_sec) >= config.maxFileTimeM*60) {
         writer_s3_flush(TRUE);
     }
+    MOLOCH_UNLOCK(output);
 
     return TRUE;
 }

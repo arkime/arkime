@@ -1,0 +1,19 @@
+[Desktop Entry]
+Name=Access Prompt
+Name[ca]=Petició d'accés
+Name[ca@valencia]=Petició d'accés
+Name[en_GB]=Access Prompt
+Name[pt]=Pedido de Acesso
+Name[pt_BR]=Prompt de acesso
+Comment=Unlock access to passwords and other secrets
+Comment[ca]=Desbloca l'accés a les contrasenyes i altres secrets
+Comment[ca@valencia]=Desbloca l'accés a les contrasenyes i altres secrets
+Comment[en_GB]=Unlock access to passwords and other secrets
+Comment[pt]=Destrancar acesso a senhas e outros segredos
+Comment[pt_BR]=Destravar acesso a senhas e outros segredos
+Icon=security-medium
+Exec=true
+Terminal=false
+Type=Application
+OnlyShowIn=GNOME-Classic
+NotShowIn=GNOME

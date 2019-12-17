@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+]>
+<refentry id="gdbus-org.project.InlineDocs">
+  <refmeta>    <refentrytitle role="top_of_page" id="gdbus-interface-org-project-InlineDocs.top_of_page">org.project.InlineDocs</refentrytitle>
+  <indexterm zone="gdbus-interface-org-project-InlineDocs.top_of_page"><primary sortas="InlineDocs">org.project.InlineDocs</primary></indexterm>
+  </refmeta>  <refnamediv>    <refname>org.project.InlineDocs</refname>    <refpurpose>The short description</refpurpose>  </refnamediv>  <refsynopsisdiv role="synopsis">
+    <title role="synopsis.title">Methods</title>
+    <synopsis>
+<link linkend="gdbus-method-org-project-InlineDocs.FooMethod">FooMethod</link> (IN  s greeting,
+           OUT s response);
+<link linkend="gdbus-method-org-project-InlineDocs.Method2">Method2</link>   (IN  s greeting,
+           OUT s response);
+</synopsis>
+  </refsynopsisdiv>
+  <refsect1 role="signal_proto">
+    <title role="signal_proto.title">Signals</title>
+    <synopsis>
+<link linkend="gdbus-signal-org-project-InlineDocs.BarSignal">BarSignal</link> (s blah,
+           s boo);
+</synopsis>
+  </refsect1>
+  <refsect1 role="properties">
+    <title role="properties.title">Properties</title>
+    <synopsis>
+<link linkend="gdbus-property-org-project-InlineDocs.BazProperty">BazProperty</link>    readable   s
+<link linkend="gdbus-property-org-project-InlineDocs.Property2">Property2</link>      readable   s
+<link linkend="gdbus-property-org-project-InlineDocs.Property3">Property3</link>      readable   s
+<link linkend="gdbus-property-org-project-InlineDocs.Property4">Property4</link>      readable   s
+<link linkend="gdbus-property-org-project-InlineDocs.Property5">Property5</link>      readable   s
+<link linkend="gdbus-property-org-project-InlineDocs.FancyProperty">FancyProperty</link>  readable   s
+</synopsis>
+  </refsect1>
+<refsect1 role="desc" id="gdbus-interface-org-project-InlineDocs">
+  <title role="desc.title">Description</title>
+  <para>    Here is the <emphasis>longer</emphasis> description.
+</para><para>    With lots of stuff.
+</para>
+</refsect1>
+<refsect1 role="details" id="gdbus-methods-org.project.InlineDocs">
+  <title role="details.title">Method Details</title>
+<refsect2 role="method" id="gdbus-method-org-project-InlineDocs.FooMethod">
+  <title>The FooMethod() method</title>
+  <indexterm zone="gdbus-method-org-project-InlineDocs.FooMethod"><primary sortas="InlineDocs.FooMethod">org.project.InlineDocs.FooMethod()</primary></indexterm>
+<programlisting>
+FooMethod (IN  s greeting,
+           OUT s response);
+</programlisting>
+<para>      The docs for the actual method.
+</para><para>      Multi-paragraph.
+</para><para>      Test of inline links: The <link linkend="gdbus-interface-org-project-Bar.top_of_page">org.project.Bar</link> D-Bus interface,
+      <link linkend="gdbus-method-org-project-Bar.HelloWorld">HelloWorld()</link> method, the
+      <link linkend="gdbus-signal-org-project-Bar.TestSignal">"TestSignal"</link>, the
+      <link linkend="gdbus-property-org-project-InlineDocs.Property3">"Property3"</link> property.
+</para>
+<variablelist role="params">
+<varlistentry>
+  <term><literal>IN s <parameter>greeting</parameter></literal>:</term>
+  <listitem><para>The docs for greeting parameter.</para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT s <parameter>response</parameter></literal>:</term>
+  <listitem><para>The docs for response parameter.</para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-org-project-InlineDocs.Method2">
+  <title>The Method2() method</title>
+  <indexterm zone="gdbus-method-org-project-InlineDocs.Method2"><primary sortas="InlineDocs.Method2">org.project.InlineDocs.Method2()</primary></indexterm>
+<programlisting>
+Method2 (IN  s greeting,
+         OUT s response);
+</programlisting>
+<para>foo</para>
+<variablelist role="params">
+<varlistentry>
+  <term><literal>IN s <parameter>greeting</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT s <parameter>response</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+</refsect1>
+<refsect1 role="details" id="gdbus-signals-org.project.InlineDocs">
+  <title role="details.title">Signal Details</title>
+<refsect2 role="signal" id="gdbus-signal-org-project-InlineDocs.BarSignal">
+  <title>The "BarSignal" signal</title>
+  <indexterm zone="gdbus-signal-org-project-InlineDocs.BarSignal"><primary sortas="InlineDocs::BarSignal">org.project.InlineDocs::BarSignal</primary></indexterm>
+<programlisting>
+BarSignal (s blah,
+           s boo);
+</programlisting>
+<para>      The docs for the actual signal.
+</para>
+<variablelist role="params">
+<varlistentry>
+  <term><literal>s <parameter>blah</parameter></literal>:</term>
+  <listitem><para>The docs for blah parameter.</para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>s <parameter>boo</parameter></literal>:</term>
+  <listitem><para>The docs for boo parameter.</para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+</refsect1>
+<refsect1 role="details" id="gdbus-properties-org.project.InlineDocs">
+  <title role="details.title">Property Details</title>
+<refsect2 role="property" id="gdbus-property-org-project-InlineDocs.BazProperty">
+  <title>The "BazProperty" property</title>
+  <indexterm zone="gdbus-property-org-project-InlineDocs.BazProperty"><primary sortas="InlineDocs:BazProperty">org.project.InlineDocs:BazProperty</primary></indexterm>
+<programlisting>
+BazProperty  readable   s
+</programlisting>
+<para>The docs for the property.</para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-InlineDocs.Property2">
+  <title>The "Property2" property</title>
+  <indexterm zone="gdbus-property-org-project-InlineDocs.Property2"><primary sortas="InlineDocs:Property2">org.project.InlineDocs:Property2</primary></indexterm>
+<programlisting>
+Property2  readable   s
+</programlisting>
+<para>Another property</para><para>         This should be a new paragraph.
+</para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-InlineDocs.Property3">
+  <title>The "Property3" property</title>
+  <indexterm zone="gdbus-property-org-project-InlineDocs.Property3"><primary sortas="InlineDocs:Property3">org.project.InlineDocs:Property3</primary></indexterm>
+<programlisting>
+Property3  readable   s
+</programlisting>
+<para>         First line.
+         This should NOT be a new paragraph.
+</para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-InlineDocs.Property4">
+  <title>The "Property4" property</title>
+  <indexterm zone="gdbus-property-org-project-InlineDocs.Property4"><primary sortas="InlineDocs:Property4">org.project.InlineDocs:Property4</primary></indexterm>
+<programlisting>
+Property4  readable   s
+</programlisting>
+<para>         First line. With trailing whitespace.  
+         Second line (same paragraph).  
+</para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-InlineDocs.Property5">
+  <title>The "Property5" property</title>
+  <indexterm zone="gdbus-property-org-project-InlineDocs.Property5"><primary sortas="InlineDocs:Property5">org.project.InlineDocs:Property5</primary></indexterm>
+<programlisting>
+Property5  readable   s
+</programlisting>
+<para>Foo</para><para>         First line (second paragraph). With trailing whitespace.  
+         Second line (same paragraph).  
+<programlisting>
+1 program listing
+ 2 should include indented space
+  3
+   4
+    5
+</programlisting>
+</para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-project-InlineDocs.FancyProperty">
+  <title>The "FancyProperty" property</title>
+  <indexterm zone="gdbus-property-org-project-InlineDocs.FancyProperty"><primary sortas="InlineDocs:FancyProperty">org.project.InlineDocs:FancyProperty</primary></indexterm>
+<programlisting>
+FancyProperty  readable   s
+</programlisting>
+<para>      Here's some fancy use of XML inside the comment.
+      <variablelist>
+        <varlistentry>
+          <term><option>namespace</option></term>
+          <listitem>
+            <para>The namespace to use for generated code. In CamelCase format.</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>output-prefix</option></term>
+          <listitem>
+            <para>
+              A prefix to use for all generated files. Defaults to <filename>generated</filename>.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+</para>
+</refsect2>
+</refsect1>
+</refentry>
+

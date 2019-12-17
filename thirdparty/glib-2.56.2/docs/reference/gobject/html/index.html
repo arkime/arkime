@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GObject Reference Manual: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="next" href="pr01.html" title="Introduction">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<div class="book">
+<div class="titlepage">
+<div>
+<div><table class="navigation" id="top" width="100%" cellpadding="2" cellspacing="0"><tr><th valign="middle"><p class="title">GObject Reference Manual</p></th></tr></table></div>
+<div><p class="releaseinfo">
+      for GObject 2.56.2
+
+      The latest version of this documentation can be found on-line at
+      <a class="ulink" href="https://developer.gnome.org/gobject/unstable/" target="_top">https://developer.gnome.org/gobject/unstable/</a>.
+    </p></div>
+</div>
+<hr>
+</div>
+<div class="toc"><dl class="toc">
+<dt><span class="preface"><a href="pr01.html">Introduction</a></span></dt>
+<dt><span class="part"><a href="pt01.html">I. Concepts</a></span></dt>
+<dd><dl>
+<dt><span class="chapter"><a href="chapter-intro.html">Background</a></span></dt>
+<dd><dl>
+<dt><span class="sect1"><a href="chapter-intro.html#id-1.3.2.5">Data types and programming</a></span></dt>
+<dt><span class="sect1"><a href="ch01s02.html">Exporting a C API</a></span></dt>
+</dl></dd>
+<dt><span class="chapter"><a href="chapter-gtype.html">The GLib Dynamic Type System</a></span></dt>
+<dd><dl>
+<dt><span class="sect1"><a href="chapter-gtype.html#gtype-copy">Copy functions</a></span></dt>
+<dt><span class="sect1"><a href="gtype-conventions.html">Conventions</a></span></dt>
+<dt><span class="sect1"><a href="gtype-non-instantiable.html">Non-instantiable non-classed fundamental types</a></span></dt>
+<dt><span class="sect1"><a href="gtype-instantiable-classed.html">Instantiable classed types: objects</a></span></dt>
+<dd><dl><dt><span class="sect2"><a href="gtype-instantiable-classed.html#gtype-instantiable-classed-init-done">Initialization and Destruction</a></span></dt></dl></dd>
+<dt><span class="sect1"><a href="gtype-non-instantiable-classed.html">Non-instantiable classed types: interfaces</a></span></dt>
+<dd><dl>
+<dt><span class="sect2"><a href="gtype-non-instantiable-classed.html#gtype-non-instantiable-classed-init">Interface Initialization</a></span></dt>
+<dt><span class="sect2"><a href="gtype-non-instantiable-classed.html#gtype-non-instantiable-classed-dest">Interface Destruction</a></span></dt>
+</dl></dd>
+</dl></dd>
+<dt><span class="chapter"><a href="chapter-gobject.html">The GObject base class</a></span></dt>
+<dd><dl>
+<dt><span class="sect1"><a href="chapter-gobject.html#gobject-instantiation">Object instantiation</a></span></dt>
+<dt><span class="sect1"><a href="gobject-memory.html">Object memory management</a></span></dt>
+<dd><dl>
+<dt><span class="sect2"><a href="gobject-memory.html#gobject-memory-refcount">Reference count</a></span></dt>
+<dt><span class="sect2"><a href="gobject-memory.html#gobject-memory-weakref">Weak References</a></span></dt>
+<dt><span class="sect2"><a href="gobject-memory.html#gobject-memory-cycles">Reference counts and cycles</a></span></dt>
+</dl></dd>
+<dt><span class="sect1"><a href="gobject-properties.html">Object properties</a></span></dt>
+<dd><dl><dt><span class="sect2"><a href="gobject-properties.html#gobject-multi-properties">Accessing multiple properties at once</a></span></dt></dl></dd>
+</dl></dd>
+<dt><span class="chapter"><a href="chapter-signal.html">The GObject messaging system</a></span></dt>
+<dd><dl>
+<dt><span class="sect1"><a href="chapter-signal.html#closure">Closures</a></span></dt>
+<dd><dl>
+<dt><span class="sect2"><a href="chapter-signal.html#id-1.3.5.2.5">C Closures</a></span></dt>
+<dt><span class="sect2"><a href="chapter-signal.html#id-1.3.5.2.6">Non-C closures (for the fearless)</a></span></dt>
+</dl></dd>
+<dt><span class="sect1"><a href="signal.html">Signals</a></span></dt>
+<dd><dl>
+<dt><span class="sect2"><a href="signal.html#signal-registration">Signal registration</a></span></dt>
+<dt><span class="sect2"><a href="signal.html#signal-connection">Signal connection</a></span></dt>
+<dt><span class="sect2"><a href="signal.html#signal-emission">Signal emission</a></span></dt>
+<dt><span class="sect2"><a href="signal.html#signal-detail">The <span class="emphasis"><em>detail</em></span> argument</a></span></dt>
+</dl></dd>
+</dl></dd>
+</dl></dd>
+<dt><span class="reference"><a href="rn01.html">II. API Reference</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="gobject-Type-Information.html">Type Information</a></span><span class="refpurpose"> — The GLib Runtime type identification and
+    management system</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GTypePlugin.html">GTypePlugin</a></span><span class="refpurpose"> — An interface for dynamically loadable types</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GTypeModule.html">GTypeModule</a></span><span class="refpurpose"> — Type loading modules</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gobject-The-Base-Object-Type.html">GObject</a></span><span class="refpurpose"> — The base object type</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gobject-Enumeration-and-Flag-Types.html">Enumeration and Flag Types</a></span><span class="refpurpose"> — Enumeration and flags types</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gobject-Boxed-Types.html">Boxed Types</a></span><span class="refpurpose"> — A mechanism to wrap opaque C structures registered
+    by the type system</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gobject-Generic-values.html">Generic values</a></span><span class="refpurpose"> — A polymorphic type that can hold values of any
+    other type</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gobject-Standard-Parameter-and-Value-Types.html">Parameters and Values</a></span><span class="refpurpose"> — Standard Parameter and Value Types</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gobject-GParamSpec.html">GParamSpec</a></span><span class="refpurpose"> — Metadata for parameter specifications</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gobject-Varargs-Value-Collection.html">Varargs Value Collection</a></span><span class="refpurpose"> — Converting varargs to generic values</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gobject-Signals.html">Signals</a></span><span class="refpurpose"> — A means for customization of object behaviour
+    and a general purpose notification mechanism</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gobject-Closures.html">Closures</a></span><span class="refpurpose"> — Functions as first-class objects</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gobject-Value-arrays.html">Value arrays</a></span><span class="refpurpose"> — A container structure to maintain an array of
+    generic values</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GBinding.html">GBinding</a></span><span class="refpurpose"> — Bind two object properties</span>
+</dt>
+</dl></dd>
+<dt><span class="reference"><a href="rn02.html">III. Tools Reference</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="glib-mkenums.html">glib-mkenums</a></span><span class="refpurpose"> — C language enum description generation utility</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="glib-genmarshal.html">glib-genmarshal</a></span><span class="refpurpose"> — C code marshaller generation utility for GLib closures</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gobject-query.html">gobject-query</a></span><span class="refpurpose"> — display a tree of types</span>
+</dt>
+</dl></dd>
+<dt><span class="part"><a href="pt02.html">IV. Tutorial</a></span></dt>
+<dd><dl>
+<dt><span class="chapter"><a href="howto-gobject.html">How to define and implement a new GObject</a></span></dt>
+<dd><dl>
+<dt><span class="sect1"><a href="howto-gobject.html#howto-gobject-header">Boilerplate header code</a></span></dt>
+<dt><span class="sect1"><a href="howto-gobject-code.html">Boilerplate code</a></span></dt>
+<dt><span class="sect1"><a href="howto-gobject-construction.html">Object construction</a></span></dt>
+<dt><span class="sect1"><a href="howto-gobject-destruction.html">Object destruction</a></span></dt>
+<dt><span class="sect1"><a href="howto-gobject-methods.html">Object methods</a></span></dt>
+<dd><dl>
+<dt><span class="sect2"><a href="howto-gobject-methods.html#non-virtual-public-methods">Non-virtual public methods</a></span></dt>
+<dt><span class="sect2"><a href="howto-gobject-methods.html#virtual-public-methods">Virtual public methods</a></span></dt>
+<dt><span class="sect2"><a href="howto-gobject-methods.html#virtual-private-methods">Virtual private Methods</a></span></dt>
+</dl></dd>
+<dt><span class="sect1"><a href="howto-gobject-chainup.html">Chaining up</a></span></dt>
+</dl></dd>
+<dt><span class="chapter"><a href="howto-interface.html">How to define and implement interfaces</a></span></dt>
+<dd><dl>
+<dt><span class="sect1"><a href="howto-interface.html#howto-interface-define">Defining interfaces</a></span></dt>
+<dt><span class="sect1"><a href="howto-interface-implement.html">Implementing interfaces</a></span></dt>
+<dt><span class="sect1"><a href="howto-interface-prerequisite.html">Interface definition prerequisites</a></span></dt>
+<dt><span class="sect1"><a href="howto-interface-properties.html">Interface properties</a></span></dt>
+<dt><span class="sect1"><a href="howto-interface-override.html">Overriding interface methods</a></span></dt>
+</dl></dd>
+<dt><span class="chapter"><a href="howto-signals.html">How to create and use signals</a></span></dt>
+<dd><dl><dt><span class="sect1"><a href="howto-signals.html#howto-simple-signals">Simple use of signals</a></span></dt></dl></dd>
+</dl></dd>
+<dt><span class="part"><a href="pt03.html">V. Related Tools</a></span></dt>
+<dd><dl>
+<dt><span class="chapter"><a href="tools-vala.html">Vala</a></span></dt>
+<dt><span class="chapter"><a href="tools-gob.html">GObject builder</a></span></dt>
+<dt><span class="chapter"><a href="tools-ginspector.html">Graphical inspection of GObjects</a></span></dt>
+<dt><span class="chapter"><a href="tools-refdb.html">Debugging reference count problems</a></span></dt>
+<dt><span class="chapter"><a href="tools-gtkdoc.html">Writing API docs</a></span></dt>
+</dl></dd>
+<dt><span class="index"><a href="api-index-full.html">Index</a></span></dt>
+<dt><span class="glossary"><a href="annotation-glossary.html">Annotation Glossary</a></span></dt>
+</dl></div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,19 @@
+[Desktop Entry]
+Type=Application
+GenericName=generic-appinfo-test
+Name=appinfo-test
+Name[de]=appinfo-test-de
+X-GNOME-FullName=example
+X-GNOME-FullName[de]=Beispiel
+Comment=GAppInfo example
+Comment[de]=GAppInfo Beispiel
+Exec=./appinfo-test --option %U %i --name %c --filename %k %m %%
+Icon=testicon.svg
+Terminal=true
+StartupNotify=true
+StartupWMClass=appinfo-class
+MimeType=image/png;image/jpeg;
+Keywords=keyword1;test keyword;
+Categories=GNOME;GTK;
+X-JunkFood=Burger
+X-JunkFood[de]=Bratwurst

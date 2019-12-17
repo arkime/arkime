@@ -1,0 +1,30 @@
+#include <winver.h>
+
+VS_VERSION_INFO VERSIONINFO
+  FILEVERSION @GLIB_MAJOR_VERSION@,@GLIB_MINOR_VERSION@,@GLIB_MICRO_VERSION@,0
+  PRODUCTVERSION @GLIB_MAJOR_VERSION@,@GLIB_MINOR_VERSION@,@GLIB_MICRO_VERSION@,0
+  FILEFLAGSMASK 0
+  FILEFLAGS 0
+  FILEOS VOS__WINDOWS32
+  FILETYPE VFT_DLL
+  FILESUBTYPE VFT2_UNKNOWN
+  BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+      BLOCK "040904B0"
+      BEGIN
+	VALUE "CompanyName", "The GLib developer community"
+	VALUE "FileDescription", "GModule"
+	VALUE "FileVersion", "@GLIB_VERSION@.0"
+	VALUE "InternalName", "libgmodule-2.0-@LT_CURRENT_MINUS_AGE@"
+	VALUE "LegalCopyright", "Copyright 1998-2011 Tim Janik and others."
+	VALUE "OriginalFilename", "libgmodule-2.0-@LT_CURRENT_MINUS_AGE@.dll"
+	VALUE "ProductName", "GLib"
+	VALUE "ProductVersion", "@GLIB_VERSION@"
+      END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+      VALUE "Translation", 0x409, 1200
+    END
+  END

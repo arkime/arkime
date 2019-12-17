@@ -1,0 +1,669 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>glib-mkenums: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="rn02.html" title="Tools Reference">
+<link rel="prev" href="rn02.html" title="Tools Reference">
+<link rel="next" href="glib-genmarshal.html" title="glib-genmarshal">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="rn02.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="rn02.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-genmarshal.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div lang="en" class="refentry">
+<a name="glib-mkenums"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle">glib-mkenums</span></h2>
+<p>glib-mkenums — C language enum description generation utility</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<h2>Synopsis</h2>
+<div class="cmdsynopsis"><p><code class="command">glib-mkenums</code>  [OPTION...] [FILE...]</p></div>
+</div>
+<div class="refsect1">
+<a name="id-1.5.2.5"></a><h2>Description</h2>
+<p><span class="command"><strong>glib-mkenums</strong></span> is a small utility that parses C code to
+extract enum definitions and produces enum descriptions based on text templates
+specified by the user. Typically, you can use this tool to generate enumeration
+types for the GType type system, for #GObject properties and signal marshalling;
+additionally, you can use it to generate enumeration values of #GSettings schemas.
+</p>
+<p><span class="command"><strong>glib-mkenums</strong></span> takes a list of valid C code files as
+input. The options specified control the text that generated, substituting various
+keywords enclosed in @ characters in the templates.
+</p>
+<div class="refsect2">
+<a name="id-1.5.2.5.4"></a><h3>Production text substitutions</h3>
+<p>
+Certain keywords enclosed in @ characters will be substituted in the
+emitted text. For the substitution examples of the keywords below,
+the following example enum definition is assumed:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">enum</span>
+<span class="cbracket">{</span>
+<span class="normal">  PREFIX_THE_XVALUE    </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="number">3</span><span class="symbol">,</span>
+<span class="normal">  PREFIX_ANOTHER_VALUE </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="number">4</span>
+<span class="cbracket">}</span><span class="normal"> PrefixTheXEnum</span><span class="symbol">;</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term">@EnumName@</span></p></td>
+<td><p>
+The name of the enum currently being processed, enum names are assumed to be
+properly namespaced and to use mixed capitalization to separate
+words (e.g. <code class="literal">PrefixTheXEnum</code>).
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term">@enum_name@</span></p></td>
+<td><p>
+The enum name with words lowercase and word-separated by underscores
+(e.g. <code class="literal">prefix_the_xenum</code>).
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term">@ENUMNAME@</span></p></td>
+<td><p>
+The enum name with words uppercase and word-separated by underscores
+(e.g. <code class="literal">PREFIX_THE_XENUM</code>).
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term">@ENUMSHORT@</span></p></td>
+<td><p>
+The enum name with words uppercase and word-separated by underscores,
+prefix stripped (e.g. <code class="literal">THE_XENUM</code>).
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term">@ENUMPREFIX@</span></p></td>
+<td><p>
+The prefix of the enum name (e.g. <code class="literal">PREFIX</code>).
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term">@VALUENAME@</span></p></td>
+<td><p>
+The enum value name currently being processed with words uppercase and
+word-separated by underscores,
+this is the assumed literal notation of enum values in the C sources
+(e.g. <code class="literal">PREFIX_THE_XVALUE</code>).
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term">@valuenick@</span></p></td>
+<td><p>
+A nick name for the enum value currently being processed, this is usually
+generated by stripping common prefix words of all the enum values of the
+current enum, the words are lowercase and underscores are substituted by a
+minus (e.g. <code class="literal">the-xvalue</code>).
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term">@valuenum@</span></p></td>
+<td><p>
+The integer value for the enum value currently being processed. If the
+evaluation fails then <span class="command"><strong>glib-mkenums</strong></span> will exit with an
+error status, but this only happens if <code class="literal">@valuenum@</code>
+appears in your value production template. (Since: 2.26)
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term">@type@</span></p></td>
+<td><p>
+This is substituted either by "enum" or "flags", depending on whether the
+enum value definitions contained bit-shift operators or not (e.g. flags).
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term">@Type@</span></p></td>
+<td><p>
+The same as <code class="literal">@type@</code> with the first letter capitalized (e.g. Flags).
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term">@TYPE@</span></p></td>
+<td><p>
+The same as <code class="literal">@type@</code> with all letters uppercased (e.g. FLAGS).
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term">@filename@</span></p></td>
+<td><p>
+The name of the input file currently being processed (e.g. foo.h).
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term">@basename@</span></p></td>
+<td><p>
+The base name of the input file currently being processed (e.g. foo.h). Typically
+you want to use <code class="literal">@basename@</code> in place of <code class="literal">@filename@</code> in your templates, to improve the reproducibility of the build. (Since: 2.22)
+</p></td>
+</tr>
+</tbody>
+</table></div>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.5.2.5.5"></a><h3>Trigraph extensions</h3>
+<p>
+Some C comments are treated specially in the parsed enum definitions,
+such comments start out with the trigraph sequence <code class="literal">/*&lt;</code>
+and end with the trigraph sequence <code class="literal">&gt;*/</code>.
+Per enum definition, the options "skip" and "flags" can be specified, to
+indicate this enum definition to be skipped, or for it to be treated as
+a flags definition, or to specify the common prefix to be stripped from
+all values to generate value nicknames, respectively. The "underscore_name"
+option can be used to specify the word separation used in the *_get_type()
+function. For instance, <code class="literal">/*&lt; underscore_name=gnome_vfs_uri_hide_options &gt;*/</code>.
+</p>
+<p>
+Per value definition, the options "skip" and "nick" are supported.
+The former causes the value to be skipped, and the latter can be used to
+specify the otherwise auto-generated nickname.
+Examples:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">enum</span><span class="normal"> </span><span class="comment">/*&lt; skip &gt;*/</span>
+<span class="cbracket">{</span>
+<span class="normal">  PREFIX_FOO</span>
+<span class="cbracket">}</span><span class="normal"> PrefixThisEnumWillBeSkipped</span><span class="symbol">;</span>
+<span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">enum</span><span class="normal"> </span><span class="comment">/*&lt; flags,prefix=PREFIX &gt;*/</span>
+<span class="cbracket">{</span>
+<span class="normal">  PREFIX_THE_ZEROTH_VALUE</span><span class="symbol">,</span><span class="normal">  </span><span class="comment">/*&lt; skip &gt;*/</span>
+<span class="normal">  PREFIX_THE_FIRST_VALUE</span><span class="symbol">,</span>
+<span class="normal">  PREFIX_THE_SECOND_VALUE</span><span class="symbol">,</span>
+<span class="normal">  PREFIX_THE_THIRD_VALUE</span><span class="symbol">,</span><span class="normal">   </span><span class="comment">/*&lt; nick=the-last-value &gt;*/</span>
+<span class="cbracket">}</span><span class="normal"> PrefixTheFlagsEnum</span><span class="symbol">;</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="id-1.5.2.6"></a><h2>Options</h2>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><code class="option">--fhead</code> <em class="replaceable"><code>TEXT</code></em></span></p></td>
+<td>
+<p>
+Emits <em class="replaceable"><code>TEXT</code></em> prior to processing input files.
+</p>
+<p>
+You can specify this option multiple times, and the <em class="replaceable"><code>TEXT</code></em>
+will be concatenated.
+</p>
+<p>
+When used along with a template file, <em class="replaceable"><code>TEXT</code></em>
+will be prepended to the template's <code class="literal">file-header</code> section.
+</p>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--fprod</code> <em class="replaceable"><code>TEXT</code></em></span></p></td>
+<td>
+<p>
+Emits <em class="replaceable"><code>TEXT</code></em> every time a new input file
+is being processed.
+</p>
+<p>
+You can specify this option multiple times, and the <em class="replaceable"><code>TEXT</code></em>
+will be concatenated.
+</p>
+<p>
+When used along with a template file, <em class="replaceable"><code>TEXT</code></em>
+will be appended to the template's <code class="literal">file-production</code> section.
+</p>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--ftail</code> <em class="replaceable"><code>TEXT</code></em></span></p></td>
+<td>
+<p>
+Emits <em class="replaceable"><code>TEXT</code></em> after all input files have been
+processed.
+</p>
+<p>
+You can specify this option multiple times, and the <em class="replaceable"><code>TEXT</code></em>
+will be concatenated.
+</p>
+<p>
+When used along with a template file, <em class="replaceable"><code>TEXT</code></em>
+will be appended to the template's <code class="literal">file-tail</code> section.
+</p>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--eprod</code> <em class="replaceable"><code>TEXT</code></em></span></p></td>
+<td><p>
+Emits <em class="replaceable"><code>TEXT</code></em> everytime an enum is encountered
+in the input files.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--vhead</code> <em class="replaceable"><code>TEXT</code></em></span></p></td>
+<td>
+<p>
+Emits <em class="replaceable"><code>TEXT</code></em> before iterating over the set of
+values of an enum.
+</p>
+<p>
+You can specify this option multiple times, and the <em class="replaceable"><code>TEXT</code></em>
+will be concatenated.
+</p>
+<p>
+When used along with a template file, <em class="replaceable"><code>TEXT</code></em>
+will be prepended to the template's <code class="literal">value-header</code> section.
+</p>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--vprod</code> <em class="replaceable"><code>TEXT</code></em></span></p></td>
+<td>
+<p>
+Emits <em class="replaceable"><code>TEXT</code></em> for every value of an enum.
+</p>
+<p>
+You can specify this option multiple times, and the <em class="replaceable"><code>TEXT</code></em>
+will be concatenated.
+</p>
+<p>
+When used along with a template file, <em class="replaceable"><code>TEXT</code></em>
+will be appended to the template's <code class="literal">value-production</code> section.
+</p>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--vtail</code> <em class="replaceable"><code>TEXT</code></em></span></p></td>
+<td>
+<p>
+Emits <em class="replaceable"><code>TEXT</code></em> after iterating over all values
+of an enum.
+</p>
+<p>
+You can specify this option multiple times, and the <em class="replaceable"><code>TEXT</code></em>
+will be concatenated.
+</p>
+<p>
+When used along with a template file, <em class="replaceable"><code>TEXT</code></em>
+will be appended to the template's <code class="literal">value-tail</code> section.
+</p>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--comments</code> <em class="replaceable"><code>TEXT</code></em></span></p></td>
+<td><p>
+Template for auto-generated comments, the default (for C code generations) is
+<code class="literal">"/* @comment@ */"</code>.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--template</code> <em class="replaceable"><code>FILE</code></em></span></p></td>
+<td>
+<p>
+Read templates from the given file. The templates are enclosed in
+specially-formatted C comments
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="comment">/*** BEGIN section ***/</span>
+<span class="comment">/*** END section ***/</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+where section may be <code class="literal">file-header</code>,
+<code class="literal">file-production</code>, <code class="literal">file-tail</code>,
+<code class="literal">enumeration-production</code>, <code class="literal">value-header</code>,
+<code class="literal">value-production</code>, <code class="literal">value-tail</code> or
+<code class="literal">comment</code>.
+</p>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--identifier-prefix</code> <em class="replaceable"><code>PREFIX</code></em></span></p></td>
+<td><p>
+Indicates what portion of the enum name should be intepreted as the
+prefix (eg, the "<code class="literal">Gtk</code>" in
+"<code class="literal">GtkDirectionType</code>"). Normally this will be figured
+out automatically, but you may need to override the default if your
+namespace is capitalized oddly.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--symbol-prefix</code> <em class="replaceable"><code>PREFIX</code></em></span></p></td>
+<td><p>
+Indicates what prefix should be used to correspond to the identifier
+prefix in related C function names (eg, the "<code class="literal">gtk</code>"
+in "<code class="literal">gtk_direction_type_get_type</code>". Equivalently,
+this is the lowercase version of the prefix component of the enum
+value names (eg, the "<code class="literal">GTK</code>" in
+"<code class="literal">GTK_DIR_UP</code>". The default value is the identifier
+prefix, converted to lowercase.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--help</code></span></p></td>
+<td><p>
+Print brief help and exit.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--version</code></span></p></td>
+<td><p>
+Print version and exit.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--output=FILE</code></span></p></td>
+<td><p>
+Write output to FILE instead of stdout.
+</p></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="id-1.5.2.7"></a><h2>Using glib-mkenums with Autotools</h2>
+<p>
+In order to use <span class="command"><strong>glib-mkenums</strong></span> in your project when using
+Autotools as the build system, you will first need to modify your
+<code class="filename">configure.ac</code> file to ensure you find the appropriate
+command using <span class="command"><strong>pkg-config</strong></span>, similarly as to how you discover
+the compiler and linker flags for GLib.
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="function">PKG_PROG_PKG_CONFIG</span><span class="symbol">([</span><span class="number">0.28</span><span class="symbol">])</span>
+
+<span class="function">PKG_CHECK_VAR</span><span class="symbol">([</span><span class="normal">GLIB_MKENUMS</span><span class="symbol">],</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">glib</span><span class="symbol">-</span><span class="number">2.0</span><span class="symbol">],</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">glib_mkenums</span><span class="symbol">])</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+In your <code class="filename">Makefile.am</code> file you will typically use rules
+like these:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="preproc"># A</span><span class="normal"> list of headers to inspect</span>
+<span class="normal">project_headers </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">        project</span><span class="symbol">-</span><span class="normal">foo</span><span class="symbol">.</span><span class="normal">h </span><span class="symbol">\</span>
+<span class="normal">        project</span><span class="symbol">-</span><span class="normal">bar</span><span class="symbol">.</span><span class="normal">h </span><span class="symbol">\</span>
+<span class="normal">        project</span><span class="symbol">-</span><span class="normal">baz</span><span class="symbol">.</span><span class="normal">h</span>
+
+<span class="keyword">enum</span><span class="symbol">-</span><span class="normal">types</span><span class="symbol">.</span><span class="normal">h</span><span class="symbol">:</span><span class="normal"> $</span><span class="symbol">(</span><span class="normal">project_headers</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">enum</span><span class="symbol">-</span><span class="normal">types</span><span class="symbol">.</span><span class="normal">h</span><span class="symbol">.</span><span class="normal">in</span>
+<span class="normal">        $</span><span class="symbol">(</span><span class="normal">AM_V_GEN</span><span class="symbol">)</span><span class="normal">$</span><span class="symbol">(</span><span class="normal">GLIB_MKENUMS</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                </span><span class="symbol">--</span><span class="normal">template</span><span class="symbol">=</span><span class="keyword">enum</span><span class="symbol">-</span><span class="normal">types</span><span class="symbol">.</span><span class="normal">h</span><span class="symbol">.</span><span class="normal">in </span><span class="symbol">\</span>
+<span class="normal">                </span><span class="symbol">--</span><span class="normal">output</span><span class="symbol">=</span><span class="normal">$@ </span><span class="symbol">\</span>
+<span class="normal">                $</span><span class="symbol">(</span><span class="normal">project_headers</span><span class="symbol">)</span>
+
+<span class="keyword">enum</span><span class="symbol">-</span><span class="normal">types</span><span class="symbol">.</span><span class="normal">c</span><span class="symbol">:</span><span class="normal"> $</span><span class="symbol">(</span><span class="normal">project_headers</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">enum</span><span class="symbol">-</span><span class="normal">types</span><span class="symbol">.</span><span class="normal">c</span><span class="symbol">.</span><span class="usertype">in</span><span class="normal"> </span><span class="keyword">enum</span><span class="symbol">-</span><span class="normal">types</span><span class="symbol">.</span><span class="normal">h</span>
+<span class="normal">        $</span><span class="symbol">(</span><span class="normal">AM_V_GEN</span><span class="symbol">)</span><span class="normal">$</span><span class="symbol">(</span><span class="normal">GLIB_MKENUMS</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                </span><span class="symbol">--</span><span class="normal">template</span><span class="symbol">=</span><span class="keyword">enum</span><span class="symbol">-</span><span class="normal">types</span><span class="symbol">.</span><span class="normal">c</span><span class="symbol">.</span><span class="normal">in </span><span class="symbol">\</span>
+<span class="normal">                </span><span class="symbol">--</span><span class="normal">output</span><span class="symbol">=</span><span class="normal">$@ </span><span class="symbol">\</span>
+<span class="normal">                $</span><span class="symbol">(</span><span class="normal">project_headers</span><span class="symbol">)</span>
+
+<span class="normal">BUILT_SOURCES </span><span class="symbol">+=</span><span class="normal"> </span><span class="keyword">enum</span><span class="symbol">-</span><span class="normal">types</span><span class="symbol">.</span><span class="usertype">h</span><span class="normal"> </span><span class="keyword">enum</span><span class="symbol">-</span><span class="normal">types</span><span class="symbol">.</span><span class="normal">c</span>
+<span class="normal">CLEANFILES </span><span class="symbol">+=</span><span class="normal"> </span><span class="keyword">enum</span><span class="symbol">-</span><span class="normal">types</span><span class="symbol">.</span><span class="usertype">h</span><span class="normal"> </span><span class="keyword">enum</span><span class="symbol">-</span><span class="normal">types</span><span class="symbol">.</span><span class="normal">c</span>
+<span class="normal">EXTRA_DIST </span><span class="symbol">+=</span><span class="normal"> </span><span class="keyword">enum</span><span class="symbol">-</span><span class="normal">types</span><span class="symbol">.</span><span class="normal">h</span><span class="symbol">.</span><span class="usertype">in</span><span class="normal"> </span><span class="keyword">enum</span><span class="symbol">-</span><span class="normal">types</span><span class="symbol">.</span><span class="normal">c</span><span class="symbol">.</span><span class="normal">in</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+In the example above, we have a variable called <code class="literal">project_headers</code>
+where we reference all header files we want to inspect for generating enumeration
+GTypes. In the <code class="filename">enum-types.h</code> rule we use <span class="command"><strong>glib-mkenums</strong></span>
+with a template called <code class="filename">enum-types.h.in</code> in order to generate the
+header file; a header template file will typically look like this:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="comment">/*** BEGIN file-header ***/</span>
+<span class="preproc">#pragma</span><span class="normal"> once</span>
+
+<span class="comment">/* Include the main project header */</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">"project.h"</span>
+
+<span class="normal"><a href="../glib-Miscellaneous-Macros.html#G-BEGIN-DECLS:CAPS">G_BEGIN_DECLS</a></span>
+<span class="comment">/*** END file-header ***/</span>
+
+<span class="comment">/*** BEGIN file-production ***/</span>
+
+<span class="comment">/* enumerations from "@filename@" */</span>
+<span class="comment">/*** END file-production ***/</span>
+
+<span class="comment">/*** BEGIN value-header ***/</span>
+<span class="normal"><a href="gobject-Type-Information.html#GType">GType</a> @enum_name@</span><span class="function">_get_type</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span><span class="normal"> <a href="../glib-Miscellaneous-Macros.html#G-GNUC-CONST:CAPS">G_GNUC_CONST</a></span><span class="symbol">;</span>
+<span class="preproc">#define</span><span class="normal"> @ENUMPREFIX@_TYPE_@ENUMSHORT@ </span><span class="symbol">(</span><span class="normal">@enum_name@</span><span class="function">_get_type</span><span class="normal"> </span><span class="symbol">())</span>
+<span class="comment">/*** END value-header ***/</span>
+
+<span class="comment">/*** BEGIN file-tail ***/</span>
+<span class="normal"><a href="../glib-Miscellaneous-Macros.html#G-END-DECLS:CAPS">G_END_DECLS</a></span>
+<span class="comment">/*** END file-tail ***/</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+The <code class="filename">enum-types.c</code> rule is similar to the rule for the
+header file, but will use a different <code class="filename">enum-types.c.in</code> template
+file, similar to this:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="comment">/*** BEGIN file-header ***/</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">"config.h"</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">"enum-types.h"</span>
+
+<span class="comment">/*** END file-header ***/</span>
+
+<span class="comment">/*** BEGIN file-production ***/</span>
+<span class="comment">/* enumerations from "@filename@" */</span>
+<span class="comment">/*** END file-production ***/</span>
+
+<span class="comment">/*** BEGIN value-header ***/</span>
+<span class="normal"><a href="gobject-Type-Information.html#GType">GType</a></span>
+<span class="normal">@enum_name@</span><span class="function">_get_type</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">volatile</span><span class="normal"> </span><span class="usertype">gsize</span><span class="normal"> g_@type@_type_id__volatile</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="../glib-Threads.html#g-once-init-enter">g_once_init_enter</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">g_define_type_id__volatile</span><span class="symbol">))</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">const</span><span class="normal"> G@Type@</span><span class="usertype">Value</span><span class="normal"> values</span><span class="symbol">[]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="comment">/*** END value-header ***/</span>
+
+<span class="comment">/*** BEGIN value-production ***/</span>
+<span class="normal">            </span><span class="cbracket">{</span><span class="normal"> @VALUENAME@</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"@VALUENAME@"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"@valuenick@"</span><span class="normal"> </span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="comment">/*** END value-production ***/</span>
+
+<span class="comment">/*** BEGIN value-tail ***/</span>
+<span class="normal">            </span><span class="cbracket">{</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a> </span><span class="cbracket">}</span>
+<span class="normal">      </span><span class="cbracket">}</span><span class="symbol">;</span>
+
+<span class="normal">      </span><span class="usertype">GType</span><span class="normal"> g_@type@_type_id </span><span class="symbol">=</span>
+<span class="normal">        g_@type@</span><span class="function">_register_static</span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="../glib-Quarks.html#g-intern-static-string">g_intern_static_string</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"@EnumName@"</span><span class="symbol">),</span><span class="normal"> values</span><span class="symbol">);</span>
+
+<span class="normal">      </span><span class="function"><a href="../glib-Threads.html#g-once-init-leave">g_once_init_leave</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">g_@type@_type_id__volatile</span><span class="symbol">,</span><span class="normal"> g_@type@_type_id</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> g_@type@_type_id__volatile</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+
+<span class="comment">/*** END value-tail ***/</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+<div class="refsect1">
+<a name="id-1.5.2.8"></a><h2>See also</h2>
+<p>
+<span class="citerefentry"><span class="refentrytitle">glib-genmarshal</span>(1)</span>
+</p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

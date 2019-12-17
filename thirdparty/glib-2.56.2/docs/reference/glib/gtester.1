@@ -1,0 +1,141 @@
+'\" t
+.\"     Title: gtester
+.\"    Author: Tim Janik
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 08/17/2018
+.\"    Manual: User Commands
+.\"    Source: GLib
+.\"  Language: English
+.\"
+.TH "GTESTER" "1" "" "GLib" "User Commands"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+gtester \- test running utility
+.SH "SYNOPSIS"
+.HP \w'\fBgtester\fR\ 'u
+\fBgtester\fR [OPTION...] [testprogram]
+.SH "DESCRIPTION"
+.PP
+\fBgtester\fR
+is a utility to run unit tests that have been written using the GLib test framework\&.
+.PP
+When called with the
+\fB\-o\fR
+option,
+\fBgtester\fR
+writes an XML report of the test results, which can be converted into HTML using the
+\fBgtester\-report\fR
+utility\&.
+.SH "OPTIONS"
+.PP
+\fB\-h\fR, \fB\-\-help\fR
+.RS 4
+print help and exit
+.RE
+.PP
+\fB\-v\fR, \fB\-\-version\fR
+.RS 4
+print version information and exit
+.RE
+.PP
+\fB\-\-g\-fatal\-warnings\fR
+.RS 4
+make warnings fatal
+.RE
+.PP
+\fB\-k\fR, \fB\-\-keep\-going\fR
+.RS 4
+continue running after tests failed
+.RE
+.PP
+\fB\-l\fR
+.RS 4
+list paths of available test cases
+.RE
+.PP
+\fB\-m=\fR\fB\fIMODE\fR\fR
+.RS 4
+run test cases in
+\fIMODE\fR, which can be one of:
+.PP
+\fBperf\fR
+.RS 4
+run performance tests
+.RE
+.PP
+\fBslow\fR, \fBthorough\fR
+.RS 4
+run slow tests, or repeat non\-deterministic tests more often
+.RE
+.PP
+\fBquick\fR
+.RS 4
+do not run slow or performance tests, or do extra repeats of non\-deterministic tests (default)
+.RE
+.PP
+\fBundefined\fR
+.RS 4
+run test cases that deliberately provoke checks or assertion failures, if implemented (default)
+.RE
+.PP
+\fBno\-undefined\fR
+.RS 4
+do not run test cases that deliberately provoke checks or assertion failures
+.RE
+.sp
+.RE
+.PP
+\fB\-p=\fR\fB\fITESTPATH\fR\fR
+.RS 4
+only run test cases matching
+\fITESTPATH\fR
+.RE
+.PP
+\fB\-s=\fR\fB\fITESTPATH\fR\fR
+.RS 4
+skip test cases matching
+\fITESTPATH\fR
+.RE
+.PP
+\fB\-\-seed=\fR\fB\fISEEDSTRING\fR\fR
+.RS 4
+run all test cases with random number seed
+\fISEEDSTRING\fR
+.RE
+.PP
+\fB\-o=\fR\fB\fILOGFILE\fR\fR
+.RS 4
+write the test log to
+\fILOGFILE\fR
+.RE
+.PP
+\fB\-q\fR, \fB\-\-quiet\fR
+.RS 4
+suppress per test binary output
+.RE
+.PP
+\fB\-\-verbose\fR
+.RS 4
+report success per testcase
+.RE
+.SH "SEE ALSO"
+.PP
+\fBgtester-report\fR(1)

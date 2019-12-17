@@ -1,0 +1,616 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>UNIX-specific utilities and integration: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-utilities.html" title="GLib Utilities">
+<link rel="prev" href="glib-Testing.html" title="Testing">
+<link rel="next" href="glib-Windows-Compatibility-Functions.html" title="Windows Compatibility Functions">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-UNIX-specific-utilities-and-integration.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-utilities.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Testing.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-Windows-Compatibility-Functions.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-UNIX-specific-utilities-and-integration"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-UNIX-specific-utilities-and-integration.top_of_page"></a>UNIX-specific utilities and integration</span></h2>
+<p>UNIX-specific utilities and integration — pipes, signal handling</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-UNIX-specific-utilities-and-integration.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-UNIX-specific-utilities-and-integration.html#g-unix-open-pipe" title="g_unix_open_pipe ()">g_unix_open_pipe</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-UNIX-specific-utilities-and-integration.html#g-unix-set-fd-nonblocking" title="g_unix_set_fd_nonblocking ()">g_unix_set_fd_nonblocking</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-UNIX-specific-utilities-and-integration.html#g-unix-signal-add" title="g_unix_signal_add ()">g_unix_signal_add</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-UNIX-specific-utilities-and-integration.html#g-unix-signal-add-full" title="g_unix_signal_add_full ()">g_unix_signal_add_full</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-The-Main-Event-Loop.html#GSource" title="struct GSource"><span class="returnvalue">GSource</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-UNIX-specific-utilities-and-integration.html#g-unix-signal-source-new" title="g_unix_signal_source_new ()">g_unix_signal_source_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="glib-UNIX-specific-utilities-and-integration.html#GUnixFDSourceFunc" title="GUnixFDSourceFunc ()">*GUnixFDSourceFunc</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-UNIX-specific-utilities-and-integration.html#g-unix-fd-add" title="g_unix_fd_add ()">g_unix_fd_add</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-UNIX-specific-utilities-and-integration.html#g-unix-fd-add-full" title="g_unix_fd_add_full ()">g_unix_fd_add_full</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-The-Main-Event-Loop.html#GSource" title="struct GSource"><span class="returnvalue">GSource</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-UNIX-specific-utilities-and-integration.html#g-unix-fd-source-new" title="g_unix_fd_source_new ()">g_unix_fd_source_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-UNIX-specific-utilities-and-integration.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-UNIX-specific-utilities-and-integration.html#G-UNIX-ERROR:CAPS" title="G_UNIX_ERROR">G_UNIX_ERROR</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-UNIX-specific-utilities-and-integration.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib-unix.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-UNIX-specific-utilities-and-integration.description"></a><h2>Description</h2>
+<p>Most of GLib is intended to be portable; in contrast, this set of
+functions is designed for programs which explicitly target UNIX,
+or are using it to build higher level abstractions which would be
+conditionally compiled if the platform matches G_OS_UNIX.</p>
+<p>To use these functions, you must explicitly include the
+"glib-unix.h" header.</p>
+</div>
+<div class="refsect1">
+<a name="glib-UNIX-specific-utilities-and-integration.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-unix-open-pipe"></a><h3>g_unix_open_pipe ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_unix_open_pipe (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> *fds</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> flags</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Similar to the UNIX <code class="function">pipe()</code> call, but on modern systems like Linux
+uses the <code class="function">pipe2()</code> system call, which atomically creates a pipe with
+the configured flags. The only supported flag currently is
+<code class="literal">FD_CLOEXEC</code>. If for example you want to configure <code class="literal">O_NONBLOCK</code>, that
+must still be done separately with <code class="function">fcntl()</code>.</p>
+<p>This function does not take <code class="literal">O_CLOEXEC</code>, it takes <code class="literal">FD_CLOEXEC</code> as if
+for <code class="function">fcntl()</code>; these are different on Linux/glibc.</p>
+<div class="refsect3">
+<a name="g-unix-open-pipe.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>fds</p></td>
+<td class="parameter_description"><p>Array of two integers</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>Bitfield of file descriptor flags, as for <code class="function">fcntl()</code></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-open-pipe.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> on success, <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> if not (and errno will be set).</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-set-fd-nonblocking"></a><h3>g_unix_set_fd_nonblocking ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_unix_set_fd_nonblocking (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> fd</code></em>,
+                           <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="type">gboolean</span></a> nonblock</code></em>,
+                           <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Control the non-blocking state of the given file descriptor,
+according to <em class="parameter"><code>nonblock</code></em>
+. On most systems this uses <code class="literal">O_NONBLOCK</code>, but
+on some older ones may use <code class="literal">O_NDELAY</code>.</p>
+<div class="refsect3">
+<a name="g-unix-set-fd-nonblocking.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>fd</p></td>
+<td class="parameter_description"><p>A file descriptor</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>nonblock</p></td>
+<td class="parameter_description"><p>If <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>, set the descriptor to be non-blocking</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-set-fd-nonblocking.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if successful</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-signal-add"></a><h3>g_unix_signal_add ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_unix_signal_add (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> signum</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-The-Main-Event-Loop.html#GSourceFunc" title="GSourceFunc ()"><span class="type">GSourceFunc</span></a> handler</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>A convenience function for <a class="link" href="glib-UNIX-specific-utilities-and-integration.html#g-unix-signal-source-new" title="g_unix_signal_source_new ()"><code class="function">g_unix_signal_source_new()</code></a>, which
+attaches to the default <a class="link" href="glib-The-Main-Event-Loop.html#GMainContext" title="GMainContext"><span class="type">GMainContext</span></a>.  You can remove the watch
+using <a class="link" href="glib-The-Main-Event-Loop.html#g-source-remove" title="g_source_remove ()"><code class="function">g_source_remove()</code></a>.</p>
+<div class="refsect3">
+<a name="g-unix-signal-add.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>signum</p></td>
+<td class="parameter_description"><p>Signal number</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>handler</p></td>
+<td class="parameter_description"><p>Callback</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>Data for <em class="parameter"><code>handler</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-signal-add.returns"></a><h4>Returns</h4>
+<p> An ID (greater than 0) for the event source</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-signal-add-full"></a><h3>g_unix_signal_add_full ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_unix_signal_add_full (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> priority</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> signum</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-The-Main-Event-Loop.html#GSourceFunc" title="GSourceFunc ()"><span class="type">GSourceFunc</span></a> handler</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Datasets.html#GDestroyNotify" title="GDestroyNotify ()"><span class="type">GDestroyNotify</span></a> notify</code></em>);</pre>
+<p>A convenience function for <a class="link" href="glib-UNIX-specific-utilities-and-integration.html#g-unix-signal-source-new" title="g_unix_signal_source_new ()"><code class="function">g_unix_signal_source_new()</code></a>, which
+attaches to the default <a class="link" href="glib-The-Main-Event-Loop.html#GMainContext" title="GMainContext"><span class="type">GMainContext</span></a>.  You can remove the watch
+using <a class="link" href="glib-The-Main-Event-Loop.html#g-source-remove" title="g_source_remove ()"><code class="function">g_source_remove()</code></a>.</p>
+<p><span class="annotation">[<acronym title="Rename the original symbol's name to SYMBOL."><span class="acronym">rename-to</span></acronym> g_unix_signal_add]</span></p>
+<div class="refsect3">
+<a name="g-unix-signal-add-full.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>priority</p></td>
+<td class="parameter_description"><p>the priority of the signal source. Typically this will be in
+the range between <a class="link" href="glib-The-Main-Event-Loop.html#G-PRIORITY-DEFAULT:CAPS" title="G_PRIORITY_DEFAULT"><span class="type">G_PRIORITY_DEFAULT</span></a> and <a class="link" href="glib-The-Main-Event-Loop.html#G-PRIORITY-HIGH:CAPS" title="G_PRIORITY_HIGH"><span class="type">G_PRIORITY_HIGH</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>signum</p></td>
+<td class="parameter_description"><p>Signal number</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>handler</p></td>
+<td class="parameter_description"><p>Callback</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>Data for <em class="parameter"><code>handler</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>notify</p></td>
+<td class="parameter_description"><p><a class="link" href="glib-Datasets.html#GDestroyNotify" title="GDestroyNotify ()"><span class="type">GDestroyNotify</span></a> for <em class="parameter"><code>handler</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-signal-add-full.returns"></a><h4>Returns</h4>
+<p> An ID (greater than 0) for the event source</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-signal-source-new"></a><h3>g_unix_signal_source_new ()</h3>
+<pre class="programlisting"><a class="link" href="glib-The-Main-Event-Loop.html#GSource" title="struct GSource"><span class="returnvalue">GSource</span></a> *
+g_unix_signal_source_new (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> signum</code></em>);</pre>
+<p>Create a <a class="link" href="glib-The-Main-Event-Loop.html#GSource" title="struct GSource"><span class="type">GSource</span></a> that will be dispatched upon delivery of the UNIX
+signal <em class="parameter"><code>signum</code></em>
+.  In GLib versions before 2.36, only <code class="literal">SIGHUP</code>, <code class="literal">SIGINT</code>,
+<code class="literal">SIGTERM</code> can be monitored.  In GLib 2.36, <code class="literal">SIGUSR1</code> and <code class="literal">SIGUSR2</code>
+were added. In GLib 2.54, <code class="literal">SIGWINCH</code> was added.</p>
+<p>Note that unlike the UNIX default, all sources which have created a
+watch will be dispatched, regardless of which underlying thread
+invoked <a class="link" href="glib-UNIX-specific-utilities-and-integration.html#g-unix-signal-source-new" title="g_unix_signal_source_new ()"><code class="function">g_unix_signal_source_new()</code></a>.</p>
+<p>For example, an effective use of this function is to handle <code class="literal">SIGTERM</code>
+cleanly; flushing any outstanding files, and then calling
+<a class="link" href="glib-The-Main-Event-Loop.html#g-main-loop-quit" title="g_main_loop_quit ()"><code class="function">g_main_loop_quit()</code></a>.  It is not safe to do any of this a regular
+UNIX signal handler; your handler may be invoked while <code class="function">malloc()</code> or
+another library function is running, causing reentrancy if you
+attempt to use it from the handler.  None of the GLib/GObject API
+is safe against this kind of reentrancy.</p>
+<p>The interaction of this source when combined with native UNIX
+functions like <code class="function">sigprocmask()</code> is not defined.</p>
+<p>The source will not initially be associated with any <a class="link" href="glib-The-Main-Event-Loop.html#GMainContext" title="GMainContext"><span class="type">GMainContext</span></a>
+and must be added to one with <a class="link" href="glib-The-Main-Event-Loop.html#g-source-attach" title="g_source_attach ()"><code class="function">g_source_attach()</code></a> before it will be
+executed.</p>
+<div class="refsect3">
+<a name="g-unix-signal-source-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>signum</p></td>
+<td class="parameter_description"><p>A signal number</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-signal-source-new.returns"></a><h4>Returns</h4>
+<p> A newly created <a class="link" href="glib-The-Main-Event-Loop.html#GSource" title="struct GSource"><span class="type">GSource</span></a></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GUnixFDSourceFunc"></a><h3>GUnixFDSourceFunc ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+<span class="c_punctuation">(</span>*GUnixFDSourceFunc<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> fd</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOCondition" title="enum GIOCondition"><span class="type">GIOCondition</span></a> condition</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>The type of functions to be called when a UNIX fd watch source
+triggers.</p>
+<div class="refsect3">
+<a name="GUnixFDSourceFunc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>fd</p></td>
+<td class="parameter_description"><p>the fd that triggered the event</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>condition</p></td>
+<td class="parameter_description"><p>the IO conditions reported on <em class="parameter"><code>fd</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data passed to <a class="link" href="glib-UNIX-specific-utilities-and-integration.html#g-unix-fd-add" title="g_unix_fd_add ()"><code class="function">g_unix_fd_add()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="GUnixFDSourceFunc.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> if the source should be removed</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-fd-add"></a><h3>g_unix_fd_add ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_unix_fd_add (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> fd</code></em>,
+               <em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOCondition" title="enum GIOCondition"><span class="type">GIOCondition</span></a> condition</code></em>,
+               <em class="parameter"><code><a class="link" href="glib-UNIX-specific-utilities-and-integration.html#GUnixFDSourceFunc" title="GUnixFDSourceFunc ()"><span class="type">GUnixFDSourceFunc</span></a> function</code></em>,
+               <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Sets a function to be called when the IO condition, as specified by
+<em class="parameter"><code>condition</code></em>
+ becomes true for <em class="parameter"><code>fd</code></em>
+.</p>
+<p><em class="parameter"><code>function</code></em>
+ will be called when the specified IO condition becomes
+<a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>.  The function is expected to clear whatever event caused the
+IO condition to become true and return <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> in order to be notified
+when it happens again.  If <em class="parameter"><code>function</code></em>
+ returns <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> then the watch
+will be cancelled.</p>
+<p>The return value of this function can be passed to <a class="link" href="glib-The-Main-Event-Loop.html#g-source-remove" title="g_source_remove ()"><code class="function">g_source_remove()</code></a>
+to cancel the watch at any time that it exists.</p>
+<p>The source will never close the fd -- you must do it yourself.</p>
+<div class="refsect3">
+<a name="g-unix-fd-add.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>fd</p></td>
+<td class="parameter_description"><p>a file descriptor</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>condition</p></td>
+<td class="parameter_description"><p>IO conditions to watch for on <em class="parameter"><code>fd</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>function</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-UNIX-specific-utilities-and-integration.html#GUnixFDSourceFunc" title="GUnixFDSourceFunc ()"><span class="type">GUnixFDSourceFunc</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>data to pass to <em class="parameter"><code>function</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-fd-add.returns"></a><h4>Returns</h4>
+<p> the ID (greater than 0) of the event source</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-36.html#api-index-2.36">2.36</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-fd-add-full"></a><h3>g_unix_fd_add_full ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_unix_fd_add_full (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> priority</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> fd</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOCondition" title="enum GIOCondition"><span class="type">GIOCondition</span></a> condition</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-UNIX-specific-utilities-and-integration.html#GUnixFDSourceFunc" title="GUnixFDSourceFunc ()"><span class="type">GUnixFDSourceFunc</span></a> function</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-Datasets.html#GDestroyNotify" title="GDestroyNotify ()"><span class="type">GDestroyNotify</span></a> notify</code></em>);</pre>
+<p>Sets a function to be called when the IO condition, as specified by
+<em class="parameter"><code>condition</code></em>
+ becomes true for <em class="parameter"><code>fd</code></em>
+.</p>
+<p>This is the same as <a class="link" href="glib-UNIX-specific-utilities-and-integration.html#g-unix-fd-add" title="g_unix_fd_add ()"><code class="function">g_unix_fd_add()</code></a>, except that it allows you to
+specify a non-default priority and a provide a <a class="link" href="glib-Datasets.html#GDestroyNotify" title="GDestroyNotify ()"><span class="type">GDestroyNotify</span></a> for
+<em class="parameter"><code>user_data</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-unix-fd-add-full.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>priority</p></td>
+<td class="parameter_description"><p>the priority of the source</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>fd</p></td>
+<td class="parameter_description"><p>a file descriptor</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>condition</p></td>
+<td class="parameter_description"><p>IO conditions to watch for on <em class="parameter"><code>fd</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>function</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-UNIX-specific-utilities-and-integration.html#GUnixFDSourceFunc" title="GUnixFDSourceFunc ()"><span class="type">GUnixFDSourceFunc</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>data to pass to <em class="parameter"><code>function</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>notify</p></td>
+<td class="parameter_description"><p>function to call when the idle is removed, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-fd-add-full.returns"></a><h4>Returns</h4>
+<p> the ID (greater than 0) of the event source</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-36.html#api-index-2.36">2.36</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-fd-source-new"></a><h3>g_unix_fd_source_new ()</h3>
+<pre class="programlisting"><a class="link" href="glib-The-Main-Event-Loop.html#GSource" title="struct GSource"><span class="returnvalue">GSource</span></a> *
+g_unix_fd_source_new (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> fd</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-IO-Channels.html#GIOCondition" title="enum GIOCondition"><span class="type">GIOCondition</span></a> condition</code></em>);</pre>
+<p>Creates a <a class="link" href="glib-The-Main-Event-Loop.html#GSource" title="struct GSource"><span class="type">GSource</span></a> to watch for a particular IO condition on a file
+descriptor.</p>
+<p>The source will never close the fd -- you must do it yourself.</p>
+<div class="refsect3">
+<a name="g-unix-fd-source-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>fd</p></td>
+<td class="parameter_description"><p>a file descriptor</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>condition</p></td>
+<td class="parameter_description"><p>IO conditions to watch for on <em class="parameter"><code>fd</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-fd-source-new.returns"></a><h4>Returns</h4>
+<p> the newly created <a class="link" href="glib-The-Main-Event-Loop.html#GSource" title="struct GSource"><span class="type">GSource</span></a></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-36.html#api-index-2.36">2.36</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-UNIX-specific-utilities-and-integration.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="G-UNIX-ERROR:CAPS"></a><h3>G_UNIX_ERROR</h3>
+<pre class="programlisting">#define G_UNIX_ERROR (g_unix_error_quark())
+</pre>
+<p>Error domain for API in the g_unix_ namespace. Note that there is no
+exported enumeration mapping <code class="literal">errno</code>. Instead, all functions ensure that
+<code class="literal">errno</code> is relevant. The code for all <a class="link" href="glib-UNIX-specific-utilities-and-integration.html#G-UNIX-ERROR:CAPS" title="G_UNIX_ERROR"><span class="type">G_UNIX_ERROR</span></a> is always 0, and the
+error message is always generated via <a class="link" href="glib-String-Utility-Functions.html#g-strerror" title="g_strerror ()"><code class="function">g_strerror()</code></a>.</p>
+<p>It is expected that most code will not look at <code class="literal">errno</code> from these APIs.
+Important cases where one would want to differentiate between errors are
+already covered by existing cross-platform GLib API, such as e.g. <span class="type">GFile</span>
+wrapping <code class="literal">ENOENT</code>. However, it is provided for completeness, at least.</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

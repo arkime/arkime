@@ -1,0 +1,406 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Object properties: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="chapter-gobject.html" title="The GObject base class">
+<link rel="prev" href="gobject-memory.html" title="Object memory management">
+<link rel="next" href="chapter-signal.html" title="The GObject messaging system">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="chapter-gobject.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gobject-memory.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="chapter-signal.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="gobject-properties"></a>Object properties</h2></div></div></div>
+<p>
+      One of GObject's nice features is its generic get/set mechanism for object
+      properties. When an object
+      is instantiated, the object's <code class="function">class_init</code> handler should be used to register
+      the object's properties with <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-class-install-properties" title="g_object_class_install_properties ()">g_object_class_install_properties</a></code>.
+    </p>
+<p>
+      The best way to understand how object properties work is by looking at a real example
+      of how it is used:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="comment">/************************************************/</span>
+<span class="comment">/* Implementation                               */</span>
+<span class="comment">/************************************************/</span>
+
+<span class="keyword">enum</span>
+<span class="cbracket">{</span>
+<span class="normal">  PROP_FILENAME </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">,</span>
+<span class="normal">  PROP_ZOOM_LEVEL</span><span class="symbol">,</span>
+<span class="normal">  N_PROPERTIES</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="usertype">GParamSpec</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">obj_properties</span><span class="symbol">[</span><span class="normal">N_PROPERTIES</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">}</span><span class="symbol">;</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_file_set_property</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GObject</span><span class="normal">      </span><span class="symbol">*</span><span class="normal">object</span><span class="symbol">,</span>
+<span class="normal">                          </span><span class="usertype">guint</span><span class="normal">         property_id</span><span class="symbol">,</span>
+<span class="normal">                          </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">GValue</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">value</span><span class="symbol">,</span>
+<span class="normal">                          </span><span class="usertype">GParamSpec</span><span class="normal">   </span><span class="symbol">*</span><span class="normal">pspec</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">ViewerFile</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">self </span><span class="symbol">=</span><span class="normal"> </span><span class="function">VIEWER_FILE</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">object</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">switch</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">property_id</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">case</span><span class="normal"> PROP_FILENAME</span><span class="symbol">:</span>
+<span class="normal">      </span><span class="function"><a href="../glib-Memory-Allocation.html#g-free">g_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">-&gt;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">filename</span><span class="symbol">);</span>
+<span class="normal">      self</span><span class="symbol">-&gt;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">filename </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-value-dup-string">g_value_dup_string</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">value</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"filename: %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> self</span><span class="symbol">-&gt;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">filename</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">break</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="keyword">case</span><span class="normal"> PROP_ZOOM_LEVEL</span><span class="symbol">:</span>
+<span class="normal">      self</span><span class="symbol">-&gt;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">zoom_level </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-value-get-uint">g_value_get_uint</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">value</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"zoom level: %u</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> self</span><span class="symbol">-&gt;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">zoom_level</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">break</span><span class="symbol">;</span>
+
+<span class="label">    default:</span>
+<span class="normal">      </span><span class="comment">/* We don't have any other property... */</span>
+<span class="normal">      </span><span class="function"><a href="gobject-The-Base-Object-Type.html#G-OBJECT-WARN-INVALID-PROPERTY-ID:CAPS">G_OBJECT_WARN_INVALID_PROPERTY_ID</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">object</span><span class="symbol">,</span><span class="normal"> property_id</span><span class="symbol">,</span><span class="normal"> pspec</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_file_get_property</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GObject</span><span class="normal">    </span><span class="symbol">*</span><span class="normal">object</span><span class="symbol">,</span>
+<span class="normal">                          </span><span class="usertype">guint</span><span class="normal">       property_id</span><span class="symbol">,</span>
+<span class="normal">                          </span><span class="usertype">GValue</span><span class="normal">     </span><span class="symbol">*</span><span class="normal">value</span><span class="symbol">,</span>
+<span class="normal">                          </span><span class="usertype">GParamSpec</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">pspec</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">ViewerFile</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">self </span><span class="symbol">=</span><span class="normal"> </span><span class="function">VIEWER_FILE</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">object</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">switch</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">property_id</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">case</span><span class="normal"> PROP_FILENAME</span><span class="symbol">:</span>
+<span class="normal">      </span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-value-set-string">g_value_set_string</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">value</span><span class="symbol">,</span><span class="normal"> self</span><span class="symbol">-&gt;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">filename</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">break</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="keyword">case</span><span class="normal"> PROP_ZOOM_LEVEL</span><span class="symbol">:</span>
+<span class="normal">      </span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-value-set-uint">g_value_set_uint</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">value</span><span class="symbol">,</span><span class="normal"> self</span><span class="symbol">-&gt;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">zoom_level</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">break</span><span class="symbol">;</span>
+
+<span class="label">    default:</span>
+<span class="normal">      </span><span class="comment">/* We don't have any other property... */</span>
+<span class="normal">      </span><span class="function"><a href="gobject-The-Base-Object-Type.html#G-OBJECT-WARN-INVALID-PROPERTY-ID:CAPS">G_OBJECT_WARN_INVALID_PROPERTY_ID</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">object</span><span class="symbol">,</span><span class="normal"> property_id</span><span class="symbol">,</span><span class="normal"> pspec</span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_file_class_init</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerFileClass</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">klass</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GObjectClass</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">object_class </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gobject-The-Base-Object-Type.html#G-OBJECT-CLASS:CAPS">G_OBJECT_CLASS</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">klass</span><span class="symbol">);</span>
+
+<span class="normal">  object_class</span><span class="symbol">-&gt;</span><span class="normal">set_property </span><span class="symbol">=</span><span class="normal"> viewer_file_set_property</span><span class="symbol">;</span>
+<span class="normal">  object_class</span><span class="symbol">-&gt;</span><span class="normal">get_property </span><span class="symbol">=</span><span class="normal"> viewer_file_get_property</span><span class="symbol">;</span>
+
+<span class="normal">  obj_properties</span><span class="symbol">[</span><span class="normal">PROP_FILENAME</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span>
+<span class="normal">    </span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-param-spec-string">g_param_spec_string</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"filename"</span><span class="symbol">,</span>
+<span class="normal">                         </span><span class="string">"Filename"</span><span class="symbol">,</span>
+<span class="normal">                         </span><span class="string">"Name of the file to load and display from."</span><span class="symbol">,</span>
+<span class="normal">                         <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a>  </span><span class="comment">/* default value */</span><span class="symbol">,</span>
+<span class="normal">                         <a href="gobject-GParamSpec.html#G-PARAM-CONSTRUCT-ONLY:CAPS">G_PARAM_CONSTRUCT_ONLY</a> </span><span class="symbol">|</span><span class="normal"> <a href="gobject-GParamSpec.html#G-PARAM-READWRITE:CAPS">G_PARAM_READWRITE</a></span><span class="symbol">));</span>
+
+<span class="normal">  obj_properties</span><span class="symbol">[</span><span class="normal">PROP_ZOOM_LEVEL</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span>
+<span class="normal">    </span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-param-spec-uint">g_param_spec_uint</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"zoom-level"</span><span class="symbol">,</span>
+<span class="normal">                       </span><span class="string">"Zoom level"</span><span class="symbol">,</span>
+<span class="normal">                       </span><span class="string">"Zoom level to view the file at."</span><span class="symbol">,</span>
+<span class="normal">                       </span><span class="number">0</span><span class="normal">  </span><span class="comment">/* minimum value */</span><span class="symbol">,</span>
+<span class="normal">                       </span><span class="number">10</span><span class="normal"> </span><span class="comment">/* maximum value */</span><span class="symbol">,</span>
+<span class="normal">                       </span><span class="number">2</span><span class="normal">  </span><span class="comment">/* default value */</span><span class="symbol">,</span>
+<span class="normal">                       <a href="gobject-GParamSpec.html#G-PARAM-READWRITE:CAPS">G_PARAM_READWRITE</a></span><span class="symbol">));</span>
+
+<span class="normal">  </span><span class="function"><a href="gobject-The-Base-Object-Type.html#g-object-class-install-properties">g_object_class_install_properties</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">object_class</span><span class="symbol">,</span>
+<span class="normal">                                     N_PROPERTIES</span><span class="symbol">,</span>
+<span class="normal">                                     obj_properties</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="comment">/************************************************/</span>
+<span class="comment">/* Use                                          */</span>
+<span class="comment">/************************************************/</span>
+
+<span class="usertype">ViewerFile</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">file</span><span class="symbol">;</span>
+<span class="usertype">GValue</span><span class="normal"> val </span><span class="symbol">=</span><span class="normal"> <a href="gobject-Generic-values.html#G-VALUE-INIT:CAPS">G_VALUE_INIT</a></span><span class="symbol">;</span>
+
+<span class="normal">file </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gobject-The-Base-Object-Type.html#g-object-new">g_object_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">VIEWER_TYPE_FILE</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="function"><a href="gobject-Generic-values.html#g-value-init">g_value_init</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">val</span><span class="symbol">,</span><span class="normal"> <a href="gobject-Type-Information.html#G-TYPE-UINT:CAPS">G_TYPE_UINT</a></span><span class="symbol">);</span>
+<span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-value-set-char">g_value_set_char</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">val</span><span class="symbol">,</span><span class="normal"> </span><span class="number">11</span><span class="symbol">);</span>
+
+<span class="function"><a href="gobject-The-Base-Object-Type.html#g-object-set-property">g_object_set_property</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="gobject-The-Base-Object-Type.html#G-OBJECT:CAPS">G_OBJECT</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">file</span><span class="symbol">),</span><span class="normal"> </span><span class="string">"zoom-level"</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">val</span><span class="symbol">);</span>
+
+<span class="function"><a href="gobject-Generic-values.html#g-value-unset">g_value_unset</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">val</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+      The client code above looks simple but a lot of things happen under the hood:
+    </p>
+<p>
+      <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-set-property" title="g_object_set_property ()">g_object_set_property</a></code> first ensures a property
+      with this name was registered in <span class="emphasis"><em>file</em></span>'s <code class="function">class_init</code> handler. If so it walks the class hierarchy,
+      from bottom-most most-derived type, to top-most fundamental type to find the class
+      which registered that property. It then tries to convert the user-provided
+      <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a>
+      into a <span class="type">GValue</span> whose type is that of the associated property.
+    </p>
+<p>
+      If the user provides a <span class="type">signed char</span> <span class="type">GValue</span>, as is shown
+      here, and if the object's property was registered as an <span class="type">unsigned int</span>,
+      <code class="function"><a class="link" href="gobject-Generic-values.html#g-value-transform" title="g_value_transform ()">g_value_transform</a></code> will try to transform the input signed char into
+      an unsigned int. Of course, the success of the transformation depends on the availability
+      of the required transform function. In practice, there will almost always be a transformation
+      <a href="#ftn.id-1.3.4.6.5.5" class="footnote" name="id-1.3.4.6.5.5"><sup class="footnote">[2]</sup></a>
+      which matches and conversion will be carried out if needed.
+    </p>
+<p>
+      After transformation, the <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> is validated by 
+      <code class="function"><a class="link" href="gobject-GParamSpec.html#g-param-value-validate" title="g_param_value_validate ()">g_param_value_validate</a></code> which makes sure the user's
+      data stored in the <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> matches the characteristics specified by
+      the property's <a class="link" href="gobject-GParamSpec.html#GParamSpec" title="struct GParamSpec"><span class="type">GParamSpec</span></a>.
+      Here, the <a class="link" href="gobject-GParamSpec.html#GParamSpec" title="struct GParamSpec"><span class="type">GParamSpec</span></a> we 
+      provided in <code class="function">class_init</code> has a validation function which makes sure that the GValue
+      contains a value which respects the minimum and maximum bounds of the 
+      <a class="link" href="gobject-GParamSpec.html#GParamSpec" title="struct GParamSpec"><span class="type">GParamSpec</span></a>. In the example above, the client's GValue does not
+      respect these constraints (it is set to 11, while the maximum is 10). As such, the
+      <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-set-property" title="g_object_set_property ()">g_object_set_property</a></code> function will return with an error.
+    </p>
+<p>
+      If the user's GValue had been set to a valid value, <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-set-property" title="g_object_set_property ()">g_object_set_property</a></code>
+      would have proceeded with calling the object's
+      <code class="function">set_property</code> class method. Here, since our
+      implementation of <span class="type">ViewerFile</span> did override this method, execution would jump to
+      <code class="function">viewer_file_set_property</code> after having retrieved from the 
+      <a class="link" href="gobject-GParamSpec.html#GParamSpec" title="struct GParamSpec"><span class="type">GParamSpec</span></a> the <span class="emphasis"><em>param_id</em></span>
+      <a href="#ftn.id-1.3.4.6.7.7" class="footnote" name="id-1.3.4.6.7.7"><sup class="footnote">[3]</sup></a>
+      which had been stored by
+      <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-class-install-property" title="g_object_class_install_property ()">g_object_class_install_property</a></code>.
+    </p>
+<p>
+      Once the property has been set by the object's
+      <code class="function">set_property</code> class method, execution
+      returns to <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-set-property" title="g_object_set_property ()">g_object_set_property</a></code> which makes sure that
+      the "notify" signal is emitted on the object's instance with the changed property as
+      parameter unless notifications were frozen by <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-freeze-notify" title="g_object_freeze_notify ()">g_object_freeze_notify</a></code>.
+    </p>
+<p>
+      <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-thaw-notify" title="g_object_thaw_notify ()">g_object_thaw_notify</a></code> can be used to re-enable notification of 
+      property modifications through the
+      <a class="link" href="gobject-The-Base-Object-Type.html#GObject-notify" title="The “notify” signal"><span class="type">“notify”</span></a> signal. It is important to remember that
+      even if properties are changed while property change notification is frozen, the "notify"
+      signal will be emitted once for each of these changed properties as soon as the property
+      change notification is thawed: no property change is lost for the "notify"
+      signal, although multiple notifications for a single property are
+      compressed. Signals can only be delayed by the notification freezing
+      mechanism.
+    </p>
+<p>
+      It sounds like a tedious task to set up GValues every time when one wants to modify a property.
+      In practice one will rarely do this. The functions <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-set-property" title="g_object_set_property ()">g_object_set_property</a></code>
+      and <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-get-property" title="g_object_get_property ()">g_object_get_property</a></code>
+      are meant to be used by language bindings. For application there is an easier way and
+      that is described next.
+    </p>
+<div class="sect2">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="gobject-multi-properties"></a>Accessing multiple properties at once</h3></div></div></div>
+<p>
+        It is interesting to note that the <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-set" title="g_object_set ()">g_object_set</a></code> and 
+        <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-set-valist" title="g_object_set_valist ()">g_object_set_valist</a></code> (variadic version) functions can be used to set
+        multiple properties at once. The client code shown above can then be re-written as:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">ViewerFile</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">file</span><span class="symbol">;</span>
+<span class="normal">file </span><span class="symbol">=</span><span class="normal"> </span><span class="comment">/* */</span><span class="symbol">;</span>
+<span class="function"><a href="gobject-The-Base-Object-Type.html#g-object-set">g_object_set</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="gobject-The-Base-Object-Type.html#G-OBJECT:CAPS">G_OBJECT</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">file</span><span class="symbol">),</span>
+<span class="normal">              </span><span class="string">"zoom-level"</span><span class="symbol">,</span><span class="normal"> </span><span class="number">6</span><span class="symbol">,</span><span class="normal"> </span>
+<span class="normal">              </span><span class="string">"filename"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"~/some-file.txt"</span><span class="symbol">,</span><span class="normal"> </span>
+<span class="normal">              NULL</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+        This saves us from managing the GValues that we were needing to handle when using
+        <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-set-property" title="g_object_set_property ()">g_object_set_property</a></code>.
+        The code above will trigger one notify signal emission for each property modified.
+      </p>
+<p>
+        Equivalent <code class="function">_get</code> versions are also available:
+        <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-get" title="g_object_get ()">g_object_get</a></code>
+        and <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-get-valist" title="g_object_get_valist ()">g_object_get_valist</a></code> (variadic version) can be used to get numerous
+        properties at once.
+      </p>
+<p>
+        These high level functions have one drawback — they don't provide a return value.
+        One should pay attention to the argument types and ranges when using them.
+        A known source of errors is to pass a different type from what the
+        property expects; for instance, passing an integer when the property
+        expects a floating point value and thus shifting all subsequent parameters
+        by some number of bytes. Also forgetting the terminating
+        <code class="literal">NULL</code> will lead to undefined behaviour.
+      </p>
+<p>
+        This explains how <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-new" title="g_object_new ()">g_object_new</a></code>,
+        <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-newv" title="g_object_newv ()">g_object_newv</a></code> and <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-new-valist" title="g_object_new_valist ()">g_object_new_valist</a></code> 
+        work: they parse the user-provided variable number of parameters and invoke
+        <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-set" title="g_object_set ()">g_object_set</a></code> on the parameters only after the object has been successfully constructed.
+        The "notify" signal will be emitted for each property set.
+      </p>
+</div>
+<div class="footnotes">
+<br><hr style="width:100; text-align:left;margin-left: 0">
+<div id="ftn.id-1.3.4.6.5.5" class="footnote"><p><a href="#id-1.3.4.6.5.5" class="para"><sup class="para">[2] </sup></a>Its behaviour might not be what you expect but it is up to you to actually avoid
+          relying on these transformations.
+        </p></div>
+<div id="ftn.id-1.3.4.6.7.7" class="footnote"><p><a href="#id-1.3.4.6.7.7" class="para"><sup class="para">[3] </sup></a>
+          It should be noted that the param_id used here need only to uniquely identify each 
+          <a class="link" href="gobject-GParamSpec.html#GParamSpec" title="struct GParamSpec"><span class="type">GParamSpec</span></a> within the <span class="type">ViewerFileClass</span> such that the switch
+          used in the set and get methods actually works. Of course, this locally-unique 
+          integer is purely an optimization: it would have been possible to use a set of 
+          <span class="emphasis"><em>if (strcmp (a, b) == 0) {} else if (strcmp (a, b) == 0) {}</em></span> statements.
+        </p></div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

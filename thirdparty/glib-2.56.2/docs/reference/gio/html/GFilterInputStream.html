@@ -1,0 +1,247 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GFilterInputStream: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="streaming.html" title="Streaming I/O">
+<link rel="prev" href="GFileDescriptorBased.html" title="GFileDescriptorBased">
+<link rel="next" href="GFilterOutputStream.html" title="GFilterOutputStream">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GFilterInputStream.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GFilterInputStream.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GFilterInputStream.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="streaming.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GFileDescriptorBased.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GFilterOutputStream.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GFilterInputStream"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GFilterInputStream.top_of_page"></a>GFilterInputStream</span></h2>
+<p>GFilterInputStream — Filter Input Stream</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GFilterInputStream.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GInputStream.html" title="GInputStream"><span class="returnvalue">GInputStream</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GFilterInputStream.html#g-filter-input-stream-get-base-stream" title="g_filter_input_stream_get_base_stream ()">g_filter_input_stream_get_base_stream</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GFilterInputStream.html#g-filter-input-stream-get-close-base-stream" title="g_filter_input_stream_get_close_base_stream ()">g_filter_input_stream_get_close_base_stream</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GFilterInputStream.html#g-filter-input-stream-set-close-base-stream" title="g_filter_input_stream_set_close_base_stream ()">g_filter_input_stream_set_close_base_stream</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GFilterInputStream.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="property_type">
+<a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a> *</td>
+<td class="property_name"><a class="link" href="GFilterInputStream.html#GFilterInputStream--base-stream" title="The “base-stream” property">base-stream</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GFilterInputStream.html#GFilterInputStream--close-base-stream" title="The “close-base-stream” property">close-base-stream</a></td>
+<td class="property_flags">Read / Write / Construct</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GFilterInputStream.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GFilterInputStream.html#GFilterInputStream-struct" title="GFilterInputStream">GFilterInputStream</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GFilterInputStream.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> <a class="link" href="GInputStream.html" title="GInputStream">GInputStream</a>
+        <span class="lineart">╰──</span> GFilterInputStream
+            <span class="lineart">├──</span> <a class="link" href="GBufferedInputStream.html" title="GBufferedInputStream">GBufferedInputStream</a>
+            <span class="lineart">╰──</span> <a class="link" href="gio-GConverterInputstream.html#GConverterInputStream">GConverterInputStream</a>
+</pre>
+</div>
+<div class="refsect1">
+<a name="GFilterInputStream.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GFilterInputStream.description"></a><h2>Description</h2>
+<p>Base class for input stream implementations that perform some
+kind of filtering operation on a base stream. Typical examples
+of filtering operations are character set conversion, compression
+and byte order flipping.</p>
+</div>
+<div class="refsect1">
+<a name="GFilterInputStream.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-filter-input-stream-get-base-stream"></a><h3>g_filter_input_stream_get_base_stream ()</h3>
+<pre class="programlisting"><a class="link" href="GInputStream.html" title="GInputStream"><span class="returnvalue">GInputStream</span></a> *
+g_filter_input_stream_get_base_stream (<em class="parameter"><code><a class="link" href="GFilterInputStream.html" title="GFilterInputStream"><span class="type">GFilterInputStream</span></a> *stream</code></em>);</pre>
+<p>Gets the base stream for the filter stream.</p>
+<div class="refsect3">
+<a name="g-filter-input-stream-get-base-stream.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GFilterInputStream.html" title="GFilterInputStream"><span class="type">GFilterInputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-filter-input-stream-get-base-stream.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a>. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-filter-input-stream-get-close-base-stream"></a><h3>g_filter_input_stream_get_close_base_stream ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_filter_input_stream_get_close_base_stream
+                               (<em class="parameter"><code><a class="link" href="GFilterInputStream.html" title="GFilterInputStream"><span class="type">GFilterInputStream</span></a> *stream</code></em>);</pre>
+<p>Returns whether the base stream will be closed when <em class="parameter"><code>stream</code></em>
+ is
+closed.</p>
+<div class="refsect3">
+<a name="g-filter-input-stream-get-close-base-stream.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GFilterInputStream.html" title="GFilterInputStream"><span class="type">GFilterInputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-filter-input-stream-get-close-base-stream.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the base stream will be closed.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-filter-input-stream-set-close-base-stream"></a><h3>g_filter_input_stream_set_close_base_stream ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_filter_input_stream_set_close_base_stream
+                               (<em class="parameter"><code><a class="link" href="GFilterInputStream.html" title="GFilterInputStream"><span class="type">GFilterInputStream</span></a> *stream</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> close_base</code></em>);</pre>
+<p>Sets whether the base stream will be closed when <em class="parameter"><code>stream</code></em>
+ is closed.</p>
+<div class="refsect3">
+<a name="g-filter-input-stream-set-close-base-stream.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GFilterInputStream.html" title="GFilterInputStream"><span class="type">GFilterInputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>close_base</p></td>
+<td class="parameter_description"><p><a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> to close the base stream.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GFilterInputStream.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GFilterInputStream-struct"></a><h3>GFilterInputStream</h3>
+<pre class="programlisting">typedef struct _GFilterInputStream GFilterInputStream;</pre>
+<p>A base class for all input streams that work on an underlying stream.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GFilterInputStream.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GFilterInputStream--base-stream"></a><h3>The <code class="literal">“base-stream”</code> property</h3>
+<pre class="programlisting">  “base-stream”              <a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a> *</pre>
+<p>The underlying base stream on which the io ops will be done.</p>
+<p>Flags: Read / Write / Construct Only</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GFilterInputStream--close-base-stream"></a><h3>The <code class="literal">“close-base-stream”</code> property</h3>
+<pre class="programlisting">  “close-base-stream”        <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>If the base stream should be closed when the filter stream is closed.</p>
+<p>Flags: Read / Write / Construct</p>
+<p>Default value: TRUE</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

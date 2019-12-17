@@ -1,0 +1,23 @@
+[Desktop Entry]
+Terminal=false
+Name=Okular
+Name[ca]=Okular
+Name[ca@valencia]=Okular
+Name[en_GB]=Okular
+Name[eo]=Okular
+Name[pt]=Okular
+Name[pt_BR]=Okular
+GenericName=Document Viewer
+GenericName[ca]=Visualitzador de documents
+GenericName[ca@valencia]=Visualitzador de documents
+GenericName[en_GB]=Document Viewer
+GenericName[eo]=Dokumenta rigardilo
+GenericName[pt]=Visualizador de Documentos
+GenericName[pt_BR]=Visualizador de documentos
+Exec=true %U %i -caption %c
+Icon=okular
+Type=Application
+X-DocPath=okular/index.html
+InitialPreference=7
+Categories=Qt;KDE;Graphics;VectorGraphics;Viewer;
+MimeType=application/vnd.kde.okular-archive;

@@ -1,0 +1,2082 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Message Output and Debugging Functions: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-core.html" title="GLib Core Application Support">
+<link rel="prev" href="glib-Warnings-and-Assertions.html" title="Warnings and Assertions">
+<link rel="next" href="glib-utilities.html" title="GLib Utilities">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-Message-Logging.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-core.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Warnings-and-Assertions.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-utilities.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Message-Logging"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Message-Logging.top_of_page"></a>Message Output and Debugging Functions</span></h2>
+<p>Message Output and Debugging Functions — functions to output messages and help debug applications</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-Message-Logging.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="glib-Message-Logging.html#GLogFunc" title="GLogFunc ()">*GLogFunc</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-log" title="g_log ()">g_log</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-logv" title="g_logv ()">g_logv</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-message" title="g_message()">g_message</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-warning" title="g_warning()">g_warning</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-critical" title="g_critical()">g_critical</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-error" title="g_error()">g_error</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-info" title="g_info()">g_info</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-debug" title="g_debug()">g_debug</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-log-set-handler" title="g_log_set_handler ()">g_log_set_handler</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-log-set-handler-full" title="g_log_set_handler_full ()">g_log_set_handler_full</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-log-remove-handler" title="g_log_remove_handler ()">g_log_remove_handler</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="returnvalue">GLogLevelFlags</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-log-set-always-fatal" title="g_log_set_always_fatal ()">g_log_set_always_fatal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="returnvalue">GLogLevelFlags</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-log-set-fatal-mask" title="g_log_set_fatal_mask ()">g_log_set_fatal_mask</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-log-default-handler" title="g_log_default_handler ()">g_log_default_handler</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Message-Logging.html#GLogFunc" title="GLogFunc ()"><span class="returnvalue">GLogFunc</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-log-set-default-handler" title="g_log_set_default_handler ()">g_log_set_default_handler</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()">g_log_structured</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-log-variant" title="g_log_variant ()">g_log_variant</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-log-structured-array" title="g_log_structured_array ()">g_log_structured_array</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Message-Logging.html#G-DEBUG-HERE:CAPS" title="G_DEBUG_HERE">G_DEBUG_HERE</a></td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Message-Logging.html#GLogWriterOutput" title="enum GLogWriterOutput"><span class="returnvalue">GLogWriterOutput</span></a>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="glib-Message-Logging.html#GLogWriterFunc" title="GLogWriterFunc ()">*GLogWriterFunc</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-log-set-writer-func" title="g_log_set_writer_func ()">g_log_set_writer_func</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-log-writer-supports-color" title="g_log_writer_supports_color ()">g_log_writer_supports_color</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-log-writer-is-journald" title="g_log_writer_is_journald ()">g_log_writer_is_journald</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-log-writer-format-fields" title="g_log_writer_format_fields ()">g_log_writer_format_fields</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Message-Logging.html#GLogWriterOutput" title="enum GLogWriterOutput"><span class="returnvalue">GLogWriterOutput</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-log-writer-journald" title="g_log_writer_journald ()">g_log_writer_journald</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Message-Logging.html#GLogWriterOutput" title="enum GLogWriterOutput"><span class="returnvalue">GLogWriterOutput</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-log-writer-standard-streams" title="g_log_writer_standard_streams ()">g_log_writer_standard_streams</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Message-Logging.html#GLogWriterOutput" title="enum GLogWriterOutput"><span class="returnvalue">GLogWriterOutput</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Message-Logging.html#g-log-writer-default" title="g_log_writer_default ()">g_log_writer_default</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Message-Logging.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Message-Logging.html#G-LOG-DOMAIN:CAPS" title="G_LOG_DOMAIN">G_LOG_DOMAIN</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Message-Logging.html#G-LOG-FATAL-MASK:CAPS" title="G_LOG_FATAL_MASK">G_LOG_FATAL_MASK</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Message-Logging.html#G-LOG-LEVEL-USER-SHIFT:CAPS" title="G_LOG_LEVEL_USER_SHIFT">G_LOG_LEVEL_USER_SHIFT</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags">GLogLevelFlags</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="glib-Message-Logging.html#GLogField" title="struct GLogField">GLogField</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="glib-Message-Logging.html#GLogWriterOutput" title="enum GLogWriterOutput">GLogWriterOutput</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Message-Logging.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Message-Logging.description"></a><h2>Description</h2>
+<p>These functions provide support for outputting messages.</p>
+<p>The g_return family of macros (<a class="link" href="glib-Warnings-and-Assertions.html#g-return-if-fail" title="g_return_if_fail()"><code class="function">g_return_if_fail()</code></a>,
+<a class="link" href="glib-Warnings-and-Assertions.html#g-return-val-if-fail" title="g_return_val_if_fail()"><code class="function">g_return_val_if_fail()</code></a>, <a class="link" href="glib-Warnings-and-Assertions.html#g-return-if-reached" title="g_return_if_reached"><code class="function">g_return_if_reached()</code></a>,
+<a class="link" href="glib-Warnings-and-Assertions.html#g-return-val-if-reached" title="g_return_val_if_reached()"><code class="function">g_return_val_if_reached()</code></a>) should only be used for programming
+errors, a typical use case is checking for invalid parameters at
+the beginning of a public function. They should not be used if
+you just mean "if (error) return", they should only be used if
+you mean "if (bug in program) return". The program behavior is
+generally considered undefined after one of these checks fails.
+They are not intended for normal control flow, only to give a
+perhaps-helpful warning before giving up.</p>
+<p>Structured logging output is supported using <a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a>. This differs
+from the traditional <a class="link" href="glib-Message-Logging.html#g-log" title="g_log ()"><code class="function">g_log()</code></a> API in that log messages are handled as a
+collection of key–value pairs representing individual pieces of information,
+rather than as a single string containing all the information in an arbitrary
+format.</p>
+<p>The convenience macros <a class="link" href="glib-Message-Logging.html#g-info" title="g_info()"><code class="function">g_info()</code></a>, <a class="link" href="glib-Message-Logging.html#g-message" title="g_message()"><code class="function">g_message()</code></a>, <a class="link" href="glib-Message-Logging.html#g-debug" title="g_debug()"><code class="function">g_debug()</code></a>, <a class="link" href="glib-Message-Logging.html#g-warning" title="g_warning()"><code class="function">g_warning()</code></a> and <a class="link" href="glib-Message-Logging.html#g-error" title="g_error()"><code class="function">g_error()</code></a>
+will use the traditional <a class="link" href="glib-Message-Logging.html#g-log" title="g_log ()"><code class="function">g_log()</code></a> API unless you define the symbol
+<code class="literal">G_LOG_USE_STRUCTURED</code> before including <code class="literal">glib.h</code>. But note that even messages
+logged through the traditional <a class="link" href="glib-Message-Logging.html#g-log" title="g_log ()"><code class="function">g_log()</code></a> API are ultimatively passed to
+<a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a>, so that all log messages end up in same destination.
+If <code class="literal">G_LOG_USE_STRUCTURED</code> is defined, <a class="link" href="glib-Testing.html#g-test-expect-message" title="g_test_expect_message ()"><code class="function">g_test_expect_message()</code></a> will become
+ineffective for the wrapper macros <a class="link" href="glib-Message-Logging.html#g-warning" title="g_warning()"><code class="function">g_warning()</code></a> and friends (see
+<a class="link" href="glib-Message-Logging.html#testing-for-messages" title="Testing for Messages">Testing for Messages</a>).</p>
+<p>The support for structured logging was motivated by the following needs (some
+of which were supported previously; others weren’t):</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>Support for multiple logging levels.</p></li>
+<li class="listitem"><p>Structured log support with the ability to add <code class="literal">MESSAGE_ID</code>s (see
+<a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a>).</p></li>
+<li class="listitem"><p>Moving the responsibility for filtering log messages from the program to
+the log viewer — instead of libraries and programs installing log handlers
+(with <a class="link" href="glib-Message-Logging.html#g-log-set-handler" title="g_log_set_handler ()"><code class="function">g_log_set_handler()</code></a>) which filter messages before output, all log
+messages are outputted, and the log viewer program (such as <code class="literal">journalctl</code>)
+must filter them. This is based on the idea that bugs are sometimes hard
+to reproduce, so it is better to log everything possible and then use
+tools to analyse the logs than it is to not be able to reproduce a bug to
+get additional log data. Code which uses logging in performance-critical
+sections should compile out the <a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a> calls in
+release builds, and compile them in in debugging builds.</p></li>
+<li class="listitem"><p>A single writer function which handles all log messages in a process, from
+all libraries and program code; rather than multiple log handlers with
+poorly defined interactions between them. This allows a program to easily
+change its logging policy by changing the writer function, for example to
+log to an additional location or to change what logging output fallbacks
+are used. The log writer functions provided by GLib are exposed publicly
+so they can be used from programs’ log writers. This allows log writer
+policy and implementation to be kept separate.</p></li>
+<li class="listitem"><p>If a library wants to add standard information to all of its log messages
+(such as library state) or to redact private data (such as passwords or
+network credentials), it should use a wrapper function around its
+<a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a> calls or implement that in the single log writer
+function.</p></li>
+<li class="listitem"><p>If a program wants to pass context data from a <a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a> call to
+its log writer function so that, for example, it can use the correct
+server connection to submit logs to, that user data can be passed as a
+zero-length <a class="link" href="glib-Message-Logging.html#GLogField" title="struct GLogField"><span class="type">GLogField</span></a> to <a class="link" href="glib-Message-Logging.html#g-log-structured-array" title="g_log_structured_array ()"><code class="function">g_log_structured_array()</code></a>.</p></li>
+<li class="listitem"><p>Color output needed to be supported on the terminal, to make reading
+through logs easier.</p></li>
+</ul></div>
+<div class="refsect3">
+<a name="using-structured-logging"></a><h4>Using Structured Logging</h4>
+<p>To use structured logging (rather than the old-style logging), either use
+the <a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a> and <a class="link" href="glib-Message-Logging.html#g-log-structured-array" title="g_log_structured_array ()"><code class="function">g_log_structured_array()</code></a> functions; or define
+<code class="literal">G_LOG_USE_STRUCTURED</code> before including any GLib header, and use the
+<a class="link" href="glib-Message-Logging.html#g-message" title="g_message()"><code class="function">g_message()</code></a>, <a class="link" href="glib-Message-Logging.html#g-debug" title="g_debug()"><code class="function">g_debug()</code></a>, <a class="link" href="glib-Message-Logging.html#g-error" title="g_error()"><code class="function">g_error()</code></a> (etc.) macros.</p>
+<p>You do not need to define <code class="literal">G_LOG_USE_STRUCTURED</code> to use <a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a>,
+but it is a good idea to avoid confusion.</p>
+</div>
+<div class="refsect3">
+<a name="log-domains"></a><h4>Log Domains</h4>
+<p>Log domains may be used to broadly split up the origins of log messages.
+Typically, there are one or a few log domains per application or library.
+<a class="link" href="glib-Message-Logging.html#G-LOG-DOMAIN:CAPS" title="G_LOG_DOMAIN"><code class="literal">G_LOG_DOMAIN</code></a> should be used to define the default log domain for the current
+compilation unit — it is typically defined at the top of a source file, or in
+the preprocessor flags for a group of source files.</p>
+<p>Log domains must be unique, and it is recommended that they are the
+application or library name, optionally followed by a hyphen and a sub-domain
+name. For example, <code class="literal">bloatpad</code> or <code class="literal">bloatpad-io</code>.</p>
+</div>
+<div class="refsect3">
+<a name="debug-message-output"></a><h4>Debug Message Output</h4>
+<p>The default log functions (<a class="link" href="glib-Message-Logging.html#g-log-default-handler" title="g_log_default_handler ()"><code class="function">g_log_default_handler()</code></a> for the old-style API and
+<a class="link" href="glib-Message-Logging.html#g-log-writer-default" title="g_log_writer_default ()"><code class="function">g_log_writer_default()</code></a> for the structured API) both drop debug and
+informational messages by default, unless the log domains of those messages
+are listed in the <code class="literal">G_MESSAGES_DEBUG</code> environment variable (or it is set to
+<code class="literal">all</code>).</p>
+<p>It is recommended that custom log writer functions re-use the
+<code class="literal">G_MESSAGES_DEBUG</code> environment variable, rather than inventing a custom one,
+so that developers can re-use the same debugging techniques and tools across
+projects.</p>
+</div>
+<div class="refsect3">
+<a name="testing-for-messages"></a><h4>Testing for Messages</h4>
+<p>With the old <a class="link" href="glib-Message-Logging.html#g-log" title="g_log ()"><code class="function">g_log()</code></a> API, <a class="link" href="glib-Testing.html#g-test-expect-message" title="g_test_expect_message ()"><code class="function">g_test_expect_message()</code></a> and
+<a class="link" href="glib-Testing.html#g-test-assert-expected-messages" title="g_test_assert_expected_messages"><code class="function">g_test_assert_expected_messages()</code></a> could be used in simple cases to check
+whether some code under test had emitted a given log message. These
+functions have been deprecated with the structured logging API, for several
+reasons:</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>They relied on an internal queue which was too inflexible for many use
+cases, where messages might be emitted in several orders, some
+messages might not be emitted deterministically, or messages might be
+emitted by unrelated log domains.</p></li>
+<li class="listitem"><p>They do not support structured log fields.</p></li>
+<li class="listitem"><p>Examining the log output of code is a bad approach to testing it, and
+while it might be necessary for legacy code which uses <a class="link" href="glib-Message-Logging.html#g-log" title="g_log ()"><code class="function">g_log()</code></a>, it should
+be avoided for new code using <a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a>.</p></li>
+</ul></div>
+<p>They will continue to work as before if <a class="link" href="glib-Message-Logging.html#g-log" title="g_log ()"><code class="function">g_log()</code></a> is in use (and
+<code class="literal">G_LOG_USE_STRUCTURED</code> is not defined). They will do nothing if used with the
+structured logging API.</p>
+<p>Examining the log output of code is discouraged: libraries should not emit to
+<code class="literal">stderr</code> during defined behaviour, and hence this should not be tested. If
+the log emissions of a library during undefined behaviour need to be tested,
+they should be limited to asserting that the library aborts and prints a
+suitable error message before aborting. This should be done with
+<a class="link" href="glib-Testing.html#g-test-trap-assert-stderr" title="g_test_trap_assert_stderr()"><code class="function">g_test_trap_assert_stderr()</code></a>.</p>
+<p>If it is really necessary to test the structured log messages emitted by a
+particular piece of code – and the code cannot be restructured to be more
+suitable to more conventional unit testing – you should write a custom log
+writer function (see <a class="link" href="glib-Message-Logging.html#g-log-set-writer-func" title="g_log_set_writer_func ()"><code class="function">g_log_set_writer_func()</code></a>) which appends all log messages
+to a queue. When you want to check the log messages, examine and clear the
+queue, ignoring irrelevant log messages (for example, from log domains other
+than the one under test).</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Message-Logging.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="GLogFunc"></a><h3>GLogFunc ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+<span class="c_punctuation">(</span>*GLogFunc<span class="c_punctuation">)</span> (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *log_domain</code></em>,
+             <em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a> log_level</code></em>,
+             <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *message</code></em>,
+             <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Specifies the prototype of log handler functions.</p>
+<p>The default log handler, <a class="link" href="glib-Message-Logging.html#g-log-default-handler" title="g_log_default_handler ()"><code class="function">g_log_default_handler()</code></a>, automatically appends a
+new-line character to <em class="parameter"><code>message</code></em>
+ when printing it. It is advised that any
+custom log handler functions behave similarly, so that logging calls in user
+code do not need modifying to add a new-line character to the message if the
+log handler is changed.</p>
+<p>This is not used if structured logging is enabled; see
+<a class="link" href="glib-Message-Logging.html#using-structured-logging" title="Using Structured Logging">Using Structured Logging</a>.</p>
+<div class="refsect3">
+<a name="GLogFunc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>log_domain</p></td>
+<td class="parameter_description"><p>the log domain of the message</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>log_level</p></td>
+<td class="parameter_description"><p>the log level of the message (including the
+fatal and recursion flags)</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>the message to process</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data, set in <a class="link" href="glib-Message-Logging.html#g-log-set-handler" title="g_log_set_handler ()"><code class="function">g_log_set_handler()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-log"></a><h3>g_log ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_log (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *log_domain</code></em>,
+       <em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a> log_level</code></em>,
+       <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *format</code></em>,
+       <em class="parameter"><code>...</code></em>);</pre>
+<p>Logs an error or debugging message.</p>
+<p>If the log level has been set as fatal, the <code class="function">abort()</code>
+function is called to terminate the program.</p>
+<p>If <a class="link" href="glib-Message-Logging.html#g-log-default-handler" title="g_log_default_handler ()"><code class="function">g_log_default_handler()</code></a> is used as the log handler function, a new-line
+character will automatically be appended to @..., and need not be entered
+manually.</p>
+<p>If <a class="link" href="glib-Message-Logging.html#using-structured-logging" title="Using Structured Logging">structured logging is enabled</a> this will
+output via the structured log writer function (see <a class="link" href="glib-Message-Logging.html#g-log-set-writer-func" title="g_log_set_writer_func ()"><code class="function">g_log_set_writer_func()</code></a>).</p>
+<div class="refsect3">
+<a name="g-log.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>log_domain</p></td>
+<td class="parameter_description"><p>the log domain, usually <a class="link" href="glib-Message-Logging.html#G-LOG-DOMAIN:CAPS" title="G_LOG_DOMAIN"><span class="type">G_LOG_DOMAIN</span></a>, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>
+for the default. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>log_level</p></td>
+<td class="parameter_description"><p>the log level, either from <a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a>
+or a user-defined level</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>format</p></td>
+<td class="parameter_description"><p>the message format. See the <code class="function">printf()</code> documentation</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>the parameters to insert into the format string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-logv"></a><h3>g_logv ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_logv (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *log_domain</code></em>,
+        <em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a> log_level</code></em>,
+        <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *format</code></em>,
+        <em class="parameter"><code><span class="type">va_list</span> args</code></em>);</pre>
+<p>Logs an error or debugging message.</p>
+<p>If the log level has been set as fatal, the <code class="function">abort()</code>
+function is called to terminate the program.</p>
+<p>If <a class="link" href="glib-Message-Logging.html#g-log-default-handler" title="g_log_default_handler ()"><code class="function">g_log_default_handler()</code></a> is used as the log handler function, a new-line
+character will automatically be appended to @..., and need not be entered
+manually.</p>
+<p>If <a class="link" href="glib-Message-Logging.html#using-structured-logging" title="Using Structured Logging">structured logging is enabled</a> this will
+output via the structured log writer function (see <a class="link" href="glib-Message-Logging.html#g-log-set-writer-func" title="g_log_set_writer_func ()"><code class="function">g_log_set_writer_func()</code></a>).</p>
+<div class="refsect3">
+<a name="g-logv.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>log_domain</p></td>
+<td class="parameter_description"><p>the log domain, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> for the default ""
+application domain. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>log_level</p></td>
+<td class="parameter_description"><p>the log level</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>format</p></td>
+<td class="parameter_description"><p>the message format. See the <code class="function">printf()</code> documentation</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>args</p></td>
+<td class="parameter_description"><p>the parameters to insert into the format string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-message"></a><h3>g_message()</h3>
+<pre class="programlisting">#define             g_message(...)</pre>
+<p>A convenience function/macro to log a normal message.</p>
+<p>If <a class="link" href="glib-Message-Logging.html#g-log-default-handler" title="g_log_default_handler ()"><code class="function">g_log_default_handler()</code></a> is used as the log handler function, a new-line
+character will automatically be appended to @..., and need not be entered
+manually.</p>
+<p>If structured logging is enabled, this will use <a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a>;
+otherwise it will use <a class="link" href="glib-Message-Logging.html#g-log" title="g_log ()"><code class="function">g_log()</code></a>. See
+<a class="link" href="glib-Message-Logging.html#using-structured-logging" title="Using Structured Logging">Using Structured Logging</a>.</p>
+<div class="refsect3">
+<a name="g-message.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>format string, followed by parameters to insert
+into the format string (as with <code class="function">printf()</code>)</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-warning"></a><h3>g_warning()</h3>
+<pre class="programlisting">#define             g_warning(...)</pre>
+<p>A convenience function/macro to log a warning message. The message should
+typically *not* be translated to the user's language.</p>
+<p>This is not intended for end user error reporting. Use of <a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> is
+preferred for that instead, as it allows calling functions to perform actions
+conditional on the type of error.</p>
+<p>You can make warnings fatal at runtime by setting the <code class="literal">G_DEBUG</code>
+environment variable (see
+<a class="ulink" href="glib-running.html" target="_top">Running GLib Applications</a>):</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal">G_DEBUG</span><span class="symbol">=</span><span class="normal">fatal</span><span class="symbol">-</span><span class="usertype">warnings</span><span class="normal"> gdb </span><span class="symbol">./</span><span class="normal">my</span><span class="symbol">-</span><span class="normal">program</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>Any unrelated failures can be skipped over in
+<a class="ulink" href="https://www.gnu.org/software/gdb/" target="_top">gdb</a> using the <code class="literal">continue</code> command.</p>
+<p>If <a class="link" href="glib-Message-Logging.html#g-log-default-handler" title="g_log_default_handler ()"><code class="function">g_log_default_handler()</code></a> is used as the log handler function,
+a newline character will automatically be appended to @..., and
+need not be entered manually.</p>
+<p>If structured logging is enabled, this will use <a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a>;
+otherwise it will use <a class="link" href="glib-Message-Logging.html#g-log" title="g_log ()"><code class="function">g_log()</code></a>. See
+<a class="link" href="glib-Message-Logging.html#using-structured-logging" title="Using Structured Logging">Using Structured Logging</a>.</p>
+<div class="refsect3">
+<a name="g-warning.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>format string, followed by parameters to insert
+into the format string (as with <code class="function">printf()</code>)</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-critical"></a><h3>g_critical()</h3>
+<pre class="programlisting">#define             g_critical(...)</pre>
+<p>Logs a "critical warning" (<a class="link" href="glib-Message-Logging.html#G-LOG-LEVEL-CRITICAL:CAPS"><span class="type">G_LOG_LEVEL_CRITICAL</span></a>).
+It's more or less application-defined what constitutes
+a critical vs. a regular warning. You could call
+<a class="link" href="glib-Message-Logging.html#g-log-set-always-fatal" title="g_log_set_always_fatal ()"><code class="function">g_log_set_always_fatal()</code></a> to make critical warnings exit
+the program, then use <a class="link" href="glib-Message-Logging.html#g-critical" title="g_critical()"><code class="function">g_critical()</code></a> for fatal errors, for
+example.</p>
+<p>You can also make critical warnings fatal at runtime by
+setting the <code class="literal">G_DEBUG</code> environment variable (see
+<a class="ulink" href="glib-running.html" target="_top">Running GLib Applications</a>):</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal">G_DEBUG</span><span class="symbol">=</span><span class="normal">fatal</span><span class="symbol">-</span><span class="usertype">warnings</span><span class="normal"> gdb </span><span class="symbol">./</span><span class="normal">my</span><span class="symbol">-</span><span class="normal">program</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>Any unrelated failures can be skipped over in
+<a class="ulink" href="https://www.gnu.org/software/gdb/" target="_top">gdb</a> using the <code class="literal">continue</code> command.</p>
+<p>The message should typically *not* be translated to the
+user's language.</p>
+<p>If <a class="link" href="glib-Message-Logging.html#g-log-default-handler" title="g_log_default_handler ()"><code class="function">g_log_default_handler()</code></a> is used as the log handler function, a new-line
+character will automatically be appended to @..., and need not be entered
+manually.</p>
+<p>If structured logging is enabled, this will use <a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a>;
+otherwise it will use <a class="link" href="glib-Message-Logging.html#g-log" title="g_log ()"><code class="function">g_log()</code></a>. See
+<a class="link" href="glib-Message-Logging.html#using-structured-logging" title="Using Structured Logging">Using Structured Logging</a>.</p>
+<div class="refsect3">
+<a name="g-critical.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>format string, followed by parameters to insert
+into the format string (as with <code class="function">printf()</code>)</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-error"></a><h3>g_error()</h3>
+<pre class="programlisting">#define             g_error(...)</pre>
+<p>A convenience function/macro to log an error message. The message should
+typically *not* be translated to the user's language.</p>
+<p>This is not intended for end user error reporting. Use of <a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> is
+preferred for that instead, as it allows calling functions to perform actions
+conditional on the type of error.</p>
+<p>Error messages are always fatal, resulting in a call to
+<code class="function">abort()</code> to terminate the application. This function will
+result in a core dump; don't use it for errors you expect.
+Using this function indicates a bug in your program, i.e.
+an assertion failure.</p>
+<p>If <a class="link" href="glib-Message-Logging.html#g-log-default-handler" title="g_log_default_handler ()"><code class="function">g_log_default_handler()</code></a> is used as the log handler function, a new-line
+character will automatically be appended to @..., and need not be entered
+manually.</p>
+<p>If structured logging is enabled, this will use <a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a>;
+otherwise it will use <a class="link" href="glib-Message-Logging.html#g-log" title="g_log ()"><code class="function">g_log()</code></a>. See
+<a class="link" href="glib-Message-Logging.html#using-structured-logging" title="Using Structured Logging">Using Structured Logging</a>.</p>
+<div class="refsect3">
+<a name="g-error.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>format string, followed by parameters to insert
+into the format string (as with <code class="function">printf()</code>)</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-info"></a><h3>g_info()</h3>
+<pre class="programlisting">#define             g_info(...)</pre>
+<p>A convenience function/macro to log an informational message. Seldom used.</p>
+<p>If <a class="link" href="glib-Message-Logging.html#g-log-default-handler" title="g_log_default_handler ()"><code class="function">g_log_default_handler()</code></a> is used as the log handler function, a new-line
+character will automatically be appended to @..., and need not be entered
+manually.</p>
+<p>Such messages are suppressed by the <a class="link" href="glib-Message-Logging.html#g-log-default-handler" title="g_log_default_handler ()"><code class="function">g_log_default_handler()</code></a> and
+<a class="link" href="glib-Message-Logging.html#g-log-writer-default" title="g_log_writer_default ()"><code class="function">g_log_writer_default()</code></a> unless the <code class="literal">G_MESSAGES_DEBUG</code> environment variable is
+set appropriately.</p>
+<p>If structured logging is enabled, this will use <a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a>;
+otherwise it will use <a class="link" href="glib-Message-Logging.html#g-log" title="g_log ()"><code class="function">g_log()</code></a>. See
+<a class="link" href="glib-Message-Logging.html#using-structured-logging" title="Using Structured Logging">Using Structured Logging</a>.</p>
+<div class="refsect3">
+<a name="g-info.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>format string, followed by parameters to insert
+into the format string (as with <code class="function">printf()</code>)</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-debug"></a><h3>g_debug()</h3>
+<pre class="programlisting">#define             g_debug(...)</pre>
+<p>A convenience function/macro to log a debug message. The message should
+typically *not* be translated to the user's language.</p>
+<p>If <a class="link" href="glib-Message-Logging.html#g-log-default-handler" title="g_log_default_handler ()"><code class="function">g_log_default_handler()</code></a> is used as the log handler function, a new-line
+character will automatically be appended to @..., and need not be entered
+manually.</p>
+<p>Such messages are suppressed by the <a class="link" href="glib-Message-Logging.html#g-log-default-handler" title="g_log_default_handler ()"><code class="function">g_log_default_handler()</code></a> and
+<a class="link" href="glib-Message-Logging.html#g-log-writer-default" title="g_log_writer_default ()"><code class="function">g_log_writer_default()</code></a> unless the <code class="literal">G_MESSAGES_DEBUG</code> environment variable is
+set appropriately.</p>
+<p>If structured logging is enabled, this will use <a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a>;
+otherwise it will use <a class="link" href="glib-Message-Logging.html#g-log" title="g_log ()"><code class="function">g_log()</code></a>. See
+<a class="link" href="glib-Message-Logging.html#using-structured-logging" title="Using Structured Logging">Using Structured Logging</a>.</p>
+<div class="refsect3">
+<a name="g-debug.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>format string, followed by parameters to insert
+into the format string (as with <code class="function">printf()</code>)</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-6.html#api-index-2.6">2.6</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-log-set-handler"></a><h3>g_log_set_handler ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_log_set_handler (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *log_domain</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a> log_levels</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogFunc" title="GLogFunc ()"><span class="type">GLogFunc</span></a> log_func</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Sets the log handler for a domain and a set of log levels.
+To handle fatal and recursive messages the <em class="parameter"><code>log_levels</code></em>
+ parameter
+must be combined with the <a class="link" href="glib-Message-Logging.html#G-LOG-FLAG-FATAL:CAPS"><span class="type">G_LOG_FLAG_FATAL</span></a> and <a class="link" href="glib-Message-Logging.html#G-LOG-FLAG-RECURSION:CAPS"><span class="type">G_LOG_FLAG_RECURSION</span></a>
+bit flags.</p>
+<p>Note that since the <a class="link" href="glib-Message-Logging.html#G-LOG-LEVEL-ERROR:CAPS"><span class="type">G_LOG_LEVEL_ERROR</span></a> log level is always fatal, if
+you want to set a handler for this log level you must combine it with
+<a class="link" href="glib-Message-Logging.html#G-LOG-FLAG-FATAL:CAPS"><span class="type">G_LOG_FLAG_FATAL</span></a>.</p>
+<p>This has no effect if structured logging is enabled; see
+<a class="link" href="glib-Message-Logging.html#using-structured-logging" title="Using Structured Logging">Using Structured Logging</a>.</p>
+<p>Here is an example for adding a log handler for all warning messages
+in the default domain:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="function"><a href="glib-Message-Logging.html#g-log-set-handler">g_log_set_handler</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> <a href="glib-Message-Logging.html#G-LOG-LEVEL-WARNING:CAPS">G_LOG_LEVEL_WARNING</a> </span><span class="symbol">|</span><span class="normal"> <a href="glib-Message-Logging.html#G-LOG-FLAG-FATAL:CAPS">G_LOG_FLAG_FATAL</a></span>
+<span class="normal">                   </span><span class="symbol">|</span><span class="normal"> <a href="glib-Message-Logging.html#G-LOG-FLAG-RECURSION:CAPS">G_LOG_FLAG_RECURSION</a></span><span class="symbol">,</span><span class="normal"> my_log_handler</span><span class="symbol">,</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>This example adds a log handler for all critical messages from GTK+:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="function"><a href="glib-Message-Logging.html#g-log-set-handler">g_log_set_handler</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Gtk"</span><span class="symbol">,</span><span class="normal"> <a href="glib-Message-Logging.html#G-LOG-LEVEL-CRITICAL:CAPS">G_LOG_LEVEL_CRITICAL</a> </span><span class="symbol">|</span><span class="normal"> <a href="glib-Message-Logging.html#G-LOG-FLAG-FATAL:CAPS">G_LOG_FLAG_FATAL</a></span>
+<span class="normal">                   </span><span class="symbol">|</span><span class="normal"> <a href="glib-Message-Logging.html#G-LOG-FLAG-RECURSION:CAPS">G_LOG_FLAG_RECURSION</a></span><span class="symbol">,</span><span class="normal"> my_log_handler</span><span class="symbol">,</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>This example adds a log handler for all messages from GLib:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="function"><a href="glib-Message-Logging.html#g-log-set-handler">g_log_set_handler</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"GLib"</span><span class="symbol">,</span><span class="normal"> <a href="glib-Message-Logging.html#G-LOG-LEVEL-MASK:CAPS">G_LOG_LEVEL_MASK</a> </span><span class="symbol">|</span><span class="normal"> <a href="glib-Message-Logging.html#G-LOG-FLAG-FATAL:CAPS">G_LOG_FLAG_FATAL</a></span>
+<span class="normal">                   </span><span class="symbol">|</span><span class="normal"> <a href="glib-Message-Logging.html#G-LOG-FLAG-RECURSION:CAPS">G_LOG_FLAG_RECURSION</a></span><span class="symbol">,</span><span class="normal"> my_log_handler</span><span class="symbol">,</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="g-log-set-handler.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>log_domain</p></td>
+<td class="parameter_description"><p>the log domain, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> for the default ""
+application domain. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>log_levels</p></td>
+<td class="parameter_description"><p>the log levels to apply the log handler for.
+To handle fatal and recursive messages as well, combine
+the log levels with the <a class="link" href="glib-Message-Logging.html#G-LOG-FLAG-FATAL:CAPS"><span class="type">G_LOG_FLAG_FATAL</span></a> and
+<a class="link" href="glib-Message-Logging.html#G-LOG-FLAG-RECURSION:CAPS"><span class="type">G_LOG_FLAG_RECURSION</span></a> bit flags.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>log_func</p></td>
+<td class="parameter_description"><p>the log handler function</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>data passed to the log handler</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-log-set-handler.returns"></a><h4>Returns</h4>
+<p> the id of the new handler</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-log-set-handler-full"></a><h3>g_log_set_handler_full ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_log_set_handler_full (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *log_domain</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a> log_levels</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogFunc" title="GLogFunc ()"><span class="type">GLogFunc</span></a> log_func</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Datasets.html#GDestroyNotify" title="GDestroyNotify ()"><span class="type">GDestroyNotify</span></a> destroy</code></em>);</pre>
+<p>Like <a class="link" href="glib-Message-Logging.html#g-log-set-handler" title="g_log_set_handler ()"><code class="function">g_log_set_handler()</code></a>, but takes a destroy notify for the <em class="parameter"><code>user_data</code></em>
+.</p>
+<p>This has no effect if structured logging is enabled; see
+<a class="link" href="glib-Message-Logging.html#using-structured-logging" title="Using Structured Logging">Using Structured Logging</a>.</p>
+<p><span class="annotation">[<acronym title="Rename the original symbol's name to SYMBOL."><span class="acronym">rename-to</span></acronym> g_log_set_handler]</span></p>
+<div class="refsect3">
+<a name="g-log-set-handler-full.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>log_domain</p></td>
+<td class="parameter_description"><p>the log domain, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> for the default ""
+application domain. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>log_levels</p></td>
+<td class="parameter_description"><p>the log levels to apply the log handler for.
+To handle fatal and recursive messages as well, combine
+the log levels with the <a class="link" href="glib-Message-Logging.html#G-LOG-FLAG-FATAL:CAPS"><span class="type">G_LOG_FLAG_FATAL</span></a> and
+<a class="link" href="glib-Message-Logging.html#G-LOG-FLAG-RECURSION:CAPS"><span class="type">G_LOG_FLAG_RECURSION</span></a> bit flags.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>log_func</p></td>
+<td class="parameter_description"><p>the log handler function</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>data passed to the log handler</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>destroy</p></td>
+<td class="parameter_description"><p>destroy notify for <em class="parameter"><code>user_data</code></em>
+, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-log-set-handler-full.returns"></a><h4>Returns</h4>
+<p> the id of the new handler</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-log-remove-handler"></a><h3>g_log_remove_handler ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_log_remove_handler (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *log_domain</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="type">guint</span></a> handler_id</code></em>);</pre>
+<p>Removes the log handler.</p>
+<p>This has no effect if structured logging is enabled; see
+<a class="link" href="glib-Message-Logging.html#using-structured-logging" title="Using Structured Logging">Using Structured Logging</a>.</p>
+<div class="refsect3">
+<a name="g-log-remove-handler.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>log_domain</p></td>
+<td class="parameter_description"><p>the log domain</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>handler_id</p></td>
+<td class="parameter_description"><p>the id of the handler, which was returned
+in <a class="link" href="glib-Message-Logging.html#g-log-set-handler" title="g_log_set_handler ()"><code class="function">g_log_set_handler()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-log-set-always-fatal"></a><h3>g_log_set_always_fatal ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="returnvalue">GLogLevelFlags</span></a>
+g_log_set_always_fatal (<em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a> fatal_mask</code></em>);</pre>
+<p>Sets the message levels which are always fatal, in any log domain.
+When a message with any of these levels is logged the program terminates.
+You can only set the levels defined by GLib to be fatal.
+<a class="link" href="glib-Message-Logging.html#G-LOG-LEVEL-ERROR:CAPS"><code class="literal">G_LOG_LEVEL_ERROR</code></a> is always fatal.</p>
+<p>You can also make some message levels fatal at runtime by setting
+the <code class="literal">G_DEBUG</code> environment variable (see
+<a class="ulink" href="glib-running.html" target="_top">Running GLib Applications</a>).</p>
+<p>Libraries should not call this function, as it affects all messages logged
+by a process, including those from other libraries.</p>
+<p>Structured log messages (using <a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a> and
+<a class="link" href="glib-Message-Logging.html#g-log-structured-array" title="g_log_structured_array ()"><code class="function">g_log_structured_array()</code></a>) are fatal only if the default log writer is used;
+otherwise it is up to the writer function to determine which log messages
+are fatal. See <a class="link" href="glib-Message-Logging.html#using-structured-logging" title="Using Structured Logging">Using Structured Logging</a>.</p>
+<div class="refsect3">
+<a name="g-log-set-always-fatal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>fatal_mask</p></td>
+<td class="parameter_description"><p>the mask containing bits set for each level
+of error which is to be fatal</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-log-set-always-fatal.returns"></a><h4>Returns</h4>
+<p> the old fatal mask</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-log-set-fatal-mask"></a><h3>g_log_set_fatal_mask ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="returnvalue">GLogLevelFlags</span></a>
+g_log_set_fatal_mask (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *log_domain</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a> fatal_mask</code></em>);</pre>
+<p>Sets the log levels which are fatal in the given domain.
+<a class="link" href="glib-Message-Logging.html#G-LOG-LEVEL-ERROR:CAPS"><code class="literal">G_LOG_LEVEL_ERROR</code></a> is always fatal.</p>
+<p>This has no effect on structured log messages (using <a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a> or
+<a class="link" href="glib-Message-Logging.html#g-log-structured-array" title="g_log_structured_array ()"><code class="function">g_log_structured_array()</code></a>). To change the fatal behaviour for specific log
+messages, programs must install a custom log writer function using
+<a class="link" href="glib-Message-Logging.html#g-log-set-writer-func" title="g_log_set_writer_func ()"><code class="function">g_log_set_writer_func()</code></a>. See
+<a class="link" href="glib-Message-Logging.html#using-structured-logging" title="Using Structured Logging">Using Structured Logging</a>.</p>
+<div class="refsect3">
+<a name="g-log-set-fatal-mask.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>log_domain</p></td>
+<td class="parameter_description"><p>the log domain</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>fatal_mask</p></td>
+<td class="parameter_description"><p>the new fatal mask</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-log-set-fatal-mask.returns"></a><h4>Returns</h4>
+<p> the old fatal mask for the log domain</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-log-default-handler"></a><h3>g_log_default_handler ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_log_default_handler (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *log_domain</code></em>,
+                       <em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a> log_level</code></em>,
+                       <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *message</code></em>,
+                       <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> unused_data</code></em>);</pre>
+<p>The default log handler set up by GLib; <a class="link" href="glib-Message-Logging.html#g-log-set-default-handler" title="g_log_set_default_handler ()"><code class="function">g_log_set_default_handler()</code></a>
+allows to install an alternate default log handler.
+This is used if no log handler has been set for the particular log
+domain and log level combination. It outputs the message to stderr
+or stdout and if the log level is fatal it calls <code class="function">abort()</code>. It automatically
+prints a new-line character after the message, so one does not need to be
+manually included in <em class="parameter"><code>message</code></em>
+.</p>
+<p>The behavior of this log handler can be influenced by a number of
+environment variables:</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p><code class="literal">G_MESSAGES_PREFIXED</code>: A :-separated list of log levels for which
+messages should be prefixed by the program name and PID of the
+aplication.</p></li>
+<li class="listitem"><p><code class="literal">G_MESSAGES_DEBUG</code>: A space-separated list of log domains for
+which debug and informational messages are printed. By default
+these messages are not printed.</p></li>
+</ul></div>
+<p>stderr is used for levels <a class="link" href="glib-Message-Logging.html#G-LOG-LEVEL-ERROR:CAPS"><code class="literal">G_LOG_LEVEL_ERROR</code></a>, <a class="link" href="glib-Message-Logging.html#G-LOG-LEVEL-CRITICAL:CAPS"><code class="literal">G_LOG_LEVEL_CRITICAL</code></a>,
+<a class="link" href="glib-Message-Logging.html#G-LOG-LEVEL-WARNING:CAPS"><code class="literal">G_LOG_LEVEL_WARNING</code></a> and <a class="link" href="glib-Message-Logging.html#G-LOG-LEVEL-MESSAGE:CAPS"><code class="literal">G_LOG_LEVEL_MESSAGE</code></a>. stdout is used for
+the rest.</p>
+<p>This has no effect if structured logging is enabled; see
+<a class="link" href="glib-Message-Logging.html#using-structured-logging" title="Using Structured Logging">Using Structured Logging</a>.</p>
+<div class="refsect3">
+<a name="g-log-default-handler.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>log_domain</p></td>
+<td class="parameter_description"><p>the log domain of the message, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> for the
+default "" application domain. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>log_level</p></td>
+<td class="parameter_description"><p>the level of the message</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>the message. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>unused_data</p></td>
+<td class="parameter_description"><p>data passed from <a class="link" href="glib-Message-Logging.html#g-log" title="g_log ()"><code class="function">g_log()</code></a> which is unused. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-log-set-default-handler"></a><h3>g_log_set_default_handler ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Message-Logging.html#GLogFunc" title="GLogFunc ()"><span class="returnvalue">GLogFunc</span></a>
+g_log_set_default_handler (<em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogFunc" title="GLogFunc ()"><span class="type">GLogFunc</span></a> log_func</code></em>,
+                           <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Installs a default log handler which is used if no
+log handler has been set for the particular log domain
+and log level combination. By default, GLib uses
+<a class="link" href="glib-Message-Logging.html#g-log-default-handler" title="g_log_default_handler ()"><code class="function">g_log_default_handler()</code></a> as default log handler.</p>
+<p>This has no effect if structured logging is enabled; see
+<a class="link" href="glib-Message-Logging.html#using-structured-logging" title="Using Structured Logging">Using Structured Logging</a>.</p>
+<div class="refsect3">
+<a name="g-log-set-default-handler.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>log_func</p></td>
+<td class="parameter_description"><p>the log handler function</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>data passed to the log handler</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-log-set-default-handler.returns"></a><h4>Returns</h4>
+<p> the previous default log handler</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-6.html#api-index-2.6">2.6</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-log-structured"></a><h3>g_log_structured ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_log_structured (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *log_domain</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a> log_level</code></em>,
+                  <em class="parameter"><code>...</code></em>);</pre>
+<p>Log a message with structured data. The message will be passed through to
+the log writer set by the application using <a class="link" href="glib-Message-Logging.html#g-log-set-writer-func" title="g_log_set_writer_func ()"><code class="function">g_log_set_writer_func()</code></a>. If the
+message is fatal (i.e. its log level is <a class="link" href="glib-Message-Logging.html#G-LOG-LEVEL-ERROR:CAPS"><code class="literal">G_LOG_LEVEL_ERROR</code></a>), the program will
+be aborted at the end of this function. If the log writer returns
+<a class="link" href="glib-Message-Logging.html#G-LOG-WRITER-UNHANDLED:CAPS"><code class="literal">G_LOG_WRITER_UNHANDLED</code></a> (failure), no other fallback writers will be tried.
+See the documentation for <a class="link" href="glib-Message-Logging.html#GLogWriterFunc" title="GLogWriterFunc ()"><span class="type">GLogWriterFunc</span></a> for information on chaining
+writers.</p>
+<p>The structured data is provided as key–value pairs, where keys are UTF-8
+strings, and values are arbitrary pointers — typically pointing to UTF-8
+strings, but that is not a requirement. To pass binary (non-nul-terminated)
+structured data, use <a class="link" href="glib-Message-Logging.html#g-log-structured-array" title="g_log_structured_array ()"><code class="function">g_log_structured_array()</code></a>. The keys for structured data
+should follow the <a class="ulink" href="https://www.freedesktop.org/software/systemd/man/systemd.journal-fields.html" target="_top">systemd journal
+fields</a>
+specification. It is suggested that custom keys are namespaced according to
+the code which sets them. For example, custom keys from GLib all have a
+<code class="literal">GLIB_</code> prefix.</p>
+<p>The <em class="parameter"><code>log_domain</code></em>
+ will be converted into a <code class="literal">GLIB_DOMAIN</code> field. <em class="parameter"><code>log_level</code></em>
+ will
+be converted into a
+<a class="ulink" href="https://www.freedesktop.org/software/systemd/man/systemd.journal-fields.html#PRIORITY=" target="_top"><code class="literal">PRIORITY</code></a>
+field. The format string will have its placeholders substituted for the provided
+values and be converted into a
+<a class="ulink" href="https://www.freedesktop.org/software/systemd/man/systemd.journal-fields.html#MESSAGE=" target="_top"><code class="literal">MESSAGE</code></a>
+field.</p>
+<p>Other fields you may commonly want to pass into this function:</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p><a class="ulink" href="https://www.freedesktop.org/software/systemd/man/systemd.journal-fields.html#MESSAGE_ID=" target="_top"><code class="literal">MESSAGE_ID</code></a></p></li>
+<li class="listitem"><p><a class="ulink" href="https://www.freedesktop.org/software/systemd/man/systemd.journal-fields.html#CODE_FILE=" target="_top"><code class="literal">CODE_FILE</code></a></p></li>
+<li class="listitem"><p><a class="ulink" href="https://www.freedesktop.org/software/systemd/man/systemd.journal-fields.html#CODE_LINE=" target="_top"><code class="literal">CODE_LINE</code></a></p></li>
+<li class="listitem"><p><a class="ulink" href="https://www.freedesktop.org/software/systemd/man/systemd.journal-fields.html#CODE_FUNC=" target="_top"><code class="literal">CODE_FUNC</code></a></p></li>
+<li class="listitem"><p><a class="ulink" href="https://www.freedesktop.org/software/systemd/man/systemd.journal-fields.html#ERRNO=" target="_top"><code class="literal">ERRNO</code></a></p></li>
+</ul></div>
+<p>Note that <code class="literal">CODE_FILE</code>, <code class="literal">CODE_LINE</code> and <code class="literal">CODE_FUNC</code> are automatically set by
+the logging macros, <a class="link" href="glib-Message-Logging.html#G-DEBUG-HERE:CAPS" title="G_DEBUG_HERE"><code class="function">G_DEBUG_HERE()</code></a>, <a class="link" href="glib-Message-Logging.html#g-message" title="g_message()"><code class="function">g_message()</code></a>, <a class="link" href="glib-Message-Logging.html#g-warning" title="g_warning()"><code class="function">g_warning()</code></a>, <a class="link" href="glib-Message-Logging.html#g-critical" title="g_critical()"><code class="function">g_critical()</code></a>,
+<a class="link" href="glib-Message-Logging.html#g-error" title="g_error()"><code class="function">g_error()</code></a>, etc, if the symbols <code class="literal">G_LOG_USE_STRUCTURED</code> is defined before including
+glib.h.</p>
+<p>For example:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="function"><a href="glib-Message-Logging.html#g-log-structured">g_log_structured</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="glib-Message-Logging.html#G-LOG-DOMAIN:CAPS">G_LOG_DOMAIN</a></span><span class="symbol">,</span><span class="normal"> <a href="glib-Message-Logging.html#G-LOG-LEVEL-DEBUG:CAPS">G_LOG_LEVEL_DEBUG</a></span><span class="symbol">,</span>
+<span class="normal">                  </span><span class="string">"MESSAGE_ID"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"06d4df59e6c24647bfe69d2c27ef0b4e"</span><span class="symbol">,</span>
+<span class="normal">                  </span><span class="string">"MY_APPLICATION_CUSTOM_FIELD"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"some debug string"</span><span class="symbol">,</span>
+<span class="normal">                  </span><span class="string">"MESSAGE"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"This is a debug message about pointer %p and integer %u."</span><span class="symbol">,</span>
+<span class="normal">                  some_pointer</span><span class="symbol">,</span><span class="normal"> some_integer</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>Note that each <code class="literal">MESSAGE_ID</code> must be <a class="ulink" href="https://www.freedesktop.org/software/systemd/man/systemd.journal-fields.html#MESSAGE_ID=" target="_top">uniquely and randomly
+generated</a>.
+If adding a <code class="literal">MESSAGE_ID</code>, consider shipping a <a class="ulink" href="https://www.freedesktop.org/wiki/Software/systemd/catalog/" target="_top">message
+catalog</a> with
+your software.</p>
+<p>To pass a user data pointer to the log writer function which is specific to
+this logging call, you must use <a class="link" href="glib-Message-Logging.html#g-log-structured-array" title="g_log_structured_array ()"><code class="function">g_log_structured_array()</code></a> and pass the pointer
+as a field with <a class="link" href="glib-Message-Logging.html#GLogField.length"><span class="type">GLogField.length</span></a> set to zero, otherwise it will be
+interpreted as a string.</p>
+<p>For example:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">const</span><span class="normal"> </span><span class="usertype">GLogField</span><span class="normal"> fields</span><span class="symbol">[]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">  </span><span class="cbracket">{</span><span class="normal"> </span><span class="string">"MESSAGE"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"This is a debug message."</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="normal"> </span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="normal">  </span><span class="cbracket">{</span><span class="normal"> </span><span class="string">"MESSAGE_ID"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"fcfb2e1e65c3494386b74878f1abf893"</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="normal"> </span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="normal">  </span><span class="cbracket">{</span><span class="normal"> </span><span class="string">"MY_APPLICATION_CUSTOM_FIELD"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"some debug string"</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="normal"> </span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="normal">  </span><span class="cbracket">{</span><span class="normal"> </span><span class="string">"MY_APPLICATION_STATE"</span><span class="symbol">,</span><span class="normal"> state_object</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+<span class="function"><a href="glib-Message-Logging.html#g-log-structured-array">g_log_structured_array</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="glib-Message-Logging.html#G-LOG-LEVEL-DEBUG:CAPS">G_LOG_LEVEL_DEBUG</a></span><span class="symbol">,</span><span class="normal"> fields</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="glib-Standard-Macros.html#G-N-ELEMENTS:CAPS">G_N_ELEMENTS</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">fields</span><span class="symbol">));</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>Note also that, even if no other structured fields are specified, there
+must always be a <code class="literal">MESSAGE</code> key before the format string. The <code class="literal">MESSAGE</code>-format
+pair has to be the last of the key-value pairs, and <code class="literal">MESSAGE</code> is the only
+field for which <code class="function">printf()</code>-style formatting is supported.</p>
+<p>The default writer function for <code class="literal">stdout</code> and <code class="literal">stderr</code> will automatically
+append a new-line character after the message, so you should not add one
+manually to the format string.</p>
+<div class="refsect3">
+<a name="g-log-structured.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>log_domain</p></td>
+<td class="parameter_description"><p>log domain, usually <a class="link" href="glib-Message-Logging.html#G-LOG-DOMAIN:CAPS" title="G_LOG_DOMAIN"><code class="literal">G_LOG_DOMAIN</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>log_level</p></td>
+<td class="parameter_description"><p>log level, either from <a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a>, or a user-defined
+level</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>key-value pairs of structured data to add to the log entry, followed
+by the key "MESSAGE", followed by a <code class="function">printf()</code>-style message format,
+followed by parameters to insert in the format string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-50.html#api-index-2.50">2.50</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-log-variant"></a><h3>g_log_variant ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_log_variant (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *log_domain</code></em>,
+               <em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a> log_level</code></em>,
+               <em class="parameter"><code><a class="link" href="glib-GVariant.html#GVariant" title="GVariant"><span class="type">GVariant</span></a> *fields</code></em>);</pre>
+<p>Log a message with structured data, accepting the data within a <a class="link" href="glib-GVariant.html#GVariant" title="GVariant"><span class="type">GVariant</span></a>. This
+version is especially useful for use in other languages, via introspection.</p>
+<p>The only mandatory item in the <em class="parameter"><code>fields</code></em>
+ dictionary is the "MESSAGE" which must
+contain the text shown to the user.</p>
+<p>The values in the <em class="parameter"><code>fields</code></em>
+ dictionary are likely to be of type String
+(<a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-STRING:CAPS" title="G_VARIANT_TYPE_STRING"><span class="type">G_VARIANT_TYPE_STRING</span></a>). Array of bytes (<a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-BYTESTRING:CAPS" title="G_VARIANT_TYPE_BYTESTRING"><span class="type">G_VARIANT_TYPE_BYTESTRING</span></a>) is also
+supported. In this case the message is handled as binary and will be forwarded
+to the log writer as such. The size of the array should not be higher than
+<a class="link" href="glib-Basic-Types.html#G-MAXSSIZE:CAPS" title="G_MAXSSIZE"><code class="literal">G_MAXSSIZE</code></a>. Otherwise it will be truncated to this size. For other types
+<a class="link" href="glib-GVariant.html#g-variant-print" title="g_variant_print ()"><code class="function">g_variant_print()</code></a> will be used to convert the value into a string.</p>
+<p>For more details on its usage and about the parameters, see <a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a>.</p>
+<div class="refsect3">
+<a name="g-log-variant.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>log_domain</p></td>
+<td class="parameter_description"><p>log domain, usually <a class="link" href="glib-Message-Logging.html#G-LOG-DOMAIN:CAPS" title="G_LOG_DOMAIN"><code class="literal">G_LOG_DOMAIN</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>log_level</p></td>
+<td class="parameter_description"><p>log level, either from <a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a>, or a user-defined
+level</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>fields</p></td>
+<td class="parameter_description"><p>a dictionary (<a class="link" href="glib-GVariant.html#GVariant" title="GVariant"><span class="type">GVariant</span></a> of the type <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-VARDICT:CAPS" title="G_VARIANT_TYPE_VARDICT"><code class="literal">G_VARIANT_TYPE_VARDICT</code></a>)
+containing the key-value pairs of message data.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-50.html#api-index-2.50">2.50</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-log-structured-array"></a><h3>g_log_structured_array ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_log_structured_array (<em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a> log_level</code></em>,
+                        <em class="parameter"><code>const <a class="link" href="glib-Message-Logging.html#GLogField" title="struct GLogField"><span class="type">GLogField</span></a> *fields</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> n_fields</code></em>);</pre>
+<p>Log a message with structured data. The message will be passed through to the
+log writer set by the application using <a class="link" href="glib-Message-Logging.html#g-log-set-writer-func" title="g_log_set_writer_func ()"><code class="function">g_log_set_writer_func()</code></a>. If the
+message is fatal (i.e. its log level is <a class="link" href="glib-Message-Logging.html#G-LOG-LEVEL-ERROR:CAPS"><code class="literal">G_LOG_LEVEL_ERROR</code></a>), the program will
+be aborted at the end of this function.</p>
+<p>See <a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a> for more documentation.</p>
+<p>This assumes that <em class="parameter"><code>log_level</code></em>
+ is already present in <em class="parameter"><code>fields</code></em>
+ (typically as the
+<code class="literal">PRIORITY</code> field).</p>
+<div class="refsect3">
+<a name="g-log-structured-array.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>log_level</p></td>
+<td class="parameter_description"><p>log level, either from <a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a>, or a user-defined
+level</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>fields</p></td>
+<td class="parameter_description"><p>key–value pairs of structured data to add
+to the log message. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=n_fields]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n_fields</p></td>
+<td class="parameter_description"><p>number of elements in the <em class="parameter"><code>fields</code></em>
+array</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-50.html#api-index-2.50">2.50</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-DEBUG-HERE:CAPS"></a><h3>G_DEBUG_HERE</h3>
+<pre class="programlisting">#define             G_DEBUG_HERE()</pre>
+<p>A convenience form of <a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a>, recommended to be added to
+functions when debugging. It prints the current monotonic time and the code
+location using <a class="link" href="glib-Miscellaneous-Macros.html#G-STRLOC:CAPS" title="G_STRLOC"><code class="literal">G_STRLOC</code></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-50.html#api-index-2.50">2.50</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GLogWriterFunc"></a><h3>GLogWriterFunc ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Message-Logging.html#GLogWriterOutput" title="enum GLogWriterOutput"><span class="returnvalue">GLogWriterOutput</span></a>
+<span class="c_punctuation">(</span>*GLogWriterFunc<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a> log_level</code></em>,
+                   <em class="parameter"><code>const <a class="link" href="glib-Message-Logging.html#GLogField" title="struct GLogField"><span class="type">GLogField</span></a> *fields</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> n_fields</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Writer function for log entries. A log entry is a collection of one or more
+<a href="glib-Message-Logging.html#GLogField"><span class="type">GLogFields</span></a>, using the standard <a class="ulink" href="https://www.freedesktop.org/software/systemd/man/systemd.journal-fields.html" target="_top">field names from journal
+specification</a>.
+See <a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a> for more information.</p>
+<p>Writer functions must ignore fields which they do not recognise, unless they
+can write arbitrary binary output, as field values may be arbitrary binary.</p>
+<p><em class="parameter"><code>log_level</code></em>
+ is guaranteed to be included in <em class="parameter"><code>fields</code></em>
+ as the <code class="literal">PRIORITY</code> field,
+but is provided separately for convenience of deciding whether or where to
+output the log entry.</p>
+<p>Writer functions should return <a class="link" href="glib-Message-Logging.html#G-LOG-WRITER-HANDLED:CAPS"><code class="literal">G_LOG_WRITER_HANDLED</code></a> if they handled the log
+message successfully or if they deliberately ignored it. If there was an
+error handling the message (for example, if the writer function is meant to
+send messages to a remote logging server and there is a network error), it
+should return <a class="link" href="glib-Message-Logging.html#G-LOG-WRITER-UNHANDLED:CAPS"><code class="literal">G_LOG_WRITER_UNHANDLED</code></a>. This allows writer functions to be
+chained and fall back to simpler handlers in case of failure.</p>
+<div class="refsect3">
+<a name="GLogWriterFunc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>log_level</p></td>
+<td class="parameter_description"><p>log level of the message</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>fields</p></td>
+<td class="parameter_description"><p>fields forming the message. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=n_fields]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n_fields</p></td>
+<td class="parameter_description"><p>number of <em class="parameter"><code>fields</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data passed to <a class="link" href="glib-Message-Logging.html#g-log-set-writer-func" title="g_log_set_writer_func ()"><code class="function">g_log_set_writer_func()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="GLogWriterFunc.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Message-Logging.html#G-LOG-WRITER-HANDLED:CAPS"><code class="literal">G_LOG_WRITER_HANDLED</code></a> if the log entry was handled successfully;
+<a class="link" href="glib-Message-Logging.html#G-LOG-WRITER-UNHANDLED:CAPS"><code class="literal">G_LOG_WRITER_UNHANDLED</code></a> otherwise</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-50.html#api-index-2.50">2.50</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-log-set-writer-func"></a><h3>g_log_set_writer_func ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_log_set_writer_func (<em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogWriterFunc" title="GLogWriterFunc ()"><span class="type">GLogWriterFunc</span></a> func</code></em>,
+                       <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                       <em class="parameter"><code><a class="link" href="glib-Datasets.html#GDestroyNotify" title="GDestroyNotify ()"><span class="type">GDestroyNotify</span></a> user_data_free</code></em>);</pre>
+<p>Set a writer function which will be called to format and write out each log
+message. Each program should set a writer function, or the default writer
+(<a class="link" href="glib-Message-Logging.html#g-log-writer-default" title="g_log_writer_default ()"><code class="function">g_log_writer_default()</code></a>) will be used.</p>
+<p>Libraries **must not** call this function — only programs are allowed to
+install a writer function, as there must be a single, central point where
+log messages are formatted and outputted.</p>
+<p>There can only be one writer function. It is an error to set more than one.</p>
+<div class="refsect3">
+<a name="g-log-set-writer-func.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>func</p></td>
+<td class="parameter_description"><p>log writer function, which must not be <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data to pass to <em class="parameter"><code>func</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym> func]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data_free</p></td>
+<td class="parameter_description"><p>function to free <em class="parameter"><code>user_data</code></em>
+once it’s
+finished with, if non-<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'destroy_data', for callbacks."><span class="acronym">destroy</span></acronym> func]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-50.html#api-index-2.50">2.50</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-log-writer-supports-color"></a><h3>g_log_writer_supports_color ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_log_writer_supports_color (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> output_fd</code></em>);</pre>
+<p>Check whether the given <em class="parameter"><code>output_fd</code></em>
+ file descriptor supports ANSI color
+escape sequences. If so, they can safely be used when formatting log
+messages.</p>
+<div class="refsect3">
+<a name="g-log-writer-supports-color.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>output_fd</p></td>
+<td class="parameter_description"><p>output file descriptor to check</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-log-writer-supports-color.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if ANSI color escapes are supported, <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> otherwise</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-50.html#api-index-2.50">2.50</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-log-writer-is-journald"></a><h3>g_log_writer_is_journald ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_log_writer_is_journald (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> output_fd</code></em>);</pre>
+<p>Check whether the given <em class="parameter"><code>output_fd</code></em>
+ file descriptor is a connection to the
+systemd journal, or something else (like a log file or <code class="literal">stdout</code> or
+<code class="literal">stderr</code>).</p>
+<p>Invalid file descriptors are accepted and return <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a>, which allows for
+the following construct without needing any additional error handling:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal">is_journald </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-Message-Logging.html#g-log-writer-is-journald">g_log_writer_is_journald</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">fileno</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">stderr</span><span class="symbol">));</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="g-log-writer-is-journald.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>output_fd</p></td>
+<td class="parameter_description"><p>output file descriptor to check</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-log-writer-is-journald.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>output_fd</code></em>
+points to the journal, <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> otherwise</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-50.html#api-index-2.50">2.50</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-log-writer-format-fields"></a><h3>g_log_writer_format_fields ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_log_writer_format_fields (<em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a> log_level</code></em>,
+                            <em class="parameter"><code>const <a class="link" href="glib-Message-Logging.html#GLogField" title="struct GLogField"><span class="type">GLogField</span></a> *fields</code></em>,
+                            <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> n_fields</code></em>,
+                            <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="type">gboolean</span></a> use_color</code></em>);</pre>
+<p>Format a structured log message as a string suitable for outputting to the
+terminal (or elsewhere). This will include the values of all fields it knows
+how to interpret, which includes <code class="literal">MESSAGE</code> and <code class="literal">GLIB_DOMAIN</code> (see the
+documentation for <a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a>). It does not include values from
+unknown fields.</p>
+<p>The returned string does **not** have a trailing new-line character. It is
+encoded in the character set of the current locale, which is not necessarily
+UTF-8.</p>
+<div class="refsect3">
+<a name="g-log-writer-format-fields.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>log_level</p></td>
+<td class="parameter_description"><p>log level, either from <a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a>, or a user-defined
+level</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>fields</p></td>
+<td class="parameter_description"><p>key–value pairs of structured data forming
+the log message. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=n_fields]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n_fields</p></td>
+<td class="parameter_description"><p>number of elements in the <em class="parameter"><code>fields</code></em>
+array</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>use_color</p></td>
+<td class="parameter_description"><p><a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> to use ANSI color escape sequences when formatting the
+message, <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> to not</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-log-writer-format-fields.returns"></a><h4>Returns</h4>
+<p>string containing the formatted log message, in
+the character set of the current locale. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-50.html#api-index-2.50">2.50</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-log-writer-journald"></a><h3>g_log_writer_journald ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Message-Logging.html#GLogWriterOutput" title="enum GLogWriterOutput"><span class="returnvalue">GLogWriterOutput</span></a>
+g_log_writer_journald (<em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a> log_level</code></em>,
+                       <em class="parameter"><code>const <a class="link" href="glib-Message-Logging.html#GLogField" title="struct GLogField"><span class="type">GLogField</span></a> *fields</code></em>,
+                       <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> n_fields</code></em>,
+                       <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Format a structured log message and send it to the systemd journal as a set
+of key–value pairs. All fields are sent to the journal, but if a field has
+length zero (indicating program-specific data) then only its key will be
+sent.</p>
+<p>This is suitable for use as a <a class="link" href="glib-Message-Logging.html#GLogWriterFunc" title="GLogWriterFunc ()"><span class="type">GLogWriterFunc</span></a>.</p>
+<p>If GLib has been compiled without systemd support, this function is still
+defined, but will always return <a class="link" href="glib-Message-Logging.html#G-LOG-WRITER-UNHANDLED:CAPS"><code class="literal">G_LOG_WRITER_UNHANDLED</code></a>.</p>
+<div class="refsect3">
+<a name="g-log-writer-journald.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>log_level</p></td>
+<td class="parameter_description"><p>log level, either from <a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a>, or a user-defined
+level</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>fields</p></td>
+<td class="parameter_description"><p>key–value pairs of structured data forming
+the log message. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=n_fields]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n_fields</p></td>
+<td class="parameter_description"><p>number of elements in the <em class="parameter"><code>fields</code></em>
+array</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data passed to <a class="link" href="glib-Message-Logging.html#g-log-set-writer-func" title="g_log_set_writer_func ()"><code class="function">g_log_set_writer_func()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-log-writer-journald.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Message-Logging.html#G-LOG-WRITER-HANDLED:CAPS"><code class="literal">G_LOG_WRITER_HANDLED</code></a> on success, <a class="link" href="glib-Message-Logging.html#G-LOG-WRITER-UNHANDLED:CAPS"><code class="literal">G_LOG_WRITER_UNHANDLED</code></a> otherwise</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-50.html#api-index-2.50">2.50</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-log-writer-standard-streams"></a><h3>g_log_writer_standard_streams ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Message-Logging.html#GLogWriterOutput" title="enum GLogWriterOutput"><span class="returnvalue">GLogWriterOutput</span></a>
+g_log_writer_standard_streams (<em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a> log_level</code></em>,
+                               <em class="parameter"><code>const <a class="link" href="glib-Message-Logging.html#GLogField" title="struct GLogField"><span class="type">GLogField</span></a> *fields</code></em>,
+                               <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> n_fields</code></em>,
+                               <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Format a structured log message and print it to either <code class="literal">stdout</code> or <code class="literal">stderr</code>,
+depending on its log level. <a class="link" href="glib-Message-Logging.html#G-LOG-LEVEL-INFO:CAPS"><code class="literal">G_LOG_LEVEL_INFO</code></a> and <a class="link" href="glib-Message-Logging.html#G-LOG-LEVEL-DEBUG:CAPS"><code class="literal">G_LOG_LEVEL_DEBUG</code></a> messages
+are sent to <code class="literal">stdout</code>; all other log levels are sent to <code class="literal">stderr</code>. Only fields
+which are understood by this function are included in the formatted string
+which is printed.</p>
+<p>If the output stream supports ANSI color escape sequences, they will be used
+in the output.</p>
+<p>A trailing new-line character is added to the log message when it is printed.</p>
+<p>This is suitable for use as a <a class="link" href="glib-Message-Logging.html#GLogWriterFunc" title="GLogWriterFunc ()"><span class="type">GLogWriterFunc</span></a>.</p>
+<div class="refsect3">
+<a name="g-log-writer-standard-streams.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>log_level</p></td>
+<td class="parameter_description"><p>log level, either from <a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a>, or a user-defined
+level</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>fields</p></td>
+<td class="parameter_description"><p>key–value pairs of structured data forming
+the log message. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=n_fields]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n_fields</p></td>
+<td class="parameter_description"><p>number of elements in the <em class="parameter"><code>fields</code></em>
+array</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data passed to <a class="link" href="glib-Message-Logging.html#g-log-set-writer-func" title="g_log_set_writer_func ()"><code class="function">g_log_set_writer_func()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-log-writer-standard-streams.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Message-Logging.html#G-LOG-WRITER-HANDLED:CAPS"><code class="literal">G_LOG_WRITER_HANDLED</code></a> on success, <a class="link" href="glib-Message-Logging.html#G-LOG-WRITER-UNHANDLED:CAPS"><code class="literal">G_LOG_WRITER_UNHANDLED</code></a> otherwise</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-50.html#api-index-2.50">2.50</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-log-writer-default"></a><h3>g_log_writer_default ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Message-Logging.html#GLogWriterOutput" title="enum GLogWriterOutput"><span class="returnvalue">GLogWriterOutput</span></a>
+g_log_writer_default (<em class="parameter"><code><a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a> log_level</code></em>,
+                      <em class="parameter"><code>const <a class="link" href="glib-Message-Logging.html#GLogField" title="struct GLogField"><span class="type">GLogField</span></a> *fields</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> n_fields</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Format a structured log message and output it to the default log destination
+for the platform. On Linux, this is typically the systemd journal, falling
+back to <code class="literal">stdout</code> or <code class="literal">stderr</code> if running from the terminal or if output is
+being redirected to a file.</p>
+<p>Support for other platform-specific logging mechanisms may be added in
+future. Distributors of GLib may modify this function to impose their own
+(documented) platform-specific log writing policies.</p>
+<p>This is suitable for use as a <a class="link" href="glib-Message-Logging.html#GLogWriterFunc" title="GLogWriterFunc ()"><span class="type">GLogWriterFunc</span></a>, and is the default writer used
+if no other is set using <a class="link" href="glib-Message-Logging.html#g-log-set-writer-func" title="g_log_set_writer_func ()"><code class="function">g_log_set_writer_func()</code></a>.</p>
+<p>As with <a class="link" href="glib-Message-Logging.html#g-log-default-handler" title="g_log_default_handler ()"><code class="function">g_log_default_handler()</code></a>, this function drops debug and informational
+messages unless their log domain (or <code class="literal">all</code>) is listed in the space-separated
+<code class="literal">G_MESSAGES_DEBUG</code> environment variable.</p>
+<div class="refsect3">
+<a name="g-log-writer-default.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>log_level</p></td>
+<td class="parameter_description"><p>log level, either from <a class="link" href="glib-Message-Logging.html#GLogLevelFlags" title="enum GLogLevelFlags"><span class="type">GLogLevelFlags</span></a>, or a user-defined
+level</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>fields</p></td>
+<td class="parameter_description"><p>key–value pairs of structured data forming
+the log message. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=n_fields]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n_fields</p></td>
+<td class="parameter_description"><p>number of elements in the <em class="parameter"><code>fields</code></em>
+array</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data passed to <a class="link" href="glib-Message-Logging.html#g-log-set-writer-func" title="g_log_set_writer_func ()"><code class="function">g_log_set_writer_func()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-log-writer-default.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Message-Logging.html#G-LOG-WRITER-HANDLED:CAPS"><code class="literal">G_LOG_WRITER_HANDLED</code></a> on success, <a class="link" href="glib-Message-Logging.html#G-LOG-WRITER-UNHANDLED:CAPS"><code class="literal">G_LOG_WRITER_UNHANDLED</code></a> otherwise</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-50.html#api-index-2.50">2.50</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Message-Logging.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="G-LOG-DOMAIN:CAPS"></a><h3>G_LOG_DOMAIN</h3>
+<pre class="programlisting">#define G_LOG_DOMAIN    ((gchar*) 0)
+</pre>
+<p>Defines the log domain. See <a class="ulink" href="#log-domains" target="_top">Log Domains</a>.</p>
+<p>Libraries should define this so that any messages
+which they log can be differentiated from messages from other
+libraries and application code. But be careful not to define
+it in any public header files.</p>
+<p>Log domains must be unique, and it is recommended that they are the
+application or library name, optionally followed by a hyphen and a sub-domain
+name. For example, <code class="literal">bloatpad</code> or <code class="literal">bloatpad-io</code>.</p>
+<p>If undefined, it defaults to the default <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> (or <code class="literal">""</code>) log domain; this is
+not advisable, as it cannot be filtered against using the <code class="literal">G_MESSAGES_DEBUG</code>
+environment variable.</p>
+<p>For example, GTK+ uses this in its <code class="literal">Makefile.am</code>:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal">AM_CPPFLAGS </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">-</span><span class="normal">DG_LOG_DOMAIN</span><span class="symbol">=\</span><span class="string">"Gtk</span><span class="specialchar">\"</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>Applications can choose to leave it as the default <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> (or <code class="literal">""</code>)
+domain. However, defining the domain offers the same advantages as
+above.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-LOG-FATAL-MASK:CAPS"></a><h3>G_LOG_FATAL_MASK</h3>
+<pre class="programlisting">#define G_LOG_FATAL_MASK        (G_LOG_FLAG_RECURSION | G_LOG_LEVEL_ERROR)
+</pre>
+<p>GLib log levels that are considered fatal by default.</p>
+<p>This is not used if structured logging is enabled; see
+<a class="link" href="glib-Message-Logging.html#using-structured-logging" title="Using Structured Logging">Using Structured Logging</a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-LOG-LEVEL-USER-SHIFT:CAPS"></a><h3>G_LOG_LEVEL_USER_SHIFT</h3>
+<pre class="programlisting">#define G_LOG_LEVEL_USER_SHIFT  (8)
+</pre>
+<p>Log levels below 1&lt;&lt;G_LOG_LEVEL_USER_SHIFT are used by GLib.
+Higher bits can be used for user-defined log levels.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GLogLevelFlags"></a><h3>enum GLogLevelFlags</h3>
+<p>Flags specifying the level of log messages.</p>
+<p>It is possible to change how GLib treats messages of the various
+levels using <a class="link" href="glib-Message-Logging.html#g-log-set-handler" title="g_log_set_handler ()"><code class="function">g_log_set_handler()</code></a> and <a class="link" href="glib-Message-Logging.html#g-log-set-fatal-mask" title="g_log_set_fatal_mask ()"><code class="function">g_log_set_fatal_mask()</code></a>.</p>
+<div class="refsect3">
+<a name="GLogLevelFlags.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-LOG-FLAG-RECURSION:CAPS"></a>G_LOG_FLAG_RECURSION</p></td>
+<td class="enum_member_description">
+<p>internal flag</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-LOG-FLAG-FATAL:CAPS"></a>G_LOG_FLAG_FATAL</p></td>
+<td class="enum_member_description">
+<p>internal flag</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-LOG-LEVEL-ERROR:CAPS"></a>G_LOG_LEVEL_ERROR</p></td>
+<td class="enum_member_description">
+<p>log level for errors, see <a class="link" href="glib-Message-Logging.html#g-error" title="g_error()"><code class="function">g_error()</code></a>.
+    This level is also used for messages produced by <a class="link" href="glib-Testing.html#g-assert" title="g_assert()"><code class="function">g_assert()</code></a>.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-LOG-LEVEL-CRITICAL:CAPS"></a>G_LOG_LEVEL_CRITICAL</p></td>
+<td class="enum_member_description">
+<p>log level for critical warning messages, see
+    <a class="link" href="glib-Message-Logging.html#g-critical" title="g_critical()"><code class="function">g_critical()</code></a>.
+    This level is also used for messages produced by <a class="link" href="glib-Warnings-and-Assertions.html#g-return-if-fail" title="g_return_if_fail()"><code class="function">g_return_if_fail()</code></a>
+    and <a class="link" href="glib-Warnings-and-Assertions.html#g-return-val-if-fail" title="g_return_val_if_fail()"><code class="function">g_return_val_if_fail()</code></a>.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-LOG-LEVEL-WARNING:CAPS"></a>G_LOG_LEVEL_WARNING</p></td>
+<td class="enum_member_description">
+<p>log level for warnings, see <a class="link" href="glib-Message-Logging.html#g-warning" title="g_warning()"><code class="function">g_warning()</code></a></p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-LOG-LEVEL-MESSAGE:CAPS"></a>G_LOG_LEVEL_MESSAGE</p></td>
+<td class="enum_member_description">
+<p>log level for messages, see <a class="link" href="glib-Message-Logging.html#g-message" title="g_message()"><code class="function">g_message()</code></a></p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-LOG-LEVEL-INFO:CAPS"></a>G_LOG_LEVEL_INFO</p></td>
+<td class="enum_member_description">
+<p>log level for informational messages, see <a class="link" href="glib-Message-Logging.html#g-info" title="g_info()"><code class="function">g_info()</code></a></p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-LOG-LEVEL-DEBUG:CAPS"></a>G_LOG_LEVEL_DEBUG</p></td>
+<td class="enum_member_description">
+<p>log level for debug messages, see <a class="link" href="glib-Message-Logging.html#g-debug" title="g_debug()"><code class="function">g_debug()</code></a></p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-LOG-LEVEL-MASK:CAPS"></a>G_LOG_LEVEL_MASK</p></td>
+<td class="enum_member_description">
+<p>a mask including all log levels</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GLogField"></a><h3>struct GLogField</h3>
+<pre class="programlisting">struct GLogField {
+  const gchar *key;
+  gconstpointer value;
+  gssize length;
+};
+</pre>
+<p>Structure representing a single field in a structured log entry. See
+<a class="link" href="glib-Message-Logging.html#g-log-structured" title="g_log_structured ()"><code class="function">g_log_structured()</code></a> for details.</p>
+<p>Log fields may contain arbitrary values, including binary with embedded nul
+bytes. If the field contains a string, the string must be UTF-8 encoded and
+have a trailing nul byte. Otherwise, <em class="parameter"><code>length</code></em>
+ must be set to a non-negative
+value.</p>
+<div class="refsect3">
+<a name="GLogField.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GLogField.key"></a>key</code></em>;</p></td>
+<td class="struct_member_description"><p>field name (UTF-8 string)</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> <em class="structfield"><code><a name="GLogField.value"></a>value</code></em>;</p></td>
+<td class="struct_member_description"><p>field value (arbitrary bytes)</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> <em class="structfield"><code><a name="GLogField.length"></a>length</code></em>;</p></td>
+<td class="struct_member_description"><p>length of <em class="parameter"><code>value</code></em>
+, in bytes, or -1 if it is nul-terminated</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-50.html#api-index-2.50">2.50</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GLogWriterOutput"></a><h3>enum GLogWriterOutput</h3>
+<p>Return values from <a href="glib-Message-Logging.html#GLogWriterFunc"><span class="type">GLogWriterFuncs</span></a> to indicate whether the given log entry
+was successfully handled by the writer, or whether there was an error in
+handling it (and hence a fallback writer should be used).</p>
+<p>If a <a class="link" href="glib-Message-Logging.html#GLogWriterFunc" title="GLogWriterFunc ()"><span class="type">GLogWriterFunc</span></a> ignores a log entry, it should return
+<a class="link" href="glib-Message-Logging.html#G-LOG-WRITER-HANDLED:CAPS"><code class="literal">G_LOG_WRITER_HANDLED</code></a>.</p>
+<div class="refsect3">
+<a name="GLogWriterOutput.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-LOG-WRITER-HANDLED:CAPS"></a>G_LOG_WRITER_HANDLED</p></td>
+<td class="enum_member_description">
+<p>Log writer has handled the log entry.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-LOG-WRITER-UNHANDLED:CAPS"></a>G_LOG_WRITER_UNHANDLED</p></td>
+<td class="enum_member_description">
+<p>Log writer could not handle the log entry.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-50.html#api-index-2.50">2.50</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

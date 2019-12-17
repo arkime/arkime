@@ -1,0 +1,3 @@
+ELEMENT 'foo'
+  TEXT ''
+ERROR Error on line 2 char 2: Document ended unexpectedly inside the close tag for element 'foo'

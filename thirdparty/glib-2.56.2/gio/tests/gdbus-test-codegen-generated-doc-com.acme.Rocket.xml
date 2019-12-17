@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+]>
+<refentry id="gdbus-com.acme.Rocket">
+  <refmeta>    <refentrytitle role="top_of_page" id="gdbus-interface-com-acme-Rocket.top_of_page">com.acme.Rocket</refentrytitle>
+  <indexterm zone="gdbus-interface-com-acme-Rocket.top_of_page"><primary sortas="Rocket123">com.acme.Rocket</primary></indexterm>
+  </refmeta>  <refnamediv>    <refname>com.acme.Rocket</refname>    <refpurpose></refpurpose>  </refnamediv>  <refsynopsisdiv role="synopsis">
+    <title role="synopsis.title">Methods</title>
+    <synopsis>
+<link linkend="gdbus-method-com-acme-Rocket.Ignite">Ignite</link> ();
+</synopsis>
+  </refsynopsisdiv>
+  <refsect1 role="signal_proto">
+    <title role="signal_proto.title">Signals</title>
+    <synopsis>
+<link linkend="gdbus-signal-com-acme-Rocket.Exploded">Exploded</link> ();
+</synopsis>
+  </refsect1>
+  <refsect1 role="properties">
+    <title role="properties.title">Properties</title>
+    <synopsis>
+<link linkend="gdbus-property-com-acme-Rocket.Speed">Speed</link>      readable   d
+<link linkend="gdbus-property-com-acme-Rocket.Direction">Direction</link>  readable   (ddd)
+<link linkend="gdbus-property-com-acme-Rocket.Type">Type</link>       readable   s
+</synopsis>
+  </refsect1>
+<refsect1 role="desc" id="gdbus-interface-com-acme-Rocket">
+  <title role="desc.title">Description</title>
+  <para></para>
+</refsect1>
+<refsect1 role="details" id="gdbus-methods-com.acme.Rocket">
+  <title role="details.title">Method Details</title>
+<refsect2 role="method" id="gdbus-method-com-acme-Rocket.Ignite">
+  <title>The Ignite() method</title>
+  <indexterm zone="gdbus-method-com-acme-Rocket.Ignite"><primary sortas="Rocket123.Ignite">com.acme.Rocket.Ignite()</primary></indexterm>
+<programlisting>
+Ignite ();
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+<refsect1 role="details" id="gdbus-signals-com.acme.Rocket">
+  <title role="details.title">Signal Details</title>
+<refsect2 role="signal" id="gdbus-signal-com-acme-Rocket.Exploded">
+  <title>The "Exploded" signal</title>
+  <indexterm zone="gdbus-signal-com-acme-Rocket.Exploded"><primary sortas="Rocket123::Exploded">com.acme.Rocket::Exploded</primary></indexterm>
+<programlisting>
+Exploded ();
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+<refsect1 role="details" id="gdbus-properties-com.acme.Rocket">
+  <title role="details.title">Property Details</title>
+<refsect2 role="property" id="gdbus-property-com-acme-Rocket.Speed">
+  <title>The "Speed" property</title>
+  <indexterm zone="gdbus-property-com-acme-Rocket.Speed"><primary sortas="Rocket123:Speed">com.acme.Rocket:Speed</primary></indexterm>
+<programlisting>
+Speed  readable   d
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-com-acme-Rocket.Direction">
+  <title>The "Direction" property</title>
+  <indexterm zone="gdbus-property-com-acme-Rocket.Direction"><primary sortas="Rocket123:Direction">com.acme.Rocket:Direction</primary></indexterm>
+<programlisting>
+Direction  readable   (ddd)
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-com-acme-Rocket.Type">
+  <title>The "Type" property</title>
+  <indexterm zone="gdbus-property-com-acme-Rocket.Type"><primary sortas="Rocket123:Type">com.acme.Rocket:Type</primary></indexterm>
+<programlisting>
+Type  readable   s
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+</refentry>
+

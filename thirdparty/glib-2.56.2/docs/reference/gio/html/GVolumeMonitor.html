@@ -1,0 +1,927 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GVolumeMonitor: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="volume_mon.html" title="Volumes and Drives">
+<link rel="prev" href="volume_mon.html" title="Volumes and Drives">
+<link rel="next" href="GVolume.html" title="GVolume">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GVolumeMonitor.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GVolumeMonitor.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_signals">  <span class="dim">|</span> 
+                  <a href="#GVolumeMonitor.signals" class="shortcut">Signals</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="volume_mon.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="volume_mon.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GVolume.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GVolumeMonitor"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GVolumeMonitor.top_of_page"></a>GVolumeMonitor</span></h2>
+<p>GVolumeMonitor — Volume Monitor</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GVolumeMonitor.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="returnvalue">GVolumeMonitor</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GVolumeMonitor.html#g-volume-monitor-get" title="g_volume_monitor_get ()">g_volume_monitor_get</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GVolumeMonitor.html#g-volume-monitor-get-connected-drives" title="g_volume_monitor_get_connected_drives ()">g_volume_monitor_get_connected_drives</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GVolumeMonitor.html#g-volume-monitor-get-volumes" title="g_volume_monitor_get_volumes ()">g_volume_monitor_get_volumes</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GVolumeMonitor.html#g-volume-monitor-get-mounts" title="g_volume_monitor_get_mounts ()">g_volume_monitor_get_mounts</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GVolume.html" title="GVolume"><span class="returnvalue">GVolume</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GVolumeMonitor.html#g-volume-monitor-adopt-orphan-mount" title="g_volume_monitor_adopt_orphan_mount ()">g_volume_monitor_adopt_orphan_mount</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GMount.html" title="GMount"><span class="returnvalue">GMount</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GVolumeMonitor.html#g-volume-monitor-get-mount-for-uuid" title="g_volume_monitor_get_mount_for_uuid ()">g_volume_monitor_get_mount_for_uuid</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GVolume.html" title="GVolume"><span class="returnvalue">GVolume</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GVolumeMonitor.html#g-volume-monitor-get-volume-for-uuid" title="g_volume_monitor_get_volume_for_uuid ()">g_volume_monitor_get_volume_for_uuid</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GVolumeMonitor.signals"></a><h2>Signals</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="signals_return">
+<col width="300px" class="signals_name">
+<col width="200px" class="signals_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GVolumeMonitor.html#GVolumeMonitor-drive-changed" title="The “drive-changed” signal">drive-changed</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GVolumeMonitor.html#GVolumeMonitor-drive-connected" title="The “drive-connected” signal">drive-connected</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GVolumeMonitor.html#GVolumeMonitor-drive-disconnected" title="The “drive-disconnected” signal">drive-disconnected</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GVolumeMonitor.html#GVolumeMonitor-drive-eject-button" title="The “drive-eject-button” signal">drive-eject-button</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GVolumeMonitor.html#GVolumeMonitor-drive-stop-button" title="The “drive-stop-button” signal">drive-stop-button</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GVolumeMonitor.html#GVolumeMonitor-mount-added" title="The “mount-added” signal">mount-added</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GVolumeMonitor.html#GVolumeMonitor-mount-changed" title="The “mount-changed” signal">mount-changed</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GVolumeMonitor.html#GVolumeMonitor-mount-pre-unmount" title="The “mount-pre-unmount” signal">mount-pre-unmount</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GVolumeMonitor.html#GVolumeMonitor-mount-removed" title="The “mount-removed” signal">mount-removed</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GVolumeMonitor.html#GVolumeMonitor-volume-added" title="The “volume-added” signal">volume-added</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GVolumeMonitor.html#GVolumeMonitor-volume-changed" title="The “volume-changed” signal">volume-changed</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GVolumeMonitor.html#GVolumeMonitor-volume-removed" title="The “volume-removed” signal">volume-removed</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GVolumeMonitor.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GVolumeMonitor.html#GVolumeMonitor-struct" title="GVolumeMonitor">GVolumeMonitor</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="GVolumeMonitor.html#G-VOLUME-MONITOR-EXTENSION-POINT-NAME:CAPS" title="G_VOLUME_MONITOR_EXTENSION_POINT_NAME">G_VOLUME_MONITOR_EXTENSION_POINT_NAME</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GVolumeMonitor.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GVolumeMonitor
+</pre>
+</div>
+<div class="refsect1">
+<a name="GVolumeMonitor.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GVolumeMonitor.description"></a><h2>Description</h2>
+<p><a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> is for listing the user interesting devices and volumes
+on the computer. In other words, what a file selector or file manager
+would show in a sidebar. </p>
+<p><a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> is not
+<a href="../glib-The-Main-Event-Loop.html#g-main-context-push-thread-default">thread-default-context aware</a>,
+and so should not be used other than from the main thread, with no
+thread-default-context active.</p>
+</div>
+<div class="refsect1">
+<a name="GVolumeMonitor.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-volume-monitor-get"></a><h3>g_volume_monitor_get ()</h3>
+<pre class="programlisting"><a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="returnvalue">GVolumeMonitor</span></a> *
+g_volume_monitor_get (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Gets the volume monitor used by gio.</p>
+<div class="refsect3">
+<a name="g-volume-monitor-get.returns"></a><h4>Returns</h4>
+<p>a reference to the <a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> used by gio. Call
+<a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a> when done with it. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-volume-monitor-get-connected-drives"></a><h3>g_volume_monitor_get_connected_drives ()</h3>
+<pre class="programlisting"><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+g_volume_monitor_get_connected_drives (<em class="parameter"><code><a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> *volume_monitor</code></em>);</pre>
+<p>Gets a list of drives connected to the system.</p>
+<p>The returned list should be freed with <a href="../glib-Doubly-Linked-Lists.html#g-list-free"><code class="function">g_list_free()</code></a>, after
+its elements have been unreffed with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.</p>
+<div class="refsect3">
+<a name="g-volume-monitor-get-connected-drives.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>volume_monitor</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-volume-monitor-get-connected-drives.returns"></a><h4>Returns</h4>
+<p>a <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of connected <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> objects. </p>
+<p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GDrive][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-volume-monitor-get-volumes"></a><h3>g_volume_monitor_get_volumes ()</h3>
+<pre class="programlisting"><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+g_volume_monitor_get_volumes (<em class="parameter"><code><a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> *volume_monitor</code></em>);</pre>
+<p>Gets a list of the volumes on the system.</p>
+<p>The returned list should be freed with <a href="../glib-Doubly-Linked-Lists.html#g-list-free"><code class="function">g_list_free()</code></a>, after
+its elements have been unreffed with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.</p>
+<div class="refsect3">
+<a name="g-volume-monitor-get-volumes.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>volume_monitor</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-volume-monitor-get-volumes.returns"></a><h4>Returns</h4>
+<p>a <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of <a class="link" href="GVolume.html" title="GVolume"><span class="type">GVolume</span></a> objects. </p>
+<p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GVolume][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-volume-monitor-get-mounts"></a><h3>g_volume_monitor_get_mounts ()</h3>
+<pre class="programlisting"><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+g_volume_monitor_get_mounts (<em class="parameter"><code><a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> *volume_monitor</code></em>);</pre>
+<p>Gets a list of the mounts on the system.</p>
+<p>The returned list should be freed with <a href="../glib-Doubly-Linked-Lists.html#g-list-free"><code class="function">g_list_free()</code></a>, after
+its elements have been unreffed with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.</p>
+<div class="refsect3">
+<a name="g-volume-monitor-get-mounts.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>volume_monitor</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-volume-monitor-get-mounts.returns"></a><h4>Returns</h4>
+<p>a <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of <a class="link" href="GMount.html" title="GMount"><span class="type">GMount</span></a> objects. </p>
+<p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GMount][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-volume-monitor-adopt-orphan-mount"></a><h3>g_volume_monitor_adopt_orphan_mount ()</h3>
+<pre class="programlisting"><a class="link" href="GVolume.html" title="GVolume"><span class="returnvalue">GVolume</span></a> *
+g_volume_monitor_adopt_orphan_mount (<em class="parameter"><code><a class="link" href="GMount.html" title="GMount"><span class="type">GMount</span></a> *mount</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_volume_monitor_adopt_orphan_mount</code> has been deprecated since version 2.20 and should not be used in newly-written code.</p>
+<p>Instead of using this function, <a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a>
+implementations should instead create shadow mounts with the URI of
+the mount they intend to adopt. See the proxy volume monitor in
+gvfs for an example of this. Also see <a class="link" href="GMount.html#g-mount-is-shadowed" title="g_mount_is_shadowed ()"><code class="function">g_mount_is_shadowed()</code></a>,
+<a class="link" href="GMount.html#g-mount-shadow" title="g_mount_shadow ()"><code class="function">g_mount_shadow()</code></a> and <a class="link" href="GMount.html#g-mount-unshadow" title="g_mount_unshadow ()"><code class="function">g_mount_unshadow()</code></a> functions.</p>
+</div>
+<p>This function should be called by any <a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a>
+implementation when a new <a class="link" href="GMount.html" title="GMount"><span class="type">GMount</span></a> object is created that is not
+associated with a <a class="link" href="GVolume.html" title="GVolume"><span class="type">GVolume</span></a> object. It must be called just before
+emitting the <em class="parameter"><code>mount_added</code></em>
+ signal.</p>
+<p>If the return value is not <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, the caller must associate the
+returned <a class="link" href="GVolume.html" title="GVolume"><span class="type">GVolume</span></a> object with the <a class="link" href="GMount.html" title="GMount"><span class="type">GMount</span></a>. This involves returning
+it in its <a class="link" href="GMount.html#g-mount-get-volume" title="g_mount_get_volume ()"><code class="function">g_mount_get_volume()</code></a> implementation. The caller must
+also listen for the "removed" signal on the returned object
+and give up its reference when handling that signal</p>
+<p>Similary, if implementing <a class="link" href="GVolumeMonitor.html#g-volume-monitor-adopt-orphan-mount" title="g_volume_monitor_adopt_orphan_mount ()"><code class="function">g_volume_monitor_adopt_orphan_mount()</code></a>,
+the implementor must take a reference to <em class="parameter"><code>mount</code></em>
+ and return it in
+its <a class="link" href="GVolume.html#g-volume-get-mount" title="g_volume_get_mount ()"><code class="function">g_volume_get_mount()</code></a> implemented. Also, the implementor must
+listen for the "unmounted" signal on <em class="parameter"><code>mount</code></em>
+ and give up its
+reference upon handling that signal.</p>
+<p>There are two main use cases for this function.</p>
+<p>One is when implementing a user space file system driver that reads
+blocks of a block device that is already represented by the native
+volume monitor (for example a CD Audio file system driver). Such
+a driver will generate its own <a class="link" href="GMount.html" title="GMount"><span class="type">GMount</span></a> object that needs to be
+associated with the <a class="link" href="GVolume.html" title="GVolume"><span class="type">GVolume</span></a> object that represents the volume.</p>
+<p>The other is for implementing a <a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> whose sole purpose
+is to return <a class="link" href="GVolume.html" title="GVolume"><span class="type">GVolume</span></a> objects representing entries in the users
+"favorite servers" list or similar.</p>
+<div class="refsect3">
+<a name="g-volume-monitor-adopt-orphan-mount.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMount.html" title="GMount"><span class="type">GMount</span></a> object to find a parent for</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-volume-monitor-adopt-orphan-mount.returns"></a><h4>Returns</h4>
+<p>the <a class="link" href="GVolume.html" title="GVolume"><span class="type">GVolume</span></a> object that is the parent for <em class="parameter"><code>mount</code></em>
+or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+if no wants to adopt the <a class="link" href="GMount.html" title="GMount"><span class="type">GMount</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-volume-monitor-get-mount-for-uuid"></a><h3>g_volume_monitor_get_mount_for_uuid ()</h3>
+<pre class="programlisting"><a class="link" href="GMount.html" title="GMount"><span class="returnvalue">GMount</span></a> *
+g_volume_monitor_get_mount_for_uuid (<em class="parameter"><code><a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> *volume_monitor</code></em>,
+                                     <em class="parameter"><code>const <span class="type">char</span> *uuid</code></em>);</pre>
+<p>Finds a <a class="link" href="GMount.html" title="GMount"><span class="type">GMount</span></a> object by its UUID (see <a class="link" href="GMount.html#g-mount-get-uuid" title="g_mount_get_uuid ()"><code class="function">g_mount_get_uuid()</code></a>)</p>
+<div class="refsect3">
+<a name="g-volume-monitor-get-mount-for-uuid.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>volume_monitor</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>uuid</p></td>
+<td class="parameter_description"><p>the UUID to look for</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-volume-monitor-get-mount-for-uuid.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GMount.html" title="GMount"><span class="type">GMount</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if no such mount is available.
+Free the returned object with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-volume-monitor-get-volume-for-uuid"></a><h3>g_volume_monitor_get_volume_for_uuid ()</h3>
+<pre class="programlisting"><a class="link" href="GVolume.html" title="GVolume"><span class="returnvalue">GVolume</span></a> *
+g_volume_monitor_get_volume_for_uuid (<em class="parameter"><code><a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> *volume_monitor</code></em>,
+                                      <em class="parameter"><code>const <span class="type">char</span> *uuid</code></em>);</pre>
+<p>Finds a <a class="link" href="GVolume.html" title="GVolume"><span class="type">GVolume</span></a> object by its UUID (see <a class="link" href="GVolume.html#g-volume-get-uuid" title="g_volume_get_uuid ()"><code class="function">g_volume_get_uuid()</code></a>)</p>
+<div class="refsect3">
+<a name="g-volume-monitor-get-volume-for-uuid.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>volume_monitor</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>uuid</p></td>
+<td class="parameter_description"><p>the UUID to look for</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-volume-monitor-get-volume-for-uuid.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GVolume.html" title="GVolume"><span class="type">GVolume</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if no such volume is available.
+Free the returned object with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GVolumeMonitor.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GVolumeMonitor-struct"></a><h3>GVolumeMonitor</h3>
+<pre class="programlisting">typedef struct _GVolumeMonitor GVolumeMonitor;</pre>
+<p>A Volume Monitor that watches for volume events.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VOLUME-MONITOR-EXTENSION-POINT-NAME:CAPS"></a><h3>G_VOLUME_MONITOR_EXTENSION_POINT_NAME</h3>
+<pre class="programlisting">#define G_VOLUME_MONITOR_EXTENSION_POINT_NAME "gio-volume-monitor"
+</pre>
+<p>Extension point for volume monitor functionality.
+See Extending GIO.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GVolumeMonitor.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="GVolumeMonitor-drive-changed"></a><h3>The <code class="literal">“drive-changed”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> *volume_monitor,
+               <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>         *drive,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+<p>Emitted when a drive changes.</p>
+<div class="refsect3">
+<a name="GVolumeMonitor-drive-changed.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>volume_monitor</p></td>
+<td class="parameter_description"><p>The volume monitor emitting the signal.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>the drive that changed</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GVolumeMonitor-drive-connected"></a><h3>The <code class="literal">“drive-connected”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> *volume_monitor,
+               <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>         *drive,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+<p>Emitted when a drive is connected to the system.</p>
+<div class="refsect3">
+<a name="GVolumeMonitor-drive-connected.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>volume_monitor</p></td>
+<td class="parameter_description"><p>The volume monitor emitting the signal.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> that was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GVolumeMonitor-drive-disconnected"></a><h3>The <code class="literal">“drive-disconnected”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> *volume_monitor,
+               <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>         *drive,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+<p>Emitted when a drive is disconnected from the system.</p>
+<div class="refsect3">
+<a name="GVolumeMonitor-drive-disconnected.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>volume_monitor</p></td>
+<td class="parameter_description"><p>The volume monitor emitting the signal.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> that was disconnected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GVolumeMonitor-drive-eject-button"></a><h3>The <code class="literal">“drive-eject-button”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> *volume_monitor,
+               <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>         *drive,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+<p>Emitted when the eject button is pressed on <em class="parameter"><code>drive</code></em>
+.</p>
+<div class="refsect3">
+<a name="GVolumeMonitor-drive-eject-button.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>volume_monitor</p></td>
+<td class="parameter_description"><p>The volume monitor emitting the signal.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>the drive where the eject button was pressed</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+<p class="since">Since: <a class="link" href="api-index-2-18.html#api-index-2.18">2.18</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GVolumeMonitor-drive-stop-button"></a><h3>The <code class="literal">“drive-stop-button”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> *volume_monitor,
+               <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>         *drive,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+<p>Emitted when the stop button is pressed on <em class="parameter"><code>drive</code></em>
+.</p>
+<div class="refsect3">
+<a name="GVolumeMonitor-drive-stop-button.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>volume_monitor</p></td>
+<td class="parameter_description"><p>The volume monitor emitting the signal.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>the drive where the stop button was pressed</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GVolumeMonitor-mount-added"></a><h3>The <code class="literal">“mount-added”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> *volume_monitor,
+               <a class="link" href="GMount.html" title="GMount"><span class="type">GMount</span></a>         *mount,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+<p>Emitted when a mount is added.</p>
+<div class="refsect3">
+<a name="GVolumeMonitor-mount-added.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>volume_monitor</p></td>
+<td class="parameter_description"><p>The volume monitor emitting the signal.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mount</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMount.html" title="GMount"><span class="type">GMount</span></a> that was added.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GVolumeMonitor-mount-changed"></a><h3>The <code class="literal">“mount-changed”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> *volume_monitor,
+               <a class="link" href="GMount.html" title="GMount"><span class="type">GMount</span></a>         *mount,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+<p>Emitted when a mount changes.</p>
+<div class="refsect3">
+<a name="GVolumeMonitor-mount-changed.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>volume_monitor</p></td>
+<td class="parameter_description"><p>The volume monitor emitting the signal.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mount</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMount.html" title="GMount"><span class="type">GMount</span></a> that changed.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GVolumeMonitor-mount-pre-unmount"></a><h3>The <code class="literal">“mount-pre-unmount”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> *volume_monitor,
+               <a class="link" href="GMount.html" title="GMount"><span class="type">GMount</span></a>         *mount,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+<p>May be emitted when a mount is about to be removed.</p>
+<p>This signal depends on the backend and is only emitted if
+GIO was used to unmount.</p>
+<div class="refsect3">
+<a name="GVolumeMonitor-mount-pre-unmount.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>volume_monitor</p></td>
+<td class="parameter_description"><p>The volume monitor emitting the signal.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mount</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMount.html" title="GMount"><span class="type">GMount</span></a> that is being unmounted.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GVolumeMonitor-mount-removed"></a><h3>The <code class="literal">“mount-removed”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> *volume_monitor,
+               <a class="link" href="GMount.html" title="GMount"><span class="type">GMount</span></a>         *mount,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+<p>Emitted when a mount is removed.</p>
+<div class="refsect3">
+<a name="GVolumeMonitor-mount-removed.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>volume_monitor</p></td>
+<td class="parameter_description"><p>The volume monitor emitting the signal.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mount</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMount.html" title="GMount"><span class="type">GMount</span></a> that was removed.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GVolumeMonitor-volume-added"></a><h3>The <code class="literal">“volume-added”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> *volume_monitor,
+               <a class="link" href="GVolume.html" title="GVolume"><span class="type">GVolume</span></a>        *volume,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+<p>Emitted when a mountable volume is added to the system.</p>
+<div class="refsect3">
+<a name="GVolumeMonitor-volume-added.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>volume_monitor</p></td>
+<td class="parameter_description"><p>The volume monitor emitting the signal.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>volume</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GVolume.html" title="GVolume"><span class="type">GVolume</span></a> that was added.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GVolumeMonitor-volume-changed"></a><h3>The <code class="literal">“volume-changed”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> *volume_monitor,
+               <a class="link" href="GVolume.html" title="GVolume"><span class="type">GVolume</span></a>        *volume,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+<p>Emitted when mountable volume is changed.</p>
+<div class="refsect3">
+<a name="GVolumeMonitor-volume-changed.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>volume_monitor</p></td>
+<td class="parameter_description"><p>The volume monitor emitting the signal.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>volume</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GVolume.html" title="GVolume"><span class="type">GVolume</span></a> that changed.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GVolumeMonitor-volume-removed"></a><h3>The <code class="literal">“volume-removed”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GVolumeMonitor.html" title="GVolumeMonitor"><span class="type">GVolumeMonitor</span></a> *volume_monitor,
+               <a class="link" href="GVolume.html" title="GVolume"><span class="type">GVolume</span></a>        *volume,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+<p>Emitted when a mountable volume is removed from the system.</p>
+<div class="refsect3">
+<a name="GVolumeMonitor-volume-removed.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>volume_monitor</p></td>
+<td class="parameter_description"><p>The volume monitor emitting the signal.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>volume</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GVolume.html" title="GVolume"><span class="type">GVolume</span></a> that was removed.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GVolumeMonitor.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="GFileMonitor.html" title="GFileMonitor"><span class="type">GFileMonitor</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

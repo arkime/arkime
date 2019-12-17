@@ -1,0 +1,4152 @@
+=== ChangeLog discontinued ===
+
+	With the move to git, GLib is switching from a ChangeLog file
+	to relying on commit messages to provide change history. Please
+	see README.commits for guidance on the expected message format.
+
+2009-03-13  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.20.0 ===
+
+2009-03-02  Matthias Clasen <mclasen@redhat.com>
+
+	* === Released 2.19.10 ===
+
+2009-03-02  Matthias Clasen <mclasen@redhat.com>
+
+	* === Released 2.19.9 ===
+
+2009-03-01  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 573128 – A couple of typos in GObject documentation
+
+	* gobject/tut_gobject.xml: Fix some typos. Reported by Dimitri Vorbiev
+
+2009-02-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.19.8 ===
+
+2009-02-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.19.7 ===
+
+2009-02-06  Stefan Kost  <ensonic@users.sf.net>
+
+	* gio/gio-docs.xml:
+	* glib/glib-docs.sgml:
+	* gobject/gobject-docs.sgml:
+	  Add online urls for library.gnome.org. This allows other docs to do
+          gtkdoc-rebase --online --html-dir=html
+          before publishing docs and have working xrefs.
+
+2009-02-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.19.6 ===
+
+2009-01-19  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.19.5 ===
+
+2009-01-13  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt:
+	* glib/tmpl/base64.sgml: Mention g_base64_decode_inplace
+
+2009-01-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.19.4 ===
+
+2009-01-02  Matthias Clasen <mclasen@redhat.com>
+
+	* glib/tmpl/string_utils.sgml: Move most function docs inline.
+
+2009-01-01  Matthias Clasen <mclasen@redhat.com>
+
+	Bug 565831 – error in interface creation sample
+
+	* gobject/tut_howto.xml: Fix an example. Pointed out by
+	Jens Georg.
+
+2008-12-15  Matthias Clasen <mclasen@redhat.com>
+
+	* === Released 2.19.3 ===
+
+2008-12-08  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/gio-sections.txt: Add new functions
+
+2008-12-07  Behdad Esfahbod  <behdad@gnome.org>
+
+	Bug 563156 – Document printing and scanning gunichar values
+
+	* glib/tmpl/unicode.sgml: Document printing and scanning gunichar
+	values.
+
+2008-12-07  Behdad Esfahbod  <behdad@gnome.org>
+
+	Bug 563150 – G_GU?INT*_MODIFIER/FORMAT docs
+
+	* glib/tmpl/glib-unused.sgml:
+	* glib/tmpl/macros_misc.sgml:
+	* glib/tmpl/types.sgml:
+	Update docs to mention scanning as well as printing.
+	Cross reference these from their respective types.
+
+2008-12-01  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.19.2 ===
+
+2008-12-01  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.19.1 ===
+
+2008-12-01  Alexander Larsson  <alexl@redhat.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        * gio/gio-sections.txt:
+
+2008-11-30  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/running.sgml: Mention all and help special options in
+	debug envvars.
+
+2008-11-30  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 562538 – GObject interface tutorial shouldn't finalise with
+	"Please forget everything"
+
+	* gobject/tut_gtype.xml: Remove the questionable closing sentence
+	and all references to private functions. Pointed out by Christian
+	Dywan.
+
+2008-11-28  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 559452 – GObject Reference Manual (typo)
+	Bug 559462 – GObject Reference Manual (typo)
+	Bug 559517 – GObject Reference Manual (typo)
+
+	* gobject/tut_howto.xml:
+	* gobject/tut_gsignal.xml: 
+	* gobject/tut_gobject.xml: Fix typos, found by Andrew Feren.
+
+2008-11-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/gio-sections.txt: Add g_app_info_get_commandline
+
+2008-11-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/keyfile.sgml: Explain locale identifiers in
+	more detail
+
+2008-11-28  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 562549 – g_byte_array_free should tell how free data
+
+	* glib/tmpl/arrays_byte.sgml: Improve docs, proposed by
+	Guillaume Desmottes
+
+2008-11-21  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/Makefile.am:
+	* gobject/Makefile.am:
+	* gio/Makefile.am: Use a new gtk-doc feature to generate
+	much nicer indices.
+
+2008-11-14  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Add G_STATIC_ASSERT and friends
+
+2008-11-14  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/gio-sections.txt: Add G_FILE_ATTRIBUTE_PREVIEW_ICON
+
+2008-11-10  Behdad Esfahbod  <behdad@gnome.org>
+
+	Bug 559448 – GObject Reference Manual (typo)
+
+	* gobject/tut_gobject.xml: Fix typo.
+
+2008-11-03 Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 552776 – ac_cv_func_posix_getgrgid_r not mentioned
+
+	* glib/cross.sgml: Mention ac_cv_func_posix_getgrgid_r.
+
+2008-10-29 16:04:38  Tim Janik  <timj@gtk.org>
+
+	* glib/tmpl/macros_misc.sgml: Clarified/added docs for
+	G_STRINGIFY, G_PASTE and G_STATIC_ASSERT, based on
+	patches from Christian Persch and  Christian Dywan.
+
+2008-10-21  Alexander Larsson  <alexl@redhat.com>
+
+        * gio/gio-sections.txt:
+	Update with new symbolse
+
+2008-10-16  Matthias Clasen <mclasen@redhat.com>
+
+	* === Released 2.19.0 ===
+
+	* gio/gio-sections.txt: Add new api
+
+	* gobject/gobject-docs.sgml: 
+	* gio/gio-docs.xml: Add new indexes
+
+2008-10-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/Makefile.am: Don't specify multiple directories in
+	DOC_SOURCE_DIR. It doesn't work.
+
+2008-09-26  Dan Winship  <danw@gnome.org>
+
+	* glib/tmpl/testing.sgml: Fix lots of typos, document
+	g_assert_error() and g_assert_no_error()
+
+2008-09-26`  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/iochannel.sgml: Move more docs inline
+
+2008-09-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.18.1 ===
+
+2008-09-15  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 552359 – g_file_info_get_icon should return GThemedIcon, and
+	g_themed_icon_get_names shold be documented ?
+
+	* gio/gio-sections.txt: Add g_themed_icon_get_names. 
+
+2008-09-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/modules.sgml: Reinstate docs that somehow got lost.
+
+2008-09-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.18.0 ===
+
+2008-09-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/gobject-sections.txt: Add g_object_get_type
+
+2008-09-02  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 550056 – Missing documentation for g_emblemed_icon_get_emblems
+
+	* gio/gio-sections.txt: Add some missing GEmblem functions.
+	Noticed by Cosmio Cecchi
+
+2008-08-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/i18n.sgml: Add hint about intltool to NC_() docs.
+
+2008-08-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.17.7 ===
+
+2008-08-16  Matthias Clasen  <mclasen@redhat.com>
+	
+	* gio/gio-sections.txt: Fix a typo
+
+2008-08-15  Tor Lillqvist  <tml@novell.com>
+
+	* glib/tmpl/threads.sgml: Add an exception: g_mem_set_vtable() may
+	be called before g_thread_init().
+
+2008-08-15  Tor Lillqvist  <tml@novell.com>
+
+	* glib/tmpl/threads.sgml: Warn about the consequences of not
+	calling g_thread_init() first, if it will be called at all. Advice
+	calling it if using random GLib-based libraries.
+
+2008-08-11  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 547262 – Missing link in the docs
+
+	* glib/tmpl/gregex.sgml: Fix a reference.
+	Pointed out by Bastien Nocera
+
+2008-08-04  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.17.6 ===
+
+2008-08-04  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/gio.types:
+	* gio/gio-docs.xml:
+	* gio/gio-sections.txt: Add Gemblem
+
+2008-08-04  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.17.5 ===
+
+2008-08-04  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/gobject-docs.sgml: Add a 2.18 index
+
+2008-08-01  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/gio-sections.txt: Add some more GEmblemedIcon things.
+
+	* glib/tmpl/testing.sgml: Fix a typo. Noticed by Marek Kasik.
+
+2008-07-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Add g_markup_context_get_user_data
+
+2008-07-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/gio-sections.txt:
+	* gio/gio-docs.xml: Add GEmblemedIcon 
+
+2008-07-21  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.17.4 ===
+
+2008-07-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/gobject-sections.txt: Add new signal api.
+
+2008-07-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt:
+	* glib/tmpl/i18n.sgml: Add new gettext stuff
+
+2008-07-18  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 530759 – update the gobject tutorial to the XXI century
+
+	* gobject/*: Some updates to the tutorial. Patch by Emmanuele
+	Bassi.
+
+2008-07-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/gio-sections.txt: Add g_content_type_guess_for_tree
+
+2008-07-16  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 543220 – Case collision on gio-extension-points.html
+
+	Reported by Ryan Schmidt
+	* gio/overview.xml: Rename id to avoid filename conflict.
+
+2008-07-16  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 543168 – Description of G_SLICE=debug-blocks discourages its use
+
+	* glib/running.sgml: Improve docs of G_SLICE=debug-blocks.
+	Patch by Alessandro Vesely.
+
+2008-07-08  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/gio-sections.txt: Add new GMount functions
+
+2008-07-05  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 521589 – [RFC] gobject documentation should mention Vala
+
+	* gobject/tut_tools.xml: Add a reference to Vala.
+	Patch by Marc-Andre Lureau.
+
+2008-07-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Move g_strcmp0 to a more appropriate
+	place in the docs.
+
+2008-07-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.17.3 ===
+
+2008-07-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/gio-sections.txt: Add g_desktop_app_info_new_from_keyfile
+	and g_file_monitor
+
+2008-07-01  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/gio.types: Add missing types. Pointed out by David Zeuthen.
+
+2008-06-24  Michael Natterer  <mitch@imendio.com>
+
+	* glib/Makefile.am
+	* gobject/Makefile.am: don't comment out the include of
+	Makefile.decl just because there are no tests. It needs to be
+	included in each Makefile.am or make check will fail.
+
+2008-06-22  Stefan Kost  <ensonic@users.sf.net>
+
+	* glib/Makefile.am:
+	* gobject/Makefile.am:
+	  Unify the Makefiles. In glib only scan glib folders.
+
+2008-06-16  Ross Burton  <ross@burtonini.com>
+
+	* gio/gio-sections.txt:
+	Add g_file_enumerator_get_container.
+
+2008-06-14  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/macros_misc.sgml: Document G_GNUC_MAY_ALIAS
+
+	* glib/tmpl/testing.sgml: Move docs around, and add more
+
+	* glib/tmpl/unicode.sgml: Document break types
+
+	* glib/tmpl/hash_tables.sgml: Add docs for GHashTableIter
+
+2008-06-12  Matthias Clasen  <mclasen@redhat.com>
+	
+	* === Released 2.17.2 ===
+
+2008-06-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.17.1 ===
+
+2008-06-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/gio-sections.txt: Add some new symbols
+
+2008-06-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/running.sgml: Remove mention of G_WIN32_PRETEND_WIN9X
+
+2008-06-12  Ross Burton  <ross@burtonini.com>
+
+	* gio/gio-sections.txt:
+	Add g_file_make_directory_with_parents.
+
+2008-06-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Testing documentation fixups
+
+2008-06-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gtester.xml:
+	* glib/gtester.1:
+	* glib/gtester-report.xml:
+	* glib/gtester-report.1:
+	* glib/glib-docs.sgml:
+	* glib/Makefile.am: Add gtester, gtester-report man pages
+
+2008-06-11  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/glib-sections.txt: Add g_dgettext() and g_dngettext().
+
+2008-06-11  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 535418 – Please document which glib version defines goffset
+
+	* glib/tmpl/types.sgml: Add a Since tag for goffset
+	Proposed by Holger Berndt
+
+2008-06-11  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 528715 – Misprint in the description of the interface
+	g_type_class_add_private
+
+	* glib/tmpl/macros_misc.sgml:
+	* gobject/tmpl/gclosure.sgml:
+	* gobject/tmpl/gtype.sgml: Fix typos
+	Noticed by Areg Beketovski
+
+2008-06-11  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 528714 – Misprint in the description of the interface 
+	g_param_spec_flags
+
+	* gobject/tmpl/param_value_types.sgml: Fix a typo.
+	Pointed out by Areg Beketovski
+
+2008-06-11  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 537260 – Doc bug in G_TYPE_INSTANCE_GET_CLASS()
+
+	* gobject/tmpl/gtype.sgml: Fix unclear parameter descriptions.
+	Pointed out by Behdad Esfahbod
+
+2008-06-11  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 530527 – Misprint in the description of the interface
+	g_cclosure_marshal_VOID__FLAGS
+
+	* gobject/tmpl/gclosure.sgml: Fix a duplication.
+	Noticed by Areg Beketovski
+
+2008-06-11  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 530526 – Misprint in the description of the fields 'class_init' 
+	and 'class_finalize' of the structure GTypeInfo
+
+	* gobject/tmpl/gtype.sgml: Improve GTypeInfo docs
+	Proposed by Areg Beketovski
+
+2008-06-11  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 528719 – Improvement to the documentation of the
+	"g_object_connect" interface
+
+	* gobject/tmpl/objects.sgml: Improve the documentation of
+	g_object_connect. Proposed by Areg Bketovski
+
+2008-06-11  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 528172 – gtk_signal_handlers_unblock_* functions return value
+	amount of matched signals, not amount of actually unblocked.
+
+	* gobject/tmpl/signals.sgml: Fix documentation of return value
+	of functions that operate on matched signal handlers.
+
+2008-06-11  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 528717 – Misprint in the description of the parameter 
+	'type_id' for the interface g_type_register_fundamental
+
+	* gobject/tmpl/gtype.sgml: Remove references to GTypeFundamentals
+	Pointed out by Areg Beketovski
+
+2008-06-11  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 528716 – Misprint in the description of the parameter 
+	'iface_data' for the callback types GInterfaceInitFunc and 
+	GInterfaceFinalizeFunc
+
+	* gobject/tmpl/gtype.sgml: Fix description of parameters
+	for GInterface{Init/Finalize}Func.
+	Pointed out by Areg Beketovski
+
+2008-06-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/gparamspec.sgml: Document G_PARAM_STATIC_NICK
+
+2008-06-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/gio-sections.txt: Add g_themed_icon_prepend_name
+
+2008-06-10 14:06:34  Tim Janik  <timj@imendio.com>
+
+	* gobject/tmpl/gtype.sgml: fixed documentation regarding type checking
+	macros that do and do not issue warnings.
+
+2008-05-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-docs.sgml:
+	* gio/gio-docs.sgml: Add indexes of 2.18 additions
+
+2008-05-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.17.0 ===
+
+2008-05-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/compiling.sgml: Document G_DISABLE_SINGLE_INCLUDES
+
+2008-05-27  Michael Natterer  <mitch@gimp.org>
+
+	* glib/tmpl/gurifuncs.sgml
+	* glib/tmpl/testing.sgml: new files.
+
+	* glib/tmpl/unicode.sgml
+	* glib/tmpl/macros_misc.sgml
+	* glib/tmpl/checksum.sgml: regenerated.
+
+	* Updated lots of svn:ignore all over the place.
+
+2008-05-27  Matthias Clasen  <mclasen@redhat.com>
+	
+	Bug 535021 – g_param_spec_internal documentation should 
+	describe purpose of nick and blurb
+
+	* gobject/tmpl/gparamspec.sgml: Explain nicks and blurbs
+	some more.
+
+2008-05-26  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-docs.sgml: Add 2.18 index
+
+	* glib/glib-sections.txt: Add g_checksum_reset
+
+2008-05-25  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/gclosure.sgml: Fix docs for
+	g_cclosure_marshal_STRING__OBJECT_POINTER. (#534177, Areg Beketovski)
+
+2008-05-18  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 527214 – g_timer_elapsed() returns random values.
+
+	* docs/reference/glib/tmpl/timers.sgml:
+	Add notes regarding gthreads dependency. 
+	Patch by Mathias Hasselmann
+
+2008-05-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/gio-sections.txt: Add new api
+
+2008-05-17  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 528648 – Extra >s in Object Construction section...
+
+	* gobject/tut_howto.xml: Fix a formatting glitch
+
+2008-05-14  Tor Lillqvist  <tml@novell.com>
+
+	* glib/tmpl/spawn.sgml: Don't mention fork()/exec() in the short
+	description. fork()/exec() is an implementation detail on Unix.
+
+2008-04-07  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/unicode.sgml: Updates for Unicode 5.1
+
+2008-04-07  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 526572 – Missing * in declaration of parent_class in Object
+	Destruction section of GObject Reference Manual
+
+	* gobject/tut_howto.xml: Add missing *.
+
+2008-04-03  Matthias Clasen  <mclasen@redhat.com>
+
+	Bug 525553 – fix typo and nitpicking in GArray documentation
+
+	* glib/tmpl/arrays.sgml: Correct an index in an example,
+	pointed out by Paul Bolle
+
+2008-03-30  Matthias Clasen  <mclasen@redhat.com>
+	
+	* gio/gio-sections.txt: Add g_file_query_file_type.
+
+2008-03-30  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt:
+	* glib/tmpl/macros-misc.sgml: Document G_GNUC_ALLOC_SIZE
+	macros
+
+2008-03-28  A. Walton  <awalton@svn.gnome.org>
+
+	* gio/overview.xml:
+	Document GIO_EXTRA_MODULES, fixes a small typo.
+
+2008-03-19  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/overview.xml: Document GVS_DISABLE_FUSE.
+
+2008-03-12  Benjamin Otte  <otte@gnome.org>
+
+	* gio/gio-sections.txt:
+	g_file_contains_file() doesn't exist anymore
+
+2008-03-10  Matthias Clasen  <mclasen@redhat.com>
+	
+	* === Released 2.16.1 ===
+
+2008-03-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.16.0 ===
+
+2008-03-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/linked_lists_double.sgml:
+	* glib/tmpl/linked_lists_single.sgml: Remove docs that have
+	been inlined.
+
+2008-03-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/types.sgml: Add a Since marker for goffset (#521013,
+	Charles Kerr)
+
+2008-02-29  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/linked_lists_double.sgml: Move docs inline
+
+2008-02-25  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.15.6 ===
+
+2008-02-23  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/gio-sections.txt: Updates
+
+2008-02-21  Tor Lillqvist  <tml@novell.com>
+
+	* glib/running.sgml: Clarify character set issues on Windows.
+
+2008-02-13  Ryan Lortie  <desrt@desrt.ca>
+
+        * gio/gio-sections.txt: add G_FILE_ATTRIBUTE_TRASH_ITEM_COUNT
+
+2008-02-12  Matthias Clasen <mclasen@redhat.com>
+
+	* gio/migration.xml: Add a note about mime monitoring
+
+2008-02-11  Matthias Clasen <mclasen@redhat.com>
+
+	* === Released 2.15.5 ===
+
+2008-02-11  Matthias Clasen <mclasen@redhat.com>
+
+	* gio/gio-docs.xml:
+	* gio/gio-sections.txt:
+	* gio/overview.xml: Documentation additions
+
+2008-02-10  Philip Withnall  <pwithnall@svn.gnome.org>
+
+	* glib/tmpl/modules.sgml: Improve the documentation for
+	the G_MODULE_EXPORT macro. (#514470)
+
+2008-02-09  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/i18n.sgml: Improve the documentation for the
+	N_() macro.  (#514053, Tommi Vainikainen)
+
+2008-01-29  Christian Persch  <chpe@gnome.org>
+
+	* glib/tmpl/macros_misc.sgml: G_GNUC_[PRETTY_]FUNCTION are
+	deprecated since 2.16, not 2.14.
+
+2008-01-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.15.4 ===
+
+2008-01-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/trees-nary.sgml: Move docs inline
+
+2008-01-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/macros_misc.sgml: Document G_GNUC_(PRETTY)_FUNCTION
+	as deprecated.
+
+2008-01-24  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/migration.xml: Some more
+
+2008-01-23  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/migration.xml: Add something on trash handling
+	and some very sketchy information on gnome_vfs_xfer
+
+2008-01-23  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/overview.xml: Document environment
+	variables used by GIO.
+
+2008-01-21  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.15.3 ===
+
+2008-01-20  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/gio-sections.txt: Additions
+
+2008-01-14  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.15.2 ===
+
+2008-01-11  Matthias Clasen  <mclasen@redhat.com>
+	
+	* glib/*: Hook up gtestutils docs.
+	
+2008-01-08  Alexander Larsson  <alexl@redhat.com>
+
+        * gio/gio-docs.xml:
+        * gio/migrating.xml:
+	Remove GDirectoryMonitor refernces
+
+008-01-07  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.15.1 ===
+
+2008-01-07  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt:
+	* gio/gio-sections.txt: Update to api changes
+
+2008-01-06  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/building.sgml: Document new dependencies and 
+	configure options.
+
+2007-12-31  Wouter Bolsterlee  <wbolster@svn.gnome.org>
+
+	* gio/migrating.xml: Fixed invalid XML entity
+
+2007-12-31  Wouter Bolsterlee  <wbolster@svn.gnome.org>
+
+	* glib/tmpl/macros_misc.sgml: Fixed typo
+
+2007-12-30  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/Makefile.am:
+	* gio/gio-sections.txt: Updates
+
+2007-12-29  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/spawn.sgml: Add a warning about allowed functions
+	between fork() and exec().
+
+2007-12-24  Benjamin Otte  <otte@gnome.org>
+
+	* glib/tmpl/timers.sgml: Add a warning about g_thread_init
+	invalidating timers. (#491218)
+
+2007-12-24  Mathias Hasselmann  <mathias@openismus.com>
+
+	Fix typo in g_try_new0 docs (#505195, Felix Riemann).
+
+	* docs/reference/glib/tmpl/memory.sgml: Reference
+	n_structs, instead of non-existant n_counts argument.
+
+2007-12-22  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/gtypemodule.sgml: Fix a typo
+
+2007-12-20  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.15.0 ===
+
+2007-12-19  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/migrating.xml:
+	* gio/overview.xml:
+	Some minor fixes and additions.
+	
+2007-12-17  Matthias Clasen <mclasen@redhat.com>
+
+	* gio: Flesh out the overview and migration docs.
+
+2007-12-17  Matthias Clasen <mclasen@redhat.com>
+
+	* gio/migration.xml: Stub of a migration chapter
+	* gio/overview.xml: Stub of an overview
+	* gio/gvfs-overview.{odg,png}: Overview diagram taken
+	from Alex Guadec slides.
+
+	* gio/Makefile.am:
+	* gio/gio-docs.xml: Include these
+
+2007-12-17  Matthias Clasen <mclasen@redhat.com>
+
+	* gio/gio-sections.txt: Updates
+
+2007-12-14  Matthias Clasen <mclasen@redhat.com>
+
+	* glib/tmpl/hash_tables.sgml:
+	* glib/glib-sections.txt: Add hash iterator functions
+
+2007-12-10  Matthias Clasen <mclasen@redhat.com>
+
+	* gio/gio-sections.txt:
+	* gio/gio-docs.xml:
+	* gio/gio.types: Add gdesktopappinfo
+
+2007-12-10  Bastien Nocera  <hadess@hadess.net>
+
+	* glib/tmpl/keyfile.sgml: Mention the difference
+	in handling booleans between GKeyFile and .INI files
+	(Closes: #468882)
+
+2007-12-10  Alexander Larsson  <alexl@redhat.com>
+
+	* gio/Makefile.am:
+	Remove more internal headers.
+	
+	* gio/gio-sections.txt:
+	Update for changes
+
+2007-12-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/Makefile.am: Ignore gioalias.h
+	* gio/gio-sections.txt: Updates
+
+2007-12-07  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/tmpl/date.sgml: Fix tiny grammar typo.
+
+2007-12-04  Emmanuele Bassi  <ebassi@gnome.org>
+
+	* glib/glib-sections.txt: Add GChecksum public API.
+
+	* glib/tmpl/checksum.sgml:
+	* glib/glib-docs.sgml: Add the checksums API page.
+
+2007-11-29  Behdad Esfahbod  <behdad@gnome.org>
+
+	Bug 500361 – Improve docs for g_array_free() and g_ptr_array_free()
+
+	* glib/tmpl/arrays.sgml:
+	* glib/tmpl/arrays_pointer.sgml:
+	Document how to free the return value.
+
+2007-11-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/gio-sections.txt: More cleanup
+
+	* gio/gio.types: Remove internal types
+
+2007-11-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/gio-sections.txt: Remove nonexisting functions
+
+2007-11-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/gio-sections.txt: Some additions
+
+2007-11-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* gio/gio-sections.txt:
+	* gio/gio-docs.xml:
+	* gio/gio.types: Update for api changes
+
+2007-11-26  Alexander Larsson  <alexl@redhat.com>
+
+	* Makefile.am:
+	* gio/Makefile.am:
+	* gio/gio-docs.xml:
+	* gio/gio-sections.txt:
+	* gio/gio.types:
+	* gio/version.xml.in:
+	Add gio docs
+
+2007-11-23  Matthias Clasen <mclasen@redhat.com>
+
+	* glib/tmpl/i18n.sgml:
+	* glib/glib-sections.txt: Add g_dpgettext(), C_()
+
+2007-11-18  Matthias Clasen <mclasen@redhat.com>
+
+	* glib/tmpl/option.sgml: Update the example to demonstrate
+	error handling.  (#497033, Matti Katila)
+
+2007-11-09  Matthias Clasen <mclasen@redhat.com>
+
+	* glib/tmpl/patterns.sgml: Add a warning about strlen vs
+	g_utf8_strlen.  (#455725, Michael Rasmussen)
+
+	* glib/tmpl/date.sgml: Add a footnote explaining leap years.
+	(#491982, Areg Beketovski)
+
+	* glib/tmpl/date.sgml: Improve g_date_clamp docs.  (#491970,
+	Areg Beketovski)
+
+2007-11-08  Matthias Clasen <mclasen@redhat.com>
+
+	* glib/tmpl/memory.sgml
+	* glib/tmpl/hooks.sgml: Cleanups and fixes
+
+2007-11-08  Matthias Clasen <mclasen@redhat.com>
+
+	* glib/tmpl/thread_pools.sgml: Fix the GThreadPool docs. 
+	(#491959, Areg Beketovski)
+
+2007-11-07  Matthias Clasen <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Add g_markup_parse_context_get_element_stack
+
+2007-11-07  Matthias Clasen <mclasen@redhat.com>
+
+	* glib/building.sgml: Fix a typo
+
+2007-11-07  Matthias Clasen <mclasen@redhat.com>
+
+	* === Released 2.14.3 ===
+
+2007-11-05  Mathias Hasselmann  <mathias@openismus.com>
+
+	* docs/reference/gobject/tut_gtype.xml: Use correct naming conventions
+	when explaining maman_bar_get_type(). (#493688) Mention G_DEFINE_TYPE.
+
+2007-10-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/gparamspec.sgml: Small update  (#477704, Ross Burton)
+
+2007-10-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.14.2 ===
+
+2007-10-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/param_value_types.sgml: Add some discussion on 
+	g_value_set_object() vs g_value_take_object().  (#477957, Davyd
+	Madeley)
+
+2007-09-19  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/building.sgml: Fix gettext URL. (#478349, kraai ftbfs.org)
+
+2007-09-19  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.14.1 ===
+
+2007-09-16  Matthias Clasen  <mclasen@redhat.com>
+	
+	* glib/Makefile.am: Remove reference to trio
+
+2007-09-11  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/error_reporting.sgml: Add an example.  (#474229,
+	Rob Bradford)
+
+2007-09-09  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/tmpl/warnings.sgml: Improve G_BREAKPOINT docs. (#474899)
+
+2007-09-05  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/tmpl/glib-unused.sgml:
+	* glib/tmpl/macros_misc.sgml:
+	* glib/tmpl/main.sgml:
+	* gobject/tmpl/gparamspec.sgml:
+
+Tue Aug 28 19:04:12 2007  Tim Janik  <timj@gtk.org>
+
+	* glib/tmpl/memory_slices.sgml: clarified alignment
+	expectations for g_slice_alloc().
+
+2007-08-20  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/tmpl/unicode.sgml: Document that GUnicodeScript is
+	interchangeable with PangoScript.
+
+2007-08-20  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/tmpl/spawn.sgml:
+	Fix typos (#468694).
+
+2007-08-15  Mikael Hallendal  <micke@imendio.com>
+
+	* glib/tmpl/keyfile.sgml: Clearify that only comments can precede
+	groups in Key-files. (#466768)
+
+2007-08-03  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.14.0 ===
+
+2007-07-21  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Additions
+
+2007-07-21  Matthias Clasen  <mclasen@redhat.com>
+	
+	* glib/tmpl/fileutils.sgml: Fix an inaccuracy in the
+	G_FILE_TEST_IS_REGULAR docs, pointed out by
+	Vincent Untz.  (#417068)
+
+2007-07-20  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/limits.sgml:
+	* glib/tmpl/types.sgml:
+	* glib/glib-sections.txt: Add new functions
+
+2007-07-19  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/glib-sections.txt:
+
+2007-07-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.13.7 ===
+
+Thu Jul 12 18:28:47 2007  Tim Janik  <timj@gtk.org>
+
+	* gobject/tmpl/gtype.sgml: fixed g_type_name() docs to forbid passing in
+	invalid type IDs.
+
+Thu Jul 12 15:45:27 2007  Tim Janik  <timj@imendio.com>
+
+	* glib/tmpl/threads.sgml: document major caveat of g_private_set/g_private_get,
+	i.e. not retaining private data across g_thread_init.
+
+Tue Jul 10 13:11:55 2007  Tim Janik  <timj@imendio.com>
+
+	* glib/tmpl/types.sgml: corrected descriptions of gsize and gssize.
+
+Tue Jul 10 13:04:03 2007  Tim Janik  <timj@imendio.com>
+
+	* minor docu build fixes.
+
+Tue Jul 10 12:31:04 2007  Tim Janik  <timj@imendio.com>
+
+	* glib/tmpl/threads.sgml: document g_once_init_enter and g_once_init_leave.
+
+2007-07-09  Matthias Clasen <mclasen@redhat.com>
+
+	* tmpl/modules.sgml: Remove duplicate paragraph.
+	(#45786, Ruben Vermeersch)
+
+	* tmpl/modules.sgml: Remove duplicate code from
+	an example. (#454785, Ruben Vermeersch)
+
+Mon Jul  9 10:23:53 2007  Tim Janik  <timj@imendio.com>
+
+	* gobject/tmpl/gclosure.sgml: GClosure docu fixes from Guillaume
+	Cottenceau, #383155.
+
+Fri Jun 29 2007  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.13.6 ===
+
+Wed Jun 27 11:43:01 2007  Tim Janik  <timj@gtk.org>
+
+	* gobject/tmpl/gtype.sgml (initializers): typo fix, #451459.
+
+2007-06-23  Emmanuele Bassi  <ebassi@gnome.org>
+
+	* glib/tmpl/memory.sgml: Add a clarification about pairing the
+	memory allocation and free functions, and not mix system's
+	malloc/free with the corresponding GLib ones. (#450216, Hubert
+	Figuiere)
+
+2007-06-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.13.5 ===
+
+2007-06-18  Emmanuele Bassi  <ebassi@gnome.org>
+
+	* glib/glib-sections.txt: Add g_timeout_add_seconds_full().
+
+2007-06-17  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/tmpl/quarks.sgml:
+
+2007-06-16  Emmanuele Bassi  <ebassi@gnome.org>
+
+	* glib/tmpl/macros.sgml: Document the undefined behaviour of
+	CLAMP() if low > high. (#448260)
+
+2007-06-13  Sven Neumann  <sven@gimp.org>
+
+	* glib/glib-sections.txt
+	* glib/tmpl/memory_slices.sgml: document g_slice_copy() and
+	g_slice_dup().
+
+2007-06-13  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/warnings.sgml: Add some verbiage about
+	intended use cases for the g_return macros, inspired
+	by a bugzilla comment by Havoc Pennington.
+
+2007-06-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.13.4 ===
+
+2007-06-04  Matthias Clasen  <mclasen@redhat.com>
+	
+	* === Released 2.13.3 ===
+
+2007-06-04  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt:
+	* glib/tmpl/misc_utils.sgml: Add g_get_special_user_dir()
+	and GUserDirectory.
+
+2007-05-30  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/i18n.sgml: Add some hints about
+	xgettext invokation.
+
+2007-05-30  Dan Winship  <danw@novell.com>
+
+	* glib/glib-sections.txt: 
+	* glib/tmpl/keyfile.sgml: add G_KEY_FILE_DESKTOP_* macros
+
+2007-05-26  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/objects.sgml: Fix a typo
+
+2007-05-22  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.13.2 ===
+
+2007-05-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/messages.sgml: Fix a typo (#436547,
+	Guillaume Desmottes)
+
+2007-05-14  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/running.sgml: Document g_slice_debug_tree_statistics
+	as debug-only functionality.
+
+2007-05-11  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/option.sgml: Document new G_OPTION_ARG_REMAINING
+	functionality.
+
+2007-05-03  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/glib-sections.txt:
+	* glib/tmpl/messages.sgml:
+	Add g_unichar_ismark().
+
+2007-05-03  Matthias Clasen <mclasen@redhat.com>
+
+	* === Released 2.13.1 ===
+
+2007-04-30  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Add new regex functions
+
+2007-04-30  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: 
+	* glib/tmpl/gregex.sgml: Update for the GRegex/GMatchInfo
+	split.
+
+2007-04-24  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Add g_option_context_get_help.
+
+2007-04-11  Emmanuele Bassi  <ebassi@gnome.org>
+
+	* glib/glib-sections.txt: Add new hash functions.
+
+2007-04-02  Ryan Lortie  <desrt@desrt.ca>
+
+	* gobject/tmpl/objects.sgml: Document ->constructed().
+
+2007-03-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/thread_pools.sgml:
+	* glib/tmpl/strings.sgml:
+	* glib/tmpl/string_chunks.sgml:
+	* glib/tmpl/spawn.sgml:
+	* glib/tmpl/patterns.sgml:
+	* glib/tmpl/modules.sgml:
+	* glib/tmpl/memory_slices.sgml:
+	* glib/tmpl/memory.sgml:
+	* glib/tmpl/gregex.sgml: Trivial cleanups
+
+2007-03-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.13.0 ===
+
+Fri Mar 16 16:04:42 2007  Tim Janik  <timj@gtk.org>
+
+	* glib/tmpl/scanner.sgml: some fixups, mention that changing scanner 
+	config during the parsing phase is supported behavior.
+
+2007-03-15  Marco Barisione <marco@barisione.org>
+
+	Add GRegex for regular expression matching.  (#50075)
+
+	* glib/Makefile.am:
+	* glib/glib-docs.sgml:
+	* glib/glib-sections.txt:
+	* glib/tmpl/glib-unused.sgml:
+	* glib/regex-syntax.sgml:
+	* glib/tmpl/gregex-unused.sgml:
+	* glib/tmpl/gregex.sgml: Add GRegex.
+
+	* glib/building.sgml: Document build options for GRegex.
+
+2007-03-14  Stefan Kost  <ensonic@users.sf.net>
+
+	* gobject/tmpl/gparamspec.sgml:
+	  Readd docs for G_PARAM_STATIC_NICK and add docs for new
+	  G_PARAM_STATIC_STRINGS (fixes #418021).
+
+2007-03-06  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/threads.sgml: Document G_ERRORCHECK_MUTEXES. (#412145)
+
+	* glib/tmpl/trees-nary.sgml: Fix a typo in the docs for
+	g_node_first_child().  (#409395, Vincent Untz)
+
+2007-02-11  Stefan Kost  <ensonic@users.sf.net>
+
+	* gobject/tut_gobject.xml:
+	* gobject/tut_gsignal.xml:
+	* gobject/tut_gtype.xml:
+	* gobject/tut_howto.xml:
+	* gobject/tut_intro.xml:
+	* gobject/tut_tools.xml:
+	Format XML to be more editable. Describe Interfaces better. Add a
+	footnote at first occurance of 'maman_'.
+
+2007-02-08  Stefan Kost  <ensonic@users.sf.net>
+
+	* gobject/tut_gobject.xml:
+	* gobject/tut_gsignal.xml:
+	* gobject/tut_gtype.xml:
+	* gobject/tut_howto.xml:
+	* gobject/tut_tools.xml:
+	Unify spelling of GObject and GType. Improve some wording. Update the
+	usage of private data. Make tables use row-spans and add id's to them.
+
+2007-01-30  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/gsignal.sgml: Correct a typo.
+	(#401994, Mariano Suarez-Alvarez)
+
+2007-01-26  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/macros_misc.sgml: Document G_GNUC_INTERNAL
+	support for Sun Studio.
+
+2007-01-23  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/objects.sgml: Document 
+	g_object_class_override_property as 2.4 addition (#399940, 
+	Ian Turner)
+
+2007-01-17  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/tmpl/macros_misc.sgml: Put back G_GNUC_HAVE_VISIBILITY
+	doc that was removed accidentally.
+
+2007-01-15  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/gparamspec.sgml; Document G_PARAM_STATIC_NICK.
+	(#396564, Vincent Untz)
+
+2007-01-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/keyfile.sgml: Small clarifications.
+
+2007-01-03  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/glib-sections.txt: Add g_unichar_iszerowidth.
+
+	* glib/tmpl/glib-unused.sgml:
+	* glib/tmpl/keyfile.sgml:
+	* glib/tmpl/macros_misc.sgml:
+	* glib/tmpl/messages.sgml:
+	* glib/tmpl/unicode.sgml:
+	Template changes.
+
+2007-01-02  Matthias Clasen  <mclasen@redhat.com>
+	
+	* glib/running.sgml: Remove C99ism from example.
+
+2006-12-31  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/threads.sgml: Fix whitespace.  (#391116)
+	
+2006-12-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/gtype.sgml: Updates
+
+	* gobject/tmpl/gtypemodule.sgml: Document dynamic type
+	registration macros.
+
+	* gobject/gobject-docs.sgml: Add "Since 2.14" index
+	* gobject/gobject-sections.txt: Add dynamic type macros
+
+2006-12-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/objects.sgml: Clarify a detail about
+	g_object_set_data_full.  (#343750, Christian Neumair)
+
+Wed Dec 27 15:56:53 2006  Tim Janik  <timj@gtk.org>
+
+	* glib/tmpl/memory_slices.sgml: 
+	* glib/running.sgml: document G_SLICE=debug-blocks.
+
+2006-12-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/running.sgml:
+	* glib/tmpl/option.sgml:
+	* glib/tmpl/date.sgml: Add hints for locale-dependent functions.
+
+2006-12-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/keyfile.sgml: Small clarification (#369908,
+	Tapani Pälli)
+
+2006-12-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/spawn.sgml: Refer to g_child_watch_add() in addition
+	to waitpid().
+
+	* gobject/tmpl/objects.sgml: Expand GObject::notify
+	documentation.  (#381722, Nickolay V. Shmyrev)
+
+	* gobject/tmpl/gparamspec.sgml: Add canonical-parameter-name id.
+
+2006-12-15  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-docs.sgml: Add a "Since 2.14" section.
+
+	* glib/glib-sections.txt: Add g_string_chunk_clear.
+	
+2006-12-14  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/*.xml: s/Gnome/GNOME/g (#352156, Guillaume Desmottes)
+
+	* glib/tmpl/keyfile.sgml: Clarify the behaviour
+	wrt. to duplicate keys and groups.
+
+2006-12-13  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/modules.sgml: Point out that valid symbols may be NULL.
+
+2006-10-08  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/unicode.sgml: Document GUnicodeType.
+
+2006-10-08  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Add g_unichar_get_script() and
+	GUnicodeScript.
+
+	* glib/tmpl/unicode.sgml: Document GUnicodeScript
+
+	* gobject/tmpl/enumerations_flags.sgml: Add a hint about
+	the requirement that enum and flags values must be static.
+
+2006-10-01  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/option.sgml: Improve example.  (#367625, Ross Burton) 
+
+Mon Sep 11 14:57:46 2006  Tim Janik  <timj@imendio.com>
+
+	* glib/running.sgml: documented G_DEBUG flags resident-modules
+	and bind-now-modules, patch by Christian Persch on bug #345099.
+
+2006-09-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Add new functions
+
+2006-08-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/compiling.sgml: Add a note about G_DISABLE_DEPRECATED.
+	(#353172, Matt Barnes)
+
+Wed Aug 16 13:55:39 2006  Tim Janik  <timj@imendio.com>
+
+	* glib/tmpl/trash_stack.sgml: added notes about complexity.
+
+2006-08-15  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.12.2 ===
+
+2006-08-10  Josh Parsons  <josh.parsons@stonebow.otago.ac.nz>
+
+	* gobject/tmpl/gtype.sgml:
+	* glib/tmpl/threads.sgml: Style and grammar fixes.
+
+2006-08-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/messages.sgml: Add some hints
+	about making warnings fatal.  (#348785, Matt
+	Barnes)
+
+2006-07-22  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.12.1 ===
+
+2006-07-20  Tor Lillqvist  <tml@novell.com>
+
+	* glib/tmpl/date.sgml: Improve doc for
+	g_date_strftime(). (#346197)
+
+2006-07-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/base64.sgml: Remove bogus reference
+	to nonexisting function.  (#346660, Mark Drago)
+	
+2006-07-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.12.0 ===
+
+2006-06-20  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.11.4 ===
+
+2006-06-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.11.3 ===
+
+2006-06-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.11.2 ===
+
+2006-06-01  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Add new hash table functions.
+	Add new g_source functions.
+
+Wed May 31 11:35:48 2006  Tim Janik  <timj@gtk.org>
+
+	* gobject/tmpl/gtype.sgml (Note): amend G_TYPE_CHAR according to #303622.
+
+2006-05-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/markup.sgml: Document G_MARKUP_TREAT_CDATA_AS_TEXT.
+
+2006-05-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Add g_ascii_strtoll
+
+2006-05-15  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.11.1 ===
+
+2006-05-13  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Document new api.
+
+2006-05-11  Bastien Nocera  <hadess@hadess.net>
+
+	* glib/tmpl/option.sgml: add documentation for G_OPTION_ARG_INT64
+
+2006-05-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/gtype.sgml: Updates
+
+2006-05-02  Matthias Clasen  <mclasen@redhat.com>
+	
+	* === Released 2.11.0 ===
+
+2006-05-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/gtypemodule.sgml: Document a little
+	pitfall with the last unref for an object.
+
+2006-04-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/unicode.sgml: Mention that GLib 2.12 will
+	support UCD 5.0.
+
+2006-04-21  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/gobject-sections.txt:
+	* gobject/tmpl/objects.sgml: 
+	* gobject/tmpl/gtype.sgml: Additions
+
+	* glib/glib-docs.sgml:
+	* gobject/gobject-docs.sgml: Add 2.12 indices.
+
+	* gobject/tmpl/gtype.sgml: Document g_type_register_static_simple
+
+2006-04-19  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/objects.sgml: Add some missing Since: 2.8 tags
+
+2006-04-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Add new keyfile api
+
+2006-04-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tut_gobject.xml: Say that ref/unref are thread-safe now.  
+	(#322883, Christophe Fergeau)
+	
+2006-04-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/signals.sgml: Document class_offset 0.
+	and that class_closure may be NULL.
+
+2006-04-04  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt:
+	* glib/glib-docs.sgml: Add Base64 section
+
+2006-04-03  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/objects.sgml: Add some verbiage to 
+	g_object_ref_sink_docs.  (#336677)
+
+2006-03-30  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/objects.sgml: Update the floating docs wrt
+	to GInitiallyUnowned.
+
+	* gobject/tmpl/param_value_types.sgml: 
+	* gobject/tmpl/objects.sgml: 
+	* gobject/tmpl/gtype.sgml: Additions
+
+	* glib/tmpl/messages.sgml: Cleanup
+
+	* glib/tmpl/memory_slices.sgml: Adapt to a parameter name change
+
+	* glib/tmpl/linked_lists_double.sgml: Document g_list_free1
+
+2006-03-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/option.sgml: Document floating point arguments
+
+Fri Mar 24 15:22:04 2006  Tim Janik  <timj@imendio.com>
+
+	* glib/tmpl/atomic_operations.sgml: some wording fixups.
+
+2006-03-20  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/types.sgml: Document G_HAVE_GINT64 as deprecated.
+	(#335294, Richard Laager)
+
+2006-03-15  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/option.sgml: Hint that @error should
+	be set in error cases.  (#334646, Christian Persch)
+
+2006-03-09  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/templ/timers.sgml: Mention that the second
+	parameter of g_timer_elapsed can be NULL (#333916,
+	Christian Neumair)
+
+2006-03-07  Matthias Clasen  <mclasen@redhat.com>
+
+	* ===  Released 2.10.1 ===
+
+2006-02-24  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.10.0 ===
+
+2006-02-22  Stefan Kost  <ensonic@users.sf.net>
+
+	* gobject/tmpl/gtype.sgml:
+	  add @since: for _add_private, _GET_PRIVATE
+	* gobject/tut_gobject.xml:
+	  fix example to use ->priv and not ->private
+	* gobject/tut_howto.xml:
+	  fix g_type_class_add_private example
+
+2006-02-14  Tor Lillqvist  <tml@novell.com>
+
+	* glib/tmpl/iochannels.sgml: Document some Windows-specific issues.
+
+	* glib/glib-sections.txt: Move three Windows-specific functions
+	that now are documented from being Private to the correct section.
+
+2006-02-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.9.6 ===
+
+2006-02-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/date.sgml: Fix a typo (#329123, Kjartan Maraas)
+
+2006-01-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.9.5 ===
+
+2006-01-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: 
+	* glib/tmpl/memory.sgml: Document g_mem_gc_friendly.
+
+2006-01-26  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tut_tools.xml: Mention g_trap_object_ref
+
+	* glib/running.sgml: Add g_trap variables to the index.
+	Mention conditional breakpoints as an alternative.
+
+Wed Jan 25 17:32:22 2006  Tim Janik  <timj@gtk.org>
+
+	* glib/tmpl/memory_slices.sgml: link to G_DEBUG/G_SLICE where appropriate.
+
+Wed Jan 25 17:12:47 2006  Tim Janik  <timj@gtk.org>
+
+	* glib/running.sgml: documented G_SLICE=always-malloc and
+	G_DEBUG=gc-friendly. added anchors for each env var.
+
+2006-01-18  Matthias Clasen  <mclasen@redhat.com>
+	
+	* === Released 2.9.4 ===
+
+2006-01-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/scanner.sgml: Add a note explaining peculiarities
+	of peek_token wrt to scope changes.  (#307922)
+	
+2006-01-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/memory.sgml: Add a note about casting the results
+	of g_new() and g_new0().
+
+2006-01-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.9.3 ===
+
+2006-01-12  Federico Mena Quintero  <federico@ximian.com>
+
+	* glib/file-name-encodings.sxd: Replaced with the correct file.
+
+	* glib/file-name-encodings.png: Huh?  This was a 6-byte file.
+	Replaced it with the correct one.
+
+2006-01-07  Stefan Kost  <ensonic@users.sf.net>
+
+	* gobject/tut_gtype.xml:
+	  fix internal link, little XXX cleanup
+
+2006-01-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.9.2 ===
+
+2006-01-03  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Add new API 
+
+2006-01-02  Stepan Kasal  <kasal@ucw.cz>
+
+	* glib/glib-docs.sgml (glib-Windows-Compatability-Functions): Rename
+	(glib-Windows-Compatibility-Functions): , ie. s/Compata/Compati/
+	* glib/glib-sections.txt: s/Compata/Compati/
+
+2005-12-24  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/gobject-sections.txt:
+	* gobject/tmpl/param_value_types.sgml: Document GType 
+	paramspecs
+
+2005-12-20  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: add g_thread_pool_set_sort_function.
+	
+2005-12-19  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/*.sgml: Update versioned deprecation
+
+	* gobject/tmpl/gboxed.sgml: Document G_TYPE_HASH_TABLE.
+
+	* glib/glib-sections.txt: Add g_list_free1
+
+	* glib/glib-overrides.txt: Remove G_THREADS_IMPL_SOLARIS
+
+2005-12-14  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: 
+	* glib/tmpl/atomic_operations.sgml: Document new atomic
+	operations.
+
+2005-12-14  Federico Mena Quintero  <federico@ximian.com>
+
+	* glib/building.sgml: Clarify exactly what happens when you use --enable-gc-friendly.
+
+Mon Dec 12 15:31:41 2005  Tim Janik  <timj@imendio.com>
+
+	* gobject/tmpl/objects.sgml: corrected floating reference documentation.
+
+2005-12-09  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.9.1 ===
+
+2005-12-07  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/gparamspec.sgml: 
+	* gobject/tmpl/gtype.sgml: Document n_preallocs as
+	ignored.
+
+2005-12-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Updates
+	
+	* glib/tmpl/memory_slices.sgml: Fix a small formatting
+	problem.
+
+	* glib/tmpl/trees-nary.sgml: 
+	* glib/tmpl/linked_lists_single.sgml: 
+	* glib/tmpl/linked_lists_double.sgml: 
+	* glib/tmpl/caches.sgml: 
+	* glib/tmpl/strings.sgml: 
+	* glib/tmpl/scanner.sgml: 
+	* glib/tmpl/main.sgml: Add versioned deprecation.
+
+Mon Dec  5 15:53:37 2005  Tim Janik  <timj@imendio.com>
+
+	* glib/tmpl/memory_slices.sgml: updates to new g_slice API
+	and minor fixes.
+
+2005-12-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/generic_values.sgml: 
+	* glib/tmpl/trees-nary.sgml: 
+	* glib/tmpl/linked_lists_double.sgml: 
+	* glib/tmpl/linked_lists_single.sgml: 
+	* glib/tmpl/memory_chunks.sgml: 
+	* glib/tmpl/allocators.sgml: 
+	* glib/tmpl/macros_misc.sgml: Updates 
+
+	* glib/Makefile.am: Ignore gmirroringtable.h
+
+2005-12-04  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/macros_misc.sgml: Document G_GNUC_WARN_UNUSED_RESULT.
+
+2005-12-03  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/caches.sgml: Document g_cache_value_foreach
+	as deprecated; document g_cache_key_foreach more thorougly
+
+	* glib/glib-sections.txt:
+	* glib/tmpl/linked_lists_single.sgml: Add g_slist_free1.
+
+	* glib/tmpl/memory_chunks.sgml: Document GMemChunk
+	as deprecated.
+
+	* glib/glib-docs.sgml: 
+	* glib/glib-sections.txt: 
+	* glib/tmpl/memory_slices.sgml: Document the slice
+	allocator.
+
+2005-12-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/building.sgml: 
+	* glib/tmpl/threads.sgml: 
+	* glib/glib-sections.txt: Remove G_THREADS_IMPL_SOLARIS
+
+	* glib/tmpl/types.sgml: Document G_GUINT64_CONSTANT.
+
+2005-11-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/gobject-sections.txt: 
+	* gobject/tmpl/gboxed.sgml: Add g_object_ref_sink,
+	g_object_is_floating, g_param_spec_ref_sink, 
+	G_TYPE_HASH_TABLE
+
+2005-11-22  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Add g_hash_table_ref
+	and g_hash_table_unref
+
+2005-11-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.9.0 ===
+
+2005-11-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/date.sgml: 
+	* glib/glib-sections.txt: Add g_date_set_time_t,
+	g_date_set_time_val and g_thread_foreach
+
+2005-11-08  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/threads.sgml: Improve GOnce docs.
+	(#320950, Christophe Fergeau)
+
+2005-11-04  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/running.sgml: Document fatal_criticals.
+
+2005-10-26  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/gobject-sections.txt: 
+	* gobject/tmpl/generic_values.sgml: Document g_value_set_instance(),
+	(#319885, Milosz Derezynski)
+
+2005-10-26  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/unicode.sgml: Add a footnote about surrogate 
+	pairs.  (#317683, Behdad Esfahbod)
+
+2005-10-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/compiling.sgml: Document gmodule-no-export-2.0
+
+2005-10-01  Davyd Madeley  <davyd@fugro-fsi.com.au>
+
+	* glib/tmpl/string_utils.sgml: Minor documentation improvements for
+	  g_strchug, g_strchomp and g_strstrip. Brought forward from glib-2-8.
+
+2005-08-31  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/quarks.sgml: 
+	* glib/glib-sections.txt: Add string interning functions.
+
+2005-08-30  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/arrays.sgml: 
+	* glib/tmpl/arrays_pointer.sgml: 
+	* glib/tmpl/arrays_byte.sgml: Enhance sort() documentation.
+	(#314839, Behdad Esfahbod)
+
+2005-08-26  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-docs.sgml:
+	* gobject/gobject-docs.sgml: Add indices for new
+	symbols in 2.10
+
+	Improvements pointed out by Behdad Esfahbod (#314460):
+	
+	* glib/tmpl/strings.sgml: Fix up some character/byte
+	sloppyness.
+
+	* glib/tmpl/iochannels.sgml: Don't mention deprecated
+	functions in the introduction.
+
+2005-08-23  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.8.1 ===
+
+2005-08-22  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/date.sgml: Point out time_t vs GTime pitfalls.
+
+2005-08-15  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-gettexttize.xml:
+	* gobject/glib-genmarshal.xml:
+	* gobject/glib-mkenums.xml: Fix some trivial
+	formatting problems.  (#313099, Stepan Kasal)
+
+	* glib/tmpl/modules.sgml: Document that file_name can
+	be NULL.  (#313143, Gustavo Carneiro)
+
+	* glib/tmpl/linked_lists_single.sgml: 
+	* glib/tmpl/linked_lists_double.sgml: Clarify docs
+	a little.  (#311727, Tristan van Berkom)
+
+2005-08-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.8.0 ===
+
+2005-08-10  Stepan Kasal  <kasal@ucw.cz>
+
+	Fix typos: Invokation --> Invocation (in various places)
+
+	* glib/tmpl/error_reporting.sgml: Fix a typo.
+	* gobject/tut_howto.xml: Several typos and stylistic changes.
+
+2005-08-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/gparamspec.sgml: 
+	* glib/tmpl/types.sgml: 
+	* glib/tmpl/option.sgml: Small fixes.
+
+	* gobject/tmpl/generic_values.sgml: Small fixes
+
+2005-08-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.7.7 ===
+
+2005-08-03  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.7.6 ===
+
+2005-08-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.7.5 ===
+
+Sat Jul 30 23:40:35 2005  Tim Janik  <timj@gtk.org>
+
+	* glib/tmpl/datalist.sgml:
+	* glib/tmpl/datalset.sgml: document non-thread-safety for 
+	_foreach() functions.
+
+2005-07-26  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/arrays.sgml: One more improvement.
+
+2005-07-25  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/arrays.sgml: Add some details.  (#311310,
+	Jochen Baier)
+
+2005-07-21  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.7.4 ===
+
+2005-07-20  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/macros_misc.sgml: Add some discouraging
+	comments to the G_INLINE_FUNC macros.  (#310836,
+	Callum McKenzie)
+
+2005-07-19  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/byte_order.sgml: Add docs for #307047,
+	Bryan Silverthorn.
+
+2005-07-15  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.7.3 ===
+	
+2005-07-13  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-overrides.txt: Add G_VA_COPY
+
+	* glib/tmpl/option.sgml: Document that short names must
+	be printable ASCII characters != '-'.
+
+2005-07-08  Matthias Clasen  <mclasen@redhat.com>
+	
+	* === Released 2.7.2 ===
+
+2005-07-08  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/gobject-docs.sgml: 
+	* glib/glib-docs.sgml: Add the "new in 2.8" index.
+
+2005-07-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/objects.sgml: Add an example
+	for using a custom constructor.
+
+2005-06-30  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.7.1 ===
+
+2005-06-29  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/threads.sgml: 
+	* glib/tmpl/option.sgml: 
+	* glib/tmpl/fileutils.sgml: 
+	* glib/tmpl/iochannels.sgml: 
+	* glib/tmpl/hooks.sgml: 
+	* glib/tmpl/misc_utils.sgml: 
+	* glib/tmpl/date.sgml: 
+	* glib/glib-sections.txt: Updates
+
+2005-06-24  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Add GMappedFile functions.
+
+2005-06-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/option.sgml (GOptionFlags): document
+ 	G_OPTION_FLAG_NO_ARG and G_OPTION_FLAG_FILENAME  (Dan Winship)
+
+2005-06-16  Mathieu Lacage <mathieu@gnome.org>
+
+	* gobject/tut_gtype.xml: fix typo reported by Hong Gang XU.
+	
+2005-06-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.7.0 ===
+
+2005-06-09  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Add g_chdir
+
+	* glib/tmpl/threads.sgml: Document that stack size
+	will be ignored if the underlying thread implementation
+	doesn't support stack sizes.
+
+2005-06-07  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Add g_utf8_collate_key_for_filename.
+
+2005-05-25  Mathieu Lacage <mathieu@gnome.org>
+
+	* gobject/tut_*.xml: fix lots of typos, 
+	some of which were reported by Leonardo Boshell.
+
+2005-05-23  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/threads.sgml: Point out exceptions to the
+	general GLib data structure locking rules.
+
+2005-05-20  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/threads.sgml: Add a paragraph about thread
+	safety of GLib data structures.
+
+	* glib/compiling.sgml: Update an example from 1.3 to 2.x
+
+2005-05-13  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/glib-genmarshal.1: 
+	* gobject/glib-genmarshal.xml: Mention 64bit integer
+	types.
+
+2005-05-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/markup.sgml: Fix sloppy language, pointed out by
+	Daniel Vaillard.
+
+2005-05-09  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/value_collection.sgml: 
+	* gobject/tmpl/gboxed.sgml: 
+	* gobject/tmpl/enumerations_flags.sgml: 
+	* gobject/tmpl/objects.sgml: Add long descriptions.
+
+2005-05-05  Owen Taylor  <otaylor@redhat.com>
+
+	* glib/Makefile.am glib/glib-sections.txt gobject/gobject-sections.txt:
+	Update
+
+	* gobject/tmpl/objects.sgml: Document toggle-references.
+
+2005-05-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/hash_tables.sgml: Move some docs inline.
+
+	* glib/tmpl/windows.sgml: 
+	* gobject/tmpl/signals.sgml: 
+	* gobject/tmpl/generic_values.sgml: 
+	* gobject/tmpl/gtype.sgml: 
+	* gobject/tmpl/value_arrays.sgml: 
+	* gobject/tmpl/param_value_types.sgml: 
+	* gobject/tmpl/gtypemodule.sgml:
+	* gobject/tmpl/enumerations_flags.sgml: Small additions.
+
+2005-05-01  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/completions.sgml: Document
+	strncmp_func.
+
+	glib/glib-sections.txt: Add new API.
+
+2005-04-29  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/gboxed.sgml: 
+	* gobject/gobject-sections.txt: Add G_TYPE_DATE.
+
+2005-04-23  Stefan Kost  <ensonic@users.sf.net>
+
+	* gobject/tut_gtype.xml:
+	* gobject/tut_howto.xml:
+	all interface examples use 'interface' instead of 'class'
+
+2005-04-22  Stefan Kost  <ensonic@users.sf.net>
+
+	* gobject/Makefile.am:
+	* gobject/gobject-docs.sgml:
+	* gobject/tut_gobject.xml:
+	* gobject/tut_gsignal.xml:
+	* gobject/tut_gtype.xml:
+	* gobject/tut_howto.xml:
+	* gobject/tut_intro.xml:
+	* gobject/tut_tools.xml:
+	merged in docs form the gobject tutorial
+
+2005-03-29  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/arrays_pointer.sgml: Clarify the docs for
+	g_ptr_array_free and g_ptr_array_remove_range.  (#170148, 
+	#170149, Jared Lash)
+
+2005-03-29  Tor Lillqvist  <tml@novell.com>
+
+	* glib/tmpl/spawn.sgml: Add Win32 warnings regarding the child
+	setup function.
+
+2005-03-21  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: 
+	* glib/tmpl/memory.sgml: Document g_try_new, g_try_new0 
+	and g_try_renew, g_try_malloc0.
+
+2005-03-20  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/gparamspec.sgml: Document G_PARAM_SPEC_STATIC_
+	flags.
+
+2005-03-08  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: 
+	* glib/tmpl/macros_misc.sgml: Document G_GNUC_NULL_TERMINATED.
+
+2005-03-07  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/gtype.sgml:
+	* gobject/tmpl/param_value_types.sgml:
+	* gobject/tmpl/gparamspec.sgml: Apply patches by
+	Stefan Kost to document naming restrictions. (#167614)
+
+2005-02-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/option.sgml: Fix a typo.  (#166985)
+
+2005-02-07  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Add g_listenv.
+
+2005-02-04  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/linked_lists_double.sgml: 
+	* glib/tmpl/linked_lists_single.sgml: Add a note 
+	regarding inefficiency of repeated appends. (#166271,
+	Olivier Sessink)
+
+2005-02-03  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/quarks.sgml: Add a warning against
+	using g_quark_from_static_string() in dynamically
+	loaded modules. 
+
+2005-02-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/misc_utils.sgml: 
+	* glib/tmpl/hash_tables.sgml: Move some doc 
+	comments inline.
+
+2005-01-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/enumerations_flags.sgml: Fix an
+	example.  (#164269, Sebastien Bacher)
+	
+2005-01-07  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.6.1 ===
+
+2005-01-06  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/keyfile.sgml: Add hint about group name 
+	case sensitivity.  (#163029, Bastien Nocera)
+
+2005-01-04  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/signals.sgml: Small addition. (#145158,
+	Mariano Su??rez-Alvarez)
+
+2004-12-20  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/signals.sgml: Fix a typo.  (#161713,
+	Vincent Untz)
+
+2004-12-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/misc_utils.sgml: Clarify g_get_prgname docs.  
+	(#161480, Danny Milo)
+
+2004-12-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/version.sgml: Improve wording.  (#161484,
+	Christian Biere)
+
+	* === Released 2.6.0 ===
+	
+2004-12-15  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Add g_rmdir
+
+2004-12-15  Alexander Larsson  <alexl@redhat.com>
+
+	* glib/glib-sections.txt:
+	Add g_filename_display_basename
+
+2004-12-15  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/generic_values.sgml: Document some return
+	values.  (#161345, Stefan Kost)
+
+2004-12-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.5.7 ===
+	
+2004-12-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/building.sgml: 
+	* glib/tmpl/linked_lists_single.sgml: 
+	* glib/tmpl/linked_lists_double.sgml: 
+	* glib/tmpl/trees-nary.sgml: Add some warnings regarding
+	--disable-mem-pools.
+
+2004-12-01  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/iochannels.sgml: Fix a typo.  (#160162, Tom Copeland)
+
+2004-11-30  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/building.sgml: Document --enable-man and --disable-visibility.
+
+2004-11-28  Tor Lillqvist  <tml@iki.fi>
+
+	* glib/tmpl/misc_utils.sgml: Document encoding of g_get_user_name(),
+	g_get_real_name(), g_get_tmp_dir() and g_get_current_dir().
+
+2004-11-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/macros_misc.sgml: Document G_GNUC_MALLOC.
+
+	* glib/glib-sections.txt: Add G_GNUC_MALLOC
+
+2004-11-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.5.6 ===
+	
+2004-11-08  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/trees-nary.sgml: Document G_TRAVERSE_LEAVES and
+	G_TRAVERSE_NON_LEAVES
+
+	* glib/tmpl/hooks.sgml: 
+	* glib/tmpl/iochannels.sgml: Updates
+
+2004-11-04  Tor Lillqvist  <tml@iki.fi>
+
+	* glib/tmpl/windows.sgml: Improve G_WIN32_HAVE_WIDECHAR_API
+	documentation.
+
+	* glib/tmpl/option.sgml: Document G_OPTION_FLAG_REVERSE.
+
+2004-11-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.5.5 ===
+
+2004-11-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Add g_get_filename_charsets and
+	g_filename_display_name.
+
+2004-11-01  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/option.sgml: Updates
+
+2004-10-31  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/windows.sgml: Document G_WIN32_IS_NT_BASED,
+	G_WIN32_HAVE_WIDECHAR_API.
+
+	* glib/glib-sections.txt: Add g_lstat
+
+	* glib/running.sgml: Document G_WIN32_PRETEND_WIN9X.
+
+2004-10-29  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/option.sgml: Add an example.
+
+	* glib/glib-sections.txt: Add G_OPTION_REMAINING
+
+	* glib/tmpl/option.sgml: Add docs.
+
+2004-10-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/keyfile.sgml: Add some introductory notes.
+
+2004-10-27 Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.5.4 ===
+
+2004-10-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/fileutils.sgml: Add some intro.
+
+2004-10-26  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/gobject-docs.sgml: Add an index for 2.6 additions.
+
+	* gobject/gobject-sections.txt: Additions.
+
+	* gobject/Makefile.am (IGNORE_HFILES): Add gobjectalias.h
+
+	* glib/tmpl/main.sgml: Document GChildWatchFunc
+
+	* glib/tmpl/keyfile.sgml: New template.
+
+	* glib/glib-sections.txt: Additions.
+
+	* glib/tmpl/macros_misc.sgml: Document some more of
+	the macros.
+
+2004-10-25  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-docs.sgml:  Add GKeyFile section, add
+	index for 2.6 additions.
+
+2004-10-23  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/gtype.sgml (GTypeInterfaceCheckData):
+	Rename first parameter.
+
+	* glib/glib-sections.txt: Add GKeyFile section.
+
+2004-10-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/macros.sgml: 
+	* glib/glib-sections.txt: Document G_IS_DIR_SEPARATOR. 
+
+2004-10-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/objects.sgml: Improve the docs for
+	g_object_get_property().  (#153424, Stefan Kost)
+
+2004-10-03  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/tmpl/signals.sgml: Improve docs for 
+	g_signal_add_emission_hook.  (#154299, Nickolay V. Shmyrev)
+
+2004-09-20  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/messages.sgml: Correct the docs for the default log
+	handler wrt to which messages go to stderr. (#153041, Philippe Blain)
+
+Sun Sep 19 23:15:17 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/patterns.sgml: Point to g_utf8_strreverse() for
+	reversing UTF-8 strings.  (#153091, Adam Hooper)
+
+2004-09-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.5.3 ===
+
+2004-09-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/Makefile.am: Ignore galias.h
+
+	* glib/glib-sections.txt: Updates.
+
+2004-09-09  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/misc_utils.sgml: Add a hint about $HOME to the
+	docs of g_get_home_dir().
+
+Thu Sep  9 00:11:19 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/glib-sections.txt: Add g_strv_length().
+
+2004-09-07  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: Add g_get_language_names().
+
+Mon Sep  6 01:56:13 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/messages.sgml: Remove excess markup and fix a markup
+	error.
+
+Sun Sep  5 01:44:23 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/glib-sections.txt: 
+	* glib/tmpl/messages.sgml: Document g_log_set_default_handler().
+
+Wed Sep  1 20:27:59 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/glib-sections.txt: Add g_date_get_iso8601_week_of_year.
+
+Sun Aug 29 23:50:45 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/fileutils.sgml: Fix a typo.  (#151109, Stepan Kasal)
+
+2004-08-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/fileutils.sgml: Add G_FILE_ERROR_NOSYS.
+
+2004-08-25 Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.5.2 ===
+
+2004-08-23  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/warnings.sgml: Add an example for
+	g_on_error_query() usage.  (#148716, Christian Persch)
+
+2004-08-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/threads.sgml: Document the necessity to call
+	g_thread_init() when using threads 
+	(even non-gthreads).  (#149490, Vincent Untz)
+
+
+Tue Aug  3 16:43:22 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/glib-sections.txt: Add a section for GOption.
+	* glib/glib-docs.sgml: Include GOption section.
+	* glib/tmpl/option.sgml: New template.
+
+Tue Aug  3 15:34:16 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/glib-sections.txt: Add a separate section for
+	version information.
+	* glib/glib-docs.sgml: Include version section.
+	* glib/tmpl/version.sgml: New template.
+
+2004-08-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib-sections.txt: 
+	* glib/tmpl/macros_misc.sgml: Document G_GNUC_INTERNAL.
+
+2004-08-01 Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.5.1 ===
+
+2004-07-28  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/misc_utils.sgml: Clarify docs for 
+	g_get_real_name().  (#143552, Danek Duvall)
+
+Fri Jul 23 10:38:24 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/limits.sgml: Fix docs for G_MAXSIZE.  (#148262, 
+	Christophe Fergeau)
+
+Sun Jul 18 18:03:08 2004  Soeren Sandmann  <sandmann@daimi.au.dk>
+
+	* === Released 2.5.0 ===
+
+2004-07-09  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/arrays.sgml: Improve g_array_free() docs.  (#146875,
+	Ed Griffiths)
+
+Tue Jul  6 00:54:38 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/gobject-sections.txt: 
+	* gobject/tmpl/gtypemodule.sgml: Add g_type_module_register_enum()
+	and g_type_module_register_flags().
+
+Mon Jul  5 18:49:56 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/messages.sgml: 
+	* glib/glib-sections.txt: Add g_debug.
+
+2004-06-15  Federico Mena Quintero  <federico@ximian.com>
+
+	* glib/tmpl/conversions.sgml: New section on file name encodings.
+
+	* glib/file-name-encodings.sxd: New diagram of how file name
+	encodings work.
+
+	* glib/file-name-encodings.png: Same as above, for inclusion in
+	the generated docs.
+
+	* glib/Makefile.am (HTML_IMAGES): Add file-name-encodings.png.
+	(EXTRA_DIST): Add the new images.
+
+	* glib/running.sgml: Add ids to the corresponding paragraphs that
+	describe G_FILENAME_ENCODING and G_BROKEN_FILENAMES, to be able to
+	reference them from elsewhere.
+
+Thu Jun 10 21:29:55 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/modules.sgml: Add an example for GModule
+	usage.  (#144127, Tommi Komulainen)
+
+Sun Jun  6 23:20:42 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gtype.sgml: Fix the docs for G_DEFINE_TYPE()
+	and friends.  (#143800, Crispin Flowerday)
+
+2004-05-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* gobject/gobject-docs.sgml: 
+	* glib/glib-docs.sgml: Add multiple indices.
+
+2004-04-30  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.4.1 ===
+
+2004-04-23  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/running.sgml: Document LIBCHARSET_ALIAS_DIR.
+
+2004-04-15  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/tmpl/types.sgml: Correct the description of the
+	gfloat and gdouble ranges.
+
+Tue Mar 16 12:06:09 2004  Owen Taylor  <otaylor@redhat.com>
+
+	* === Released 2.4.0 ===
+	
+Sun Mar 14 11:00:41 2004  Owen Taylor  <otaylor@redhat.com>
+
+	* gobject/tmpl/signals.sgml: Document the fact that
+	g_signal_connect_object() does *not* remove the signal
+	when the object is disconnected currently and describe
+	a workaround to prevent memory leaks.
+
+Tue Mar  9 09:16:11 2004  Owen Taylor  <otaylor@redhat.com>
+
+	* === Released 2.3.6 ===
+
+Mon Mar  8 08:32:36 2004  Owen Taylor  <otaylor@redhat.com>
+
+	* glib/tmpl/main.sgml: Reference g_source_set_callback(),
+	not g_source_attach(). (Takeshi AIHANA)
+
+2004-02-29  Sebastian Wilhelmi  <seppi@seppi.de>
+
+	* glib/glib-overrides.txt, glib/glib-sections.txt,
+	glib/tmpl/atomic_operations.sgml: Updated according to code changes.
+
+Sun Feb 29 02:35:00 2004  Sven Herzberg  <herzi@gnome-de.org>
+
+	* glib/tmpl/limits.sgml: exchange non-existing G_MAX_DOUBLE for
+	G_MAXDOUBLE (fixes #135723)
+
+Fri Feb 27 22:10:25 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/modules.sgml: Reformat a bit.
+
+Fri Feb 27 22:05:23 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/limits.sgml: Document G_MAXSIZE.
+
+2004-02-26  Sebastian Wilhelmi  <seppi@seppi.de>
+
+	* glib/tmpl/threads.sgml: Updated to reflect removal of the PID
+	niceness surrogate for thread priorities.
+
+	* glib/glib-overrides.txt, glib/glib-sections.txt,
+	glib/glib-docs.sgml, glib/tmpl/atomic_operations.sgml: Add docs
+	for atomic operations.
+
+Tue Feb 24 14:09:21 2004  Owen Taylor  <otaylor@redhat.com>
+
+	* === Released 2.3.3 ===
+
+	* glib/glib-sections.txt: Updates.
+
+Sun Feb 22 00:59:11 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/trees-nary.sgml: Document GCopyFunc.
+
+Sun Feb 22 00:54:17 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/glib-sections.txt: Add GCopyFunc and g_node_copy_deep.
+
+2004-02-18  Sebastian Wilhelmi  <seppi@seppi.de>
+
+	* glib/glib-sections.txt: Add the new g_rand_* functions
+
+Sat Feb 14 01:25:23 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/glib-sections.txt: Add GPid, GChildWatchFunc,
+	g_child_watch_source_new, g_child_watch_add,
+	g_child_watch_add_full.
+
+Fri Feb 13 23:16:25 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/macros_misc.sgml: Fix a typo. 
+
+Sat Feb  7 01:02:06 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/numerical.sgml: Fix some external links.
+
+Thu Feb  5 00:54:43 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/glib-sections.txt: Add g_completion_complete_utf8.
+
+Fri Jan 30 23:25:58 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/iochannels.sgml: 
+	* glib/tmpl/main.sgml: Remove references to deprecated GTK+ and
+	GDK functions.  (#130756, Vincent Untz)
+	
+Wed Jan 28 01:39:59 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/glib-sections.txt: Add g_strsplit_set. (Soeren Sandmann)
+
+Thu Jan 22 14:51:19 2004  Owen Taylor  <otaylor@redhat.com>
+
+	* glib/glib-sections.txt glib/tmpl/timers.sgml: Document
+	g_timer_continue. (Tim-Philipp M??ller)
+
+Sun Jan 11 01:25:44 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gtype.sgml: Improve docs for G_DEFINE_TYPE_* macros.
+
+Sun Jan 11 01:25:29 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/gobject-sections.txt: Add G_DEFINE_TYPE_EXTENDED.
+
+Sat Jan 10 02:18:32 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gtype.sgml: Document the new GType boilerplate macros
+	with an example.
+
+Sat Jan 10 01:36:01 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gtype.sgml: Document g_type_class_peek_static.
+
+Sat Jan 10 01:23:58 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/gobject-sections.txt: Add g_type_class_peek_static,
+	G_DEFINE_TYPE, G_DEFINE_TYPE_WITH_CODE, G_DEFINE_ABSTRACT_TYPE,
+	G_DEFINE_ABSTRACT_TYPE_WITH_CODE, G_IMPLEMENT_INTERFACE.
+
+
+Sat Jan 10 01:23:01 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/objects.sgml: Update docs of g_object_connect.
+
+Fri Jan  9 23:40:23 2004  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gboxed.sgml: 
+	* gobject/gobject-sections.txt: Add G_TYPE_STRV and GStrv.
+
+Fri Dec 26 02:04:49 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/glib-sections.txt: Add g_ptr_array_foreach().
+
+Sun Dec 21 01:01:34 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/misc_utils.sgml: Document the encoding of 
+	g_get_real_name().
+
+Fri Dec 19 21:40:00 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/signals.sgml: Rewording.
+
+Tue Dec  2 02:31:15 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/limits.sgml:
+	* glib/glib-sections.txt: Add G_{MIN,MAX,MAXU}INT{8,16,32}.
+
+Thu Nov  6 01:42:36 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/glib-sections.txt: Add an i18n section.
+	* glib/glib-docs.sgml: Include the corresponding entity.
+	* glib/tmpl/i18n.sgml: Template for i18n section.
+
+Thu Nov  6 00:56:04 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/running.sgml: Document G_FILENAME_ENCODING.
+
+Sat Oct 25 01:07:45 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gparamspec.sgml: 
+	* gobject/tmpl/objects.sgml: Additions.
+
+Thu Oct 23 14:27:54 2003  Owen Taylor  <otaylor@redhat.com>
+
+	* gobject/Makefile.am: Add a dist-hook so that the
+	man pages get distributed.
+
+	* glib/Makefile.am: Add a dist-hook so that the
+	man pages get distributed.
+
+	* glib/Makefile.am (content_files): Add cross.sgml.
+
+	* gobject/Makefile.am (INCLUDES): Add $(top_srcdir)/glib,
+	and (for gobject.cI) $(srcdir)
+
+Tue Oct 21 23:29:54 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gtypemodule.sgml: 
+	* gobject/tmpl/enumerations_flags.sgml: 
+	* gobject/tmpl/gtype.sgml: Additions.
+
+Tue Oct 21 23:09:15 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gparamspec.sgml: 
+	* gobject/tmpl/param_value_types.sgml:
+	* gobject/tmpl/gtype.sgml: 
+	* gobject/tmpl/signals.sgml: Add "Since 2.4" markers where
+	appropriate.
+
+Tue Oct 14 17:45:33 2003  Owen Taylor  <otaylor@redhat.com>
+
+	* gobject/gobject-sections.txt gobject/tmpl/objects.sgml
+	gobject/tmpl/param_value_types.sgml gobject/tmpl/gparamspec.sgml:
+	Document interface properties and GParamSpecOverride.
+
+Mon Oct 20 22:05:37 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/objects.sgml: 
+	* gobject/tmpl/enumerations_flags.sgml: 
+	* gobject/tmpl/gtypeplugin.sgml: Additions.
+
+Mon Oct 20 22:04:45 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/gobject-sections.txt: Add GObjectConstructParam.
+
+Mon Oct 20 20:38:06 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/gobject.i: Removed...
+	* gobject/gobject.cI: ...and readded.
+	* gobject/gobject.types: Change to the standard file 
+	extension for included hunks of C code.
+
+Mon Oct 20 20:34:33 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/Makefile.am (INCLUDES): Add $(top_builddir)/glib
+	as an include dir again, this time for real.  
+
+Mon Oct 20 01:12:46 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gtype.sgml: 
+	* gobject/tmpl/param_value_types.sgml: 
+	* gobject/tmpl/value_arrays.sgml: Additions.
+
+	* gobject/tmpl/gboxed.sgml: 
+	* gobject/gobject-sections.txt: Remove prematurely added
+	GStrv documentation.
+
+Sun Oct 19 22:18:28 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/Makefile.am (INCLUDES): Add $(top_builddir)/glib
+	as an include dir.  (#124934, Mariano Su??rez-Alvarez)
+
+Sun Oct 19 00:33:28 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gtype.sgml: 
+	* gobject/tmpl/generic_values.sgml: 
+	* gobject/tmpl/objects.sgml: 
+	* gobject/tmpl/signals.sgml: Additions.
+
+Sat Oct 18 01:30:47 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gboxed.sgml: 
+	* gobject/tmpl/gtypeplugin.sgml: 
+	* gobject/tmpl/enumerations_flags.sgml: Additions.
+
+Sat Oct 18 00:04:22 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/gobject.types: List GObject here, since the
+	documentation misses the notify signal otherwise. Needs
+	a little bit of a hack to work around a gtkdoc-scangobj
+	limitation, see the comment in gobject/gobject.i.
+
+	* gobject/gobject.i: New file, containing a trivial 
+	g_object_get_type() function.
+	
+Fri Oct 17 00:23:51 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/Makefile.am (GTKDOC_LIBS): 
+	(INCLUDES): Add the necessary stuff to compile gobject-scan.
+
+	* gobject/gobject.types: Add g_type_module_get_type() and
+	g_type_plugin_get_type().
+
+Thu Oct 16 01:02:04 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gparamspec.sgml: Additions, document 
+	GParamSpecPool.
+
+Wed Oct 15 00:56:30 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gclosure.sgml: Improvements from Owen's feedback. 
+
+Tue Oct 14 02:35:45 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/gobject-sections.txt: Move the g_cclosure_marshal_*
+	functions to a non-private subsection, since these functions
+	are not private.
+
+Tue Oct 14 02:35:16 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gclosure.sgml: Fill in.
+
+Sun Oct  5 23:23:53 2003  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/glib-sections.txt: 
+	* gobject/gobject-sections.txt: Fix includes.
+
+	* gobject/tmpl/value_collection.sgml: Add docs found in the 
+	header.
+
+Thu Oct  2 01:22:46 2003  Owen Taylor  <otaylor@redhat.com>
+
+	* gobject/gobject-sections.txt gobject/tmpl/gtype.sgml: 
+	Add g_type_add/remove_interface_check()
+
+2003-09-30  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gparamspec.sgml: 
+	* gobject/tmpl/signals.sgml: Additions.
+
+	* glib/glib-sections.txt: Add g_unichar_get_mirror_char and
+	g_static_mutex_get_mutex_impl_shortcut.
+
+Mon Sep 29 10:55:23 2003  Owen Taylor  <otaylor@redhat.com>
+
+	*  gobject/gobject-sections.txt gobject/tmpl/gtype.sgml:
+	Docs for g_type_default_interface_ref(), etc.
+
+Fri Sep 12 16:29:29 2003  Owen Taylor  <otaylor@redhat.com>
+
+	* gobject/tmpl/signals.sgml: Add docs for
+	g_signal_accumulator_true_handled.
+
+2003-09-12  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/gobject-sections.txt: Add new g_value_take_x() functions.
+
+	* gobject/tmpl/param_value_types.sgml: Document new g_value_take_x()
+	functions.  (#100948)
+
+2003-08-05  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/string_utils.sgml: Add note about in-place editing to g_strdelimit() doc.
+	(#118875, Thomas Vander Stichele)
+
+2003-07-30  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/misc_utils.sgml: Move g_getenv() docs inline.
+
+	* glib/tmpl/string_utils.sgml: Small fixes.
+
+	* glib/glib-docs.sgml: Add paragraph about multi-threading policy.
+
+	* glib/glib-sections.txt: Rename g_read_link to g_file_read_link.
+
+2003-07-29  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/macros_misc.sgml: Document G_GINT{16,32,64}_MODIFIER, add note about scanning.
+
+	* glib/glib-sections.txt: Add G_GINT{16,32,64}_MODIFIER.
+
+2003-07-28  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/glib-sections.txt: Add g_setenv(), g_unsetenv() and g_read_link().  (#100763, #72545)
+
+2003-07-26  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/arrays.sgml: 
+	* glib/tmpl/arrays_byte.sgml: 
+	* glib/tmpl/arrays_pointer.sgml: 
+	* glib/glib-sections.txt: Add g_{,byte,pointer}_array_remove_range.  (#94879, Nalin Dahyabhai)
+
+	* glib/tmpl/messages.sgml: Remove the note about the message length restriction.
+
+2003-07-24  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/messages.sgml: Mention the restriction on message length.  (#118043, Martyn Russell)
+
+2003-07-18  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/arrays_pointer.sgml: Add a note about double indirection in 
+	g_ptr_array_sort[_with_data]().  (#113697, Owen Taylor)
+
+2003-07-12  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/string_utils.sgml: Add a paragraph about string precision, add links to it.
+	Remove markup which is now handled better by gtk-doc.
+
+2003-07-09  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/threads.sgml: Document GOnce, GOnceStatus, G_ONCE_INIT, g_once and g_once_impl.
+
+	* glib/glib-sections.txt: Add GOnce, GOnceStatus, G_ONCE_INIT, g_once and g_once_impl.
+
+2003-07-02  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/string_utils.sgml: Move g_strfreev() docs inline.
+
+2003-06-19  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/misc_utils.sgml: Move g_path_get_basename() docs inline.
+
+2003-06-18  Matthias Clasen  <maclas@gmx.de>
+
+o	* glib/glib-sections.txt: Add g_thread_init_glib to silence gtk-doc.
+
+	* gobject/Makefile.am: Add rule to regenerate man pages from 
+	Docbook.
+	(man_MANS): Add glib-mkenums.1, glib-genmarshal.1 and gobject-query.1.
+	(content_files): Add glib-mkenums.xml, glib-genmarshal.xml and 
+	gobject-query.xml.
+
+	* gobject/glib-mkenums.xml: 
+	* gobject/glib-genmarshal.xml: 
+	* gobject/gobject-query.xml: New refentries.
+
+	* gobject/glib-mkenums.1: 
+	* gobject/glib-genmarshal.1: 
+	* gobject/gobject-query.1: Man pages generated from the .xml
+	sources.
+
+	* gobject/gobject-docs.sgml: Include glib-mkenums.xml, 
+	glib-genmarshal.xml and gobject-query.xml.
+	
+2003-06-17  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/Makefile.am: Add rule to regenerate man pages from 
+	Docbook.
+	(man_MANS): Add glib-gettextize.1.
+	(content_files): Add glib-gettextize.xml.
+
+	* glib/glib-gettextize.xml: New refentry.
+
+	* glib/glib-gettextize.1: Man page generated from the .xml source.
+
+	* glib/glib-docs.sgml: Include glib-gettextize.xml.
+
+2003-06-17  Matthias Clasen  <mc2@YAST_ASK>
+
+	* gobject/gobject-docs.sgml: 
+	* glib/glib-docs.sgml: Add an autogenerated index.
+
+2003-06-17  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/macros_misc.sgml: Document G_GNUC_DEPRECATED.
+
+2003-06-11  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/objects.sgml: A small addition.
+
+Sun Jun  8 12:28:39 2003  Owen Taylor  <otaylor@redhat.com>
+
+	* glib/tmpl/error_reporting.sgml: XML fix.
+
+	* glib/glib-sections.txt: Updated.
+
+2003-06-06  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/limits.sgml: Correct the documentation for
+	G_MINFLOAT and G_MINDOUBLE.  (#114513, Christophe Fergeau)
+
+	* glib/glib-sections.txt: Add g_vasprintf().
+
+	* glib/tmpl/string_utils.sgml: Add a hint about g_vasprintf() to
+	the g_strdup_printf() docs.
+
+2003-05-28  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/string_utils.sgml: Document that g_strdup() and
+	g_strndup() accept NULL.  (#106987, Christian Biere)
+
+2003-05-12  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/cross.sgml: Fix a duplicate id left by copy-and-paste.
+	(#112785, Owen Taylor)
+
+2003-04-18  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/signals.sgml: Correct the documentation
+	GSignalEmissionHook (#110906) and some cleanups.
+
+2003-04-11  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gparamspec.sgml: Fix a few typos.
+
+2003-04-09  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/glib-docs.sgml: Move dependencies to building.sgml.
+
+	* glib/building.sgml: Move stuff from INSTALL here.
+
+2003-04-08  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/cross.sgml: New file; cross-compilation information.
+	* glib/glib-docs.sgml: Include cross.sgml.
+
+2003-04-07  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/enumerations_flags.sgml: Additions.
+
+2003-04-01  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/error_reporting.sgml: 
+	* glib/tmpl/random_numbers.sgml: 
+	* glib/tmpl/arrays_pointer.sgml: 
+	* glib/tmpl/arrays.sgml: Fix formatting of examples.
+
+2003-04-01  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/glib-sections.txt: Add g_string_chunk_insert_len.
+
+2003-03-28  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/param_value_types.sgml: Additions.
+
+2003-03-25  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/objects.sgml: Additions.
+
+2003-03-24  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/objects.sgml: Additions.
+
+Mon Mar 10 11:33:10 2003  Owen Taylor  <otaylor@redhat.com>
+
+	* gobject/tmpl/gtype.sgml gobject/gobject-sections.txt: 
+	Document private instance data.
+
+2003-02-11  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/string_utils.sgml: Fix an off-by-one error in the
+	g_strescape() docs.  (#105431, Phillip Vandry)
+
+2003-02-07  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gtypemodule.sgml: 
+	* gobject/tmpl/gtype.sgml: 
+	* gobject/tmpl/gclosure.sgml: 
+	* gobject/tmpl/param_value_types.sgml: 
+	* gobject/tmpl/gparamspec.sgml: 
+	* gobject/tmpl/objects.sgml: 
+	* gobject/tmpl/signals.sgml: Move all docs out-of-line. Boy, what
+	a waste of time.
+
+2003-01-21  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/strings.sgml: Document the return value of g_string_free().
+
+2003-01-15  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gtype.sgml: Fix the description of
+	G_TYPE_FUNDAMENTAL.  (#103119, Josh Parsons)
+
+2003-01-01  Tor Lillqvist  <tml@iki.fi>
+
+	* glib/tmpl/messages.sgml: Remove comment that only stdout would
+	be used on Windows, no longer true.
+
+2002-12-15  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/param_value_types.sgml: Move some docs inline.
+
+2002-12-15  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/Makefile.am (IGNORE_HFILES): Add gprintfint.h and trio.
+
+2002-12-13  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/Makefile.am (MKDB_OPTIONS): Add --ignore-files=trio to
+	avoid gtk-doc warnings about doxygen comments.
+
+Tue Dec 10 11:55:28 2002  Owen Taylor  <otaylor@redhat.com>
+
+	* glib/tmpl/timers.sgml: Improve docs for return value
+	and @microseconds out parameter. (Reported by
+	Dennis Haney, #100841)
+
+2002-12-10  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/generic_values.sgml: 
+	* gobject/tmpl/gtype.sgml: 
+	* gobject/tmpl/enumerations_flags.sgml: Add docs.
+
+2002-12-09  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gtype.sgml: 
+	* gobject/tmpl/enumerations_flags.sgml: Add docs.
+
+	* gobject/tmpl/gtype.sgml:
+	* gobject/tmpl/gtypeplugin.sgml:
+	* gobject/tmpl/gtypemodule.sgml:
+	* gobject/gobject-sections.txt: Add GTypeClass, GTypePluginClass
+	and GTypeModuleClass.
+
+	* gobject/tmpl/gboxed.sgml:
+	* gobject/tmpl/enumerations_flags.sgml: 
+	* gobject/tmpl/gclosure.sgml: 
+	* gobject/tmpl/param_value_types.sgml: Add docs.
+
+2002-12-06  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gparamspec.sgml: Typo fix.
+
+2002-12-05  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/strings.sgml: 
+	* glib/tmpl/scanner.sgml: 
+	* glib/tmpl/main.sgml: 
+	* glib/tmpl/macros_misc.sgml: 
+	* glib/tmpl/hash_tables.sgml: Add Since and Deprecation info
+	for symbols documented in the templates.
+
+2002-12-04  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gtype.sgml: Add docs.
+
+2002-12-02  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/signals.sgml: Add docs.
+
+2002-12-01  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/gobject-sections.txt: Mark g_signal_handlers_destroy as
+	private.
+
+	* gobject/tmpl/signals.sgml: Move some docs inline.
+
+2002-11-29  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/main.sgml: Write something about GSourceDummyMarshal.
+
+	* glib/tmpl/date.sgml: 
+	* glib/tmpl/string_utils.sgml: Remove redundant docs.
+
+	* glib/glib-sections.txt: Add g_ascii_strtoull and 
+	g_get_application_name.
+
+2002-11-28  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/strings.sgml: 
+	* glib/tmpl/string_utils.sgml: 
+	* glib/tmpl/misc_utils.sgml: Move some docs inline.
+
+2002-11-23  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/tmpl/gclosure.sgml: 
+	* gobject/tmpl/signals.sgml: 
+	* gobject/tmpl/gparamspec.sgml: 
+	* gobject/tmpl/value_collection.sgml: 
+	* gobject/tmpl/generic_values.sgml: 
+	* gobject/tmpl/param_value_types.sgml: 
+	* gobject/tmpl/gboxed.sgml: 
+	* gobject/tmpl/enumerations_flags.sgml: 
+	* gobject/tmpl/objects.sgml: 
+	* gobject/tmpl/gtypemodule.sgml: 
+	* gobject/tmpl/gtypeplugin.sgml: Add missing short descriptions, 
+	standardize them to start with a capital and end without a period. 
+
+	* glib/tmpl/arrays.sgml: 
+	* glib/tmpl/memory_chunks.sgml: 
+	* glib/tmpl/macros.sgml: Remove periods from titles in examples.
+
+	* glib/building.sgml: Explain --enable-include-printf.
+
+	* glib/Makefile.am (extra_files): 
+	* gobject/Makefile.am (extra_files): Add version.xml.in.
+
+	* glib/Makefile.am (content_files): 
+	* gobject/Makefile.am (content_files): Add version.xml.
+
+	* glib/version.xml.in: 
+	* gobject/version.xml.in: New files to let configure dump the version in.
+
+	* glib/glib-docs.sgml:
+	* gobject/gobject-docs.sgml: Add version information.
+
+
+Thu Nov 21 15:52:04 2002  Owen Taylor  <otaylor@redhat.com>
+
+	* glib/tmpl/iochannels.sgml: Add helpful comments about
+	the encoding of a new iochannel. (Amaury Jacquot,
+	#96444)
+
+2002-11-21  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/string_utils.sgml: Add note on including gprintf.h,
+	move some docs inline.
+
+	* glib/glib-sections.txt: Add g_printf, g_vprintf, g_fprintf,
+	g_vfprintf, g_sprintf, g_vsprintf.
+
+2002-11-20  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/macros_misc.sgml: Document G_LIKELY, G_UNLIKELY.
+
+	* glib/glib-sections.txt: Add G_LIKELY, G_UNLIKELY.
+
+2002-10-20  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/Makefile.am (SCANOBJ_FILES): 
+	* glib/Makefile.am (SCANOBJ_FILES): Add $(DOC_MODULE).prerequisites.
+
+2002-10-15  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/gobject-sections.txt: Add g_type_interface_prerequisites.
+
+2002-10-14  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/Makefile.am (dist-hook): 
+	* glib/Makefile.am (dist-hook): Dist the xml/*.xml, not
+	sgml/*.sgml.  (#95678, Owen Taylor)
+
+2002-10-14  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/Makefile.am (SCANOBJ_FILES): 
+	* glib/Makefile.am (SCANOBJ_FILES): Add $(DOC_MODULE).interfaces.
+
+2002-09-16  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/messages.sgml: Replace G_LOG_FLAG_RECURSIVE by 
+	G_LOG_FLAG_RECURSION throughout.  (#93390)
+ 
+2002-08-12  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/glib-sections.txt: Add g_markup_parse_context_get_element
+	and g_utf8_strreverse.
+
+Thu Jul 25 18:58:29 2002  Owen Taylor  <otaylor@redhat.com>
+ 
+ 	* glib/tmpl/threads.sgml: Fix reference to non-existing
+ 	@priority parameter. (#88500, Linux Walleij)
+ 
+2002-06-03  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/gobject-docs.sgml: 
+	* glib/glib-docs.sgml: 
+	* glib/tmpl/macros.sgml: 
+	* glib/tmpl/string_utils.sgml: Replace homegrown "nbsp", "hash"
+	and "percent" entities by standard ISO entities "nbsp", "num" and
+	"percnt". 
+
+2002-05-30  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/string_utils.sgml: 
+	* glib/tmpl/threads.sgml: Small formatting fixes.
+
+2002-05-26  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/conversions.sgml: Add GIConv.
+
+	* glib/tmpl/main.sgml: Fix references to nonexisting functions
+	g_main_loop_destroy(), g_source_add(), g_source_connect().
+	
+
+	* glib/glib-sections.txt: Add GIConv, g_str_has_prefix, g_str_has_suffix.
+
+	* glib/tmpl/linked_lists_single.sgml: 
+	* glib/tmpl/linked_lists_double.sgml: GListAllocator doesn't exist.
+
+	* glib/glib-docs.sgml: Declare hash entity.
+
+	* glib/tmpl/macros.sgml: Escape # in #ifdef to suppress erroneous links.
+
+2002-05-25  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/Makefile.am, gobject/gobject-docs.sgml, gobject/tmpl/*:
+	* glib/Makefile.am, glib/glib-docs.sgml, glib/tmpl/*: Produce XML,
+	not SGML.
+
+2002-05-21  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/markup.sgml: Updates.
+
+Sat May 18 00:44:35 2002  Tim Janik  <timj@gtk.org>
+
+	[merged from stable]
+
+	* glib/tmpl/scanner.sgml: fix documentation for g_scanner_unexp_token().
+
+2002-05-01  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/tmpl/threads.sgml: Clarify recursion issues with
+	GMutex. (#78171)
+
+2002-04-24  Matthias Clasen  <maclas@gmx.de>
+
+	* gobject/gobject-sections.txt: 
+	* gobject/tmpl/gtype.sgml: Updates.
+
+2002-04-21  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/strings.sgml: Fix the description of g_string_assign. (#78728)
+
+2002-04-18  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/error_reporting.sgml:
+	* glib/tmpl/threads.sgml:
+	* glib/tmpl/arrays_pointer.sgml:
+	* glib/tmpl/arrays_byte.sgml:
+	* glib/tmpl/memory_chunks.sgml: s/<!>/<!-- -->/g throughout the
+	documentation to bring the produced Docbook closer to XML.
+
+2002-03-25  Sven Neumann  <sven@gimp.org>
+
+	* glib/tmpl/scanner.sgml: Fixed documentation about unused struct 
+	fields and added a note about proper g_scanner_unexp_token() usage.
+
+2002-03-11  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/tmpl/string_utils.sgml: Add a note about g_strreverse() and 
+	UTF-8.
+
+2002-02-21  Matthias Clasen  <maclas@gmx.de>
+
+	* glib/Makefile.am (IGNORE_HFILES): Add gdebug.h.
+
+	* glib/running.sgml: Document the G_DEBUG environment variable.
+
+	* glib/tmpl/threads.sgml: Replace g_thread_wait() by
+	g_thread_join() in two places.
+
+2002-02-20  Sven Neumann  <sven@gimp.org>
+
+	* gobject/gobject-sections.txt
+	* gobject/tmpl/generic_values.sgml
+	* gobject/tmpl/param_value_types.sgml: updated for GValue changes.
+
+Tue Feb 19 17:45:43 2002  Tim Janik  <timj@gtk.org>
+
+	* gobject/tmpl/generic_values.sgml: added GValue documentation.
+
+Thu Feb  7 12:07:06 2002  Tim Janik  <timj@gtk.org>
+
+	* gobject/tmpl/generic_values.sgml: document value transformation.
+
+Mon Feb  4 17:55:39 2002  Tim Janik  <timj@gtk.org>
+	
+	* gobject/tmpl/closures.sgml: doc common functions like ref/
+	sink/unref/invalidate.
+
+	* gobject/tmpl/objects.sgml: document g_object_watch_closure() and
+	qdata functions.
+
+Tue Jan 29 12:00:59 2002  Owen Taylor  <otaylor@redhat.com>
+
+	* gobject/gobject-sections.txt: Updated.
+
+	* glib/running.sgml glib/changes-2.0.sgml: SGML fixes.
+
+2002-01-28  Ron Steinke  <rsteinke@w-link.net>
+
+	* glib/iochannel.sgml: Changed #IOChannelError to
+	#GIOChannelError in one place
+
+2002-01-16  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/building.sgml, glib/compiling.sgml, 
+	glib/running.sgml, glib/resources.sgml, 
+	glib/changes-2.0.sgml: New files.
+
+	* glib/Makefile.am (content_files): Add new files.
+
+	* glib/glib-docs.sgml: Add an Overview chapter.
+
+2002-01-08  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/tmpl/threads.sgml: Name the right function.
+
+2001-12-23  Matthias Clasen  <matthias@poet.de>
+
+	* glib/tmpl/main.sgml, glib/tmpl/string_utils.sgml,
+	glib/tmpl/strings.sgml: Replace references to deprecated
+	functions.
+
+2001-12-21  Matthias Clasen  <matthias@poet.de>
+
+	* glib/glib-sections.txt: Move g_get_charset() to the
+	Charset conversion section. (#65630)
+ 
+Wed Dec 19 23:07:53 2001  Owen Taylor  <otaylor@redhat.com>
+
+	* glib/tmpl/messages.sgml glib/tmpl/string_utils.sgml: 
+	SGML fixes.
+
+	* gobject/gobject-sections.txt glib/glib-sectoins.txt: Small updates.
+
+2001-12-15  Matthias Clasen  <matthias@poet.de>
+
+	* glib/tmpl/caches.sgml: GCs are cached by GTK, not by GDK.
+
+2001-12-14  Matthias Clasen  <matthias@poet.de>
+
+	* glib/tmpl/memory.sgml: Typo fixes.
+
+2001-12-13  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/tmpl/completion.sgml, glib/tmpl/date.sgml,
+	glib/tmpl/fileutils.sgml, glib/tmpl/iochannels.sgml,
+	glib/tmpl/macros.sgml, glib/tmpl/memory.sgml,
+	glib/tmpl/misc_utils.sgml, glib/tmpl/warnings.sgml,
+	glib/tmpl/windows.sgml: Revert mistaken change: it is UNIX, not Unix.
+
+	* glib/tmpl/memory_chunks.sgml,
+	glib/tmpl/date.sgml, glib/tmpl/threads.sgml,
+	glib/tmpl/gtype.sgml: Trivial markup fixes.
+
+2001-12-12  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/tmpl/string_utils.sgml: Correct docs for g_[v]snprintf.
+
+2001-12-12  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/tmpl/allocators.sgml, glib/tmpl/arrays.sgml, 
+	glib/tmpl/arrays_byte.sgml, glib/tmpl/arrays_pointer.sgml,
+	glib/tmpl/caches.sgml, glib/tmpl/completion.sgml, 
+	glib/tmpl/conversions.sgml,
+	glib/tmpl/datalist.sgml, glib/tmpl/date.sgml, 
+	glib/tmpl/error_reporting.sgml, glib/tmpl/fileutils.sgml,
+	glib/tmpl/hash_tables.sgml,
+	glib/tmpl/hooks.sgml, glib/tmpl/macros.sgml,
+	glib/tmpl/macros_misc.sgml, glib/tmpl/main.sgml, glib/tmpl/markup.sgml,
+	glib/tmpl/memory.sgml, glib/tmpl/memory_chunks.sgml, 
+	glib/tmpl/messages.sgml, glib/tmpl/misc_utils.sgml,
+	glib/tmpl/modules.sgml, glib/tmpl/numerical.sgml, 
+	glib/tmpl/patterns.sgml, glib/tmpl/queue.sgml, 
+	glib/tmpl/shell.sgml, glib/tmpl/spawn.sgml,
+	glib/tmpl/string_utils.sgml, glib/tmpl/thread_pools.sgml,
+	glib/tmpl/threads.sgml, glib/tmpl/timers.sgml, 
+	glib/tmpl/trees-binary.sgml, glib/tmpl/trees-nary.sgml,
+	glib/tmpl/type_conversion.sgml, glib/tmpl/unicode.sgml,
+	glib/tmpl/warnings.sgml, glib/tmpl/windows.sgml:	
+	Improve markup of examples, general consistency improvements.
+
+2001-12-06  Havoc Pennington  <hp@redhat.com>
+
+	* glib/tmpl/messages.sgml: improve g_log_set_handler docs
+
+Wed Nov 28 18:50:19 2001  Owen Taylor  <otaylor@redhat.com>
+
+	* glib/glib-sections.txt: Update.
+
+2001-11-28  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/tmpl/date.sgml: Fix g_usleep docs.
+
+2001-11-26  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/tmpl/trees-binary.sgml: Document G_LEVEL_ORDER better.
+
+2001-11-22  Matthias Clasen  <matthiasc@poet.de>
+
+	Fixes for #61284:
+
+	* glib/tmpl/windows.sgml: Document G_WIN32_DLLMAIN_FOR_DLL_NAME.
+
+	* glib/tmpl/fileutils.sgml: Document GDir.
+
+	* glib/tmpl/limits.sgml: Document G_MININT64, G_MAXINT64, G_MAXUINT64.	
+
+Thu Nov 22 12:56:57 2001  Owen Taylor  <otaylor@redhat.com>
+
+	* gobject/gobject-sections.txt: Update.
+
+	* glib/tmpl/{spawn.sgml,patterns.sgml}: SGML fixes.
+
+	* glib/glib-sections.txt: Updated.
+
+	* glib/Makefile.am (IGNORE_HFILES): Don't scan
+	headers in build/
+
+Sat Nov 17 17:24:19 2001  Owen Taylor  <otaylor@redhat.com>
+
+	* glib/glib-sections.txt: Remove g_log_domain_glib
+
+2001-11-15  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/tmpl/iochannels.sgml: Document GIOFlags, fix typos.
+
+	* glib/tmpl/conversions.sgml, glib/tmpl/unicode.sgml,
+	glib/tmpl/spawn.sgml, glib/tmpl/fileutils.sgml,
+	glib/tmpl/shell.sgml, glib/tmpl/windows.sgml: Add
+	some missing short and long descriptions.
+
+2001-11-14  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/Makefile.am (MKDB_OPTIONS): Add --sgml-mode.
+
+	* glib/tmpl/patterns.sgml: Document UTF-8 support.
+
+Wed Nov 14 03:19:49 2001  Tim Janik  <timj@gtk.org>
+
+	* gobject/tmpl/param_value_types.sgml: more docs.
+
+Tue Nov 13 21:31:58 2001  Tim Janik  <timj@gtk.org>
+
+	* gobject/tmpl/param_value_types.sgml: list parameter and
+	value types.
+
+	* gobject/tmpl/gparamspec.sgml: more docs for g_param_spec*()
+	functions.
+	
+	* gobject/*: section cleanups.
+
+Tue Nov 13 19:49:16 2001  Tim Janik  <timj@gtk.org>
+
+	* gobject/tmpl/gparamspec.sgml: param spec updates.
+
+2001-11-12  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/tmpl/markup.sgml: Remove excess listitem from long 
+	description.
+ 
+2001-11-11  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/tmpl/unicode.sgml: Document GNormalizeMode enum.
+
+	* glib/tmpl/spawn.sgml: Document GSpawnFlags flags.
+
+	* glib/tmpl/error_reporting.sgml: Document GError struct.
+
+	* glib/tmpl/main.sgml: Document GMainContext, GSource and 
+	GSourceCallbackFuncs structs.
+
+2001-10-31  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/tmpl/messages.sgml, glib/tmpl/unicode.sgml:
+	Document g_log_domain_glib, gunichar, gunichar2, GUnicodeType,
+	GUnicodeBreakType.
+
+Fri Oct 26 11:42:50 2001  Owen Taylor  <otaylor@redhat.com>
+
+	* */Makefile.am: Remove $(srcdir)/html before building
+	HTML to prevent stale files. Dist all files in html/
+
+2001-10-25  Havoc Pennington  <hp@pobox.com>
+
+	* glib/tmpl/string_utils.sgml: docs on why the deprecated
+	functions are deprecated.
+
+2001-10-15  Sven Neumann  <sven@gimp.org>
+
+	* glib/tmpl/random_numbers.sgml: fixed typo.
+
+Sat Oct 13 06:58:23 2001  Tim Janik  <timj@gtk.org>
+
+	* glib/tmpl/patterns.sgml: amended documentation.
+
+2001-10-11  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/tmpl/patterns.sgml, glib/tmpl/shell.sgml: Updates.
+
+2001-10-05  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/tmpl/hooks.sgml: Document G_HOOK_FLAG_USER_SHIFT.
+
+	* glib/tmpl/trash_stacks.sgml: Document trash stacks.
+
+	* glib/tmpl/async_queues.sgml, glib/tmpl/caches.sgml, 
+	glib/tmpl/completion.sgml, glib/tmpl/patterns.sgml, 
+	glib/tmpl/numerical.sgml, glib/tmpl/random_numbers.sgml, 
+	glib/tmpl/relations.sgml, glib/tmpl/modules.sgml: Update.
+
+2001-10-05  Matthias Clasen  <matthiasc@poet.de>
+	
+	* glib/tmpl/conversions.sgml: Update.
+
+	* glib/tmpl/patterns.sgml: Update.
+
+2001-10-05  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/tmpl/hooks.sgml, glib/tmpl/spawn.sgml,
+	glib/tmpl/macros_misc.sgml: Update. 
+
+	* glib/tmpl/linked_lists_double.sgml, glib/tmpl/trees-binary.sgml,
+	glib/glib-sections.txt: Document GCompareDataFunc.
+
+2001-10-02  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/tmpl/iochannel.sgml, glib/tmpl/macros_misc.sgml,
+	glib/tmpl/queue.sgml: update docs.
+
+	* glib/tmpl/modules.sgml, glib/tmpl/threads.sgml: Remove 
+	references to glib-config.
+
+2001-10-01  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/tmpl/iochannels.sgml, glib/tmpl/shell.sgml,
+	glib/tmpl/spawn.sgml, glib/tmpl/memory.sgml,
+	glib/tmpl/macros.sgml, glib/tmpl/completion.sgml,
+	glib/tmpl/main.sgml, glib/tmpl/messages.sgml,
+	glib/tmpl/misc_utils.sgml, glib/tmpl/threads.sgml,
+	glib/tmpl/trees-nary.sgml, glib/tmpl/string_utils.sgml:
+	More markup fixes and completions.
+
+Mon Oct  1 15:59:46 2001  Owen Taylor  <otaylor@redhat.com>
+
+	* glib/tmpl/strings.sgml docs/glib-sections.txt: Rename
+	g_string_printfa(). to g_string_append_printf().
+
+2001-10-01  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/glib-sections.txt: Move all *_error_quark()
+	functions to the 'Private' sections. (#61472)
+
+2001-10-01  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/tmpl/macros.sgml (G_CONST_RETURN): document
+	allowed uses for 'out' parameters.
+
+2001-10-01  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/tmpl/caches.sgml, glib/tmpl/datalist.sgml,
+	glib/tmpl/hash_tables.sgml, glib/tmpl/messages.sgml,
+	glib/tmpl/misc_utils.sgml: consistently refer to GTK+.
+
+	* glib/tmpl/error_reporting.sgml, glib/tmpl/fileutils.sgml,
+	glib/tmpl/windows.sgml, glib/tmpl/modules.sgml,
+	glib/tmpl/linked_lists_single.sgml, glib/tmpl/trees-nary.sgml,
+	glib/tmpl/trees-binary.sgml, glib/tmpl/timers.sgml: Markup fixes.
+
+2001-09-30  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/tmpl/arrays.sgml,glib/tmpl/arrays_byte.sgml
+	glib/tmpl/arrays_pointer.sgml, glib/tmpl/caches.sgml, 
+	glib/tmpl/datalist.sgml, glib/tmpl/date.sgml, 
+	glib/tmpl/datasets.sgml, glib/tmpl/type_conversion.sgml,
+	glib/tmpl/memory.sgml, glib/tmpl/hash_tables.sgml:
+	Markup fixes and a few additions.
+
+2001-09-27  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/tmpl/macros.sgml, glib/tmpl/macros_misc.sgml, 
+	glib/tmpl/scanner.sgml: Additions and markup fixes.
+
+2001-09-27  Matthias Clasen  <matthiasc@poet.de>
+
+	* glib/tmpl/warnings.sgml, glib/tmpl/linked_lists_double.sgml,
+	glib/tmpl/completion.sgml, glib/tmpl/strings.sgml: Documented
+	some functions, markup fixes.
+	* glib/tmpl/patterns.sgml: New file.
+	* glib/glib-docs.sgml: Add entity for patterns.sgml.
+	
+2001-09-26  Matthias Clasen <matthiasc@poet.de>
+
+	* glib/glib-sections.txt: Add g_mem_is_system_malloc.
+
+2001-09-25  Matthias Clasen <matthiasc@poet.de>
+
+	* glib/glib-sections.txt: Add a missing SECTION 
+	endtag. (#61126)
+
+2001-09-17  Darin Adler  <darin@bentspoon.com>
+
+	* glib/tmpl/string_utils.sgml: Fix a typo and change
+	documentation for g_ascii_isdigit and g_ascii_isxdigit
+	to reflect the fact that the standard isdigit and
+	isxdigit are already locale-independent.
+
+Wed Sep  5 05:24:07 2001  Tim Janik  <timj@gtk.org>
+
+	* gobject/tmpl/gboxed.sgml: documented some functions.
+
+	* gobject/tmpl/objects.sgml: some fixups.
+
+Mon Sep 10 11:37:02 2001  Owen Taylor  <otaylor@redhat.com>
+
+	* glib/glib-sections.txt: Update.
+
+Sat Sep  8 14:13:44 2001  Owen Taylor  <otaylor@redhat.com>
+
+	* glib/Makefile.am (IGNORE_HFILES): Add 
+	gbsearcharray.h.
+
+	* gobject/Makefile.am (IGNORE_HFILES): Remove
+	gbsearcharray.h.
+
+2001-08-15  Ron Stenike  <rsteinke@w-link.net>
+
+	* docs/reference/glib/glib-sections.txt: Added
+	declarations for g_io_channel_[set,get]_close_on_unref
+
+Sun Aug 12 10:03:42 2001  Owen Taylor  <otaylor@redhat.com>
+
+	* */Makefile.am: Set GPATH to fix srcdir != builddir  
+	problems with GNU make.
+
+Sun Aug 12 02:24:36 2001  Tim Janik  <timj@gtk.org>
+
+	* gobject/tmpl/value_arrays.sgml: document value arrays.
+
+2001-08-06  Sven Neumann  <sven@gimp.org>
+
+	* docs/reference/gobject/gobject-sections.txt
+	* docs/reference/gobject/tmpl/objects.sgml: added documentation for
+	g_object_[add|remove]_weak_pointer().
+
+2001-07-19  Darin Adler  <darin@bentspoon.com>
+
+	reviewed by: <delete if not using a buddy>
+
+	* glib/tmpl/string_utils.sgml:
+
+2001-06-03  Matthias Clasen  <matthiasc@poet.de>
+ 
+ 	* glib/tmpl/caches.sgml, glib/tmpl/main.sgml, 
+ 	gobject/gobject-docs.sgml, gobject/tmpl/generic_values.sgml,
+ 	gobject/tmpl/gtypemodule.sgml, gobject/tmpl/signals.sgml,
+ 	gobject/tmpl/types.sgml: fix some typos.
+ 
+Thu Jun 28 17:43:29 2001  Owen Taylor  <otaylor@redhat.com>
+
+	* glib/tmpl/memory.sgml glib/tmpl/macros_misc.sgml: Add
+	notes about inclusion of string.h to docs on g_memmove,
+	G_VA_COPY. (#54411)
+
+Tue Jun 26 12:28:20 2001  Owen Taylor  <otaylor@redhat.com>
+
+	* glib/Makefile.am: Fix problem with glibconfig.h
+
+2001-06-26  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/tmpl/threads.sgml (example): Corrected.
+
+2001-06-07  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/glib-sections.txt, glib/tmpl/date.sgml: Add g_time_val_add.
+
+	* glib/tmpl/threads.sgml: Updated. 
+
+2001-05-23  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/tmpl/arrays.sgml, glib/tmpl/arrays_pointers.sgml,
+	glib/tmpl/arrays_byte.sgml: Corrected documentation for the
+	..._sized_new functions. Discovered by noon@users.sourceforge.net.
+
+2001-05-19  Havoc Pennington  <hp@pobox.com>
+
+	* glib/Makefile.am (IGNORE_HFILES): add glibintl.h
+
+	* glib/tmpl/*.sgml: fix various missing docs
+
+2001-05-18  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/glib-overrides.txt, glib/glib-sections.txt,
+	glib/tmpl/thread_pools.sgml, glib/tmpl/threads.sgml: Updated.
+
+2001-05-09  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/tmpl/thread_pools.sgml, glib/tmpl/thread_pools.sgml:
+	Updates after some renaming took place.
+
+2001-05-08  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/tmpl/threads.sgml, glib/glib-overrides.txt: Updated.
+
+	* glib/tmpl/threads.sgml: Clarification for g_mutex_trylock.
+
+2001-04-19  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/tmpl/hash_tables.sgml, glib/tmpl/misc_utils.sgml,
+	glib/tmpl/scanner.sgml: Changes due to deprecation update.
+
+Mon Apr 16 12:18:26 2001  Owen Taylor  <otaylor@redhat.com>
+
+	* {glib,gobject}/Makefile.am (tmpl-build.stamp): More tweaks
+	from GTK+. Reenable $(HTML_IMAGES) with shell portability fixes.
+
+Wed Apr  4 00:56:00 2001  Tim Janik  <timj@gtk.org>
+
+	* gobject/Makefile.am: disabled "for i in $(HTML_IMAGES) ;"
+	dist-hook because $(HTML_IMAGES) is empty.
+
+Tue Apr  3 11:51:02 2001  Owen Taylor  <otaylor@redhat.com>
+
+	* {glib,gobject}/Makefile.am (sgml-build.stamp): Add
+	explicit path to tmpl files in dependencies.
+
+	* glib/glib.types gobject/gobject.types: empty files
+	to keep generic makefiles happy.
+
+2001-04-03  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/glib-sections.txt: Removed
+	g_static_private_(get|set)_for_thread.
+
+	* glib/tmpl/threads.sgml: Updated.
+
+	* glib/tmpl/thread_pools.sgml: Added GThreadPool documentation.
+
+Mon Mar 26 14:20:36 2001  Owen Taylor  <otaylor@redhat.com>
+
+	* glib/Makefile.am (SCAN_OPTIONS): Add --deprecated-guards
+
+Sat Mar 17 17:51:17 2001  Owen Taylor  <otaylor@redhat.com>
+
+	* gobject/Makefile.am glib/Makefile.am: A couple
+	of small fixes.
+
+2001-03-08  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/tmpl/threads.sgml: Spelling corrections.
+
+Wed Mar  7 15:02:17 2001  Owen Taylor  <otaylor@redhat.com>
+
+	* gobject/Makefile.am: Revert Tim's last commit to
+	get rid of 7+ unnecessary / broken changes. Add
+	back the useful part. Also fix problem with grep,
+	add dependency on template files.
+
+	* gobject/gobject-sections.txt: Remove double 
+	value_types names which was screwing up builds.
+
+	* glib/Makefile.am: Propagate changes from 
+	gobject/Makefile.am
+
+2001-03-07  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/tmpl/threads.sgml: Fixed stupid typo.
+
+2001-03-07  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/tmpl/threads.sgml: Completed.
+
+Wed Mar  7 09:33:27 2001  Tim Janik  <timj@gtk.org>
+
+	* gobject/Makefile.am: shuffled rules to avoid excessive
+	rebuilds.
+
+	* gobject/gobject-sections.txt: updates.
+
+	* gobject/tmpl/*: bunch of updates, added another patch
+	from Eric Lemings <eric.b.lemings@lmco.com>.
+
+2001-03-07  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/glib-sections.txt, glib/tmpl/messages.sgml: Removed
+	g_log_domain_gmodule.
+
+2001-02-23  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/tmpl/threads.sgml: Big update. Almost ready.
+
+	* glib/tmpl/async_queues.sgml: Typo.
+
+	* glib/glib-sections.txt: Added g_static_rec_mutex_init,
+	g_static_rec_mutex_free, g_static_rw_lock_init,
+	g_static_private_init and g_static_private_free.
+
+	* glib/glib-overrides.txt: Added g_thread_yield and g_thread_exit.
+
+Fri Feb 16 06:52:20 2001  Tim Janik  <timj@gtk.org>
+
+	* gobject/tmpl/types.sgml: incorporated huge docu patch from Eric
+	Lemings <eric.b.lemings@lmco.com> with a bunch of editing on my part.
+
+Mon Feb 12 12:42:45 2001  Owen Taylor  <otaylor@redhat.com>
+
+	* {glib,gobject}/Makefile.am: The ultimate gtk-doc makefile.
+
+2001-02-01  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/tmpl/threads.sgml, glib/glib-sections.txt: Added
+	documentation for g_static_mutex_init().
+
+Wed Jan 31 07:14:22 2001  Tim Janik  <timj@gtk.org>
+
+	* gobject/Makefile.am: adapt to work with new CVS gtk-doc, leaving the old
+	rules in place caused bogus recursions. main changes:
+	- add to conditionalized section:
+	  all-local:
+	        $(MAKE) scan
+	        $(MAKE) templates
+	        $(MAKE) sgml
+	        $(MAKE) html.stamp
+	  html.stamp: sgml.stamp $(EXTRA_SGML_FILES)
+	        $(MAKE) html
+	  DOC_STAMPS= html.stamp sgml.stamp
+	- change:
+	  maintainer-clean-local: clean
+	  -     cd $(srcdir) && rm -rf sgml html $(DOC_MODULE)-decl-list.txt $(DOC_MODULE)-decl.txt
+	  +     cd $(srcdir) && rm -rf sgml html $(DOC_MODULE)-decl-list.txt $(DOC_MODULE)-decl.txt $(DOC_STAMPS)
+
+	* glib/Makefile.am (maintainer-clean-local): dito.
+
+Wed Jan 31 06:21:32 2001  Tim Janik  <timj@gtk.org>
+
+	* gobject/tmpl/types.sgml: applied docu patch from Eric Lemings
+	<eric.b.lemings@lmco.com>, did some more editing.
+
+2001-01-30  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/glib-sections.txt, glib/tmpl/threads.sgml: Added
+	g_static_mutex_free().
+
+Tue Jan  9 03:10:38 2001  Tim Janik  <timj@gtk.org>
+
+	* gobject/tmpl/types.sgml: added some function documentations.
+
+	* gobject/gobject-sections.txt: buncha fixups.
+
+Fri Jan  5 15:47:10 2001  Owen Taylor  <otaylor@redhat.com>
+
+	* glib/glib-sections.txt glib/tmpl/* glib/Makefile.am: Updated.
+
+2000-12-22  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/glib-sections.txt: Added G_MODULE_SUFFIX.
+
+	* glib/tmpl/modules.sgml: Updated.
+
+2000-12-19  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/glib-sections.txt: Added g_rand_boolean and
+	g_random_boolean macros.
+
+	* glib/tmpl/random_numbers.sgml: Updated.
+	
+Tue Dec  5 15:41:23 2000  Owen Taylor  <otaylor@redhat.com>
+
+	* glib/Makefile.am glib/mainloop-states*: add images
+
+	* glib/glib-sections.txt: Updated
+
+	* glib/tmpl/main.sgml: More documentation, move function
+	docs to .c file.
+
+Mon Nov 13 00:18:55 2000  Owen Taylor  <otaylor@redhat.com>
+
+	* glib/glib-sections.sgml: Move conversion functions
+	into GConv section.
+	
+	* gobject/gobject-docs.sgml: Fix some malformed sgml.
+
+Sun Nov  5 13:24:50 2000  Owen Taylor  <otaylor@redhat.com>
+
+	* gobject/Makefile.am gobject/gobject-sections.sgml: Updates
+	* gobject/tmpl/g{boxed,type{plugin,module}}.sgml: added
+
+2000-11-05  Havoc Pennington  <hp@pobox.com>
+
+	* glib/tmpl/markup.sgml: Write docs
+
+2000-11-05  Havoc Pennington  <hp@pobox.com>
+
+	* glib/glib-sections.txt: remove parens from section name,
+	confuses gtk-doc
+
+	* glib/glib-docs.sgml: Add the new files here, doh.
+
+	* glib/tmpl/shell.sgml: add gshell.[hc] docs
+
+2000-11-05  Havoc Pennington  <hp@pobox.com>
+
+	* glib/tmpl/error_reporting.sgml: fixes
+
+2000-11-05  Havoc Pennington  <hp@pobox.com>
+
+	* glib/tmpl/spawn.sgml, glib/tmpl/markup.sgml,
+	glib/tmpl/fileutils.sgml: Added
+	
+	* glib/Makefile.am: Add new files
+
+	* glib/glib-sections.txt: Add stuff from -unused
+
+Fri Nov  3 07:33:15 2000  Tim Janik  <timj@gtk.org>
+
+	* gobject/gobject-docs.sgml: added &gobject-closures; section.
+
+	* gobject/Makefile.am (tmpl_sources): add tmpl/clsoures.sgml
+
+	* gobject/gobject-sections.txt: added Closure section.
+	
+	* gobject/tmpl/closures.sgml: new file with template description
+	for GClosure functions.
+
+2000-11-02  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/tmpl/glib-unused.sgml: Remove superfluous GSearchFunc.
+
+	* glib/tmpl/async_queues.sgml, glib/glib-sections.txt: Added
+	documentation for asynchronous queues.
+
+2000-10-31  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/tmpl/linked_lists_single.sgml: This time the right fix.
+
+	* glib/tmpl/scanner.sgml, glib/tmpl/strings.sgml: Changed
+	parameter names.
+
+	* glib/tmpl/string_utils.sgml: Corrected the documentation of
+	g_strescape and added those of g_strcompress.
+
+2000-10-30  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/tmpl/limits.sgml: Added documentation for
+	G_MAXU(INT|SHORT|LONG).
+
+	* glib/tmpl/macros_misc.sgml: Added documentation for
+	G_G(U)INT(16|32|64)_FORMAT.
+
+	* glib/tmpl/types.sgml: Mention G_MAXU(INT|SHORT|LONG) in
+	documentation for gu(int|short|long).
+
+	* glib/glib-sections.txt, glib/tmpl/linked_lists_double.sgml,
+	glib/tmpl/caches.sgml: Move GCompareFunc to GList and introduce
+	and document GEqualFunc in GHashTable.
+
+	* glib/tmpl/caches.sgml, glib/tmpl/hash_tables.sgml,
+	glib/tmpl/relations.sgml : Changed to reflect the changed API
+	(GCompareFunc -> GEqualFunc).
+
+	* glib/tmpl/linked_lists_single.sgml, glib/tmpl/threads.sgml: Typo
+	fixes.
+	
+Mon Oct 30 11:13:12 2000  Tim Janik  <timj@gtk.org>
+
+	* gobject/tmpl/signals.sgml: start at general description.
+
+	* gobject/gobject-docs.sgml: added introduction.
+
+Mon Oct 30 06:01:43 2000  Tim Janik  <timj@gtk.org>
+
+	* gobject/gobject-sections.txt: opened up a new section on signals.
+
+2000-10-27  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/tmpl/misc_utils.sgml: Removed the win32 limitation.
+
+	* glib/glib-sections.txt, glib/tmpl/hash_tables.sgml,
+	glib/tmpl/macros_misc.sgml, glib/tmpl/misc_utils.sgml,
+	glib/tmpl/scanner.sgml: Document the recently deprecated functions
+	as such.
+
+2000-10-15  Raja R Harinath  <harinath@cs.umn.edu>
+
+	'make distcheck' fixes.
+	* glib/Makefile.am (EXTRA_DIST): Add $(DOC_MODULE)-decl.txt.
+	(html): Run 'gtkdoc-fixxref' in $(srcdir).
+	(dist-check-gtkdoc): Add missing quote.
+	(dist-hook): Copy in dependency order, so that none of the
+	makerules are fired in a tarball build.
+
+	* gobject/Makefile.am: Likewise.
+
+2000-10-13  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib/glib-sections.txt: Added misc items.
+
+	* glib/tmpl/random_numbers.sgml: Documentation for the random
+	number generator.
+
+2000-10-09  Raja R Harinath  <harinath@cs.umn.edu>
+
+	* gobject/Makefile.am (DOC_SOURCE_DIR): Don't set to 
+	$top_srcdir)/gobject.
+	* glib/Makefile.am (DOC_SOURCE_DIR): Don't set to $(top_srcdir),
+
+2000-09-29  Jonathan Blandford  <jrb@redhat.com>
+
+	* glib/tmpl/trees-nary.sgml: Add g_node_insert_after().
+
+Thu Sep  7 12:35:35 2000  Owen Taylor  <otaylor@redhat.com>
+
+	* Some further makefile improvement.
+	 
+	* Restore all the docs that mysteriously vanished earlier.
+
+Wed Sep  6 10:59:45 2000  Owen Taylor  <otaylor@redhat.com>
+
+	* gobject/Makefile.am glib/Makefile.am: Improve 
+	separation of generic non-generic parts and dependencies. 
+
+Tue Sep  5 20:03:25 2000  Owen Taylor  <otaylor@redhat.com>
+
+	* Moved into glib source tree, updated glib-sections.txt
+	and Makefile.am for glib-1.3.x.
+
+2000-07-01  Damon Chaplin  <damon@helixcode.com>
+
+	* tmpl/string_utils.sgml: updated g_strndup.
+
+2000-06-11  Damon Chaplin  <damon@helixcode.com>
+
+	* tmpl/messages.sgml: updated a bit more.
+
+2000-06-11  Damon Chaplin  <damon@helixcode.com>
+
+	* tmpl/messages.sgml: updated a few bits about log handlers & flags.
+
+2000-04-16  Damon Chaplin  <damon@helixcode.com>
+
+	* tmpl/linked_lists_single.sgml: 
+	* tmpl/linked_lists_double.sgml: 
+	* tmpl/trees-nary.sgml: updated.
+
+	* tmpl/modules.sgml: described g_module_build_path().
+
+	* tmpl/date.sgml: made short description lower case and end in a '.'.
+
+	* glib-sections.txt: rearranged GDate section.
+
+	* tmpl/arrays.sgml: 
+	* tmpl/arrays_byte.sgml: 
+	* tmpl/arrays_pointer.sgml: updated.
+
+2000-02-21  Damon Chaplin  <damon@helixcode.com>
+
+	* tmpl/main.sgml: updated the g_source_remove_by_XXX() descriptions
+	to note that only the first source found is removed.
+
+2000-01-25  Damon Chaplin  <damon@karuna.freeserve.co.uk>
+
+	* tmpl/misc_utils.sgml: g_bit_nth_lsf/msf docs from 
+	Nils Rennebarth <nils@ipe.uni-stuttgart.de>, and updates for
+	GVoidFunc & GFreeFunc.
+
+1999-12-02  Sebastian Wilhelmi  <wilhelmi@ira.uka.de>
+
+	* glib-sections.txt, tmpl/threads.sgml: Removed
+	G_THREADS_IMPL_NSPR. Shouldn't be used anyway.
+
+	* glib-overrides.txt: New file, that makes most of the thread
+	related macros look like functions.
+
+	* Makefile.am: Added glib-overrides.txt to EXTRA_DIST.
+
+	* tmpl/threads.sgml: Minor updates.
+	
+Tue Aug 17 08:42:17 1999  Owen Taylor  <otaylor@redhat.com>
+
+	* tmpl/datasets.sgml: Added missing </para>
+	* tmpl/timers.sgml: Added missing </para>
+	* tmpl/misc_utils.sgml: Added missing </para>
+	* tmpl/linked_lists_double.sgml: Added missing </para>
+	* tmpl/linked_lists_single.sgml: Added missing </para>
+	* tmpl/threads.sgml: Removed extra <para>s.
+	* tmpl/main.sgml: Added missing </para>
+
+Wed Aug 18 23:38:52 1999  Owen Taylor  <otaylor@redhat.com>
+
+	* README: Added some simple build instructions.
+
+Wed Aug 18 23:11:28 1999  Owen Taylor  <otaylor@redhat.com>
+
+	* Import into CVS of glib-reference-1.1.3
+	  Filled in some basic contents for AUTHORS
+	  README, and README.cvs  
+

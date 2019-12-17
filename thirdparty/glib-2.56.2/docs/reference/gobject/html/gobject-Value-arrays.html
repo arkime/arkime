@@ -1,0 +1,643 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Value arrays: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="rn01.html" title="API Reference">
+<link rel="prev" href="gobject-Closures.html" title="Closures">
+<link rel="next" href="GBinding.html" title="GBinding">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gobject-Value-arrays.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="rn01.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gobject-Closures.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GBinding.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gobject-Value-arrays"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gobject-Value-arrays.top_of_page"></a>Value arrays</span></h2>
+<p>Value arrays — A container structure to maintain an array of
+    generic values</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gobject-Value-arrays.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="returnvalue">GValue</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Value-arrays.html#g-value-array-get-nth" title="g_value_array_get_nth ()">g_value_array_get_nth</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="returnvalue">GValueArray</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Value-arrays.html#g-value-array-new" title="g_value_array_new ()">g_value_array_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="returnvalue">GValueArray</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Value-arrays.html#g-value-array-copy" title="g_value_array_copy ()">g_value_array_copy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Value-arrays.html#g-value-array-free" title="g_value_array_free ()">g_value_array_free</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="returnvalue">GValueArray</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Value-arrays.html#g-value-array-append" title="g_value_array_append ()">g_value_array_append</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="returnvalue">GValueArray</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Value-arrays.html#g-value-array-prepend" title="g_value_array_prepend ()">g_value_array_prepend</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="returnvalue">GValueArray</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Value-arrays.html#g-value-array-insert" title="g_value_array_insert ()">g_value_array_insert</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="returnvalue">GValueArray</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Value-arrays.html#g-value-array-remove" title="g_value_array_remove ()">g_value_array_remove</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="returnvalue">GValueArray</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Value-arrays.html#g-value-array-sort" title="g_value_array_sort ()">g_value_array_sort</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="returnvalue">GValueArray</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Value-arrays.html#g-value-array-sort-with-data" title="g_value_array_sort_with_data ()">g_value_array_sort_with_data</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gobject-Value-arrays.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray">GValueArray</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gobject-Value-arrays.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib-object.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gobject-Value-arrays.description"></a><h2>Description</h2>
+<p>The prime purpose of a <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> is for it to be used as an
+object property that holds an array of values. A <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> wraps
+an array of <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> elements in order for it to be used as a boxed
+type through <a class="link" href="gobject-Generic-values.html#G-TYPE-VALUE-ARRAY:CAPS" title="G_TYPE_VALUE_ARRAY"><code class="literal">G_TYPE_VALUE_ARRAY</code></a>.</p>
+<p><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> is deprecated in favour of <a href="../glib-Arrays.html#GArray"><span class="type">GArray</span></a> since GLib 2.32. It
+is possible to create a <a href="../glib-Arrays.html#GArray"><span class="type">GArray</span></a> that behaves like a <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> by
+using the size of <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> as the element size, and by setting
+<a class="link" href="gobject-Generic-values.html#g-value-unset" title="g_value_unset ()"><code class="function">g_value_unset()</code></a> as the clear function using <a href="../glib-Arrays.html#g-array-set-clear-func"><code class="function">g_array_set_clear_func()</code></a>,
+for instance, the following code:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">GValueArray</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">array </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gobject-Value-arrays.html#g-value-array-new">g_value_array_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="number">10</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>can be replaced by:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">GArray</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">array </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="../glib-Arrays.html#g-array-sized-new">g_array_sized_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="../glib-Standard-Macros.html#FALSE:CAPS">FALSE</a></span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#TRUE:CAPS">TRUE</a></span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">sizeof</span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="gobject-Generic-values.html#GValue">GValue</a></span><span class="symbol">),</span><span class="normal"> </span><span class="number">10</span><span class="symbol">);</span>
+<span class="function"><a href="../glib-Arrays.html#g-array-set-clear-func">g_array_set_clear_func</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">array</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="../glib-Datasets.html#GDestroyNotify">GDestroyNotify</a></span><span class="symbol">)</span><span class="normal"> <a href="gobject-Generic-values.html#g-value-unset">g_value_unset</a></span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+</div>
+<div class="refsect1">
+<a name="gobject-Value-arrays.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-value-array-get-nth"></a><h3>g_value_array_get_nth ()</h3>
+<pre class="programlisting"><a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="returnvalue">GValue</span></a> *
+g_value_array_get_nth (<em class="parameter"><code><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> *value_array</code></em>,
+                       <em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> index_</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_value_array_get_nth</code> has been deprecated since version 2.32 and should not be used in newly-written code.</p>
+<p>Use <a href="../glib-Arrays.html#g-array-index"><code class="function">g_array_index()</code></a> instead.</p>
+</div>
+<p>Return a pointer to the value at <em class="parameter"><code>index_</code></em>
+ containd in <em class="parameter"><code>value_array</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-value-array-get-nth.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>value_array</p></td>
+<td class="parameter_description"><p><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> to get a value from</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>index_</p></td>
+<td class="parameter_description"><p>index of the value of interest</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-value-array-get-nth.returns"></a><h4>Returns</h4>
+<p>pointer to a value at <em class="parameter"><code>index_</code></em>
+in <em class="parameter"><code>value_array</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-array-new"></a><h3>g_value_array_new ()</h3>
+<pre class="programlisting"><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="returnvalue">GValueArray</span></a> *
+g_value_array_new (<em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> n_prealloced</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_value_array_new</code> has been deprecated since version 2.32 and should not be used in newly-written code.</p>
+<p>Use <a href="../glib-Arrays.html#GArray"><span class="type">GArray</span></a> and <a href="../glib-Arrays.html#g-array-sized-new"><code class="function">g_array_sized_new()</code></a> instead.</p>
+</div>
+<p>Allocate and initialize a new <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a>, optionally preserve space
+for <em class="parameter"><code>n_prealloced</code></em>
+ elements. New arrays always contain 0 elements,
+regardless of the value of <em class="parameter"><code>n_prealloced</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-value-array-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>n_prealloced</p></td>
+<td class="parameter_description"><p>number of values to preallocate space for</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-value-array-new.returns"></a><h4>Returns</h4>
+<p> a newly allocated <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> with 0 values</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-array-copy"></a><h3>g_value_array_copy ()</h3>
+<pre class="programlisting"><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="returnvalue">GValueArray</span></a> *
+g_value_array_copy (<em class="parameter"><code>const <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> *value_array</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_value_array_copy</code> has been deprecated since version 2.32 and should not be used in newly-written code.</p>
+<p>Use <a href="../glib-Arrays.html#GArray"><span class="type">GArray</span></a> and <a href="../glib-Arrays.html#g-array-ref"><code class="function">g_array_ref()</code></a> instead.</p>
+</div>
+<p>Construct an exact copy of a <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> by duplicating all its
+contents.</p>
+<div class="refsect3">
+<a name="g-value-array-copy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>value_array</p></td>
+<td class="parameter_description"><p><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> to copy</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-value-array-copy.returns"></a><h4>Returns</h4>
+<p>Newly allocated copy of <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-array-free"></a><h3>g_value_array_free ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_value_array_free (<em class="parameter"><code><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> *value_array</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_value_array_free</code> has been deprecated since version 2.32 and should not be used in newly-written code.</p>
+<p>Use <a href="../glib-Arrays.html#GArray"><span class="type">GArray</span></a> and <a href="../glib-Arrays.html#g-array-unref"><code class="function">g_array_unref()</code></a> instead.</p>
+</div>
+<p>Free a <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> including its contents.</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-value-array-free.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>value_array</p></td>
+<td class="parameter_description"><p><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> to free</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-array-append"></a><h3>g_value_array_append ()</h3>
+<pre class="programlisting"><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="returnvalue">GValueArray</span></a> *
+g_value_array_append (<em class="parameter"><code><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> *value_array</code></em>,
+                      <em class="parameter"><code>const <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> *value</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_value_array_append</code> has been deprecated since version 2.32 and should not be used in newly-written code.</p>
+<p>Use <a href="../glib-Arrays.html#GArray"><span class="type">GArray</span></a> and <a href="../glib-Arrays.html#g-array-append-val"><code class="function">g_array_append_val()</code></a> instead.</p>
+</div>
+<p>Insert a copy of <em class="parameter"><code>value</code></em>
+ as last element of <em class="parameter"><code>value_array</code></em>
+. If <em class="parameter"><code>value</code></em>
+ is
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, an uninitialized value is appended.</p>
+<div class="refsect3">
+<a name="g-value-array-append.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>value_array</p></td>
+<td class="parameter_description"><p><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> to add an element to</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p><a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> to copy into <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-value-array-append.returns"></a><h4>Returns</h4>
+<p>the <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> passed in as <em class="parameter"><code>value_array</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-array-prepend"></a><h3>g_value_array_prepend ()</h3>
+<pre class="programlisting"><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="returnvalue">GValueArray</span></a> *
+g_value_array_prepend (<em class="parameter"><code><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> *value_array</code></em>,
+                       <em class="parameter"><code>const <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> *value</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_value_array_prepend</code> has been deprecated since version 2.32 and should not be used in newly-written code.</p>
+<p>Use <a href="../glib-Arrays.html#GArray"><span class="type">GArray</span></a> and <a href="../glib-Arrays.html#g-array-prepend-val"><code class="function">g_array_prepend_val()</code></a> instead.</p>
+</div>
+<p>Insert a copy of <em class="parameter"><code>value</code></em>
+ as first element of <em class="parameter"><code>value_array</code></em>
+. If <em class="parameter"><code>value</code></em>
+ is
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, an uninitialized value is prepended.</p>
+<div class="refsect3">
+<a name="g-value-array-prepend.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>value_array</p></td>
+<td class="parameter_description"><p><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> to add an element to</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p><a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> to copy into <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-value-array-prepend.returns"></a><h4>Returns</h4>
+<p>the <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> passed in as <em class="parameter"><code>value_array</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-array-insert"></a><h3>g_value_array_insert ()</h3>
+<pre class="programlisting"><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="returnvalue">GValueArray</span></a> *
+g_value_array_insert (<em class="parameter"><code><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> *value_array</code></em>,
+                      <em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> index_</code></em>,
+                      <em class="parameter"><code>const <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> *value</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_value_array_insert</code> has been deprecated since version 2.32 and should not be used in newly-written code.</p>
+<p>Use <a href="../glib-Arrays.html#GArray"><span class="type">GArray</span></a> and <a href="../glib-Arrays.html#g-array-insert-val"><code class="function">g_array_insert_val()</code></a> instead.</p>
+</div>
+<p>Insert a copy of <em class="parameter"><code>value</code></em>
+ at specified position into <em class="parameter"><code>value_array</code></em>
+. If <em class="parameter"><code>value</code></em>
+
+is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, an uninitialized value is inserted.</p>
+<div class="refsect3">
+<a name="g-value-array-insert.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>value_array</p></td>
+<td class="parameter_description"><p><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> to add an element to</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>index_</p></td>
+<td class="parameter_description"><p>insertion position, must be &lt;= value_array-&gt;;n_values</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p><a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> to copy into <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-value-array-insert.returns"></a><h4>Returns</h4>
+<p>the <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> passed in as <em class="parameter"><code>value_array</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-array-remove"></a><h3>g_value_array_remove ()</h3>
+<pre class="programlisting"><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="returnvalue">GValueArray</span></a> *
+g_value_array_remove (<em class="parameter"><code><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> *value_array</code></em>,
+                      <em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> index_</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_value_array_remove</code> has been deprecated since version 2.32 and should not be used in newly-written code.</p>
+<p>Use <a href="../glib-Arrays.html#GArray"><span class="type">GArray</span></a> and <a href="../glib-Arrays.html#g-array-remove-index"><code class="function">g_array_remove_index()</code></a> instead.</p>
+</div>
+<p>Remove the value at position <em class="parameter"><code>index_</code></em>
+ from <em class="parameter"><code>value_array</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-value-array-remove.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>value_array</p></td>
+<td class="parameter_description"><p><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> to remove an element from</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>index_</p></td>
+<td class="parameter_description"><p>position of value to remove, which must be less than
+<em class="parameter"><code>value_array-&gt;n_values</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-value-array-remove.returns"></a><h4>Returns</h4>
+<p>the <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> passed in as <em class="parameter"><code>value_array</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-array-sort"></a><h3>g_value_array_sort ()</h3>
+<pre class="programlisting"><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="returnvalue">GValueArray</span></a> *
+g_value_array_sort (<em class="parameter"><code><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> *value_array</code></em>,
+                    <em class="parameter"><code><a href="../glib-Doubly-Linked-Lists.html#GCompareFunc"><span class="type">GCompareFunc</span></a> compare_func</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_value_array_sort</code> has been deprecated since version 2.32 and should not be used in newly-written code.</p>
+<p>Use <a href="../glib-Arrays.html#GArray"><span class="type">GArray</span></a> and <a href="../glib-Arrays.html#g-array-sort"><code class="function">g_array_sort()</code></a>.</p>
+</div>
+<p>Sort <em class="parameter"><code>value_array</code></em>
+ using <em class="parameter"><code>compare_func</code></em>
+ to compare the elements according to
+the semantics of <a href="../glib-Doubly-Linked-Lists.html#GCompareFunc"><span class="type">GCompareFunc</span></a>.</p>
+<p>The current implementation uses the same sorting algorithm as standard
+C <code class="function">qsort()</code> function.</p>
+<div class="refsect3">
+<a name="g-value-array-sort.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>value_array</p></td>
+<td class="parameter_description"><p><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> to sort</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>compare_func</p></td>
+<td class="parameter_description"><p>function to compare elements. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid only during the call to the method."><span class="acronym">scope call</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-value-array-sort.returns"></a><h4>Returns</h4>
+<p>the <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> passed in as <em class="parameter"><code>value_array</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-array-sort-with-data"></a><h3>g_value_array_sort_with_data ()</h3>
+<pre class="programlisting"><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="returnvalue">GValueArray</span></a> *
+g_value_array_sort_with_data (<em class="parameter"><code><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> *value_array</code></em>,
+                              <em class="parameter"><code><a href="../glib-Doubly-Linked-Lists.html#GCompareDataFunc"><span class="type">GCompareDataFunc</span></a> compare_func</code></em>,
+                              <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_value_array_sort_with_data</code> has been deprecated since version 2.32 and should not be used in newly-written code.</p>
+<p>Use <a href="../glib-Arrays.html#GArray"><span class="type">GArray</span></a> and <a href="../glib-Arrays.html#g-array-sort-with-data"><code class="function">g_array_sort_with_data()</code></a>.</p>
+</div>
+<p>Sort <em class="parameter"><code>value_array</code></em>
+ using <em class="parameter"><code>compare_func</code></em>
+ to compare the elements according
+to the semantics of <a href="../glib-Doubly-Linked-Lists.html#GCompareDataFunc"><span class="type">GCompareDataFunc</span></a>.</p>
+<p>The current implementation uses the same sorting algorithm as standard
+C <code class="function">qsort()</code> function.</p>
+<p><span class="annotation">[<acronym title="Rename the original symbol's name to SYMBOL."><span class="acronym">rename-to</span></acronym> g_value_array_sort]</span></p>
+<div class="refsect3">
+<a name="g-value-array-sort-with-data.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>value_array</p></td>
+<td class="parameter_description"><p><a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> to sort</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>compare_func</p></td>
+<td class="parameter_description"><p>function to compare elements. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid only during the call to the method."><span class="acronym">scope call</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>extra data argument provided for <em class="parameter"><code>compare_func</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-value-array-sort-with-data.returns"></a><h4>Returns</h4>
+<p>the <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> passed in as <em class="parameter"><code>value_array</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="gobject-Value-arrays.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GValueArray"></a><h3>struct GValueArray</h3>
+<pre class="programlisting">struct GValueArray {
+  guint   n_values;
+  GValue *values;
+};
+</pre>
+<p>A <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a> contains an array of <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> elements.</p>
+<div class="refsect3">
+<a name="GValueArray.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> <em class="structfield"><code><a name="GValueArray.n-values"></a>n_values</code></em>;</p></td>
+<td class="struct_member_description"><p>number of values contained in the array</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> *<em class="structfield"><code><a name="GValueArray.values"></a>values</code></em>;</p></td>
+<td class="struct_member_description"><p>array of values</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="gobject-Value-arrays.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a>, <a class="link" href="gobject-Standard-Parameter-and-Value-Types.html#GParamSpecValueArray" title="struct GParamSpecValueArray"><span class="type">GParamSpecValueArray</span></a>, <a class="link" href="gobject-Standard-Parameter-and-Value-Types.html#g-param-spec-value-array" title="g_param_spec_value_array ()"><code class="function">g_param_spec_value_array()</code></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

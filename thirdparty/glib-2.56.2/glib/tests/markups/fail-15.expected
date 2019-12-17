@@ -1,0 +1,8 @@
+ELEMENT 'foo'
+  TEXT '
+'
+  ELEMENT 'bar'
+    TEXT '
+'
+  END 'bar'
+ERROR Error on line 3 char 8: Document ended unexpectedly with elements still open - 'foo' was the last element opened

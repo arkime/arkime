@@ -1,0 +1,4 @@
+ELEMENT 'foo'
+  TEXT '�'
+END 'foo'
+ERROR Error on line 2 char 1: '^$non-carriage-null-fail|' is not a valid name

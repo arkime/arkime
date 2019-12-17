@@ -1,0 +1,227 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Overriding interface methods: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="howto-interface.html" title="How to define and implement interfaces">
+<link rel="prev" href="howto-interface-properties.html" title="Interface properties">
+<link rel="next" href="howto-signals.html" title="How to create and use signals">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="howto-interface.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="howto-interface-properties.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="howto-signals.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="howto-interface-override"></a>Overriding interface methods</h2></div></div></div>
+<p>
+      If a base class already implements an interface and a derived
+      class needs to implement the same interface but needs to override certain
+      methods, you must reimplement the interface and set only the interface
+      methods which need overriding.
+    </p>
+<p>
+      In this example, <span class="type">ViewerAudioFile</span> is derived from
+      <span class="type">ViewerFile</span>. Both implement the <span class="type">ViewerEditable</span>
+      interface. <span class="type">ViewerAudioFile</span> only implements one method of the
+      <span class="type">ViewerEditable</span> interface and uses the base class implementation of
+      the other.
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_audio_file_editable_save</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditable</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">editable</span><span class="symbol">,</span>
+<span class="normal">                                 </span><span class="usertype">GError</span><span class="normal">         </span><span class="symbol">**</span><span class="normal">error</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">ViewerAudioFile</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">self </span><span class="symbol">=</span><span class="normal"> </span><span class="function">VIEWER_AUDIO_FILE</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">editable</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Audio file implementation of editable interface save method.</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_audio_file_editable_interface_init</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditableInterface</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">iface</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="comment">/* Override the implementation of save(). */</span>
+<span class="normal">  iface</span><span class="symbol">-&gt;</span><span class="normal">save </span><span class="symbol">=</span><span class="normal"> viewer_audio_file_editable_save</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="comment">/*</span>
+<span class="comment">   * Leave iface-&gt;undo and -&gt;redo alone, they are already set to the</span>
+<span class="comment">   * base class implementation.</span>
+<span class="comment">   */</span>
+<span class="cbracket">}</span>
+
+<span class="function"><a href="gobject-Type-Information.html#G-DEFINE-TYPE-WITH-CODE:CAPS">G_DEFINE_TYPE_WITH_CODE</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ViewerAudioFile</span><span class="symbol">,</span><span class="normal"> viewer_audio_file</span><span class="symbol">,</span><span class="normal"> VIEWER_TYPE_FILE</span><span class="symbol">,</span>
+<span class="normal">                         </span><span class="function"><a href="gobject-Type-Information.html#G-IMPLEMENT-INTERFACE:CAPS">G_IMPLEMENT_INTERFACE</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">VIEWER_TYPE_EDITABLE</span><span class="symbol">,</span>
+<span class="normal">                                                viewer_audio_file_editable_interface_init</span><span class="symbol">))</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_audio_file_class_init</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerAudioFileClass</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">klass</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="comment">/* Nothing here. */</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_audio_file_init</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerAudioFile</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="comment">/* Nothing here. */</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+    </p>
+<p>
+      To access the base class interface implementation use
+      <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-interface-peek-parent" title="g_type_interface_peek_parent ()">g_type_interface_peek_parent</a></code>
+      from within an interface's <code class="function">default_init</code> function.
+    </p>
+<p>
+      To call the base class implementation of an interface
+      method from an derived class where than interface method has been
+      overridden, stash away the pointer returned from
+      <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-interface-peek-parent" title="g_type_interface_peek_parent ()">g_type_interface_peek_parent</a></code>
+      in a global variable.
+    </p>
+<p>
+      In this example <span class="type">ViewerAudioFile</span> overrides the
+      <code class="function">save</code> interface method. In its overridden method
+      it calls the base class implementation of the same interface method.
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">static</span><span class="normal"> </span><span class="usertype">ViewerEditableInterface</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">viewer_editable_parent_interface </span><span class="symbol">=</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_audio_file_editable_save</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditable</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">editable</span><span class="symbol">,</span>
+<span class="normal">                                 </span><span class="usertype">GError</span><span class="normal">         </span><span class="symbol">**</span><span class="normal">error</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">ViewerAudioFile</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">self </span><span class="symbol">=</span><span class="normal"> </span><span class="function">VIEWER_AUDIO_FILE</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">editable</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Audio file implementation of editable interface save method.</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">/* Now call the base implementation */</span>
+<span class="normal">  viewer_editable_parent_interface</span><span class="symbol">-&gt;</span><span class="function">save</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">editable</span><span class="symbol">,</span><span class="normal"> error</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_audio_file_editable_interface_init</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerEditableInterface</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">iface</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  viewer_editable_parent_interface </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gobject-Type-Information.html#g-type-interface-peek-parent">g_type_interface_peek_parent</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">iface</span><span class="symbol">);</span>
+
+<span class="normal">  iface</span><span class="symbol">-&gt;</span><span class="normal">save </span><span class="symbol">=</span><span class="normal"> viewer_audio_file_editable_save</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+
+<span class="function"><a href="gobject-Type-Information.html#G-DEFINE-TYPE-WITH-CODE:CAPS">G_DEFINE_TYPE_WITH_CODE</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ViewerAudioFile</span><span class="symbol">,</span><span class="normal"> viewer_audio_file</span><span class="symbol">,</span><span class="normal"> VIEWER_TYPE_FILE</span><span class="symbol">,</span>
+<span class="normal">                         </span><span class="function"><a href="gobject-Type-Information.html#G-IMPLEMENT-INTERFACE:CAPS">G_IMPLEMENT_INTERFACE</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">VIEWER_TYPE_EDITABLE</span><span class="symbol">,</span>
+<span class="normal">                                                viewer_audio_file_editable_interface_init</span><span class="symbol">))</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_audio_file_class_init</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerAudioFileClass</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">klass</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="comment">/* Nothing here. */</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_audio_file_init</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerAudioFile</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="comment">/* Nothing here. */</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+    </p>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

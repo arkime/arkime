@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<!--
+ Copyright (C) 2016 Red Hat, Inc.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2 of the License, or (at your option) any later version.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library. If not, see <http://www.gnu.org/licenses/>.
+
+ Author: Matthias Clasen <mclasen@redhat.com>
+-->
+<node name="/" xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
+  <!--
+      org.freedesktop.portal.NetworkMonitor:
+      @short_description: Network monitoring portal
+
+      The NetworkMonitor interface provides network status information
+      to sandboxed applications. It is not a portal in the strict sense,
+      since it does not involve user interaction. Applications are
+      expected to use this interface indirectly, via a library API
+      such as the GLib GNetworkMonitor interface.
+
+      This documentation describes version 2 of this interface.
+  -->
+  <interface name="org.freedesktop.portal.NetworkMonitor">
+    <!--
+        changed:
+
+        Emitted when the network configuration changes.
+    -->
+    <signal name="changed"/>
+    <!--
+        GetAvailable:
+        @available: whether the network is available
+
+        Returns whether the network is considered available.
+        That is, whether the system as a default route for
+        at least one of IPv4 or IPv6.
+
+        This method was added in version 2 to replace
+        the available property.
+    -->
+    <method name="GetAvailable">
+      <arg type='b' name='available' direction='out'/>
+    </method>
+    <!--
+        GetMetered:
+        @metered: whether the network is metered
+
+        Returns whether the network is considered metered.
+        That is, whether the system as traffic flowing through
+        the default connection that is subject ot limitations
+        by service providers.
+
+        This method was added in version 2 to replace
+        the metered property.
+    -->
+    <method name="GetMetered">
+      <arg type='b' name='metered' direction='out'/>
+    </method>
+    <!--
+        GetConnectivity:
+        @connectivity: the level of connectivity
+
+        Returs more detailed information about the host's network
+        connectivity. The meaning of the value is:
+        <simplelist>
+          <member>1: Local only. The host is not configured with a route to the internet.</member>
+          <member>2: Limited connectivity. The host is connected to a network, but can't reach the full internet.</member>
+          <member>3: Captive portal. The host is behind a captive portal and cannot reach the full internet.</member>
+          <member>4: Full network. The host connected to a network, and can reach the full internet.</member>
+        </simplelist>
+
+        This method was added in version 2 to replace
+        the connectivity property.
+    -->
+    <method name="GetConnectivity">
+      <arg type='u' name='connectivity' direction='out'/>
+    </method>
+    <property name="version" type="u" access="read"/>
+  </interface>
+</node>

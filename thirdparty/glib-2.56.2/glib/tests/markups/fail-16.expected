@@ -1,0 +1,2 @@
+ELEMENT 'foo'
+ERROR Error on line 1 char 6: Document ended unexpectedly, expected to see a close angle bracket ending the tag <foo/>

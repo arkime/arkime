@@ -1,0 +1,394 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>D-Bus Utilities: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="gdbus-lowlevel.html" title="Low-level D-Bus Support">
+<link rel="prev" href="gdbus-lowlevel.html" title="Low-level D-Bus Support">
+<link rel="next" href="gio-D-Bus-Addresses.html" title="D-Bus Addresses">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gio-D-Bus-Utilities.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="gdbus-lowlevel.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gdbus-lowlevel.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gio-D-Bus-Addresses.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-D-Bus-Utilities"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-D-Bus-Utilities.top_of_page"></a>D-Bus Utilities</span></h2>
+<p>D-Bus Utilities — Various utilities related to D-Bus</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gio-D-Bus-Utilities.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Utilities.html#g-dbus-generate-guid" title="g_dbus_generate_guid ()">g_dbus_generate_guid</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Utilities.html#g-dbus-is-guid" title="g_dbus_is_guid ()">g_dbus_is_guid</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Utilities.html#g-dbus-is-name" title="g_dbus_is_name ()">g_dbus_is_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Utilities.html#g-dbus-is-unique-name" title="g_dbus_is_unique_name ()">g_dbus_is_unique_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Utilities.html#g-dbus-is-member-name" title="g_dbus_is_member_name ()">g_dbus_is_member_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Utilities.html#g-dbus-is-interface-name" title="g_dbus_is_interface_name ()">g_dbus_is_interface_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Utilities.html#g-dbus-gvalue-to-gvariant" title="g_dbus_gvalue_to_gvariant ()">g_dbus_gvalue_to_gvariant</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Utilities.html#g-dbus-gvariant-to-gvalue" title="g_dbus_gvariant_to_gvalue ()">g_dbus_gvariant_to_gvalue</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-D-Bus-Utilities.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-D-Bus-Utilities.description"></a><h2>Description</h2>
+<p>Various utility routines related to D-Bus.</p>
+</div>
+<div class="refsect1">
+<a name="gio-D-Bus-Utilities.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-dbus-generate-guid"></a><h3>g_dbus_generate_guid ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_generate_guid (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Generate a D-Bus GUID that can be used with
+e.g. <a class="link" href="GDBusConnection.html#g-dbus-connection-new" title="g_dbus_connection_new ()"><code class="function">g_dbus_connection_new()</code></a>.</p>
+<p>See the D-Bus specification regarding what strings are valid D-Bus
+GUID (for example, D-Bus GUIDs are not RFC-4122 compliant).</p>
+<div class="refsect3">
+<a name="g-dbus-generate-guid.returns"></a><h4>Returns</h4>
+<p> A valid D-Bus GUID. Free with <a href="../glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-is-guid"></a><h3>g_dbus_is_guid ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_dbus_is_guid (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *string</code></em>);</pre>
+<p>Checks if <em class="parameter"><code>string</code></em>
+ is a D-Bus GUID.</p>
+<p>See the D-Bus specification regarding what strings are valid D-Bus
+GUID (for example, D-Bus GUIDs are not RFC-4122 compliant).</p>
+<div class="refsect3">
+<a name="g-dbus-is-guid.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>The string to check.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-is-guid.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>string</code></em>
+is a guid, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-is-name"></a><h3>g_dbus_is_name ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_dbus_is_name (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *string</code></em>);</pre>
+<p>Checks if <em class="parameter"><code>string</code></em>
+ is a valid D-Bus bus name (either unique or well-known).</p>
+<div class="refsect3">
+<a name="g-dbus-is-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>The string to check.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-is-name.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if valid, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-is-unique-name"></a><h3>g_dbus_is_unique_name ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_dbus_is_unique_name (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *string</code></em>);</pre>
+<p>Checks if <em class="parameter"><code>string</code></em>
+ is a valid D-Bus unique bus name.</p>
+<div class="refsect3">
+<a name="g-dbus-is-unique-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>The string to check.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-is-unique-name.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if valid, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-is-member-name"></a><h3>g_dbus_is_member_name ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_dbus_is_member_name (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *string</code></em>);</pre>
+<p>Checks if <em class="parameter"><code>string</code></em>
+ is a valid D-Bus member (e.g. signal or method) name.</p>
+<div class="refsect3">
+<a name="g-dbus-is-member-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>The string to check.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-is-member-name.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if valid, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-is-interface-name"></a><h3>g_dbus_is_interface_name ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_dbus_is_interface_name (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *string</code></em>);</pre>
+<p>Checks if <em class="parameter"><code>string</code></em>
+ is a valid D-Bus interface name.</p>
+<div class="refsect3">
+<a name="g-dbus-is-interface-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>The string to check.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-is-interface-name.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if valid, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-gvalue-to-gvariant"></a><h3>g_dbus_gvalue_to_gvariant ()</h3>
+<pre class="programlisting"><a href="../glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+g_dbus_gvalue_to_gvariant (<em class="parameter"><code>const <a href="../gobject-Generic-values.html#GValue"><span class="type">GValue</span></a> *gvalue</code></em>,
+                           <em class="parameter"><code>const <a href="../glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Converts a <a href="../gobject-Generic-values.html#GValue"><span class="type">GValue</span></a> to a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> of the type indicated by the <em class="parameter"><code>type</code></em>
+
+parameter.</p>
+<p>The conversion is using the following rules:</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p><a href="../gobject-Type-Information.html#G-TYPE-STRING:CAPS"><span class="type">G_TYPE_STRING</span></a>: 's', 'o', 'g' or 'ay'</p></li>
+<li class="listitem"><p><a href="../gobject-Boxed-Types.html#G-TYPE-STRV:CAPS"><span class="type">G_TYPE_STRV</span></a>: 'as', 'ao' or 'aay'</p></li>
+<li class="listitem"><p><a href="../gobject-Type-Information.html#G-TYPE-BOOLEAN:CAPS"><span class="type">G_TYPE_BOOLEAN</span></a>: 'b'</p></li>
+<li class="listitem"><p><a href="../gobject-Type-Information.html#G-TYPE-UCHAR:CAPS"><span class="type">G_TYPE_UCHAR</span></a>: 'y'</p></li>
+<li class="listitem"><p><a href="../gobject-Type-Information.html#G-TYPE-INT:CAPS"><span class="type">G_TYPE_INT</span></a>: 'i', 'n'</p></li>
+<li class="listitem"><p><a href="../gobject-Type-Information.html#G-TYPE-UINT:CAPS"><span class="type">G_TYPE_UINT</span></a>: 'u', 'q'</p></li>
+<li class="listitem"><p><a href="../gobject-Type-Information.html#G-TYPE-INT64:CAPS"><span class="type">G_TYPE_INT64</span></a> 'x'</p></li>
+<li class="listitem"><p><a href="../gobject-Type-Information.html#G-TYPE-UINT64:CAPS"><span class="type">G_TYPE_UINT64</span></a>: 't'</p></li>
+<li class="listitem"><p><a href="../gobject-Type-Information.html#G-TYPE-DOUBLE:CAPS"><span class="type">G_TYPE_DOUBLE</span></a>: 'd'</p></li>
+<li class="listitem"><p><a href="../gobject-Type-Information.html#G-TYPE-VARIANT:CAPS"><span class="type">G_TYPE_VARIANT</span></a>: Any <a href="../glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a></p></li>
+</ul></div>
+<p>This can fail if e.g. <em class="parameter"><code>gvalue</code></em>
+ is of type <a href="../gobject-Type-Information.html#G-TYPE-STRING:CAPS"><span class="type">G_TYPE_STRING</span></a> and <em class="parameter"><code>type</code></em>
+
+is <a href="../glib-GVariantType.html#G-VARIANT-TYPE-INT32:CAPS">'i'</a>. It will also fail for any <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a>
+(including e.g. <a href="../gobject-Type-Information.html#G-TYPE-OBJECT:CAPS"><span class="type">G_TYPE_OBJECT</span></a> and <a href="../gobject-Type-Information.html#G-TYPE-BOXED:CAPS"><span class="type">G_TYPE_BOXED</span></a> derived-types) not
+in the table above.</p>
+<p>Note that if <em class="parameter"><code>gvalue</code></em>
+ is of type <a href="../gobject-Type-Information.html#G-TYPE-VARIANT:CAPS"><span class="type">G_TYPE_VARIANT</span></a> and its value is
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, the empty <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> instance (never <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>) for <em class="parameter"><code>type</code></em>
+ is
+returned (e.g. 0 for scalar types, the empty string for string types,
+'/' for object path types, the empty array for any array type and so on).</p>
+<p>See the <a class="link" href="gio-D-Bus-Utilities.html#g-dbus-gvariant-to-gvalue" title="g_dbus_gvariant_to_gvalue ()"><code class="function">g_dbus_gvariant_to_gvalue()</code></a> function for how to convert a
+<a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> to a <a href="../gobject-Generic-values.html#GValue"><span class="type">GValue</span></a>.</p>
+<div class="refsect3">
+<a name="g-dbus-gvalue-to-gvariant.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>gvalue</p></td>
+<td class="parameter_description"><p>A <a href="../gobject-Generic-values.html#GValue"><span class="type">GValue</span></a> to convert to a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>A <a href="../glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-gvalue-to-gvariant.returns"></a><h4>Returns</h4>
+<p> A <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> (never floating) of <a href="../glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a> <em class="parameter"><code>type</code></em>
+holding
+the data from <em class="parameter"><code>gvalue</code></em>
+or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> in case of failure. Free with
+<a href="../glib-GVariant.html#g-variant-unref"><code class="function">g_variant_unref()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-gvariant-to-gvalue"></a><h3>g_dbus_gvariant_to_gvalue ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_gvariant_to_gvalue (<em class="parameter"><code><a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *value</code></em>,
+                           <em class="parameter"><code><a href="../gobject-Generic-values.html#GValue"><span class="type">GValue</span></a> *out_gvalue</code></em>);</pre>
+<p>Converts a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> to a <a href="../gobject-Generic-values.html#GValue"><span class="type">GValue</span></a>. If <em class="parameter"><code>value</code></em>
+ is floating, it is consumed.</p>
+<p>The rules specified in the <a class="link" href="gio-D-Bus-Utilities.html#g-dbus-gvalue-to-gvariant" title="g_dbus_gvalue_to_gvariant ()"><code class="function">g_dbus_gvalue_to_gvariant()</code></a> function are
+used - this function is essentially its reverse form. So, a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a>
+containing any basic or string array type will be converted to a <a href="../gobject-Generic-values.html#GValue"><span class="type">GValue</span></a>
+containing a basic value or string array. Any other <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> (handle,
+variant, tuple, dict entry) will be converted to a <a href="../gobject-Generic-values.html#GValue"><span class="type">GValue</span></a> containing that
+<a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a>.</p>
+<p>The conversion never fails - a valid <a href="../gobject-Generic-values.html#GValue"><span class="type">GValue</span></a> is always returned in
+<em class="parameter"><code>out_gvalue</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-gvariant-to-gvalue.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>A <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>out_gvalue</p></td>
+<td class="parameter_description"><p>Return location pointing to a zero-filled (uninitialized) <a href="../gobject-Generic-values.html#GValue"><span class="type">GValue</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-D-Bus-Utilities.other_details"></a><h2>Types and Values</h2>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

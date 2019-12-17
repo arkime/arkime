@@ -1,0 +1,969 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GSubprocess Launcher: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="subprocesses.html" title="Subprocesses">
+<link rel="prev" href="GSubprocess.html" title="GSubprocess">
+<link rel="next" href="networking.html" title="Low-level network support">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GSubprocessLauncher.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GSubprocessLauncher.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GSubprocessLauncher.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="subprocesses.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GSubprocess.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="networking.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GSubprocessLauncher"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GSubprocessLauncher.top_of_page"></a>GSubprocess Launcher</span></h2>
+<p>GSubprocess Launcher — Environment options for launching a child process</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GSubprocessLauncher.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="returnvalue">GSubprocessLauncher</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-new" title="g_subprocess_launcher_new ()">g_subprocess_launcher_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GSubprocess.html" title="GSubprocess"><span class="returnvalue">GSubprocess</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-spawn" title="g_subprocess_launcher_spawn ()">g_subprocess_launcher_spawn</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GSubprocess.html" title="GSubprocess"><span class="returnvalue">GSubprocess</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-spawnv" title="g_subprocess_launcher_spawnv ()">g_subprocess_launcher_spawnv</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-set-environ" title="g_subprocess_launcher_set_environ ()">g_subprocess_launcher_set_environ</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-setenv" title="g_subprocess_launcher_setenv ()">g_subprocess_launcher_setenv</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-unsetenv" title="g_subprocess_launcher_unsetenv ()">g_subprocess_launcher_unsetenv</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-getenv" title="g_subprocess_launcher_getenv ()">g_subprocess_launcher_getenv</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-set-cwd" title="g_subprocess_launcher_set_cwd ()">g_subprocess_launcher_set_cwd</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-set-flags" title="g_subprocess_launcher_set_flags ()">g_subprocess_launcher_set_flags</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-set-stdin-file-path" title="g_subprocess_launcher_set_stdin_file_path ()">g_subprocess_launcher_set_stdin_file_path</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-take-stdin-fd" title="g_subprocess_launcher_take_stdin_fd ()">g_subprocess_launcher_take_stdin_fd</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-set-stdout-file-path" title="g_subprocess_launcher_set_stdout_file_path ()">g_subprocess_launcher_set_stdout_file_path</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-take-stdout-fd" title="g_subprocess_launcher_take_stdout_fd ()">g_subprocess_launcher_take_stdout_fd</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-set-stderr-file-path" title="g_subprocess_launcher_set_stderr_file_path ()">g_subprocess_launcher_set_stderr_file_path</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-take-stderr-fd" title="g_subprocess_launcher_take_stderr_fd ()">g_subprocess_launcher_take_stderr_fd</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-take-fd" title="g_subprocess_launcher_take_fd ()">g_subprocess_launcher_take_fd</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-set-child-setup" title="g_subprocess_launcher_set_child_setup ()">g_subprocess_launcher_set_child_setup</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSubprocessLauncher.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody><tr>
+<td class="property_type"><a class="link" href="GSubprocess.html#GSubprocessFlags" title="enum GSubprocessFlags"><span class="type">GSubprocessFlags</span></a></td>
+<td class="property_name"><a class="link" href="GSubprocessLauncher.html#GSubprocessLauncher--flags" title="The “flags” property">flags</a></td>
+<td class="property_flags">Write / Construct Only</td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSubprocessLauncher.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GSubprocessLauncher.html#GSubprocessLauncher-struct" title="GSubprocessLauncher">GSubprocessLauncher</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSubprocessLauncher.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GSubprocessLauncher
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSubprocessLauncher.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSubprocessLauncher.description"></a><h2>Description</h2>
+<p>This class contains a set of options for launching child processes,
+such as where its standard input and output will be directed, the
+argument list, the environment, and more.</p>
+<p>While the <a class="link" href="GSubprocess.html" title="GSubprocess"><span class="type">GSubprocess</span></a> class has high level functions covering
+popular cases, use of this class allows access to more advanced
+options.  It can also be used to launch multiple subprocesses with
+a similar configuration.</p>
+</div>
+<div class="refsect1">
+<a name="GSubprocessLauncher.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-subprocess-launcher-new"></a><h3>g_subprocess_launcher_new ()</h3>
+<pre class="programlisting"><a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="returnvalue">GSubprocessLauncher</span></a> *
+g_subprocess_launcher_new (<em class="parameter"><code><a class="link" href="GSubprocess.html#GSubprocessFlags" title="enum GSubprocessFlags"><span class="type">GSubprocessFlags</span></a> flags</code></em>);</pre>
+<p>Creates a new <a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a>.</p>
+<p>The launcher is created with the default options.  A copy of the
+environment of the calling process is made at the time of this call
+and will be used as the environment that the process is launched in.</p>
+<div class="refsect3">
+<a name="g-subprocess-launcher-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p><a class="link" href="GSubprocess.html#GSubprocessFlags" title="enum GSubprocessFlags"><span class="type">GSubprocessFlags</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-subprocess-launcher-spawn"></a><h3>g_subprocess_launcher_spawn ()</h3>
+<pre class="programlisting"><a class="link" href="GSubprocess.html" title="GSubprocess"><span class="returnvalue">GSubprocess</span></a> *
+g_subprocess_launcher_spawn (<em class="parameter"><code><a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a> *self</code></em>,
+                             <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>,
+                             <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *argv0</code></em>,
+                             <em class="parameter"><code>...</code></em>);</pre>
+<p>Creates a <a class="link" href="GSubprocess.html" title="GSubprocess"><span class="type">GSubprocess</span></a> given a provided varargs list of arguments.</p>
+<div class="refsect3">
+<a name="g-subprocess-launcher-spawn.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>Error</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>argv0</p></td>
+<td class="parameter_description"><p>Command line arguments</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>Continued arguments, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> terminated</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-subprocess-launcher-spawn.returns"></a><h4>Returns</h4>
+<p>A new <a class="link" href="GSubprocess.html" title="GSubprocess"><span class="type">GSubprocess</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error (and <em class="parameter"><code>error</code></em>
+will be set). </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-subprocess-launcher-spawnv"></a><h3>g_subprocess_launcher_spawnv ()</h3>
+<pre class="programlisting"><a class="link" href="GSubprocess.html" title="GSubprocess"><span class="returnvalue">GSubprocess</span></a> *
+g_subprocess_launcher_spawnv (<em class="parameter"><code><a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a> *self</code></em>,
+                              <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> * const *argv</code></em>,
+                              <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Creates a <a class="link" href="GSubprocess.html" title="GSubprocess"><span class="type">GSubprocess</span></a> given a provided array of arguments.</p>
+<div class="refsect3">
+<a name="g-subprocess-launcher-spawnv.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>argv</p></td>
+<td class="parameter_description"><p>Command line arguments. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> filename]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>Error</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-subprocess-launcher-spawnv.returns"></a><h4>Returns</h4>
+<p>A new <a class="link" href="GSubprocess.html" title="GSubprocess"><span class="type">GSubprocess</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error (and <em class="parameter"><code>error</code></em>
+will be set). </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-subprocess-launcher-set-environ"></a><h3>g_subprocess_launcher_set_environ ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_subprocess_launcher_set_environ (<em class="parameter"><code><a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a> *self</code></em>,
+                                   <em class="parameter"><code><a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> **env</code></em>);</pre>
+<p>Replace the entire environment of processes launched from this
+launcher with the given 'environ' variable.</p>
+<p>Typically you will build this variable by using <a href="../glib-Miscellaneous-Utility-Functions.html#g-listenv"><code class="function">g_listenv()</code></a> to copy
+the process 'environ' and using the functions <a href="../glib-Miscellaneous-Utility-Functions.html#g-environ-setenv"><code class="function">g_environ_setenv()</code></a>,
+<a href="../glib-Miscellaneous-Utility-Functions.html#g-environ-unsetenv"><code class="function">g_environ_unsetenv()</code></a>, etc.</p>
+<p>As an alternative, you can use <a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-setenv" title="g_subprocess_launcher_setenv ()"><code class="function">g_subprocess_launcher_setenv()</code></a>,
+<a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-unsetenv" title="g_subprocess_launcher_unsetenv ()"><code class="function">g_subprocess_launcher_unsetenv()</code></a>, etc.</p>
+<p>Pass an empty array to set an empty environment. Pass <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to inherit the
+parent process’ environment. As of GLib 2.54, the parent process’ environment
+will be copied when <a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-set-environ" title="g_subprocess_launcher_set_environ ()"><code class="function">g_subprocess_launcher_set_environ()</code></a> is called.
+Previously, it was copied when the subprocess was executed. This means the
+copied environment may now be modified (using <a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-setenv" title="g_subprocess_launcher_setenv ()"><code class="function">g_subprocess_launcher_setenv()</code></a>,
+etc.) before launching the subprocess.</p>
+<p>On UNIX, all strings in this array can be arbitrary byte strings.
+On Windows, they should be in UTF-8.</p>
+<div class="refsect3">
+<a name="g-subprocess-launcher-set-environ.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSubprocess.html" title="GSubprocess"><span class="type">GSubprocess</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>env</p></td>
+<td class="parameter_description"><p>the replacement environment. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> filename][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-subprocess-launcher-setenv"></a><h3>g_subprocess_launcher_setenv ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_subprocess_launcher_setenv (<em class="parameter"><code><a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a> *self</code></em>,
+                              <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *variable</code></em>,
+                              <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value</code></em>,
+                              <em class="parameter"><code><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> overwrite</code></em>);</pre>
+<p>Sets the environment variable <em class="parameter"><code>variable</code></em>
+ in the environment of
+processes launched from this launcher.</p>
+<p>On UNIX, both the variable's name and value can be arbitrary byte
+strings, except that the variable's name cannot contain '='.
+On Windows, they should be in UTF-8.</p>
+<div class="refsect3">
+<a name="g-subprocess-launcher-setenv.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSubprocess.html" title="GSubprocess"><span class="type">GSubprocess</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>variable</p></td>
+<td class="parameter_description"><p>the environment variable to set,
+must not contain '='. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>the new value for the variable. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>overwrite</p></td>
+<td class="parameter_description"><p>whether to change the variable if it already exists</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-subprocess-launcher-unsetenv"></a><h3>g_subprocess_launcher_unsetenv ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_subprocess_launcher_unsetenv (<em class="parameter"><code><a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a> *self</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *variable</code></em>);</pre>
+<p>Removes the environment variable <em class="parameter"><code>variable</code></em>
+ from the environment of
+processes launched from this launcher.</p>
+<p>On UNIX, the variable's name can be an arbitrary byte string not
+containing '='. On Windows, it should be in UTF-8.</p>
+<div class="refsect3">
+<a name="g-subprocess-launcher-unsetenv.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSubprocess.html" title="GSubprocess"><span class="type">GSubprocess</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>variable</p></td>
+<td class="parameter_description"><p>the environment variable to unset,
+must not contain '='. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-subprocess-launcher-getenv"></a><h3>g_subprocess_launcher_getenv ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_subprocess_launcher_getenv (<em class="parameter"><code><a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a> *self</code></em>,
+                              <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *variable</code></em>);</pre>
+<p>Returns the value of the environment variable <em class="parameter"><code>variable</code></em>
+ in the
+environment of processes launched from this launcher.</p>
+<p>On UNIX, the returned string can be an arbitrary byte string.
+On Windows, it will be UTF-8.</p>
+<div class="refsect3">
+<a name="g-subprocess-launcher-getenv.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSubprocess.html" title="GSubprocess"><span class="type">GSubprocess</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>variable</p></td>
+<td class="parameter_description"><p>the environment variable to get. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-subprocess-launcher-getenv.returns"></a><h4>Returns</h4>
+<p>the value of the environment variable,
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if unset. </p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-subprocess-launcher-set-cwd"></a><h3>g_subprocess_launcher_set_cwd ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_subprocess_launcher_set_cwd (<em class="parameter"><code><a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a> *self</code></em>,
+                               <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *cwd</code></em>);</pre>
+<p>Sets the current working directory that processes will be launched
+with.</p>
+<p>By default processes are launched with the current working directory
+of the launching process at the time of launch.</p>
+<div class="refsect3">
+<a name="g-subprocess-launcher-set-cwd.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSubprocess.html" title="GSubprocess"><span class="type">GSubprocess</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cwd</p></td>
+<td class="parameter_description"><p>the cwd for launched processes. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-subprocess-launcher-set-flags"></a><h3>g_subprocess_launcher_set_flags ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_subprocess_launcher_set_flags (<em class="parameter"><code><a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a> *self</code></em>,
+                                 <em class="parameter"><code><a class="link" href="GSubprocess.html#GSubprocessFlags" title="enum GSubprocessFlags"><span class="type">GSubprocessFlags</span></a> flags</code></em>);</pre>
+<p>Sets the flags on the launcher.</p>
+<p>The default flags are <a class="link" href="GSubprocess.html#G-SUBPROCESS-FLAGS-NONE:CAPS"><code class="literal">G_SUBPROCESS_FLAGS_NONE</code></a>.</p>
+<p>You may not set flags that specify conflicting options for how to
+handle a particular stdio stream (eg: specifying both
+<a class="link" href="GSubprocess.html#G-SUBPROCESS-FLAGS-STDIN-PIPE:CAPS"><code class="literal">G_SUBPROCESS_FLAGS_STDIN_PIPE</code></a> and
+<a class="link" href="GSubprocess.html#G-SUBPROCESS-FLAGS-STDIN-INHERIT:CAPS"><code class="literal">G_SUBPROCESS_FLAGS_STDIN_INHERIT</code></a>).</p>
+<p>You may also not set a flag that conflicts with a previous call to a
+function like <a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-set-stdin-file-path" title="g_subprocess_launcher_set_stdin_file_path ()"><code class="function">g_subprocess_launcher_set_stdin_file_path()</code></a> or
+<a class="link" href="GSubprocessLauncher.html#g-subprocess-launcher-take-stdout-fd" title="g_subprocess_launcher_take_stdout_fd ()"><code class="function">g_subprocess_launcher_take_stdout_fd()</code></a>.</p>
+<div class="refsect3">
+<a name="g-subprocess-launcher-set-flags.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p><a class="link" href="GSubprocess.html#GSubprocessFlags" title="enum GSubprocessFlags"><span class="type">GSubprocessFlags</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-subprocess-launcher-set-stdin-file-path"></a><h3>g_subprocess_launcher_set_stdin_file_path ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_subprocess_launcher_set_stdin_file_path
+                               (<em class="parameter"><code><a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a> *self</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *path</code></em>);</pre>
+<p>Sets the file path to use as the stdin for spawned processes.</p>
+<p>If <em class="parameter"><code>path</code></em>
+ is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then any previously given path is unset.</p>
+<p>The file must exist or spawning the process will fail.</p>
+<p>You may not set a stdin file path if a stdin fd is already set or if
+the launcher flags contain any flags directing stdin elsewhere.</p>
+<p>This feature is only available on UNIX.</p>
+<div class="refsect3">
+<a name="g-subprocess-launcher-set-stdin-file-path.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>path</p></td>
+<td class="parameter_description"><p>(type filename) (nullable: a filename or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-subprocess-launcher-take-stdin-fd"></a><h3>g_subprocess_launcher_take_stdin_fd ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_subprocess_launcher_take_stdin_fd (<em class="parameter"><code><a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a> *self</code></em>,
+                                     <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> fd</code></em>);</pre>
+<p>Sets the file descriptor to use as the stdin for spawned processes.</p>
+<p>If <em class="parameter"><code>fd</code></em>
+ is -1 then any previously given fd is unset.</p>
+<p>Note that if your intention is to have the stdin of the calling
+process inherited by the child then <a class="link" href="GSubprocess.html#G-SUBPROCESS-FLAGS-STDIN-INHERIT:CAPS"><code class="literal">G_SUBPROCESS_FLAGS_STDIN_INHERIT</code></a>
+is a better way to go about doing that.</p>
+<p>The passed <em class="parameter"><code>fd</code></em>
+ is noted but will not be touched in the current
+process.  It is therefore necessary that it be kept open by the
+caller until the subprocess is spawned.  The file descriptor will
+also not be explicitly closed on the child side, so it must be marked
+O_CLOEXEC if that's what you want.</p>
+<p>You may not set a stdin fd if a stdin file path is already set or if
+the launcher flags contain any flags directing stdin elsewhere.</p>
+<p>This feature is only available on UNIX.</p>
+<div class="refsect3">
+<a name="g-subprocess-launcher-take-stdin-fd.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>fd</p></td>
+<td class="parameter_description"><p>a file descriptor, or -1</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-subprocess-launcher-set-stdout-file-path"></a><h3>g_subprocess_launcher_set_stdout_file_path ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_subprocess_launcher_set_stdout_file_path
+                               (<em class="parameter"><code><a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a> *self</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *path</code></em>);</pre>
+<p>Sets the file path to use as the stdout for spawned processes.</p>
+<p>If <em class="parameter"><code>path</code></em>
+ is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then any previously given path is unset.</p>
+<p>The file will be created or truncated when the process is spawned, as
+would be the case if using '&gt;' at the shell.</p>
+<p>You may not set a stdout file path if a stdout fd is already set or
+if the launcher flags contain any flags directing stdout elsewhere.</p>
+<p>This feature is only available on UNIX.</p>
+<div class="refsect3">
+<a name="g-subprocess-launcher-set-stdout-file-path.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>path</p></td>
+<td class="parameter_description"><p>a filename or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-subprocess-launcher-take-stdout-fd"></a><h3>g_subprocess_launcher_take_stdout_fd ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_subprocess_launcher_take_stdout_fd (<em class="parameter"><code><a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a> *self</code></em>,
+                                      <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> fd</code></em>);</pre>
+<p>Sets the file descriptor to use as the stdout for spawned processes.</p>
+<p>If <em class="parameter"><code>fd</code></em>
+ is -1 then any previously given fd is unset.</p>
+<p>Note that the default behaviour is to pass stdout through to the
+stdout of the parent process.</p>
+<p>The passed <em class="parameter"><code>fd</code></em>
+ is noted but will not be touched in the current
+process.  It is therefore necessary that it be kept open by the
+caller until the subprocess is spawned.  The file descriptor will
+also not be explicitly closed on the child side, so it must be marked
+O_CLOEXEC if that's what you want.</p>
+<p>You may not set a stdout fd if a stdout file path is already set or
+if the launcher flags contain any flags directing stdout elsewhere.</p>
+<p>This feature is only available on UNIX.</p>
+<div class="refsect3">
+<a name="g-subprocess-launcher-take-stdout-fd.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>fd</p></td>
+<td class="parameter_description"><p>a file descriptor, or -1</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-subprocess-launcher-set-stderr-file-path"></a><h3>g_subprocess_launcher_set_stderr_file_path ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_subprocess_launcher_set_stderr_file_path
+                               (<em class="parameter"><code><a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a> *self</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *path</code></em>);</pre>
+<p>Sets the file path to use as the stderr for spawned processes.</p>
+<p>If <em class="parameter"><code>path</code></em>
+ is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then any previously given path is unset.</p>
+<p>The file will be created or truncated when the process is spawned, as
+would be the case if using '2&gt;' at the shell.</p>
+<p>If you want to send both stdout and stderr to the same file then use
+<a class="link" href="GSubprocess.html#G-SUBPROCESS-FLAGS-STDERR-MERGE:CAPS"><code class="literal">G_SUBPROCESS_FLAGS_STDERR_MERGE</code></a>.</p>
+<p>You may not set a stderr file path if a stderr fd is already set or
+if the launcher flags contain any flags directing stderr elsewhere.</p>
+<p>This feature is only available on UNIX.</p>
+<div class="refsect3">
+<a name="g-subprocess-launcher-set-stderr-file-path.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>path</p></td>
+<td class="parameter_description"><p>a filename or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-subprocess-launcher-take-stderr-fd"></a><h3>g_subprocess_launcher_take_stderr_fd ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_subprocess_launcher_take_stderr_fd (<em class="parameter"><code><a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a> *self</code></em>,
+                                      <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> fd</code></em>);</pre>
+<p>Sets the file descriptor to use as the stderr for spawned processes.</p>
+<p>If <em class="parameter"><code>fd</code></em>
+ is -1 then any previously given fd is unset.</p>
+<p>Note that the default behaviour is to pass stderr through to the
+stderr of the parent process.</p>
+<p>The passed <em class="parameter"><code>fd</code></em>
+ belongs to the <a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a>.  It will be
+automatically closed when the launcher is finalized.  The file
+descriptor will also be closed on the child side when executing the
+spawned process.</p>
+<p>You may not set a stderr fd if a stderr file path is already set or
+if the launcher flags contain any flags directing stderr elsewhere.</p>
+<p>This feature is only available on UNIX.</p>
+<div class="refsect3">
+<a name="g-subprocess-launcher-take-stderr-fd.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>fd</p></td>
+<td class="parameter_description"><p>a file descriptor, or -1</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-subprocess-launcher-take-fd"></a><h3>g_subprocess_launcher_take_fd ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_subprocess_launcher_take_fd (<em class="parameter"><code><a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a> *self</code></em>,
+                               <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> source_fd</code></em>,
+                               <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> target_fd</code></em>);</pre>
+<p>Transfer an arbitrary file descriptor from parent process to the
+child.  This function takes "ownership" of the fd; it will be closed
+in the parent when <em class="parameter"><code>self</code></em>
+ is freed.</p>
+<p>By default, all file descriptors from the parent will be closed.
+This function allows you to create (for example) a custom <code class="function">pipe()</code> or
+<code class="function">socketpair()</code> before launching the process, and choose the target
+descriptor in the child.</p>
+<p>An example use case is GNUPG, which has a command line argument
+--passphrase-fd providing a file descriptor number where it expects
+the passphrase to be written.</p>
+<div class="refsect3">
+<a name="g-subprocess-launcher-take-fd.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>source_fd</p></td>
+<td class="parameter_description"><p>File descriptor in parent process</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>target_fd</p></td>
+<td class="parameter_description"><p>Target descriptor for child process</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-subprocess-launcher-set-child-setup"></a><h3>g_subprocess_launcher_set_child_setup ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_subprocess_launcher_set_child_setup (<em class="parameter"><code><a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a> *self</code></em>,
+                                       <em class="parameter"><code><a href="../glib-Spawning-Processes.html#GSpawnChildSetupFunc"><span class="type">GSpawnChildSetupFunc</span></a> child_setup</code></em>,
+                                       <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                                       <em class="parameter"><code><a href="../glib-Datasets.html#GDestroyNotify"><span class="type">GDestroyNotify</span></a> destroy_notify</code></em>);</pre>
+<p>Sets up a child setup function.</p>
+<p>The child setup function will be called after <code class="function">fork()</code> but before
+<code class="function">exec()</code> on the child's side.</p>
+<p><em class="parameter"><code>destroy_notify</code></em>
+ will not be automatically called on the child's side
+of the <code class="function">fork()</code>.  It will only be called when the last reference on the
+<a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a> is dropped or when a new child setup function is
+given.</p>
+<p><a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> can be given as <em class="parameter"><code>child_setup</code></em>
+ to disable the functionality.</p>
+<p>Child setup functions are only available on UNIX.</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-subprocess-launcher-set-child-setup.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSubprocessLauncher.html" title="GSubprocess Launcher"><span class="type">GSubprocessLauncher</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>child_setup</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Spawning-Processes.html#GSpawnChildSetupFunc"><span class="type">GSpawnChildSetupFunc</span></a> to use as the child setup function</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data for <em class="parameter"><code>child_setup</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>destroy_notify</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Datasets.html#GDestroyNotify"><span class="type">GDestroyNotify</span></a> for <em class="parameter"><code>user_data</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GSubprocessLauncher.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GSubprocessLauncher-struct"></a><h3>GSubprocessLauncher</h3>
+<pre class="programlisting">typedef struct _GSubprocessLauncher GSubprocessLauncher;</pre>
+<p>Options for launching a child process.</p>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GSubprocessLauncher.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GSubprocessLauncher--flags"></a><h3>The <code class="literal">“flags”</code> property</h3>
+<pre class="programlisting">  “flags”                    <a class="link" href="GSubprocess.html#GSubprocessFlags" title="enum GSubprocessFlags"><span class="type">GSubprocessFlags</span></a></pre>
+<p>GSubprocessFlags for launched processes.</p>
+<p>Flags: Write / Construct Only</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

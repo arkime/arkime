@@ -1,0 +1,986 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GSocketListener: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="highlevel-socket.html" title="High-level network functionallity">
+<link rel="prev" href="GTcpWrapperConnection.html" title="GTcpWrapperConnection">
+<link rel="next" href="GSocketService.html" title="GSocketService">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GSocketListener.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GSocketListener.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GSocketListener.properties" class="shortcut">Properties</a></span><span id="nav_signals">  <span class="dim">|</span> 
+                  <a href="#GSocketListener.signals" class="shortcut">Signals</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="highlevel-socket.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GTcpWrapperConnection.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GSocketService.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GSocketListener"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GSocketListener.top_of_page"></a>GSocketListener</span></h2>
+<p>GSocketListener — Helper for accepting network client connections</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GSocketListener.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GSocketListener.html" title="GSocketListener"><span class="returnvalue">GSocketListener</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSocketListener.html#g-socket-listener-new" title="g_socket_listener_new ()">g_socket_listener_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GSocketListener.html#g-socket-listener-add-socket" title="g_socket_listener_add_socket ()">g_socket_listener_add_socket</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GSocketListener.html#g-socket-listener-add-address" title="g_socket_listener_add_address ()">g_socket_listener_add_address</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GSocketListener.html#g-socket-listener-add-inet-port" title="g_socket_listener_add_inet_port ()">g_socket_listener_add_inet_port</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GSocketListener.html#g-socket-listener-add-any-inet-port" title="g_socket_listener_add_any_inet_port ()">g_socket_listener_add_any_inet_port</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="returnvalue">GSocketConnection</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSocketListener.html#g-socket-listener-accept" title="g_socket_listener_accept ()">g_socket_listener_accept</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSocketListener.html#g-socket-listener-accept-async" title="g_socket_listener_accept_async ()">g_socket_listener_accept_async</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="returnvalue">GSocketConnection</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSocketListener.html#g-socket-listener-accept-finish" title="g_socket_listener_accept_finish ()">g_socket_listener_accept_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GSocket.html" title="GSocket"><span class="returnvalue">GSocket</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSocketListener.html#g-socket-listener-accept-socket" title="g_socket_listener_accept_socket ()">g_socket_listener_accept_socket</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSocketListener.html#g-socket-listener-accept-socket-async" title="g_socket_listener_accept_socket_async ()">g_socket_listener_accept_socket_async</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GSocket.html" title="GSocket"><span class="returnvalue">GSocket</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSocketListener.html#g-socket-listener-accept-socket-finish" title="g_socket_listener_accept_socket_finish ()">g_socket_listener_accept_socket_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSocketListener.html#g-socket-listener-close" title="g_socket_listener_close ()">g_socket_listener_close</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSocketListener.html#g-socket-listener-set-backlog" title="g_socket_listener_set_backlog ()">g_socket_listener_set_backlog</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSocketListener.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody><tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a></td>
+<td class="property_name"><a class="link" href="GSocketListener.html#GSocketListener--listen-backlog" title="The “listen-backlog” property">listen-backlog</a></td>
+<td class="property_flags">Read / Write / Construct</td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSocketListener.signals"></a><h2>Signals</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="signals_return">
+<col width="300px" class="signals_name">
+<col width="200px" class="signals_flags">
+</colgroup>
+<tbody><tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GSocketListener.html#GSocketListener-event" title="The “event” signal">event</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSocketListener.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GSocketListener.html#GSocketListener-struct" title="GSocketListener">GSocketListener</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="GSocketListener.html#GSocketListenerEvent" title="enum GSocketListenerEvent">GSocketListenerEvent</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSocketListener.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GSocketListener
+        <span class="lineart">╰──</span> <a class="link" href="GSocketService.html" title="GSocketService">GSocketService</a>
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSocketListener.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSocketListener.description"></a><h2>Description</h2>
+<p>A <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a> is an object that keeps track of a set
+of server sockets and helps you accept sockets from any of the
+socket, either sync or async.</p>
+<p>If you want to implement a network server, also look at <a class="link" href="GSocketService.html" title="GSocketService"><span class="type">GSocketService</span></a>
+and <a class="link" href="GThreadedSocketService.html" title="GThreadedSocketService"><span class="type">GThreadedSocketService</span></a> which are subclass of <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a>
+that makes this even easier.</p>
+</div>
+<div class="refsect1">
+<a name="GSocketListener.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-socket-listener-new"></a><h3>g_socket_listener_new ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketListener.html" title="GSocketListener"><span class="returnvalue">GSocketListener</span></a> *
+g_socket_listener_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Creates a new <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a> with no sockets to listen for.
+New listeners can be added with e.g. <a class="link" href="GSocketListener.html#g-socket-listener-add-address" title="g_socket_listener_add_address ()"><code class="function">g_socket_listener_add_address()</code></a>
+or <a class="link" href="GSocketListener.html#g-socket-listener-add-inet-port" title="g_socket_listener_add_inet_port ()"><code class="function">g_socket_listener_add_inet_port()</code></a>.</p>
+<div class="refsect3">
+<a name="g-socket-listener-new.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-listener-add-socket"></a><h3>g_socket_listener_add_socket ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_socket_listener_add_socket (<em class="parameter"><code><a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a> *listener</code></em>,
+                              <em class="parameter"><code><a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a> *socket</code></em>,
+                              <em class="parameter"><code><a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> *source_object</code></em>,
+                              <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Adds <em class="parameter"><code>socket</code></em>
+ to the set of sockets that we try to accept
+new clients from. The socket must be bound to a local
+address and listened to.</p>
+<p><em class="parameter"><code>source_object</code></em>
+ will be passed out in the various calls
+to accept to identify this particular source, which is
+useful if you're listening on multiple addresses and do
+different things depending on what address is connected to.</p>
+<p>The <em class="parameter"><code>socket</code></em>
+ will not be automatically closed when the <em class="parameter"><code>listener</code></em>
+ is finalized
+unless the listener held the final reference to the socket. Before GLib 2.42,
+the <em class="parameter"><code>socket</code></em>
+ was automatically closed on finalization of the <em class="parameter"><code>listener</code></em>
+, even
+if references to it were held elsewhere.</p>
+<div class="refsect3">
+<a name="g-socket-listener-add-socket.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>listener</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>socket</p></td>
+<td class="parameter_description"><p>a listening <a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>source_object</p></td>
+<td class="parameter_description"><p>Optional <a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> identifying this source. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for error reporting, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-socket-listener-add-socket.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> on error.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-listener-add-address"></a><h3>g_socket_listener_add_address ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_socket_listener_add_address (<em class="parameter"><code><a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a> *listener</code></em>,
+                               <em class="parameter"><code><a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="type">GSocketAddress</span></a> *address</code></em>,
+                               <em class="parameter"><code><a class="link" href="GSocket.html#GSocketType" title="enum GSocketType"><span class="type">GSocketType</span></a> type</code></em>,
+                               <em class="parameter"><code><a class="link" href="GSocket.html#GSocketProtocol" title="enum GSocketProtocol"><span class="type">GSocketProtocol</span></a> protocol</code></em>,
+                               <em class="parameter"><code><a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> *source_object</code></em>,
+                               <em class="parameter"><code><a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="type">GSocketAddress</span></a> **effective_address</code></em>,
+                               <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Creates a socket of type <em class="parameter"><code>type</code></em>
+ and protocol <em class="parameter"><code>protocol</code></em>
+, binds
+it to <em class="parameter"><code>address</code></em>
+ and adds it to the set of sockets we're accepting
+sockets from.</p>
+<p>Note that adding an IPv6 address, depending on the platform,
+may or may not result in a listener that also accepts IPv4
+connections.  For more deterministic behavior, see
+<a class="link" href="GSocketListener.html#g-socket-listener-add-inet-port" title="g_socket_listener_add_inet_port ()"><code class="function">g_socket_listener_add_inet_port()</code></a>.</p>
+<p><em class="parameter"><code>source_object</code></em>
+ will be passed out in the various calls
+to accept to identify this particular source, which is
+useful if you're listening on multiple addresses and do
+different things depending on what address is connected to.</p>
+<p>If successful and <em class="parameter"><code>effective_address</code></em>
+ is non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then it will
+be set to the address that the binding actually occurred at.  This
+is helpful for determining the port number that was used for when
+requesting a binding to port 0 (ie: "any port").  This address, if
+requested, belongs to the caller and must be freed.</p>
+<div class="refsect3">
+<a name="g-socket-listener-add-address.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>listener</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketAddress.html" title="GSocketAddress"><span class="type">GSocketAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocket.html#GSocketType" title="enum GSocketType"><span class="type">GSocketType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>protocol</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocket.html#GSocketProtocol" title="enum GSocketProtocol"><span class="type">GSocketProtocol</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>source_object</p></td>
+<td class="parameter_description"><p>Optional <a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> identifying this source. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>effective_address</p></td>
+<td class="parameter_description"><p>location to store the address that was bound to, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for error reporting, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-socket-listener-add-address.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> on error.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-listener-add-inet-port"></a><h3>g_socket_listener_add_inet_port ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_socket_listener_add_inet_port (<em class="parameter"><code><a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a> *listener</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Basic-Types.html#guint16"><span class="type">guint16</span></a> port</code></em>,
+                                 <em class="parameter"><code><a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> *source_object</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Helper function for <a class="link" href="GSocketListener.html#g-socket-listener-add-address" title="g_socket_listener_add_address ()"><code class="function">g_socket_listener_add_address()</code></a> that
+creates a TCP/IP socket listening on IPv4 and IPv6 (if
+supported) on the specified port on all interfaces.</p>
+<p><em class="parameter"><code>source_object</code></em>
+ will be passed out in the various calls
+to accept to identify this particular source, which is
+useful if you're listening on multiple addresses and do
+different things depending on what address is connected to.</p>
+<div class="refsect3">
+<a name="g-socket-listener-add-inet-port.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>listener</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>port</p></td>
+<td class="parameter_description"><p>an IP port number (non-zero)</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>source_object</p></td>
+<td class="parameter_description"><p>Optional <a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> identifying this source. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for error reporting, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-socket-listener-add-inet-port.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> on error.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-listener-add-any-inet-port"></a><h3>g_socket_listener_add_any_inet_port ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>
+g_socket_listener_add_any_inet_port (<em class="parameter"><code><a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a> *listener</code></em>,
+                                     <em class="parameter"><code><a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> *source_object</code></em>,
+                                     <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Listens for TCP connections on any available port number for both
+IPv6 and IPv4 (if each is available).</p>
+<p>This is useful if you need to have a socket for incoming connections
+but don't care about the specific port number.</p>
+<p><em class="parameter"><code>source_object</code></em>
+ will be passed out in the various calls
+to accept to identify this particular source, which is
+useful if you're listening on multiple addresses and do
+different things depending on what address is connected to.</p>
+<div class="refsect3">
+<a name="g-socket-listener-add-any-inet-port.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>listener</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>source_object</p></td>
+<td class="parameter_description"><p>Optional <a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> identifying this source. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> location to store the error occurring, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to
+ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-socket-listener-add-any-inet-port.returns"></a><h4>Returns</h4>
+<p> the port number, or 0 in case of failure.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-listener-accept"></a><h3>g_socket_listener_accept ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="returnvalue">GSocketConnection</span></a> *
+g_socket_listener_accept (<em class="parameter"><code><a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a> *listener</code></em>,
+                          <em class="parameter"><code><a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> **source_object</code></em>,
+                          <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                          <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Blocks waiting for a client to connect to any of the sockets added
+to the listener. Returns a <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a> for the socket that was
+accepted.</p>
+<p>If <em class="parameter"><code>source_object</code></em>
+ is not <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> it will be filled out with the source
+object specified when the corresponding socket or address was added
+to the listener.</p>
+<p>If <em class="parameter"><code>cancellable</code></em>
+ is not <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, then the operation can be cancelled by
+triggering the cancellable object from another thread. If the operation
+was cancelled, the error <a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a> will be returned.</p>
+<div class="refsect3">
+<a name="g-socket-listener-accept.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>listener</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>source_object</p></td>
+<td class="parameter_description"><p>location where <a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> pointer will be stored, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for error reporting, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-socket-listener-accept.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a> on success, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-listener-accept-async"></a><h3>g_socket_listener_accept_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_socket_listener_accept_async (<em class="parameter"><code><a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a> *listener</code></em>,
+                                <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>This is the asynchronous version of <a class="link" href="GSocketListener.html#g-socket-listener-accept" title="g_socket_listener_accept ()"><code class="function">g_socket_listener_accept()</code></a>.</p>
+<p>When the operation is finished <em class="parameter"><code>callback</code></em>
+ will be
+called. You can then call <a class="link" href="GSocketListener.html#g-socket-listener-accept-socket" title="g_socket_listener_accept_socket ()"><code class="function">g_socket_listener_accept_socket()</code></a>
+to get the result of the operation.</p>
+<div class="refsect3">
+<a name="g-socket-listener-accept-async.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>listener</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data for the callback. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-listener-accept-finish"></a><h3>g_socket_listener_accept_finish ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="returnvalue">GSocketConnection</span></a> *
+g_socket_listener_accept_finish (<em class="parameter"><code><a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a> *listener</code></em>,
+                                 <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                 <em class="parameter"><code><a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> **source_object</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Finishes an async accept operation. See <a class="link" href="GSocketListener.html#g-socket-listener-accept-async" title="g_socket_listener_accept_async ()"><code class="function">g_socket_listener_accept_async()</code></a></p>
+<div class="refsect3">
+<a name="g-socket-listener-accept-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>listener</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>source_object</p></td>
+<td class="parameter_description"><p>Optional <a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> identifying this source. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> location to store the error occurring, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to
+ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-socket-listener-accept-finish.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a> on success, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-listener-accept-socket"></a><h3>g_socket_listener_accept_socket ()</h3>
+<pre class="programlisting"><a class="link" href="GSocket.html" title="GSocket"><span class="returnvalue">GSocket</span></a> *
+g_socket_listener_accept_socket (<em class="parameter"><code><a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a> *listener</code></em>,
+                                 <em class="parameter"><code><a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> **source_object</code></em>,
+                                 <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Blocks waiting for a client to connect to any of the sockets added
+to the listener. Returns the <a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a> that was accepted.</p>
+<p>If you want to accept the high-level <a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a>, not a <a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a>,
+which is often the case, then you should use <a class="link" href="GSocketListener.html#g-socket-listener-accept" title="g_socket_listener_accept ()"><code class="function">g_socket_listener_accept()</code></a>
+instead.</p>
+<p>If <em class="parameter"><code>source_object</code></em>
+ is not <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> it will be filled out with the source
+object specified when the corresponding socket or address was added
+to the listener.</p>
+<p>If <em class="parameter"><code>cancellable</code></em>
+ is not <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, then the operation can be cancelled by
+triggering the cancellable object from another thread. If the operation
+was cancelled, the error <a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a> will be returned.</p>
+<div class="refsect3">
+<a name="g-socket-listener-accept-socket.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>listener</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>source_object</p></td>
+<td class="parameter_description"><p>location where <a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> pointer will be stored, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for error reporting, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-socket-listener-accept-socket.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a> on success, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-listener-accept-socket-async"></a><h3>g_socket_listener_accept_socket_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_socket_listener_accept_socket_async (<em class="parameter"><code><a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a> *listener</code></em>,
+                                       <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                       <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                       <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>This is the asynchronous version of <a class="link" href="GSocketListener.html#g-socket-listener-accept-socket" title="g_socket_listener_accept_socket ()"><code class="function">g_socket_listener_accept_socket()</code></a>.</p>
+<p>When the operation is finished <em class="parameter"><code>callback</code></em>
+ will be
+called. You can then call <a class="link" href="GSocketListener.html#g-socket-listener-accept-socket-finish" title="g_socket_listener_accept_socket_finish ()"><code class="function">g_socket_listener_accept_socket_finish()</code></a>
+to get the result of the operation.</p>
+<div class="refsect3">
+<a name="g-socket-listener-accept-socket-async.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>listener</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data for the callback. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-listener-accept-socket-finish"></a><h3>g_socket_listener_accept_socket_finish ()</h3>
+<pre class="programlisting"><a class="link" href="GSocket.html" title="GSocket"><span class="returnvalue">GSocket</span></a> *
+g_socket_listener_accept_socket_finish
+                               (<em class="parameter"><code><a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a> *listener</code></em>,
+                                <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                <em class="parameter"><code><a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> **source_object</code></em>,
+                                <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Finishes an async accept operation. See <a class="link" href="GSocketListener.html#g-socket-listener-accept-socket-async" title="g_socket_listener_accept_socket_async ()"><code class="function">g_socket_listener_accept_socket_async()</code></a></p>
+<div class="refsect3">
+<a name="g-socket-listener-accept-socket-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>listener</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>source_object</p></td>
+<td class="parameter_description"><p>Optional <a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> identifying this source. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> location to store the error occurring, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to
+ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-socket-listener-accept-socket-finish.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a> on success, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-listener-close"></a><h3>g_socket_listener_close ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_socket_listener_close (<em class="parameter"><code><a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a> *listener</code></em>);</pre>
+<p>Closes all the sockets in the listener.</p>
+<div class="refsect3">
+<a name="g-socket-listener-close.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>listener</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-socket-listener-set-backlog"></a><h3>g_socket_listener_set_backlog ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_socket_listener_set_backlog (<em class="parameter"><code><a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a> *listener</code></em>,
+                               <em class="parameter"><code><span class="type">int</span> listen_backlog</code></em>);</pre>
+<p>Sets the listen backlog on the sockets in the listener.</p>
+<p>See <a class="link" href="GSocket.html#g-socket-set-listen-backlog" title="g_socket_set_listen_backlog ()"><code class="function">g_socket_set_listen_backlog()</code></a> for details</p>
+<div class="refsect3">
+<a name="g-socket-listener-set-backlog.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>listener</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>listen_backlog</p></td>
+<td class="parameter_description"><p>an integer</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GSocketListener.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GSocketListener-struct"></a><h3>GSocketListener</h3>
+<pre class="programlisting">typedef struct _GSocketListener GSocketListener;</pre>
+<p>A helper class for network servers to listen for and accept connections.</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSocketListenerEvent"></a><h3>enum GSocketListenerEvent</h3>
+<p>Describes an event occurring on a <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a>. See the
+<a class="link" href="GSocketListener.html#GSocketListener-event" title="The “event” signal"><span class="type">“event”</span></a> signal for more details.</p>
+<p>Additional values may be added to this type in the future.</p>
+<div class="refsect3">
+<a name="GSocketListenerEvent.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-SOCKET-LISTENER-BINDING:CAPS"></a>G_SOCKET_LISTENER_BINDING</p></td>
+<td class="enum_member_description">
+<p>The listener is about to bind a socket.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-SOCKET-LISTENER-BOUND:CAPS"></a>G_SOCKET_LISTENER_BOUND</p></td>
+<td class="enum_member_description">
+<p>The listener has bound a socket.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-SOCKET-LISTENER-LISTENING:CAPS"></a>G_SOCKET_LISTENER_LISTENING</p></td>
+<td class="enum_member_description">
+<p>The listener is about to start
+   listening on this socket.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-SOCKET-LISTENER-LISTENED:CAPS"></a>G_SOCKET_LISTENER_LISTENED</p></td>
+<td class="enum_member_description">
+<p>The listener is now listening on
+  this socket.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GSocketListener.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GSocketListener--listen-backlog"></a><h3>The <code class="literal">“listen-backlog”</code> property</h3>
+<pre class="programlisting">  “listen-backlog”           <a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a></pre>
+<p>outstanding connections in the listen queue.</p>
+<p>Flags: Read / Write / Construct</p>
+<p>Allowed values: [0,2000]</p>
+<p>Default value: 10</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GSocketListener.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="GSocketListener-event"></a><h3>The <code class="literal">“event”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a>     *listener,
+               <a class="link" href="GSocketListener.html#GSocketListenerEvent" title="enum GSocketListenerEvent"><span class="type">GSocketListenerEvent</span></a> event,
+               <a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a>             *socket,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>             user_data)</pre>
+<p>Emitted when <em class="parameter"><code>listener</code></em>
+'s activity on <em class="parameter"><code>socket</code></em>
+ changes state.
+Note that when <em class="parameter"><code>listener</code></em>
+ is used to listen on both IPv4 and
+IPv6, a separate set of signals will be emitted for each, and
+the order they happen in is undefined.</p>
+<div class="refsect3">
+<a name="GSocketListener-event.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>listener</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GSocketListener.html" title="GSocketListener"><span class="type">GSocketListener</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>event</p></td>
+<td class="parameter_description"><p>the event that is occurring</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>socket</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a> the event is occurring on</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GSocketListener.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="GThreadedSocketService.html" title="GThreadedSocketService"><span class="type">GThreadedSocketService</span></a>, <a class="link" href="GSocketService.html" title="GSocketService"><span class="type">GSocketService</span></a>.</p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,1562 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>D-Bus Introspection Data: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="gdbus-lowlevel.html" title="Low-level D-Bus Support">
+<link rel="prev" href="gio-D-Bus-Addresses.html" title="D-Bus Addresses">
+<link rel="next" href="gio-GDBusError.html" title="GDBusError">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gio-D-Bus-Introspection-Data.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#gio-D-Bus-Introspection-Data.object-hierarchy" class="shortcut">Object Hierarchy</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="gdbus-lowlevel.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gio-D-Bus-Addresses.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gio-GDBusError.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-D-Bus-Introspection-Data"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-D-Bus-Introspection-Data.top_of_page"></a>D-Bus Introspection Data</span></h2>
+<p>D-Bus Introspection Data — Node and interface description data structures</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gio-D-Bus-Introspection-Data.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-annotation-info-lookup" title="g_dbus_annotation_info_lookup ()">g_dbus_annotation_info_lookup</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusMethodInfo"><span class="returnvalue">GDBusMethodInfo</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-interface-info-lookup-method" title="g_dbus_interface_info_lookup_method ()">g_dbus_interface_info_lookup_method</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusSignalInfo"><span class="returnvalue">GDBusSignalInfo</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-interface-info-lookup-signal" title="g_dbus_interface_info_lookup_signal ()">g_dbus_interface_info_lookup_signal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo"><span class="returnvalue">GDBusPropertyInfo</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-interface-info-lookup-property" title="g_dbus_interface_info_lookup_property ()">g_dbus_interface_info_lookup_property</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-interface-info-cache-build" title="g_dbus_interface_info_cache_build ()">g_dbus_interface_info_cache_build</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-interface-info-cache-release" title="g_dbus_interface_info_cache_release ()">g_dbus_interface_info_cache_release</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-interface-info-generate-xml" title="g_dbus_interface_info_generate_xml ()">g_dbus_interface_info_generate_xml</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo"><span class="returnvalue">GDBusNodeInfo</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-node-info-new-for-xml" title="g_dbus_node_info_new_for_xml ()">g_dbus_node_info_new_for_xml</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="returnvalue">GDBusInterfaceInfo</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-node-info-lookup-interface" title="g_dbus_node_info_lookup_interface ()">g_dbus_node_info_lookup_interface</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-node-info-generate-xml" title="g_dbus_node_info_generate_xml ()">g_dbus_node_info_generate_xml</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo"><span class="returnvalue">GDBusNodeInfo</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-node-info-ref" title="g_dbus_node_info_ref ()">g_dbus_node_info_ref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="returnvalue">GDBusInterfaceInfo</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-interface-info-ref" title="g_dbus_interface_info_ref ()">g_dbus_interface_info_ref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusMethodInfo"><span class="returnvalue">GDBusMethodInfo</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-method-info-ref" title="g_dbus_method_info_ref ()">g_dbus_method_info_ref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusSignalInfo"><span class="returnvalue">GDBusSignalInfo</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-signal-info-ref" title="g_dbus_signal_info_ref ()">g_dbus_signal_info_ref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo"><span class="returnvalue">GDBusPropertyInfo</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-property-info-ref" title="g_dbus_property_info_ref ()">g_dbus_property_info_ref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusArgInfo"><span class="returnvalue">GDBusArgInfo</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-arg-info-ref" title="g_dbus_arg_info_ref ()">g_dbus_arg_info_ref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="returnvalue">GDBusAnnotationInfo</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-annotation-info-ref" title="g_dbus_annotation_info_ref ()">g_dbus_annotation_info_ref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-node-info-unref" title="g_dbus_node_info_unref ()">g_dbus_node_info_unref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-interface-info-unref" title="g_dbus_interface_info_unref ()">g_dbus_interface_info_unref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-method-info-unref" title="g_dbus_method_info_unref ()">g_dbus_method_info_unref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-signal-info-unref" title="g_dbus_signal_info_unref ()">g_dbus_signal_info_unref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-property-info-unref" title="g_dbus_property_info_unref ()">g_dbus_property_info_unref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-arg-info-unref" title="g_dbus_arg_info_unref ()">g_dbus_arg_info_unref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-annotation-info-unref" title="g_dbus_annotation_info_unref ()">g_dbus_annotation_info_unref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<a name="GDBusAnnotationInfo"></a><a name="GDBusArgInfo"></a><a name="GDBusMethodInfo"></a><a name="GDBusSignalInfo"></a><a name="GDBusPropertyInfo"></a><a name="GDBusInterfaceInfo"></a><a name="GDBusNodeInfo"></a><div class="refsect1">
+<a name="gio-D-Bus-Introspection-Data.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo-struct" title="GDBusAnnotationInfo">GDBusAnnotationInfo</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusArgInfo-struct" title="GDBusArgInfo">GDBusArgInfo</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusMethodInfo-struct" title="GDBusMethodInfo">GDBusMethodInfo</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusSignalInfo-struct" title="GDBusSignalInfo">GDBusSignalInfo</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfoFlags" title="enum GDBusPropertyInfoFlags">GDBusPropertyInfoFlags</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo-struct" title="GDBusPropertyInfo">GDBusPropertyInfo</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo-struct" title="GDBusInterfaceInfo">GDBusInterfaceInfo</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo-struct" title="GDBusNodeInfo">GDBusNodeInfo</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gio-D-Bus-Introspection-Data.html#G-TYPE-DBUS-NODE-INFO:CAPS" title="G_TYPE_DBUS_NODE_INFO">G_TYPE_DBUS_NODE_INFO</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gio-D-Bus-Introspection-Data.html#G-TYPE-DBUS-INTERFACE-INFO:CAPS" title="G_TYPE_DBUS_INTERFACE_INFO">G_TYPE_DBUS_INTERFACE_INFO</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gio-D-Bus-Introspection-Data.html#G-TYPE-DBUS-METHOD-INFO:CAPS" title="G_TYPE_DBUS_METHOD_INFO">G_TYPE_DBUS_METHOD_INFO</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gio-D-Bus-Introspection-Data.html#G-TYPE-DBUS-SIGNAL-INFO:CAPS" title="G_TYPE_DBUS_SIGNAL_INFO">G_TYPE_DBUS_SIGNAL_INFO</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gio-D-Bus-Introspection-Data.html#G-TYPE-DBUS-PROPERTY-INFO:CAPS" title="G_TYPE_DBUS_PROPERTY_INFO">G_TYPE_DBUS_PROPERTY_INFO</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gio-D-Bus-Introspection-Data.html#G-TYPE-DBUS-ARG-INFO:CAPS" title="G_TYPE_DBUS_ARG_INFO">G_TYPE_DBUS_ARG_INFO</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gio-D-Bus-Introspection-Data.html#G-TYPE-DBUS-ANNOTATION-INFO:CAPS" title="G_TYPE_DBUS_ANNOTATION_INFO">G_TYPE_DBUS_ANNOTATION_INFO</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-D-Bus-Introspection-Data.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Boxed-Types.html">GBoxed</a>
+    <span class="lineart">├──</span> GDBusAnnotationInfo
+    <span class="lineart">├──</span> GDBusArgInfo
+    <span class="lineart">├──</span> GDBusInterfaceInfo
+    <span class="lineart">├──</span> GDBusMethodInfo
+    <span class="lineart">├──</span> GDBusNodeInfo
+    <span class="lineart">├──</span> GDBusPropertyInfo
+    <span class="lineart">╰──</span> GDBusSignalInfo
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-D-Bus-Introspection-Data.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-D-Bus-Introspection-Data.description"></a><h2>Description</h2>
+<p>Various data structures and convenience routines to parse and
+generate D-Bus introspection XML. Introspection information is
+used when registering objects with <a class="link" href="GDBusConnection.html#g-dbus-connection-register-object" title="g_dbus_connection_register_object ()"><code class="function">g_dbus_connection_register_object()</code></a>.</p>
+<p>The format of D-Bus introspection XML is specified in the
+<a class="ulink" href="http://dbus.freedesktop.org/doc/dbus-specification.html#introspection-format" target="_top">D-Bus specification</a></p>
+</div>
+<div class="refsect1">
+<a name="gio-D-Bus-Introspection-Data.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-dbus-annotation-info-lookup"></a><h3>g_dbus_annotation_info_lookup ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_annotation_info_lookup (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="type">GDBusAnnotationInfo</span></a> **annotations</code></em>,
+                               <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);</pre>
+<p>Looks up the value of an annotation.</p>
+<p>The cost of this function is O(n) in number of annotations.</p>
+<div class="refsect3">
+<a name="g-dbus-annotation-info-lookup.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>annotations</p></td>
+<td class="parameter_description"><p>A <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of annotations or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>The name of the annotation to look up.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-annotation-info-lookup.returns"></a><h4>Returns</h4>
+<p> The value or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if not found. Do not free, it is owned by <em class="parameter"><code>annotations</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-info-lookup-method"></a><h3>g_dbus_interface_info_lookup_method ()</h3>
+<pre class="programlisting"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusMethodInfo"><span class="returnvalue">GDBusMethodInfo</span></a> *
+g_dbus_interface_info_lookup_method (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a> *info</code></em>,
+                                     <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);</pre>
+<p>Looks up information about a method.</p>
+<p>The cost of this function is O(n) in number of methods unless
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-interface-info-cache-build" title="g_dbus_interface_info_cache_build ()"><code class="function">g_dbus_interface_info_cache_build()</code></a> has been used on <em class="parameter"><code>info</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-interface-info-lookup-method.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>A D-Bus method name (typically in CamelCase)</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-interface-info-lookup-method.returns"></a><h4>Returns</h4>
+<p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusMethodInfo"><span class="type">GDBusMethodInfo</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if not found. Do not free, it is owned by <em class="parameter"><code>info</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-info-lookup-signal"></a><h3>g_dbus_interface_info_lookup_signal ()</h3>
+<pre class="programlisting"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusSignalInfo"><span class="returnvalue">GDBusSignalInfo</span></a> *
+g_dbus_interface_info_lookup_signal (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a> *info</code></em>,
+                                     <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);</pre>
+<p>Looks up information about a signal.</p>
+<p>The cost of this function is O(n) in number of signals unless
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-interface-info-cache-build" title="g_dbus_interface_info_cache_build ()"><code class="function">g_dbus_interface_info_cache_build()</code></a> has been used on <em class="parameter"><code>info</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-interface-info-lookup-signal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>A D-Bus signal name (typically in CamelCase)</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-interface-info-lookup-signal.returns"></a><h4>Returns</h4>
+<p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusSignalInfo"><span class="type">GDBusSignalInfo</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if not found. Do not free, it is owned by <em class="parameter"><code>info</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-info-lookup-property"></a><h3>g_dbus_interface_info_lookup_property ()</h3>
+<pre class="programlisting"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo"><span class="returnvalue">GDBusPropertyInfo</span></a> *
+g_dbus_interface_info_lookup_property (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a> *info</code></em>,
+                                       <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);</pre>
+<p>Looks up information about a property.</p>
+<p>The cost of this function is O(n) in number of properties unless
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-interface-info-cache-build" title="g_dbus_interface_info_cache_build ()"><code class="function">g_dbus_interface_info_cache_build()</code></a> has been used on <em class="parameter"><code>info</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-interface-info-lookup-property.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>A D-Bus property name (typically in CamelCase).</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-interface-info-lookup-property.returns"></a><h4>Returns</h4>
+<p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo"><span class="type">GDBusPropertyInfo</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if not found. Do not free, it is owned by <em class="parameter"><code>info</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-info-cache-build"></a><h3>g_dbus_interface_info_cache_build ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_interface_info_cache_build (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a> *info</code></em>);</pre>
+<p>Builds a lookup-cache to speed up
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-interface-info-lookup-method" title="g_dbus_interface_info_lookup_method ()"><code class="function">g_dbus_interface_info_lookup_method()</code></a>,
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-interface-info-lookup-signal" title="g_dbus_interface_info_lookup_signal ()"><code class="function">g_dbus_interface_info_lookup_signal()</code></a> and
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-interface-info-lookup-property" title="g_dbus_interface_info_lookup_property ()"><code class="function">g_dbus_interface_info_lookup_property()</code></a>.</p>
+<p>If this has already been called with <em class="parameter"><code>info</code></em>
+, the existing cache is
+used and its use count is increased.</p>
+<p>Note that <em class="parameter"><code>info</code></em>
+ cannot be modified until
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-interface-info-cache-release" title="g_dbus_interface_info_cache_release ()"><code class="function">g_dbus_interface_info_cache_release()</code></a> is called.</p>
+<div class="refsect3">
+<a name="g-dbus-interface-info-cache-build.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-info-cache-release"></a><h3>g_dbus_interface_info_cache_release ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_interface_info_cache_release (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a> *info</code></em>);</pre>
+<p>Decrements the usage count for the cache for <em class="parameter"><code>info</code></em>
+ built by
+<a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-interface-info-cache-build" title="g_dbus_interface_info_cache_build ()"><code class="function">g_dbus_interface_info_cache_build()</code></a> (if any) and frees the
+resources used by the cache if the usage count drops to zero.</p>
+<div class="refsect3">
+<a name="g-dbus-interface-info-cache-release.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A GDBusInterfaceInfo</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-info-generate-xml"></a><h3>g_dbus_interface_info_generate_xml ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_interface_info_generate_xml (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a> *info</code></em>,
+                                    <em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> indent</code></em>,
+                                    <em class="parameter"><code><a href="../glib-Strings.html#GString"><span class="type">GString</span></a> *string_builder</code></em>);</pre>
+<p>Appends an XML representation of <em class="parameter"><code>info</code></em>
+ (and its children) to <em class="parameter"><code>string_builder</code></em>
+.</p>
+<p>This function is typically used for generating introspection XML
+documents at run-time for handling the
+<code class="literal">org.freedesktop.DBus.Introspectable.Introspect</code>
+method.</p>
+<div class="refsect3">
+<a name="g-dbus-interface-info-generate-xml.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo"><span class="type">GDBusNodeInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>indent</p></td>
+<td class="parameter_description"><p>Indentation level.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>string_builder</p></td>
+<td class="parameter_description"><p>A <a href="../glib-Strings.html#GString"><span class="type">GString</span></a> to to append XML data to.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-node-info-new-for-xml"></a><h3>g_dbus_node_info_new_for_xml ()</h3>
+<pre class="programlisting"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo"><span class="returnvalue">GDBusNodeInfo</span></a> *
+g_dbus_node_info_new_for_xml (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *xml_data</code></em>,
+                              <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Parses <em class="parameter"><code>xml_data</code></em>
+ and returns a <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo"><span class="type">GDBusNodeInfo</span></a> representing the data.</p>
+<p>The introspection XML must contain exactly one top-level
+&lt;node&gt; element.</p>
+<p>Note that this routine is using a
+GMarkup-based
+parser that only accepts a subset of valid XML documents.</p>
+<div class="refsect3">
+<a name="g-dbus-node-info-new-for-xml.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>xml_data</p></td>
+<td class="parameter_description"><p>Valid D-Bus introspection XML.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>Return location for error.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-node-info-new-for-xml.returns"></a><h4>Returns</h4>
+<p> A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo"><span class="type">GDBusNodeInfo</span></a> structure or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>error</code></em>
+is set. Free
+with <a class="link" href="gio-D-Bus-Introspection-Data.html#g-dbus-node-info-unref" title="g_dbus_node_info_unref ()"><code class="function">g_dbus_node_info_unref()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-node-info-lookup-interface"></a><h3>g_dbus_node_info_lookup_interface ()</h3>
+<pre class="programlisting"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="returnvalue">GDBusInterfaceInfo</span></a> *
+g_dbus_node_info_lookup_interface (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo"><span class="type">GDBusNodeInfo</span></a> *info</code></em>,
+                                   <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);</pre>
+<p>Looks up information about an interface.</p>
+<p>The cost of this function is O(n) in number of interfaces.</p>
+<div class="refsect3">
+<a name="g-dbus-node-info-lookup-interface.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo"><span class="type">GDBusNodeInfo</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>A D-Bus interface name.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-node-info-lookup-interface.returns"></a><h4>Returns</h4>
+<p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if not found. Do not free, it is owned by <em class="parameter"><code>info</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-node-info-generate-xml"></a><h3>g_dbus_node_info_generate_xml ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_node_info_generate_xml (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo"><span class="type">GDBusNodeInfo</span></a> *info</code></em>,
+                               <em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> indent</code></em>,
+                               <em class="parameter"><code><a href="../glib-Strings.html#GString"><span class="type">GString</span></a> *string_builder</code></em>);</pre>
+<p>Appends an XML representation of <em class="parameter"><code>info</code></em>
+ (and its children) to <em class="parameter"><code>string_builder</code></em>
+.</p>
+<p>This function is typically used for generating introspection XML documents at run-time for
+handling the <code class="literal">org.freedesktop.DBus.Introspectable.Introspect</code>  method.</p>
+<div class="refsect3">
+<a name="g-dbus-node-info-generate-xml.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo"><span class="type">GDBusNodeInfo</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>indent</p></td>
+<td class="parameter_description"><p>Indentation level.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>string_builder</p></td>
+<td class="parameter_description"><p>A <a href="../glib-Strings.html#GString"><span class="type">GString</span></a> to to append XML data to.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-node-info-ref"></a><h3>g_dbus_node_info_ref ()</h3>
+<pre class="programlisting"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo"><span class="returnvalue">GDBusNodeInfo</span></a> *
+g_dbus_node_info_ref (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo"><span class="type">GDBusNodeInfo</span></a> *info</code></em>);</pre>
+<p>If <em class="parameter"><code>info</code></em>
+ is statically allocated does nothing. Otherwise increases
+the reference count.</p>
+<div class="refsect3">
+<a name="g-dbus-node-info-ref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo"><span class="type">GDBusNodeInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-node-info-ref.returns"></a><h4>Returns</h4>
+<p> The same <em class="parameter"><code>info</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-info-ref"></a><h3>g_dbus_interface_info_ref ()</h3>
+<pre class="programlisting"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="returnvalue">GDBusInterfaceInfo</span></a> *
+g_dbus_interface_info_ref (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a> *info</code></em>);</pre>
+<p>If <em class="parameter"><code>info</code></em>
+ is statically allocated does nothing. Otherwise increases
+the reference count.</p>
+<div class="refsect3">
+<a name="g-dbus-interface-info-ref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-interface-info-ref.returns"></a><h4>Returns</h4>
+<p> The same <em class="parameter"><code>info</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-method-info-ref"></a><h3>g_dbus_method_info_ref ()</h3>
+<pre class="programlisting"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusMethodInfo"><span class="returnvalue">GDBusMethodInfo</span></a> *
+g_dbus_method_info_ref (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusMethodInfo"><span class="type">GDBusMethodInfo</span></a> *info</code></em>);</pre>
+<p>If <em class="parameter"><code>info</code></em>
+ is statically allocated does nothing. Otherwise increases
+the reference count.</p>
+<div class="refsect3">
+<a name="g-dbus-method-info-ref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusMethodInfo"><span class="type">GDBusMethodInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-method-info-ref.returns"></a><h4>Returns</h4>
+<p> The same <em class="parameter"><code>info</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-signal-info-ref"></a><h3>g_dbus_signal_info_ref ()</h3>
+<pre class="programlisting"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusSignalInfo"><span class="returnvalue">GDBusSignalInfo</span></a> *
+g_dbus_signal_info_ref (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusSignalInfo"><span class="type">GDBusSignalInfo</span></a> *info</code></em>);</pre>
+<p>If <em class="parameter"><code>info</code></em>
+ is statically allocated does nothing. Otherwise increases
+the reference count.</p>
+<div class="refsect3">
+<a name="g-dbus-signal-info-ref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusSignalInfo"><span class="type">GDBusSignalInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-signal-info-ref.returns"></a><h4>Returns</h4>
+<p> The same <em class="parameter"><code>info</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-property-info-ref"></a><h3>g_dbus_property_info_ref ()</h3>
+<pre class="programlisting"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo"><span class="returnvalue">GDBusPropertyInfo</span></a> *
+g_dbus_property_info_ref (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo"><span class="type">GDBusPropertyInfo</span></a> *info</code></em>);</pre>
+<p>If <em class="parameter"><code>info</code></em>
+ is statically allocated does nothing. Otherwise increases
+the reference count.</p>
+<div class="refsect3">
+<a name="g-dbus-property-info-ref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo"><span class="type">GDBusPropertyInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-property-info-ref.returns"></a><h4>Returns</h4>
+<p> The same <em class="parameter"><code>info</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-arg-info-ref"></a><h3>g_dbus_arg_info_ref ()</h3>
+<pre class="programlisting"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusArgInfo"><span class="returnvalue">GDBusArgInfo</span></a> *
+g_dbus_arg_info_ref (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusArgInfo"><span class="type">GDBusArgInfo</span></a> *info</code></em>);</pre>
+<p>If <em class="parameter"><code>info</code></em>
+ is statically allocated does nothing. Otherwise increases
+the reference count.</p>
+<div class="refsect3">
+<a name="g-dbus-arg-info-ref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusArgInfo"><span class="type">GDBusArgInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-arg-info-ref.returns"></a><h4>Returns</h4>
+<p> The same <em class="parameter"><code>info</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-annotation-info-ref"></a><h3>g_dbus_annotation_info_ref ()</h3>
+<pre class="programlisting"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="returnvalue">GDBusAnnotationInfo</span></a> *
+g_dbus_annotation_info_ref (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="type">GDBusAnnotationInfo</span></a> *info</code></em>);</pre>
+<p>If <em class="parameter"><code>info</code></em>
+ is statically allocated does nothing. Otherwise increases
+the reference count.</p>
+<div class="refsect3">
+<a name="g-dbus-annotation-info-ref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo"><span class="type">GDBusNodeInfo</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-annotation-info-ref.returns"></a><h4>Returns</h4>
+<p> The same <em class="parameter"><code>info</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-node-info-unref"></a><h3>g_dbus_node_info_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_node_info_unref (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo"><span class="type">GDBusNodeInfo</span></a> *info</code></em>);</pre>
+<p>If <em class="parameter"><code>info</code></em>
+ is statically allocated, does nothing. Otherwise decreases
+the reference count of <em class="parameter"><code>info</code></em>
+. When its reference count drops to 0,
+the memory used is freed.</p>
+<div class="refsect3">
+<a name="g-dbus-node-info-unref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo"><span class="type">GDBusNodeInfo</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-info-unref"></a><h3>g_dbus_interface_info_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_interface_info_unref (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a> *info</code></em>);</pre>
+<p>If <em class="parameter"><code>info</code></em>
+ is statically allocated, does nothing. Otherwise decreases
+the reference count of <em class="parameter"><code>info</code></em>
+. When its reference count drops to 0,
+the memory used is freed.</p>
+<div class="refsect3">
+<a name="g-dbus-interface-info-unref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-method-info-unref"></a><h3>g_dbus_method_info_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_method_info_unref (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusMethodInfo"><span class="type">GDBusMethodInfo</span></a> *info</code></em>);</pre>
+<p>If <em class="parameter"><code>info</code></em>
+ is statically allocated, does nothing. Otherwise decreases
+the reference count of <em class="parameter"><code>info</code></em>
+. When its reference count drops to 0,
+the memory used is freed.</p>
+<div class="refsect3">
+<a name="g-dbus-method-info-unref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusMethodInfo"><span class="type">GDBusMethodInfo</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-signal-info-unref"></a><h3>g_dbus_signal_info_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_signal_info_unref (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusSignalInfo"><span class="type">GDBusSignalInfo</span></a> *info</code></em>);</pre>
+<p>If <em class="parameter"><code>info</code></em>
+ is statically allocated, does nothing. Otherwise decreases
+the reference count of <em class="parameter"><code>info</code></em>
+. When its reference count drops to 0,
+the memory used is freed.</p>
+<div class="refsect3">
+<a name="g-dbus-signal-info-unref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusSignalInfo"><span class="type">GDBusSignalInfo</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-property-info-unref"></a><h3>g_dbus_property_info_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_property_info_unref (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo"><span class="type">GDBusPropertyInfo</span></a> *info</code></em>);</pre>
+<p>If <em class="parameter"><code>info</code></em>
+ is statically allocated, does nothing. Otherwise decreases
+the reference count of <em class="parameter"><code>info</code></em>
+. When its reference count drops to 0,
+the memory used is freed.</p>
+<div class="refsect3">
+<a name="g-dbus-property-info-unref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo"><span class="type">GDBusPropertyInfo</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-arg-info-unref"></a><h3>g_dbus_arg_info_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_arg_info_unref (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusArgInfo"><span class="type">GDBusArgInfo</span></a> *info</code></em>);</pre>
+<p>If <em class="parameter"><code>info</code></em>
+ is statically allocated, does nothing. Otherwise decreases
+the reference count of <em class="parameter"><code>info</code></em>
+. When its reference count drops to 0,
+the memory used is freed.</p>
+<div class="refsect3">
+<a name="g-dbus-arg-info-unref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusArgInfo"><span class="type">GDBusArgInfo</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-annotation-info-unref"></a><h3>g_dbus_annotation_info_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_annotation_info_unref (<em class="parameter"><code><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="type">GDBusAnnotationInfo</span></a> *info</code></em>);</pre>
+<p>If <em class="parameter"><code>info</code></em>
+ is statically allocated, does nothing. Otherwise decreases
+the reference count of <em class="parameter"><code>info</code></em>
+. When its reference count drops to 0,
+the memory used is freed.</p>
+<div class="refsect3">
+<a name="g-dbus-annotation-info-unref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>info</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="type">GDBusAnnotationInfo</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-D-Bus-Introspection-Data.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GDBusAnnotationInfo-struct"></a><h3>GDBusAnnotationInfo</h3>
+<pre class="programlisting">typedef struct {
+  volatile gint         ref_count;
+  gchar                *key;
+  gchar                *value;
+  GDBusAnnotationInfo **annotations;
+} GDBusAnnotationInfo;
+</pre>
+<p>Information about an annotation.</p>
+<div class="refsect3">
+<a name="GDBusAnnotationInfo.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p>volatile <a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> <em class="structfield"><code><a name="GDBusAnnotationInfo-struct.ref-count"></a>ref_count</code></em>;</p></td>
+<td class="struct_member_description"><p>The reference count or -1 if statically allocated.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GDBusAnnotationInfo-struct.key"></a>key</code></em>;</p></td>
+<td class="struct_member_description"><p>The name of the annotation, e.g. "org.freedesktop.DBus.Deprecated".</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GDBusAnnotationInfo-struct.value"></a>value</code></em>;</p></td>
+<td class="struct_member_description"><p>The value of the annotation.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="type">GDBusAnnotationInfo</span></a> **<em class="structfield"><code><a name="GDBusAnnotationInfo-struct.annotations"></a>annotations</code></em>;</p></td>
+<td class="struct_member_description"><p>A pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of pointers to <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="type">GDBusAnnotationInfo</span></a> structures or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there are no annotations. </p></td>
+<td class="struct_member_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusArgInfo-struct"></a><h3>GDBusArgInfo</h3>
+<pre class="programlisting">typedef struct {
+  volatile gint         ref_count;
+  gchar                *name;
+  gchar                *signature;
+  GDBusAnnotationInfo **annotations;
+} GDBusArgInfo;
+</pre>
+<p>Information about an argument for a method or a signal.</p>
+<div class="refsect3">
+<a name="GDBusArgInfo.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p>volatile <a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> <em class="structfield"><code><a name="GDBusArgInfo-struct.ref-count"></a>ref_count</code></em>;</p></td>
+<td class="struct_member_description"><p>The reference count or -1 if statically allocated.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GDBusArgInfo-struct.name"></a>name</code></em>;</p></td>
+<td class="struct_member_description"><p>Name of the argument, e.g. <em class="parameter"><code>unix_user_id</code></em>
+.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GDBusArgInfo-struct.signature"></a>signature</code></em>;</p></td>
+<td class="struct_member_description"><p>D-Bus signature of the argument (a single complete type).</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="type">GDBusAnnotationInfo</span></a> **<em class="structfield"><code><a name="GDBusArgInfo-struct.annotations"></a>annotations</code></em>;</p></td>
+<td class="struct_member_description"><p>A pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of pointers to <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="type">GDBusAnnotationInfo</span></a> structures or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there are no annotations. </p></td>
+<td class="struct_member_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusMethodInfo-struct"></a><h3>GDBusMethodInfo</h3>
+<pre class="programlisting">typedef struct {
+  volatile gint         ref_count;
+  gchar                *name;
+  GDBusArgInfo        **in_args;
+  GDBusArgInfo        **out_args;
+  GDBusAnnotationInfo **annotations;
+} GDBusMethodInfo;
+</pre>
+<p>Information about a method on an D-Bus interface.</p>
+<div class="refsect3">
+<a name="GDBusMethodInfo.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p>volatile <a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> <em class="structfield"><code><a name="GDBusMethodInfo-struct.ref-count"></a>ref_count</code></em>;</p></td>
+<td class="struct_member_description"><p>The reference count or -1 if statically allocated.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GDBusMethodInfo-struct.name"></a>name</code></em>;</p></td>
+<td class="struct_member_description"><p>The name of the D-Bus method, e.g. <em class="parameter"><code>RequestName</code></em>
+.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusArgInfo"><span class="type">GDBusArgInfo</span></a> **<em class="structfield"><code><a name="GDBusMethodInfo-struct.in-args"></a>in_args</code></em>;</p></td>
+<td class="struct_member_description"><p>A pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of pointers to <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusArgInfo"><span class="type">GDBusArgInfo</span></a> structures or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there are no in arguments. </p></td>
+<td class="struct_member_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusArgInfo"><span class="type">GDBusArgInfo</span></a> **<em class="structfield"><code><a name="GDBusMethodInfo-struct.out-args"></a>out_args</code></em>;</p></td>
+<td class="struct_member_description"><p>A pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of pointers to <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusArgInfo"><span class="type">GDBusArgInfo</span></a> structures or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there are no out arguments. </p></td>
+<td class="struct_member_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="type">GDBusAnnotationInfo</span></a> **<em class="structfield"><code><a name="GDBusMethodInfo-struct.annotations"></a>annotations</code></em>;</p></td>
+<td class="struct_member_description"><p>A pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of pointers to <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="type">GDBusAnnotationInfo</span></a> structures or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there are no annotations. </p></td>
+<td class="struct_member_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusSignalInfo-struct"></a><h3>GDBusSignalInfo</h3>
+<pre class="programlisting">typedef struct {
+  volatile gint         ref_count;
+  gchar                *name;
+  GDBusArgInfo        **args;
+  GDBusAnnotationInfo **annotations;
+} GDBusSignalInfo;
+</pre>
+<p>Information about a signal on a D-Bus interface.</p>
+<div class="refsect3">
+<a name="GDBusSignalInfo.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p>volatile <a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> <em class="structfield"><code><a name="GDBusSignalInfo-struct.ref-count"></a>ref_count</code></em>;</p></td>
+<td class="struct_member_description"><p>The reference count or -1 if statically allocated.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GDBusSignalInfo-struct.name"></a>name</code></em>;</p></td>
+<td class="struct_member_description"><p>The name of the D-Bus signal, e.g. "NameOwnerChanged".</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusArgInfo"><span class="type">GDBusArgInfo</span></a> **<em class="structfield"><code><a name="GDBusSignalInfo-struct.args"></a>args</code></em>;</p></td>
+<td class="struct_member_description"><p>A pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of pointers to <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusArgInfo"><span class="type">GDBusArgInfo</span></a> structures or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there are no arguments. </p></td>
+<td class="struct_member_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="type">GDBusAnnotationInfo</span></a> **<em class="structfield"><code><a name="GDBusSignalInfo-struct.annotations"></a>annotations</code></em>;</p></td>
+<td class="struct_member_description"><p>A pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of pointers to <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="type">GDBusAnnotationInfo</span></a> structures or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there are no annotations. </p></td>
+<td class="struct_member_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusPropertyInfoFlags"></a><h3>enum GDBusPropertyInfoFlags</h3>
+<p>Flags describing the access control of a D-Bus property.</p>
+<div class="refsect3">
+<a name="GDBusPropertyInfoFlags.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-PROPERTY-INFO-FLAGS-NONE:CAPS"></a>G_DBUS_PROPERTY_INFO_FLAGS_NONE</p></td>
+<td class="enum_member_description">
+<p>No flags set.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-PROPERTY-INFO-FLAGS-READABLE:CAPS"></a>G_DBUS_PROPERTY_INFO_FLAGS_READABLE</p></td>
+<td class="enum_member_description">
+<p>Property is readable.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DBUS-PROPERTY-INFO-FLAGS-WRITABLE:CAPS"></a>G_DBUS_PROPERTY_INFO_FLAGS_WRITABLE</p></td>
+<td class="enum_member_description">
+<p>Property is writable.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusPropertyInfo-struct"></a><h3>GDBusPropertyInfo</h3>
+<pre class="programlisting">typedef struct {
+  volatile gint             ref_count;
+  gchar                    *name;
+  gchar                    *signature;
+  GDBusPropertyInfoFlags    flags;
+  GDBusAnnotationInfo     **annotations;
+} GDBusPropertyInfo;
+</pre>
+<p>Information about a D-Bus property on a D-Bus interface.</p>
+<div class="refsect3">
+<a name="GDBusPropertyInfo.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p>volatile <a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> <em class="structfield"><code><a name="GDBusPropertyInfo-struct.ref-count"></a>ref_count</code></em>;</p></td>
+<td class="struct_member_description"><p>The reference count or -1 if statically allocated.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GDBusPropertyInfo-struct.name"></a>name</code></em>;</p></td>
+<td class="struct_member_description"><p>The name of the D-Bus property, e.g. "SupportedFilesystems".</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GDBusPropertyInfo-struct.signature"></a>signature</code></em>;</p></td>
+<td class="struct_member_description"><p>The D-Bus signature of the property (a single complete type).</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfoFlags" title="enum GDBusPropertyInfoFlags"><span class="type">GDBusPropertyInfoFlags</span></a> <em class="structfield"><code><a name="GDBusPropertyInfo-struct.flags"></a>flags</code></em>;</p></td>
+<td class="struct_member_description"><p>Access control flags for the property.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="type">GDBusAnnotationInfo</span></a> **<em class="structfield"><code><a name="GDBusPropertyInfo-struct.annotations"></a>annotations</code></em>;</p></td>
+<td class="struct_member_description"><p>A pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of pointers to <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="type">GDBusAnnotationInfo</span></a> structures or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there are no annotations. </p></td>
+<td class="struct_member_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusInterfaceInfo-struct"></a><h3>GDBusInterfaceInfo</h3>
+<pre class="programlisting">typedef struct {
+  volatile gint         ref_count;
+  gchar                *name;
+  GDBusMethodInfo     **methods;
+  GDBusSignalInfo     **signals;
+  GDBusPropertyInfo   **properties;
+  GDBusAnnotationInfo **annotations;
+} GDBusInterfaceInfo;
+</pre>
+<p>Information about a D-Bus interface.</p>
+<div class="refsect3">
+<a name="GDBusInterfaceInfo.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p>volatile <a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> <em class="structfield"><code><a name="GDBusInterfaceInfo-struct.ref-count"></a>ref_count</code></em>;</p></td>
+<td class="struct_member_description"><p>The reference count or -1 if statically allocated.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GDBusInterfaceInfo-struct.name"></a>name</code></em>;</p></td>
+<td class="struct_member_description"><p>The name of the D-Bus interface, e.g. "org.freedesktop.DBus.Properties".</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusMethodInfo"><span class="type">GDBusMethodInfo</span></a> **<em class="structfield"><code><a name="GDBusInterfaceInfo-struct.methods"></a>methods</code></em>;</p></td>
+<td class="struct_member_description"><p>A pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of pointers to <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusMethodInfo"><span class="type">GDBusMethodInfo</span></a> structures or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there are no methods. </p></td>
+<td class="struct_member_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusSignalInfo"><span class="type">GDBusSignalInfo</span></a> **<em class="structfield"><code><a name="GDBusInterfaceInfo-struct.signals"></a>signals</code></em>;</p></td>
+<td class="struct_member_description"><p>A pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of pointers to <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusSignalInfo"><span class="type">GDBusSignalInfo</span></a> structures or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there are no signals. </p></td>
+<td class="struct_member_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo"><span class="type">GDBusPropertyInfo</span></a> **<em class="structfield"><code><a name="GDBusInterfaceInfo-struct.properties"></a>properties</code></em>;</p></td>
+<td class="struct_member_description"><p>A pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of pointers to <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo"><span class="type">GDBusPropertyInfo</span></a> structures or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there are no properties. </p></td>
+<td class="struct_member_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="type">GDBusAnnotationInfo</span></a> **<em class="structfield"><code><a name="GDBusInterfaceInfo-struct.annotations"></a>annotations</code></em>;</p></td>
+<td class="struct_member_description"><p>A pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of pointers to <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="type">GDBusAnnotationInfo</span></a> structures or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there are no annotations. </p></td>
+<td class="struct_member_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusNodeInfo-struct"></a><h3>GDBusNodeInfo</h3>
+<pre class="programlisting">typedef struct {
+  volatile gint         ref_count;
+  gchar                *path;
+  GDBusInterfaceInfo  **interfaces;
+  GDBusNodeInfo       **nodes;
+  GDBusAnnotationInfo **annotations;
+} GDBusNodeInfo;
+</pre>
+<p>Information about nodes in a remote object hierarchy.</p>
+<div class="refsect3">
+<a name="GDBusNodeInfo.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p>volatile <a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> <em class="structfield"><code><a name="GDBusNodeInfo-struct.ref-count"></a>ref_count</code></em>;</p></td>
+<td class="struct_member_description"><p>The reference count or -1 if statically allocated.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GDBusNodeInfo-struct.path"></a>path</code></em>;</p></td>
+<td class="struct_member_description"><p>The path of the node or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if omitted. Note that this may be a relative path. See the D-Bus specification for more details.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a> **<em class="structfield"><code><a name="GDBusNodeInfo-struct.interfaces"></a>interfaces</code></em>;</p></td>
+<td class="struct_member_description"><p>A pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of pointers to <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a> structures or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there are no interfaces. </p></td>
+<td class="struct_member_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo"><span class="type">GDBusNodeInfo</span></a> **<em class="structfield"><code><a name="GDBusNodeInfo-struct.nodes"></a>nodes</code></em>;</p></td>
+<td class="struct_member_description"><p>A pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of pointers to <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo"><span class="type">GDBusNodeInfo</span></a> structures or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there are no nodes. </p></td>
+<td class="struct_member_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="type">GDBusAnnotationInfo</span></a> **<em class="structfield"><code><a name="GDBusNodeInfo-struct.annotations"></a>annotations</code></em>;</p></td>
+<td class="struct_member_description"><p>A pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of pointers to <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="type">GDBusAnnotationInfo</span></a> structures or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there are no annotations. </p></td>
+<td class="struct_member_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-DBUS-NODE-INFO:CAPS"></a><h3>G_TYPE_DBUS_NODE_INFO</h3>
+<pre class="programlisting">#define G_TYPE_DBUS_NODE_INFO       (g_dbus_node_info_get_type ())
+</pre>
+<p>The <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> for a boxed type holding a <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusNodeInfo"><span class="type">GDBusNodeInfo</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-DBUS-INTERFACE-INFO:CAPS"></a><h3>G_TYPE_DBUS_INTERFACE_INFO</h3>
+<pre class="programlisting">#define G_TYPE_DBUS_INTERFACE_INFO  (g_dbus_interface_info_get_type ())
+</pre>
+<p>The <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> for a boxed type holding a <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-DBUS-METHOD-INFO:CAPS"></a><h3>G_TYPE_DBUS_METHOD_INFO</h3>
+<pre class="programlisting">#define G_TYPE_DBUS_METHOD_INFO     (g_dbus_method_info_get_type ())
+</pre>
+<p>The <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> for a boxed type holding a <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusMethodInfo"><span class="type">GDBusMethodInfo</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-DBUS-SIGNAL-INFO:CAPS"></a><h3>G_TYPE_DBUS_SIGNAL_INFO</h3>
+<pre class="programlisting">#define G_TYPE_DBUS_SIGNAL_INFO     (g_dbus_signal_info_get_type ())
+</pre>
+<p>The <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> for a boxed type holding a <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusSignalInfo"><span class="type">GDBusSignalInfo</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-DBUS-PROPERTY-INFO:CAPS"></a><h3>G_TYPE_DBUS_PROPERTY_INFO</h3>
+<pre class="programlisting">#define G_TYPE_DBUS_PROPERTY_INFO   (g_dbus_property_info_get_type ())
+</pre>
+<p>The <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> for a boxed type holding a <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo"><span class="type">GDBusPropertyInfo</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-DBUS-ARG-INFO:CAPS"></a><h3>G_TYPE_DBUS_ARG_INFO</h3>
+<pre class="programlisting">#define G_TYPE_DBUS_ARG_INFO        (g_dbus_arg_info_get_type ())
+</pre>
+<p>The <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> for a boxed type holding a <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusArgInfo"><span class="type">GDBusArgInfo</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-DBUS-ANNOTATION-INFO:CAPS"></a><h3>G_TYPE_DBUS_ANNOTATION_INFO</h3>
+<pre class="programlisting">#define G_TYPE_DBUS_ANNOTATION_INFO (g_dbus_annotation_info_get_type ())
+</pre>
+<p>The <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> for a boxed type holding a <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusAnnotationInfo"><span class="type">GDBusAnnotationInfo</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

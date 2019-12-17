@@ -1,0 +1,1833 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GVariantType: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-data-types.html" title="GLib Data Types">
+<link rel="prev" href="glib-Datasets.html" title="Datasets">
+<link rel="next" href="glib-GVariant.html" title="GVariant">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-GVariantType.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-data-types.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Datasets.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-GVariant.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-GVariantType"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-GVariantType.top_of_page"></a>GVariantType</span></h2>
+<p>GVariantType — introduction to the GVariant type system</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-GVariantType.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE:CAPS" title="G_VARIANT_TYPE()">G_VARIANT_TYPE</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-free" title="g_variant_type_free ()">g_variant_type_free</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-copy" title="g_variant_type_copy ()">g_variant_type_copy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-new" title="g_variant_type_new ()">g_variant_type_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-string-is-valid" title="g_variant_type_string_is_valid ()">g_variant_type_string_is_valid</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-string-scan" title="g_variant_type_string_scan ()">g_variant_type_string_scan</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-get-string-length" title="g_variant_type_get_string_length ()">g_variant_type_get_string_length</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-peek-string" title="g_variant_type_peek_string ()">g_variant_type_peek_string</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-dup-string" title="g_variant_type_dup_string ()">g_variant_type_dup_string</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-is-definite" title="g_variant_type_is_definite ()">g_variant_type_is_definite</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-is-container" title="g_variant_type_is_container ()">g_variant_type_is_container</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-is-basic" title="g_variant_type_is_basic ()">g_variant_type_is_basic</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-is-maybe" title="g_variant_type_is_maybe ()">g_variant_type_is_maybe</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-is-array" title="g_variant_type_is_array ()">g_variant_type_is_array</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-is-tuple" title="g_variant_type_is_tuple ()">g_variant_type_is_tuple</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-is-dict-entry" title="g_variant_type_is_dict_entry ()">g_variant_type_is_dict_entry</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-is-variant" title="g_variant_type_is_variant ()">g_variant_type_is_variant</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-hash" title="g_variant_type_hash ()">g_variant_type_hash</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-equal" title="g_variant_type_equal ()">g_variant_type_equal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-is-subtype-of" title="g_variant_type_is_subtype_of ()">g_variant_type_is_subtype_of</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-new-maybe" title="g_variant_type_new_maybe ()">g_variant_type_new_maybe</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-new-array" title="g_variant_type_new_array ()">g_variant_type_new_array</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-new-tuple" title="g_variant_type_new_tuple ()">g_variant_type_new_tuple</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-new-dict-entry" title="g_variant_type_new_dict_entry ()">g_variant_type_new_dict_entry</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-element" title="g_variant_type_element ()">g_variant_type_element</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-n-items" title="g_variant_type_n_items ()">g_variant_type_n_items</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-first" title="g_variant_type_first ()">g_variant_type_first</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-next" title="g_variant_type_next ()">g_variant_type_next</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-key" title="g_variant_type_key ()">g_variant_type_key</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-GVariantType.html#g-variant-type-value" title="g_variant_type_value ()">g_variant_type_value</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-GVariantType.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType">GVariantType</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-BOOLEAN:CAPS" title="G_VARIANT_TYPE_BOOLEAN">G_VARIANT_TYPE_BOOLEAN</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-BYTE:CAPS" title="G_VARIANT_TYPE_BYTE">G_VARIANT_TYPE_BYTE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-INT16:CAPS" title="G_VARIANT_TYPE_INT16">G_VARIANT_TYPE_INT16</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-UINT16:CAPS" title="G_VARIANT_TYPE_UINT16">G_VARIANT_TYPE_UINT16</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-INT32:CAPS" title="G_VARIANT_TYPE_INT32">G_VARIANT_TYPE_INT32</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-UINT32:CAPS" title="G_VARIANT_TYPE_UINT32">G_VARIANT_TYPE_UINT32</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-INT64:CAPS" title="G_VARIANT_TYPE_INT64">G_VARIANT_TYPE_INT64</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-UINT64:CAPS" title="G_VARIANT_TYPE_UINT64">G_VARIANT_TYPE_UINT64</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-HANDLE:CAPS" title="G_VARIANT_TYPE_HANDLE">G_VARIANT_TYPE_HANDLE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-DOUBLE:CAPS" title="G_VARIANT_TYPE_DOUBLE">G_VARIANT_TYPE_DOUBLE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-STRING:CAPS" title="G_VARIANT_TYPE_STRING">G_VARIANT_TYPE_STRING</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-OBJECT-PATH:CAPS" title="G_VARIANT_TYPE_OBJECT_PATH">G_VARIANT_TYPE_OBJECT_PATH</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-SIGNATURE:CAPS" title="G_VARIANT_TYPE_SIGNATURE">G_VARIANT_TYPE_SIGNATURE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-VARIANT:CAPS" title="G_VARIANT_TYPE_VARIANT">G_VARIANT_TYPE_VARIANT</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-ANY:CAPS" title="G_VARIANT_TYPE_ANY">G_VARIANT_TYPE_ANY</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-BASIC:CAPS" title="G_VARIANT_TYPE_BASIC">G_VARIANT_TYPE_BASIC</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-MAYBE:CAPS" title="G_VARIANT_TYPE_MAYBE">G_VARIANT_TYPE_MAYBE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-ARRAY:CAPS" title="G_VARIANT_TYPE_ARRAY">G_VARIANT_TYPE_ARRAY</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-TUPLE:CAPS" title="G_VARIANT_TYPE_TUPLE">G_VARIANT_TYPE_TUPLE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-UNIT:CAPS" title="G_VARIANT_TYPE_UNIT">G_VARIANT_TYPE_UNIT</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-DICT-ENTRY:CAPS" title="G_VARIANT_TYPE_DICT_ENTRY">G_VARIANT_TYPE_DICT_ENTRY</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-DICTIONARY:CAPS" title="G_VARIANT_TYPE_DICTIONARY">G_VARIANT_TYPE_DICTIONARY</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-STRING-ARRAY:CAPS" title="G_VARIANT_TYPE_STRING_ARRAY">G_VARIANT_TYPE_STRING_ARRAY</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-OBJECT-PATH-ARRAY:CAPS" title="G_VARIANT_TYPE_OBJECT_PATH_ARRAY">G_VARIANT_TYPE_OBJECT_PATH_ARRAY</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-BYTESTRING:CAPS" title="G_VARIANT_TYPE_BYTESTRING">G_VARIANT_TYPE_BYTESTRING</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-BYTESTRING-ARRAY:CAPS" title="G_VARIANT_TYPE_BYTESTRING_ARRAY">G_VARIANT_TYPE_BYTESTRING_ARRAY</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-VARDICT:CAPS" title="G_VARIANT_TYPE_VARDICT">G_VARIANT_TYPE_VARDICT</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-GVariantType.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib.h&gt;
+#include &lt;glib/gi18n.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-GVariantType.description"></a><h2>Description</h2>
+<p>This section introduces the GVariant type system. It is based, in
+large part, on the D-Bus type system, with two major changes and
+some minor lifting of restrictions. The
+<a class="ulink" href="http://dbus.freedesktop.org/doc/dbus-specification.html" target="_top">D-Bus specification</a>,
+therefore, provides a significant amount of
+information that is useful when working with GVariant.</p>
+<p>The first major change with respect to the D-Bus type system is the
+introduction of maybe (or "nullable") types.  Any type in GVariant can be
+converted to a maybe type, in which case, "nothing" (or "null") becomes a
+valid value.  Maybe types have been added by introducing the
+character "m" to type strings.</p>
+<p>The second major change is that the GVariant type system supports the
+concept of "indefinite types" -- types that are less specific than
+the normal types found in D-Bus.  For example, it is possible to speak
+of "an array of any type" in GVariant, where the D-Bus type system
+would require you to speak of "an array of integers" or "an array of
+strings".  Indefinite types have been added by introducing the
+characters "*", "?" and "r" to type strings.</p>
+<p>Finally, all arbitrary restrictions relating to the complexity of
+types are lifted along with the restriction that dictionary entries
+may only appear nested inside of arrays.</p>
+<p>Just as in D-Bus, GVariant types are described with strings ("type
+strings").  Subject to the differences mentioned above, these strings
+are of the same form as those found in DBus.  Note, however: D-Bus
+always works in terms of messages and therefore individual type
+strings appear nowhere in its interface.  Instead, "signatures"
+are a concatenation of the strings of the type of each argument in a
+message.  GVariant deals with single values directly so GVariant type
+strings always describe the type of exactly one value.  This means
+that a D-Bus signature string is generally not a valid GVariant type
+string -- except in the case that it is the signature of a message
+containing exactly one argument.</p>
+<p>An indefinite type is similar in spirit to what may be called an
+abstract type in other type systems.  No value can exist that has an
+indefinite type as its type, but values can exist that have types
+that are subtypes of indefinite types.  That is to say,
+<a class="link" href="glib-GVariant.html#g-variant-get-type" title="g_variant_get_type ()"><code class="function">g_variant_get_type()</code></a> will never return an indefinite type, but
+calling <a class="link" href="glib-GVariant.html#g-variant-is-of-type" title="g_variant_is_of_type ()"><code class="function">g_variant_is_of_type()</code></a> with an indefinite type may return
+<a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>.  For example, you cannot have a value that represents "an
+array of no particular type", but you can have an "array of integers"
+which certainly matches the type of "an array of no particular type",
+since "array of integers" is a subtype of "array of no particular
+type".</p>
+<p>This is similar to how instances of abstract classes may not
+directly exist in other type systems, but instances of their
+non-abstract subtypes may.  For example, in GTK, no object that has
+the type of <span class="type">GtkBin</span> can exist (since <span class="type">GtkBin</span> is an abstract class),
+but a <span class="type">GtkWindow</span> can certainly be instantiated, and you would say
+that the <span class="type">GtkWindow</span> is a <span class="type">GtkBin</span> (since <span class="type">GtkWindow</span> is a subclass of
+<span class="type">GtkBin</span>).</p>
+<div class="refsect3">
+<a name="id-1.6.18.6.9"></a><h4>GVariant Type Strings</h4>
+<p>A GVariant type string can be any of the following:</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>any basic type string (listed below)</p></li>
+<li class="listitem"><p>"v", "r" or "*"</p></li>
+<li class="listitem"><p>one of the characters 'a' or 'm', followed by another type string</p></li>
+<li class="listitem"><p>the character '(', followed by a concatenation of zero or more other
+type strings, followed by the character ')'</p></li>
+<li class="listitem"><p>the character '{', followed by a basic type string (see below),
+followed by another type string, followed by the character '}'</p></li>
+</ul></div>
+<p>A basic type string describes a basic type (as per
+<a class="link" href="glib-GVariantType.html#g-variant-type-is-basic" title="g_variant_type_is_basic ()"><code class="function">g_variant_type_is_basic()</code></a>) and is always a single character in length.
+The valid basic type strings are "b", "y", "n", "q", "i", "u", "x", "t",
+"h", "d", "s", "o", "g" and "?".</p>
+<p>The above definition is recursive to arbitrary depth. "aaaaai" and
+"(ui(nq((y)))s)" are both valid type strings, as is
+"a(aa(ui)(qna{ya(yd)}))".</p>
+<p>The meaning of each of the characters is as follows:</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p><code class="literal">b</code>: the type string of <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-BOOLEAN:CAPS" title="G_VARIANT_TYPE_BOOLEAN"><code class="literal">G_VARIANT_TYPE_BOOLEAN</code></a>; a boolean value.</p></li>
+<li class="listitem"><p><code class="literal">y</code>: the type string of <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-BYTE:CAPS" title="G_VARIANT_TYPE_BYTE"><code class="literal">G_VARIANT_TYPE_BYTE</code></a>; a byte.</p></li>
+<li class="listitem"><p><code class="literal">n</code>: the type string of <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-INT16:CAPS" title="G_VARIANT_TYPE_INT16"><code class="literal">G_VARIANT_TYPE_INT16</code></a>; a signed 16 bit integer.</p></li>
+<li class="listitem"><p><code class="literal">q</code>: the type string of <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-UINT16:CAPS" title="G_VARIANT_TYPE_UINT16"><code class="literal">G_VARIANT_TYPE_UINT16</code></a>; an unsigned 16 bit integer.</p></li>
+<li class="listitem"><p><code class="literal">i</code>: the type string of <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-INT32:CAPS" title="G_VARIANT_TYPE_INT32"><code class="literal">G_VARIANT_TYPE_INT32</code></a>; a signed 32 bit integer.</p></li>
+<li class="listitem"><p><code class="literal">u</code>: the type string of <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-UINT32:CAPS" title="G_VARIANT_TYPE_UINT32"><code class="literal">G_VARIANT_TYPE_UINT32</code></a>; an unsigned 32 bit integer.</p></li>
+<li class="listitem"><p><code class="literal">x</code>: the type string of <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-INT64:CAPS" title="G_VARIANT_TYPE_INT64"><code class="literal">G_VARIANT_TYPE_INT64</code></a>; a signed 64 bit integer.</p></li>
+<li class="listitem"><p><code class="literal">t</code>: the type string of <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-UINT64:CAPS" title="G_VARIANT_TYPE_UINT64"><code class="literal">G_VARIANT_TYPE_UINT64</code></a>; an unsigned 64 bit integer.</p></li>
+<li class="listitem"><p><code class="literal">h</code>: the type string of <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-HANDLE:CAPS" title="G_VARIANT_TYPE_HANDLE"><code class="literal">G_VARIANT_TYPE_HANDLE</code></a>; a signed 32 bit value
+that, by convention, is used as an index into an array of file
+descriptors that are sent alongside a D-Bus message.</p></li>
+<li class="listitem"><p><code class="literal">d</code>: the type string of <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-DOUBLE:CAPS" title="G_VARIANT_TYPE_DOUBLE"><code class="literal">G_VARIANT_TYPE_DOUBLE</code></a>; a double precision
+floating point value.</p></li>
+<li class="listitem"><p><code class="literal">s</code>: the type string of <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-STRING:CAPS" title="G_VARIANT_TYPE_STRING"><code class="literal">G_VARIANT_TYPE_STRING</code></a>; a string.</p></li>
+<li class="listitem"><p><code class="literal">o</code>: the type string of <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-OBJECT-PATH:CAPS" title="G_VARIANT_TYPE_OBJECT_PATH"><code class="literal">G_VARIANT_TYPE_OBJECT_PATH</code></a>; a string in the form
+of a D-Bus object path.</p></li>
+<li class="listitem"><p><code class="literal">g</code>: the type string of <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-SIGNATURE:CAPS" title="G_VARIANT_TYPE_SIGNATURE"><code class="literal">G_VARIANT_TYPE_SIGNATURE</code></a>; a string in the form of
+a D-Bus type signature.</p></li>
+<li class="listitem"><p><code class="literal">?</code>: the type string of <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-BASIC:CAPS" title="G_VARIANT_TYPE_BASIC"><code class="literal">G_VARIANT_TYPE_BASIC</code></a>; an indefinite type that
+is a supertype of any of the basic types.</p></li>
+<li class="listitem"><p><code class="literal">v</code>: the type string of <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-VARIANT:CAPS" title="G_VARIANT_TYPE_VARIANT"><code class="literal">G_VARIANT_TYPE_VARIANT</code></a>; a container type that
+contain any other type of value.</p></li>
+<li class="listitem"><p><code class="literal">a</code>: used as a prefix on another type string to mean an array of that
+type; the type string "ai", for example, is the type of an array of
+signed 32-bit integers.</p></li>
+<li class="listitem"><p><code class="literal">m</code>: used as a prefix on another type string to mean a "maybe", or
+"nullable", version of that type; the type string "ms", for example,
+is the type of a value that maybe contains a string, or maybe contains
+nothing.</p></li>
+<li class="listitem"><p><code class="literal">()</code>: used to enclose zero or more other concatenated type strings to
+create a tuple type; the type string "(is)", for example, is the type of
+a pair of an integer and a string.</p></li>
+<li class="listitem"><p><code class="literal">r</code>: the type string of <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-TUPLE:CAPS" title="G_VARIANT_TYPE_TUPLE"><code class="literal">G_VARIANT_TYPE_TUPLE</code></a>; an indefinite type that is
+a supertype of any tuple type, regardless of the number of items.</p></li>
+<li class="listitem">
+<p><code class="literal">{}</code>: used to enclose a basic type string concatenated with another type
+string to create a dictionary entry type, which usually appears inside of
+an array to form a dictionary; the type string "a{sd}", for example, is
+the type of a dictionary that maps strings to double precision floating
+point values.</p>
+<p>The first type (the basic type) is the key type and the second type is
+the value type. The reason that the first type is restricted to being a
+basic type is so that it can easily be hashed.</p>
+</li>
+<li class="listitem"><p><code class="literal">*</code>: the type string of <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-ANY:CAPS" title="G_VARIANT_TYPE_ANY"><code class="literal">G_VARIANT_TYPE_ANY</code></a>; the indefinite type that is
+a supertype of all types.  Note that, as with all type strings, this
+character represents exactly one type. It cannot be used inside of tuples
+to mean "any number of items".</p></li>
+</ul></div>
+<p>Any type string of a container that contains an indefinite type is,
+itself, an indefinite type. For example, the type string "a*"
+(corresponding to <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-ARRAY:CAPS" title="G_VARIANT_TYPE_ARRAY"><code class="literal">G_VARIANT_TYPE_ARRAY</code></a>) is an indefinite type
+that is a supertype of every array type. "(*s)" is a supertype
+of all tuples that contain exactly two items where the second
+item is a string.</p>
+<p>"a{?*}" is an indefinite type that is a supertype of all arrays
+containing dictionary entries where the key is any basic type and
+the value is any type at all.  This is, by definition, a dictionary,
+so this type string corresponds to <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-DICTIONARY:CAPS" title="G_VARIANT_TYPE_DICTIONARY"><code class="literal">G_VARIANT_TYPE_DICTIONARY</code></a>. Note
+that, due to the restriction that the key of a dictionary entry must
+be a basic type, "{**}" is not a valid type string.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-GVariantType.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE:CAPS"></a><h3>G_VARIANT_TYPE()</h3>
+<pre class="programlisting"># define G_VARIANT_TYPE(type_string)            (g_variant_type_checked_ ((type_string)))
+</pre>
+<p>Converts a string to a const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a>.  Depending on the
+current debugging level, this function may perform a runtime check
+to ensure that <em class="parameter"><code>string</code></em>
+ is a valid GVariant type string.</p>
+<p>It is always a programmer error to use this macro with an invalid
+type string. If in doubt, use <a class="link" href="glib-GVariantType.html#g-variant-type-string-is-valid" title="g_variant_type_string_is_valid ()"><code class="function">g_variant_type_string_is_valid()</code></a> to
+check if the string is valid.</p>
+<p>Since 2.24</p>
+<div class="refsect3">
+<a name="G-VARIANT-TYPE.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type_string</p></td>
+<td class="parameter_description"><p>a well-formed <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> type string</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-free"></a><h3>g_variant_type_free ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_variant_type_free (<em class="parameter"><code><a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Frees a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> that was allocated with
+<a class="link" href="glib-GVariantType.html#g-variant-type-copy" title="g_variant_type_copy ()"><code class="function">g_variant_type_copy()</code></a>, <a class="link" href="glib-GVariantType.html#g-variant-type-new" title="g_variant_type_new ()"><code class="function">g_variant_type_new()</code></a> or one of the container
+type constructor functions.</p>
+<p>In the case that <em class="parameter"><code>type</code></em>
+ is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>, this function does nothing.</p>
+<p>Since 2.24</p>
+<div class="refsect3">
+<a name="g-variant-type-free.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a>, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-copy"></a><h3>g_variant_type_copy ()</h3>
+<pre class="programlisting"><a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+g_variant_type_copy (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Makes a copy of a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a>.  It is appropriate to call
+<a class="link" href="glib-GVariantType.html#g-variant-type-free" title="g_variant_type_free ()"><code class="function">g_variant_type_free()</code></a> on the return value.  <em class="parameter"><code>type</code></em>
+ may not be <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>.</p>
+<div class="refsect3">
+<a name="g-variant-type-copy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-copy.returns"></a><h4>Returns</h4>
+<p>a new <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p>
+<p>Since 2.24. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-new"></a><h3>g_variant_type_new ()</h3>
+<pre class="programlisting"><a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+g_variant_type_new (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *type_string</code></em>);</pre>
+<p>Creates a new <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> corresponding to the type string given
+by <em class="parameter"><code>type_string</code></em>
+.  It is appropriate to call <a class="link" href="glib-GVariantType.html#g-variant-type-free" title="g_variant_type_free ()"><code class="function">g_variant_type_free()</code></a> on
+the return value.</p>
+<p>It is a programmer error to call this function with an invalid type
+string.  Use <a class="link" href="glib-GVariantType.html#g-variant-type-string-is-valid" title="g_variant_type_string_is_valid ()"><code class="function">g_variant_type_string_is_valid()</code></a> if you are unsure.</p>
+<div class="refsect3">
+<a name="g-variant-type-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type_string</p></td>
+<td class="parameter_description"><p>a valid GVariant type string</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-new.returns"></a><h4>Returns</h4>
+<p>a new <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-string-is-valid"></a><h3>g_variant_type_string_is_valid ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_variant_type_string_is_valid (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *type_string</code></em>);</pre>
+<p>Checks if <em class="parameter"><code>type_string</code></em>
+ is a valid GVariant type string.  This call is
+equivalent to calling <a class="link" href="glib-GVariantType.html#g-variant-type-string-scan" title="g_variant_type_string_scan ()"><code class="function">g_variant_type_string_scan()</code></a> and confirming
+that the following character is a nul terminator.</p>
+<div class="refsect3">
+<a name="g-variant-type-string-is-valid.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type_string</p></td>
+<td class="parameter_description"><p>a pointer to any string</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-string-is-valid.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>type_string</code></em>
+is exactly one valid type string</p>
+<p>Since 2.24</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-string-scan"></a><h3>g_variant_type_string_scan ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_variant_type_string_scan (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *string</code></em>,
+                            <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *limit</code></em>,
+                            <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> **endptr</code></em>);</pre>
+<p>Scan for a single complete and valid GVariant type string in <em class="parameter"><code>string</code></em>
+.
+The memory pointed to by <em class="parameter"><code>limit</code></em>
+ (or bytes beyond it) is never
+accessed.</p>
+<p>If a valid type string is found, <em class="parameter"><code>endptr</code></em>
+ is updated to point to the
+first character past the end of the string that was found and <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>
+is returned.</p>
+<p>If there is no valid type string starting at <em class="parameter"><code>string</code></em>
+, or if the type
+string does not end before <em class="parameter"><code>limit</code></em>
+ then <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> is returned.</p>
+<p>For the simple case of checking if a string is a valid type string,
+see <a class="link" href="glib-GVariantType.html#g-variant-type-string-is-valid" title="g_variant_type_string_is_valid ()"><code class="function">g_variant_type_string_is_valid()</code></a>.</p>
+<div class="refsect3">
+<a name="g-variant-type-string-scan.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a pointer to any string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>limit</p></td>
+<td class="parameter_description"><p>the end of <em class="parameter"><code>string</code></em>
+, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>endptr</p></td>
+<td class="parameter_description"><p>location to store the end pointer, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-string-scan.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if a valid type string was found</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-get-string-length"></a><h3>g_variant_type_get_string_length ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>
+g_variant_type_get_string_length (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Returns the length of the type string corresponding to the given
+<em class="parameter"><code>type</code></em>
+.  This function must be used to determine the valid extent of
+the memory region returned by <a class="link" href="glib-GVariantType.html#g-variant-type-peek-string" title="g_variant_type_peek_string ()"><code class="function">g_variant_type_peek_string()</code></a>.</p>
+<div class="refsect3">
+<a name="g-variant-type-get-string-length.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-get-string-length.returns"></a><h4>Returns</h4>
+<p> the length of the corresponding type string</p>
+<p>Since 2.24</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-peek-string"></a><h3>g_variant_type_peek_string ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_variant_type_peek_string (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Returns the type string corresponding to the given <em class="parameter"><code>type</code></em>
+.  The
+result is not nul-terminated; in order to determine its length you
+must call <a class="link" href="glib-GVariantType.html#g-variant-type-get-string-length" title="g_variant_type_get_string_length ()"><code class="function">g_variant_type_get_string_length()</code></a>.</p>
+<p>To get a nul-terminated string, see <a class="link" href="glib-GVariantType.html#g-variant-type-dup-string" title="g_variant_type_dup_string ()"><code class="function">g_variant_type_dup_string()</code></a>.</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-variant-type-peek-string.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-peek-string.returns"></a><h4>Returns</h4>
+<p> the corresponding type string (not nul-terminated)</p>
+<p>Since 2.24</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-dup-string"></a><h3>g_variant_type_dup_string ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_variant_type_dup_string (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Returns a newly-allocated copy of the type string corresponding to
+<em class="parameter"><code>type</code></em>
+.  The returned string is nul-terminated.  It is appropriate to
+call <a class="link" href="glib-Memory-Allocation.html#g-free" title="g_free ()"><code class="function">g_free()</code></a> on the return value.</p>
+<div class="refsect3">
+<a name="g-variant-type-dup-string.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-dup-string.returns"></a><h4>Returns</h4>
+<p>the corresponding type string</p>
+<p>Since 2.24. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-is-definite"></a><h3>g_variant_type_is_definite ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_variant_type_is_definite (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Determines if the given <em class="parameter"><code>type</code></em>
+ is definite (ie: not indefinite).</p>
+<p>A type is definite if its type string does not contain any indefinite
+type characters ('*', '?', or 'r').</p>
+<p>A <a class="link" href="glib-GVariant.html#GVariant" title="GVariant"><span class="type">GVariant</span></a> instance may not have an indefinite type, so calling
+this function on the result of <a class="link" href="glib-GVariant.html#g-variant-get-type" title="g_variant_get_type ()"><code class="function">g_variant_get_type()</code></a> will always
+result in <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> being returned.  Calling this function on an
+indefinite type like <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-ARRAY:CAPS" title="G_VARIANT_TYPE_ARRAY"><code class="literal">G_VARIANT_TYPE_ARRAY</code></a>, however, will result in
+<a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> being returned.</p>
+<div class="refsect3">
+<a name="g-variant-type-is-definite.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-is-definite.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>type</code></em>
+is definite</p>
+<p>Since 2.24</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-is-container"></a><h3>g_variant_type_is_container ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_variant_type_is_container (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Determines if the given <em class="parameter"><code>type</code></em>
+ is a container type.</p>
+<p>Container types are any array, maybe, tuple, or dictionary
+entry types plus the variant type.</p>
+<p>This function returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> for any indefinite type for which every
+definite subtype is a container -- <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-ARRAY:CAPS" title="G_VARIANT_TYPE_ARRAY"><code class="literal">G_VARIANT_TYPE_ARRAY</code></a>, for
+example.</p>
+<div class="refsect3">
+<a name="g-variant-type-is-container.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-is-container.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>type</code></em>
+is a container type</p>
+<p>Since 2.24</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-is-basic"></a><h3>g_variant_type_is_basic ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_variant_type_is_basic (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Determines if the given <em class="parameter"><code>type</code></em>
+ is a basic type.</p>
+<p>Basic types are booleans, bytes, integers, doubles, strings, object
+paths and signatures.</p>
+<p>Only a basic type may be used as the key of a dictionary entry.</p>
+<p>This function returns <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> for all indefinite types except
+<a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-BASIC:CAPS" title="G_VARIANT_TYPE_BASIC"><code class="literal">G_VARIANT_TYPE_BASIC</code></a>.</p>
+<div class="refsect3">
+<a name="g-variant-type-is-basic.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-is-basic.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>type</code></em>
+is a basic type</p>
+<p>Since 2.24</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-is-maybe"></a><h3>g_variant_type_is_maybe ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_variant_type_is_maybe (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Determines if the given <em class="parameter"><code>type</code></em>
+ is a maybe type.  This is true if the
+type string for <em class="parameter"><code>type</code></em>
+ starts with an 'm'.</p>
+<p>This function returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> for any indefinite type for which every
+definite subtype is a maybe type -- <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-MAYBE:CAPS" title="G_VARIANT_TYPE_MAYBE"><code class="literal">G_VARIANT_TYPE_MAYBE</code></a>, for
+example.</p>
+<div class="refsect3">
+<a name="g-variant-type-is-maybe.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-is-maybe.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>type</code></em>
+is a maybe type</p>
+<p>Since 2.24</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-is-array"></a><h3>g_variant_type_is_array ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_variant_type_is_array (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Determines if the given <em class="parameter"><code>type</code></em>
+ is an array type.  This is true if the
+type string for <em class="parameter"><code>type</code></em>
+ starts with an 'a'.</p>
+<p>This function returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> for any indefinite type for which every
+definite subtype is an array type -- <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-ARRAY:CAPS" title="G_VARIANT_TYPE_ARRAY"><code class="literal">G_VARIANT_TYPE_ARRAY</code></a>, for
+example.</p>
+<div class="refsect3">
+<a name="g-variant-type-is-array.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-is-array.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>type</code></em>
+is an array type</p>
+<p>Since 2.24</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-is-tuple"></a><h3>g_variant_type_is_tuple ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_variant_type_is_tuple (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Determines if the given <em class="parameter"><code>type</code></em>
+ is a tuple type.  This is true if the
+type string for <em class="parameter"><code>type</code></em>
+ starts with a '(' or if <em class="parameter"><code>type</code></em>
+ is
+<a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-TUPLE:CAPS" title="G_VARIANT_TYPE_TUPLE"><code class="literal">G_VARIANT_TYPE_TUPLE</code></a>.</p>
+<p>This function returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> for any indefinite type for which every
+definite subtype is a tuple type -- <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-TUPLE:CAPS" title="G_VARIANT_TYPE_TUPLE"><code class="literal">G_VARIANT_TYPE_TUPLE</code></a>, for
+example.</p>
+<div class="refsect3">
+<a name="g-variant-type-is-tuple.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-is-tuple.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>type</code></em>
+is a tuple type</p>
+<p>Since 2.24</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-is-dict-entry"></a><h3>g_variant_type_is_dict_entry ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_variant_type_is_dict_entry (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Determines if the given <em class="parameter"><code>type</code></em>
+ is a dictionary entry type.  This is
+true if the type string for <em class="parameter"><code>type</code></em>
+ starts with a '{'.</p>
+<p>This function returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> for any indefinite type for which every
+definite subtype is a dictionary entry type --
+<a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-DICT-ENTRY:CAPS" title="G_VARIANT_TYPE_DICT_ENTRY"><code class="literal">G_VARIANT_TYPE_DICT_ENTRY</code></a>, for example.</p>
+<div class="refsect3">
+<a name="g-variant-type-is-dict-entry.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-is-dict-entry.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>type</code></em>
+is a dictionary entry type</p>
+<p>Since 2.24</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-is-variant"></a><h3>g_variant_type_is_variant ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_variant_type_is_variant (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Determines if the given <em class="parameter"><code>type</code></em>
+ is the variant type.</p>
+<div class="refsect3">
+<a name="g-variant-type-is-variant.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-is-variant.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>type</code></em>
+is the variant type</p>
+<p>Since 2.24</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-hash"></a><h3>g_variant_type_hash ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_variant_type_hash (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> type</code></em>);</pre>
+<p>Hashes <em class="parameter"><code>type</code></em>
+.</p>
+<p>The argument type of <em class="parameter"><code>type</code></em>
+ is only <a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> to allow use with
+<a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> without function pointer casting.  A valid
+<a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> must be provided.</p>
+<div class="refsect3">
+<a name="g-variant-type-hash.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GVariantType]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-hash.returns"></a><h4>Returns</h4>
+<p> the hash value</p>
+<p>Since 2.24</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-equal"></a><h3>g_variant_type_equal ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_variant_type_equal (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> type1</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> type2</code></em>);</pre>
+<p>Compares <em class="parameter"><code>type1</code></em>
+ and <em class="parameter"><code>type2</code></em>
+ for equality.</p>
+<p>Only returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the types are exactly equal.  Even if one type
+is an indefinite type and the other is a subtype of it, <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> will
+be returned if they are not exactly equal.  If you want to check for
+subtypes, use <a class="link" href="glib-GVariantType.html#g-variant-type-is-subtype-of" title="g_variant_type_is_subtype_of ()"><code class="function">g_variant_type_is_subtype_of()</code></a>.</p>
+<p>The argument types of <em class="parameter"><code>type1</code></em>
+ and <em class="parameter"><code>type2</code></em>
+ are only <a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> to
+allow use with <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> without function pointer casting.  For
+both arguments, a valid <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> must be provided.</p>
+<div class="refsect3">
+<a name="g-variant-type-equal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>type1</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GVariantType]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>type2</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GVariantType]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-equal.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>type1</code></em>
+and <em class="parameter"><code>type2</code></em>
+are exactly equal</p>
+<p>Since 2.24</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-is-subtype-of"></a><h3>g_variant_type_is_subtype_of ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_variant_type_is_subtype_of (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>,
+                              <em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *supertype</code></em>);</pre>
+<p>Checks if <em class="parameter"><code>type</code></em>
+ is a subtype of <em class="parameter"><code>supertype</code></em>
+.</p>
+<p>This function returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>type</code></em>
+ is a subtype of <em class="parameter"><code>supertype</code></em>
+.  All
+types are considered to be subtypes of themselves.  Aside from that,
+only indefinite types can have subtypes.</p>
+<div class="refsect3">
+<a name="g-variant-type-is-subtype-of.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>supertype</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-is-subtype-of.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>type</code></em>
+is a subtype of <em class="parameter"><code>supertype</code></em>
+</p>
+<p>Since 2.24</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-new-maybe"></a><h3>g_variant_type_new_maybe ()</h3>
+<pre class="programlisting"><a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+g_variant_type_new_maybe (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *element</code></em>);</pre>
+<p>Constructs the type corresponding to a maybe instance containing
+type <em class="parameter"><code>type</code></em>
+ or Nothing.</p>
+<p>It is appropriate to call <a class="link" href="glib-GVariantType.html#g-variant-type-free" title="g_variant_type_free ()"><code class="function">g_variant_type_free()</code></a> on the return value.</p>
+<p><span class="annotation">[<acronym title="This symbol is a constructor, not a static method."><span class="acronym">constructor</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-variant-type-new-maybe.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>element</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-new-maybe.returns"></a><h4>Returns</h4>
+<p>a new maybe <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p>
+<p>Since 2.24. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-new-array"></a><h3>g_variant_type_new_array ()</h3>
+<pre class="programlisting"><a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+g_variant_type_new_array (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *element</code></em>);</pre>
+<p>Constructs the type corresponding to an array of elements of the
+type <em class="parameter"><code>type</code></em>
+.</p>
+<p>It is appropriate to call <a class="link" href="glib-GVariantType.html#g-variant-type-free" title="g_variant_type_free ()"><code class="function">g_variant_type_free()</code></a> on the return value.</p>
+<p><span class="annotation">[<acronym title="This symbol is a constructor, not a static method."><span class="acronym">constructor</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-variant-type-new-array.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>element</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-new-array.returns"></a><h4>Returns</h4>
+<p>a new array <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p>
+<p>Since 2.24. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-new-tuple"></a><h3>g_variant_type_new_tuple ()</h3>
+<pre class="programlisting"><a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+g_variant_type_new_tuple (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> * const *items</code></em>,
+                          <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> length</code></em>);</pre>
+<p>Constructs a new tuple type, from <em class="parameter"><code>items</code></em>
+.</p>
+<p><em class="parameter"><code>length</code></em>
+ is the number of items in <em class="parameter"><code>items</code></em>
+, or -1 to indicate that
+<em class="parameter"><code>items</code></em>
+ is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>-terminated.</p>
+<p>It is appropriate to call <a class="link" href="glib-GVariantType.html#g-variant-type-free" title="g_variant_type_free ()"><code class="function">g_variant_type_free()</code></a> on the return value.</p>
+<div class="refsect3">
+<a name="g-variant-type-new-tuple.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>items</p></td>
+<td class="parameter_description"><p>an array of <a href="glib-GVariantType.html#GVariantType"><span class="type">GVariantTypes</span></a>, one for each item. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=length]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>length</p></td>
+<td class="parameter_description"><p>the length of <em class="parameter"><code>items</code></em>
+, or -1</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-new-tuple.returns"></a><h4>Returns</h4>
+<p>a new tuple <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p>
+<p>Since 2.24. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-new-dict-entry"></a><h3>g_variant_type_new_dict_entry ()</h3>
+<pre class="programlisting"><a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+g_variant_type_new_dict_entry (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *key</code></em>,
+                               <em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *value</code></em>);</pre>
+<p>Constructs the type corresponding to a dictionary entry with a key
+of type <em class="parameter"><code>key</code></em>
+ and a value of type <em class="parameter"><code>value</code></em>
+.</p>
+<p>It is appropriate to call <a class="link" href="glib-GVariantType.html#g-variant-type-free" title="g_variant_type_free ()"><code class="function">g_variant_type_free()</code></a> on the return value.</p>
+<p><span class="annotation">[<acronym title="This symbol is a constructor, not a static method."><span class="acronym">constructor</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-variant-type-new-dict-entry.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a basic <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-new-dict-entry.returns"></a><h4>Returns</h4>
+<p>a new dictionary entry <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p>
+<p>Since 2.24. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-element"></a><h3>g_variant_type_element ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+g_variant_type_element (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Determines the element type of an array or maybe type.</p>
+<p>This function may only be used with array or maybe types.</p>
+<div class="refsect3">
+<a name="g-variant-type-element.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>an array or maybe <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-element.returns"></a><h4>Returns</h4>
+<p>the element type of <em class="parameter"><code>type</code></em>
+</p>
+<p>Since 2.24. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-n-items"></a><h3>g_variant_type_n_items ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>
+g_variant_type_n_items (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Determines the number of items contained in a tuple or
+dictionary entry type.</p>
+<p>This function may only be used with tuple or dictionary entry types,
+but must not be used with the generic tuple type
+<a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-TUPLE:CAPS" title="G_VARIANT_TYPE_TUPLE"><code class="literal">G_VARIANT_TYPE_TUPLE</code></a>.</p>
+<p>In the case of a dictionary entry type, this function will always
+return 2.</p>
+<div class="refsect3">
+<a name="g-variant-type-n-items.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a tuple or dictionary entry <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-n-items.returns"></a><h4>Returns</h4>
+<p> the number of items in <em class="parameter"><code>type</code></em>
+</p>
+<p>Since 2.24</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-first"></a><h3>g_variant_type_first ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+g_variant_type_first (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Determines the first item type of a tuple or dictionary entry
+type.</p>
+<p>This function may only be used with tuple or dictionary entry types,
+but must not be used with the generic tuple type
+<a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-TUPLE:CAPS" title="G_VARIANT_TYPE_TUPLE"><code class="literal">G_VARIANT_TYPE_TUPLE</code></a>.</p>
+<p>In the case of a dictionary entry type, this returns the type of
+the key.</p>
+<p><a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> is returned in case of <em class="parameter"><code>type</code></em>
+ being <a class="link" href="glib-GVariantType.html#G-VARIANT-TYPE-UNIT:CAPS" title="G_VARIANT_TYPE_UNIT"><code class="literal">G_VARIANT_TYPE_UNIT</code></a>.</p>
+<p>This call, together with <a class="link" href="glib-GVariantType.html#g-variant-type-next" title="g_variant_type_next ()"><code class="function">g_variant_type_next()</code></a> provides an iterator
+interface over tuple and dictionary entry types.</p>
+<div class="refsect3">
+<a name="g-variant-type-first.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a tuple or dictionary entry <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-first.returns"></a><h4>Returns</h4>
+<p>the first item type of <em class="parameter"><code>type</code></em>
+, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a></p>
+<p>Since 2.24. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-next"></a><h3>g_variant_type_next ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+g_variant_type_next (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Determines the next item type of a tuple or dictionary entry
+type.</p>
+<p><em class="parameter"><code>type</code></em>
+ must be the result of a previous call to
+<a class="link" href="glib-GVariantType.html#g-variant-type-first" title="g_variant_type_first ()"><code class="function">g_variant_type_first()</code></a> or <a class="link" href="glib-GVariantType.html#g-variant-type-next" title="g_variant_type_next ()"><code class="function">g_variant_type_next()</code></a>.</p>
+<p>If called on the key type of a dictionary entry then this call
+returns the value type.  If called on the value type of a dictionary
+entry then this call returns <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>.</p>
+<p>For tuples, <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> is returned when <em class="parameter"><code>type</code></em>
+ is the last item in a tuple.</p>
+<div class="refsect3">
+<a name="g-variant-type-next.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> from a previous call</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-next.returns"></a><h4>Returns</h4>
+<p>the next <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> after <em class="parameter"><code>type</code></em>
+, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a></p>
+<p>Since 2.24. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-key"></a><h3>g_variant_type_key ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+g_variant_type_key (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Determines the key type of a dictionary entry type.</p>
+<p>This function may only be used with a dictionary entry type.  Other
+than the additional restriction, this call is equivalent to
+<a class="link" href="glib-GVariantType.html#g-variant-type-first" title="g_variant_type_first ()"><code class="function">g_variant_type_first()</code></a>.</p>
+<div class="refsect3">
+<a name="g-variant-type-key.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a dictionary entry <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-key.returns"></a><h4>Returns</h4>
+<p>the key type of the dictionary entry</p>
+<p>Since 2.24. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-variant-type-value"></a><h3>g_variant_type_value ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="returnvalue">GVariantType</span></a> *
+g_variant_type_value (<em class="parameter"><code>const <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a> *type</code></em>);</pre>
+<p>Determines the value type of a dictionary entry type.</p>
+<p>This function may only be used with a dictionary entry type.</p>
+<div class="refsect3">
+<a name="g-variant-type-value.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>a dictionary entry <a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-variant-type-value.returns"></a><h4>Returns</h4>
+<p>the value type of the dictionary entry</p>
+<p>Since 2.24. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-GVariantType.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GVariantType"></a><h3>GVariantType</h3>
+<pre class="programlisting">typedef struct _GVariantType GVariantType;</pre>
+<p>A type in the GVariant type system.</p>
+<p>Two types may not be compared by value; use <a class="link" href="glib-GVariantType.html#g-variant-type-equal" title="g_variant_type_equal ()"><code class="function">g_variant_type_equal()</code></a> or
+<a class="link" href="glib-GVariantType.html#g-variant-type-is-subtype-of" title="g_variant_type_is_subtype_of ()"><code class="function">g_variant_type_is_subtype_of()</code></a>.  May be copied using
+<a class="link" href="glib-GVariantType.html#g-variant-type-copy" title="g_variant_type_copy ()"><code class="function">g_variant_type_copy()</code></a> and freed using <a class="link" href="glib-GVariantType.html#g-variant-type-free" title="g_variant_type_free ()"><code class="function">g_variant_type_free()</code></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-BOOLEAN:CAPS"></a><h3>G_VARIANT_TYPE_BOOLEAN</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_BOOLEAN              ((const GVariantType *) "b")
+</pre>
+<p>The type of a value that can be either <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> or <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-BYTE:CAPS"></a><h3>G_VARIANT_TYPE_BYTE</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_BYTE                 ((const GVariantType *) "y")
+</pre>
+<p>The type of an integer value that can range from 0 to 255.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-INT16:CAPS"></a><h3>G_VARIANT_TYPE_INT16</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_INT16                ((const GVariantType *) "n")
+</pre>
+<p>The type of an integer value that can range from -32768 to 32767.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-UINT16:CAPS"></a><h3>G_VARIANT_TYPE_UINT16</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_UINT16               ((const GVariantType *) "q")
+</pre>
+<p>The type of an integer value that can range from 0 to 65535.
+There were about this many people living in Toronto in the 1870s.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-INT32:CAPS"></a><h3>G_VARIANT_TYPE_INT32</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_INT32                ((const GVariantType *) "i")
+</pre>
+<p>The type of an integer value that can range from -2147483648 to
+2147483647.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-UINT32:CAPS"></a><h3>G_VARIANT_TYPE_UINT32</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_UINT32               ((const GVariantType *) "u")
+</pre>
+<p>The type of an integer value that can range from 0 to 4294967295.
+That's one number for everyone who was around in the late 1970s.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-INT64:CAPS"></a><h3>G_VARIANT_TYPE_INT64</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_INT64                ((const GVariantType *) "x")
+</pre>
+<p>The type of an integer value that can range from
+-9223372036854775808 to 9223372036854775807.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-UINT64:CAPS"></a><h3>G_VARIANT_TYPE_UINT64</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_UINT64               ((const GVariantType *) "t")
+</pre>
+<p>The type of an integer value that can range from 0
+to 18446744073709551615 (inclusive).  That's a really big number,
+but a Rubik's cube can have a bit more than twice as many possible
+positions.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-HANDLE:CAPS"></a><h3>G_VARIANT_TYPE_HANDLE</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_HANDLE               ((const GVariantType *) "h")
+</pre>
+<p>The type of a 32bit signed integer value, that by convention, is used
+as an index into an array of file descriptors that are sent alongside
+a D-Bus message.</p>
+<p>If you are not interacting with D-Bus, then there is no reason to make
+use of this type.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-DOUBLE:CAPS"></a><h3>G_VARIANT_TYPE_DOUBLE</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_DOUBLE               ((const GVariantType *) "d")
+</pre>
+<p>The type of a double precision IEEE754 floating point number.
+These guys go up to about 1.80e308 (plus and minus) but miss out on
+some numbers in between.  In any case, that's far greater than the
+estimated number of fundamental particles in the observable
+universe.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-STRING:CAPS"></a><h3>G_VARIANT_TYPE_STRING</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_STRING               ((const GVariantType *) "s")
+</pre>
+<p>The type of a string.  "" is a string.  <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> is not a string.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-OBJECT-PATH:CAPS"></a><h3>G_VARIANT_TYPE_OBJECT_PATH</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_OBJECT_PATH          ((const GVariantType *) "o")
+</pre>
+<p>The type of a D-Bus object reference.  These are strings of a
+specific format used to identify objects at a given destination on
+the bus.</p>
+<p>If you are not interacting with D-Bus, then there is no reason to make
+use of this type.  If you are, then the D-Bus specification contains a
+precise description of valid object paths.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-SIGNATURE:CAPS"></a><h3>G_VARIANT_TYPE_SIGNATURE</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_SIGNATURE            ((const GVariantType *) "g")
+</pre>
+<p>The type of a D-Bus type signature.  These are strings of a specific
+format used as type signatures for D-Bus methods and messages.</p>
+<p>If you are not interacting with D-Bus, then there is no reason to make
+use of this type.  If you are, then the D-Bus specification contains a
+precise description of valid signature strings.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-VARIANT:CAPS"></a><h3>G_VARIANT_TYPE_VARIANT</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_VARIANT              ((const GVariantType *) "v")
+</pre>
+<p>The type of a box that contains any other value (including another
+variant).</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-ANY:CAPS"></a><h3>G_VARIANT_TYPE_ANY</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_ANY                  ((const GVariantType *) "*")
+</pre>
+<p>An indefinite type that is a supertype of every type (including
+itself).</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-BASIC:CAPS"></a><h3>G_VARIANT_TYPE_BASIC</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_BASIC                ((const GVariantType *) "?")
+</pre>
+<p>An indefinite type that is a supertype of every basic (ie:
+non-container) type.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-MAYBE:CAPS"></a><h3>G_VARIANT_TYPE_MAYBE</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_MAYBE                ((const GVariantType *) "m*")
+</pre>
+<p>An indefinite type that is a supertype of every maybe type.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-ARRAY:CAPS"></a><h3>G_VARIANT_TYPE_ARRAY</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_ARRAY                ((const GVariantType *) "a*")
+</pre>
+<p>An indefinite type that is a supertype of every array type.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-TUPLE:CAPS"></a><h3>G_VARIANT_TYPE_TUPLE</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_TUPLE                ((const GVariantType *) "r")
+</pre>
+<p>An indefinite type that is a supertype of every tuple type,
+regardless of the number of items in the tuple.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-UNIT:CAPS"></a><h3>G_VARIANT_TYPE_UNIT</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_UNIT                 ((const GVariantType *) "()")
+</pre>
+<p>The empty tuple type.  Has only one instance.  Known also as "triv"
+or "void".</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-DICT-ENTRY:CAPS"></a><h3>G_VARIANT_TYPE_DICT_ENTRY</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_DICT_ENTRY           ((const GVariantType *) "{?*}")
+</pre>
+<p>An indefinite type that is a supertype of every dictionary entry
+type.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-DICTIONARY:CAPS"></a><h3>G_VARIANT_TYPE_DICTIONARY</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_DICTIONARY           ((const GVariantType *) "a{?*}")
+</pre>
+<p>An indefinite type that is a supertype of every dictionary type --
+that is, any array type that has an element type equal to any
+dictionary entry type.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-STRING-ARRAY:CAPS"></a><h3>G_VARIANT_TYPE_STRING_ARRAY</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_STRING_ARRAY         ((const GVariantType *) "as")
+</pre>
+<p>The type of an array of strings.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-OBJECT-PATH-ARRAY:CAPS"></a><h3>G_VARIANT_TYPE_OBJECT_PATH_ARRAY</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_OBJECT_PATH_ARRAY    ((const GVariantType *) "ao")
+</pre>
+<p>The type of an array of object paths.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-BYTESTRING:CAPS"></a><h3>G_VARIANT_TYPE_BYTESTRING</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_BYTESTRING           ((const GVariantType *) "ay")
+</pre>
+<p>The type of an array of bytes.  This type is commonly used to pass
+around strings that may not be valid utf8.  In that case, the
+convention is that the nul terminator character should be included as
+the last character in the array.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-BYTESTRING-ARRAY:CAPS"></a><h3>G_VARIANT_TYPE_BYTESTRING_ARRAY</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_BYTESTRING_ARRAY     ((const GVariantType *) "aay")
+</pre>
+<p>The type of an array of byte strings (an array of arrays of bytes).</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VARIANT-TYPE-VARDICT:CAPS"></a><h3>G_VARIANT_TYPE_VARDICT</h3>
+<pre class="programlisting">#define G_VARIANT_TYPE_VARDICT              ((const GVariantType *) "a{sv}")
+</pre>
+<p>The type of a dictionary mapping strings to variants (the ubiquitous
+"a{sv}" type).</p>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-GVariantType.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="glib-GVariantType.html#GVariantType" title="GVariantType"><span class="type">GVariantType</span></a>, <a class="link" href="glib-GVariant.html#GVariant" title="GVariant"><span class="type">GVariant</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

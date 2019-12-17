@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>gsettings: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="tools.html" title="GIO Tools">
+<link rel="prev" href="gio-querymodules.html" title="gio-querymodules">
+<link rel="next" href="glib-compile-schemas.html" title="glib-compile-schemas">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="tools.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gio-querymodules.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-compile-schemas.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div lang="en" class="refentry">
+<a name="gsettings-tool"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle">gsettings</span></h2>
+<p>gsettings — GSettings configuration tool</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<h2>Synopsis</h2>
+<div class="cmdsynopsis"><p><code class="command">gsettings</code>   get   <em class="replaceable"><code>SCHEMA</code></em> [:<em class="replaceable"><code>PATH</code></em>]   <em class="replaceable"><code>KEY</code></em> </p></div>
+<div class="cmdsynopsis"><p><code class="command">gsettings</code>   monitor   <em class="replaceable"><code>SCHEMA</code></em> [:<em class="replaceable"><code>PATH</code></em>]  [<em class="replaceable"><code>KEY</code></em>]</p></div>
+<div class="cmdsynopsis"><p><code class="command">gsettings</code>   writable   <em class="replaceable"><code>SCHEMA</code></em> [:<em class="replaceable"><code>PATH</code></em>]   <em class="replaceable"><code>KEY</code></em> </p></div>
+<div class="cmdsynopsis"><p><code class="command">gsettings</code>   range   <em class="replaceable"><code>SCHEMA</code></em> [:<em class="replaceable"><code>PATH</code></em>]   <em class="replaceable"><code>KEY</code></em> </p></div>
+<div class="cmdsynopsis"><p><code class="command">gsettings</code>   describe   <em class="replaceable"><code>SCHEMA</code></em> [:<em class="replaceable"><code>PATH</code></em>]   <em class="replaceable"><code>KEY</code></em> </p></div>
+<div class="cmdsynopsis"><p><code class="command">gsettings</code>   set   <em class="replaceable"><code>SCHEMA</code></em> [:<em class="replaceable"><code>PATH</code></em>]   <em class="replaceable"><code>KEY</code></em>   <em class="replaceable"><code>VALUE</code></em> </p></div>
+<div class="cmdsynopsis"><p><code class="command">gsettings</code>   reset   <em class="replaceable"><code>SCHEMA</code></em> [:<em class="replaceable"><code>PATH</code></em>]   <em class="replaceable"><code>KEY</code></em> </p></div>
+<div class="cmdsynopsis"><p><code class="command">gsettings</code>   reset-recursively   <em class="replaceable"><code>SCHEMA</code></em> [:<em class="replaceable"><code>PATH</code></em>] </p></div>
+<div class="cmdsynopsis"><p><code class="command">gsettings</code>   list-schemas  [--print-paths]</p></div>
+<div class="cmdsynopsis"><p><code class="command">gsettings</code>   list-relocatable-schemas </p></div>
+<div class="cmdsynopsis"><p><code class="command">gsettings</code>   list-keys   <em class="replaceable"><code>SCHEMA</code></em> [:<em class="replaceable"><code>PATH</code></em>] </p></div>
+<div class="cmdsynopsis"><p><code class="command">gsettings</code>   list-children   <em class="replaceable"><code>SCHEMA</code></em> [:<em class="replaceable"><code>PATH</code></em>] </p></div>
+<div class="cmdsynopsis"><p><code class="command">gsettings</code>   list-recursively  [<em class="replaceable"><code>SCHEMA</code></em> [:<em class="replaceable"><code>PATH</code></em>]]</p></div>
+<div class="cmdsynopsis"><p><code class="command">gsettings</code>   help  [<em class="replaceable"><code>COMMAND</code></em>]</p></div>
+</div>
+<div class="refsect1">
+<a name="id-1.4.26.3.5"></a><h2>Description</h2>
+<p><span class="command"><strong>gsettings</strong></span> offers a simple commandline
+interface to <a class="link" href="GSettings.html" title="GSettings"><span class="type">GSettings</span></a>.
+It lets you get, set or monitor an individual key for changes.
+</p>
+<p>
+The <em class="replaceable"><code>SCHEMA</code></em> and <em class="replaceable"><code>KEY</code></em>
+arguments are required for most commands to specify the schema id and the
+name of the key to operate on. The schema id may optionally have a
+:<em class="replaceable"><code>PATH</code></em> suffix. Specifying the path is only needed
+if the schema does not have a fixed path.
+</p>
+<p>
+When setting a key, you also need specify a <em class="replaceable"><code>VALUE</code></em>
+The format for the value is that of a serialized
+<a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a>,
+so e.g. a string
+must include explicit quotes: "'foo'". This format is also used when printing
+out values.
+</p>
+<p>
+Note that gsettings needs a D-Bus session bus connection to write changes to
+the dconf database.
+</p>
+</div>
+<div class="refsect1">
+<a name="id-1.4.26.3.6"></a><h2>Commands</h2>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><code class="option">get</code></span></p></td>
+<td><p>
+Gets the value of <em class="replaceable"><code>KEY</code></em>.
+The value is printed out as a serialised
+<a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a>.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">monitor</code></span></p></td>
+<td><p>
+Monitors <em class="replaceable"><code>KEY</code></em> for changes and prints the changed
+values. If no <em class="replaceable"><code>KEY</code></em> is specified, all keys in the
+schema are monitored. Monitoring will continue until the process is terminated.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">writable</code></span></p></td>
+<td><p>
+Finds out whether <em class="replaceable"><code>KEY</code></em> is writable.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">range</code></span></p></td>
+<td><p>
+Queries the range of valid values for <em class="replaceable"><code>KEY</code></em>.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">describe</code></span></p></td>
+<td><p>
+Queries the description of valid values for <em class="replaceable"><code>KEY</code></em>.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">set</code></span></p></td>
+<td><p>
+Sets the value of <em class="replaceable"><code>KEY</code></em> to
+<em class="replaceable"><code>VALUE</code></em>. The value is specified as a serialised
+<a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a>.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">reset</code></span></p></td>
+<td><p>
+Resets <em class="replaceable"><code>KEY</code></em> to its default value.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">reset-recursively</code></span></p></td>
+<td><p>
+Reset all keys under the given <em class="replaceable"><code>SCHEMA</code></em>.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">list-schemas</code></span></p></td>
+<td><p>
+Lists the installed, non-relocatable schemas.
+See <code class="option">list-relocatable-schemas</code> if you are interested in
+relocatable schemas. If [<span class="optional"><code class="option">--print-paths</code></span>]
+is given, the path where each schema is mapped is also printed.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">list-relocatable-schemas</code></span></p></td>
+<td><p>
+Lists the installed, relocatable schemas.
+See <code class="option">list-schemas</code> if you are interested in
+non-relocatable schemas.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">list-keys</code></span></p></td>
+<td><p>
+Lists the keys in <em class="replaceable"><code>SCHEMA</code></em>.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">list-children</code></span></p></td>
+<td><p>
+Lists the children of <em class="replaceable"><code>SCHEMA</code></em>.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">list-recursively</code></span></p></td>
+<td><p>
+Lists keys and values, recursively. If no <em class="replaceable"><code>SCHEMA</code></em>
+is given, list keys in all schemas.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">help</code></span></p></td>
+<td><p>
+Prints help and exits.
+</p></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

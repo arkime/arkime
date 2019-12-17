@@ -1,0 +1,7 @@
+ELEMENT 'foo'
+  TEXT '
+'
+  ELEMENT 'bar'
+    TEXT '
+'
+ERROR Error on line 3 char 7: Element 'foo' was closed, but the currently open element is 'bar'

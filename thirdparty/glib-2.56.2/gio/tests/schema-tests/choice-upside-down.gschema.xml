@@ -1,0 +1,14 @@
+<schemalist>
+  <schema id='org.gtk.test.schema'>
+    <key name='test' type='s'>
+      <choices>
+        <choice value='who'/>
+        <choice value='what'/>
+        <choice value='where'/>
+        <choice value='when'/>
+        <choice value='why'/>
+      </choices>
+      <default>'who'</default>
+    </key>
+  </schema>
+</schemalist>

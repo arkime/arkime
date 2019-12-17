@@ -1,0 +1,4 @@
+<schemalist>
+  <schema id='a'/> <schema id='x'/>
+  <schema id='b' list-of='x' extends='a'/>
+</schemalist>

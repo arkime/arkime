@@ -1,0 +1,7 @@
+<schemalist>
+  <schema id="missing-quotes" path="/tests/">
+    <key name="test" type="s">
+      <default>foo</default>
+    </key>
+  </schema>
+</schemalist>

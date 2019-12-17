@@ -1,0 +1,94 @@
+#!/bin/sh
+
+# Build zipfiles for GLib on Win32: Separate runtime and developer ones.
+# After running make install, run this.
+
+ZIP=/tmp/glib-@GLIB_VERSION@.zip
+DEVZIP=/tmp/glib-dev-@GLIB_VERSION@.zip
+
+cd @prefix@
+
+mkdir -p share/doc/glib-@GLIB_VERSION@
+cp -p @abs_srcdir@/COPYING share/doc/glib-@GLIB_VERSION@
+
+mkdir -p share/doc/glib-dev-@GLIB_VERSION@
+cp -p @abs_srcdir@/COPYING share/doc/glib-dev-@GLIB_VERSION@
+
+if test @LIB_EXE_MACHINE_FLAG@ = X64; then
+  helperbits=64
+else
+  helperbits=32
+fi
+
+rm $ZIP
+zip $ZIP -@ <<EOF
+bin/gspawn-win${helperbits}-helper.exe
+bin/gspawn-win${helperbits}-helper-console.exe
+bin/libgio-2.0-@LT_CURRENT_MINUS_AGE@.dll
+bin/libglib-2.0-@LT_CURRENT_MINUS_AGE@.dll
+bin/libgmodule-2.0-@LT_CURRENT_MINUS_AGE@.dll
+bin/libgobject-2.0-@LT_CURRENT_MINUS_AGE@.dll
+bin/libgthread-2.0-@LT_CURRENT_MINUS_AGE@.dll
+EOF
+
+zip $ZIP share/locale/*/LC_MESSAGES/glib20.mo
+
+zip -r -D $ZIP share/doc/glib-@GLIB_VERSION@
+
+rm $DEVZIP
+zip -r -D $DEVZIP -@ <<EOF
+bin/gdbus.exe
+bin/gdbus-codegen
+bin/gio-querymodules.exe
+bin/glib-compile-schemas.exe
+bin/glib-genmarshal.exe
+bin/glib-gettextize
+bin/glib-mkenums
+bin/gobject-query.exe
+bin/gsettings.exe
+etc/bash_completion.d/gdbus-bash-completion.sh
+etc/bash_completion.d/gsettings-bash-completion.sh
+include/gio-win32-2.0
+include/glib-2.0
+lib/gdbus-2.0
+lib/gio
+lib/glib-2.0
+lib/pkgconfig/glib-2.0.pc
+lib/pkgconfig/gmodule-2.0.pc
+lib/pkgconfig/gmodule-no-export-2.0.pc
+lib/pkgconfig/gobject-2.0.pc
+lib/pkgconfig/gthread-2.0.pc
+lib/pkgconfig/gio-2.0.pc
+lib/pkgconfig/gio-windows-2.0.pc
+lib/gio-2.0.def
+lib/gio-2.0.lib
+lib/glib-2.0.def
+lib/glib-2.0.lib
+lib/gmodule-2.0.def
+lib/gmodule-2.0.lib
+lib/gobject-2.0.def
+lib/gobject-2.0.lib
+lib/gthread-2.0.def
+lib/gthread-2.0.lib
+lib/libgio-2.0.dll.a
+lib/libglib-2.0.dll.a
+lib/libgmodule-2.0.dll.a
+lib/libgobject-2.0.dll.a
+lib/libgthread-2.0.dll.a
+share/aclocal/glib-2.0.m4
+share/aclocal/glib-gettext.m4
+share/aclocal/gsettings.m4
+share/glib-2.0
+share/gtk-doc/html
+share/man/man1/gdbus.1
+share/man/man1/gdbus-codegen.1
+share/man/man1/gio-querymodules.1
+share/man/man1/glib-compile-schemas.1
+share/man/man1/glib-genmarshal.1
+share/man/man1/glib-gettextize.1
+share/man/man1/glib-mkenums.1
+share/man/man1/gobject-query.1
+share/man/man1/gsettings.1
+EOF
+
+zip -r $DEVZIP share/doc/glib-dev-@GLIB_VERSION@

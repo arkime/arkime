@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+]>
+<refentry id="glib-programming">
+<refmeta>
+<refentrytitle>Writing GLib Applications</refentrytitle>
+<manvolnum>3</manvolnum>
+<refmiscinfo>GLib Library</refmiscinfo>
+</refmeta>
+
+<refnamediv>
+<refname>Writing GLib Applications</refname>
+<refpurpose>
+General considerations when programming with GLib
+</refpurpose>
+</refnamediv>
+
+<refsect1>
+<title>Writing GLib Applications</title>
+
+<refsect2>
+<title>Threads</title>
+
+<para>
+The general policy of GLib is that all functions are invisibly threadsafe
+with the exception of data structure manipulation functions, where, if
+you have two threads manipulating the <emphasis>same</emphasis> data
+structure, they must use a lock to synchronize their operation.
+</para>
+
+<para>
+GLib creates a worker thread for its own purposes so GLib applications
+will always have at least 2 threads.
+</para>
+
+<para>
+See the sections on <link linkend="glib-Threads">threads</link> and
+<link linkend="glib-Thread-Pools">threadpools</link> for GLib APIs that
+support multithreaded applications.
+</para>
+
+</refsect2>
+
+<refsect2>
+<title>Security</title>
+
+<para>
+When writing code that runs with elevated privileges, it is important
+to follow some basic rules of secure programming. David Wheeler has an
+excellent book on this topic,
+<ulink url="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO/index.html">Secure Programming for Linux and Unix HOWTO</ulink>.
+</para>
+
+<para>
+When it comes to GLib and its associated libraries, GLib and
+GObject are generally fine to use in code that runs with elevated
+privileges; they don't load modules (executable code in shared objects)
+or run other programs 'behind your back'. GIO has to be used
+carefully in privileged programs, see the <ulink url="http://developer.gnome.org/gio/stable/ch02.html">GIO documentation</ulink> for details.
+</para>
+
+</refsect2>
+
+</refsect1>
+
+</refentry>

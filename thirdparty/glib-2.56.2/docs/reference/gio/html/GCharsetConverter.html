@@ -1,0 +1,313 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GCharsetConverter: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="conversion.html" title="Data conversion">
+<link rel="prev" href="GConverter.html" title="GConverter">
+<link rel="next" href="GZlibCompressor.html" title="GZlibCompressor">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GCharsetConverter.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GCharsetConverter.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_interfaces">  <span class="dim">|</span> 
+                  <a href="#GCharsetConverter.implemented-interfaces" class="shortcut">Implemented Interfaces</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GCharsetConverter.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="conversion.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GConverter.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GZlibCompressor.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GCharsetConverter"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GCharsetConverter.top_of_page"></a>GCharsetConverter</span></h2>
+<p>GCharsetConverter — Convert between charsets</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GCharsetConverter.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GCharsetConverter.html" title="GCharsetConverter"><span class="returnvalue">GCharsetConverter</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GCharsetConverter.html#g-charset-converter-new" title="g_charset_converter_new ()">g_charset_converter_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GCharsetConverter.html#g-charset-converter-set-use-fallback" title="g_charset_converter_set_use_fallback ()">g_charset_converter_set_use_fallback</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GCharsetConverter.html#g-charset-converter-get-use-fallback" title="g_charset_converter_get_use_fallback ()">g_charset_converter_get_use_fallback</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GCharsetConverter.html#g-charset-converter-get-num-fallbacks" title="g_charset_converter_get_num_fallbacks ()">g_charset_converter_get_num_fallbacks</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GCharsetConverter.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="property_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<td class="property_name"><a class="link" href="GCharsetConverter.html#GCharsetConverter--from-charset" title="The “from-charset” property">from-charset</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<td class="property_name"><a class="link" href="GCharsetConverter.html#GCharsetConverter--to-charset" title="The “to-charset” property">to-charset</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GCharsetConverter.html#GCharsetConverter--use-fallback" title="The “use-fallback” property">use-fallback</a></td>
+<td class="property_flags">Read / Write / Construct</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GCharsetConverter.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GCharsetConverter.html#GCharsetConverter-struct" title="GCharsetConverter">GCharsetConverter</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GCharsetConverter.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GCharsetConverter
+</pre>
+</div>
+<div class="refsect1">
+<a name="GCharsetConverter.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GCharsetConverter implements
+ <a class="link" href="GConverter.html" title="GConverter">GConverter</a> and  <a class="link" href="GInitable.html" title="GInitable">GInitable</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GCharsetConverter.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GCharsetConverter.description"></a><h2>Description</h2>
+<p><a class="link" href="GCharsetConverter.html" title="GCharsetConverter"><span class="type">GCharsetConverter</span></a> is an implementation of <a class="link" href="GConverter.html" title="GConverter"><span class="type">GConverter</span></a> based on
+GIConv.</p>
+</div>
+<div class="refsect1">
+<a name="GCharsetConverter.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-charset-converter-new"></a><h3>g_charset_converter_new ()</h3>
+<pre class="programlisting"><a class="link" href="GCharsetConverter.html" title="GCharsetConverter"><span class="returnvalue">GCharsetConverter</span></a> *
+g_charset_converter_new (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *to_charset</code></em>,
+                         <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *from_charset</code></em>,
+                         <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Creates a new <a class="link" href="GCharsetConverter.html" title="GCharsetConverter"><span class="type">GCharsetConverter</span></a>.</p>
+<div class="refsect3">
+<a name="g-charset-converter-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>to_charset</p></td>
+<td class="parameter_description"><p>destination charset</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>from_charset</p></td>
+<td class="parameter_description"><p>source charset</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for error reporting, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-charset-converter-new.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="GCharsetConverter.html" title="GCharsetConverter"><span class="type">GCharsetConverter</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-charset-converter-set-use-fallback"></a><h3>g_charset_converter_set_use_fallback ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_charset_converter_set_use_fallback (<em class="parameter"><code><a class="link" href="GCharsetConverter.html" title="GCharsetConverter"><span class="type">GCharsetConverter</span></a> *converter</code></em>,
+                                      <em class="parameter"><code><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> use_fallback</code></em>);</pre>
+<p>Sets the <a class="link" href="GCharsetConverter.html#GCharsetConverter--use-fallback" title="The “use-fallback” property"><span class="type">“use-fallback”</span></a> property.</p>
+<div class="refsect3">
+<a name="g-charset-converter-set-use-fallback.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>converter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCharsetConverter.html" title="GCharsetConverter"><span class="type">GCharsetConverter</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>use_fallback</p></td>
+<td class="parameter_description"><p><a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> to use fallbacks</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-charset-converter-get-use-fallback"></a><h3>g_charset_converter_get_use_fallback ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_charset_converter_get_use_fallback (<em class="parameter"><code><a class="link" href="GCharsetConverter.html" title="GCharsetConverter"><span class="type">GCharsetConverter</span></a> *converter</code></em>);</pre>
+<p>Gets the <a class="link" href="GCharsetConverter.html#GCharsetConverter--use-fallback" title="The “use-fallback” property"><span class="type">“use-fallback”</span></a> property.</p>
+<div class="refsect3">
+<a name="g-charset-converter-get-use-fallback.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>converter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCharsetConverter.html" title="GCharsetConverter"><span class="type">GCharsetConverter</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-charset-converter-get-use-fallback.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if fallbacks are used by <em class="parameter"><code>converter</code></em>
+</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-charset-converter-get-num-fallbacks"></a><h3>g_charset_converter_get_num_fallbacks ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+g_charset_converter_get_num_fallbacks (<em class="parameter"><code><a class="link" href="GCharsetConverter.html" title="GCharsetConverter"><span class="type">GCharsetConverter</span></a> *converter</code></em>);</pre>
+<p>Gets the number of fallbacks that <em class="parameter"><code>converter</code></em>
+ has applied so far.</p>
+<div class="refsect3">
+<a name="g-charset-converter-get-num-fallbacks.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>converter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCharsetConverter.html" title="GCharsetConverter"><span class="type">GCharsetConverter</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-charset-converter-get-num-fallbacks.returns"></a><h4>Returns</h4>
+<p> the number of fallbacks that <em class="parameter"><code>converter</code></em>
+has applied</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GCharsetConverter.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GCharsetConverter-struct"></a><h3>GCharsetConverter</h3>
+<pre class="programlisting">typedef struct _GCharsetConverter GCharsetConverter;</pre>
+<p>Conversions between character sets.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GCharsetConverter.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GCharsetConverter--from-charset"></a><h3>The <code class="literal">“from-charset”</code> property</h3>
+<pre class="programlisting">  “from-charset”             <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>The character encoding to convert from.</p>
+<p>Flags: Read / Write / Construct Only</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GCharsetConverter--to-charset"></a><h3>The <code class="literal">“to-charset”</code> property</h3>
+<pre class="programlisting">  “to-charset”               <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>The character encoding to convert to.</p>
+<p>Flags: Read / Write / Construct Only</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GCharsetConverter--use-fallback"></a><h3>The <code class="literal">“use-fallback”</code> property</h3>
+<pre class="programlisting">  “use-fallback”             <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Use fallback (of form \&lt;hexval&gt;) for invalid bytes.</p>
+<p>Flags: Read / Write / Construct</p>
+<p>Default value: FALSE</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

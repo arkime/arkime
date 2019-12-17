@@ -1,0 +1,1029 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GInetAddress: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="networking.html" title="Low-level network support">
+<link rel="prev" href="GDatagramBased.html" title="GDatagramBased">
+<link rel="next" href="GInetAddressMask.html" title="GInetAddressMask">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GInetAddress.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GInetAddress.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GInetAddress.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="networking.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GDatagramBased.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GInetAddressMask.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GInetAddress"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GInetAddress.top_of_page"></a>GInetAddress</span></h2>
+<p>GInetAddress — An IPv4/IPv6 address</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GInetAddress.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GInetAddress.html" title="GInetAddress"><span class="returnvalue">GInetAddress</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddress.html#g-inet-address-new-from-string" title="g_inet_address_new_from_string ()">g_inet_address_new_from_string</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GInetAddress.html" title="GInetAddress"><span class="returnvalue">GInetAddress</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddress.html#g-inet-address-new-from-bytes" title="g_inet_address_new_from_bytes ()">g_inet_address_new_from_bytes</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GInetAddress.html" title="GInetAddress"><span class="returnvalue">GInetAddress</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddress.html#g-inet-address-new-any" title="g_inet_address_new_any ()">g_inet_address_new_any</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GInetAddress.html" title="GInetAddress"><span class="returnvalue">GInetAddress</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddress.html#g-inet-address-new-loopback" title="g_inet_address_new_loopback ()">g_inet_address_new_loopback</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddress.html#g-inet-address-equal" title="g_inet_address_equal ()">g_inet_address_equal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#guint8"><span class="returnvalue">guint8</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddress.html#g-inet-address-to-bytes" title="g_inet_address_to_bytes ()">g_inet_address_to_bytes</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gsize"><span class="returnvalue">gsize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddress.html#g-inet-address-get-native-size" title="g_inet_address_get_native_size ()">g_inet_address_get_native_size</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddress.html#g-inet-address-to-string" title="g_inet_address_to_string ()">g_inet_address_to_string</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="returnvalue">GSocketFamily</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddress.html#g-inet-address-get-family" title="g_inet_address_get_family ()">g_inet_address_get_family</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddress.html#g-inet-address-get-is-any" title="g_inet_address_get_is_any ()">g_inet_address_get_is_any</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddress.html#g-inet-address-get-is-loopback" title="g_inet_address_get_is_loopback ()">g_inet_address_get_is_loopback</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddress.html#g-inet-address-get-is-link-local" title="g_inet_address_get_is_link_local ()">g_inet_address_get_is_link_local</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddress.html#g-inet-address-get-is-site-local" title="g_inet_address_get_is_site_local ()">g_inet_address_get_is_site_local</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddress.html#g-inet-address-get-is-multicast" title="g_inet_address_get_is_multicast ()">g_inet_address_get_is_multicast</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddress.html#g-inet-address-get-is-mc-link-local" title="g_inet_address_get_is_mc_link_local ()">g_inet_address_get_is_mc_link_local</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddress.html#g-inet-address-get-is-mc-node-local" title="g_inet_address_get_is_mc_node_local ()">g_inet_address_get_is_mc_node_local</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddress.html#g-inet-address-get-is-mc-site-local" title="g_inet_address_get_is_mc_site_local ()">g_inet_address_get_is_mc_site_local</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddress.html#g-inet-address-get-is-mc-org-local" title="g_inet_address_get_is_mc_org_local ()">g_inet_address_get_is_mc_org_local</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddress.html#g-inet-address-get-is-mc-global" title="g_inet_address_get_is_mc_global ()">g_inet_address_get_is_mc_global</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GInetAddress.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a></td>
+<td class="property_name"><a class="link" href="GInetAddress.html#GInetAddress--bytes" title="The “bytes” property">bytes</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type"><a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="type">GSocketFamily</span></a></td>
+<td class="property_name"><a class="link" href="GInetAddress.html#GInetAddress--family" title="The “family” property">family</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GInetAddress.html#GInetAddress--is-any" title="The “is-any” property">is-any</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GInetAddress.html#GInetAddress--is-link-local" title="The “is-link-local” property">is-link-local</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GInetAddress.html#GInetAddress--is-loopback" title="The “is-loopback” property">is-loopback</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GInetAddress.html#GInetAddress--is-mc-global" title="The “is-mc-global” property">is-mc-global</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GInetAddress.html#GInetAddress--is-mc-link-local" title="The “is-mc-link-local” property">is-mc-link-local</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GInetAddress.html#GInetAddress--is-mc-node-local" title="The “is-mc-node-local” property">is-mc-node-local</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GInetAddress.html#GInetAddress--is-mc-org-local" title="The “is-mc-org-local” property">is-mc-org-local</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GInetAddress.html#GInetAddress--is-mc-site-local" title="The “is-mc-site-local” property">is-mc-site-local</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GInetAddress.html#GInetAddress--is-multicast" title="The “is-multicast” property">is-multicast</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GInetAddress.html#GInetAddress--is-site-local" title="The “is-site-local” property">is-site-local</a></td>
+<td class="property_flags">Read</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GInetAddress.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GInetAddress.html#GInetAddress-struct" title="GInetAddress">GInetAddress</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GInetAddress.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GInetAddress
+</pre>
+</div>
+<div class="refsect1">
+<a name="GInetAddress.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GInetAddress.description"></a><h2>Description</h2>
+<p><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> represents an IPv4 or IPv6 internet address. Use
+<a class="link" href="GResolver.html#g-resolver-lookup-by-name" title="g_resolver_lookup_by_name ()"><code class="function">g_resolver_lookup_by_name()</code></a> or <a class="link" href="GResolver.html#g-resolver-lookup-by-name-async" title="g_resolver_lookup_by_name_async ()"><code class="function">g_resolver_lookup_by_name_async()</code></a> to
+look up the <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> for a hostname. Use
+<a class="link" href="GResolver.html#g-resolver-lookup-by-address" title="g_resolver_lookup_by_address ()"><code class="function">g_resolver_lookup_by_address()</code></a> or
+<a class="link" href="GResolver.html#g-resolver-lookup-by-address-async" title="g_resolver_lookup_by_address_async ()"><code class="function">g_resolver_lookup_by_address_async()</code></a> to look up the hostname for a
+<a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a>.</p>
+<p>To actually connect to a remote host, you will need a
+<a class="link" href="GInetSocketAddress.html" title="GInetSocketAddress"><span class="type">GInetSocketAddress</span></a> (which includes a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> as well as a
+port number).</p>
+</div>
+<div class="refsect1">
+<a name="GInetAddress.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-inet-address-new-from-string"></a><h3>g_inet_address_new_from_string ()</h3>
+<pre class="programlisting"><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="returnvalue">GInetAddress</span></a> *
+g_inet_address_new_from_string (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *string</code></em>);</pre>
+<p>Parses <em class="parameter"><code>string</code></em>
+ as an IP address and creates a new <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a>.</p>
+<div class="refsect3">
+<a name="g-inet-address-new-from-string.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>a string representation of an IP address</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-new-from-string.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> corresponding to <em class="parameter"><code>string</code></em>
+, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if
+<em class="parameter"><code>string</code></em>
+could not be parsed.
+Free the returned object with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-new-from-bytes"></a><h3>g_inet_address_new_from_bytes ()</h3>
+<pre class="programlisting"><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="returnvalue">GInetAddress</span></a> *
+g_inet_address_new_from_bytes (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#guint8"><span class="type">guint8</span></a> *bytes</code></em>,
+                               <em class="parameter"><code><a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="type">GSocketFamily</span></a> family</code></em>);</pre>
+<p>Creates a new <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> from the given <em class="parameter"><code>family</code></em>
+ and <em class="parameter"><code>bytes</code></em>
+.
+<em class="parameter"><code>bytes</code></em>
+ should be 4 bytes for <a class="link" href="GSocketAddress.html#G-SOCKET-FAMILY-IPV4:CAPS"><code class="literal">G_SOCKET_FAMILY_IPV4</code></a> and 16 bytes for
+<a class="link" href="GSocketAddress.html#G-SOCKET-FAMILY-IPV6:CAPS"><code class="literal">G_SOCKET_FAMILY_IPV6</code></a>.</p>
+<div class="refsect3">
+<a name="g-inet-address-new-from-bytes.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>bytes</p></td>
+<td class="parameter_description"><p>raw address data. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>family</p></td>
+<td class="parameter_description"><p>the address family of <em class="parameter"><code>bytes</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-new-from-bytes.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> corresponding to <em class="parameter"><code>family</code></em>
+and <em class="parameter"><code>bytes</code></em>
+.
+Free the returned object with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-new-any"></a><h3>g_inet_address_new_any ()</h3>
+<pre class="programlisting"><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="returnvalue">GInetAddress</span></a> *
+g_inet_address_new_any (<em class="parameter"><code><a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="type">GSocketFamily</span></a> family</code></em>);</pre>
+<p>Creates a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> for the "any" address (unassigned/"don't
+care") for <em class="parameter"><code>family</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-inet-address-new-any.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>family</p></td>
+<td class="parameter_description"><p>the address family</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-new-any.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> corresponding to the "any" address
+for <em class="parameter"><code>family</code></em>
+.
+Free the returned object with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-new-loopback"></a><h3>g_inet_address_new_loopback ()</h3>
+<pre class="programlisting"><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="returnvalue">GInetAddress</span></a> *
+g_inet_address_new_loopback (<em class="parameter"><code><a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="type">GSocketFamily</span></a> family</code></em>);</pre>
+<p>Creates a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> for the loopback address for <em class="parameter"><code>family</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-inet-address-new-loopback.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>family</p></td>
+<td class="parameter_description"><p>the address family</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-new-loopback.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> corresponding to the loopback address
+for <em class="parameter"><code>family</code></em>
+.
+Free the returned object with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-equal"></a><h3>g_inet_address_equal ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_inet_address_equal (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>,
+                      <em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *other_address</code></em>);</pre>
+<p>Checks if two <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> instances are equal, e.g. the same address.</p>
+<div class="refsect3">
+<a name="g-inet-address-equal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>other_address</p></td>
+<td class="parameter_description"><p>Another <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-equal.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>address</code></em>
+and <em class="parameter"><code>other_address</code></em>
+are equal, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-to-bytes"></a><h3>g_inet_address_to_bytes ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#guint8"><span class="returnvalue">guint8</span></a> *
+g_inet_address_to_bytes (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>);</pre>
+<p>Gets the raw binary address data from <em class="parameter"><code>address</code></em>
+.</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-inet-address-to-bytes.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-to-bytes.returns"></a><h4>Returns</h4>
+<p> a pointer to an internal array of the bytes in <em class="parameter"><code>address</code></em>
+,
+which should not be modified, stored, or freed. The size of this
+array can be gotten with <a class="link" href="GInetAddress.html#g-inet-address-get-native-size" title="g_inet_address_get_native_size ()"><code class="function">g_inet_address_get_native_size()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-get-native-size"></a><h3>g_inet_address_get_native_size ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gsize"><span class="returnvalue">gsize</span></a>
+g_inet_address_get_native_size (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>);</pre>
+<p>Gets the size of the native raw binary address for <em class="parameter"><code>address</code></em>
+. This
+is the size of the data that you get from <a class="link" href="GInetAddress.html#g-inet-address-to-bytes" title="g_inet_address_to_bytes ()"><code class="function">g_inet_address_to_bytes()</code></a>.</p>
+<div class="refsect3">
+<a name="g-inet-address-get-native-size.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-get-native-size.returns"></a><h4>Returns</h4>
+<p> the number of bytes used for the native version of <em class="parameter"><code>address</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-to-string"></a><h3>g_inet_address_to_string ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_inet_address_to_string (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>);</pre>
+<p>Converts <em class="parameter"><code>address</code></em>
+ to string form.</p>
+<div class="refsect3">
+<a name="g-inet-address-to-string.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-to-string.returns"></a><h4>Returns</h4>
+<p> a representation of <em class="parameter"><code>address</code></em>
+as a string, which should be
+freed after use.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-get-family"></a><h3>g_inet_address_get_family ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="returnvalue">GSocketFamily</span></a>
+g_inet_address_get_family (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>);</pre>
+<p>Gets <em class="parameter"><code>address</code></em>
+'s family</p>
+<div class="refsect3">
+<a name="g-inet-address-get-family.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-get-family.returns"></a><h4>Returns</h4>
+<p> <em class="parameter"><code>address</code></em>
+'s family</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-get-is-any"></a><h3>g_inet_address_get_is_any ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_inet_address_get_is_any (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>);</pre>
+<p>Tests whether <em class="parameter"><code>address</code></em>
+ is the "any" address for its family.</p>
+<div class="refsect3">
+<a name="g-inet-address-get-is-any.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-get-is-any.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>address</code></em>
+is the "any" address for its family.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-get-is-loopback"></a><h3>g_inet_address_get_is_loopback ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_inet_address_get_is_loopback (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>);</pre>
+<p>Tests whether <em class="parameter"><code>address</code></em>
+ is the loopback address for its family.</p>
+<div class="refsect3">
+<a name="g-inet-address-get-is-loopback.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-get-is-loopback.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>address</code></em>
+is the loopback address for its family.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-get-is-link-local"></a><h3>g_inet_address_get_is_link_local ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_inet_address_get_is_link_local (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>);</pre>
+<p>Tests whether <em class="parameter"><code>address</code></em>
+ is a link-local address (that is, if it
+identifies a host on a local network that is not connected to the
+Internet).</p>
+<div class="refsect3">
+<a name="g-inet-address-get-is-link-local.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-get-is-link-local.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>address</code></em>
+is a link-local address.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-get-is-site-local"></a><h3>g_inet_address_get_is_site_local ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_inet_address_get_is_site_local (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>);</pre>
+<p>Tests whether <em class="parameter"><code>address</code></em>
+ is a site-local address such as 10.0.0.1
+(that is, the address identifies a host on a local network that can
+not be reached directly from the Internet, but which may have
+outgoing Internet connectivity via a NAT or firewall).</p>
+<div class="refsect3">
+<a name="g-inet-address-get-is-site-local.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-get-is-site-local.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>address</code></em>
+is a site-local address.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-get-is-multicast"></a><h3>g_inet_address_get_is_multicast ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_inet_address_get_is_multicast (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>);</pre>
+<p>Tests whether <em class="parameter"><code>address</code></em>
+ is a multicast address.</p>
+<div class="refsect3">
+<a name="g-inet-address-get-is-multicast.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-get-is-multicast.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>address</code></em>
+is a multicast address.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-get-is-mc-link-local"></a><h3>g_inet_address_get_is_mc_link_local ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_inet_address_get_is_mc_link_local (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>);</pre>
+<p>Tests whether <em class="parameter"><code>address</code></em>
+ is a link-local multicast address.</p>
+<div class="refsect3">
+<a name="g-inet-address-get-is-mc-link-local.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-get-is-mc-link-local.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>address</code></em>
+is a link-local multicast address.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-get-is-mc-node-local"></a><h3>g_inet_address_get_is_mc_node_local ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_inet_address_get_is_mc_node_local (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>);</pre>
+<p>Tests whether <em class="parameter"><code>address</code></em>
+ is a node-local multicast address.</p>
+<div class="refsect3">
+<a name="g-inet-address-get-is-mc-node-local.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-get-is-mc-node-local.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>address</code></em>
+is a node-local multicast address.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-get-is-mc-site-local"></a><h3>g_inet_address_get_is_mc_site_local ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_inet_address_get_is_mc_site_local (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>);</pre>
+<p>Tests whether <em class="parameter"><code>address</code></em>
+ is a site-local multicast address.</p>
+<div class="refsect3">
+<a name="g-inet-address-get-is-mc-site-local.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-get-is-mc-site-local.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>address</code></em>
+is a site-local multicast address.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-get-is-mc-org-local"></a><h3>g_inet_address_get_is_mc_org_local ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_inet_address_get_is_mc_org_local (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>);</pre>
+<p>Tests whether <em class="parameter"><code>address</code></em>
+ is an organization-local multicast address.</p>
+<div class="refsect3">
+<a name="g-inet-address-get-is-mc-org-local.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-get-is-mc-org-local.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>address</code></em>
+is an organization-local multicast address.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-get-is-mc-global"></a><h3>g_inet_address_get_is_mc_global ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_inet_address_get_is_mc_global (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>);</pre>
+<p>Tests whether <em class="parameter"><code>address</code></em>
+ is a global multicast address.</p>
+<div class="refsect3">
+<a name="g-inet-address-get-is-mc-global.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-get-is-mc-global.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>address</code></em>
+is a global multicast address.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GInetAddress.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GInetAddress-struct"></a><h3>GInetAddress</h3>
+<pre class="programlisting">typedef struct _GInetAddress GInetAddress;</pre>
+<p>An IPv4 or IPv6 internet address.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GInetAddress.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GInetAddress--bytes"></a><h3>The <code class="literal">“bytes”</code> property</h3>
+<pre class="programlisting">  “bytes”                    <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a></pre>
+<p>The raw address data.</p>
+<p>Flags: Read / Write / Construct Only</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GInetAddress--family"></a><h3>The <code class="literal">“family”</code> property</h3>
+<pre class="programlisting">  “family”                   <a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="type">GSocketFamily</span></a></pre>
+<p>The address family (IPv4 or IPv6).</p>
+<p>Flags: Read / Write / Construct Only</p>
+<p>Default value: G_SOCKET_FAMILY_INVALID</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GInetAddress--is-any"></a><h3>The <code class="literal">“is-any”</code> property</h3>
+<pre class="programlisting">  “is-any”                   <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether this is the "any" address for its family.
+See <a class="link" href="GInetAddress.html#g-inet-address-get-is-any" title="g_inet_address_get_is_any ()"><code class="function">g_inet_address_get_is_any()</code></a>.</p>
+<p>Flags: Read</p>
+<p>Default value: FALSE</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GInetAddress--is-link-local"></a><h3>The <code class="literal">“is-link-local”</code> property</h3>
+<pre class="programlisting">  “is-link-local”            <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether this is a link-local address.
+See <a class="link" href="GInetAddress.html#g-inet-address-get-is-link-local" title="g_inet_address_get_is_link_local ()"><code class="function">g_inet_address_get_is_link_local()</code></a>.</p>
+<p>Flags: Read</p>
+<p>Default value: FALSE</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GInetAddress--is-loopback"></a><h3>The <code class="literal">“is-loopback”</code> property</h3>
+<pre class="programlisting">  “is-loopback”              <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether this is the loopback address for its family.
+See <a class="link" href="GInetAddress.html#g-inet-address-get-is-loopback" title="g_inet_address_get_is_loopback ()"><code class="function">g_inet_address_get_is_loopback()</code></a>.</p>
+<p>Flags: Read</p>
+<p>Default value: FALSE</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GInetAddress--is-mc-global"></a><h3>The <code class="literal">“is-mc-global”</code> property</h3>
+<pre class="programlisting">  “is-mc-global”             <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether this is a global multicast address.
+See <a class="link" href="GInetAddress.html#g-inet-address-get-is-mc-global" title="g_inet_address_get_is_mc_global ()"><code class="function">g_inet_address_get_is_mc_global()</code></a>.</p>
+<p>Flags: Read</p>
+<p>Default value: FALSE</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GInetAddress--is-mc-link-local"></a><h3>The <code class="literal">“is-mc-link-local”</code> property</h3>
+<pre class="programlisting">  “is-mc-link-local”         <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether this is a link-local multicast address.
+See <a class="link" href="GInetAddress.html#g-inet-address-get-is-mc-link-local" title="g_inet_address_get_is_mc_link_local ()"><code class="function">g_inet_address_get_is_mc_link_local()</code></a>.</p>
+<p>Flags: Read</p>
+<p>Default value: FALSE</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GInetAddress--is-mc-node-local"></a><h3>The <code class="literal">“is-mc-node-local”</code> property</h3>
+<pre class="programlisting">  “is-mc-node-local”         <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether this is a node-local multicast address.
+See <a class="link" href="GInetAddress.html#g-inet-address-get-is-mc-node-local" title="g_inet_address_get_is_mc_node_local ()"><code class="function">g_inet_address_get_is_mc_node_local()</code></a>.</p>
+<p>Flags: Read</p>
+<p>Default value: FALSE</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GInetAddress--is-mc-org-local"></a><h3>The <code class="literal">“is-mc-org-local”</code> property</h3>
+<pre class="programlisting">  “is-mc-org-local”          <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether this is an organization-local multicast address.
+See <a class="link" href="GInetAddress.html#g-inet-address-get-is-mc-org-local" title="g_inet_address_get_is_mc_org_local ()"><code class="function">g_inet_address_get_is_mc_org_local()</code></a>.</p>
+<p>Flags: Read</p>
+<p>Default value: FALSE</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GInetAddress--is-mc-site-local"></a><h3>The <code class="literal">“is-mc-site-local”</code> property</h3>
+<pre class="programlisting">  “is-mc-site-local”         <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether this is a site-local multicast address.
+See <a class="link" href="GInetAddress.html#g-inet-address-get-is-mc-site-local" title="g_inet_address_get_is_mc_site_local ()"><code class="function">g_inet_address_get_is_mc_site_local()</code></a>.</p>
+<p>Flags: Read</p>
+<p>Default value: FALSE</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GInetAddress--is-multicast"></a><h3>The <code class="literal">“is-multicast”</code> property</h3>
+<pre class="programlisting">  “is-multicast”             <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether this is a multicast address.
+See <a class="link" href="GInetAddress.html#g-inet-address-get-is-multicast" title="g_inet_address_get_is_multicast ()"><code class="function">g_inet_address_get_is_multicast()</code></a>.</p>
+<p>Flags: Read</p>
+<p>Default value: FALSE</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GInetAddress--is-site-local"></a><h3>The <code class="literal">“is-site-local”</code> property</h3>
+<pre class="programlisting">  “is-site-local”            <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether this is a site-local address.
+See <a class="link" href="GInetAddress.html#g-inet-address-get-is-loopback" title="g_inet_address_get_is_loopback ()"><code class="function">g_inet_address_get_is_loopback()</code></a>.</p>
+<p>Flags: Read</p>
+<p>Default value: FALSE</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,5 @@
+<schemalist>
+  <schema id='x'/> <schema id='y'/>
+  <schema id='lx' list-of='x'/>
+  <schema id='ly' extends='lx' list-of='y'/>
+</schemalist>

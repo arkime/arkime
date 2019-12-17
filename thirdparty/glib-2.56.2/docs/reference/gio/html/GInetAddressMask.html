@@ -1,0 +1,501 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GInetAddressMask: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="networking.html" title="Low-level network support">
+<link rel="prev" href="GInetAddress.html" title="GInetAddress">
+<link rel="next" href="GSocketAddress.html" title="GSocketAddress">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GInetAddressMask.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GInetAddressMask.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_interfaces">  <span class="dim">|</span> 
+                  <a href="#GInetAddressMask.implemented-interfaces" class="shortcut">Implemented Interfaces</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GInetAddressMask.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="networking.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GInetAddress.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GSocketAddress.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GInetAddressMask"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GInetAddressMask.top_of_page"></a>GInetAddressMask</span></h2>
+<p>GInetAddressMask — An IPv4/IPv6 address mask</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GInetAddressMask.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="returnvalue">GInetAddressMask</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddressMask.html#g-inet-address-mask-new" title="g_inet_address_mask_new ()">g_inet_address_mask_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="returnvalue">GInetAddressMask</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddressMask.html#g-inet-address-mask-new-from-string" title="g_inet_address_mask_new_from_string ()">g_inet_address_mask_new_from_string</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddressMask.html#g-inet-address-mask-to-string" title="g_inet_address_mask_to_string ()">g_inet_address_mask_to_string</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="returnvalue">GSocketFamily</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddressMask.html#g-inet-address-mask-get-family" title="g_inet_address_mask_get_family ()">g_inet_address_mask_get_family</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GInetAddress.html" title="GInetAddress"><span class="returnvalue">GInetAddress</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddressMask.html#g-inet-address-mask-get-address" title="g_inet_address_mask_get_address ()">g_inet_address_mask_get_address</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddressMask.html#g-inet-address-mask-get-length" title="g_inet_address_mask_get_length ()">g_inet_address_mask_get_length</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddressMask.html#g-inet-address-mask-matches" title="g_inet_address_mask_matches ()">g_inet_address_mask_matches</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInetAddressMask.html#g-inet-address-mask-equal" title="g_inet_address_mask_equal ()">g_inet_address_mask_equal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GInetAddressMask.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="property_type">
+<a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *</td>
+<td class="property_name"><a class="link" href="GInetAddressMask.html#GInetAddressMask--address" title="The “address” property">address</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
+<tr>
+<td class="property_type"><a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="type">GSocketFamily</span></a></td>
+<td class="property_name"><a class="link" href="GInetAddressMask.html#GInetAddressMask--family" title="The “family” property">family</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a></td>
+<td class="property_name"><a class="link" href="GInetAddressMask.html#GInetAddressMask--length" title="The “length” property">length</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GInetAddressMask.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GInetAddressMask.html#GInetAddressMask-struct" title="GInetAddressMask">GInetAddressMask</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GInetAddressMask.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GInetAddressMask
+</pre>
+</div>
+<div class="refsect1">
+<a name="GInetAddressMask.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GInetAddressMask implements
+ <a class="link" href="GInitable.html" title="GInitable">GInitable</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GInetAddressMask.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GInetAddressMask.description"></a><h2>Description</h2>
+<p><a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> represents a range of IPv4 or IPv6 addresses
+described by a base address and a length indicating how many bits
+of the base address are relevant for matching purposes. These are
+often given in string form. Eg, "10.0.0.0/8", or "fe80::/10".</p>
+</div>
+<div class="refsect1">
+<a name="GInetAddressMask.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-inet-address-mask-new"></a><h3>g_inet_address_mask_new ()</h3>
+<pre class="programlisting"><a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="returnvalue">GInetAddressMask</span></a> *
+g_inet_address_mask_new (<em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *addr</code></em>,
+                         <em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> length</code></em>,
+                         <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Creates a new <a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> representing all addresses whose
+first <em class="parameter"><code>length</code></em>
+ bits match <em class="parameter"><code>addr</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-inet-address-mask-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>addr</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>length</p></td>
+<td class="parameter_description"><p>number of bits of <em class="parameter"><code>addr</code></em>
+to use</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-mask-new.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-mask-new-from-string"></a><h3>g_inet_address_mask_new_from_string ()</h3>
+<pre class="programlisting"><a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="returnvalue">GInetAddressMask</span></a> *
+g_inet_address_mask_new_from_string (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *mask_string</code></em>,
+                                     <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Parses <em class="parameter"><code>mask_string</code></em>
+ as an IP address and (optional) length, and
+creates a new <a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a>. The length, if present, is
+delimited by a "/". If it is not present, then the length is
+assumed to be the full length of the address.</p>
+<div class="refsect3">
+<a name="g-inet-address-mask-new-from-string.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>mask_string</p></td>
+<td class="parameter_description"><p>an IP address or address/length string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-mask-new-from-string.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> corresponding to <em class="parameter"><code>string</code></em>
+, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+on error.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-mask-to-string"></a><h3>g_inet_address_mask_to_string ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_inet_address_mask_to_string (<em class="parameter"><code><a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask</code></em>);</pre>
+<p>Converts <em class="parameter"><code>mask</code></em>
+ back to its corresponding string form.</p>
+<div class="refsect3">
+<a name="g-inet-address-mask-to-string.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mask</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-mask-to-string.returns"></a><h4>Returns</h4>
+<p> a string corresponding to <em class="parameter"><code>mask</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-mask-get-family"></a><h3>g_inet_address_mask_get_family ()</h3>
+<pre class="programlisting"><a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="returnvalue">GSocketFamily</span></a>
+g_inet_address_mask_get_family (<em class="parameter"><code><a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask</code></em>);</pre>
+<p>Gets the <a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="type">GSocketFamily</span></a> of <em class="parameter"><code>mask</code></em>
+'s address</p>
+<div class="refsect3">
+<a name="g-inet-address-mask-get-family.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mask</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-mask-get-family.returns"></a><h4>Returns</h4>
+<p> the <a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="type">GSocketFamily</span></a> of <em class="parameter"><code>mask</code></em>
+'s address</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-mask-get-address"></a><h3>g_inet_address_mask_get_address ()</h3>
+<pre class="programlisting"><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="returnvalue">GInetAddress</span></a> *
+g_inet_address_mask_get_address (<em class="parameter"><code><a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask</code></em>);</pre>
+<p>Gets <em class="parameter"><code>mask</code></em>
+'s base address</p>
+<div class="refsect3">
+<a name="g-inet-address-mask-get-address.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mask</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-mask-get-address.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>mask</code></em>
+'s base address. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-mask-get-length"></a><h3>g_inet_address_mask_get_length ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+g_inet_address_mask_get_length (<em class="parameter"><code><a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask</code></em>);</pre>
+<p>Gets <em class="parameter"><code>mask</code></em>
+'s length</p>
+<div class="refsect3">
+<a name="g-inet-address-mask-get-length.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mask</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-mask-get-length.returns"></a><h4>Returns</h4>
+<p> <em class="parameter"><code>mask</code></em>
+'s length</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-mask-matches"></a><h3>g_inet_address_mask_matches ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_inet_address_mask_matches (<em class="parameter"><code><a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask</code></em>,
+                             <em class="parameter"><code><a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *address</code></em>);</pre>
+<p>Tests if <em class="parameter"><code>address</code></em>
+ falls within the range described by <em class="parameter"><code>mask</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-inet-address-mask-matches.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>mask</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-mask-matches.returns"></a><h4>Returns</h4>
+<p> whether <em class="parameter"><code>address</code></em>
+falls within the range described by
+<em class="parameter"><code>mask</code></em>
+.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-inet-address-mask-equal"></a><h3>g_inet_address_mask_equal ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_inet_address_mask_equal (<em class="parameter"><code><a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask</code></em>,
+                           <em class="parameter"><code><a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a> *mask2</code></em>);</pre>
+<p>Tests if <em class="parameter"><code>mask</code></em>
+ and <em class="parameter"><code>mask2</code></em>
+ are the same mask.</p>
+<div class="refsect3">
+<a name="g-inet-address-mask-equal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>mask</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mask2</p></td>
+<td class="parameter_description"><p>another <a class="link" href="GInetAddressMask.html" title="GInetAddressMask"><span class="type">GInetAddressMask</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-inet-address-mask-equal.returns"></a><h4>Returns</h4>
+<p> whether <em class="parameter"><code>mask</code></em>
+and <em class="parameter"><code>mask2</code></em>
+are the same mask</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GInetAddressMask.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GInetAddressMask-struct"></a><h3>GInetAddressMask</h3>
+<pre class="programlisting">typedef struct _GInetAddressMask GInetAddressMask;</pre>
+<p>A combination of an IPv4 or IPv6 base address and a length,
+representing a range of IP addresses.</p>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GInetAddressMask.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GInetAddressMask--address"></a><h3>The <code class="literal">“address”</code> property</h3>
+<pre class="programlisting">  “address”                  <a class="link" href="GInetAddress.html" title="GInetAddress"><span class="type">GInetAddress</span></a> *</pre>
+<p>The base address.</p>
+<p>Flags: Read / Write</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GInetAddressMask--family"></a><h3>The <code class="literal">“family”</code> property</h3>
+<pre class="programlisting">  “family”                   <a class="link" href="GSocketAddress.html#GSocketFamily" title="enum GSocketFamily"><span class="type">GSocketFamily</span></a></pre>
+<p>The address family (IPv4 or IPv6).</p>
+<p>Flags: Read</p>
+<p>Default value: G_SOCKET_FAMILY_INVALID</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GInetAddressMask--length"></a><h3>The <code class="literal">“length”</code> property</h3>
+<pre class="programlisting">  “length”                   <a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a></pre>
+<p>The prefix length.</p>
+<p>Flags: Read / Write</p>
+<p>Allowed values: &lt;= 128</p>
+<p>Default value: 0</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

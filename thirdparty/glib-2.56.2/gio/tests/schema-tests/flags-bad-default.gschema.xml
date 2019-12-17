@@ -1,0 +1,16 @@
+<schemalist>
+  <flags id='flags'>
+    <value nick='none' value='0'/>
+    <value nick='mourning' value='1'/>
+    <value nick='laughing' value='2'/>
+    <value nick='talking' value='4'/>
+    <value nick='walking' value='8'/>
+  </flags>
+
+  <schema id='xyz'>
+    <key name='abc' flags='flags'>
+      <default>['speaking']</default>
+    </key>
+  </schema>
+</schemalist>
+

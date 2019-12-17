@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>How to create and use signals: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="pt02.html" title="Part IV. Tutorial">
+<link rel="prev" href="howto-interface-override.html" title="Overriding interface methods">
+<link rel="next" href="pt03.html" title="Part V. Related Tools">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="pt02.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="howto-interface-override.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="pt03.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="chapter">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="howto-signals"></a>How to create and use signals</h2></div></div></div>
+<div class="toc"><dl class="toc"><dt><span class="sect1"><a href="howto-signals.html#howto-simple-signals">Simple use of signals</a></span></dt></dl></div>
+<p>
+    The signal system in GType is pretty complex and
+    flexible: it is possible for its users to connect at runtime any
+    number of callbacks (implemented in any language for which a binding
+    exists)
+    <a href="#ftn.id-1.6.5.2.1" class="footnote" name="id-1.6.5.2.1"><sup class="footnote">[8]</sup></a>
+    to any signal and to stop the emission of any signal at any 
+    state of the signal emission process. This flexibility makes it
+    possible to use GSignal for much more than just emitting signals to
+    multiple clients.
+  </p>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="howto-simple-signals"></a>Simple use of signals</h2></div></div></div>
+<p>
+      The most basic use of signals is to implement event
+      notification. For example, given a <span class="type">ViewerFile</span> object with
+      a <code class="function">write</code> method, a signal could be emitted whenever
+      the file is changed using that method.
+      The code below shows how the user can connect a callback to the
+      "changed" signal.
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal">file </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gobject-The-Base-Object-Type.html#g-object-new">g_object_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">VIEWER_FILE_TYPE</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="function"><a href="gobject-Signals.html#g-signal-connect">g_signal_connect</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">file</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"changed"</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="gobject-Closures.html#GCallback">GCallback</a></span><span class="symbol">)</span><span class="normal"> changed_event</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="function">viewer_file_write</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">file</span><span class="symbol">,</span><span class="normal"> buffer</span><span class="symbol">,</span><span class="normal"> </span><span class="function">strlen</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">buffer</span><span class="symbol">));</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+    </p>
+<p>
+      The <span class="type">ViewerFile</span> signal is registered in the
+      <code class="function">class_init</code> function:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal">file_signals</span><span class="symbol">[</span><span class="normal">CHANGED</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span>
+<span class="normal">  </span><span class="function"><a href="gobject-Signals.html#g-signal-newv">g_signal_newv</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"changed"</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="function"><a href="gobject-Type-Information.html#G-TYPE-FROM-CLASS:CAPS">G_TYPE_FROM_CLASS</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">object_class</span><span class="symbol">),</span>
+<span class="normal">                 <a href="gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">G_SIGNAL_RUN_LAST</a> </span><span class="symbol">|</span><span class="normal"> <a href="gobject-Signals.html#G-SIGNAL-NO-RECURSE:CAPS">G_SIGNAL_NO_RECURSE</a> </span><span class="symbol">|</span><span class="normal"> <a href="gobject-Signals.html#G-SIGNAL-NO-HOOKS:CAPS">G_SIGNAL_NO_HOOKS</a></span><span class="symbol">,</span>
+<span class="normal">                 <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a> </span><span class="comment">/* closure */</span><span class="symbol">,</span>
+<span class="normal">                 <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a> </span><span class="comment">/* accumulator */</span><span class="symbol">,</span>
+<span class="normal">                 <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a> </span><span class="comment">/* accumulator data */</span><span class="symbol">,</span>
+<span class="normal">                 <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a> </span><span class="comment">/* C marshaller */</span><span class="symbol">,</span>
+<span class="normal">                 <a href="gobject-Type-Information.html#G-TYPE-NONE:CAPS">G_TYPE_NONE</a> </span><span class="comment">/* return_type */</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="number">0</span><span class="normal">     </span><span class="comment">/* n_params */</span><span class="symbol">,</span>
+<span class="normal">                 <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a>  </span><span class="comment">/* param_types */</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+      and the signal is emitted in <code class="function">viewer_file_write</code>:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="type">void</span>
+<span class="function">viewer_file_write</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerFile</span><span class="normal">   </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">,</span>
+<span class="normal">                   </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">guint8</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">buffer</span><span class="symbol">,</span>
+<span class="normal">                   </span><span class="usertype">gsize</span><span class="normal">         size</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-return-if-fail">g_return_if_fail</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">VIEWER_IS_FILE</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">));</span>
+<span class="normal">  </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-return-if-fail">g_return_if_fail</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">buffer </span><span class="symbol">!=</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a> </span><span class="symbol">||</span><span class="normal"> size </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">/* First write data. */</span>
+
+<span class="normal">  </span><span class="comment">/* Then, notify user of data written. */</span>
+<span class="normal">  </span><span class="function"><a href="gobject-Signals.html#g-signal-emit">g_signal_emit</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">,</span><span class="normal"> file_signals</span><span class="symbol">[</span><span class="normal">CHANGED</span><span class="symbol">],</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="comment">/* details */</span><span class="symbol">);</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+      As shown above, the details parameter can safely be set to zero if no
+      detail needs to be conveyed. For a discussion of what it can be used for,
+      see <a class="xref" href="signal.html#signal-detail" title="The detail argument">the section called “The <span class="emphasis"><em>detail</em></span> argument”</a>
+    </p>
+<p>
+      The C signal marshaller should always be <code class="literal">NULL</code>, in which
+      case the best marshaller for the given closure type will be chosen by
+      GLib. This may be an internal marshaller specific to the closure type, or
+      <code class="function">g_cclosure_marshal_generic</code>, which implements generic
+      conversion of arrays of parameters to C callback invocations. GLib used to
+      require the user to write or generate a type-specific marshaller and pass
+      that, but that has been deprecated in favour of automatic selection of
+      marshallers.
+    </p>
+<p>
+      Note that <code class="function">g_cclosure_marshal_generic</code> is slower than
+      non-generic marshallers, so should be avoided for performance critical
+      code. However, performance critical code should rarely be using signals
+      anyway, as emitting a signal blocks on emitting it to all listeners, which
+      has potentially unbounded cost.
+    </p>
+</div>
+<div class="footnotes">
+<br><hr style="width:100; text-align:left;margin-left: 0">
+<div id="ftn.id-1.6.5.2.1" class="footnote"><p><a href="#id-1.6.5.2.1" class="para"><sup class="para">[8] </sup></a>A Python callback can be connected to any signal on any
+      C-based GObject, and vice versa, assuming that the Python object
+      inherits from GObject.</p></div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

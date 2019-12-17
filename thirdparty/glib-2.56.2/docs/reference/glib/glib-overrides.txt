@@ -1,0 +1,294 @@
+# This file makes most of the thread related macros look like
+# functions, which they really were, if possible easy.
+
+<MACRO>
+<NAME>GLIB_DISABLE_DEPRECATION_WARNINGS</NAME>
+#ifdef GLIB_DISABLE_DEPRECATION_WARNINGS
+</MACRO>
+
+<MACRO>
+<NAME>G_ATOMIC_LOCK_FREE</NAME>
+#define G_ATOMIC_LOCK_FREE
+</MACRO>
+
+# default thread implementation
+
+<MACRO>
+<NAME>G_THREADS_IMPL_POSIX</NAME>
+#define G_THREADS_IMPL_POSIX
+</MACRO>
+
+<MACRO>
+<NAME>G_THREADS_IMPL_WIN32</NAME>
+#define G_THREADS_IMPL_NONE
+</MACRO>
+
+# threads supported?
+
+<FUNCTION>
+<NAME>g_thread_supported</NAME>
+<RETURNS>gboolean</RETURNS>
+</FUNCTION>
+
+# GMutex
+
+<FUNCTION>
+<NAME>g_mutex_new</NAME>
+<RETURNS>GMutex *</RETURNS>
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_mutex_lock</NAME>
+<RETURNS>void</RETURNS>
+GMutex *mutex
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_mutex_trylock</NAME>
+<RETURNS>gboolean</RETURNS>
+GMutex *mutex
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_mutex_unlock</NAME>
+<RETURNS>void</RETURNS>
+GMutex *mutex
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_mutex_free</NAME>
+<RETURNS>void</RETURNS>
+GMutex *mutex
+</FUNCTION>
+
+# GStaticMutex
+
+<STRUCT>
+<NAME>GStaticMutex</NAME>
+</STRUCT>
+
+<MACRO>
+<NAME>G_STATIC_MUTEX_INIT</NAME>
+#define G_STATIC_MUTEX_INIT
+</MACRO>
+
+<FUNCTION>
+<NAME>g_static_mutex_lock</NAME>
+<RETURNS>void</RETURNS>
+GStaticMutex* mutex
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_static_mutex_trylock</NAME>
+<RETURNS>gboolean</RETURNS>
+GStaticMutex* mutex
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_static_mutex_unlock</NAME>
+<RETURNS>void</RETURNS>
+GStaticMutex* mutex
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_static_mutex_get_mutex</NAME>
+<RETURNS>GMutex *</RETURNS>
+GStaticMutex* mutex
+</FUNCTION>
+
+# GThread
+
+<FUNCTION>
+<NAME>g_thread_yield</NAME>
+<RETURNS>void</RETURNS>
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_thread_create</NAME>
+<RETURNS>GThread *</RETURNS>
+GThreadFunc func
+gpointer data,
+gboolean joinable,
+GError **error
+</FUNCTION>
+
+# G_LOCK_* macros
+
+<MACRO>
+<NAME>G_LOCK_DEFINE</NAME>
+#define G_LOCK_DEFINE(name)    
+</MACRO>
+
+<MACRO>
+<NAME>G_LOCK_DEFINE_STATIC</NAME>
+#define G_LOCK_DEFINE_STATIC(name)
+</MACRO>
+
+<MACRO>
+<NAME>G_LOCK_EXTERN</NAME>
+#define G_LOCK_EXTERN(name)    
+</MACRO>
+
+<MACRO>
+<NAME>G_LOCK</NAME>
+#define G_LOCK(name)
+</MACRO>
+
+<MACRO>
+<NAME>G_UNLOCK</NAME>
+#define G_UNLOCK(name)
+</MACRO>
+
+<MACRO>
+<NAME>G_TRYLOCK</NAME>
+#define G_TRYLOCK(name)
+</MACRO>
+
+# GCond
+
+<FUNCTION>
+<NAME>g_cond_new</NAME>
+<RETURNS>GCond*</RETURNS>
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_cond_signal</NAME>
+<RETURNS>void</RETURNS>
+GCond *cond
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_cond_broadcast</NAME>
+<RETURNS>void</RETURNS>
+GCond *cond
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_cond_wait</NAME>
+<RETURNS>void</RETURNS>
+GCond *cond, GMutex *mutex
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_cond_timed_wait</NAME>
+<RETURNS>gboolean</RETURNS>
+GCond *cond, GMutex *mutex, GTimeVal *abs_time
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_cond_free</NAME>
+<RETURNS>void</RETURNS>
+GCond *cond
+</FUNCTION>
+
+# GPrivate
+<MACRO>
+<NAME>G_PRIVATE_INIT</NAME>
+#define G_PRIVATE_INIT(notify)
+</MACRO>
+
+# GStaticPrivate
+
+<MACRO>
+<NAME>G_STATIC_PRIVATE_INIT</NAME>
+#define G_STATIC_PRIVATE_INIT 
+</MACRO>
+
+# Definitions for different operating systems
+
+<MACRO>
+<NAME>G_OS_UNIX</NAME>
+#define G_OS_UNIX
+</MACRO>
+
+<MACRO>
+<NAME>G_OS_WIN32</NAME>
+#define G_OS_WIN32
+</MACRO>
+
+# g_ascii_isxxx
+
+<FUNCTION>
+<NAME>g_ascii_isalnum</NAME>
+<RETURNS>gboolean</RETURNS>
+gchar c
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_ascii_isalpha</NAME>
+<RETURNS>gboolean</RETURNS>
+gchar c
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_ascii_iscntrl</NAME>
+<RETURNS>gboolean</RETURNS>
+gchar c
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_ascii_isdigit</NAME>
+<RETURNS>gboolean</RETURNS>
+gchar c
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_ascii_isgraph</NAME>
+<RETURNS>gboolean</RETURNS>
+gchar c
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_ascii_islower</NAME>
+<RETURNS>gboolean</RETURNS>
+gchar c
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_ascii_isprint</NAME>
+<RETURNS>gboolean</RETURNS>
+gchar c
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_ascii_ispunct</NAME>
+<RETURNS>gboolean</RETURNS>
+gchar c
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_ascii_isspace</NAME>
+<RETURNS>gboolean</RETURNS>
+gchar c
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_ascii_isupper</NAME>
+<RETURNS>gboolean</RETURNS>
+gchar c
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_ascii_isxdigit</NAME>
+<RETURNS>gboolean</RETURNS>
+gchar c
+</FUNCTION>
+
+# g_atomic
+
+<FUNCTION>
+<NAME>g_atomic_int_inc</NAME>
+<RETURNS>void</RETURNS>
+gint *atomic
+</FUNCTION>
+
+<FUNCTION>
+<NAME>g_atomic_int_dec_and_test</NAME>
+<RETURNS>gboolean</RETURNS>
+gint *atomic
+</FUNCTION>
+
+<MACRO>
+<NAME>G_VA_COPY</NAME>
+#define G_VA_COPY(ap1,ap2)    
+</MACRO>

@@ -1,0 +1,461 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GConverter: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="conversion.html" title="Data conversion">
+<link rel="prev" href="conversion.html" title="Data conversion">
+<link rel="next" href="GCharsetConverter.html" title="GCharsetConverter">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GConverter.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GConverter.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_prerequisites">  <span class="dim">|</span> 
+                  <a href="#GConverter.prerequisites" class="shortcut">Prerequisites</a></span><span id="nav_implementations">  <span class="dim">|</span> 
+                  <a href="#GConverter.implementations" class="shortcut">Known Implementations</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="conversion.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="conversion.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GCharsetConverter.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GConverter"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GConverter.top_of_page"></a>GConverter</span></h2>
+<p>GConverter — Data conversion interface</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GConverter.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GConverter.html#GConverterResult" title="enum GConverterResult"><span class="returnvalue">GConverterResult</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GConverter.html#g-converter-convert" title="g_converter_convert ()">g_converter_convert</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GConverter.html#g-converter-reset" title="g_converter_reset ()">g_converter_reset</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GConverter.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GConverter.html#GConverter-struct" title="GConverter">GConverter</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GConverter.html#GConverterIface" title="struct GConverterIface">GConverterIface</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="GConverter.html#GConverterResult" title="enum GConverterResult">GConverterResult</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="GConverter.html#GConverterFlags" title="enum GConverterFlags">GConverterFlags</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GConverter.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/GTypeModule.html">GInterface</a>
+    <span class="lineart">╰──</span> GConverter
+</pre>
+</div>
+<div class="refsect1">
+<a name="GConverter.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GConverter requires
+ <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GConverter.implementations"></a><h2>Known Implementations</h2>
+<p>
+GConverter is implemented by
+ <a class="link" href="GCharsetConverter.html" title="GCharsetConverter">GCharsetConverter</a>,  <a class="link" href="GZlibCompressor.html" title="GZlibCompressor">GZlibCompressor</a> and  <a class="link" href="GZlibDecompressor.html" title="GZlibDecompressor">GZlibDecompressor</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GConverter.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GConverter.description"></a><h2>Description</h2>
+<p><a class="link" href="GConverter.html" title="GConverter"><span class="type">GConverter</span></a> is implemented by objects that convert
+binary data in various ways. The conversion can be
+stateful and may fail at any place.</p>
+<p>Some example conversions are: character set conversion,
+compression, decompression and regular expression
+replace.</p>
+</div>
+<div class="refsect1">
+<a name="GConverter.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-converter-convert"></a><h3>g_converter_convert ()</h3>
+<pre class="programlisting"><a class="link" href="GConverter.html#GConverterResult" title="enum GConverterResult"><span class="returnvalue">GConverterResult</span></a>
+g_converter_convert (<em class="parameter"><code><a class="link" href="GConverter.html" title="GConverter"><span class="type">GConverter</span></a> *converter</code></em>,
+                     <em class="parameter"><code>const <span class="type">void</span> *inbuf</code></em>,
+                     <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> inbuf_size</code></em>,
+                     <em class="parameter"><code><span class="type">void</span> *outbuf</code></em>,
+                     <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> outbuf_size</code></em>,
+                     <em class="parameter"><code><a class="link" href="GConverter.html#GConverterFlags" title="enum GConverterFlags"><span class="type">GConverterFlags</span></a> flags</code></em>,
+                     <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> *bytes_read</code></em>,
+                     <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> *bytes_written</code></em>,
+                     <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>This is the main operation used when converting data. It is to be called
+multiple times in a loop, and each time it will do some work, i.e.
+producing some output (in <em class="parameter"><code>outbuf</code></em>
+) or consuming some input (from <em class="parameter"><code>inbuf</code></em>
+) or
+both. If its not possible to do any work an error is returned.</p>
+<p>Note that a single call may not consume all input (or any input at all).
+Also a call may produce output even if given no input, due to state stored
+in the converter producing output.</p>
+<p>If any data was either produced or consumed, and then an error happens, then
+only the successful conversion is reported and the error is returned on the
+next call.</p>
+<p>A full conversion loop involves calling this method repeatedly, each time
+giving it new input and space output space. When there is no more input
+data after the data in <em class="parameter"><code>inbuf</code></em>
+, the flag <a class="link" href="GConverter.html#G-CONVERTER-INPUT-AT-END:CAPS"><code class="literal">G_CONVERTER_INPUT_AT_END</code></a> must be set.
+The loop will be (unless some error happens) returning <a class="link" href="GConverter.html#G-CONVERTER-CONVERTED:CAPS"><code class="literal">G_CONVERTER_CONVERTED</code></a>
+each time until all data is consumed and all output is produced, then
+<a class="link" href="GConverter.html#G-CONVERTER-FINISHED:CAPS"><code class="literal">G_CONVERTER_FINISHED</code></a> is returned instead. Note, that <a class="link" href="GConverter.html#G-CONVERTER-FINISHED:CAPS"><code class="literal">G_CONVERTER_FINISHED</code></a>
+may be returned even if <a class="link" href="GConverter.html#G-CONVERTER-INPUT-AT-END:CAPS"><code class="literal">G_CONVERTER_INPUT_AT_END</code></a> is not set, for instance
+in a decompression converter where the end of data is detectable from the
+data (and there might even be other data after the end of the compressed data).</p>
+<p>When some data has successfully been converted <em class="parameter"><code>bytes_read</code></em>
+ and is set to
+the number of bytes read from <em class="parameter"><code>inbuf</code></em>
+, and <em class="parameter"><code>bytes_written</code></em>
+ is set to indicate
+how many bytes was written to <em class="parameter"><code>outbuf</code></em>
+. If there are more data to output
+or consume (i.e. unless the <a class="link" href="GConverter.html#G-CONVERTER-INPUT-AT-END:CAPS"><code class="literal">G_CONVERTER_INPUT_AT_END</code></a> is specified) then
+<a class="link" href="GConverter.html#G-CONVERTER-CONVERTED:CAPS"><code class="literal">G_CONVERTER_CONVERTED</code></a> is returned, and if no more data is to be output
+then <a class="link" href="GConverter.html#G-CONVERTER-FINISHED:CAPS"><code class="literal">G_CONVERTER_FINISHED</code></a> is returned.</p>
+<p>On error <a class="link" href="GConverter.html#G-CONVERTER-ERROR:CAPS"><code class="literal">G_CONVERTER_ERROR</code></a> is returned and <em class="parameter"><code>error</code></em>
+ is set accordingly.
+Some errors need special handling:</p>
+<p><a class="link" href="gio-GIOError.html#G-IO-ERROR-NO-SPACE:CAPS"><code class="literal">G_IO_ERROR_NO_SPACE</code></a> is returned if there is not enough space
+to write the resulting converted data, the application should
+call the function again with a larger <em class="parameter"><code>outbuf</code></em>
+ to continue.</p>
+<p><a class="link" href="gio-GIOError.html#G-IO-ERROR-PARTIAL-INPUT:CAPS"><code class="literal">G_IO_ERROR_PARTIAL_INPUT</code></a> is returned if there is not enough
+input to fully determine what the conversion should produce,
+and the <a class="link" href="GConverter.html#G-CONVERTER-INPUT-AT-END:CAPS"><code class="literal">G_CONVERTER_INPUT_AT_END</code></a> flag is not set. This happens for
+example with an incomplete multibyte sequence when converting text,
+or when a regexp matches up to the end of the input (and may match
+further input). It may also happen when <em class="parameter"><code>inbuf_size</code></em>
+ is zero and
+there is no more data to produce.</p>
+<p>When this happens the application should read more input and then
+call the function again. If further input shows that there is no
+more data call the function again with the same data but with
+the <a class="link" href="GConverter.html#G-CONVERTER-INPUT-AT-END:CAPS"><code class="literal">G_CONVERTER_INPUT_AT_END</code></a> flag set. This may cause the conversion
+to finish as e.g. in the regexp match case (or, to fail again with
+<a class="link" href="gio-GIOError.html#G-IO-ERROR-PARTIAL-INPUT:CAPS"><code class="literal">G_IO_ERROR_PARTIAL_INPUT</code></a> in e.g. a charset conversion where the
+input is actually partial).</p>
+<p>After <a class="link" href="GConverter.html#g-converter-convert" title="g_converter_convert ()"><code class="function">g_converter_convert()</code></a> has returned <a class="link" href="GConverter.html#G-CONVERTER-FINISHED:CAPS"><code class="literal">G_CONVERTER_FINISHED</code></a> the
+converter object is in an invalid state where its not allowed
+to call <a class="link" href="GConverter.html#g-converter-convert" title="g_converter_convert ()"><code class="function">g_converter_convert()</code></a> anymore. At this time you can only
+free the object or call <a class="link" href="GConverter.html#g-converter-reset" title="g_converter_reset ()"><code class="function">g_converter_reset()</code></a> to reset it to the
+initial state.</p>
+<p>If the flag <a class="link" href="GConverter.html#G-CONVERTER-FLUSH:CAPS"><code class="literal">G_CONVERTER_FLUSH</code></a> is set then conversion is modified
+to try to write out all internal state to the output. The application
+has to call the function multiple times with the flag set, and when
+the available input has been consumed and all internal state has
+been produced then <a class="link" href="GConverter.html#G-CONVERTER-FLUSHED:CAPS"><code class="literal">G_CONVERTER_FLUSHED</code></a> (or <a class="link" href="GConverter.html#G-CONVERTER-FINISHED:CAPS"><code class="literal">G_CONVERTER_FINISHED</code></a> if
+really at the end) is returned instead of <a class="link" href="GConverter.html#G-CONVERTER-CONVERTED:CAPS"><code class="literal">G_CONVERTER_CONVERTED</code></a>.
+This is somewhat similar to what happens at the end of the input stream,
+but done in the middle of the data.</p>
+<p>This has different meanings for different conversions. For instance
+in a compression converter it would mean that we flush all the
+compression state into output such that if you uncompress the
+compressed data you get back all the input data. Doing this may
+make the final file larger due to padding though. Another example
+is a regexp conversion, where if you at the end of the flushed data
+have a match, but there is also a potential longer match. In the
+non-flushed case we would ask for more input, but when flushing we
+treat this as the end of input and do the match.</p>
+<p>Flushing is not always possible (like if a charset converter flushes
+at a partial multibyte sequence). Converters are supposed to try
+to produce as much output as possible and then return an error
+(typically <a class="link" href="gio-GIOError.html#G-IO-ERROR-PARTIAL-INPUT:CAPS"><code class="literal">G_IO_ERROR_PARTIAL_INPUT</code></a>).</p>
+<div class="refsect3">
+<a name="g-converter-convert.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>converter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GConverter.html" title="GConverter"><span class="type">GConverter</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>inbuf</p></td>
+<td class="parameter_description"><p>the buffer
+containing the data to convert. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=inbuf_size][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>inbuf_size</p></td>
+<td class="parameter_description"><p>the number of bytes in <em class="parameter"><code>inbuf</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>outbuf</p></td>
+<td class="parameter_description"><p>a buffer to write
+converted data in. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8][<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=outbuf_size]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>outbuf_size</p></td>
+<td class="parameter_description"><p>the number of bytes in <em class="parameter"><code>outbuf</code></em>
+, must be at least one</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GConverter.html#GConverterFlags" title="enum GConverterFlags"><span class="type">GConverterFlags</span></a> controlling the conversion details</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_read</p></td>
+<td class="parameter_description"><p>will be set to the number of bytes read from <em class="parameter"><code>inbuf</code></em>
+on success. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_written</p></td>
+<td class="parameter_description"><p>will be set to the number of bytes written to <em class="parameter"><code>outbuf</code></em>
+on success. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location to store the error occurring, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-converter-convert.returns"></a><h4>Returns</h4>
+<p> a <a class="link" href="GConverter.html#GConverterResult" title="enum GConverterResult"><span class="type">GConverterResult</span></a>, <a class="link" href="GConverter.html#G-CONVERTER-ERROR:CAPS"><code class="literal">G_CONVERTER_ERROR</code></a> on error.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-converter-reset"></a><h3>g_converter_reset ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_converter_reset (<em class="parameter"><code><a class="link" href="GConverter.html" title="GConverter"><span class="type">GConverter</span></a> *converter</code></em>);</pre>
+<p>Resets all internal state in the converter, making it behave
+as if it was just created. If the converter has any internal
+state that would produce output then that output is lost.</p>
+<div class="refsect3">
+<a name="g-converter-reset.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>converter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GConverter.html" title="GConverter"><span class="type">GConverter</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GConverter.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GConverter-struct"></a><h3>GConverter</h3>
+<pre class="programlisting">typedef struct _GConverter GConverter;</pre>
+<p>Seek object for streaming operations.</p>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GConverterIface"></a><h3>struct GConverterIface</h3>
+<pre class="programlisting">struct GConverterIface {
+  GTypeInterface g_iface;
+
+  /* Virtual Table */
+
+  GConverterResult (* convert) (GConverter *converter,
+				const void *inbuf,
+				gsize       inbuf_size,
+				void       *outbuf,
+				gsize       outbuf_size,
+				GConverterFlags flags,
+				gsize      *bytes_read,
+				gsize      *bytes_written,
+				GError    **error);
+  void  (* reset)   (GConverter *converter);
+};
+</pre>
+<p>Provides an interface for converting data from one type
+to another type. The conversion can be stateful
+and may fail at any place.</p>
+<div class="refsect3">
+<a name="GConverterIface.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GConverterIface.convert"></a>convert</code></em> ()</p></td>
+<td class="struct_member_description"><p>Converts data.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GConverterIface.reset"></a>reset</code></em> ()</p></td>
+<td class="struct_member_description"><p>Reverts the internal state of the converter to its initial state.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GConverterResult"></a><h3>enum GConverterResult</h3>
+<p>Results returned from <a class="link" href="GConverter.html#g-converter-convert" title="g_converter_convert ()"><code class="function">g_converter_convert()</code></a>.</p>
+<div class="refsect3">
+<a name="GConverterResult.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-CONVERTER-ERROR:CAPS"></a>G_CONVERTER_ERROR</p></td>
+<td class="enum_member_description">
+<p>There was an error during conversion.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-CONVERTER-CONVERTED:CAPS"></a>G_CONVERTER_CONVERTED</p></td>
+<td class="enum_member_description">
+<p>Some data was consumed or produced</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-CONVERTER-FINISHED:CAPS"></a>G_CONVERTER_FINISHED</p></td>
+<td class="enum_member_description">
+<p>The conversion is finished</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-CONVERTER-FLUSHED:CAPS"></a>G_CONVERTER_FLUSHED</p></td>
+<td class="enum_member_description">
+<p>Flushing is finished</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GConverterFlags"></a><h3>enum GConverterFlags</h3>
+<p>Flags used when calling a <a class="link" href="GConverter.html#g-converter-convert" title="g_converter_convert ()"><code class="function">g_converter_convert()</code></a>.</p>
+<div class="refsect3">
+<a name="GConverterFlags.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-CONVERTER-NO-FLAGS:CAPS"></a>G_CONVERTER_NO_FLAGS</p></td>
+<td class="enum_member_description">
+<p>No flags.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-CONVERTER-INPUT-AT-END:CAPS"></a>G_CONVERTER_INPUT_AT_END</p></td>
+<td class="enum_member_description">
+<p>At end of input data</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-CONVERTER-FLUSH:CAPS"></a>G_CONVERTER_FLUSH</p></td>
+<td class="enum_member_description">
+<p>Flush data</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GConverter.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a>, <a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

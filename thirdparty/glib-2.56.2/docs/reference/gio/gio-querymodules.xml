@@ -1,0 +1,45 @@
+<refentry id="gio-querymodules" lang="en">
+
+<refentryinfo>
+  <title>glib-compile-schemas</title>
+  <productname>GIO</productname>
+  <authorgroup>
+    <author>
+      <contrib>Developer</contrib>
+      <firstname>Alexander</firstname>
+      <surname>Larsson</surname>
+    </author>
+  </authorgroup>
+</refentryinfo>
+
+<refmeta>
+  <refentrytitle>gio-querymodules</refentrytitle>
+  <manvolnum>1</manvolnum>
+  <refmiscinfo class="manual">User Commands</refmiscinfo>
+</refmeta>
+
+<refnamediv>
+  <refname>gio-querymodules</refname>
+  <refpurpose>GIO module cache creation</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+  <cmdsynopsis>
+    <command>gio-querymodules</command>
+    <arg choice="req" rep="repeat">DIRECTORY</arg>
+  </cmdsynopsis>
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+<para><command>gio-querymodules</command> creates a
+<filename>giomodule.cache</filename> file in the listed directories.
+This file lists the implemented extension points for each module
+that has been found. It is used by GIO at runtime to avoid opening
+all modules just to find out which extension points they are implementing.
+</para>
+<para>
+GIO modules are usually installed in the <filename>gio/modules</filename>
+subdirectory of libdir.
+</para>
+</refsect1>
+</refentry>

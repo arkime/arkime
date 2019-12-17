@@ -1,0 +1,578 @@
+'\" t
+.\"     Title: gio
+.\"    Author: Matthias Clasen <mclasen@redhat.com>
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 08/17/2018
+.\"    Manual: User Commands
+.\"    Source: GIO
+.\"  Language: English
+.\"
+.TH "GIO" "1" "" "GIO" "User Commands"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+gio \- GIO commandline tool
+.SH "SYNOPSIS"
+.HP \w'\fBgio\fR\ 'u
+\fBgio\fR help [\fICOMMAND\fR]
+.HP \w'\fBgio\fR\ 'u
+\fBgio\fR version
+.HP \w'\fBgio\fR\ 'u
+\fBgio\fR cat \fILOCATION\fR...
+.HP \w'\fBgio\fR\ 'u
+\fBgio\fR copy [\fIOPTION\fR...] \fISOURCE\fR... \fIDESTINATION\fR
+.HP \w'\fBgio\fR\ 'u
+\fBgio\fR info [\fIOPTION\fR...] \fILOCATION\fR...
+.HP \w'\fBgio\fR\ 'u
+\fBgio\fR list [\fIOPTION\fR...] [\fILOCATION\fR...]
+.HP \w'\fBgio\fR\ 'u
+\fBgio\fR mime \fIMIMETYPE\fR [\fIHANDLER\fR]
+.HP \w'\fBgio\fR\ 'u
+\fBgio\fR mkdir [\fIOPTION\fR...] \fILOCATION\fR...
+.HP \w'\fBgio\fR\ 'u
+\fBgio\fR monitor [\fIOPTION\fR...] [\fILOCATION\fR...]
+.HP \w'\fBgio\fR\ 'u
+\fBgio\fR mount [\fIOPTION\fR...] [\fILOCATION\fR...]
+.HP \w'\fBgio\fR\ 'u
+\fBgio\fR move [\fIOPTION\fR...] \fISOURCE\fR... \fIDESTINATION\fR
+.HP \w'\fBgio\fR\ 'u
+\fBgio\fR open \fILOCATION\fR...
+.HP \w'\fBgio\fR\ 'u
+\fBgio\fR rename \fILOCATION\fR \fINAME\fR
+.HP \w'\fBgio\fR\ 'u
+\fBgio\fR remove [\fIOPTION\fR...] \fILOCATION\fR...
+.HP \w'\fBgio\fR\ 'u
+\fBgio\fR save [\fIOPTION\fR...] \fIDESTINATION\fR
+.HP \w'\fBgio\fR\ 'u
+\fBgio\fR set [\fIOPTION\fR...] \fILOCATION\fR \fIATTRIBUTE\fR \fIVALUE\fR...
+.HP \w'\fBgio\fR\ 'u
+\fBgio\fR trash [\fIOPTION\fR...] [\fILOCATION\fR...]
+.HP \w'\fBgio\fR\ 'u
+\fBgio\fR tree [\fIOPTION\fR...] [\fILOCATION\fR...]
+.SH "DESCRIPTION"
+.PP
+\fBgio\fR
+is a utility that makes many of the GIO features available from the commandline\&. In doing so, it provides commands that are similar to traditional utilities, but let you use GIO locations instead of local files: for example you can use something like
+smb://server/resource/file\&.txt
+as location\&.
+.SH "COMMANDS"
+.PP
+\fBhelp\fR [\fICOMMAND\fR]
+.RS 4
+Displays a short synopsis of the available commands or provides detailed help on a specific command\&.
+.RE
+.PP
+\fBversion\fR
+.RS 4
+Prints the GLib version to which
+\fBgio\fR
+belongs\&.
+.RE
+.PP
+\fBcat\fR \fILOCATION\fR...
+.RS 4
+Concatenates the given files and prints them to the standard output\&.
+.sp
+The cat command works just like the traditional cat utility\&.
+.sp
+Note: just pipe through cat if you need its formatting options like \-n, \-T or other\&.
+.RE
+.PP
+\fBcopy\fR [\fIOPTION\fR...] \fISOURCE\fR... \fIDESTINATION\fR
+.RS 4
+Copies one or more files from
+\fISOURCE\fR
+to
+\fIDESTINATION\fR\&. If more than one source is specified, the destination must be a directory\&.
+.sp
+The copy command is similar to the traditional cp utility\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBOptions\fR
+.RS 4
+.PP
+\fB\-T\fR, \fB\-\-no\-target\-directory\fR
+.RS 4
+Don\*(Aqt copy into
+\fIDESTINATION\fR
+even if it is a directory\&.
+.RE
+.PP
+\fB\-p\fR, \fB\-\-progress\fR
+.RS 4
+Show progress\&.
+.RE
+.PP
+\fB\-i\fR, \fB\-\-interactive\fR
+.RS 4
+Prompt for confirmation before overwriting files\&.
+.RE
+.PP
+\fB\-\-preserve\fR
+.RS 4
+Preserve all attributes of copied files\&.
+.RE
+.PP
+\fB\-b\fR, \fB\-\-backup\fR
+.RS 4
+Create backups of existing destination files\&.
+.RE
+.PP
+\fB\-P\fR, \fB\-\-no\-dereference\fR
+.RS 4
+Never follow symbolic links\&.
+.RE
+.RE
+.RE
+.PP
+\fBinfo\fR [\fIOPTION\fR...] \fILOCATION\fR...
+.RS 4
+Shows information about the given locations\&.
+.sp
+The info command is similar to the traditional ls utility\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBOptions\fR
+.RS 4
+.PP
+\fB\-w\fR, \fB\-\-query\-writable\fR
+.RS 4
+List writable attributes\&.
+.RE
+.PP
+\fB\-f\fR, \fB\-\-filesystem\fR
+.RS 4
+Show information about the filesystem that the given locations reside on\&.
+.RE
+.PP
+\fB\-a\fR \fB\-\-attributes=\fR\fB\fIATTRIBUTES\fR\fR
+.RS 4
+The attributes to get\&.
+.sp
+Attributes can be specified with their GIO name, e\&.g\&. standard::icon, or just by namespace, e\&.g\&. unix, or by \*(Aq*\*(Aq, which matches all attributes\&. Several attributes or groups of attributes can be specified, separated by comma\&.
+.sp
+By default, all attributes are listed\&.
+.RE
+.PP
+\fB\-n\fR, \fB\-\-nofollow\-symlinks\fR
+.RS 4
+Don\*(Aqt follow symbolic links\&.
+.RE
+.RE
+.RE
+.PP
+\fBlist\fR [\fIOPTION\fR...] [\fILOCATION\fR...]
+.RS 4
+Lists the contents of the given locations\&. If no location is given, the contents of the current directory are shown\&.
+.sp
+The list command is similar to the traditional ls utility\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBOptions\fR
+.RS 4
+.PP
+\fB\-a\fR \fB\-\-attributes=\fR\fB\fIATTRIBUTES\fR\fR
+.RS 4
+The attributes to get\&.
+.sp
+Attributes can be specified with their GIO name, e\&.g\&. standard::icon, or just by namespace, e\&.g\&. unix, or by \*(Aq*\*(Aq, which matches all attributes\&. Several attributes or groups of attributes can be specified, separated by comma\&.
+.sp
+By default, all attributes are listed\&.
+.RE
+.PP
+\fB\-h\fR, \fB\-\-hidden\fR
+.RS 4
+Show hidden files\&.
+.RE
+.PP
+\fB\-l\fR, \fB\-\-long\fR
+.RS 4
+Use a long listing format\&.
+.RE
+.PP
+\fB\-n\fR, \fB\-\-nofollow\-symlinks\fR
+.RS 4
+Don\*(Aqt follow symbolic links\&.
+.RE
+.PP
+\fB\-u\fR, \fB\-\-print\-uris\fR
+.RS 4
+Print full URIs\&.
+.RE
+.RE
+.RE
+.PP
+\fBmime\fR \fIMIMETYPE\fR [\fIHANDLER\fR]
+.RS 4
+If no handler is given, the mime command lists the registered and recommended applications for the mimetype\&. If a handler is given, it is set as the default handler for the mimetype\&.
+.sp
+Handlers must be specified by their desktop file name, including the extension\&. Example: org\&.gnome\&.gedit\&.desktop\&.
+.RE
+.PP
+\fBmkdir\fR [\fIOPTION\fR...] \fILOCATION\fR...
+.RS 4
+Creates directories\&.
+.sp
+The mkdir command is similar to the traditional mkdir utility\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBOptions\fR
+.RS 4
+.PP
+\fB\-p\fR, \fB\-\-parent\fR
+.RS 4
+Create parent directories when necessary\&.
+.RE
+.RE
+.RE
+.PP
+\fBmonitor\fR [\fIOPTION\fR...] [\fILOCATION\fR...]
+.RS 4
+Monitors files or directories for changes, such as creation deletion, content and attribute changes, and mount and unmount operations affecting the monitored locations\&.
+.sp
+The monitor command uses the GIO file monitoring APIs to do its job\&. GIO has different implementations for different platforms\&. The most common implementation on Linux uses inotify\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBOptions\fR
+.RS 4
+.PP
+\fB\-d\fR, \fB\-\-dir=\fR\fB\fILOCATION\fR\fR
+.RS 4
+Monitor the given location as a directory\&. Normally, the file type is used to determine whether to monitor a file or directory\&.
+.RE
+.PP
+\fB\-f\fR, \fB\-\-file=\fR\fB\fILOCATION\fR\fR
+.RS 4
+Monitor the given location as a file\&. Normally, the file type is used to determine whether to monitor a file or directory\&.
+.RE
+.PP
+\fB\-D\fR, \fB\-\-direct=\fR\fB\fILOCATION\fR\fR
+.RS 4
+Monitor the file directly\&. This allows to capture changes made via hardlinks\&.
+.RE
+.PP
+\fB\-s\fR, \fB\-\-silent=\fR\fB\fILOCATION\fR\fR
+.RS 4
+Monitor the file directly, but don\*(Aqt report changes\&.
+.RE
+.PP
+\fB\-n\fR, \fB\-\-no\-moves\fR
+.RS 4
+Report moves and renames as simple deleted/created events\&.
+.RE
+.PP
+\fB\-m\fR, \fB\-\-mounts\fR
+.RS 4
+Watch for mount events\&.
+.RE
+.RE
+.RE
+.PP
+\fBmount\fR [\fIOPTION\fR...] [\fILOCATION\fR...]
+.RS 4
+Provides commandline access to various aspects of GIOs mounting functionality\&.
+.sp
+Mounting refers to the traditional concept of arranging multiple file systems and devices in a single tree, rooted at /\&. Classical mounting happens in the kernel and is controlle by the mount utility\&. GIO expands this concept by introducing mount daemons that can make file systems available to GIO applications without kernel involvement\&.
+.sp
+GIO mounts can require authentication, and the mount command may ask for user IDs, passwords, and so on, when required\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBOptions\fR
+.RS 4
+.PP
+\fB\-m\fR, \fB\-\-mountable\fR
+.RS 4
+Mount as mountable\&.
+.RE
+.PP
+\fB\-d\fR, \fB\-\-device=\fR\fB\fIDEVICE\fR\fR
+.RS 4
+Mount volume with device file\&.
+.RE
+.PP
+\fB\-u\fR, \fB\-\-unmount\fR
+.RS 4
+Unmount the location\&.
+.RE
+.PP
+\fB\-e\fR, \fB\-\-eject\fR
+.RS 4
+Eject the location\&.
+.RE
+.PP
+\fB\-s\fR, \fB\-\-unmount\-scheme=\fR\fB\fISCHEME\fR\fR
+.RS 4
+Unmount all mounts with the given scheme\&.
+.RE
+.PP
+\fB\-f\fR, \fB\-\-force\fR
+.RS 4
+Ignore outstanding file operations when unmounting or ejecting\&.
+.RE
+.PP
+\fB\-a\fR, \fB\-\-anonymous\fR
+.RS 4
+Use an anonymous user when authenticating\&.
+.RE
+.PP
+\fB\-l\fR, \fB\-\-list\fR
+.RS 4
+List all GIO mounts\&.
+.RE
+.PP
+\fB\-o\fR, \fB\-\-monitor\fR
+.RS 4
+Monitor mount\-related events\&.
+.RE
+.PP
+\fB\-i\fR, \fB\-\-detail\fR
+.RS 4
+Show extra information\&.
+.RE
+.RE
+.RE
+.PP
+\fBmove\fR [\fIOPTION\fR...] \fISOURCE\fR... \fIDESTINATION\fR
+.RS 4
+Moves one or more files from
+\fISOURCE\fR
+to
+\fIDESTINATION\fR\&. If more than one source is specified, the destination must be a directory\&.
+.sp
+The move command is similar to the traditional mv utility\&.
+.RE
+.PP
+\fBopen\fR \fILOCATION\fR...
+.RS 4
+Opens files with the default application that is registered to handle files of this type\&.
+.sp
+GIO obtains this information from the shared\-mime\-info database, with per\-user overrides stored in
+\fB$XDG_DATA_HOME\fR/applications/mimeapps\&.list\&.
+.sp
+The mime command can be used to change the default handler for a mimetype\&.
+.RE
+.PP
+\fBrename\fR \fILOCATION\fR \fINAME\fR
+.RS 4
+Renames a file\&.
+.sp
+The rename command is similar to the traditional rename utility\&.
+.RE
+.PP
+\fBremove\fR [\fIOPTION\fR...] \fILOCATION\fR...
+.RS 4
+Deletes each given file\&.
+.sp
+This command removes files irreversibly\&. If you want a reversible way to remove files, see the trash command\&.
+.sp
+Note that not all URI schemes that are supported by GIO may allow deletion of files\&.
+.sp
+The remove command is similar to the traditional rm utility\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBOptions\fR
+.RS 4
+.PP
+\fB\-f\fR, \fB\-\-force\fR
+.RS 4
+Ignore non\-existent and non\-deletable files\&.
+.RE
+.RE
+.RE
+.PP
+\fBsave\fR [\fIOPTION\fR...] \fIDESTINATION\fR
+.RS 4
+Reads from standard input and saves the data to the given location\&.
+.sp
+This is similar to just redirecting output to a file using traditional shell syntax, but the save command allows saving to location that GIO can write to\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBOptions\fR
+.RS 4
+.PP
+\fB\-b\fR, \fB\-\-backup\fR
+.RS 4
+Backup existing destination files\&.
+.RE
+.PP
+\fB\-c\fR, \fB\-\-create\fR
+.RS 4
+Only create the destination if it doesn\*(Aqt exist yet\&.
+.RE
+.PP
+\fB\-a\fR, \fB\-\-append\fR
+.RS 4
+Append to the end of the file\&.
+.RE
+.PP
+\fB\-p\fR, \fB\-\-private\fR
+.RS 4
+When creating, restrict access to the current user\&.
+.RE
+.PP
+\fB\-u\fR, \fB\-\-unlink\fR
+.RS 4
+When replacing, replace as if the destination did not exist\&.
+.RE
+.PP
+\fB\-v\fR, \fB\-\-print\-etag\fR
+.RS 4
+Print the new etag in the end\&.
+.RE
+.PP
+\fB\-e\fR, \fB\-\-etag=\fR\fB\fIETAG\fR\fR
+.RS 4
+The etag of the file that is overwritten\&.
+.RE
+.RE
+.RE
+.PP
+\fBset\fR \fILOCATION\fR \fIATTRIBUTE\fR \fIVALUE\fR...
+.RS 4
+Allows to set a file attribute on a file\&.
+.sp
+File attributes can be specified with their GIO name, e\&.g standard::icon\&. Note that not all GIO file attributes are writable\&. Use the \-\-query\-writable option of the info command to list writable file attributes\&.
+.sp
+If the
+\fITYPE\fR
+is unset,
+\fIVALUE\fR
+does not have to be specified\&. If the type is stringv, multiple values can be given\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBOptions\fR
+.RS 4
+.PP
+\fB\-t\fR, \fB\-\-type=\fR\fB\fITYPE\fR\fR
+.RS 4
+Specifies the type of the attribute\&. Supported types are string, stringv, bytestring, boolean, uint32, int32, uint64, int64 and unset\&.
+.sp
+If the type is not specified, string is assumed\&.
+.RE
+.PP
+\fB\-n\fR, \fB\-\-nofollow\-symlinks\fR
+.RS 4
+Don\*(Aqt follow symbolic links\&.
+.RE
+.RE
+.RE
+.PP
+\fBtrash\fR [\fIOPTION\fR...] [\fILOCATION\fR...]
+.RS 4
+Sends files or directories to the "Trashcan"\&. This can be a different folder depending on where the file is located, and not all file systems support this concept\&. In the common case that the file lives inside a users home directory, the trash folder is
+\fB$XDG_DATA_HOME\fR/Trash\&.
+.sp
+Note that moving files to the trash does not free up space on the file system until the "Trashcan" is emptied\&. If you are interested in deleting a file irreversibly, see the remove command\&.
+.sp
+Inspecting and emptying the "Trashcan" is normally supported by graphical file managers such as nautilus, but you can also see the trash with the command: gio list trash://\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBOptions\fR
+.RS 4
+.PP
+\fB\-f\fR, \fB\-\-force\fR
+.RS 4
+Ignore non\-existent and non\-deletable files\&.
+.RE
+.PP
+\fB\-\-empty\fR
+.RS 4
+Empty the trash\&.
+.RE
+.RE
+.RE
+.PP
+\fBtree\fR [\fIOPTION\fR...] [\fILOCATION\fR...]
+.RS 4
+Lists the contents of the given locations recursively, in a tree\-like format\&. If no location is given, it defaults to the current directory\&.
+.sp
+The tree command is similar to the traditional tree utility\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBOptions\fR
+.RS 4
+.PP
+\fB\-h\fR, \fB\-\-hidden\fR
+.RS 4
+Show hidden files\&.
+.RE
+.PP
+\fB\-l\fR, \fB\-\-follow\-symlinks\fR
+.RS 4
+Follow symbolic links\&.
+.RE
+.RE
+.RE
+.SH "EXIT STATUS"
+.PP
+On success 0 is returned, a non\-zero failure code otherwise\&.
+.SH "SEE ALSO"
+.PP
+\fBcat\fR(1),
+\fBcp\fR(1),
+\fBls\fR(1),
+\fBmkdir\fR(1),
+\fBmv\fR(1),
+\fBrm\fR(1),
+\fBtree\fR(1)\&.

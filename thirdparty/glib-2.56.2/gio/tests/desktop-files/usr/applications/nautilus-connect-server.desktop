@@ -1,0 +1,22 @@
+[Desktop Entry]
+Name=Connect to Server
+Name[bn]=সার্ভারের সাথে সংযোগ স্থাপন করা হবে
+Name[bn_IN]=সার্ভারের সাথে সংযোগ স্থাপন করা হবে
+Name[ca]=Connecta't al servidor
+Name[ca@valencia]=Connecta't al servidor
+Name[en@shaw]=𐑒𐑩𐑯𐑧𐑒𐑑 𐑑 𐑕𐑻𐑝𐑼
+Name[en_CA]=Connect to Server
+Name[en_GB]=Connect to Server
+Name[eo]=Konekti al servilo
+Name[pt]=Ligar-se a Servidores
+Name[pt_BR]=Conectar ao servidor
+Exec=true
+Icon=applications-internet
+NoDisplay=true
+Terminal=false
+StartupNotify=true
+Type=Application
+X-GNOME-Bugzilla-Bugzilla=GNOME
+X-GNOME-Bugzilla-Product=nautilus
+X-GNOME-Bugzilla-Component=general
+X-GNOME-Bugzilla-Version=3.10.0

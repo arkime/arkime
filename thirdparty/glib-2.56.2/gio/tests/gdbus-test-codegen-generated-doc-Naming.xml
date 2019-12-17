@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+]>
+<refentry id="gdbus-Naming">
+  <refmeta>    <refentrytitle role="top_of_page" id="gdbus-interface-Naming.top_of_page">Naming</refentrytitle>
+  <indexterm zone="gdbus-interface-Naming.top_of_page"><primary sortas="Naming">Naming</primary></indexterm>
+  </refmeta>  <refnamediv>    <refname>Naming</refname>    <refpurpose></refpurpose>  </refnamediv>  <refsect1 role="properties">
+    <title role="properties.title">Properties</title>
+    <synopsis>
+<link linkend="gdbus-property-Naming.Type">Type</link>  readwrite  i
+</synopsis>
+  </refsect1>
+<refsect1 role="desc" id="gdbus-interface-Naming">
+  <title role="desc.title">Description</title>
+  <para></para>
+</refsect1>
+<refsect1 role="details" id="gdbus-properties-Naming">
+  <title role="details.title">Property Details</title>
+<refsect2 role="property" id="gdbus-property-Naming.Type">
+  <title>The "Type" property</title>
+  <indexterm zone="gdbus-property-Naming.Type"><primary sortas="Naming:Type">Naming:Type</primary></indexterm>
+<programlisting>
+Type  readwrite  i
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+</refentry>
+

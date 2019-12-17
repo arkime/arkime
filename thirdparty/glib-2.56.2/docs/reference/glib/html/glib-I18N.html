@@ -1,0 +1,815 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Internationalization: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-utilities.html" title="GLib Utilities">
+<link rel="prev" href="glib-Data-HMACs.html" title="Secure HMAC Digests">
+<link rel="next" href="glib-Date-and-Time-Functions.html" title="Date and Time Functions">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-I18N.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-utilities.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Data-HMACs.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-Date-and-Time-Functions.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-I18N"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-I18N.top_of_page"></a>Internationalization</span></h2>
+<p>Internationalization — gettext support macros</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-I18N.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-I18N.html#Q-:CAPS" title="Q_()">Q_</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-I18N.html#C-:CAPS" title="C_()">C_</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-I18N.html#N-:CAPS" title="N_()">N_</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-I18N.html#NC-:CAPS" title="NC_()">NC_</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-I18N.html#g-dgettext" title="g_dgettext ()">g_dgettext</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-I18N.html#g-dcgettext" title="g_dcgettext ()">g_dcgettext</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-I18N.html#g-dngettext" title="g_dngettext ()">g_dngettext</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-I18N.html#g-dpgettext" title="g_dpgettext ()">g_dpgettext</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-I18N.html#g-dpgettext2" title="g_dpgettext2 ()">g_dpgettext2</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-I18N.html#g-strip-context" title="g_strip_context ()">g_strip_context</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> * const *
+</td>
+<td class="function_name">
+<a class="link" href="glib-I18N.html#g-get-language-names" title="g_get_language_names ()">g_get_language_names</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> **
+</td>
+<td class="function_name">
+<a class="link" href="glib-I18N.html#g-get-locale-variants" title="g_get_locale_variants ()">g_get_locale_variants</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-I18N.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib.h&gt;
+#include &lt;glib/gi18n.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-I18N.description"></a><h2>Description</h2>
+<p>GLib doesn't force any particular localization method upon its users.
+But since GLib itself is localized using the <code class="function">gettext()</code> mechanism, it seems
+natural to offer the de-facto standard <code class="function">gettext()</code> support macros in an
+easy-to-use form.</p>
+<p>In order to use these macros in an application, you must include
+<code class="literal">&amp;lt;glib/gi18n.h&gt;</code>. For use in a library, you must include
+<code class="literal">&amp;lt;glib/gi18n-lib.h&gt;</code>
+after defining the <code class="literal">GETTEXT_PACKAGE</code> macro suitably for your library:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="preproc">#define</span><span class="normal"> GETTEXT_PACKAGE </span><span class="string">"gtk20"</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;glib/gi18n-lib.h&gt;</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+For an application, note that you also have to call <code class="function">bindtextdomain()</code>,
+<code class="function">bind_textdomain_codeset()</code>, <code class="function">textdomain()</code> and <a class="link" href="glib-running.html#setlocale" title="Locale"><code class="function">setlocale()</code></a> early on in your
+<code class="function">main()</code> to make <code class="function">gettext()</code> work. For example:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;glib/gi18n.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;locale.h&gt;</span>
+
+<span class="type">int</span>
+<span class="function">main</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> argc</span><span class="symbol">,</span><span class="normal"> </span><span class="type">char</span><span class="normal"> </span><span class="symbol">**</span><span class="normal">argv</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function">setlocale</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">LC_ALL</span><span class="symbol">,</span><span class="normal"> </span><span class="string">""</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function">bindtextdomain</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">GETTEXT_PACKAGE</span><span class="symbol">,</span><span class="normal"> DATADIR </span><span class="string">"/locale"</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function">bind_textdomain_codeset</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">GETTEXT_PACKAGE</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"UTF-8"</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function">textdomain</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">GETTEXT_PACKAGE</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">// Rest of your application.</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+where <code class="literal">DATADIR</code> is as typically provided by automake.</p>
+<p>For a library, you only have to call <code class="function">bindtextdomain()</code> and
+<code class="function">bind_textdomain_codeset()</code> in your initialization function. If your library
+doesn't have an initialization function, you can call the functions before
+the first translated message.</p>
+<p>The
+<a class="ulink" href="http://www.gnu.org/software/gettext/manual/gettext.html#Maintainers" target="_top">gettext manual</a>
+covers details of how to integrate gettext into a project’s build system and
+workflow.</p>
+</div>
+<div class="refsect1">
+<a name="glib-I18N.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="Q-:CAPS"></a><h3>Q_()</h3>
+<pre class="programlisting">#define             Q_(String)</pre>
+<p>Like <code class="function">_()</code>, but handles context in message ids. This has the advantage
+that the string can be adorned with a prefix to guarantee uniqueness
+and provide context to the translator.</p>
+<p>One use case given in the gettext manual is GUI translation, where one
+could e.g. disambiguate two "Open" menu entries as "File|Open" and
+"Printer|Open". Another use case is the string "Russian" which may
+have to be translated differently depending on whether it's the name
+of a character set or a language. This could be solved by using
+"charset|Russian" and "language|Russian".</p>
+<p>See the <a class="link" href="glib-I18N.html#C-:CAPS" title="C_()"><code class="function">C_()</code></a> macro for a different way to mark up translatable strings
+with context.</p>
+<p>If you are using the <a class="link" href="glib-I18N.html#Q-:CAPS" title="Q_()"><code class="function">Q_()</code></a> macro, you need to make sure that you pass
+<code class="literal">--keyword=Q_</code> to xgettext when extracting messages.
+If you are using GNU gettext &gt;= 0.15, you can also use
+<code class="literal">--keyword=Q_:1g</code> to let xgettext split the context
+string off into a msgctxt line in the po file.</p>
+<div class="refsect3">
+<a name="Q-.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>String</p></td>
+<td class="parameter_description"><p>the string to be translated, with a '|'-separated prefix
+which must not be translated</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="Q-.returns"></a><h4>Returns</h4>
+<p> the translated message</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="C-:CAPS"></a><h3>C_()</h3>
+<pre class="programlisting">#define             C_(Context,String)</pre>
+<p>Uses gettext to get the translation for <em class="parameter"><code>String</code></em>
+. <em class="parameter"><code>Context</code></em>
+ is
+used as a context. This is mainly useful for short strings which
+may need different translations, depending on the context in which
+they are used.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal">label1 </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-I18N.html#C-:CAPS">C_</a></span><span class="symbol">(</span><span class="string">"Navigation"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"Back"</span><span class="symbol">);</span>
+<span class="normal">label2 </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-I18N.html#C-:CAPS">C_</a></span><span class="symbol">(</span><span class="string">"Body part"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"Back"</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>If you are using the <a class="link" href="glib-I18N.html#C-:CAPS" title="C_()"><code class="function">C_()</code></a> macro, you need to make sure that you pass
+<code class="literal">--keyword=C_:1c,2</code> to xgettext when extracting messages.
+Note that this only works with GNU gettext &gt;= 0.15.</p>
+<div class="refsect3">
+<a name="C-.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>Context</p></td>
+<td class="parameter_description"><p>a message context, must be a string literal</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>String</p></td>
+<td class="parameter_description"><p>a message id, must be a string literal</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="C-.returns"></a><h4>Returns</h4>
+<p> the translated message</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-16.html#api-index-2.16">2.16</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="N-:CAPS"></a><h3>N_()</h3>
+<pre class="programlisting">#define             N_(String)</pre>
+<p>Only marks a string for translation. This is useful in situations
+where the translated strings can't be directly used, e.g. in string
+array initializers. To get the translated string, call <code class="function">gettext()</code>
+at runtime.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">const</span><span class="normal"> </span><span class="type">char</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">messages</span><span class="symbol">[]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="function"><a href="glib-I18N.html#N-:CAPS">N_</a></span><span class="symbol">(</span><span class="string">"some very meaningful message"</span><span class="symbol">),</span>
+<span class="normal">    </span><span class="function"><a href="glib-I18N.html#N-:CAPS">N_</a></span><span class="symbol">(</span><span class="string">"and another one"</span><span class="symbol">)</span>
+<span class="normal">  </span><span class="cbracket">}</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="keyword">const</span><span class="normal"> </span><span class="type">char</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">string</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="symbol">...</span>
+<span class="normal">  string</span>
+<span class="normal">    </span><span class="symbol">=</span><span class="normal"> index </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">1</span><span class="normal"> </span><span class="symbol">?</span><span class="normal"> </span><span class="function">_</span><span class="symbol">(</span><span class="string">"a default message"</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">:</span><span class="normal"> </span><span class="function">gettext</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">messages</span><span class="symbol">[</span><span class="normal">index</span><span class="symbol">]);</span>
+
+<span class="normal">  </span><span class="function">fputs</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">string</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="symbol">...</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="N-.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>String</p></td>
+<td class="parameter_description"><p>the string to be translated</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NC-:CAPS"></a><h3>NC_()</h3>
+<pre class="programlisting">#define             NC_(Context, String)</pre>
+<p>Only marks a string for translation, with context.
+This is useful in situations where the translated strings can't
+be directly used, e.g. in string array initializers. To get the
+translated string, you should call <a class="link" href="glib-I18N.html#g-dpgettext2" title="g_dpgettext2 ()"><code class="function">g_dpgettext2()</code></a> at runtime.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">static</span><span class="normal"> </span><span class="keyword">const</span><span class="normal"> </span><span class="type">char</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">messages</span><span class="symbol">[]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="function"><a href="glib-I18N.html#NC-:CAPS">NC_</a></span><span class="symbol">(</span><span class="string">"some context"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"some very meaningful message"</span><span class="symbol">),</span>
+<span class="normal">    </span><span class="function"><a href="glib-I18N.html#NC-:CAPS">NC_</a></span><span class="symbol">(</span><span class="string">"some context"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"and another one"</span><span class="symbol">)</span>
+<span class="normal">  </span><span class="cbracket">}</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="keyword">const</span><span class="normal"> </span><span class="type">char</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">string</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="symbol">...</span>
+<span class="normal">  string</span>
+<span class="normal">    </span><span class="symbol">=</span><span class="normal"> index </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">1</span><span class="normal"> </span><span class="symbol">?</span><span class="normal"> </span><span class="function"><a href="glib-I18N.html#g-dpgettext2">g_dpgettext2</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> </span><span class="string">"some context"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"a default message"</span><span class="symbol">)</span>
+<span class="normal">                </span><span class="symbol">:</span><span class="normal"> </span><span class="function"><a href="glib-I18N.html#g-dpgettext2">g_dpgettext2</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> </span><span class="string">"some context"</span><span class="symbol">,</span><span class="normal"> messages</span><span class="symbol">[</span><span class="normal">index</span><span class="symbol">]);</span>
+
+<span class="normal">  </span><span class="function">fputs</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">string</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="symbol">...</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>If you are using the <a class="link" href="glib-I18N.html#NC-:CAPS" title="NC_()"><code class="function">NC_()</code></a> macro, you need to make sure that you pass
+<code class="literal">--keyword=NC_:1c,2</code> to xgettext when extracting messages.
+Note that this only works with GNU gettext &gt;= 0.15. Intltool has support
+for the <a class="link" href="glib-I18N.html#NC-:CAPS" title="NC_()"><code class="function">NC_()</code></a> macro since version 0.40.1.</p>
+<div class="refsect3">
+<a name="NC-.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>Context</p></td>
+<td class="parameter_description"><p>a message context, must be a string literal</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>String</p></td>
+<td class="parameter_description"><p>a message id, must be a string literal</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-18.html#api-index-2.18">2.18</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dgettext"></a><h3>g_dgettext ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_dgettext (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *domain</code></em>,
+            <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *msgid</code></em>);</pre>
+<p>This function is a wrapper of <code class="function">dgettext()</code> which does not translate
+the message if the default domain as set with <code class="function">textdomain()</code> has no
+translations for the current locale.</p>
+<p>The advantage of using this function over <code class="function">dgettext()</code> proper is that
+libraries using this function (like GTK+) will not use translations
+if the application using the library does not have translations for
+the current locale.  This results in a consistent English-only
+interface instead of one having partial translations.  For this
+feature to work, the call to <code class="function">textdomain()</code> and <a class="link" href="glib-running.html#setlocale" title="Locale"><code class="function">setlocale()</code></a> should
+precede any <a class="link" href="glib-I18N.html#g-dgettext" title="g_dgettext ()"><code class="function">g_dgettext()</code></a> invocations.  For GTK+, it means calling
+<code class="function">textdomain()</code> before gtk_init or its variants.</p>
+<p>This function disables translations if and only if upon its first
+call all the following conditions hold:</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p><em class="parameter"><code>domain</code></em>
+ is not <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a></p></li>
+<li class="listitem"><p>textdomain() has been called to set a default text domain</p></li>
+<li class="listitem"><p>there is no translations available for the default text domain
+and the current locale</p></li>
+<li class="listitem"><p>current locale is not "C" or any English locales (those
+starting with "en_")</p></li>
+</ul></div>
+<p>Note that this behavior may not be desired for example if an application
+has its untranslated messages in a language other than English. In those
+cases the application should call <code class="function">textdomain()</code> after initializing GTK+.</p>
+<p>Applications should normally not use this function directly,
+but use the <code class="function">_()</code> macro for translations.</p>
+<div class="refsect3">
+<a name="g-dgettext.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>domain</p></td>
+<td class="parameter_description"><p>the translation domain to use, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> to use
+the domain set with <code class="function">textdomain()</code>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>msgid</p></td>
+<td class="parameter_description"><p>message to translate</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dgettext.returns"></a><h4>Returns</h4>
+<p> The translated string</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-18.html#api-index-2.18">2.18</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dcgettext"></a><h3>g_dcgettext ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_dcgettext (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *domain</code></em>,
+             <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *msgid</code></em>,
+             <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> category</code></em>);</pre>
+<p>This is a variant of <a class="link" href="glib-I18N.html#g-dgettext" title="g_dgettext ()"><code class="function">g_dgettext()</code></a> that allows specifying a locale
+category instead of always using <code class="literal">LC_MESSAGES</code>. See <a class="link" href="glib-I18N.html#g-dgettext" title="g_dgettext ()"><code class="function">g_dgettext()</code></a> for
+more information about how this functions differs from calling
+<code class="function">dcgettext()</code> directly.</p>
+<div class="refsect3">
+<a name="g-dcgettext.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>domain</p></td>
+<td class="parameter_description"><p>the translation domain to use, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> to use
+the domain set with <code class="function">textdomain()</code>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>msgid</p></td>
+<td class="parameter_description"><p>message to translate</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>category</p></td>
+<td class="parameter_description"><p>a locale category</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dcgettext.returns"></a><h4>Returns</h4>
+<p> the translated string for the given locale category</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dngettext"></a><h3>g_dngettext ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_dngettext (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *domain</code></em>,
+             <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *msgid</code></em>,
+             <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *msgid_plural</code></em>,
+             <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gulong" title="gulong"><span class="type">gulong</span></a> n</code></em>);</pre>
+<p>This function is a wrapper of <code class="function">dngettext()</code> which does not translate
+the message if the default domain as set with <code class="function">textdomain()</code> has no
+translations for the current locale.</p>
+<p>See <a class="link" href="glib-I18N.html#g-dgettext" title="g_dgettext ()"><code class="function">g_dgettext()</code></a> for details of how this differs from <code class="function">dngettext()</code>
+proper.</p>
+<div class="refsect3">
+<a name="g-dngettext.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>domain</p></td>
+<td class="parameter_description"><p>the translation domain to use, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> to use
+the domain set with <code class="function">textdomain()</code>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>msgid</p></td>
+<td class="parameter_description"><p>message to translate</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>msgid_plural</p></td>
+<td class="parameter_description"><p>plural form of the message</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n</p></td>
+<td class="parameter_description"><p>the quantity for which translation is needed</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dngettext.returns"></a><h4>Returns</h4>
+<p> The translated string</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-18.html#api-index-2.18">2.18</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dpgettext"></a><h3>g_dpgettext ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_dpgettext (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *domain</code></em>,
+             <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *msgctxtid</code></em>,
+             <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> msgidoffset</code></em>);</pre>
+<p>This function is a variant of <a class="link" href="glib-I18N.html#g-dgettext" title="g_dgettext ()"><code class="function">g_dgettext()</code></a> which supports
+a disambiguating message context. GNU gettext uses the
+'\004' character to separate the message context and
+message id in <em class="parameter"><code>msgctxtid</code></em>
+.
+If 0 is passed as <em class="parameter"><code>msgidoffset</code></em>
+, this function will fall back to
+trying to use the deprecated convention of using "|" as a separation
+character.</p>
+<p>This uses <a class="link" href="glib-I18N.html#g-dgettext" title="g_dgettext ()"><code class="function">g_dgettext()</code></a> internally. See that functions for differences
+with <code class="function">dgettext()</code> proper.</p>
+<p>Applications should normally not use this function directly,
+but use the <a class="link" href="glib-I18N.html#C-:CAPS" title="C_()"><code class="function">C_()</code></a> macro for translations with context.</p>
+<div class="refsect3">
+<a name="g-dpgettext.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>domain</p></td>
+<td class="parameter_description"><p>the translation domain to use, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> to use
+the domain set with <code class="function">textdomain()</code>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>msgctxtid</p></td>
+<td class="parameter_description"><p>a combined message context and message id, separated
+by a \004 character</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>msgidoffset</p></td>
+<td class="parameter_description"><p>the offset of the message id in <em class="parameter"><code>msgctxid</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dpgettext.returns"></a><h4>Returns</h4>
+<p> The translated string</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-16.html#api-index-2.16">2.16</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dpgettext2"></a><h3>g_dpgettext2 ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_dpgettext2 (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *domain</code></em>,
+              <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *context</code></em>,
+              <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *msgid</code></em>);</pre>
+<p>This function is a variant of <a class="link" href="glib-I18N.html#g-dgettext" title="g_dgettext ()"><code class="function">g_dgettext()</code></a> which supports
+a disambiguating message context. GNU gettext uses the
+'\004' character to separate the message context and
+message id in <em class="parameter"><code>msgctxtid</code></em>
+.</p>
+<p>This uses <a class="link" href="glib-I18N.html#g-dgettext" title="g_dgettext ()"><code class="function">g_dgettext()</code></a> internally. See that functions for differences
+with <code class="function">dgettext()</code> proper.</p>
+<p>This function differs from <a class="link" href="glib-I18N.html#C-:CAPS" title="C_()"><code class="function">C_()</code></a> in that it is not a macro and
+thus you may use non-string-literals as context and msgid arguments.</p>
+<div class="refsect3">
+<a name="g-dpgettext2.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>domain</p></td>
+<td class="parameter_description"><p>the translation domain to use, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> to use
+the domain set with <code class="function">textdomain()</code>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>context</p></td>
+<td class="parameter_description"><p>the message context</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>msgid</p></td>
+<td class="parameter_description"><p>the message</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dpgettext2.returns"></a><h4>Returns</h4>
+<p> The translated string</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-18.html#api-index-2.18">2.18</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-strip-context"></a><h3>g_strip_context ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_strip_context (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *msgid</code></em>,
+                 <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *msgval</code></em>);</pre>
+<p>An auxiliary function for <code class="function">gettext()</code> support (see <a class="link" href="glib-I18N.html#Q-:CAPS" title="Q_()"><code class="function">Q_()</code></a>).</p>
+<div class="refsect3">
+<a name="g-strip-context.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>msgid</p></td>
+<td class="parameter_description"><p>a string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>msgval</p></td>
+<td class="parameter_description"><p>another string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-strip-context.returns"></a><h4>Returns</h4>
+<p> <em class="parameter"><code>msgval</code></em>
+, unless <em class="parameter"><code>msgval</code></em>
+is identical to <em class="parameter"><code>msgid</code></em>
+and contains a '|' character, in which case a pointer to
+the substring of msgid after the first '|' character is returned.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-get-language-names"></a><h3>g_get_language_names ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> * const *
+g_get_language_names (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Computes a list of applicable locale names, which can be used to
+e.g. construct locale-dependent filenames or search paths. The returned
+list is sorted from most desirable to least desirable and always contains
+the default locale "C".</p>
+<p>For example, if LANGUAGE=de:en_US, then the returned list is
+"de", "en_US", "en", "C".</p>
+<p>This function consults the environment variables <code class="literal">LANGUAGE</code>, <code class="literal">LC_ALL</code>,
+<code class="literal">LC_MESSAGES</code> and <code class="literal">LANG</code> to find the list of locales specified by the
+user.</p>
+<div class="refsect3">
+<a name="g-get-language-names.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>-terminated array of strings owned by GLib
+that must not be modified or freed. </p>
+<p><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-6.html#api-index-2.6">2.6</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-get-locale-variants"></a><h3>g_get_locale_variants ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> **
+g_get_locale_variants (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *locale</code></em>);</pre>
+<p>Returns a list of derived variants of <em class="parameter"><code>locale</code></em>
+, which can be used to
+e.g. construct locale-dependent filenames or search paths. The returned
+list is sorted from most desirable to least desirable.
+This function handles territory, charset and extra locale modifiers.</p>
+<p>For example, if <em class="parameter"><code>locale</code></em>
+ is "fr_BE", then the returned list
+is "fr_BE", "fr".</p>
+<p>If you need the list of variants for the current locale,
+use <a class="link" href="glib-I18N.html#g-get-language-names" title="g_get_language_names ()"><code class="function">g_get_language_names()</code></a>.</p>
+<div class="refsect3">
+<a name="g-get-locale-variants.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>locale</p></td>
+<td class="parameter_description"><p>a locale identifier</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-get-locale-variants.returns"></a><h4>Returns</h4>
+<p>a newly
+allocated array of newly allocated strings with the locale variants. Free with
+<a class="link" href="glib-String-Utility-Functions.html#g-strfreev" title="g_strfreev ()"><code class="function">g_strfreev()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-I18N.other_details"></a><h2>Types and Values</h2>
+</div>
+<div class="refsect1">
+<a name="glib-I18N.see-also"></a><h2>See Also</h2>
+<p>the gettext manual</p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

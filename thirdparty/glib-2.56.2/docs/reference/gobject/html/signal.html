@@ -1,0 +1,372 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Signals: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="chapter-signal.html" title="The GObject messaging system">
+<link rel="prev" href="chapter-signal.html" title="The GObject messaging system">
+<link rel="next" href="rn01.html" title="API Reference">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="chapter-signal.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="chapter-signal.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="rn01.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="signal"></a>Signals</h2></div></div></div>
+<p>
+      GObject's signals have nothing to do with standard UNIX signals: they connect 
+      arbitrary application-specific events with any number of listeners.
+      For example, in GTK+, every user event (keystroke or mouse move) is received
+      from the windowing system and generates a GTK+ event in the form of a signal emission
+      on the widget object instance.
+    </p>
+<p>
+      Each signal is registered in the type system together with the type on which
+      it can be emitted: users of the type are said to <span class="emphasis"><em>connect</em></span>
+      to the signal on a given type instance when they register a closure to be 
+      invoked upon the signal emission. Users can also emit the signal by themselves 
+      or stop the emission of the signal from within one of the closures connected 
+      to the signal.
+    </p>
+<p>
+      When a signal is emitted on a given type instance, all the closures
+      connected to this signal on this type instance will be invoked. All the closures
+      connected to such a signal represent callbacks whose signature looks like:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">return_type</span><span class="normal"> </span><span class="function">function_callback</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">gpointer</span><span class="normal"> instance</span><span class="symbol">,</span><span class="normal"> …</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">gpointer</span><span class="normal"> user_data</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+    </p>
+<div class="sect2">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="signal-registration"></a>Signal registration</h3></div></div></div>
+<p>
+		To register a new signal on an existing type, we can use any of <code class="function"><a class="link" href="gobject-Signals.html#g-signal-newv" title="g_signal_newv ()">g_signal_newv</a></code>,
+		<code class="function"><a class="link" href="gobject-Signals.html#g-signal-new-valist" title="g_signal_new_valist ()">g_signal_new_valist</a></code> or <code class="function"><a class="link" href="gobject-Signals.html#g-signal-new" title="g_signal_new ()">g_signal_new</a></code> functions:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">guint</span><span class="normal"> </span><span class="function"><a href="gobject-Signals.html#g-signal-newv">g_signal_newv</a></span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">        </span><span class="symbol">*</span><span class="normal">signal_name</span><span class="symbol">,</span>
+<span class="normal">                     </span><span class="usertype">GType</span><span class="normal">               itype</span><span class="symbol">,</span>
+<span class="normal">                     </span><span class="usertype">GSignalFlags</span><span class="normal">        signal_flags</span><span class="symbol">,</span>
+<span class="normal">                     </span><span class="usertype">GClosure</span><span class="normal">           </span><span class="symbol">*</span><span class="normal">class_closure</span><span class="symbol">,</span>
+<span class="normal">                     </span><span class="usertype">GSignalAccumulator</span><span class="normal">  accumulator</span><span class="symbol">,</span>
+<span class="normal">                     </span><span class="usertype">gpointer</span><span class="normal">            accu_data</span><span class="symbol">,</span>
+<span class="normal">                     </span><span class="usertype">GSignalCMarshaller</span><span class="normal">  c_marshaller</span><span class="symbol">,</span>
+<span class="normal">                     </span><span class="usertype">GType</span><span class="normal">               return_type</span><span class="symbol">,</span>
+<span class="normal">                     </span><span class="usertype">guint</span><span class="normal">               n_params</span><span class="symbol">,</span>
+<span class="normal">                     </span><span class="usertype">GType</span><span class="normal">              </span><span class="symbol">*</span><span class="normal">param_types</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+		The number of parameters to these functions is a bit intimidating but they are relatively
+		simple:
+		</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>
+			  <em class="parameter"><code>signal_name</code></em>: is a string which can be used to uniquely identify a given signal.
+			</p></li>
+<li class="listitem"><p>
+			  <em class="parameter"><code>itype</code></em>: is the instance type on which this signal can be emitted.
+			</p></li>
+<li class="listitem"><p>
+			  <em class="parameter"><code>signal_flags</code></em>: partly defines the order in which closures which were connected to the
+			  signal are invoked.
+			</p></li>
+<li class="listitem"><p>
+			  <em class="parameter"><code>class_closure</code></em>: this is the default closure for the signal: if it is not NULL upon
+			  the signal emission, it will be invoked upon this emission of the signal. The 
+			  moment where this closure is invoked compared to other closures connected to that 
+			  signal depends partly on the signal_flags.
+			</p></li>
+<li class="listitem"><p>
+			  <em class="parameter"><code>accumulator</code></em>: this is a function pointer which is invoked after each closure
+			  has been invoked. If it returns FALSE, signal emission is stopped. If it returns
+			  TRUE, signal emission proceeds normally. It is also used to compute the return
+			  value of the signal based on the return value of all the invoked closures.
+			  For example, an accumulator could ignore
+			  <code class="literal">NULL</code> returns from closures; or it
+			  could build a list of the values returned by the
+			  closures.
+			</p></li>
+<li class="listitem"><p>
+			  <em class="parameter"><code>accu_data</code></em>: this pointer will be passed down to each invocation of the
+			  accumulator during emission.
+			</p></li>
+<li class="listitem"><p>
+			  <em class="parameter"><code>c_marshaller</code></em>: this is the default C marshaller for any closure which is connected to
+			this signal.
+			</p></li>
+<li class="listitem"><p>
+			  <em class="parameter"><code>return_type</code></em>: this is the type of the return value of the signal.
+			</p></li>
+<li class="listitem"><p>
+			  <em class="parameter"><code>n_params</code></em>: this is the number of parameters this signal takes.
+			</p></li>
+<li class="listitem"><p>
+			  <em class="parameter"><code>param_types</code></em>: this is an array of GTypes which indicate the type of each parameter
+			  of the signal. The length of this array is indicated by n_params.
+			</p></li>
+</ul></div>
+<p>
+      </p>
+<p>
+		As you can see from the above definition, a signal is basically a description
+		of the closures which can be connected to this signal and a description of the
+		order in which the closures connected to this signal will be invoked.
+	  </p>
+</div>
+<div class="sect2">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="signal-connection"></a>Signal connection</h3></div></div></div>
+<p>
+		If you want to connect to a signal with a closure, you have three possibilities:
+		</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>
+		  You can register a class closure at signal registration: this is a
+		  system-wide operation. i.e.: the class closure will be invoked during each emission
+		  of a given signal on <span class="emphasis"><em>any</em></span> of the instances of the type which supports that signal.
+			</p></li>
+<li class="listitem"><p>
+		  You can use <code class="function"><a class="link" href="gobject-Signals.html#g-signal-override-class-closure" title="g_signal_override_class_closure ()">g_signal_override_class_closure</a></code> which
+		  overrides the class closure of a given type. It is possible to call this function
+		  only on a derived type of the type on which the signal was registered.
+		  This function is of use only to language bindings.
+			</p></li>
+<li class="listitem"><p>
+		  You can register a closure with the <code class="function"><a class="link" href="gobject-Signals.html#g-signal-connect" title="g_signal_connect()">g_signal_connect</a></code>
+		  family of functions. This is an instance-specific operation: the closure
+		  will be invoked only during emission of a given signal on a given instance.
+			</p></li>
+</ul></div>
+<p>
+		It is also possible to connect a different kind of callback on a given signal: 
+		emission hooks are invoked whenever a given signal is emitted whatever the instance on 
+		which it is emitted. Emission hooks are used for example to get all mouse_clicked
+		emissions in an application to be able to emit the small mouse click sound.
+		Emission hooks are connected with <code class="function"><a class="link" href="gobject-Signals.html#g-signal-add-emission-hook" title="g_signal_add_emission_hook ()">g_signal_add_emission_hook</a></code>
+		and removed with <code class="function"><a class="link" href="gobject-Signals.html#g-signal-remove-emission-hook" title="g_signal_remove_emission_hook ()">g_signal_remove_emission_hook</a></code>.
+	  </p>
+</div>
+<div class="sect2">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="signal-emission"></a>Signal emission</h3></div></div></div>
+<p>
+		Signal emission is done through the use of the <code class="function"><a class="link" href="gobject-Signals.html#g-signal-emit" title="g_signal_emit ()">g_signal_emit</a></code> family 
+		of functions.
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="type">void</span><span class="normal"> </span><span class="function"><a href="gobject-Signals.html#g-signal-emitv">g_signal_emitv</a></span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">GValue</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">instance_and_params</span><span class="symbol">,</span>
+<span class="normal">                     </span><span class="usertype">guint</span><span class="normal">         signal_id</span><span class="symbol">,</span>
+<span class="normal">                     </span><span class="usertype">GQuark</span><span class="normal">        detail</span><span class="symbol">,</span>
+<span class="normal">                     </span><span class="usertype">GValue</span><span class="normal">       </span><span class="symbol">*</span><span class="normal">return_value</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+		</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>
+			The <em class="parameter"><code>instance_and_params</code></em> array of GValues contains the list of input
+			parameters to the signal. The first element of the array is the 
+			instance pointer on which to invoke the signal. The following elements of
+			the array contain the list of parameters to the signal.
+			</p></li>
+<li class="listitem"><p>
+			<em class="parameter"><code>signal_id</code></em> identifies the signal to invoke.
+			</p></li>
+<li class="listitem"><p>
+			<em class="parameter"><code>detail</code></em> identifies the specific detail of the signal to invoke. A detail is a kind of 
+			magic token/argument which is passed around during signal emission and which is used
+			by closures connected to the signal to filter out unwanted signal emissions. In most 
+			cases, you can safely set this value to zero. See <a class="xref" href="signal.html#signal-detail" title="The detail argument">the section called “The <span class="emphasis"><em>detail</em></span> argument”</a> for
+			more details about this parameter.
+			</p></li>
+<li class="listitem"><p>
+			<em class="parameter"><code>return_value</code></em> holds the return value of the last closure invoked during emission if
+			no accumulator was specified. If an accumulator was specified during signal creation,
+			this accumulator is used to calculate the return value as a function of the return
+			values of all the closures invoked during emission. 
+			If no closure is invoked during
+			emission, the <em class="parameter"><code>return_value</code></em> is nonetheless initialized to zero/null.
+			</p></li>
+</ul></div>
+<p>
+		</p>
+<p>
+		Signal emission can be decomposed in 5 steps:
+		</p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem"><p>
+			<code class="literal">RUN_FIRST</code>: if the
+			<a class="link" href="gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS"><code class="literal">G_SIGNAL_RUN_FIRST</code></a> flag was used
+			during signal registration and if there exists a class closure for this signal,
+			the class closure is invoked.
+			</p></li>
+<li class="listitem"><p>
+			<code class="literal">EMISSION_HOOK</code>: if any emission hook was added to
+			the signal, they are invoked from first to last added. Accumulate return values.
+			</p></li>
+<li class="listitem"><p>
+			<code class="literal">HANDLER_RUN_FIRST</code>: if any closure were connected
+			with the <code class="function"><a class="link" href="gobject-Signals.html#g-signal-connect" title="g_signal_connect()">g_signal_connect</a></code> family of 
+			functions, and if they are not blocked (with the <code class="function"><a class="link" href="gobject-Signals.html#g-signal-handler-block" title="g_signal_handler_block ()">g_signal_handler_block</a></code>
+			family of functions) they are run here, from first to last connected.
+			</p></li>
+<li class="listitem"><p>
+			<code class="literal">RUN_LAST</code>: if the <code class="literal">G_SIGNAL_RUN_LAST</code>
+			flag was set during registration and if a class closure
+			was set, it is invoked here.
+			</p></li>
+<li class="listitem"><p>
+			<code class="literal">HANDLER_RUN_LAST</code>: if any closure were connected
+			with the <code class="function">g_signal_connect_after</code> family of 
+			functions, if they were not invoked during <code class="literal">HANDLER_RUN_FIRST</code> and if they 
+			are not blocked, they are run here, from first to last connected.
+			</p></li>
+<li class="listitem"><p>
+			<code class="literal">RUN_CLEANUP</code>: if the <code class="literal">G_SIGNAL_RUN_CLEANUP</code> flag
+			was set during registration and if a class closure was set,
+			it is invoked here. Signal emission is completed here.
+			</p></li>
+</ol></div>
+<p>
+	  </p>
+<p>
+		If, at any point during emission (except in <code class="literal">RUN_CLEANUP</code> or
+		<code class="literal">EMISSION_HOOK</code> state), one of the closures stops the signal emission with
+		<code class="function"><a class="link" href="gobject-Signals.html#g-signal-stop-emission" title="g_signal_stop_emission ()">g_signal_stop_emission</a></code>,
+		emission jumps to <code class="literal">RUN_CLEANUP</code> state.
+	  </p>
+<p>
+		If, at any point during emission, one of the closures or emission hook 
+		emits the same signal on the same instance, emission is restarted from
+		the <code class="literal">RUN_FIRST</code> state.
+	  </p>
+<p>
+		The accumulator function is invoked in all states, after invocation
+		of each closure (except in <code class="literal">RUN_EMISSION_HOOK</code> and
+		<code class="literal">RUN_CLEANUP</code>). It accumulates
+		the closure return value into the signal return value and returns TRUE or
+		FALSE. If, at any point, it does not return TRUE, emission jumps
+		to <code class="literal">RUN_CLEANUP</code> state.
+	  </p>
+<p>
+		If no accumulator function was provided, the value returned by the last handler
+		run will be returned by <code class="function"><a class="link" href="gobject-Signals.html#g-signal-emit" title="g_signal_emit ()">g_signal_emit</a></code>.
+	  </p>
+</div>
+<div class="sect2">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="signal-detail"></a>The <span class="emphasis"><em>detail</em></span> argument</h3></div></div></div>
+<p>All the functions related to signal emission or signal connection have a parameter
+		named the <span class="emphasis"><em>detail</em></span>. Sometimes, this parameter is hidden by the API
+		but it is always there, in one form or another. 
+	  </p>
+<p>
+	    Of the three main connection functions,
+		only one has an explicit detail parameter as a <a href="../glib-Quarks.html#GQuark"><span class="type">GQuark</span></a>:
+		<a class="link" href="gobject-Signals.html#g-signal-connect-closure-by-id" title="g_signal_connect_closure_by_id ()"><code class="function">g_signal_connect_closure_by_id</code></a>.
+		<a href="#ftn.id-1.3.5.3.8.3.3" class="footnote" name="id-1.3.5.3.8.3.3"><sup class="footnote">[6]</sup></a>
+	  </p>
+<p>
+	    The two other functions,
+	    <a class="link" href="gobject-Signals.html#g-signal-connect-closure" title="g_signal_connect_closure ()"><code class="function">g_signal_connect_closure</code></a> and
+	    <a class="link" href="gobject-Signals.html#g-signal-connect-data" title="g_signal_connect_data ()"><code class="function">g_signal_connect_data</code></a>
+	    hide the detail parameter in the signal name identification.
+		Their <em class="parameter"><code>detailed_signal</code></em> parameter is a
+		string which identifies the name of the signal to connect to.
+		The format of this string should match
+		<span class="emphasis"><em>signal_name::detail_name</em></span>. For example,
+		connecting to the signal named
+		<span class="emphasis"><em>notify::cursor_position</em></span> will actually
+		connect to the signal named <span class="emphasis"><em>notify</em></span> with the
+		<span class="emphasis"><em>cursor_position</em></span> detail.
+		Internally, the detail string is transformed to a GQuark if it is present.
+	  </p>
+<p>
+	    Of the four main signal emission functions, one hides it in its
+	    signal name parameter:
+	    <a class="link" href="gobject-Signals.html#g-signal-connect" title="g_signal_connect()"><code class="function">g_signal_connect</code></a>.
+	    The other three have an explicit detail parameter as a
+	    <a href="../glib-Quarks.html#GQuark"><span class="type">GQuark</span></a> again:
+	    <a class="link" href="gobject-Signals.html#g-signal-emit" title="g_signal_emit ()"><code class="function">g_signal_emit</code></a>,
+	    <a class="link" href="gobject-Signals.html#g-signal-emitv" title="g_signal_emitv ()"><code class="function">g_signal_emitv</code></a> and
+	    <a class="link" href="gobject-Signals.html#g-signal-emit-valist" title="g_signal_emit_valist ()"><code class="function">g_signal_emit_valist</code></a>.
+	  </p>
+<p>
+        If a detail is provided by the user to the emission function, it is used during emission to match
+        against the closures which also provide a detail.
+        If a closure's detail does not match the detail provided by the user, it
+        will not be invoked (even though it is connected to a signal which is
+        being emitted).
+	  </p>
+<p>
+		This completely optional filtering mechanism is mainly used as an optimization for signals
+		which are often emitted for many different reasons: the clients can filter out which events they are
+		interested in before the closure's marshalling code runs. For example, this is used extensively
+		by the <a class="link" href="gobject-The-Base-Object-Type.html#GObject-notify" title="The “notify” signal"><em class="structfield"><code>notify</code></em></a> signal of GObject: whenever a property is modified on a GObject,
+		instead of just emitting the <span class="emphasis"><em>notify</em></span> signal, GObject associates as a detail to this
+		signal emission the name of the property modified. This allows clients who wish to be notified of changes
+		to only one property to filter most events before receiving them.
+	  </p>
+<p>
+		As a simple rule, users can and should set the detail parameter to zero: this will disable completely
+        this optional filtering for that signal.
+	  </p>
+</div>
+<div class="footnotes">
+<br><hr style="width:100; text-align:left;margin-left: 0">
+<div id="ftn.id-1.3.5.3.8.3.3" class="footnote"><p><a href="#id-1.3.5.3.8.3.3" class="para"><sup class="para">[6] </sup></a>A GQuark is an integer which uniquely represents a string. It is possible to transform
+		   back and forth between the integer and string representations with the functions 
+		   <code class="function"><a href="../glib-Quarks.html#g-quark-from-string">g_quark_from_string</a></code> and <code class="function"><a href="../glib-Quarks.html#g-quark-to-string">g_quark_to_string</a></code>.
+		  </p></div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

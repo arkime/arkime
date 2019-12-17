@@ -1,0 +1,254 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GWin32InputStream: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="streaming.html" title="Streaming I/O">
+<link rel="prev" href="GUnixOutputStream.html" title="GUnixOutputStream">
+<link rel="next" href="gio-GWin32OutputStream.html" title="GWin32OutputStream">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gio-GWin32InputStream.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="streaming.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GUnixOutputStream.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gio-GWin32OutputStream.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-GWin32InputStream"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-GWin32InputStream.top_of_page"></a>GWin32InputStream</span></h2>
+<p>GWin32InputStream — Streaming input operations for Windows file handles</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gio-GWin32InputStream.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GInputStream.html" title="GInputStream"><span class="returnvalue">GInputStream</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32InputStream.html#g-win32-input-stream-new" title="g_win32_input_stream_new ()">g_win32_input_stream_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32InputStream.html#g-win32-input-stream-set-close-handle" title="g_win32_input_stream_set_close_handle ()">g_win32_input_stream_set_close_handle</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32InputStream.html#g-win32-input-stream-get-close-handle" title="g_win32_input_stream_get_close_handle ()">g_win32_input_stream_get_close_handle</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32InputStream.html#g-win32-input-stream-get-handle" title="g_win32_input_stream_get_handle ()">g_win32_input_stream_get_handle</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-GWin32InputStream.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="gio-GWin32InputStream.html#GWin32InputStream" title="struct GWin32InputStream">GWin32InputStream</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-GWin32InputStream.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gwin32inputstream.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-GWin32InputStream.description"></a><h2>Description</h2>
+<p><a class="link" href="gio-GWin32InputStream.html#GWin32InputStream" title="struct GWin32InputStream"><span class="type">GWin32InputStream</span></a> implements <a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a> for reading from a
+Windows file handle.</p>
+<p>Note that <code class="literal">&amp;lt;gio/gwin32inputstream.h&gt;</code> belongs to the Windows-specific GIO
+interfaces, thus you have to use the <code class="literal">gio-windows-2.0.pc</code> pkg-config file
+when using it.</p>
+</div>
+<div class="refsect1">
+<a name="gio-GWin32InputStream.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-win32-input-stream-new"></a><h3>g_win32_input_stream_new ()</h3>
+<pre class="programlisting"><a class="link" href="GInputStream.html" title="GInputStream"><span class="returnvalue">GInputStream</span></a> *
+g_win32_input_stream_new (<em class="parameter"><code><span class="type">void</span> *handle</code></em>,
+                          <em class="parameter"><code><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> close_handle</code></em>);</pre>
+<p>Creates a new <a class="link" href="gio-GWin32InputStream.html#GWin32InputStream" title="struct GWin32InputStream"><span class="type">GWin32InputStream</span></a> for the given <em class="parameter"><code>handle</code></em>
+.</p>
+<p>If <em class="parameter"><code>close_handle</code></em>
+ is <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>, the handle will be closed
+when the stream is closed.</p>
+<p>Note that "handle" here means a Win32 HANDLE, not a "file descriptor"
+as used in the Windows C libraries.</p>
+<div class="refsect3">
+<a name="g-win32-input-stream-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>handle</p></td>
+<td class="parameter_description"><p>a Win32 file handle</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>close_handle</p></td>
+<td class="parameter_description"><p><a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> to close the handle when done</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-input-stream-new.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="gio-GWin32InputStream.html#GWin32InputStream" title="struct GWin32InputStream"><span class="type">GWin32InputStream</span></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-input-stream-set-close-handle"></a><h3>g_win32_input_stream_set_close_handle ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_win32_input_stream_set_close_handle (<em class="parameter"><code><a class="link" href="gio-GWin32InputStream.html#GWin32InputStream" title="struct GWin32InputStream"><span class="type">GWin32InputStream</span></a> *stream</code></em>,
+                                       <em class="parameter"><code><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> close_handle</code></em>);</pre>
+<p>Sets whether the handle of <em class="parameter"><code>stream</code></em>
+ shall be closed
+when the stream is closed.</p>
+<div class="refsect3">
+<a name="g-win32-input-stream-set-close-handle.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32InputStream.html#GWin32InputStream" title="struct GWin32InputStream"><span class="type">GWin32InputStream</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>close_handle</p></td>
+<td class="parameter_description"><p><a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> to close the handle when done</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-input-stream-get-close-handle"></a><h3>g_win32_input_stream_get_close_handle ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_win32_input_stream_get_close_handle (<em class="parameter"><code><a class="link" href="gio-GWin32InputStream.html#GWin32InputStream" title="struct GWin32InputStream"><span class="type">GWin32InputStream</span></a> *stream</code></em>);</pre>
+<p>Returns whether the handle of <em class="parameter"><code>stream</code></em>
+ will be
+closed when the stream is closed.</p>
+<div class="refsect3">
+<a name="g-win32-input-stream-get-close-handle.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32InputStream.html#GWin32InputStream" title="struct GWin32InputStream"><span class="type">GWin32InputStream</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-input-stream-get-close-handle.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the handle is closed when done</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-input-stream-get-handle"></a><h3>g_win32_input_stream_get_handle ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span> *
+g_win32_input_stream_get_handle (<em class="parameter"><code><a class="link" href="gio-GWin32InputStream.html#GWin32InputStream" title="struct GWin32InputStream"><span class="type">GWin32InputStream</span></a> *stream</code></em>);</pre>
+<p>Return the Windows file handle that the stream reads from.</p>
+<div class="refsect3">
+<a name="g-win32-input-stream-get-handle.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32InputStream.html#GWin32InputStream" title="struct GWin32InputStream"><span class="type">GWin32InputStream</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-input-stream-get-handle.returns"></a><h4>Returns</h4>
+<p> The file handle of <em class="parameter"><code>stream</code></em>
+</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-GWin32InputStream.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GWin32InputStream"></a><h3>struct GWin32InputStream</h3>
+<pre class="programlisting">struct GWin32InputStream {
+  GInputStream parent_instance;
+};
+</pre>
+<p>Implements <a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a> for reading from selectable Windows file handles</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-GWin32InputStream.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="GInputStream.html" title="GInputStream"><span class="type">GInputStream</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

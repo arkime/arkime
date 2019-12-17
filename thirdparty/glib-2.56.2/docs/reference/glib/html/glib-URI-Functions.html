@@ -1,0 +1,503 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>URI Functions: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-utilities.html" title="GLib Utilities">
+<link rel="prev" href="glib-File-Utilities.html" title="File Utilities">
+<link rel="next" href="glib-Hostname-Utilities.html" title="Hostname Utilities">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-URI-Functions.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-utilities.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-File-Utilities.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-Hostname-Utilities.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-URI-Functions"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-URI-Functions.top_of_page"></a>URI Functions</span></h2>
+<p>URI Functions — manipulating URIs</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-URI-Functions.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-URI-Functions.html#g-uri-parse-scheme" title="g_uri_parse_scheme ()">g_uri_parse_scheme</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-URI-Functions.html#g-uri-escape-string" title="g_uri_escape_string ()">g_uri_escape_string</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-URI-Functions.html#g-uri-unescape-string" title="g_uri_unescape_string ()">g_uri_unescape_string</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-URI-Functions.html#g-uri-unescape-segment" title="g_uri_unescape_segment ()">g_uri_unescape_segment</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> **
+</td>
+<td class="function_name">
+<a class="link" href="glib-URI-Functions.html#g-uri-list-extract-uris" title="g_uri_list_extract_uris ()">g_uri_list_extract_uris</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-URI-Functions.html#g-filename-from-uri" title="g_filename_from_uri ()">g_filename_from_uri</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-URI-Functions.html#g-filename-to-uri" title="g_filename_to_uri ()">g_filename_to_uri</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-URI-Functions.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-URI-Functions.html#G-URI-RESERVED-CHARS-ALLOWED-IN-PATH:CAPS" title="G_URI_RESERVED_CHARS_ALLOWED_IN_PATH">G_URI_RESERVED_CHARS_ALLOWED_IN_PATH</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-URI-Functions.html#G-URI-RESERVED-CHARS-ALLOWED-IN-PATH-ELEMENT:CAPS" title="G_URI_RESERVED_CHARS_ALLOWED_IN_PATH_ELEMENT">G_URI_RESERVED_CHARS_ALLOWED_IN_PATH_ELEMENT</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-URI-Functions.html#G-URI-RESERVED-CHARS-ALLOWED-IN-USERINFO:CAPS" title="G_URI_RESERVED_CHARS_ALLOWED_IN_USERINFO">G_URI_RESERVED_CHARS_ALLOWED_IN_USERINFO</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-URI-Functions.html#G-URI-RESERVED-CHARS-GENERIC-DELIMITERS:CAPS" title="G_URI_RESERVED_CHARS_GENERIC_DELIMITERS">G_URI_RESERVED_CHARS_GENERIC_DELIMITERS</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-URI-Functions.html#G-URI-RESERVED-CHARS-SUBCOMPONENT-DELIMITERS:CAPS" title="G_URI_RESERVED_CHARS_SUBCOMPONENT_DELIMITERS">G_URI_RESERVED_CHARS_SUBCOMPONENT_DELIMITERS</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-URI-Functions.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib.h&gt;
+#include &lt;glib/gi18n.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-URI-Functions.description"></a><h2>Description</h2>
+<p>Functions for manipulating Universal Resource Identifiers (URIs) as
+defined by
+<a class="ulink" href="http://www.ietf.org/rfc/rfc3986.txt" target="_top">RFC 3986</a>.
+It is highly recommended that you have read and
+understand RFC 3986 for understanding this API.</p>
+</div>
+<div class="refsect1">
+<a name="glib-URI-Functions.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-uri-parse-scheme"></a><h3>g_uri_parse_scheme ()</h3>
+<pre class="programlisting"><span class="returnvalue">char</span> *
+g_uri_parse_scheme (<em class="parameter"><code>const <span class="type">char</span> *uri</code></em>);</pre>
+<p>Gets the scheme portion of a URI string. RFC 3986 decodes the scheme as:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal">URI </span><span class="symbol">=</span><span class="normal"> scheme </span><span class="string">":"</span><span class="normal"> hier</span><span class="symbol">-</span><span class="normal">part </span><span class="symbol">[</span><span class="normal"> </span><span class="string">"?"</span><span class="normal"> query </span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">[</span><span class="normal"> </span><span class="string">"#"</span><span class="normal"> fragment </span><span class="symbol">]</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+Common schemes include "file", "http", "svn+ssh", etc.</p>
+<div class="refsect3">
+<a name="g-uri-parse-scheme.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>uri</p></td>
+<td class="parameter_description"><p>a valid URI.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-uri-parse-scheme.returns"></a><h4>Returns</h4>
+<p> The "Scheme" component of the URI, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> on error.
+The returned string should be freed when no longer needed.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-16.html#api-index-2.16">2.16</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-uri-escape-string"></a><h3>g_uri_escape_string ()</h3>
+<pre class="programlisting"><span class="returnvalue">char</span> *
+g_uri_escape_string (<em class="parameter"><code>const <span class="type">char</span> *unescaped</code></em>,
+                     <em class="parameter"><code>const <span class="type">char</span> *reserved_chars_allowed</code></em>,
+                     <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="type">gboolean</span></a> allow_utf8</code></em>);</pre>
+<p>Escapes a string for use in a URI.</p>
+<p>Normally all characters that are not "unreserved" (i.e. ASCII alphanumerical
+characters plus dash, dot, underscore and tilde) are escaped.
+But if you specify characters in <em class="parameter"><code>reserved_chars_allowed</code></em>
+ they are not
+escaped. This is useful for the "reserved" characters in the URI
+specification, since those are allowed unescaped in some portions of
+a URI.</p>
+<div class="refsect3">
+<a name="g-uri-escape-string.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>unescaped</p></td>
+<td class="parameter_description"><p>the unescaped input string.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>reserved_chars_allowed</p></td>
+<td class="parameter_description"><p>a string of reserved characters that
+are allowed to be used, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>allow_utf8</p></td>
+<td class="parameter_description"><p><a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the result can include UTF-8 characters.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-uri-escape-string.returns"></a><h4>Returns</h4>
+<p> an escaped version of <em class="parameter"><code>unescaped</code></em>
+. The returned string should be
+freed when no longer needed.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-16.html#api-index-2.16">2.16</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-uri-unescape-string"></a><h3>g_uri_unescape_string ()</h3>
+<pre class="programlisting"><span class="returnvalue">char</span> *
+g_uri_unescape_string (<em class="parameter"><code>const <span class="type">char</span> *escaped_string</code></em>,
+                       <em class="parameter"><code>const <span class="type">char</span> *illegal_characters</code></em>);</pre>
+<p>Unescapes a whole escaped string.</p>
+<p>If any of the characters in <em class="parameter"><code>illegal_characters</code></em>
+ or the character zero appears
+as an escaped character in <em class="parameter"><code>escaped_string</code></em>
+ then that is an error and <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>
+will be returned. This is useful it you want to avoid for instance having a
+slash being expanded in an escaped path element, which might confuse pathname
+handling.</p>
+<div class="refsect3">
+<a name="g-uri-unescape-string.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>escaped_string</p></td>
+<td class="parameter_description"><p>an escaped string to be unescaped.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>illegal_characters</p></td>
+<td class="parameter_description"><p>a string of illegal characters not to be
+allowed, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-uri-unescape-string.returns"></a><h4>Returns</h4>
+<p> an unescaped version of <em class="parameter"><code>escaped_string</code></em>
+. The returned string
+should be freed when no longer needed.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-16.html#api-index-2.16">2.16</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-uri-unescape-segment"></a><h3>g_uri_unescape_segment ()</h3>
+<pre class="programlisting"><span class="returnvalue">char</span> *
+g_uri_unescape_segment (<em class="parameter"><code>const <span class="type">char</span> *escaped_string</code></em>,
+                        <em class="parameter"><code>const <span class="type">char</span> *escaped_string_end</code></em>,
+                        <em class="parameter"><code>const <span class="type">char</span> *illegal_characters</code></em>);</pre>
+<p>Unescapes a segment of an escaped string.</p>
+<p>If any of the characters in <em class="parameter"><code>illegal_characters</code></em>
+ or the character zero appears
+as an escaped character in <em class="parameter"><code>escaped_string</code></em>
+ then that is an error and <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>
+will be returned. This is useful it you want to avoid for instance having a
+slash being expanded in an escaped path element, which might confuse pathname
+handling.</p>
+<div class="refsect3">
+<a name="g-uri-unescape-segment.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>escaped_string</p></td>
+<td class="parameter_description"><p>A string, may be <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>escaped_string_end</p></td>
+<td class="parameter_description"><p>Pointer to end of <em class="parameter"><code>escaped_string</code></em>
+, may be <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>illegal_characters</p></td>
+<td class="parameter_description"><p>An optional string of illegal characters not to be allowed, may be <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-uri-unescape-segment.returns"></a><h4>Returns</h4>
+<p> an unescaped version of <em class="parameter"><code>escaped_string</code></em>
+or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> on error.
+The returned string should be freed when no longer needed.  As a
+special case if <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> is given for <em class="parameter"><code>escaped_string</code></em>
+, this function
+will return <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-16.html#api-index-2.16">2.16</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-uri-list-extract-uris"></a><h3>g_uri_list_extract_uris ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> **
+g_uri_list_extract_uris (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *uri_list</code></em>);</pre>
+<p>Splits an URI list conforming to the text/uri-list
+mime type defined in RFC 2483 into individual URIs,
+discarding any comments. The URIs are not validated.</p>
+<div class="refsect3">
+<a name="g-uri-list-extract-uris.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>uri_list</p></td>
+<td class="parameter_description"><p>an URI list </p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-uri-list-extract-uris.returns"></a><h4>Returns</h4>
+<p>a newly allocated <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>-terminated list
+of strings holding the individual URIs. The array should be freed
+with <a class="link" href="glib-String-Utility-Functions.html#g-strfreev" title="g_strfreev ()"><code class="function">g_strfreev()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-6.html#api-index-2.6">2.6</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-filename-from-uri"></a><h3>g_filename_from_uri ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_filename_from_uri (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *uri</code></em>,
+                     <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> **hostname</code></em>,
+                     <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Converts an escaped ASCII-encoded URI to a local filename in the
+encoding used for filenames.</p>
+<div class="refsect3">
+<a name="g-filename-from-uri.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>uri</p></td>
+<td class="parameter_description"><p>a uri describing a filename (escaped, encoded in ASCII).</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>hostname</p></td>
+<td class="parameter_description"><p>Location to store hostname for the URI.
+If there is no hostname in the URI, <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> will be
+stored in this location. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location to store the error occurring, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> to ignore
+errors. Any of the errors in <a class="link" href="glib-Character-Set-Conversion.html#GConvertError" title="enum GConvertError"><span class="type">GConvertError</span></a> may occur.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-filename-from-uri.returns"></a><h4>Returns</h4>
+<p>a newly-allocated string holding
+the resulting filename, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> on an error. </p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-filename-to-uri"></a><h3>g_filename_to_uri ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_filename_to_uri (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *filename</code></em>,
+                   <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *hostname</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Converts an absolute filename to an escaped ASCII-encoded URI, with the path
+component following Section 3.3. of RFC 2396.</p>
+<div class="refsect3">
+<a name="g-filename-to-uri.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>filename</p></td>
+<td class="parameter_description"><p>an absolute filename specified in the GLib file
+name encoding, which is the on-disk file name bytes on Unix, and UTF-8
+on Windows. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>hostname</p></td>
+<td class="parameter_description"><p>A UTF-8 encoded hostname, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> for none. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location to store the error occurring, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> to ignore
+errors. Any of the errors in <a class="link" href="glib-Character-Set-Conversion.html#GConvertError" title="enum GConvertError"><span class="type">GConvertError</span></a> may occur.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-filename-to-uri.returns"></a><h4>Returns</h4>
+<p> a newly-allocated string holding the resulting
+URI, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> on an error.</p>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-URI-Functions.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="G-URI-RESERVED-CHARS-ALLOWED-IN-PATH:CAPS"></a><h3>G_URI_RESERVED_CHARS_ALLOWED_IN_PATH</h3>
+<pre class="programlisting">#define G_URI_RESERVED_CHARS_ALLOWED_IN_PATH G_URI_RESERVED_CHARS_ALLOWED_IN_PATH_ELEMENT "/"
+</pre>
+<p>Allowed characters in a path. Includes "!$&amp;'()*+,;=:@/".</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-URI-RESERVED-CHARS-ALLOWED-IN-PATH-ELEMENT:CAPS"></a><h3>G_URI_RESERVED_CHARS_ALLOWED_IN_PATH_ELEMENT</h3>
+<pre class="programlisting">#define G_URI_RESERVED_CHARS_ALLOWED_IN_PATH_ELEMENT G_URI_RESERVED_CHARS_SUBCOMPONENT_DELIMITERS ":@"
+</pre>
+<p>Allowed characters in path elements. Includes "!$&amp;'()*+,;=:@".</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-URI-RESERVED-CHARS-ALLOWED-IN-USERINFO:CAPS"></a><h3>G_URI_RESERVED_CHARS_ALLOWED_IN_USERINFO</h3>
+<pre class="programlisting">#define G_URI_RESERVED_CHARS_ALLOWED_IN_USERINFO G_URI_RESERVED_CHARS_SUBCOMPONENT_DELIMITERS ":"
+</pre>
+<p>Allowed characters in userinfo as defined in RFC 3986. Includes "!$&amp;'()*+,;=:".</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-URI-RESERVED-CHARS-GENERIC-DELIMITERS:CAPS"></a><h3>G_URI_RESERVED_CHARS_GENERIC_DELIMITERS</h3>
+<pre class="programlisting">#define G_URI_RESERVED_CHARS_GENERIC_DELIMITERS ":/?#[]@"
+</pre>
+<p>Generic delimiters characters as defined in RFC 3986. Includes ":/?#[]@".</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-URI-RESERVED-CHARS-SUBCOMPONENT-DELIMITERS:CAPS"></a><h3>G_URI_RESERVED_CHARS_SUBCOMPONENT_DELIMITERS</h3>
+<pre class="programlisting">#define G_URI_RESERVED_CHARS_SUBCOMPONENT_DELIMITERS "!$&amp;'()*+,;="
+</pre>
+<p>Subcomponent delimiter characters as defined in RFC 3986. Includes "!$&amp;'()*+,;=".</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

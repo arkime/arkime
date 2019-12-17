@@ -1,0 +1,34 @@
+<schemalist>
+  <schema id='base'>
+    <key name='foo' type='s'>
+      <default>'bar'</default>
+    </key>
+
+    <key name='ranged' type='i'>
+      <range min='0' max='22'/>
+      <default>10</default>
+    </key>
+
+    <key name='choice' type='s'>
+      <choices>
+        <choice value='a'/>
+        <choice value='aaa'/>
+        <choice value='aaaaa'/>
+      </choices>
+      <default>'aaaaa'</default>
+    </key>
+  </schema>
+
+  <schema id='sub' extends='base'>
+  </schema>
+
+  <schema id='sub2' extends='base'>
+    <override name='foo'>'baz'</override>
+    <override name='ranged'>0</override>
+    <override name='choice'>'aaa'</override>
+  </schema>
+
+  <schema id='sub3' extends='sub2'>
+    <override name='foo'>'foo'</override>
+  </schema>
+</schemalist>

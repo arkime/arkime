@@ -1,0 +1,30 @@
+#include <winver.h>
+
+VS_VERSION_INFO VERSIONINFO
+  FILEVERSION 2,56,2,0
+  PRODUCTVERSION 2,56,2,0
+  FILEFLAGSMASK 0
+  FILEFLAGS 0
+  FILEOS VOS__WINDOWS32
+  FILETYPE VFT_DLL
+  FILESUBTYPE VFT2_UNKNOWN
+  BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+      BLOCK "040904B0"
+      BEGIN
+	VALUE "CompanyName", "The GLib developer community"
+	VALUE "FileDescription", "GLib"
+	VALUE "FileVersion", "2.56.2.0"
+	VALUE "InternalName", "libglib-2.0-0"
+	VALUE "LegalCopyright", "Copyright 1995-2011 Peter Mattis, Spencer Kimball, Josh MacDonald and others."
+	VALUE "OriginalFilename", "libglib-2.0-0.dll"
+	VALUE "ProductName", "GLib"
+	VALUE "ProductVersion", "2.56.2"
+      END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+      VALUE "Translation", 0x409, 1200
+    END
+  END

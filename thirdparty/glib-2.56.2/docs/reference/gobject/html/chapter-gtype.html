@@ -1,0 +1,316 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>The GLib Dynamic Type System: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="pt01.html" title="Part I. Concepts">
+<link rel="prev" href="ch01s02.html" title="Exporting a C API">
+<link rel="next" href="gtype-conventions.html" title="Conventions">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="pt01.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="ch01s02.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gtype-conventions.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="chapter">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="chapter-gtype"></a>The GLib Dynamic Type System</h2></div></div></div>
+<div class="toc"><dl class="toc">
+<dt><span class="sect1"><a href="chapter-gtype.html#gtype-copy">Copy functions</a></span></dt>
+<dt><span class="sect1"><a href="gtype-conventions.html">Conventions</a></span></dt>
+<dt><span class="sect1"><a href="gtype-non-instantiable.html">Non-instantiable non-classed fundamental types</a></span></dt>
+<dt><span class="sect1"><a href="gtype-instantiable-classed.html">Instantiable classed types: objects</a></span></dt>
+<dd><dl><dt><span class="sect2"><a href="gtype-instantiable-classed.html#gtype-instantiable-classed-init-done">Initialization and Destruction</a></span></dt></dl></dd>
+<dt><span class="sect1"><a href="gtype-non-instantiable-classed.html">Non-instantiable classed types: interfaces</a></span></dt>
+<dd><dl>
+<dt><span class="sect2"><a href="gtype-non-instantiable-classed.html#gtype-non-instantiable-classed-init">Interface Initialization</a></span></dt>
+<dt><span class="sect2"><a href="gtype-non-instantiable-classed.html#gtype-non-instantiable-classed-dest">Interface Destruction</a></span></dt>
+</dl></dd>
+</dl></div>
+<p>
+        A type, as manipulated by the GLib type system, is much more generic than what
+        is usually understood as an Object type. It is best explained by looking at the 
+        structure and the functions used to register new types in the type system.
+        </p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">struct</span><span class="normal"> </span><span class="classname">_GTypeInfo</span><span class="normal">               <a href="gobject-Type-Information.html#GTypeInfo">GTypeInfo</a></span><span class="symbol">;</span>
+<span class="keyword">struct</span><span class="normal"> </span><span class="classname">_GTypeInfo</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="comment">/* interface types, classed types, instantiated types */</span>
+<span class="normal">  </span><span class="usertype">guint16</span><span class="normal">                class_size</span><span class="symbol">;</span>
+<span class="normal">  </span>
+<span class="normal">  </span><span class="usertype">GBaseInitFunc</span><span class="normal">          base_init</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GBaseFinalizeFunc</span><span class="normal">      base_finalize</span><span class="symbol">;</span>
+<span class="normal">  </span>
+<span class="normal">  </span><span class="comment">/* classed types, instantiated types */</span>
+<span class="normal">  </span><span class="usertype">GClassInitFunc</span><span class="normal">         class_init</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GClassFinalizeFunc</span><span class="normal">     class_finalize</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">gconstpointer</span><span class="normal">          class_data</span><span class="symbol">;</span>
+<span class="normal">  </span>
+<span class="normal">  </span><span class="comment">/* instantiated types */</span>
+<span class="normal">  </span><span class="usertype">guint16</span><span class="normal">                instance_size</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">guint16</span><span class="normal">                n_preallocs</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GInstanceInitFunc</span><span class="normal">      instance_init</span><span class="symbol">;</span>
+<span class="normal">  </span>
+<span class="normal">  </span><span class="comment">/* value handling */</span>
+<span class="normal">  </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">GTypeValueTable</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">value_table</span><span class="symbol">;</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+<span class="usertype">GType</span><span class="normal"> </span><span class="function"><a href="gobject-Type-Information.html#g-type-register-static">g_type_register_static</a></span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GType</span><span class="normal">             parent_type</span><span class="symbol">,</span>
+<span class="normal">                              </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">      </span><span class="symbol">*</span><span class="normal">type_name</span><span class="symbol">,</span>
+<span class="normal">                              </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">GTypeInfo</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">info</span><span class="symbol">,</span>
+<span class="normal">                              </span><span class="usertype">GTypeFlags</span><span class="normal">        flags</span><span class="symbol">);</span>
+<span class="usertype">GType</span><span class="normal"> </span><span class="function"><a href="gobject-Type-Information.html#g-type-register-fundamental">g_type_register_fundamental</a></span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GType</span><span class="normal">                       type_id</span><span class="symbol">,</span>
+<span class="normal">                                   </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">                </span><span class="symbol">*</span><span class="normal">type_name</span><span class="symbol">,</span>
+<span class="normal">                                   </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">GTypeInfo</span><span class="normal">            </span><span class="symbol">*</span><span class="normal">info</span><span class="symbol">,</span>
+<span class="normal">                                   </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">GTypeFundamentalInfo</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">finfo</span><span class="symbol">,</span>
+<span class="normal">                                   </span><span class="usertype">GTypeFlags</span><span class="normal">                  flags</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+      </p>
+<p>
+        <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-register-static" title="g_type_register_static ()">g_type_register_static</a></code>,
+        <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-register-dynamic" title="g_type_register_dynamic ()">g_type_register_dynamic</a></code> and 
+        <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-register-fundamental" title="g_type_register_fundamental ()">g_type_register_fundamental</a></code>
+        are the C functions, defined in
+        <code class="filename">gtype.h</code> and implemented in <code class="filename">gtype.c</code>
+        which you should use to register a new <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> in the program's type system.
+        It is not likely you will ever need to use 
+        <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-register-fundamental" title="g_type_register_fundamental ()">g_type_register_fundamental</a></code>
+        but in case you want to, the last chapter explains how to create
+        new fundamental types.
+      </p>
+<p>
+        Fundamental types are top-level types which do not derive from any other type 
+        while other non-fundamental types derive from other types.
+        Upon initialization, the type system not only initializes its
+        internal data structures but it also registers a number of core
+        types: some of these are fundamental types. Others are types derived from these 
+        fundamental types.
+      </p>
+<p>
+        Fundamental and non-fundamental types are defined by:
+        </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>
+            class size: the class_size field in <a class="link" href="gobject-Type-Information.html#GTypeInfo" title="struct GTypeInfo"><span class="type">GTypeInfo</span></a>.
+          </p></li>
+<li class="listitem"><p>
+            class initialization functions (C++ constructor): the <code class="function">base_init</code> and 
+            <code class="function">class_init</code> fields in <a class="link" href="gobject-Type-Information.html#GTypeInfo" title="struct GTypeInfo"><span class="type">GTypeInfo</span></a>.
+          </p></li>
+<li class="listitem"><p>
+            class destruction functions (C++ destructor): the base_finalize and 
+            class_finalize fields in <a class="link" href="gobject-Type-Information.html#GTypeInfo" title="struct GTypeInfo"><span class="type">GTypeInfo</span></a>.
+          </p></li>
+<li class="listitem"><p>
+            instance size (C++ parameter to new): the instance_size field in 
+            <a class="link" href="gobject-Type-Information.html#GTypeInfo" title="struct GTypeInfo"><span class="type">GTypeInfo</span></a>.
+          </p></li>
+<li class="listitem"><p>
+            instantiation policy (C++ type of new operator): the n_preallocs
+            field in <a class="link" href="gobject-Type-Information.html#GTypeInfo" title="struct GTypeInfo"><span class="type">GTypeInfo</span></a>.
+          </p></li>
+<li class="listitem"><p>
+            copy functions (C++ copy operators): the value_table field in 
+            <a class="link" href="gobject-Type-Information.html#GTypeInfo" title="struct GTypeInfo"><span class="type">GTypeInfo</span></a>.
+          </p></li>
+<li class="listitem"><p>
+            type characteristic flags: <a class="link" href="gobject-Type-Information.html#GTypeFlags" title="enum GTypeFlags"><span class="type">GTypeFlags</span></a>.
+          </p></li>
+</ul></div>
+<p>
+        Fundamental types are also defined by a set of <a class="link" href="gobject-Type-Information.html#GTypeFundamentalFlags" title="enum GTypeFundamentalFlags"><span class="type">GTypeFundamentalFlags</span></a> 
+        which are stored in a <a class="link" href="gobject-Type-Information.html#GTypeFundamentalInfo" title="struct GTypeFundamentalInfo"><span class="type">GTypeFundamentalInfo</span></a>.
+        Non-fundamental types are furthermore defined by the type of their parent which is
+        passed as the parent_type parameter to <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-register-static" title="g_type_register_static ()">g_type_register_static</a></code>
+        and <code class="function"><a class="link" href="gobject-Type-Information.html#g-type-register-dynamic" title="g_type_register_dynamic ()">g_type_register_dynamic</a></code>.
+      </p>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="gtype-copy"></a>Copy functions</h2></div></div></div>
+<p>
+          The major common point between <span class="emphasis"><em>all</em></span> GLib types (fundamental and 
+          non-fundamental, classed and non-classed, instantiable and non-instantiable) is that
+          they can all be manipulated through a single API to copy/assign them.
+        </p>
+<p>
+          The <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure is used as an abstract container for all of these 
+          types. Its simplistic API (defined in <code class="filename">gobject/gvalue.h</code>) can be 
+          used to invoke the value_table functions registered
+          during type registration: for example <code class="function"><a class="link" href="gobject-Generic-values.html#g-value-copy" title="g_value_copy ()">g_value_copy</a></code> copies the 
+          content of a <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> to another <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a>. This is similar
+          to a C++ assignment which invokes the C++ copy operator to modify the default
+          bit-by-bit copy semantics of C++/C structures/classes.
+        </p>
+<p>
+          The following code shows how you can copy around a 64 bit integer, as well as a <a class="link" href="gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a>
+          instance pointer:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">test_int</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GValue</span><span class="normal"> a_value </span><span class="symbol">=</span><span class="normal"> <a href="gobject-Generic-values.html#G-VALUE-INIT:CAPS">G_VALUE_INIT</a></span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GValue</span><span class="normal"> b_value </span><span class="symbol">=</span><span class="normal"> <a href="gobject-Generic-values.html#G-VALUE-INIT:CAPS">G_VALUE_INIT</a></span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">guint64</span><span class="normal"> a</span><span class="symbol">,</span><span class="normal"> b</span><span class="symbol">;</span>
+
+<span class="normal">  a </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0xdeadbeef</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="function"><a href="gobject-Generic-values.html#g-value-init">g_value_init</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">a_value</span><span class="symbol">,</span><span class="normal"> <a href="gobject-Type-Information.html#G-TYPE-UINT64:CAPS">G_TYPE_UINT64</a></span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-value-set-uint64">g_value_set_uint64</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">a_value</span><span class="symbol">,</span><span class="normal"> a</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="gobject-Generic-values.html#g-value-init">g_value_init</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">b_value</span><span class="symbol">,</span><span class="normal"> <a href="gobject-Type-Information.html#G-TYPE-UINT64:CAPS">G_TYPE_UINT64</a></span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="gobject-Generic-values.html#g-value-copy">g_value_copy</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">a_value</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">b_value</span><span class="symbol">);</span>
+
+<span class="normal">  b </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-value-get-uint64">g_value_get_uint64</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">b_value</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">a </span><span class="symbol">==</span><span class="normal"> b</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Yay !! 10 lines of code to copy around a uint64.</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Are you sure this is not a Z80 ?</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">test_object</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GObject</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">obj</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GValue</span><span class="normal"> obj_vala </span><span class="symbol">=</span><span class="normal"> <a href="gobject-Generic-values.html#G-VALUE-INIT:CAPS">G_VALUE_INIT</a></span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GValue</span><span class="normal"> obj_valb </span><span class="symbol">=</span><span class="normal"> <a href="gobject-Generic-values.html#G-VALUE-INIT:CAPS">G_VALUE_INIT</a></span><span class="symbol">;</span>
+<span class="normal">  obj </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gobject-The-Base-Object-Type.html#g-object-new">g_object_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">VIEWER_TYPE_FILE</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="gobject-Generic-values.html#g-value-init">g_value_init</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">obj_vala</span><span class="symbol">,</span><span class="normal"> VIEWER_TYPE_FILE</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-value-set-object">g_value_set_object</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">obj_vala</span><span class="symbol">,</span><span class="normal"> obj</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="gobject-Generic-values.html#g-value-init">g_value_init</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">obj_valb</span><span class="symbol">,</span><span class="normal"> <a href="gobject-Type-Information.html#G-TYPE-OBJECT:CAPS">G_TYPE_OBJECT</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">/* g_value_copy's semantics for G_TYPE_OBJECT types is to copy the reference.</span>
+<span class="comment">   * This function thus calls g_object_ref.</span>
+<span class="comment">   * It is interesting to note that the assignment works here because</span>
+<span class="comment">   * VIEWER_TYPE_FILE is a G_TYPE_OBJECT.</span>
+<span class="comment">   */</span>
+<span class="normal">  </span><span class="function"><a href="gobject-Generic-values.html#g-value-copy">g_value_copy</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">obj_vala</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">obj_valb</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="function"><a href="gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="gobject-The-Base-Object-Type.html#G-OBJECT:CAPS">G_OBJECT</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">obj</span><span class="symbol">));</span>
+<span class="normal">  </span><span class="function"><a href="gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="gobject-The-Base-Object-Type.html#G-OBJECT:CAPS">G_OBJECT</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">obj</span><span class="symbol">));</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+          The important point about the above code is that the exact semantics of the copy calls
+          is undefined since they depend on the implementation of the copy function. Certain 
+          copy functions might decide to allocate a new chunk of memory and then to copy the 
+          data from the source to the destination. Others might want to simply increment
+          the reference count of the instance and copy the reference to the new GValue.
+        </p>
+<p>
+          The value table used to specify these assignment functions is
+          documented in
+          <a class="link" href="gobject-Type-Information.html#GTypeValueTable" title="struct GTypeValueTable"><span class="type">GTypeValueTable</span></a>.
+        </p>
+<p>
+          Interestingly, it is also very unlikely
+          you will ever need to specify a value_table during type registration
+          because these value_tables are inherited from the parent types for
+          non-fundamental types.
+        </p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

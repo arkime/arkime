@@ -1,0 +1,110 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>gresource: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="tools.html" title="GIO Tools">
+<link rel="prev" href="gdbus-codegen.html" title="gdbus-codegen">
+<link rel="next" href="gapplication-tool.html" title="gapplication">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="tools.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gdbus-codegen.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gapplication-tool.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div lang="en" class="refentry">
+<a name="gresource-tool"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle">gresource</span></h2>
+<p>gresource — GResource tool</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<h2>Synopsis</h2>
+<div class="cmdsynopsis"><p><code class="command">gresource</code>  [--section <em class="replaceable"><code>SECTION</code></em>]  list   <em class="replaceable"><code>FILE</code></em>  [<em class="replaceable"><code>PATH</code></em>]</p></div>
+<div class="cmdsynopsis"><p><code class="command">gresource</code>  [--section <em class="replaceable"><code>SECTION</code></em>]  details   <em class="replaceable"><code>FILE</code></em>  [<em class="replaceable"><code>PATH</code></em>]</p></div>
+<div class="cmdsynopsis"><p><code class="command">gresource</code>  [--section <em class="replaceable"><code>SECTION</code></em>]  extract   <em class="replaceable"><code>FILE</code></em>   <em class="replaceable"><code>PATH</code></em> </p></div>
+<div class="cmdsynopsis"><p><code class="command">gresource</code>   sections   <em class="replaceable"><code>FILE</code></em> </p></div>
+<div class="cmdsynopsis"><p><code class="command">gresource</code>   help  [<em class="replaceable"><code>COMMAND</code></em>]</p></div>
+</div>
+<div class="refsect1">
+<a name="id-1.4.26.8.5"></a><h2>Description</h2>
+<p><span class="command"><strong>gresource</strong></span> offers a simple commandline
+interface to <a class="link" href="GResource.html" title="GResource"><span class="type">GResource</span></a>.
+It lets you list and extract resources that have been compiled
+into a resource file or included in an elf file (a binary or a
+shared library).
+</p>
+<p>
+The file to operate on is specified by the <em class="replaceable"><code>FILE</code></em>
+argument.
+</p>
+<p>
+If an elf file includes multiple sections with resources, it is
+possible to select which one to operate on with the
+ --section  option. Use the
+  sections  command to find available sections.
+</p>
+</div>
+<div class="refsect1">
+<a name="id-1.4.26.8.6"></a><h2>Commands</h2>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><code class="option">list</code></span></p></td>
+<td><p>
+Lists resources. If <em class="replaceable"><code>SECTION</code></em> is given, only
+list resources in this section. If <em class="replaceable"><code>PATH</code></em> is
+given, only list matching resources.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">details</code></span></p></td>
+<td><p>
+Lists resources with details. If <em class="replaceable"><code>SECTION</code></em>
+is given, only list resources in this section. If
+<em class="replaceable"><code>PATH</code></em> is given, only list matching resources.
+Details include the section, size and compression of each resource.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">extract</code></span></p></td>
+<td><p>
+Extracts the resource named by <em class="replaceable"><code>PATH</code></em> to stdout.
+Note that resources may contain binary data.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">sections</code></span></p></td>
+<td><p>
+Lists sections containing resources. This is only interesting if
+<em class="replaceable"><code>FILE</code></em> is an elf file.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">help</code></span></p></td>
+<td><p>
+Prints help and exits.
+</p></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

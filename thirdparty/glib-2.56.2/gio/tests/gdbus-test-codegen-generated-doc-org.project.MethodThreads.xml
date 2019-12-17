@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+]>
+<refentry id="gdbus-org.project.MethodThreads">
+  <refmeta>    <refentrytitle role="top_of_page" id="gdbus-interface-org-project-MethodThreads.top_of_page">org.project.MethodThreads</refentrytitle>
+  <indexterm zone="gdbus-interface-org-project-MethodThreads.top_of_page"><primary sortas="MethodThreads">org.project.MethodThreads</primary></indexterm>
+  </refmeta>  <refnamediv>    <refname>org.project.MethodThreads</refname>    <refpurpose></refpurpose>  </refnamediv>  <refsynopsisdiv role="synopsis">
+    <title role="synopsis.title">Methods</title>
+    <synopsis>
+<link linkend="gdbus-method-org-project-MethodThreads.GetSelf">GetSelf</link> (OUT s self_pointer);
+</synopsis>
+  </refsynopsisdiv>
+<refsect1 role="desc" id="gdbus-interface-org-project-MethodThreads">
+  <title role="desc.title">Description</title>
+  <para></para>
+</refsect1>
+<refsect1 role="details" id="gdbus-methods-org.project.MethodThreads">
+  <title role="details.title">Method Details</title>
+<refsect2 role="method" id="gdbus-method-org-project-MethodThreads.GetSelf">
+  <title>The GetSelf() method</title>
+  <indexterm zone="gdbus-method-org-project-MethodThreads.GetSelf"><primary sortas="MethodThreads.GetSelf">org.project.MethodThreads.GetSelf()</primary></indexterm>
+<programlisting>
+GetSelf (OUT s self_pointer);
+</programlisting>
+<para></para>
+<variablelist role="params">
+<varlistentry>
+  <term><literal>OUT s <parameter>self_pointer</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+</refsect1>
+</refentry>
+

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xbel version="1.0">
+  <title>Singleton</title>
+  <desc>A file containing a single bookmark element</desc>
+  <bookmark href="file:///home/zefram/Documents/milan-stuttgart.ps" added="20050930T23:05:28Z" modified="20050930T23:05:28Z" visited="20050930T23:05:28Z">
+    <title>Milan-Stuttgart</title>
+    <desc>A schedule</desc>
+    <info>
+      <metadata owner="http://freedesktop.org">
+        <mime-type type="application/postscript"/>
+        <applications>
+          <application name="populate-recent" exec="populate-recent --info %u" timestamp="1128121528" count="1"/>
+        </applications>
+      </metadata>
+    </info>
+  </bookmark>
+</xbel>

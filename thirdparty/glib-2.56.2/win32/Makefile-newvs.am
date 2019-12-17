@@ -1,0 +1,55 @@
+# Centralized autotools file
+# Create the Visual Studio 2012/2013/2015 project files
+# from the Visual Studio 2010 project files
+
+# This autotools file, from GLib, can be used in other projects
+# that have Visual Studio build support.
+
+# Author: Fan, Chun-wei
+# November 05, 2012
+
+# MSVC_BASE_VER: Baseline MSVC 201x version to copy/process project files from (100 for 2010, 120 for 2013)
+# MSVC_BASE_VER_LONG: Long Version of baseline Visual Studio 201x version (2010, 2012, 2013, 14, 15)
+# MSVC_BASE_TOOLSET: Use if baseline MSVC toolset is not in the form v$(MSVC_BASE_VER)0, meaning v$(MSVC_BASE_TOOLSET)
+# MSVC_VER_LONG: Long Version of target Visual Studio (2012, 2013, 14 and so on)
+# MSVC_VER: Short Version of target Visual Studio (110 for 2012, 120 for 2013, 140 for 2015, 141 for 2017)
+# MSVC_TOOLSET: Use if target MSVC toolsett is not in the form v $(MSVC_VER)0, meaning v$(MSVC_TOOLSET)
+
+if MSVC_BASE_NO_TOOLSET_SET
+MSVC_BASE_TOOLSET = $(MSVC_BASE_VER)0
+endif
+
+if MSVC_NO_TOOLSET_SET
+MSVC_TOOLSET = $(MSVC_VER)0
+endif
+
+%.sln:
+	sed 's/11\.00/12\.00/g' < $(top_srcdir)/win32/vs$(MSVC_BASE_VER)/$@ > $(top_builddir)/win32/vs$(MSVC_VER)/$@.tmp
+	sed 's/$(MSVC_BASE_VER_LONG)/$(MSVC_VER_LONG)/g' < $(top_builddir)/win32/vs$(MSVC_VER)/$@.tmp > $(top_builddir)/win32/vs$(MSVC_VER)/$@
+	rm $(top_builddir)/win32/vs$(MSVC_VER)/$@.tmp
+
+%.txt:
+	sed 's/vs$(MSVC_BASE_VER)/vs$(MSVC_VER)/g' < $(top_srcdir)/win32/vs$(MSVC_BASE_VER)/$@ > $(top_builddir)/win32/vs$(MSVC_VER)/$@.tmp
+	sed 's/VS$(MSVC_BASE_VER)/VS$(MSVC_VER)/g' < $(top_builddir)/win32/vs$(MSVC_VER)/$@.tmp > $(top_builddir)/win32/vs$(MSVC_VER)/$@
+	rm $(top_builddir)/win32/vs$(MSVC_VER)/$@.tmp
+
+%.vcxproj:
+	if test -e $(top_srcdir)/win32/vs$(MSVC_BASE_VER)/$@; then \
+		sed 's/v$(MSVC_BASE_TOOLSET)/v$(MSVC_TOOLSET)/g' < $(top_srcdir)/win32/vs$(MSVC_BASE_VER)/$@ > $(top_builddir)/win32/vs$(MSVC_VER)/$@; \
+	else \
+		sed 's/v$(MSVC_BASE_TOOLSET)/v$(MSVC_TOOLSET)/g' < $(top_builddir)/win32/vs$(MSVC_BASE_VER)/$@ > $(top_builddir)/win32/vs$(MSVC_VER)/$@; \
+	fi
+
+%.props: $(top_builddir)/win32/vs$(MSVC_BASE_VER)/Makefile
+	if test -e $(top_srcdir)/win32/vs$(MSVC_BASE_VER)/$@; then \
+		sed 's/<VSVer>$(MSVC_BASE_VER)<\/VSVer>/<VSVer>$(MSVC_VER)<\/VSVer>/g' < $(top_srcdir)/win32/vs$(MSVC_BASE_VER)/$@ > $(top_builddir)/win32/vs$(MSVC_VER)/$@; \
+	else \
+		sed 's/<VSVer>$(MSVC_BASE_VER)<\/VSVer>/<VSVer>$(MSVC_VER)<\/VSVer>/g' < $(top_builddir)/win32/vs$(MSVC_BASE_VER)/$@ > $(top_builddir)/win32/vs$(MSVC_VER)/$@; \
+	fi
+
+%.vcxproj.filters:
+	if test -e $(top_srcdir)/win32/vs$(MSVC_BASE_VER)/$@; then \
+		cp $(top_srcdir)/win32/vs$(MSVC_BASE_VER)/$@ $(top_builddir)/win32/vs$(MSVC_VER)/$@; \
+	else \
+		cp $(top_builddir)/win32/vs$(MSVC_BASE_VER)/$@ $(top_builddir)/win32/vs$(MSVC_VER)/$@; \
+	fi

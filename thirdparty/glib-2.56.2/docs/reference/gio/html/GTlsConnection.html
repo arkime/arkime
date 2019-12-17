@@ -1,0 +1,1292 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GTlsConnection: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="tls.html" title="TLS (SSL) support">
+<link rel="prev" href="GTlsCertificate.html" title="GTlsCertificate">
+<link rel="next" href="GTlsClientConnection.html" title="GTlsClientConnection">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GTlsConnection.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GTlsConnection.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_derived_interfaces">  <span class="dim">|</span> 
+                  <a href="#GTlsConnection.derived-interfaces" class="shortcut">Known Derived Interfaces</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GTlsConnection.properties" class="shortcut">Properties</a></span><span id="nav_signals">  <span class="dim">|</span> 
+                  <a href="#GTlsConnection.signals" class="shortcut">Signals</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="tls.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GTlsCertificate.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GTlsClientConnection.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GTlsConnection"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GTlsConnection.top_of_page"></a>GTlsConnection</span></h2>
+<p>GTlsConnection — TLS connection type</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GTlsConnection.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsConnection.html#g-tls-connection-set-certificate" title="g_tls_connection_set_certificate ()">g_tls_connection_set_certificate</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="returnvalue">GTlsCertificate</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GTlsConnection.html#g-tls-connection-get-certificate" title="g_tls_connection_get_certificate ()">g_tls_connection_get_certificate</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="returnvalue">GTlsCertificate</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GTlsConnection.html#g-tls-connection-get-peer-certificate" title="g_tls_connection_get_peer_certificate ()">g_tls_connection_get_peer_certificate</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-TLS-Overview.html#GTlsCertificateFlags" title="enum GTlsCertificateFlags"><span class="returnvalue">GTlsCertificateFlags</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsConnection.html#g-tls-connection-get-peer-certificate-errors" title="g_tls_connection_get_peer_certificate_errors ()">g_tls_connection_get_peer_certificate_errors</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsConnection.html#g-tls-connection-set-require-close-notify" title="g_tls_connection_set_require_close_notify ()">g_tls_connection_set_require_close_notify</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsConnection.html#g-tls-connection-get-require-close-notify" title="g_tls_connection_get_require_close_notify ()">g_tls_connection_get_require_close_notify</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsConnection.html#g-tls-connection-set-rehandshake-mode" title="g_tls_connection_set_rehandshake_mode ()">g_tls_connection_set_rehandshake_mode</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GTlsConnection.html#GTlsRehandshakeMode" title="enum GTlsRehandshakeMode"><span class="returnvalue">GTlsRehandshakeMode</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsConnection.html#g-tls-connection-get-rehandshake-mode" title="g_tls_connection_get_rehandshake_mode ()">g_tls_connection_get_rehandshake_mode</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsConnection.html#g-tls-connection-set-use-system-certdb" title="g_tls_connection_set_use_system_certdb ()">g_tls_connection_set_use_system_certdb</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsConnection.html#g-tls-connection-get-use-system-certdb" title="g_tls_connection_get_use_system_certdb ()">g_tls_connection_get_use_system_certdb</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GTlsDatabase.html" title="GTlsDatabase"><span class="returnvalue">GTlsDatabase</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GTlsConnection.html#g-tls-connection-get-database" title="g_tls_connection_get_database ()">g_tls_connection_get_database</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsConnection.html#g-tls-connection-set-database" title="g_tls_connection_set_database ()">g_tls_connection_set_database</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GTlsInteraction.html" title="GTlsInteraction"><span class="returnvalue">GTlsInteraction</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GTlsConnection.html#g-tls-connection-get-interaction" title="g_tls_connection_get_interaction ()">g_tls_connection_get_interaction</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsConnection.html#g-tls-connection-set-interaction" title="g_tls_connection_set_interaction ()">g_tls_connection_set_interaction</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsConnection.html#g-tls-connection-handshake" title="g_tls_connection_handshake ()">g_tls_connection_handshake</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsConnection.html#g-tls-connection-handshake-async" title="g_tls_connection_handshake_async ()">g_tls_connection_handshake_async</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsConnection.html#g-tls-connection-handshake-finish" title="g_tls_connection_handshake_finish ()">g_tls_connection_handshake_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsConnection.html#g-tls-connection-emit-accept-certificate" title="g_tls_connection_emit_accept_certificate ()">g_tls_connection_emit_accept_certificate</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GTlsConnection.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="property_type">
+<a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a> *</td>
+<td class="property_name"><a class="link" href="GTlsConnection.html#GTlsConnection--base-io-stream" title="The “base-io-stream” property">base-io-stream</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type">
+<a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> *</td>
+<td class="property_name"><a class="link" href="GTlsConnection.html#GTlsConnection--certificate" title="The “certificate” property">certificate</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
+<tr>
+<td class="property_type">
+<a class="link" href="GTlsDatabase.html" title="GTlsDatabase"><span class="type">GTlsDatabase</span></a> *</td>
+<td class="property_name"><a class="link" href="GTlsConnection.html#GTlsConnection--database" title="The “database” property">database</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
+<tr>
+<td class="property_type">
+<a class="link" href="GTlsInteraction.html" title="GTlsInteraction"><span class="type">GTlsInteraction</span></a> *</td>
+<td class="property_name"><a class="link" href="GTlsConnection.html#GTlsConnection--interaction" title="The “interaction” property">interaction</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
+<tr>
+<td class="property_type">
+<a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> *</td>
+<td class="property_name"><a class="link" href="GTlsConnection.html#GTlsConnection--peer-certificate" title="The “peer-certificate” property">peer-certificate</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a class="link" href="gio-TLS-Overview.html#GTlsCertificateFlags" title="enum GTlsCertificateFlags"><span class="type">GTlsCertificateFlags</span></a></td>
+<td class="property_name"><a class="link" href="GTlsConnection.html#GTlsConnection--peer-certificate-errors" title="The “peer-certificate-errors” property">peer-certificate-errors</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a class="link" href="GTlsConnection.html#GTlsRehandshakeMode" title="enum GTlsRehandshakeMode"><span class="type">GTlsRehandshakeMode</span></a></td>
+<td class="property_name"><a class="link" href="GTlsConnection.html#GTlsConnection--rehandshake-mode" title="The “rehandshake-mode” property">rehandshake-mode</a></td>
+<td class="property_flags">Read / Write / Construct</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GTlsConnection.html#GTlsConnection--require-close-notify" title="The “require-close-notify” property">require-close-notify</a></td>
+<td class="property_flags">Read / Write / Construct</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GTlsConnection.html#GTlsConnection--use-system-certdb" title="The “use-system-certdb” property">use-system-certdb</a></td>
+<td class="property_flags">Read / Write / Construct</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GTlsConnection.signals"></a><h2>Signals</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="signals_return">
+<col width="300px" class="signals_name">
+<col width="200px" class="signals_flags">
+</colgroup>
+<tbody><tr>
+<td class="signal_type"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a></td>
+<td class="signal_name"><a class="link" href="GTlsConnection.html#GTlsConnection-accept-certificate" title="The “accept-certificate” signal">accept-certificate</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GTlsConnection.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GTlsConnection.html#GTlsConnection-struct" title="GTlsConnection">GTlsConnection</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="GTlsConnection.html#GTlsRehandshakeMode" title="enum GTlsRehandshakeMode">GTlsRehandshakeMode</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GTlsConnection.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> <a class="link" href="GIOStream.html" title="GIOStream">GIOStream</a>
+        <span class="lineart">╰──</span> GTlsConnection
+</pre>
+</div>
+<div class="refsect1">
+<a name="GTlsConnection.derived-interfaces"></a><h2>Known Derived Interfaces</h2>
+<p>
+GTlsConnection is required by
+ <a class="link" href="GTlsClientConnection.html" title="GTlsClientConnection">GTlsClientConnection</a> and  <a class="link" href="GTlsServerConnection.html" title="GTlsServerConnection">GTlsServerConnection</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GTlsConnection.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GTlsConnection.description"></a><h2>Description</h2>
+<p><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> is the base TLS connection class type, which wraps
+a <a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a> and provides TLS encryption on top of it. Its
+subclasses, <a class="link" href="GTlsClientConnection.html" title="GTlsClientConnection"><span class="type">GTlsClientConnection</span></a> and <a class="link" href="GTlsServerConnection.html" title="GTlsServerConnection"><span class="type">GTlsServerConnection</span></a>,
+implement client-side and server-side TLS, respectively.</p>
+<p>For DTLS (Datagram TLS) support, see <a class="link" href="GDtlsConnection.html" title="GDtlsConnection"><span class="type">GDtlsConnection</span></a>.</p>
+</div>
+<div class="refsect1">
+<a name="GTlsConnection.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-tls-connection-set-certificate"></a><h3>g_tls_connection_set_certificate ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_tls_connection_set_certificate (<em class="parameter"><code><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> *conn</code></em>,
+                                  <em class="parameter"><code><a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> *certificate</code></em>);</pre>
+<p>This sets the certificate that <em class="parameter"><code>conn</code></em>
+ will present to its peer
+during the TLS handshake. For a <a class="link" href="GTlsServerConnection.html" title="GTlsServerConnection"><span class="type">GTlsServerConnection</span></a>, it is
+mandatory to set this, and that will normally be done at construct
+time.</p>
+<p>For a <a class="link" href="GTlsClientConnection.html" title="GTlsClientConnection"><span class="type">GTlsClientConnection</span></a>, this is optional. If a handshake fails
+with <a class="link" href="gio-TLS-Overview.html#G-TLS-ERROR-CERTIFICATE-REQUIRED:CAPS"><code class="literal">G_TLS_ERROR_CERTIFICATE_REQUIRED</code></a>, that means that the server
+requires a certificate, and if you try connecting again, you should
+call this method first. You can call
+<a class="link" href="GTlsClientConnection.html#g-tls-client-connection-get-accepted-cas" title="g_tls_client_connection_get_accepted_cas ()"><code class="function">g_tls_client_connection_get_accepted_cas()</code></a> on the failed connection
+to get a list of Certificate Authorities that the server will
+accept certificates from.</p>
+<p>(It is also possible that a server will allow the connection with
+or without a certificate; in that case, if you don't provide a
+certificate, you can tell that the server requested one by the fact
+that <a class="link" href="GTlsClientConnection.html#g-tls-client-connection-get-accepted-cas" title="g_tls_client_connection_get_accepted_cas ()"><code class="function">g_tls_client_connection_get_accepted_cas()</code></a> will return
+non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.)</p>
+<div class="refsect3">
+<a name="g-tls-connection-set-certificate.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>conn</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>certificate</p></td>
+<td class="parameter_description"><p>the certificate to use for <em class="parameter"><code>conn</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-connection-get-certificate"></a><h3>g_tls_connection_get_certificate ()</h3>
+<pre class="programlisting"><a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="returnvalue">GTlsCertificate</span></a> *
+g_tls_connection_get_certificate (<em class="parameter"><code><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> *conn</code></em>);</pre>
+<p>Gets <em class="parameter"><code>conn</code></em>
+'s certificate, as set by
+<a class="link" href="GTlsConnection.html#g-tls-connection-set-certificate" title="g_tls_connection_set_certificate ()"><code class="function">g_tls_connection_set_certificate()</code></a>.</p>
+<div class="refsect3">
+<a name="g-tls-connection-get-certificate.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>conn</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-connection-get-certificate.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>conn</code></em>
+'s certificate, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-connection-get-peer-certificate"></a><h3>g_tls_connection_get_peer_certificate ()</h3>
+<pre class="programlisting"><a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="returnvalue">GTlsCertificate</span></a> *
+g_tls_connection_get_peer_certificate (<em class="parameter"><code><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> *conn</code></em>);</pre>
+<p>Gets <em class="parameter"><code>conn</code></em>
+'s peer's certificate after the handshake has completed.
+(It is not set during the emission of
+<a class="link" href="GTlsConnection.html#GTlsConnection-accept-certificate" title="The “accept-certificate” signal"><span class="type">“accept-certificate”</span></a>.)</p>
+<div class="refsect3">
+<a name="g-tls-connection-get-peer-certificate.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>conn</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-connection-get-peer-certificate.returns"></a><h4>Returns</h4>
+<p><em class="parameter"><code>conn</code></em>
+'s peer's certificate, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-connection-get-peer-certificate-errors"></a><h3>g_tls_connection_get_peer_certificate_errors ()</h3>
+<pre class="programlisting"><a class="link" href="gio-TLS-Overview.html#GTlsCertificateFlags" title="enum GTlsCertificateFlags"><span class="returnvalue">GTlsCertificateFlags</span></a>
+g_tls_connection_get_peer_certificate_errors
+                               (<em class="parameter"><code><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> *conn</code></em>);</pre>
+<p>Gets the errors associated with validating <em class="parameter"><code>conn</code></em>
+'s peer's
+certificate, after the handshake has completed. (It is not set
+during the emission of <a class="link" href="GTlsConnection.html#GTlsConnection-accept-certificate" title="The “accept-certificate” signal"><span class="type">“accept-certificate”</span></a>.)</p>
+<div class="refsect3">
+<a name="g-tls-connection-get-peer-certificate-errors.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>conn</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-connection-get-peer-certificate-errors.returns"></a><h4>Returns</h4>
+<p> <em class="parameter"><code>conn</code></em>
+'s peer's certificate errors</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-connection-set-require-close-notify"></a><h3>g_tls_connection_set_require_close_notify ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_tls_connection_set_require_close_notify
+                               (<em class="parameter"><code><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> *conn</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> require_close_notify</code></em>);</pre>
+<p>Sets whether or not <em class="parameter"><code>conn</code></em>
+ expects a proper TLS close notification
+before the connection is closed. If this is <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> (the default),
+then <em class="parameter"><code>conn</code></em>
+ will expect to receive a TLS close notification from its
+peer before the connection is closed, and will return a
+<a class="link" href="gio-TLS-Overview.html#G-TLS-ERROR-EOF:CAPS"><code class="literal">G_TLS_ERROR_EOF</code></a> error if the connection is closed without proper
+notification (since this may indicate a network error, or
+man-in-the-middle attack).</p>
+<p>In some protocols, the application will know whether or not the
+connection was closed cleanly based on application-level data
+(because the application-level data includes a length field, or is
+somehow self-delimiting); in this case, the close notify is
+redundant and sometimes omitted. (TLS 1.1 explicitly allows this;
+in TLS 1.0 it is technically an error, but often done anyway.) You
+can use <a class="link" href="GTlsConnection.html#g-tls-connection-set-require-close-notify" title="g_tls_connection_set_require_close_notify ()"><code class="function">g_tls_connection_set_require_close_notify()</code></a> to tell <em class="parameter"><code>conn</code></em>
+
+to allow an "unannounced" connection close, in which case the close
+will show up as a 0-length read, as in a non-TLS
+<a class="link" href="GSocketConnection.html" title="GSocketConnection"><span class="type">GSocketConnection</span></a>, and it is up to the application to check that
+the data has been fully received.</p>
+<p>Note that this only affects the behavior when the peer closes the
+connection; when the application calls <a class="link" href="GIOStream.html#g-io-stream-close" title="g_io_stream_close ()"><code class="function">g_io_stream_close()</code></a> itself
+on <em class="parameter"><code>conn</code></em>
+, this will send a close notification regardless of the
+setting of this property. If you explicitly want to do an unclean
+close, you can close <em class="parameter"><code>conn</code></em>
+'s <a class="link" href="GTlsConnection.html#GTlsConnection--base-io-stream" title="The “base-io-stream” property"><span class="type">“base-io-stream”</span></a> rather
+than closing <em class="parameter"><code>conn</code></em>
+ itself, but note that this may only be done when no other
+operations are pending on <em class="parameter"><code>conn</code></em>
+ or the base I/O stream.</p>
+<div class="refsect3">
+<a name="g-tls-connection-set-require-close-notify.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>conn</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>require_close_notify</p></td>
+<td class="parameter_description"><p>whether or not to require close notification</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-connection-get-require-close-notify"></a><h3>g_tls_connection_get_require_close_notify ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_tls_connection_get_require_close_notify
+                               (<em class="parameter"><code><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> *conn</code></em>);</pre>
+<p>Tests whether or not <em class="parameter"><code>conn</code></em>
+ expects a proper TLS close notification
+when the connection is closed. See
+<a class="link" href="GTlsConnection.html#g-tls-connection-set-require-close-notify" title="g_tls_connection_set_require_close_notify ()"><code class="function">g_tls_connection_set_require_close_notify()</code></a> for details.</p>
+<div class="refsect3">
+<a name="g-tls-connection-get-require-close-notify.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>conn</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-connection-get-require-close-notify.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>conn</code></em>
+requires a proper TLS close
+notification.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-connection-set-rehandshake-mode"></a><h3>g_tls_connection_set_rehandshake_mode ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_tls_connection_set_rehandshake_mode (<em class="parameter"><code><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> *conn</code></em>,
+                                       <em class="parameter"><code><a class="link" href="GTlsConnection.html#GTlsRehandshakeMode" title="enum GTlsRehandshakeMode"><span class="type">GTlsRehandshakeMode</span></a> mode</code></em>);</pre>
+<p>Sets how <em class="parameter"><code>conn</code></em>
+ behaves with respect to rehandshaking requests.</p>
+<p><a class="link" href="GTlsConnection.html#G-TLS-REHANDSHAKE-NEVER:CAPS"><code class="literal">G_TLS_REHANDSHAKE_NEVER</code></a> means that it will never agree to
+rehandshake after the initial handshake is complete. (For a client,
+this means it will refuse rehandshake requests from the server, and
+for a server, this means it will close the connection with an error
+if the client attempts to rehandshake.)</p>
+<p><a class="link" href="GTlsConnection.html#G-TLS-REHANDSHAKE-SAFELY:CAPS"><code class="literal">G_TLS_REHANDSHAKE_SAFELY</code></a> means that the connection will allow a
+rehandshake only if the other end of the connection supports the
+TLS <code class="literal">renegotiation_info</code> extension. This is the default behavior,
+but means that rehandshaking will not work against older
+implementations that do not support that extension.</p>
+<p><a class="link" href="GTlsConnection.html#G-TLS-REHANDSHAKE-UNSAFELY:CAPS"><code class="literal">G_TLS_REHANDSHAKE_UNSAFELY</code></a> means that the connection will allow
+rehandshaking even without the <code class="literal">renegotiation_info</code> extension. On
+the server side in particular, this is not recommended, since it
+leaves the server open to certain attacks. However, this mode is
+necessary if you need to allow renegotiation with older client
+software.</p>
+<div class="refsect3">
+<a name="g-tls-connection-set-rehandshake-mode.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>conn</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mode</p></td>
+<td class="parameter_description"><p>the rehandshaking mode</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-connection-get-rehandshake-mode"></a><h3>g_tls_connection_get_rehandshake_mode ()</h3>
+<pre class="programlisting"><a class="link" href="GTlsConnection.html#GTlsRehandshakeMode" title="enum GTlsRehandshakeMode"><span class="returnvalue">GTlsRehandshakeMode</span></a>
+g_tls_connection_get_rehandshake_mode (<em class="parameter"><code><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> *conn</code></em>);</pre>
+<p>Gets <em class="parameter"><code>conn</code></em>
+ rehandshaking mode. See
+<a class="link" href="GTlsConnection.html#g-tls-connection-set-rehandshake-mode" title="g_tls_connection_set_rehandshake_mode ()"><code class="function">g_tls_connection_set_rehandshake_mode()</code></a> for details.</p>
+<div class="refsect3">
+<a name="g-tls-connection-get-rehandshake-mode.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>conn</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-connection-get-rehandshake-mode.returns"></a><h4>Returns</h4>
+<p> <em class="parameter"><code>conn</code></em>
+'s rehandshaking mode</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-connection-set-use-system-certdb"></a><h3>g_tls_connection_set_use_system_certdb ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_tls_connection_set_use_system_certdb
+                               (<em class="parameter"><code><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> *conn</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> use_system_certdb</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_tls_connection_set_use_system_certdb</code> has been deprecated since version 2.30 and should not be used in newly-written code.</p>
+<p>Use <a class="link" href="GTlsConnection.html#g-tls-connection-set-database" title="g_tls_connection_set_database ()"><code class="function">g_tls_connection_set_database()</code></a> instead</p>
+</div>
+<p>Sets whether <em class="parameter"><code>conn</code></em>
+ uses the system certificate database to verify
+peer certificates. This is <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> by default. If set to <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a>, then
+peer certificate validation will always set the
+<a class="link" href="gio-TLS-Overview.html#G-TLS-CERTIFICATE-UNKNOWN-CA:CAPS"><code class="literal">G_TLS_CERTIFICATE_UNKNOWN_CA</code></a> error (meaning
+<a class="link" href="GTlsConnection.html#GTlsConnection-accept-certificate" title="The “accept-certificate” signal"><span class="type">“accept-certificate”</span></a> will always be emitted on
+client-side connections, unless that bit is not set in
+<a class="link" href="GTlsClientConnection.html#GTlsClientConnection--validation-flags" title="The “validation-flags” property"><span class="type">“validation-flags”</span></a>).</p>
+<div class="refsect3">
+<a name="g-tls-connection-set-use-system-certdb.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>conn</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>use_system_certdb</p></td>
+<td class="parameter_description"><p>whether to use the system certificate database</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-connection-get-use-system-certdb"></a><h3>g_tls_connection_get_use_system_certdb ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_tls_connection_get_use_system_certdb
+                               (<em class="parameter"><code><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> *conn</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_tls_connection_get_use_system_certdb</code> has been deprecated since version 2.30 and should not be used in newly-written code.</p>
+<p>Use <a class="link" href="GTlsConnection.html#g-tls-connection-get-database" title="g_tls_connection_get_database ()"><code class="function">g_tls_connection_get_database()</code></a> instead</p>
+</div>
+<p>Gets whether <em class="parameter"><code>conn</code></em>
+ uses the system certificate database to verify
+peer certificates. See <a class="link" href="GTlsConnection.html#g-tls-connection-set-use-system-certdb" title="g_tls_connection_set_use_system_certdb ()"><code class="function">g_tls_connection_set_use_system_certdb()</code></a>.</p>
+<div class="refsect3">
+<a name="g-tls-connection-get-use-system-certdb.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>conn</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-connection-get-use-system-certdb.returns"></a><h4>Returns</h4>
+<p> whether <em class="parameter"><code>conn</code></em>
+uses the system certificate database</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-connection-get-database"></a><h3>g_tls_connection_get_database ()</h3>
+<pre class="programlisting"><a class="link" href="GTlsDatabase.html" title="GTlsDatabase"><span class="returnvalue">GTlsDatabase</span></a> *
+g_tls_connection_get_database (<em class="parameter"><code><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> *conn</code></em>);</pre>
+<p>Gets the certificate database that <em class="parameter"><code>conn</code></em>
+ uses to verify
+peer certificates. See <a class="link" href="GTlsConnection.html#g-tls-connection-set-database" title="g_tls_connection_set_database ()"><code class="function">g_tls_connection_set_database()</code></a>.</p>
+<div class="refsect3">
+<a name="g-tls-connection-get-database.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>conn</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-connection-get-database.returns"></a><h4>Returns</h4>
+<p>the certificate database that <em class="parameter"><code>conn</code></em>
+uses or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-connection-set-database"></a><h3>g_tls_connection_set_database ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_tls_connection_set_database (<em class="parameter"><code><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> *conn</code></em>,
+                               <em class="parameter"><code><a class="link" href="GTlsDatabase.html" title="GTlsDatabase"><span class="type">GTlsDatabase</span></a> *database</code></em>);</pre>
+<p>Sets the certificate database that is used to verify peer certificates.
+This is set to the default database by default. See
+<a class="link" href="GTlsBackend.html#g-tls-backend-get-default-database" title="g_tls_backend_get_default_database ()"><code class="function">g_tls_backend_get_default_database()</code></a>. If set to <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, then
+peer certificate validation will always set the
+<a class="link" href="gio-TLS-Overview.html#G-TLS-CERTIFICATE-UNKNOWN-CA:CAPS"><code class="literal">G_TLS_CERTIFICATE_UNKNOWN_CA</code></a> error (meaning
+<a class="link" href="GTlsConnection.html#GTlsConnection-accept-certificate" title="The “accept-certificate” signal"><span class="type">“accept-certificate”</span></a> will always be emitted on
+client-side connections, unless that bit is not set in
+<a class="link" href="GTlsClientConnection.html#GTlsClientConnection--validation-flags" title="The “validation-flags” property"><span class="type">“validation-flags”</span></a>).</p>
+<div class="refsect3">
+<a name="g-tls-connection-set-database.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>conn</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>database</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsDatabase.html" title="GTlsDatabase"><span class="type">GTlsDatabase</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-connection-get-interaction"></a><h3>g_tls_connection_get_interaction ()</h3>
+<pre class="programlisting"><a class="link" href="GTlsInteraction.html" title="GTlsInteraction"><span class="returnvalue">GTlsInteraction</span></a> *
+g_tls_connection_get_interaction (<em class="parameter"><code><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> *conn</code></em>);</pre>
+<p>Get the object that will be used to interact with the user. It will be used
+for things like prompting the user for passwords. If <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> is returned, then
+no user interaction will occur for this connection.</p>
+<div class="refsect3">
+<a name="g-tls-connection-get-interaction.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>conn</p></td>
+<td class="parameter_description"><p>a connection</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-connection-get-interaction.returns"></a><h4>Returns</h4>
+<p>The interaction object. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-connection-set-interaction"></a><h3>g_tls_connection_set_interaction ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_tls_connection_set_interaction (<em class="parameter"><code><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> *conn</code></em>,
+                                  <em class="parameter"><code><a class="link" href="GTlsInteraction.html" title="GTlsInteraction"><span class="type">GTlsInteraction</span></a> *interaction</code></em>);</pre>
+<p>Set the object that will be used to interact with the user. It will be used
+for things like prompting the user for passwords.</p>
+<p>The <em class="parameter"><code>interaction</code></em>
+ argument will normally be a derived subclass of
+<a class="link" href="GTlsInteraction.html" title="GTlsInteraction"><span class="type">GTlsInteraction</span></a>. <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> can also be provided if no user interaction
+should occur for this connection.</p>
+<div class="refsect3">
+<a name="g-tls-connection-set-interaction.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>conn</p></td>
+<td class="parameter_description"><p>a connection</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>interaction</p></td>
+<td class="parameter_description"><p>an interaction object, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-connection-handshake"></a><h3>g_tls_connection_handshake ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_tls_connection_handshake (<em class="parameter"><code><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> *conn</code></em>,
+                            <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                            <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Attempts a TLS handshake on <em class="parameter"><code>conn</code></em>
+.</p>
+<p>On the client side, it is never necessary to call this method;
+although the connection needs to perform a handshake after
+connecting (or after sending a "STARTTLS"-type command) and may
+need to rehandshake later if the server requests it,
+<a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> will handle this for you automatically when you try
+to send or receive data on the connection. However, you can call
+<a class="link" href="GTlsConnection.html#g-tls-connection-handshake" title="g_tls_connection_handshake ()"><code class="function">g_tls_connection_handshake()</code></a> manually if you want to know for sure
+whether the initial handshake succeeded or failed (as opposed to
+just immediately trying to write to <em class="parameter"><code>conn</code></em>
+'s output stream, in which
+case if it fails, it may not be possible to tell if it failed
+before or after completing the handshake).</p>
+<p>Likewise, on the server side, although a handshake is necessary at
+the beginning of the communication, you do not need to call this
+function explicitly unless you want clearer error reporting.
+However, you may call <a class="link" href="GTlsConnection.html#g-tls-connection-handshake" title="g_tls_connection_handshake ()"><code class="function">g_tls_connection_handshake()</code></a> later on to
+renegotiate parameters (encryption methods, etc) with the client.</p>
+<p><a class="link" href="GTlsConnection.html#GTlsConnection-accept-certificate" title="The “accept-certificate” signal"><span class="type">“accept_certificate”</span></a> may be emitted during the
+handshake.</p>
+<div class="refsect3">
+<a name="g-tls-connection-handshake.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>conn</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-connection-handshake.returns"></a><h4>Returns</h4>
+<p> success or failure</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-connection-handshake-async"></a><h3>g_tls_connection_handshake_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_tls_connection_handshake_async (<em class="parameter"><code><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> *conn</code></em>,
+                                  <em class="parameter"><code><span class="type">int</span> io_priority</code></em>,
+                                  <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                  <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                  <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Asynchronously performs a TLS handshake on <em class="parameter"><code>conn</code></em>
+. See
+<a class="link" href="GTlsConnection.html#g-tls-connection-handshake" title="g_tls_connection_handshake ()"><code class="function">g_tls_connection_handshake()</code></a> for more information.</p>
+<div class="refsect3">
+<a name="g-tls-connection-handshake-async.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>conn</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>io_priority</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GAsyncResult.html#io-priority" title="I/O Priority">I/O priority</a> of the request</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>callback to call when the handshake is complete</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>the data to pass to the callback function</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-connection-handshake-finish"></a><h3>g_tls_connection_handshake_finish ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_tls_connection_handshake_finish (<em class="parameter"><code><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> *conn</code></em>,
+                                   <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                   <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Finish an asynchronous TLS handshake operation. See
+<a class="link" href="GTlsConnection.html#g-tls-connection-handshake" title="g_tls_connection_handshake ()"><code class="function">g_tls_connection_handshake()</code></a> for more information.</p>
+<div class="refsect3">
+<a name="g-tls-connection-handshake-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>conn</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> pointer, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-connection-handshake-finish.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> on failure, in which
+case <em class="parameter"><code>error</code></em>
+will be set.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-connection-emit-accept-certificate"></a><h3>g_tls_connection_emit_accept_certificate ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_tls_connection_emit_accept_certificate
+                               (<em class="parameter"><code><a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> *conn</code></em>,
+                                <em class="parameter"><code><a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> *peer_cert</code></em>,
+                                <em class="parameter"><code><a class="link" href="gio-TLS-Overview.html#GTlsCertificateFlags" title="enum GTlsCertificateFlags"><span class="type">GTlsCertificateFlags</span></a> errors</code></em>);</pre>
+<p>Used by <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a> implementations to emit the
+<a class="link" href="GTlsConnection.html#GTlsConnection-accept-certificate" title="The “accept-certificate” signal"><span class="type">“accept-certificate”</span></a> signal.</p>
+<div class="refsect3">
+<a name="g-tls-connection-emit-accept-certificate.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>conn</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>peer_cert</p></td>
+<td class="parameter_description"><p>the peer's <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>errors</p></td>
+<td class="parameter_description"><p>the problems with <em class="parameter"><code>peer_cert</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-connection-emit-accept-certificate.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if one of the signal handlers has returned
+<a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> to accept <em class="parameter"><code>peer_cert</code></em>
+</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GTlsConnection.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GTlsConnection-struct"></a><h3>GTlsConnection</h3>
+<pre class="programlisting">typedef struct _GTlsConnection GTlsConnection;</pre>
+<p>Abstract base class for the backend-specific <a class="link" href="GTlsClientConnection.html" title="GTlsClientConnection"><span class="type">GTlsClientConnection</span></a>
+and <a class="link" href="GTlsServerConnection.html" title="GTlsServerConnection"><span class="type">GTlsServerConnection</span></a> types.</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsRehandshakeMode"></a><h3>enum GTlsRehandshakeMode</h3>
+<p>When to allow rehandshaking. See
+<a class="link" href="GTlsConnection.html#g-tls-connection-set-rehandshake-mode" title="g_tls_connection_set_rehandshake_mode ()"><code class="function">g_tls_connection_set_rehandshake_mode()</code></a>.</p>
+<div class="refsect3">
+<a name="GTlsRehandshakeMode.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-REHANDSHAKE-NEVER:CAPS"></a>G_TLS_REHANDSHAKE_NEVER</p></td>
+<td class="enum_member_description">
+<p>Never allow rehandshaking</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-REHANDSHAKE-SAFELY:CAPS"></a>G_TLS_REHANDSHAKE_SAFELY</p></td>
+<td class="enum_member_description">
+<p>Allow safe rehandshaking only</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-TLS-REHANDSHAKE-UNSAFELY:CAPS"></a>G_TLS_REHANDSHAKE_UNSAFELY</p></td>
+<td class="enum_member_description">
+<p>Allow unsafe rehandshaking</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GTlsConnection.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GTlsConnection--base-io-stream"></a><h3>The <code class="literal">“base-io-stream”</code> property</h3>
+<pre class="programlisting">  “base-io-stream”           <a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a> *</pre>
+<p>The <a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a> that the connection wraps. The connection holds a reference
+to this stream, and may run operations on the stream from other threads
+throughout its lifetime. Consequently, after the <a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a> has been
+constructed, application code may only run its own operations on this
+stream when no <a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a> operations are running.</p>
+<p>Flags: Read / Write / Construct Only</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsConnection--certificate"></a><h3>The <code class="literal">“certificate”</code> property</h3>
+<pre class="programlisting">  “certificate”              <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> *</pre>
+<p>The connection's certificate; see
+<a class="link" href="GTlsConnection.html#g-tls-connection-set-certificate" title="g_tls_connection_set_certificate ()"><code class="function">g_tls_connection_set_certificate()</code></a>.</p>
+<p>Flags: Read / Write</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsConnection--database"></a><h3>The <code class="literal">“database”</code> property</h3>
+<pre class="programlisting">  “database”                 <a class="link" href="GTlsDatabase.html" title="GTlsDatabase"><span class="type">GTlsDatabase</span></a> *</pre>
+<p>The certificate database to use when verifying this TLS connection.
+If no certificate database is set, then the default database will be
+used. See <a class="link" href="GTlsBackend.html#g-tls-backend-get-default-database" title="g_tls_backend_get_default_database ()"><code class="function">g_tls_backend_get_default_database()</code></a>.</p>
+<p>Flags: Read / Write</p>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsConnection--interaction"></a><h3>The <code class="literal">“interaction”</code> property</h3>
+<pre class="programlisting">  “interaction”              <a class="link" href="GTlsInteraction.html" title="GTlsInteraction"><span class="type">GTlsInteraction</span></a> *</pre>
+<p>A <a class="link" href="GTlsInteraction.html" title="GTlsInteraction"><span class="type">GTlsInteraction</span></a> object to be used when the connection or certificate
+database need to interact with the user. This will be used to prompt the
+user for passwords where necessary.</p>
+<p>Flags: Read / Write</p>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsConnection--peer-certificate"></a><h3>The <code class="literal">“peer-certificate”</code> property</h3>
+<pre class="programlisting">  “peer-certificate”         <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> *</pre>
+<p>The connection's peer's certificate, after the TLS handshake has
+completed and the certificate has been accepted. Note in
+particular that this is not yet set during the emission of
+<a class="link" href="GTlsConnection.html#GTlsConnection-accept-certificate" title="The “accept-certificate” signal"><span class="type">“accept-certificate”</span></a>.</p>
+<p>(You can watch for a <a href="../gobject-The-Base-Object-Type.html#GObject-notify"><span class="type">“notify”</span></a> signal on this property to
+detect when a handshake has occurred.)</p>
+<p>Flags: Read</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsConnection--peer-certificate-errors"></a><h3>The <code class="literal">“peer-certificate-errors”</code> property</h3>
+<pre class="programlisting">  “peer-certificate-errors”  <a class="link" href="gio-TLS-Overview.html#GTlsCertificateFlags" title="enum GTlsCertificateFlags"><span class="type">GTlsCertificateFlags</span></a></pre>
+<p>The errors noticed-and-ignored while verifying
+<a class="link" href="GTlsConnection.html#GTlsConnection--peer-certificate" title="The “peer-certificate” property"><span class="type">“peer-certificate”</span></a>. Normally this should be 0, but
+it may not be if <a class="link" href="GTlsClientConnection.html#GTlsClientConnection--validation-flags" title="The “validation-flags” property"><span class="type">“validation-flags”</span></a> is not
+<a class="link" href="gio-TLS-Overview.html#G-TLS-CERTIFICATE-VALIDATE-ALL:CAPS"><code class="literal">G_TLS_CERTIFICATE_VALIDATE_ALL</code></a>, or if
+<a class="link" href="GTlsConnection.html#GTlsConnection-accept-certificate" title="The “accept-certificate” signal"><span class="type">“accept-certificate”</span></a> overrode the default
+behavior.</p>
+<p>Flags: Read</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsConnection--rehandshake-mode"></a><h3>The <code class="literal">“rehandshake-mode”</code> property</h3>
+<pre class="programlisting">  “rehandshake-mode”         <a class="link" href="GTlsConnection.html#GTlsRehandshakeMode" title="enum GTlsRehandshakeMode"><span class="type">GTlsRehandshakeMode</span></a></pre>
+<p>The rehandshaking mode. See
+<a class="link" href="GTlsConnection.html#g-tls-connection-set-rehandshake-mode" title="g_tls_connection_set_rehandshake_mode ()"><code class="function">g_tls_connection_set_rehandshake_mode()</code></a>.</p>
+<p>Flags: Read / Write / Construct</p>
+<p>Default value: G_TLS_REHANDSHAKE_SAFELY</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsConnection--require-close-notify"></a><h3>The <code class="literal">“require-close-notify”</code> property</h3>
+<pre class="programlisting">  “require-close-notify”     <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether or not proper TLS close notification is required.
+See <a class="link" href="GTlsConnection.html#g-tls-connection-set-require-close-notify" title="g_tls_connection_set_require_close_notify ()"><code class="function">g_tls_connection_set_require_close_notify()</code></a>.</p>
+<p>Flags: Read / Write / Construct</p>
+<p>Default value: TRUE</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsConnection--use-system-certdb"></a><h3>The <code class="literal">“use-system-certdb”</code> property</h3>
+<pre class="programlisting">  “use-system-certdb”        <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether or not the system certificate database will be used to
+verify peer certificates. See
+<a class="link" href="GTlsConnection.html#g-tls-connection-set-use-system-certdb" title="g_tls_connection_set_use_system_certdb ()"><code class="function">g_tls_connection_set_use_system_certdb()</code></a>.</p>
+<div class="warning">
+<p><code class="literal">GTlsConnection:use-system-certdb</code> has been deprecated since version 2.30 and should not be used in newly-written code.</p>
+<p>Use GTlsConnection:database instead</p>
+</div>
+<p>Flags: Read / Write / Construct</p>
+<p>Default value: TRUE</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GTlsConnection.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="GTlsConnection-accept-certificate"></a><h3>The <code class="literal">“accept-certificate”</code> signal</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+user_function (<a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a>      *conn,
+               <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a>     *peer_cert,
+               <a class="link" href="gio-TLS-Overview.html#GTlsCertificateFlags" title="enum GTlsCertificateFlags"><span class="type">GTlsCertificateFlags</span></a> errors,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>             user_data)</pre>
+<p>Emitted during the TLS handshake after the peer certificate has
+been received. You can examine <em class="parameter"><code>peer_cert</code></em>
+'s certification path by
+calling <a class="link" href="GTlsCertificate.html#g-tls-certificate-get-issuer" title="g_tls_certificate_get_issuer ()"><code class="function">g_tls_certificate_get_issuer()</code></a> on it.</p>
+<p>For a client-side connection, <em class="parameter"><code>peer_cert</code></em>
+ is the server's
+certificate, and the signal will only be emitted if the
+certificate was not acceptable according to <em class="parameter"><code>conn</code></em>
+'s
+<a class="link" href="GTlsClientConnection.html#GTlsClientConnection--validation-flags" title="The “validation-flags” property"><span class="type">“validation_flags”</span></a>. If you would like the
+certificate to be accepted despite <em class="parameter"><code>errors</code></em>
+, return <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> from the
+signal handler. Otherwise, if no handler accepts the certificate,
+the handshake will fail with <a class="link" href="gio-TLS-Overview.html#G-TLS-ERROR-BAD-CERTIFICATE:CAPS"><code class="literal">G_TLS_ERROR_BAD_CERTIFICATE</code></a>.</p>
+<p>For a server-side connection, <em class="parameter"><code>peer_cert</code></em>
+ is the certificate
+presented by the client, if this was requested via the server's
+<a class="link" href="GTlsServerConnection.html#GTlsServerConnection--authentication-mode" title="The “authentication-mode” property"><span class="type">“authentication_mode”</span></a>. On the server side,
+the signal is always emitted when the client presents a
+certificate, and the certificate will only be accepted if a
+handler returns <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>.</p>
+<p>Note that if this signal is emitted as part of asynchronous I/O
+in the main thread, then you should not attempt to interact with
+the user before returning from the signal handler. If you want to
+let the user decide whether or not to accept the certificate, you
+would have to return <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> from the signal handler on the first
+attempt, and then after the connection attempt returns a
+<a class="link" href="gio-TLS-Overview.html#G-TLS-ERROR-HANDSHAKE:CAPS"><code class="literal">G_TLS_ERROR_HANDSHAKE</code></a>, you can interact with the user, and if
+the user decides to accept the certificate, remember that fact,
+create a new connection, and return <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> from the signal handler
+the next time.</p>
+<p>If you are doing I/O in another thread, you do not
+need to worry about this, and can simply block in the signal
+handler until the UI thread returns an answer.</p>
+<div class="refsect3">
+<a name="GTlsConnection-accept-certificate.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>conn</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTlsConnection.html" title="GTlsConnection"><span class="type">GTlsConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>peer_cert</p></td>
+<td class="parameter_description"><p>the peer's <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>errors</p></td>
+<td class="parameter_description"><p>the problems with <em class="parameter"><code>peer_cert</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="GTlsConnection-accept-certificate.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> to accept <em class="parameter"><code>peer_cert</code></em>
+(which will also
+immediately end the signal emission). <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> to allow the signal
+emission to continue, which will cause the handshake to fail if
+no one else overrides it.</p>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

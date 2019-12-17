@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="glib-build-defines.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros">
+    <BinDir>$(SolutionDir)$(Configuration)\$(Platform)\bin</BinDir>
+    <GlibDoInstall>
+mkdir $(CopyDir)
+mkdir $(CopyDir)\bin
+copy $(BinDir)\$(GlibDllPrefix)glib$(GlibDllSuffix).dll $(CopyDir)\bin
+copy $(BinDir)\$(GlibDllPrefix)glib$(GlibDllSuffix).pdb $(CopyDir)\bin
+copy $(BinDir)\$(GlibDllPrefix)gthread$(GlibDllSuffix).dll $(CopyDir)\bin
+copy $(BinDir)\$(GlibDllPrefix)gthread$(GlibDllSuffix).pdb $(CopyDir)\bin
+copy $(BinDir)\$(GlibDllPrefix)gmodule$(GlibDllSuffix).dll $(CopyDir)\bin
+copy $(BinDir)\$(GlibDllPrefix)gmodule$(GlibDllSuffix).pdb $(CopyDir)\bin
+copy $(BinDir)\$(GlibDllPrefix)gobject$(GlibDllSuffix).dll $(CopyDir)\bin
+copy $(BinDir)\$(GlibDllPrefix)gobject$(GlibDllSuffix).pdb $(CopyDir)\bin
+copy $(BinDir)\$(GlibDllPrefix)gio$(GlibDllSuffix).dll $(CopyDir)\bin
+copy $(BinDir)\$(GlibDllPrefix)gio$(GlibDllSuffix).pdb $(CopyDir)\bin
+copy $(BinDir)\gspawn-win*-helper*.exe $(CopyDir)\bin
+copy $(BinDir)\gspawn-win*-helper*.pdb $(CopyDir)\bin
+copy $(BinDir)\glib-compile-schemas.exe $(CopyDir)\bin
+copy $(BinDir)\glib-compile-schemas.pdb $(CopyDir)\bin
+copy $(BinDir)\gsettings.exe $(CopyDir)\bin
+copy $(BinDir)\gsettings.pdb $(CopyDir)\bin
+copy $(BinDir)\glib-compile-resources.exe $(CopyDir)\bin
+copy $(BinDir)\glib-compile-resources.pdb $(CopyDir)\bin
+copy $(BinDir)\gresource.exe $(CopyDir)\bin
+copy $(BinDir)\gresource.pdb $(CopyDir)\bin
+copy $(BinDir)\gio-querymodules.exe $(CopyDir)\bin
+copy $(BinDir)\gio-querymodules.pdb $(CopyDir)\bin
+copy $(BinDir)\gdbus.exe $(CopyDir)\bin
+copy $(BinDir)\gdbus.pdb $(CopyDir)\bin
+copy $(BinDir)\gio.exe $(CopyDir)\bin
+copy $(BinDir)\gio.pdb $(CopyDir)\bin
+
+copy ..\..\gobject\glib-mkenums $(CopyDir)\bin
+copy ..\..\gobject\glib-genmarshal $(CopyDir)\bin
+copy ..\..\gio\gdbus-2.0\codegen\gdbus-codegen $(CopyDir)\bin
+
+mkdir $(CopyDir)\include\glib-$(ApiVersion)\glib\deprecated
+copy ..\..\msvc_recommended_pragmas.h $(CopyDir)\include\glib-$(ApiVersion)
+copy ..\..\glib\glib.h $(CopyDir)\include\glib-$(ApiVersion)
+copy ..\..\glib\glib-object.h $(CopyDir)\include\glib-$(ApiVersion)
+#include "glib.vs10.headers"
+
+copy ..\..\gmodule\gmodule.h $(CopyDir)\include\glib-$(ApiVersion)
+
+mkdir $(CopyDir)\include\glib-$(ApiVersion)\gobject
+#include "gobject.vs10.headers"
+copy ..\..\gobject\gobjectnotifyqueue.c $(CopyDir)\include\glib-$(ApiVersion)\gobject
+
+mkdir $(CopyDir)\include\glib-$(ApiVersion)\gio
+#include "gio.vs10.headers"
+
+mkdir $(CopyDir)\include\gio-win32-$(ApiVersion)\gio
+copy ..\..\gio\gwin32inputstream.h $(CopyDir)\include\gio-win32-$(ApiVersion)\gio
+copy ..\..\gio\gwin32outputstream.h $(CopyDir)\include\gio-win32-$(ApiVersion)\gio
+
+mkdir $(CopyDir)\lib\glib-$(ApiVersion)\include
+copy ..\..\glib\glibconfig.h $(CopyDir)\lib\glib-$(ApiVersion)\include
+copy $(BinDir)\glib-$(ApiVersion).lib $(CopyDir)\lib
+copy $(BinDir)\gthread-$(ApiVersion).lib $(CopyDir)\lib
+copy $(BinDir)\gmodule-$(ApiVersion).lib $(CopyDir)\lib
+copy $(BinDir)\gobject-$(ApiVersion).lib $(CopyDir)\lib
+copy $(BinDir)\gio-$(ApiVersion).lib $(CopyDir)\lib
+
+mkdir $(CopyDir)\lib\pkgconfig
+copy ..\gio-windows-2.0.pc $(CopyDir)\lib\pkgconfig
+copy ..\gio-2.0.pc $(CopyDir)\lib\pkgconfig
+copy ..\gobject-2.0.pc $(CopyDir)\lib\pkgconfig
+copy ..\gmodule-no-export-2.0.pc $(CopyDir)\lib\pkgconfig
+copy ..\gmodule-export-2.0.pc $(CopyDir)\lib\pkgconfig
+copy ..\gmodule-2.0.pc $(CopyDir)\lib\pkgconfig
+copy ..\gthread-2.0.pc $(CopyDir)\lib\pkgconfig
+copy ..\glib-2.0.pc $(CopyDir)\lib\pkgconfig
+
+mkdir $(CopyDir)\share\glib-$(ApiVersion)\schemas
+copy ..\..\gio\gschema.dtd $(CopyDir)\share\glib-$(ApiVersion)\schemas
+
+mkdir $(CopyDir)\share\glib-$(ApiVersion)\codegen
+copy ..\..\gio\gdbus-2.0\codegen\*.py $(CopyDir)\share\glib-$(ApiVersion)\codegen
+</GlibDoInstall>
+    <GlibUtilScripts>..\..\gobject\glib-mkenums;..\..\gobject\glib-genmarshal;..\..\gio\gdbus-2.0\codegen\gdbus-codegen</GlibUtilScripts>
+    <GlibPCFiles>..\gio-windows-2.0.pc;..\gio-2.0.pc;..\gobject-2.0.pc;..\gmodule-no-export-2.0.pc;..\gmodule-export-2.0.pc;..\gmodule-2.0.pc;..\gthread-2.0.pc;..\glib-2.0.pc</GlibPCFiles>
+    <GenGLibMKEnums>$(PythonDir)\python.exe ..\gen_util_scripts.py --type=glib-mkenums --version=$(GlibVersion)</GenGLibMKEnums>
+    <GenGLibGenmarshal>$(PythonDir)\python.exe ..\gen_util_scripts.py --type=glib-genmarshal --version=$(GlibVersion)</GenGLibGenmarshal>
+    <GenGDBusCodegen>$(PythonDir)\python.exe ..\gen_util_scripts.py --type=gdbus-codegen --version=$(GlibVersion)</GenGDBusCodegen>
+    <GlibGenPC>(if not exist $(CopyDir) mkdir $(CopyDir)) &amp; ($(PythonDir)\python.exe ..\glibpc.py --prefix=$(CopyDir) --version=$(GlibVersion))</GlibGenPC>
+  </PropertyGroup>
+  <PropertyGroup>
+    <_PropertySheetDisplayName>glibinstallprops</_PropertySheetDisplayName>
+  </PropertyGroup>
+  <ItemGroup>
+    <BuildMacro Include="BinDir">
+      <Value>$(BinDir)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GlibDoInstall">
+      <Value>$(GlibDoInstall)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GlibUtilScripts">
+      <Value>$(GlibUtilScripts)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GlibPCFiles">
+      <Value>$(GlibPCFiles)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GenGLibMKEnums">
+      <Value>$(GenGLibMKEnums)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GenGLibGenmarshal">
+      <Value>$(GenGLibGenmarshal)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GenGDBusCodegen">
+      <Value>$(GenGDBusCodegen)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GlibGenPC">
+      <Value>$(GlibGenPC)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

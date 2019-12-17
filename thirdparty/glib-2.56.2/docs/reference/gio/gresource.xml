@@ -1,0 +1,127 @@
+<refentry id="gresource-tool" lang="en">
+
+<refentryinfo>
+  <title>gresource</title>
+  <productname>GIO</productname>
+  <authorgroup>
+    <author>
+      <contrib>Developer</contrib>
+      <firstname>Matthias</firstname>
+      <surname>Clasen</surname>
+    </author>
+  </authorgroup>
+</refentryinfo>
+
+<refmeta>
+  <refentrytitle>gresource</refentrytitle>
+  <manvolnum>1</manvolnum>
+  <refmiscinfo class="manual">User Commands</refmiscinfo>
+</refmeta>
+
+<refnamediv>
+  <refname>gresource</refname>
+  <refpurpose>GResource tool</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+  <cmdsynopsis>
+    <command>gresource</command>
+    <arg choice="opt">--section <replaceable>SECTION</replaceable></arg>
+    <arg choice="plain">list</arg>
+    <arg choice="plain"><replaceable>FILE</replaceable></arg>
+    <arg choice="opt"><replaceable>PATH</replaceable></arg>
+  </cmdsynopsis>
+  <cmdsynopsis>
+    <command>gresource</command>
+    <arg choice="opt">--section <replaceable>SECTION</replaceable></arg>
+    <arg choice="plain">details</arg>
+    <arg choice="plain"><replaceable>FILE</replaceable></arg>
+    <arg choice="opt"><replaceable>PATH</replaceable></arg>
+  </cmdsynopsis>
+  <cmdsynopsis>
+    <command>gresource</command>
+    <arg choice="opt">--section <replaceable>SECTION</replaceable></arg>
+    <arg choice="plain">extract</arg>
+    <arg choice="plain"><replaceable>FILE</replaceable></arg>
+    <arg choice="plain"><replaceable>PATH</replaceable></arg>
+  </cmdsynopsis>
+  <cmdsynopsis>
+    <command>gresource</command>
+    <arg choice="plain">sections</arg>
+    <arg choice="plain"><replaceable>FILE</replaceable></arg>
+  </cmdsynopsis>
+  <cmdsynopsis>
+    <command>gresource</command>
+    <arg choice="plain">help</arg>
+    <arg choice="opt"><replaceable>COMMAND</replaceable></arg>
+  </cmdsynopsis>
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+<para><command>gresource</command> offers a simple commandline
+interface to <link linkend="GResource"><type>GResource</type></link>.
+It lets you list and extract resources that have been compiled
+into a resource file or included in an elf file (a binary or a
+shared library).
+</para>
+<para>
+The file to operate on is specified by the <replaceable>FILE</replaceable>
+argument.
+</para>
+<para>
+If an elf file includes multiple sections with resources, it is
+possible to select which one to operate on with the
+<arg choice="plain">--section</arg> option. Use the
+<arg choice="plain">sections</arg> command to find available sections.
+</para>
+</refsect1>
+
+<refsect1><title>Commands</title>
+<variablelist>
+
+<varlistentry>
+<term><option>list</option></term>
+<listitem><para>
+Lists resources. If <replaceable>SECTION</replaceable> is given, only
+list resources in this section. If <replaceable>PATH</replaceable> is
+given, only list matching resources.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>details</option></term>
+<listitem><para>
+Lists resources with details. If <replaceable>SECTION</replaceable>
+is given, only list resources in this section. If
+<replaceable>PATH</replaceable> is given, only list matching resources.
+Details include the section, size and compression of each resource.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>extract</option></term>
+<listitem><para>
+Extracts the resource named by <replaceable>PATH</replaceable> to stdout.
+Note that resources may contain binary data.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>sections</option></term>
+<listitem><para>
+Lists sections containing resources. This is only interesting if
+<replaceable>FILE</replaceable> is an elf file.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>help</option></term>
+<listitem><para>
+Prints help and exits.
+</para></listitem>
+</varlistentry>
+
+</variablelist>
+
+</refsect1>
+</refentry>

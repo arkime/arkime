@@ -1,0 +1,762 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GDatagramBased: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="networking.html" title="Low-level network support">
+<link rel="prev" href="GSocket.html" title="GSocket">
+<link rel="next" href="GInetAddress.html" title="GInetAddress">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GDatagramBased.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GDatagramBased.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_prerequisites">  <span class="dim">|</span> 
+                  <a href="#GDatagramBased.prerequisites" class="shortcut">Prerequisites</a></span><span id="nav_derived_interfaces">  <span class="dim">|</span> 
+                  <a href="#GDatagramBased.derived-interfaces" class="shortcut">Known Derived Interfaces</a></span><span id="nav_implementations">  <span class="dim">|</span> 
+                  <a href="#GDatagramBased.implementations" class="shortcut">Known Implementations</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="networking.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GSocket.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GInetAddress.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GDatagramBased"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GDatagramBased.top_of_page"></a>GDatagramBased</span></h2>
+<p>GDatagramBased — Low-level datagram communications interface</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GDatagramBased.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="GDatagramBased.html#GDatagramBasedSourceFunc" title="GDatagramBasedSourceFunc ()">*GDatagramBasedSourceFunc</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDatagramBased.html#g-datagram-based-receive-messages" title="g_datagram_based_receive_messages ()">g_datagram_based_receive_messages</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDatagramBased.html#g-datagram-based-send-messages" title="g_datagram_based_send_messages ()">g_datagram_based_send_messages</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-The-Main-Event-Loop.html#GSource"><span class="returnvalue">GSource</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDatagramBased.html#g-datagram-based-create-source" title="g_datagram_based_create_source ()">g_datagram_based_create_source</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-IO-Channels.html#GIOCondition"><span class="returnvalue">GIOCondition</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDatagramBased.html#g-datagram-based-condition-check" title="g_datagram_based_condition_check ()">g_datagram_based_condition_check</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDatagramBased.html#g-datagram-based-condition-wait" title="g_datagram_based_condition_wait ()">g_datagram_based_condition_wait</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDatagramBased.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GDatagramBased.html#GDatagramBased-struct" title="GDatagramBased">GDatagramBased</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GDatagramBased.html#GDatagramBasedInterface" title="struct GDatagramBasedInterface">GDatagramBasedInterface</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDatagramBased.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/GTypeModule.html">GInterface</a>
+    <span class="lineart">╰──</span> GDatagramBased
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDatagramBased.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GDatagramBased requires
+ <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GDatagramBased.derived-interfaces"></a><h2>Known Derived Interfaces</h2>
+<p>
+GDatagramBased is required by
+ <a class="link" href="GDtlsClientConnection.html" title="GDtlsClientConnection">GDtlsClientConnection</a>,  <a class="link" href="GDtlsConnection.html" title="GDtlsConnection">GDtlsConnection</a> and  <a class="link" href="GDtlsServerConnection.html" title="GDtlsServerConnection">GDtlsServerConnection</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GDatagramBased.implementations"></a><h2>Known Implementations</h2>
+<p>
+GDatagramBased is implemented by
+ <a class="link" href="GSocket.html" title="GSocket">GSocket</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GDatagramBased.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDatagramBased.description"></a><h2>Description</h2>
+<p>A <a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a> is a networking interface for representing datagram-based
+communications. It is a more or less direct mapping of the core parts of the
+BSD socket API in a portable GObject interface. It is implemented by
+<a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a>, which wraps the UNIX socket API on UNIX and winsock2 on Windows.</p>
+<p><a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a> is entirely platform independent, and is intended to be used
+alongside higher-level networking APIs such as <a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a>.</p>
+<p>It uses vectored scatter/gather I/O by default, allowing for many messages
+to be sent or received in a single call. Where possible, implementations of
+the interface should take advantage of vectored I/O to minimise processing
+or system calls. For example, <a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a> uses <code class="function">recvmmsg()</code> and <code class="function">sendmmsg()</code> where
+possible. Callers should take advantage of scatter/gather I/O (the use of
+multiple buffers per message) to avoid unnecessary copying of data to
+assemble or disassemble a message.</p>
+<p>Each <a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a> operation has a timeout parameter which may be negative
+for blocking behaviour, zero for non-blocking behaviour, or positive for
+timeout behaviour. A blocking operation blocks until finished or there is an
+error. A non-blocking operation will return immediately with a
+<a class="link" href="gio-GIOError.html#G-IO-ERROR-WOULD-BLOCK:CAPS"><code class="literal">G_IO_ERROR_WOULD_BLOCK</code></a> error if it cannot make progress. A timeout operation
+will block until the operation is complete or the timeout expires; if the
+timeout expires it will return what progress it made, or
+<a class="link" href="gio-GIOError.html#G-IO-ERROR-TIMED-OUT:CAPS"><code class="literal">G_IO_ERROR_TIMED_OUT</code></a> if no progress was made. To know when a call would
+successfully run you can call <a class="link" href="GDatagramBased.html#g-datagram-based-condition-check" title="g_datagram_based_condition_check ()"><code class="function">g_datagram_based_condition_check()</code></a> or
+<a class="link" href="GDatagramBased.html#g-datagram-based-condition-wait" title="g_datagram_based_condition_wait ()"><code class="function">g_datagram_based_condition_wait()</code></a>. You can also use
+<a class="link" href="GDatagramBased.html#g-datagram-based-create-source" title="g_datagram_based_create_source ()"><code class="function">g_datagram_based_create_source()</code></a> and attach it to a <a href="../glib-The-Main-Event-Loop.html#GMainContext"><span class="type">GMainContext</span></a> to get
+callbacks when I/O is possible.</p>
+<p>When running a non-blocking operation applications should always be able to
+handle getting a <a class="link" href="gio-GIOError.html#G-IO-ERROR-WOULD-BLOCK:CAPS"><code class="literal">G_IO_ERROR_WOULD_BLOCK</code></a> error even when some other function
+said that I/O was possible. This can easily happen in case of a race
+condition in the application, but it can also happen for other reasons. For
+instance, on Windows a socket is always seen as writable until a write
+returns <a class="link" href="gio-GIOError.html#G-IO-ERROR-WOULD-BLOCK:CAPS"><code class="literal">G_IO_ERROR_WOULD_BLOCK</code></a>.</p>
+<p>As with <a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a>, <a href="GDatagramBased.html#GDatagramBased-struct"><span class="type">GDatagramBaseds</span></a> can be either connection oriented (for
+example, SCTP) or connectionless (for example, UDP). <a href="GDatagramBased.html#GDatagramBased-struct"><span class="type">GDatagramBaseds</span></a> must be
+datagram-based, not stream-based. The interface does not cover connection
+establishment — use methods on the underlying type to establish a connection
+before sending and receiving data through the <a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a> API. For
+connectionless socket types the target/source address is specified or
+received in each I/O operation.</p>
+<p>Like most other APIs in GLib, <a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a> is not inherently thread safe.
+To use a <a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a> concurrently from multiple threads, you must
+implement your own locking.</p>
+</div>
+<div class="refsect1">
+<a name="GDatagramBased.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="GDatagramBasedSourceFunc"></a><h3>GDatagramBasedSourceFunc ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+<span class="c_punctuation">(</span>*GDatagramBasedSourceFunc<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a> *datagram_based</code></em>,
+                             <em class="parameter"><code><a href="../glib-IO-Channels.html#GIOCondition"><span class="type">GIOCondition</span></a> condition</code></em>,
+                             <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>This is the function type of the callback used for the <a href="../glib-The-Main-Event-Loop.html#GSource"><span class="type">GSource</span></a>
+returned by <a class="link" href="GDatagramBased.html#g-datagram-based-create-source" title="g_datagram_based_create_source ()"><code class="function">g_datagram_based_create_source()</code></a>.</p>
+<div class="refsect3">
+<a name="GDatagramBasedSourceFunc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>datagram_based</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>condition</p></td>
+<td class="parameter_description"><p>the current condition at the source fired</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>data passed in by the user</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="GDatagramBasedSourceFunc.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-The-Main-Event-Loop.html#G-SOURCE-REMOVE:CAPS"><code class="literal">G_SOURCE_REMOVE</code></a> if the source should be removed,
+<a href="../glib-The-Main-Event-Loop.html#G-SOURCE-CONTINUE:CAPS"><code class="literal">G_SOURCE_CONTINUE</code></a> otherwise</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-48.html#api-index-2.48">2.48</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-datagram-based-receive-messages"></a><h3>g_datagram_based_receive_messages ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>
+g_datagram_based_receive_messages (<em class="parameter"><code><a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a> *datagram_based</code></em>,
+                                   <em class="parameter"><code><a class="link" href="GSocket.html#GInputMessage" title="struct GInputMessage"><span class="type">GInputMessage</span></a> *messages</code></em>,
+                                   <em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> num_messages</code></em>,
+                                   <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> flags</code></em>,
+                                   <em class="parameter"><code><a href="../glib-Basic-Types.html#gint64"><span class="type">gint64</span></a> timeout</code></em>,
+                                   <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                   <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Receive one or more data messages from <em class="parameter"><code>datagram_based</code></em>
+ in one go.</p>
+<p><em class="parameter"><code>messages</code></em>
+ must point to an array of <a class="link" href="GSocket.html#GInputMessage" title="struct GInputMessage"><span class="type">GInputMessage</span></a> structs and
+<em class="parameter"><code>num_messages</code></em>
+ must be the length of this array. Each <a class="link" href="GSocket.html#GInputMessage" title="struct GInputMessage"><span class="type">GInputMessage</span></a>
+contains a pointer to an array of <a class="link" href="GSocket.html#GInputVector" title="struct GInputVector"><span class="type">GInputVector</span></a> structs describing the
+buffers that the data received in each message will be written to.</p>
+<p><em class="parameter"><code>flags</code></em>
+ modify how all messages are received. The commonly available
+arguments for this are available in the <a class="link" href="GSocket.html#GSocketMsgFlags" title="enum GSocketMsgFlags"><span class="type">GSocketMsgFlags</span></a> enum, but the
+values there are the same as the system values, and the flags
+are passed in as-is, so you can pass in system-specific flags too. These
+flags affect the overall receive operation. Flags affecting individual
+messages are returned in <a class="link" href="GSocket.html#GInputMessage.flags"><span class="type">GInputMessage.flags</span></a>.</p>
+<p>The other members of <a class="link" href="GSocket.html#GInputMessage" title="struct GInputMessage"><span class="type">GInputMessage</span></a> are treated as described in its
+documentation.</p>
+<p>If <em class="parameter"><code>timeout</code></em>
+ is negative the call will block until <em class="parameter"><code>num_messages</code></em>
+ have been
+received, the connection is closed remotely (EOS), <em class="parameter"><code>cancellable</code></em>
+ is cancelled,
+or an error occurs.</p>
+<p>If <em class="parameter"><code>timeout</code></em>
+ is 0 the call will return up to <em class="parameter"><code>num_messages</code></em>
+ without blocking,
+or <a class="link" href="gio-GIOError.html#G-IO-ERROR-WOULD-BLOCK:CAPS"><code class="literal">G_IO_ERROR_WOULD_BLOCK</code></a> if no messages are queued in the operating system
+to be received.</p>
+<p>If <em class="parameter"><code>timeout</code></em>
+ is positive the call will block on the same conditions as if
+<em class="parameter"><code>timeout</code></em>
+ were negative. If the timeout is reached
+before any messages are received, <a class="link" href="gio-GIOError.html#G-IO-ERROR-TIMED-OUT:CAPS"><code class="literal">G_IO_ERROR_TIMED_OUT</code></a> is returned,
+otherwise it will return the number of messages received before timing out.
+(Note: This is effectively the behaviour of <code class="literal">MSG_WAITFORONE</code> with
+<code class="function">recvmmsg()</code>.)</p>
+<p>To be notified when messages are available, wait for the <a href="../glib-IO-Channels.html#G-IO-IN:CAPS"><code class="literal">G_IO_IN</code></a> condition.
+Note though that you may still receive <a class="link" href="gio-GIOError.html#G-IO-ERROR-WOULD-BLOCK:CAPS"><code class="literal">G_IO_ERROR_WOULD_BLOCK</code></a> from
+<a class="link" href="GDatagramBased.html#g-datagram-based-receive-messages" title="g_datagram_based_receive_messages ()"><code class="function">g_datagram_based_receive_messages()</code></a> even if you were previously notified of a
+<a href="../glib-IO-Channels.html#G-IO-IN:CAPS"><code class="literal">G_IO_IN</code></a> condition.</p>
+<p>If the remote peer closes the connection, any messages queued in the
+underlying receive buffer will be returned, and subsequent calls to
+<a class="link" href="GDatagramBased.html#g-datagram-based-receive-messages" title="g_datagram_based_receive_messages ()"><code class="function">g_datagram_based_receive_messages()</code></a> will return 0 (with no error set).</p>
+<p>If the connection is shut down or closed (by calling <a class="link" href="GSocket.html#g-socket-close" title="g_socket_close ()"><code class="function">g_socket_close()</code></a> or
+<a class="link" href="GSocket.html#g-socket-shutdown" title="g_socket_shutdown ()"><code class="function">g_socket_shutdown()</code></a> with <em class="parameter"><code>shutdown_read</code></em>
+ set, if it’s a <a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a>, for
+example), all calls to this function will return <a class="link" href="gio-GIOError.html#G-IO-ERROR-CLOSED:CAPS"><code class="literal">G_IO_ERROR_CLOSED</code></a>.</p>
+<p>On error -1 is returned and <em class="parameter"><code>error</code></em>
+ is set accordingly. An error will only
+be returned if zero messages could be received; otherwise the number of
+messages successfully received before the error will be returned. If
+<em class="parameter"><code>cancellable</code></em>
+ is cancelled, <a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a> is returned as with any
+other error.</p>
+<div class="refsect3">
+<a name="g-datagram-based-receive-messages.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>datagram_based</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>messages</p></td>
+<td class="parameter_description"><p>an array of <a class="link" href="GSocket.html#GInputMessage" title="struct GInputMessage"><span class="type">GInputMessage</span></a> structs. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=num_messages]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>num_messages</p></td>
+<td class="parameter_description"><p>the number of elements in <em class="parameter"><code>messages</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>an int containing <a class="link" href="GSocket.html#GSocketMsgFlags" title="enum GSocketMsgFlags"><span class="type">GSocketMsgFlags</span></a> flags for the overall operation</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>timeout</p></td>
+<td class="parameter_description"><p>the maximum time (in microseconds) to wait, 0 to not block, or -1
+to block indefinitely</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><code class="literal">GCancellable</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-datagram-based-receive-messages.returns"></a><h4>Returns</h4>
+<p> number of messages received, or -1 on error. Note that the number
+of messages received may be smaller than <em class="parameter"><code>num_messages</code></em>
+if <em class="parameter"><code>timeout</code></em>
+is
+zero or positive, if the peer closed the connection, or if <em class="parameter"><code>num_messages</code></em>
+was larger than <code class="literal">UIO_MAXIOV</code> (1024), in which case the caller may re-try
+to receive the remaining messages.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-48.html#api-index-2.48">2.48</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-datagram-based-send-messages"></a><h3>g_datagram_based_send_messages ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>
+g_datagram_based_send_messages (<em class="parameter"><code><a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a> *datagram_based</code></em>,
+                                <em class="parameter"><code><a class="link" href="GSocket.html#GOutputMessage" title="struct GOutputMessage"><span class="type">GOutputMessage</span></a> *messages</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> num_messages</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> flags</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gint64"><span class="type">gint64</span></a> timeout</code></em>,
+                                <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Send one or more data messages from <em class="parameter"><code>datagram_based</code></em>
+ in one go.</p>
+<p><em class="parameter"><code>messages</code></em>
+ must point to an array of <a class="link" href="GSocket.html#GOutputMessage" title="struct GOutputMessage"><span class="type">GOutputMessage</span></a> structs and
+<em class="parameter"><code>num_messages</code></em>
+ must be the length of this array. Each <a class="link" href="GSocket.html#GOutputMessage" title="struct GOutputMessage"><span class="type">GOutputMessage</span></a>
+contains an address to send the data to, and a pointer to an array of
+<a class="link" href="GSocket.html#GOutputVector" title="struct GOutputVector"><span class="type">GOutputVector</span></a> structs to describe the buffers that the data to be sent
+for each message will be gathered from.</p>
+<p><em class="parameter"><code>flags</code></em>
+ modify how the message is sent. The commonly available arguments
+for this are available in the <a class="link" href="GSocket.html#GSocketMsgFlags" title="enum GSocketMsgFlags"><span class="type">GSocketMsgFlags</span></a> enum, but the
+values there are the same as the system values, and the flags
+are passed in as-is, so you can pass in system-specific flags too.</p>
+<p>The other members of <a class="link" href="GSocket.html#GOutputMessage" title="struct GOutputMessage"><span class="type">GOutputMessage</span></a> are treated as described in its
+documentation.</p>
+<p>If <em class="parameter"><code>timeout</code></em>
+ is negative the call will block until <em class="parameter"><code>num_messages</code></em>
+ have been
+sent, <em class="parameter"><code>cancellable</code></em>
+ is cancelled, or an error occurs.</p>
+<p>If <em class="parameter"><code>timeout</code></em>
+ is 0 the call will send up to <em class="parameter"><code>num_messages</code></em>
+ without blocking,
+or will return <a class="link" href="gio-GIOError.html#G-IO-ERROR-WOULD-BLOCK:CAPS"><code class="literal">G_IO_ERROR_WOULD_BLOCK</code></a> if there is no space to send messages.</p>
+<p>If <em class="parameter"><code>timeout</code></em>
+ is positive the call will block on the same conditions as if
+<em class="parameter"><code>timeout</code></em>
+ were negative. If the timeout is reached before any messages are
+sent, <a class="link" href="gio-GIOError.html#G-IO-ERROR-TIMED-OUT:CAPS"><code class="literal">G_IO_ERROR_TIMED_OUT</code></a> is returned, otherwise it will return the number
+of messages sent before timing out.</p>
+<p>To be notified when messages can be sent, wait for the <a href="../glib-IO-Channels.html#G-IO-OUT:CAPS"><code class="literal">G_IO_OUT</code></a> condition.
+Note though that you may still receive <a class="link" href="gio-GIOError.html#G-IO-ERROR-WOULD-BLOCK:CAPS"><code class="literal">G_IO_ERROR_WOULD_BLOCK</code></a> from
+<a class="link" href="GDatagramBased.html#g-datagram-based-send-messages" title="g_datagram_based_send_messages ()"><code class="function">g_datagram_based_send_messages()</code></a> even if you were previously notified of a
+<a href="../glib-IO-Channels.html#G-IO-OUT:CAPS"><code class="literal">G_IO_OUT</code></a> condition. (On Windows in particular, this is very common due to
+the way the underlying APIs work.)</p>
+<p>If the connection is shut down or closed (by calling <a class="link" href="GSocket.html#g-socket-close" title="g_socket_close ()"><code class="function">g_socket_close()</code></a> or
+<a class="link" href="GSocket.html#g-socket-shutdown" title="g_socket_shutdown ()"><code class="function">g_socket_shutdown()</code></a> with <em class="parameter"><code>shutdown_write</code></em>
+ set, if it’s a <a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a>, for
+example), all calls to this function will return <a class="link" href="gio-GIOError.html#G-IO-ERROR-CLOSED:CAPS"><code class="literal">G_IO_ERROR_CLOSED</code></a>.</p>
+<p>On error -1 is returned and <em class="parameter"><code>error</code></em>
+ is set accordingly. An error will only
+be returned if zero messages could be sent; otherwise the number of messages
+successfully sent before the error will be returned. If <em class="parameter"><code>cancellable</code></em>
+ is
+cancelled, <a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a> is returned as with any other error.</p>
+<div class="refsect3">
+<a name="g-datagram-based-send-messages.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>datagram_based</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>messages</p></td>
+<td class="parameter_description"><p>an array of <a class="link" href="GSocket.html#GOutputMessage" title="struct GOutputMessage"><span class="type">GOutputMessage</span></a> structs. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=num_messages]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>num_messages</p></td>
+<td class="parameter_description"><p>the number of elements in <em class="parameter"><code>messages</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>an int containing <a class="link" href="GSocket.html#GSocketMsgFlags" title="enum GSocketMsgFlags"><span class="type">GSocketMsgFlags</span></a> flags</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>timeout</p></td>
+<td class="parameter_description"><p>the maximum time (in microseconds) to wait, 0 to not block, or -1
+to block indefinitely</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><code class="literal">GCancellable</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-datagram-based-send-messages.returns"></a><h4>Returns</h4>
+<p> number of messages sent, or -1 on error. Note that the number of
+messages sent may be smaller than <em class="parameter"><code>num_messages</code></em>
+if <em class="parameter"><code>timeout</code></em>
+is zero
+or positive, or if <em class="parameter"><code>num_messages</code></em>
+was larger than <code class="literal">UIO_MAXIOV</code> (1024), in
+which case the caller may re-try to send the remaining messages.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-48.html#api-index-2.48">2.48</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-datagram-based-create-source"></a><h3>g_datagram_based_create_source ()</h3>
+<pre class="programlisting"><a href="../glib-The-Main-Event-Loop.html#GSource"><span class="returnvalue">GSource</span></a> *
+g_datagram_based_create_source (<em class="parameter"><code><a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a> *datagram_based</code></em>,
+                                <em class="parameter"><code><a href="../glib-IO-Channels.html#GIOCondition"><span class="type">GIOCondition</span></a> condition</code></em>,
+                                <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>);</pre>
+<p>Creates a <a href="../glib-The-Main-Event-Loop.html#GSource"><span class="type">GSource</span></a> that can be attached to a <a href="../glib-The-Main-Event-Loop.html#GMainContext"><span class="type">GMainContext</span></a> to monitor for
+the availability of the specified <em class="parameter"><code>condition</code></em>
+ on the <a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a>. The
+<a href="../glib-The-Main-Event-Loop.html#GSource"><span class="type">GSource</span></a> keeps a reference to the <em class="parameter"><code>datagram_based</code></em>
+.</p>
+<p>The callback on the source is of the <a class="link" href="GDatagramBased.html#GDatagramBasedSourceFunc" title="GDatagramBasedSourceFunc ()"><span class="type">GDatagramBasedSourceFunc</span></a> type.</p>
+<p>It is meaningless to specify <a href="../glib-IO-Channels.html#G-IO-ERR:CAPS"><code class="literal">G_IO_ERR</code></a> or <a href="../glib-IO-Channels.html#G-IO-HUP:CAPS"><code class="literal">G_IO_HUP</code></a> in <em class="parameter"><code>condition</code></em>
+; these
+conditions will always be reported in the callback if they are true.</p>
+<p>If non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, <em class="parameter"><code>cancellable</code></em>
+ can be used to cancel the source, which will
+cause the source to trigger, reporting the current condition (which is
+likely 0 unless cancellation happened at the same time as a condition
+change). You can check for this in the callback using
+<a class="link" href="GCancellable.html#g-cancellable-is-cancelled" title="g_cancellable_is_cancelled ()"><code class="function">g_cancellable_is_cancelled()</code></a>.</p>
+<div class="refsect3">
+<a name="g-datagram-based-create-source.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>datagram_based</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>condition</p></td>
+<td class="parameter_description"><p>a <a href="../glib-IO-Channels.html#GIOCondition"><span class="type">GIOCondition</span></a> mask to monitor</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-datagram-based-create-source.returns"></a><h4>Returns</h4>
+<p>a newly allocated <a href="../glib-The-Main-Event-Loop.html#GSource"><span class="type">GSource</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-48.html#api-index-2.48">2.48</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-datagram-based-condition-check"></a><h3>g_datagram_based_condition_check ()</h3>
+<pre class="programlisting"><a href="../glib-IO-Channels.html#GIOCondition"><span class="returnvalue">GIOCondition</span></a>
+g_datagram_based_condition_check (<em class="parameter"><code><a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a> *datagram_based</code></em>,
+                                  <em class="parameter"><code><a href="../glib-IO-Channels.html#GIOCondition"><span class="type">GIOCondition</span></a> condition</code></em>);</pre>
+<p>Checks on the readiness of <em class="parameter"><code>datagram_based</code></em>
+ to perform operations. The
+operations specified in <em class="parameter"><code>condition</code></em>
+ are checked for and masked against the
+currently-satisfied conditions on <em class="parameter"><code>datagram_based</code></em>
+. The result is returned.</p>
+<p><a href="../glib-IO-Channels.html#G-IO-IN:CAPS"><code class="literal">G_IO_IN</code></a> will be set in the return value if data is available to read with
+<a class="link" href="GDatagramBased.html#g-datagram-based-receive-messages" title="g_datagram_based_receive_messages ()"><code class="function">g_datagram_based_receive_messages()</code></a>, or if the connection is closed remotely
+(EOS); and if the datagram_based has not been closed locally using some
+implementation-specific method (such as <a class="link" href="GSocket.html#g-socket-close" title="g_socket_close ()"><code class="function">g_socket_close()</code></a> or
+<a class="link" href="GSocket.html#g-socket-shutdown" title="g_socket_shutdown ()"><code class="function">g_socket_shutdown()</code></a> with <em class="parameter"><code>shutdown_read</code></em>
+ set, if it’s a <a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a>).</p>
+<p>If the connection is shut down or closed (by calling <a class="link" href="GSocket.html#g-socket-close" title="g_socket_close ()"><code class="function">g_socket_close()</code></a> or
+<a class="link" href="GSocket.html#g-socket-shutdown" title="g_socket_shutdown ()"><code class="function">g_socket_shutdown()</code></a> with <em class="parameter"><code>shutdown_read</code></em>
+ set, if it’s a <a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a>, for
+example), all calls to this function will return <a class="link" href="gio-GIOError.html#G-IO-ERROR-CLOSED:CAPS"><code class="literal">G_IO_ERROR_CLOSED</code></a>.</p>
+<p><a href="../glib-IO-Channels.html#G-IO-OUT:CAPS"><code class="literal">G_IO_OUT</code></a> will be set if it is expected that at least one byte can be sent
+using <a class="link" href="GDatagramBased.html#g-datagram-based-send-messages" title="g_datagram_based_send_messages ()"><code class="function">g_datagram_based_send_messages()</code></a> without blocking. It will not be set
+if the datagram_based has been closed locally.</p>
+<p><a href="../glib-IO-Channels.html#G-IO-HUP:CAPS"><code class="literal">G_IO_HUP</code></a> will be set if the connection has been closed locally.</p>
+<p><a href="../glib-IO-Channels.html#G-IO-ERR:CAPS"><code class="literal">G_IO_ERR</code></a> will be set if there was an asynchronous error in transmitting data
+previously enqueued using <a class="link" href="GDatagramBased.html#g-datagram-based-send-messages" title="g_datagram_based_send_messages ()"><code class="function">g_datagram_based_send_messages()</code></a>.</p>
+<p>Note that on Windows, it is possible for an operation to return
+<a class="link" href="gio-GIOError.html#G-IO-ERROR-WOULD-BLOCK:CAPS"><code class="literal">G_IO_ERROR_WOULD_BLOCK</code></a> even immediately after
+<a class="link" href="GDatagramBased.html#g-datagram-based-condition-check" title="g_datagram_based_condition_check ()"><code class="function">g_datagram_based_condition_check()</code></a> has claimed that the <a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a> is
+ready for writing. Rather than calling <a class="link" href="GDatagramBased.html#g-datagram-based-condition-check" title="g_datagram_based_condition_check ()"><code class="function">g_datagram_based_condition_check()</code></a> and
+then writing to the <a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a> if it succeeds, it is generally better to
+simply try writing right away, and try again later if the initial attempt
+returns <a class="link" href="gio-GIOError.html#G-IO-ERROR-WOULD-BLOCK:CAPS"><code class="literal">G_IO_ERROR_WOULD_BLOCK</code></a>.</p>
+<p>It is meaningless to specify <a href="../glib-IO-Channels.html#G-IO-ERR:CAPS"><code class="literal">G_IO_ERR</code></a> or <a href="../glib-IO-Channels.html#G-IO-HUP:CAPS"><code class="literal">G_IO_HUP</code></a> in <em class="parameter"><code>condition</code></em>
+; these
+conditions will always be set in the output if they are true. Apart from
+these flags, the output is guaranteed to be masked by <em class="parameter"><code>condition</code></em>
+.</p>
+<p>This call never blocks.</p>
+<div class="refsect3">
+<a name="g-datagram-based-condition-check.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>datagram_based</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>condition</p></td>
+<td class="parameter_description"><p>a <a href="../glib-IO-Channels.html#GIOCondition"><span class="type">GIOCondition</span></a> mask to check</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-datagram-based-condition-check.returns"></a><h4>Returns</h4>
+<p> the <a href="../glib-IO-Channels.html#GIOCondition"><span class="type">GIOCondition</span></a> mask of the current state</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-48.html#api-index-2.48">2.48</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-datagram-based-condition-wait"></a><h3>g_datagram_based_condition_wait ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_datagram_based_condition_wait (<em class="parameter"><code><a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a> *datagram_based</code></em>,
+                                 <em class="parameter"><code><a href="../glib-IO-Channels.html#GIOCondition"><span class="type">GIOCondition</span></a> condition</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Basic-Types.html#gint64"><span class="type">gint64</span></a> timeout</code></em>,
+                                 <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Waits for up to <em class="parameter"><code>timeout</code></em>
+ microseconds for condition to become true on
+<em class="parameter"><code>datagram_based</code></em>
+. If the condition is met, <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> is returned.</p>
+<p>If <em class="parameter"><code>cancellable</code></em>
+ is cancelled before the condition is met, or if <em class="parameter"><code>timeout</code></em>
+ is
+reached before the condition is met, then <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> is returned and <em class="parameter"><code>error</code></em>
+ is
+set appropriately (<a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a> or <a class="link" href="gio-GIOError.html#G-IO-ERROR-TIMED-OUT:CAPS"><code class="literal">G_IO_ERROR_TIMED_OUT</code></a>).</p>
+<div class="refsect3">
+<a name="g-datagram-based-condition-wait.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>datagram_based</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDatagramBased.html" title="GDatagramBased"><span class="type">GDatagramBased</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>condition</p></td>
+<td class="parameter_description"><p>a <a href="../glib-IO-Channels.html#GIOCondition"><span class="type">GIOCondition</span></a> mask to wait for</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>timeout</p></td>
+<td class="parameter_description"><p>the maximum time (in microseconds) to wait, 0 to not block, or -1
+to block indefinitely</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-datagram-based-condition-wait.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the condition was met, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-48.html#api-index-2.48">2.48</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDatagramBased.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GDatagramBased-struct"></a><h3>GDatagramBased</h3>
+<pre class="programlisting">typedef struct _GDatagramBased GDatagramBased;</pre>
+<p>Interface for socket-like objects with datagram semantics.</p>
+<p class="since">Since: <a class="link" href="api-index-2-48.html#api-index-2.48">2.48</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDatagramBasedInterface"></a><h3>struct GDatagramBasedInterface</h3>
+<pre class="programlisting">struct GDatagramBasedInterface {
+  GTypeInterface g_iface;
+
+  /* Virtual table */
+  gint          (*receive_messages)     (GDatagramBased       *datagram_based,
+                                         GInputMessage        *messages,
+                                         guint                 num_messages,
+                                         gint                  flags,
+                                         gint64                timeout,
+                                         GCancellable         *cancellable,
+                                         GError              **error);
+  gint          (*send_messages)        (GDatagramBased       *datagram_based,
+                                         GOutputMessage       *messages,
+                                         guint                 num_messages,
+                                         gint                  flags,
+                                         gint64                timeout,
+                                         GCancellable         *cancellable,
+                                         GError              **error);
+
+  GSource      *(*create_source)        (GDatagramBased       *datagram_based,
+                                         GIOCondition          condition,
+                                         GCancellable         *cancellable);
+  GIOCondition  (*condition_check)      (GDatagramBased       *datagram_based,
+                                         GIOCondition          condition);
+  gboolean      (*condition_wait)       (GDatagramBased       *datagram_based,
+                                         GIOCondition          condition,
+                                         gint64                timeout,
+                                         GCancellable         *cancellable,
+                                         GError              **error);
+};
+</pre>
+<p>Provides an interface for socket-like objects which have datagram semantics,
+following the Berkeley sockets API. The interface methods are thin wrappers
+around the corresponding virtual methods, and no pre-processing of inputs is
+implemented — so implementations of this API must handle all functionality
+documented in the interface methods.</p>
+<div class="refsect3">
+<a name="GDatagramBasedInterface.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDatagramBasedInterface.receive-messages"></a>receive_messages</code></em> ()</p></td>
+<td class="struct_member_description"><p>Virtual method for <a class="link" href="GDatagramBased.html#g-datagram-based-receive-messages" title="g_datagram_based_receive_messages ()"><code class="function">g_datagram_based_receive_messages()</code></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDatagramBasedInterface.send-messages"></a>send_messages</code></em> ()</p></td>
+<td class="struct_member_description"><p>Virtual method for <a class="link" href="GDatagramBased.html#g-datagram-based-send-messages" title="g_datagram_based_send_messages ()"><code class="function">g_datagram_based_send_messages()</code></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDatagramBasedInterface.create-source"></a>create_source</code></em> ()</p></td>
+<td class="struct_member_description"><p>Virtual method for <a class="link" href="GDatagramBased.html#g-datagram-based-create-source" title="g_datagram_based_create_source ()"><code class="function">g_datagram_based_create_source()</code></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDatagramBasedInterface.condition-check"></a>condition_check</code></em> ()</p></td>
+<td class="struct_member_description"><p>Virtual method for <a class="link" href="GDatagramBased.html#g-datagram-based-condition-check" title="g_datagram_based_condition_check ()"><code class="function">g_datagram_based_condition_check()</code></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDatagramBasedInterface.condition-wait"></a>condition_wait</code></em> ()</p></td>
+<td class="struct_member_description"><p>Virtual method for
+<a class="link" href="GDatagramBased.html#g-datagram-based-condition-wait" title="g_datagram_based_condition_wait ()"><code class="function">g_datagram_based_condition_wait()</code></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-48.html#api-index-2.48">2.48</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDatagramBased.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="GSocket.html" title="GSocket"><span class="type">GSocket</span></a>, <a class="link" href="gio-gnetworking.h.html" title="gnetworking.h">&amp;lt;gnetworking.h&gt;</a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

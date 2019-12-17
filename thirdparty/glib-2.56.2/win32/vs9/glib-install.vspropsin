@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="glibinstallprops"
+	InheritedPropertySheets=".\glib-build-defines.vsprops"
+	>
+	<UserMacro
+		Name="GlibDoInstall"
+		Value="
+mkdir $(CopyDir)&#x0D;&#x0A;
+mkdir $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\$(GlibDllPrefix)glib$(GlibDllSuffix).dll $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\$(GlibDllPrefix)glib$(GlibDllSuffix).pdb $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\$(GlibDllPrefix)gthread$(GlibDllSuffix).dll $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\$(GlibDllPrefix)gthread$(GlibDllSuffix).pdb $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\$(GlibDllPrefix)gmodule$(GlibDllSuffix).dll $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\$(GlibDllPrefix)gmodule$(GlibDllSuffix).pdb $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\$(GlibDllPrefix)gobject$(GlibDllSuffix).dll $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\$(GlibDllPrefix)gobject$(GlibDllSuffix).pdb $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\$(GlibDllPrefix)gio$(GlibDllSuffix).dll $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\$(GlibDllPrefix)gio$(GlibDllSuffix).pdb $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\gspawn-win*-helper*.exe $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\gspawn-win*-helper*.pdb $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\glib-compile-schemas.exe $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\glib-compile-schemas.pdb $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\gsettings.exe $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\gsettings.pdb $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\glib-compile-resources.exe $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\glib-compile-resources.pdb $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\gresource.exe $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\gresource.pdb $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\gio-querymodules.exe $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\gio-querymodules.pdb $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\gdbus.exe $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\gdbus.pdb $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\gio.exe $(CopyDir)\bin&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\gio.pdb $(CopyDir)\bin&#x0D;&#x0A;
+copy ..\..\gobject\glib-mkenums $(CopyDir)\bin&#x0D;&#x0A;
+copy ..\..\gobject\glib-genmarshal $(CopyDir)\bin&#x0D;&#x0A;
+copy ..\..\gio\gdbus-2.0\codegen\gdbus-codegen $(CopyDir)\bin&#x0D;&#x0A;
+
+mkdir $(CopyDir)\include\glib-$(ApiVersion)\glib\deprecated&#x0D;&#x0A;
+copy ..\..\msvc_recommended_pragmas.h $(CopyDir)\include\glib-$(ApiVersion)&#x0D;&#x0A;
+copy ..\..\glib\glib.h $(CopyDir)\include\glib-$(ApiVersion)&#x0D;&#x0A;
+copy ..\..\glib\glib-object.h $(CopyDir)\include\glib-$(ApiVersion)&#x0D;&#x0A;
+copy ..\..\gmodule\gmodule.h $(CopyDir)\include\glib-$(ApiVersion)&#x0D;&#x0A;
+#include "glib.headers"
+
+mkdir $(CopyDir)\include\glib-$(ApiVersion)\gobject&#x0D;&#x0A;
+#include "gobject.headers"
+copy ..\..\gobject\gobjectnotifyqueue.c $(CopyDir)\include\glib-$(ApiVersion)\gobject&#x0D;&#x0A;
+
+mkdir $(CopyDir)\include\glib-$(ApiVersion)\gio&#x0D;&#x0A;
+#include "gio.headers"
+
+mkdir $(CopyDir)\include\gio-win32-$(ApiVersion)\gio&#x0D;&#x0A;
+copy ..\..\gio\gwin32inputstream.h $(CopyDir)\include\gio-win32-$(ApiVersion)\gio&#x0D;&#x0A;
+copy ..\..\gio\gwin32outputstream.h $(CopyDir)\include\gio-win32-$(ApiVersion)\gio&#x0D;&#x0A;
+
+mkdir $(CopyDir)\lib\glib-$(ApiVersion)\include&#x0D;&#x0A;
+copy ..\..\glib\glibconfig.h $(CopyDir)\lib\glib-$(ApiVersion)\include&#x0D;&#x0A;
+
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\glib-$(ApiVersion).lib $(CopyDir)\lib&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\gthread-$(ApiVersion).lib $(CopyDir)\lib&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\gmodule-$(ApiVersion).lib $(CopyDir)\lib&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\gobject-$(ApiVersion).lib $(CopyDir)\lib&#x0D;&#x0A;
+copy $(SolutionDir)$(ConfigurationName)\$(PlatformName)\bin\gio-$(ApiVersion).lib $(CopyDir)\lib&#x0D;&#x0A;
+
+mkdir $(CopyDir)\lib\pkgconfig&#x0D;&#x0A;
+copy ..\gio-windows-2.0.pc $(CopyDir)\lib\pkgconfig&#x0D;&#x0A;
+copy ..\gio-2.0.pc $(CopyDir)\lib\pkgconfig&#x0D;&#x0A;
+copy ..\gobject-2.0.pc $(CopyDir)\lib\pkgconfig&#x0D;&#x0A;
+copy ..\gmodule-no-export-2.0.pc $(CopyDir)\lib\pkgconfig&#x0D;&#x0A;
+copy ..\gmodule-export-2.0.pc $(CopyDir)\lib\pkgconfig&#x0D;&#x0A;
+copy ..\gmodule-2.0.pc $(CopyDir)\lib\pkgconfig&#x0D;&#x0A;
+copy ..\gthread-2.0.pc $(CopyDir)\lib\pkgconfig&#x0D;&#x0A;
+copy ..\glib-2.0.pc $(CopyDir)\lib\pkgconfig&#x0D;&#x0A;
+
+mkdir $(CopyDir)\share\glib-$(ApiVersion)\schemas&#x0D;&#x0A;
+copy ..\..\gio\gschema.dtd $(CopyDir)\share\glib-$(ApiVersion)\schemas&#x0D;&#x0A;
+
+mkdir $(CopyDir)\share\glib-$(ApiVersion)\codegen&#x0D;&#x0A;
+copy ..\..\gio\gdbus-2.0\codegen\*.py $(CopyDir)\share\glib-$(ApiVersion)\codegen&#x0D;&#x0A;
+"
+	/>
+	<UserMacro
+		Name="GenGLibMKEnums"
+		Value="$(PythonDir)\python.exe ..\gen_util_scripts.py --type=glib-mkenums --version=$(GlibVersion)"
+	/>
+	<UserMacro
+		Name="GenGLibGenmarshal"
+		Value="$(PythonDir)\python.exe ..\gen_util_scripts.py --type=glib-genmarshal --version=$(GlibVersion)"
+	/>
+	<UserMacro
+		Name="GenGDBusCodegen"
+		Value="$(PythonDir)\python.exe ..\gen_util_scripts.py --type=gdbus-codegen --version=$(GlibVersion)"
+	/>
+	<UserMacro
+		Name="GlibGenPC"
+		Value="(if not exist $(CopyDir) mkdir $(CopyDir)) &amp; ($(PythonDir)\python.exe ..\glibpc.py --prefix=$(CopyDir) --version=$(GlibVersion))"
+	/>
+</VisualStudioPropertySheet>

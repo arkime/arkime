@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="foo">
+  <schema id="bar">
+    <key name="baz" type="s">
+      <default l10n="messages" context="foobar">'value'</default>
+    </key>
+  </schema>
+</schemalist>

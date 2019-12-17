@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GMenuModel exporter: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="application.html" title="Application support">
+<link rel="prev" href="GMenu.html" title="GMenu">
+<link rel="next" href="GDBusMenuModel.html" title="GDBusMenuModel">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gio-GMenuModel-exporter.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="application.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GMenu.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GDBusMenuModel.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-GMenuModel-exporter"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-GMenuModel-exporter.top_of_page"></a>GMenuModel exporter</span></h2>
+<p>GMenuModel exporter — Export GMenuModels on D-Bus</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gio-GMenuModel-exporter.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GMenuModel-exporter.html#g-dbus-connection-export-menu-model" title="g_dbus_connection_export_menu_model ()">g_dbus_connection_export_menu_model</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GMenuModel-exporter.html#g-dbus-connection-unexport-menu-model" title="g_dbus_connection_unexport_menu_model ()">g_dbus_connection_unexport_menu_model</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-GMenuModel-exporter.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-GMenuModel-exporter.description"></a><h2>Description</h2>
+<p>These functions support exporting a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> on D-Bus.
+The D-Bus interface that is used is a private implementation
+detail.</p>
+<p>To access an exported <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> remotely, use
+<a class="link" href="GDBusMenuModel.html#g-dbus-menu-model-get" title="g_dbus_menu_model_get ()"><code class="function">g_dbus_menu_model_get()</code></a> to obtain a <a class="link" href="GDBusMenuModel.html" title="GDBusMenuModel"><span class="type">GDBusMenuModel</span></a>.</p>
+</div>
+<div class="refsect1">
+<a name="gio-GMenuModel-exporter.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-dbus-connection-export-menu-model"></a><h3>g_dbus_connection_export_menu_model ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+g_dbus_connection_export_menu_model (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                     <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>,
+                                     <em class="parameter"><code><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a> *menu</code></em>,
+                                     <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Exports <em class="parameter"><code>menu</code></em>
+ on <em class="parameter"><code>connection</code></em>
+ at <em class="parameter"><code>object_path</code></em>
+.</p>
+<p>The implemented D-Bus API should be considered private.
+It is subject to change in the future.</p>
+<p>An object path can only have one menu model exported on it. If this
+constraint is violated, the export will fail and 0 will be
+returned (with <em class="parameter"><code>error</code></em>
+ set accordingly).</p>
+<p>You can unexport the menu model using
+<a class="link" href="gio-GMenuModel-exporter.html#g-dbus-connection-unexport-menu-model" title="g_dbus_connection_unexport_menu_model ()"><code class="function">g_dbus_connection_unexport_menu_model()</code></a> with the return value of
+this function.</p>
+<div class="refsect3">
+<a name="g-dbus-connection-export-menu-model.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>object_path</p></td>
+<td class="parameter_description"><p>a D-Bus object path</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>menu</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for an error, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-connection-export-menu-model.returns"></a><h4>Returns</h4>
+<p> the ID of the export (never zero), or 0 in case of failure</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-connection-unexport-menu-model"></a><h3>g_dbus_connection_unexport_menu_model ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_connection_unexport_menu_model (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                       <em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> export_id</code></em>);</pre>
+<p>Reverses the effect of a previous call to
+<a class="link" href="gio-GMenuModel-exporter.html#g-dbus-connection-export-menu-model" title="g_dbus_connection_export_menu_model ()"><code class="function">g_dbus_connection_export_menu_model()</code></a>.</p>
+<p>It is an error to call this function with an ID that wasn't returned
+from <a class="link" href="gio-GMenuModel-exporter.html#g-dbus-connection-export-menu-model" title="g_dbus_connection_export_menu_model ()"><code class="function">g_dbus_connection_export_menu_model()</code></a> or to call it with the
+same ID more than once.</p>
+<div class="refsect3">
+<a name="g-dbus-connection-unexport-menu-model.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>export_id</p></td>
+<td class="parameter_description"><p>the ID from <a class="link" href="gio-GMenuModel-exporter.html#g-dbus-connection-export-menu-model" title="g_dbus_connection_export_menu_model ()"><code class="function">g_dbus_connection_export_menu_model()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-GMenuModel-exporter.other_details"></a><h2>Types and Values</h2>
+</div>
+<div class="refsect1">
+<a name="gio-GMenuModel-exporter.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="GMenuModel.html" title="GMenuModel"><span class="type">GMenuModel</span></a>, <a class="link" href="GDBusMenuModel.html" title="GDBusMenuModel"><span class="type">GDBusMenuModel</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<schemalist>
+  <schema id='org.gtk.test.schema'>
+    <key name='test' type='s'>
+      <choices>
+        <choice value='before'/>
+        <choice value='after'/>
+      </choices>
+      <aliases>
+        <alias value='pre' target='befor'/>
+        <alias value='post' target='after'/>
+      </aliases>
+      <default>'after'</default>
+    </key>
+  </schema>
+</schemalist>

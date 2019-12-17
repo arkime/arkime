@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xbel version="1.0"
+      xmlns:bookmark="http://www.freedesktop.org/standards/desktop-bookmarks"
+      xmlns:mime="http://www.freedesktop.org/standards/shared-mime-info"
+>
+  <title>Singleton</title>
+  <desc>A file containing a single bookmark element</desc>
+  <bookmark>
+    <info>
+      <metadata owner="http://freedesktop.org">
+        <mime:mime-type type="application/postscript"/>
+        <bookmark:applications>
+          <bookmark:application name="populate-recent" exec="populate-recent --info %u" timestamp="1128121528" count="1"/>
+        </bookmark:applications>
+      </metadata>
+    </info>
+  </bookmark>
+</xbel>

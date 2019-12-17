@@ -1,0 +1,277 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Schema conversion: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="ch34.html" title="Migrating from GConf to GSettings">
+<link rel="prev" href="ch34s05.html" title="Change sets">
+<link rel="next" href="ch34s07.html" title="Data conversion">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch34.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="ch34s05.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="ch34s07.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="id-1.5.4.7"></a>Schema conversion</h2></div></div></div>
+<p>
+        If you are porting your application from GConf, most likely you already
+        have a GConf schema. GConf comes with a commandline tool
+        gsettings-schema-convert that can help with the task of converting
+        a GConf schema into an equivalent GSettings schema. The tool is not
+        perfect and may need assistence in some cases.
+      </p>
+<div class="example">
+<a name="id-1.5.4.7.3"></a><p class="title"><b>Example 1. An example for using gsettings-schema-convert</b></p>
+<div class="example-contents">
+<p>Running <strong class="userinput"><code>gsettings-schema-convert --gconf --xml --schema-id "org.gnome.font-rendering" --output org.gnome.font-rendering.gschema.xml destop_gnome_font_rendering.schemas</code></strong> on the following <code class="filename">desktop_gnome_font_rendering.schemas</code> file:
+        </p>
+<pre class="programlisting">
+
+&lt;?xml version="1.0"?&gt;
+&lt;gconfschemafile&gt;
+    &lt;schemalist&gt;
+        &lt;schema&gt;
+            &lt;key&gt;/schemas/desktop/gnome/font_rendering/dpi&lt;/key&gt;
+            &lt;applyto&gt;/desktop/gnome/font_rendering/dpi&lt;/applyto&gt;
+            &lt;owner&gt;gnome&lt;/owner&gt;
+            &lt;type&gt;int&lt;/type&gt;
+            &lt;default&gt;96&lt;/default&gt;
+            &lt;locale name="C"&gt;
+                &lt;short&gt;DPI&lt;/short&gt;
+                &lt;long&gt;The resolution used for converting font sizes to pixel sizes, in dots per inch.&lt;/long&gt;
+            &lt;/locale&gt;
+        &lt;/schema&gt;
+    &lt;/schemalist&gt;
+&lt;/gconfschemafile&gt;
+
+</pre>
+<p>
+produces a <code class="filename">org.gnome.font-rendering.gschema.xml</code> file with the following content:
+</p>
+<pre class="programlisting">
+
+&lt;schemalist&gt;
+  &lt;schema id="org.gnome.font-rendering" path="/desktop/gnome/font_rendering/"&gt;
+    &lt;key name="dpi" type="i"&gt;
+      &lt;default&gt;96&lt;/default&gt;
+      &lt;summary&gt;DPI&lt;/summary&gt;
+      &lt;description&gt;The resolution used for converting font sizes to pixel sizes, in dots per inch.&lt;/description&gt;
+    &lt;/key&gt;
+  &lt;/schema&gt;
+&lt;/schemalist&gt;
+
+</pre>
+<p>
+</p>
+</div>
+</div>
+<br class="example-break"><p>
+       GSettings schemas are identified at runtime by their id (as specified
+       in the XML source file). It is recommended to use a dotted name as schema
+       id, similar in style to a D-Bus bus name, e.g. "org.gnome.SessionManager".
+       In cases where the settings are general and not specific to one application,
+       the id should not use StudlyCaps, e.g. "org.gnome.font-rendering".
+       The filename used for the XML schema source is immaterial, but
+       schema compiler expects the files to have the extension
+       <code class="filename">.gschema.xml</code>. It is recommended to simply
+       use the schema id as the filename, followed by this extension,
+       e.g. <code class="filename">org.gnome.SessionManager.gschema.xml</code>.
+      </p>
+<p>
+        The XML source file for your GSettings schema needs to get installed
+        into <code class="filename">$datadir/glib-2.0/schemas</code>, and needs to be
+        compiled into a binary form. At runtime, GSettings looks for compiled
+        schemas in the <code class="filename">glib-2.0/schemas</code> subdirectories
+        of all <code class="envar">XDG_DATA_DIRS</code> directories, so if you install
+        your schema in a different location, you need to set the
+        <code class="envar">XDG_DATA_DIRS</code> environment variable appropriately.
+      </p>
+<p>
+        Schemas are compiled into binary form by the
+        glib-compile-schemas utility.
+        GIO provides a <code class="literal">glib_compile_schemas</code>
+        variable for the schema compiler.
+      </p>
+<p>
+        You can ignore all of this by using the provided m4 macros.  To
+        do this, add to your <code class="filename">configure.ac</code>:
+</p>
+<pre class="programlisting">
+GLIB_GSETTINGS
+</pre>
+<p>
+        The corresponding <code class="filename">Makefile.am</code> fragment looks like
+        this:
+</p>
+<pre class="programlisting">
+# gsettings_SCHEMAS is a list of all the schemas you want to install
+gsettings_SCHEMAS = my.app.gschema.xml
+
+# include the appropriate makefile rules for schema handling
+@GSETTINGS_RULES@
+</pre>
+<p>
+      </p>
+<p>
+        This is not sufficient on its own.  You need to mention what the source
+        of the <code class="filename">my.app.gschema.xml</code> file is.  If the schema
+        file is distributed directly with your project's tarball then a mention
+        in <code class="varname">EXTRA_DIST</code> is appropriate.  If the schema file is
+        generated from another source then you will need the appropriate rule
+        for that, plus probably an item in <code class="varname">EXTRA_DIST</code> for the
+        source files used by that rule.
+      </p>
+<p>
+        One possible pitfall in doing schema conversion is that the default
+        values in GSettings schemas are parsed by the <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> parser.
+        This means that strings need to include quotes in the XML.  Also note
+        that the types are now specified as <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> type strings.
+        </p>
+<pre class="programlisting">
+
+&lt;type&gt;string&lt;/type&gt;
+&lt;default&gt;rgb&lt;/default&gt;
+
+        </pre>
+<p>
+        becomes
+        </p>
+<pre class="programlisting">
+
+&lt;key name="rgba-order" type="s"&gt;
+  &lt;default&gt;'rgb'&lt;/default&gt; &lt;!-- note quotes --&gt;
+&lt;/key&gt;
+
+        </pre>
+<p>
+      </p>
+<p>
+        Another possible complication is that GConf specifies full paths
+        for each key, while a GSettings schema has a 'path' attribute that
+        contains the prefix for all the keys in the schema, and individual
+        keys just have a simple name. So
+        </p>
+<pre class="programlisting">
+
+&lt;key&gt;/schemas/desktop/gnome/font_rendering/antialiasing&lt;/key&gt;
+
+        </pre>
+<p>
+        becomes
+        </p>
+<pre class="programlisting">
+
+&lt;schema id="org.gnome.font" path="/desktop/gnome/font_rendering/"&gt;
+  &lt;key name="antialiasing" type="s"&gt;
+
+        </pre>
+<p>
+      </p>
+<p>
+        Default values can be localized in both GConf and GSettings schemas,
+        but GSettings uses gettext for the localization. You can specify
+        the gettext domain to use in the <code class="sgmltag-attribute">gettext-domain</code>
+        attribute. Therefore, when converting localized defaults in GConf,
+        </p>
+<pre class="programlisting">
+
+&lt;key&gt;/schemas/apps/my_app/font_size&lt;/key&gt;
+  &lt;locale name="C"&gt;
+    &lt;default&gt;18&lt;/default&gt;
+  &lt;/locale&gt;
+  &lt;locale name="be"&gt;
+    &lt;default&gt;24&lt;/default&gt;
+  &lt;/locale&gt;
+&lt;/key&gt;
+
+        </pre>
+<p>
+        becomes
+        </p>
+<pre class="programlisting">
+
+&lt;schema id="..." gettext-domain="your-domain"&gt;
+ ...
+&lt;key name="font-size" type="i"&gt;
+  &lt;default l10n="messages" context="font_size"&gt;18&lt;/default&gt;
+&lt;/key&gt;
+
+        </pre>
+<p>
+      </p>
+<p>
+        GSettings uses gettext for translation of default values.
+        The string that is translated is exactly the string that appears
+        inside of the <code class="sgmltag-starttag">&lt;default&gt;</code> element.  This
+        includes the quotation marks that appear around strings.
+        Default values must be marked with the <code class="varname">l10n</code>
+        attribute in the <code class="sgmltag-starttag">&lt;default&gt;</code> tag, which
+        should be set as equal to <code class="literal">'messages'</code> or
+        <code class="literal">'time'</code> depending on the desired category.  An
+        optional translation context can also be specified with the
+        <code class="varname">context</code> attribute, as in the example.  This
+        is usually recommended, since the string "<code class="literal">18</code>"
+        is not particularly easy to translate without context.  The
+        translated version of the default value should be stored in the
+        specified <code class="varname">gettext-domain</code>.  Care must be taken
+        during translation to ensure that all translated values remain
+        syntactically valid; mistakes here will cause runtime errors.
+      </p>
+<p>
+        GSettings schemas have optional <code class="sgmltag-starttag">&lt;summary&gt;</code> and
+        <code class="sgmltag-starttag">&lt;description&gt;</code> elements for each key which
+        correspond to the <code class="sgmltag-starttag">&lt;short&gt;</code> and
+        <code class="sgmltag-starttag">&lt;long&gt;</code> elements in the GConf schema and
+        will be used in similar ways by a future gsettings-editor, so you
+        should use the same conventions for them: The summary is just a short
+        label with no punctuation, the description can be one or more complete
+        sentences. If multiple paragraphs are desired for the description, the
+        paragraphs should be separated by a completely empty line.
+      </p>
+<p>
+        Translations for these strings will also be handled
+        via gettext, so you should arrange for these strings to be
+        extracted into your gettext catalog. One way to do that is to use
+        intltool. Since intltool 0.50.1, schema files are
+        supported, so all you have to do is to add your .gschema.xml
+        files to <code class="filename">POTFILES.in</code> with a line like
+        </p>
+<pre class="programlisting">
+        [type: gettext/gsettings]data/org.foo.MyApp.gschema.xml
+        </pre>
+<p>
+      </p>
+<p>
+        GSettings is a bit more restrictive about key names than GConf. Key
+        names in GSettings can be at most 32 characters long, and must only
+        consist of lowercase characters, numbers and dashes, with no
+        consecutive dashes. The first character must not be a number or dash,
+        and the last character cannot be '-'.
+      </p>
+<p>
+        If you are using the GConf backend for GSettings during the
+        transition, you may want to keep your key names the same they
+        were in GConf, so that existing settings in the users GConf
+        database are preserved. You can achieve this by using the
+        <code class="option">--allow-any-name</code> with the
+        glib-compile-schemas schema
+        compiler. Note that this option is only meant
+        to ease the process of porting your application, allowing parts
+        of your application to continue to access GConf and parts to use
+        GSettings. By the time you have finished porting your application
+        you must ensure that all key names are valid.
+      </p>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

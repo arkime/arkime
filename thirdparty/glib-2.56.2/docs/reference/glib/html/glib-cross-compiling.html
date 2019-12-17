@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Cross-compiling the GLib package: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib.html" title="GLib Overview">
+<link rel="prev" href="glib-building.html" title="Compiling the GLib package">
+<link rel="next" href="glib-programming.html" title="Writing GLib Applications">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-building.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-programming.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-cross-compiling"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle">Cross-compiling the GLib package</span></h2>
+<p>Cross-compiling the GLib Package — 
+How to cross-compile GLib
+</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="cross"></a><h2>Building the Library for a different architecture</h2>
+<p>
+        Cross-compilation is the process of compiling a program or
+        library on a different architecture or operating system then
+        it will be run upon. GLib is slightly more difficult to 
+        cross-compile than many packages because much of GLib is
+        about hiding differences between different systems. 
+      </p>
+<p>
+        These notes cover things specific to cross-compiling GLib;
+        for general information about cross-compilation, see the
+        <span class="application">autoconf</span> info pages.
+      </p>
+<p>
+        GLib tries to detect as much information as possible about
+        the target system by compiling and linking programs without
+        actually running anything; however, some information GLib
+        needs is not available this way. This information needs
+        to be provided to the configure script via a "cache file"
+        or by setting the cache variables in your environment.
+      </p>
+<p>
+        As an example of using a cache file, to cross compile for
+        the "MingW32" Win32 runtime environment on a Linux system,
+        create a file 'win32.cache' with the following contents:
+      </p>
+<pre class="programlisting"> 
+glib_cv_long_long_format=I64
+glib_cv_stack_grows=no
+      </pre>
+<p>
+        Then execute the following commands:
+      </p>
+<pre class="programlisting">
+PATH=/path/to/mingw32-compiler/bin:$PATH
+chmod a-w win32.cache   # prevent configure from changing it
+./configure --cache-file=win32.cache --host=mingw32
+      </pre>
+<p>
+        The complete list of cache file variables follows. Most
+         of these won't need to be set in most cases.
+      </p>
+</div>
+<div class="refsect1">
+<a name="cache-file-variables"></a><h2>Cache file variables</h2>
+<p><b>glib_cv_long_long_format=[ll/q/I64]. </b>
+           Format used by <code class="function">printf()</code> and 
+           <code class="function">scanf()</code> for 64 bit integers. "ll" is 
+           the C99 standard, and what is used by the 'trio' library
+           that GLib builds if your <code class="function">printf()</code> is 
+           insufficiently capable.
+           Doesn't need to be set if you are compiling using trio.
+        </p>
+<p><b>glib_cv_stack_grows=[yes/no]. </b>
+           Whether the stack grows up or down. Most places will want "no",
+           A few architectures, such as PA-RISC need "yes".
+        </p>
+<p><b>glib_cv_working_bcopy=[yes/no]. </b>
+           Whether your <code class="function">bcopy()</code> can handle overlapping 
+           copies. Only needs to be set if you don't have 
+           <code class="function">memmove()</code>. (Very unlikely)
+	</p>
+<p><b>glib_cv_sane_realloc=[yes/no]. </b>  
+            Whether your <code class="function">realloc()</code> conforms to ANSI C 
+            and can handle <code class="literal">NULL</code> as the first argument. 
+            Defaults to "yes" and probably doesn't need to be set.
+	</p>
+<p><b>glib_cv_have_strlcpy=[yes/no]. </b>
+            Whether you have <code class="function">strlcpy()</code> that matches 
+            OpenBSD. Defaults to "no", which is safe, since GLib uses a 
+            built-in version in that case.
+	</p>
+<p><b>glib_cv_have_qsort_r=[yes/no]. </b>
+           Whether you have <code class="function">qsort_r()</code> that matches
+           BSD. Defaults to "no", which is safe, since GLib uses a
+           built-in version in that case.
+         </p>
+<p><b>glib_cv_va_val_copy=[yes/no]. </b>
+            Whether <span class="type">va_list</span> can be copied as a pointer. If set 
+            to "no", then <code class="function">memcopy()</code> will be used. Only 
+            matters if you don't have <code class="function">va_copy()</code> or 
+            <code class="function">__va_copy()</code>. (So, doesn't matter for GCC.) 
+            Defaults to "yes" which is slightly more common than "no".
+	</p>
+<p><b>glib_cv_rtldglobal_broken=[yes/no]. </b>
+            Whether you have a bug found in OSF/1 v5.0. Defaults to "no".
+         </p>
+<p><b>glib_cv_uscore=[yes/no]. </b>
+            Whether an underscore needs to be prepended to symbols when
+            looking them up via <code class="function">dlsym()</code>. Only needs to 
+            be set if your system uses
+	    <code class="function">dlopen()</code>/<code class="function">dlsym()</code>.
+	 </p>
+<p><b>ac_cv_func_posix_getpwuid_r=[yes/no]. </b>
+            Whether you have a getpwuid_r function (in your C library,
+	    not your thread library) that conforms to the POSIX spec.
+            (Takes a 'struct passwd **' as the final argument)
+         </p>
+<p><b>ac_cv_func_nonposix_getpwuid_r=[yes/no]. </b>
+            Whether you have some variant of <code class="function">getpwuid_r()</code>
+            that doesn't conform to to the POSIX spec, but GLib might be able
+            to use (or might segfault.) Only needs to be set if 
+	    <code class="literal">ac_cv_func_posix_getpwuid_r</code> is not set. It's 
+            safest to set this to "no".
+         </p>
+<p><b>ac_cv_func_posix_getgrgid_r=[yes/no]. </b>
+            Whether you have a getgrgid_r function that conforms to
+            the POSIX spec.
+         </p>
+<p><b>glib_cv_use_pid_surrogate=[yes/no]. </b>
+            Whether to use a <code class="function">setpriority()</code> on the PID of 
+            the thread as a method for setting the priority of threads. This 
+            only needs to be set when using POSIX threads.
+         </p>
+<p><b>ac_cv_func_printf_unix98=[yes/no]. </b>
+           Whether your <code class="function">printf()</code> family supports Unix98 
+           style <code class="literal">%N$</code> positional parameters. Defaults to
+	"no".
+         </p>
+<p><b>ac_cv_func_vsnprintf_c99=[yes/no]. </b>
+            Whether you have a <code class="function">vsnprintf()</code> with C99 
+            semantics. (C99 semantics means returning the number of bytes 
+            that would have been written had the output buffer had enough 
+            space.) Defaults to "no".
+         </p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

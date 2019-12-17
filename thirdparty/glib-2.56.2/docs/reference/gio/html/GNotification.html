@@ -1,0 +1,784 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GNotification: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="application.html" title="Application support">
+<link rel="prev" href="GDBusMenuModel.html" title="GDBusMenuModel">
+<link rel="next" href="extending.html" title="Extending GIO">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GNotification.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GNotification.object-hierarchy" class="shortcut">Object Hierarchy</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="application.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GDBusMenuModel.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="extending.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GNotification"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GNotification.top_of_page"></a>GNotification</span></h2>
+<p>GNotification — User Notifications (pop up messages)</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GNotification.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GNotification.html" title="GNotification"><span class="returnvalue">GNotification</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GNotification.html#g-notification-new" title="g_notification_new ()">g_notification_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GNotification.html#g-notification-set-title" title="g_notification_set_title ()">g_notification_set_title</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GNotification.html#g-notification-set-body" title="g_notification_set_body ()">g_notification_set_body</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GNotification.html#g-notification-set-icon" title="g_notification_set_icon ()">g_notification_set_icon</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GNotification.html#g-notification-set-priority" title="g_notification_set_priority ()">g_notification_set_priority</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GNotification.html#g-notification-set-urgent" title="g_notification_set_urgent ()">g_notification_set_urgent</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GNotification.html#g-notification-set-default-action" title="g_notification_set_default_action ()">g_notification_set_default_action</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GNotification.html#g-notification-set-default-action-and-target" title="g_notification_set_default_action_and_target ()">g_notification_set_default_action_and_target</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GNotification.html#g-notification-set-default-action-and-target-value" title="g_notification_set_default_action_and_target_value ()">g_notification_set_default_action_and_target_value</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GNotification.html#g-notification-add-button" title="g_notification_add_button ()">g_notification_add_button</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GNotification.html#g-notification-add-button-with-target" title="g_notification_add_button_with_target ()">g_notification_add_button_with_target</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GNotification.html#g-notification-add-button-with-target-value" title="g_notification_add_button_with_target_value ()">g_notification_add_button_with_target_value</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GNotification.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GNotification.html#GNotification-struct" title="GNotification">GNotification</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="GNotification.html#GNotificationPriority" title="enum GNotificationPriority">GNotificationPriority</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GNotification.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GNotification
+</pre>
+</div>
+<div class="refsect1">
+<a name="GNotification.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GNotification.description"></a><h2>Description</h2>
+<p><a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a> is a mechanism for creating a notification to be shown
+to the user -- typically as a pop-up notification presented by the
+desktop environment shell.</p>
+<p>The key difference between <a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a> and other similar APIs is
+that, if supported by the desktop environment, notifications sent
+with <a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a> will persist after the application has exited,
+and even across system reboots.</p>
+<p>Since the user may click on a notification while the application is
+not running, applications using <a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a> should be able to be
+started as a D-Bus service, using <a class="link" href="GApplication.html" title="GApplication"><span class="type">GApplication</span></a>.</p>
+<p>User interaction with a notification (either the default action, or
+buttons) must be associated with actions on the application (ie:
+"app." actions).  It is not possible to route user interaction
+through the notification itself, because the object will not exist if
+the application is autostarted as a result of a notification being
+clicked.</p>
+<p>A notification can be sent with <a class="link" href="GApplication.html#g-application-send-notification" title="g_application_send_notification ()"><code class="function">g_application_send_notification()</code></a>.</p>
+</div>
+<div class="refsect1">
+<a name="GNotification.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-notification-new"></a><h3>g_notification_new ()</h3>
+<pre class="programlisting"><a class="link" href="GNotification.html" title="GNotification"><span class="returnvalue">GNotification</span></a> *
+g_notification_new (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *title</code></em>);</pre>
+<p>Creates a new <a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a> with <em class="parameter"><code>title</code></em>
+ as its title.</p>
+<p>After populating <em class="parameter"><code>notification</code></em>
+ with more details, it can be sent to
+the desktop shell with <a class="link" href="GApplication.html#g-application-send-notification" title="g_application_send_notification ()"><code class="function">g_application_send_notification()</code></a>. Changing
+any properties after this call will not have any effect until
+resending <em class="parameter"><code>notification</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-notification-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>title</p></td>
+<td class="parameter_description"><p>the title of the notification</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-notification-new.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a> instance</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-notification-set-title"></a><h3>g_notification_set_title ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_notification_set_title (<em class="parameter"><code><a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a> *notification</code></em>,
+                          <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *title</code></em>);</pre>
+<p>Sets the title of <em class="parameter"><code>notification</code></em>
+ to <em class="parameter"><code>title</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-notification-set-title.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>notification</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>title</p></td>
+<td class="parameter_description"><p>the new title for <em class="parameter"><code>notification</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-notification-set-body"></a><h3>g_notification_set_body ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_notification_set_body (<em class="parameter"><code><a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a> *notification</code></em>,
+                         <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *body</code></em>);</pre>
+<p>Sets the body of <em class="parameter"><code>notification</code></em>
+ to <em class="parameter"><code>body</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-notification-set-body.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>notification</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>body</p></td>
+<td class="parameter_description"><p>the new body for <em class="parameter"><code>notification</code></em>
+, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-notification-set-icon"></a><h3>g_notification_set_icon ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_notification_set_icon (<em class="parameter"><code><a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a> *notification</code></em>,
+                         <em class="parameter"><code><a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> *icon</code></em>);</pre>
+<p>Sets the icon of <em class="parameter"><code>notification</code></em>
+ to <em class="parameter"><code>icon</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-notification-set-icon.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>notification</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>icon</p></td>
+<td class="parameter_description"><p>the icon to be shown in <em class="parameter"><code>notification</code></em>
+, as a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-notification-set-priority"></a><h3>g_notification_set_priority ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_notification_set_priority (<em class="parameter"><code><a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a> *notification</code></em>,
+                             <em class="parameter"><code><a class="link" href="GNotification.html#GNotificationPriority" title="enum GNotificationPriority"><span class="type">GNotificationPriority</span></a> priority</code></em>);</pre>
+<p>Sets the priority of <em class="parameter"><code>notification</code></em>
+ to <em class="parameter"><code>priority</code></em>
+. See
+<a class="link" href="GNotification.html#GNotificationPriority" title="enum GNotificationPriority"><span class="type">GNotificationPriority</span></a> for possible values.</p>
+<div class="refsect3">
+<a name="g-notification-set-priority.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>notification</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>priority</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GNotification.html#GNotificationPriority" title="enum GNotificationPriority"><span class="type">GNotificationPriority</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-notification-set-urgent"></a><h3>g_notification_set_urgent ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_notification_set_urgent (<em class="parameter"><code><a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a> *notification</code></em>,
+                           <em class="parameter"><code><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> urgent</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_notification_set_urgent</code> has been deprecated since version 2.42 and should not be used in newly-written code.</p>
+<p>Since 2.42, this has been deprecated in favour of
+   <a class="link" href="GNotification.html#g-notification-set-priority" title="g_notification_set_priority ()"><code class="function">g_notification_set_priority()</code></a>.</p>
+</div>
+<p>Deprecated in favor of <a class="link" href="GNotification.html#g-notification-set-priority" title="g_notification_set_priority ()"><code class="function">g_notification_set_priority()</code></a>.</p>
+<div class="refsect3">
+<a name="g-notification-set-urgent.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>notification</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>urgent</p></td>
+<td class="parameter_description"><p><a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>notification</code></em>
+is urgent</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-notification-set-default-action"></a><h3>g_notification_set_default_action ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_notification_set_default_action (<em class="parameter"><code><a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a> *notification</code></em>,
+                                   <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *detailed_action</code></em>);</pre>
+<p>Sets the default action of <em class="parameter"><code>notification</code></em>
+ to <em class="parameter"><code>detailed_action</code></em>
+. This
+action is activated when the notification is clicked on.</p>
+<p>The action in <em class="parameter"><code>detailed_action</code></em>
+ must be an application-wide action (it
+must start with "app."). If <em class="parameter"><code>detailed_action</code></em>
+ contains a target, the
+given action will be activated with that target as its parameter.
+See <a class="link" href="GAction.html#g-action-parse-detailed-name" title="g_action_parse_detailed_name ()"><code class="function">g_action_parse_detailed_name()</code></a> for a description of the format
+for <em class="parameter"><code>detailed_action</code></em>
+.</p>
+<p>When no default action is set, the application that the notification
+was sent on is activated.</p>
+<div class="refsect3">
+<a name="g-notification-set-default-action.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>notification</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>detailed_action</p></td>
+<td class="parameter_description"><p>a detailed action name</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-notification-set-default-action-and-target"></a><h3>g_notification_set_default_action_and_target ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_notification_set_default_action_and_target
+                               (<em class="parameter"><code><a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a> *notification</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *action</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *target_format</code></em>,
+                                <em class="parameter"><code>...</code></em>);</pre>
+<p>Sets the default action of <em class="parameter"><code>notification</code></em>
+ to <em class="parameter"><code>action</code></em>
+. This action is
+activated when the notification is clicked on. It must be an
+application-wide action (it must start with "app.").</p>
+<p>If <em class="parameter"><code>target_format</code></em>
+ is given, it is used to collect remaining
+positional parameters into a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> instance, similar to
+<a href="../glib-GVariant.html#g-variant-new"><code class="function">g_variant_new()</code></a>. <em class="parameter"><code>action</code></em>
+ will be activated with that <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> as its
+parameter.</p>
+<p>When no default action is set, the application that the notification
+was sent on is activated.</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-notification-set-default-action-and-target.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>notification</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>action</p></td>
+<td class="parameter_description"><p>an action name</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>target_format</p></td>
+<td class="parameter_description"><p>a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> format string, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>positional parameters, as determined by <em class="parameter"><code>target_format</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-notification-set-default-action-and-target-value"></a><h3>g_notification_set_default_action_and_target_value ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_notification_set_default_action_and_target_value
+                               (<em class="parameter"><code><a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a> *notification</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *action</code></em>,
+                                <em class="parameter"><code><a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *target</code></em>);</pre>
+<p>Sets the default action of <em class="parameter"><code>notification</code></em>
+ to <em class="parameter"><code>action</code></em>
+. This action is
+activated when the notification is clicked on. It must be an
+application-wide action (start with "app.").</p>
+<p>If <em class="parameter"><code>target</code></em>
+ is non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, <em class="parameter"><code>action</code></em>
+ will be activated with <em class="parameter"><code>target</code></em>
+ as
+its parameter.</p>
+<p>When no default action is set, the application that the notification
+was sent on is activated.</p>
+<p><span class="annotation">[<acronym title="Rename the original symbol's name to SYMBOL."><span class="acronym">rename-to</span></acronym> g_notification_set_default_action_and_target]</span></p>
+<div class="refsect3">
+<a name="g-notification-set-default-action-and-target-value.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>notification</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>action</p></td>
+<td class="parameter_description"><p>an action name</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>target</p></td>
+<td class="parameter_description"><p>a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> to use as <em class="parameter"><code>action</code></em>
+'s parameter, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-notification-add-button"></a><h3>g_notification_add_button ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_notification_add_button (<em class="parameter"><code><a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a> *notification</code></em>,
+                           <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                           <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *detailed_action</code></em>);</pre>
+<p>Adds a button to <em class="parameter"><code>notification</code></em>
+ that activates the action in
+<em class="parameter"><code>detailed_action</code></em>
+ when clicked. That action must be an
+application-wide action (starting with "app."). If <em class="parameter"><code>detailed_action</code></em>
+
+contains a target, the action will be activated with that target as
+its parameter.</p>
+<p>See <a class="link" href="GAction.html#g-action-parse-detailed-name" title="g_action_parse_detailed_name ()"><code class="function">g_action_parse_detailed_name()</code></a> for a description of the format
+for <em class="parameter"><code>detailed_action</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-notification-add-button.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>notification</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>label</p></td>
+<td class="parameter_description"><p>label of the button</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>detailed_action</p></td>
+<td class="parameter_description"><p>a detailed action name</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-notification-add-button-with-target"></a><h3>g_notification_add_button_with_target ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_notification_add_button_with_target (<em class="parameter"><code><a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a> *notification</code></em>,
+                                       <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                                       <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *action</code></em>,
+                                       <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *target_format</code></em>,
+                                       <em class="parameter"><code>...</code></em>);</pre>
+<p>Adds a button to <em class="parameter"><code>notification</code></em>
+ that activates <em class="parameter"><code>action</code></em>
+ when clicked.
+<em class="parameter"><code>action</code></em>
+ must be an application-wide action (it must start with "app.").</p>
+<p>If <em class="parameter"><code>target_format</code></em>
+ is given, it is used to collect remaining
+positional parameters into a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> instance, similar to
+<a href="../glib-GVariant.html#g-variant-new"><code class="function">g_variant_new()</code></a>. <em class="parameter"><code>action</code></em>
+ will be activated with that <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> as its
+parameter.</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-notification-add-button-with-target.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>notification</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>label</p></td>
+<td class="parameter_description"><p>label of the button</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>action</p></td>
+<td class="parameter_description"><p>an action name</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>target_format</p></td>
+<td class="parameter_description"><p>a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> format string, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>positional parameters, as determined by <em class="parameter"><code>target_format</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-notification-add-button-with-target-value"></a><h3>g_notification_add_button_with_target_value ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_notification_add_button_with_target_value
+                               (<em class="parameter"><code><a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a> *notification</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *action</code></em>,
+                                <em class="parameter"><code><a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *target</code></em>);</pre>
+<p>Adds a button to <em class="parameter"><code>notification</code></em>
+ that activates <em class="parameter"><code>action</code></em>
+ when clicked.
+<em class="parameter"><code>action</code></em>
+ must be an application-wide action (it must start with "app.").</p>
+<p>If <em class="parameter"><code>target</code></em>
+ is non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, <em class="parameter"><code>action</code></em>
+ will be activated with <em class="parameter"><code>target</code></em>
+ as
+its parameter.</p>
+<p><span class="annotation">[<acronym title="Rename the original symbol's name to SYMBOL."><span class="acronym">rename-to</span></acronym> g_notification_add_button_with_target]</span></p>
+<div class="refsect3">
+<a name="g-notification-add-button-with-target-value.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>notification</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GNotification.html" title="GNotification"><span class="type">GNotification</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>label</p></td>
+<td class="parameter_description"><p>label of the button</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>action</p></td>
+<td class="parameter_description"><p>an action name</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>target</p></td>
+<td class="parameter_description"><p>a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> to use as <em class="parameter"><code>action</code></em>
+'s parameter, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GNotification.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GNotification-struct"></a><h3>GNotification</h3>
+<pre class="programlisting">typedef struct _GNotification GNotification;</pre>
+<p>This structure type is private and should only be accessed using the
+public APIs.</p>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GNotificationPriority"></a><h3>enum GNotificationPriority</h3>
+<p>Priority levels for <a href="GNotification.html#GNotification-struct"><span class="type">GNotifications</span></a>.</p>
+<div class="refsect3">
+<a name="GNotificationPriority.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-NOTIFICATION-PRIORITY-NORMAL:CAPS"></a>G_NOTIFICATION_PRIORITY_NORMAL</p></td>
+<td class="enum_member_description">
+<p>the default priority, to be used for the
+  majority of notifications (for example email messages, software updates,
+  completed download/sync operations)</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-NOTIFICATION-PRIORITY-LOW:CAPS"></a>G_NOTIFICATION_PRIORITY_LOW</p></td>
+<td class="enum_member_description">
+<p>for notifications that do not require
+  immediate attention - typically used for contextual background
+  information, such as contact birthdays or local weather</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-NOTIFICATION-PRIORITY-HIGH:CAPS"></a>G_NOTIFICATION_PRIORITY_HIGH</p></td>
+<td class="enum_member_description">
+<p>for events that require more attention,
+  usually because responses are time-sensitive (for example chat and SMS
+  messages or alarms)</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-NOTIFICATION-PRIORITY-URGENT:CAPS"></a>G_NOTIFICATION_PRIORITY_URGENT</p></td>
+<td class="enum_member_description">
+<p>for urgent notifications, or notifications
+  that require a response in a short space of time (for example phone calls
+  or emergency warnings)</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-42.html#api-index-2.42">2.42</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

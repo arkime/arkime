@@ -1,0 +1,21 @@
+<schemalist>
+  <!-- c extends b extends a -->
+  <schema id='a'/>
+  <schema id='b' extends='a'/>
+  <schema id='c' extends='b'/>
+
+  <!-- lists of each -->
+  <schema id='la' list-of='a'/>
+  <schema id='lb' list-of='b'/>
+  <schema id='lc' list-of='c'/>
+
+  <!-- extend 'la', override the list-of to 'b' -->
+  <schema id='lb-la' list-of='b' extends='la'/>
+
+  <!-- extend 'la', override the list-of to 'c' -->
+  <schema id='lc-la' list-of='c' extends='la'/>
+  <!-- extend 'lb', override the list-of to 'c' -->
+  <schema id='lc-lb' list-of='c' extends='lb'/>
+  <!-- extend 'lb-la', override the list-of to 'c' -->
+  <schema id='lc-lb-la' list-of='c' extends='lb-la'/>
+</schemalist>

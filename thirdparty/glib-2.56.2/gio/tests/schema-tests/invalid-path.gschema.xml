@@ -1,0 +1,3 @@
+<schemalist>
+  <schema id='invalid-path' path='/app/myapp'/>
+</schemalist>

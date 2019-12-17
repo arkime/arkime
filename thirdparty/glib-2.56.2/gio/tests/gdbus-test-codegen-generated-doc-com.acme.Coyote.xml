@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+]>
+<refentry id="gdbus-com.acme.Coyote">
+  <refmeta>    <refentrytitle role="top_of_page" id="gdbus-interface-com-acme-Coyote.top_of_page">com.acme.Coyote</refentrytitle>
+  <indexterm zone="gdbus-interface-com-acme-Coyote.top_of_page"><primary sortas="com.acme.Coyote">com.acme.Coyote</primary></indexterm>
+  </refmeta>  <refnamediv>    <refname>com.acme.Coyote</refname>    <refpurpose></refpurpose>  </refnamediv>  <refsynopsisdiv role="synopsis">
+    <title role="synopsis.title">Methods</title>
+    <synopsis>
+<link linkend="gdbus-method-com-acme-Coyote.Run">Run</link>    ();
+<link linkend="gdbus-method-com-acme-Coyote.Sleep">Sleep</link>  ();
+<link linkend="gdbus-method-com-acme-Coyote.Attack">Attack</link> ();
+</synopsis>
+  </refsynopsisdiv>
+  <refsect1 role="signal_proto">
+    <title role="signal_proto.title">Signals</title>
+    <synopsis>
+<link linkend="gdbus-signal-com-acme-Coyote.Surprised">Surprised</link> ();
+</synopsis>
+  </refsect1>
+  <refsect1 role="properties">
+    <title role="properties.title">Properties</title>
+    <synopsis>
+<link linkend="gdbus-property-com-acme-Coyote.Mood">Mood</link>  readable   s
+</synopsis>
+  </refsect1>
+<refsect1 role="desc" id="gdbus-interface-com-acme-Coyote">
+  <title role="desc.title">Description</title>
+  <para></para>
+</refsect1>
+<refsect1 role="details" id="gdbus-methods-com.acme.Coyote">
+  <title role="details.title">Method Details</title>
+<refsect2 role="method" id="gdbus-method-com-acme-Coyote.Run">
+  <title>The Run() method</title>
+  <indexterm zone="gdbus-method-com-acme-Coyote.Run"><primary sortas="com.acme.Coyote.Run">com.acme.Coyote.Run()</primary></indexterm>
+<programlisting>
+Run ();
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-com-acme-Coyote.Sleep">
+  <title>The Sleep() method</title>
+  <indexterm zone="gdbus-method-com-acme-Coyote.Sleep"><primary sortas="com.acme.Coyote.Sleep">com.acme.Coyote.Sleep()</primary></indexterm>
+<programlisting>
+Sleep ();
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-com-acme-Coyote.Attack">
+  <title>The Attack() method</title>
+  <indexterm zone="gdbus-method-com-acme-Coyote.Attack"><primary sortas="com.acme.Coyote.Attack">com.acme.Coyote.Attack()</primary></indexterm>
+<programlisting>
+Attack ();
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+<refsect1 role="details" id="gdbus-signals-com.acme.Coyote">
+  <title role="details.title">Signal Details</title>
+<refsect2 role="signal" id="gdbus-signal-com-acme-Coyote.Surprised">
+  <title>The "Surprised" signal</title>
+  <indexterm zone="gdbus-signal-com-acme-Coyote.Surprised"><primary sortas="com.acme.Coyote::Surprised">com.acme.Coyote::Surprised</primary></indexterm>
+<programlisting>
+Surprised ();
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+<refsect1 role="details" id="gdbus-properties-com.acme.Coyote">
+  <title role="details.title">Property Details</title>
+<refsect2 role="property" id="gdbus-property-com-acme-Coyote.Mood">
+  <title>The "Mood" property</title>
+  <indexterm zone="gdbus-property-com-acme-Coyote.Mood"><primary sortas="com.acme.Coyote:Mood">com.acme.Coyote:Mood</primary></indexterm>
+<programlisting>
+Mood  readable   s
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+</refentry>
+

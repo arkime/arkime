@@ -1,0 +1,203 @@
+Tor Lillqvist <tml@iki.fi>
+Hans Breuer <hans@breuer.org>
+
+Note that this document is not really maintained in a serious
+fashion. Lots of information here might be misleading or outdated. You
+have been warned.
+
+The general parts, and the section about gcc and autoconfiscated
+build, and about a Visual Studio build are by Tor Lillqvist.
+
+General
+=======
+
+For prebuilt binaries (DLLs and EXEs) and developer packages (headers,
+import libraries) of GLib, Pango, GTK+ etc for Windows, go to
+http://www.gtk.org/download-windows.html . They are for "native"
+Windows meaning they use the Win32 API and Microsoft C runtime library
+only. No POSIX (Unix) emulation layer like Cygwin in involved.
+
+To build GLib on Win32, you can use either gcc ("mingw") or the
+Microsoft compiler and tools. For the latter, MSVC6 and later have
+been used successfully. Also the Digital Mars C/C++ compiler has
+reportedly been used.
+
+You can also cross-compile GLib for Windows from Linux using the
+cross-compiling mingw packages for your distro.
+
+Note that to just *use* GLib on Windows, there is no need to build it
+yourself.
+
+On Windows setting up a correct build environment can be quite a task,
+especially if you are used to just type "./configure; make" on Linux,
+and expect things to work as smoothly on Windows.
+
+The following preprocessor macros are to be used for conditional
+compilation related to Win32 in GLib-using code:
+
+- G_OS_WIN32 is defined when compiling for native Win32, without
+  any POSIX emulation, other than to the extent provided by the
+  bundled Microsoft C library (msvcr*.dll).
+
+- G_WITH_CYGWIN is defined if compiling for the Cygwin
+  environment. Note that G_OS_WIN32 is *not* defined in that case, as
+  Cygwin is supposed to behave like Unix. G_OS_UNIX *is* defined by a GLib
+  for Cygwin.
+
+- G_PLATFORM_WIN32 is defined when either G_OS_WIN32 or G_WITH_CYGWIN
+  is defined.
+
+These macros are defined in glibconfig.h, and are thus available in
+all source files that include <glib.h>.
+
+Additionally, there are the compiler-specific macros:
+- __GNUC__ is defined when using gcc
+- _MSC_VER is defined when using the Microsoft compiler
+- __DMC__ is defined when using the Digital Mars C/C++ compiler
+
+G_OS_WIN32 implies using the Microsoft C runtime, normally
+msvcrt.dll. GLib is not known to work with the older crtdll.dll
+runtime, or the static Microsoft C runtime libraries libc.lib and
+libcmt.lib. It apparently does work with the debugging version of
+msvcrt.dll, msvcrtd.dll. If compiled with Microsoft compilers newer
+than MSVC6, it also works with their compiler-specific runtimes, like
+msvcr70.dll or msvcr80.dll. Please note that it's non totally clear if
+you would be allowed by the license to distrubute a GLib linked to
+msvcr70.dll or msvcr80.dll, as those are not part of the operating
+system, but of the MSVC product. msvcrt.dll is part of Windows.
+
+For people using Visual Studio 2005 or later:
+
+If you are building GLib-based libraries or applications, or GLib itself
+and you see a C4819 error (or warning, before C4819 is treated as an error
+in msvc_recommended_pragmas.h), please be advised that this error/warning should
+not be disregarded, as this likely means portions of the build is not being
+done correctly, as this is an issue of Visual Studio running on CJK (East Asian)
+locales.  This is an issue that also affects builds of other projects, such as
+QT, Firefox, LibreOffice/OpenOffice, Pango and GTK+, along with many other projects.
+
+To overcome this problem, please set your system's locale setting for non-Unicode to
+English (United States), reboot, and restart the build, and the code should build
+normally.  See also this GNOME Wiki page [1] that gives a bit further info on this.
+
+Building software that use GLib or GTK+
+=======================================
+
+Building software that just *uses* GLib or GTK+ also require to have
+the right compiler set up the right way. If you intend to use gcc,
+follow the relevant instructions below in that case, too.
+
+Tor uses gcc with the -mms-bitfields flag which means that in order to
+use the prebuilt DLLs (especially of GTK+), if you compile your code
+with gcc, you *must* also use that flag. This flag means that the
+struct layout rules are identical to those used by MSVC. This is
+essential if the same DLLs are to be usable both from gcc- and
+MSVC-compiled code. Such compatibility is desirable.
+
+When using the prebuilt GLib DLLs that use msvcrt.dll from code that
+uses other C runtimes like for example msvcr70.dll, one should note
+that one cannot use such GLib API that take or returns file
+descriptors. On Windows, a file descriptor (the small integer as
+returned by open() and handled by related functions, and included in
+the FILE struct) is an index into a table local to the C runtime
+DLL. A file descriptor in one C runtime DLL does not have the same
+meaning in another C runtime DLL.
+
+Building GLib
+=============
+
+Again, first decide whether you really want to do this.
+
+Before building GLib you must also have a GNU gettext-runtime
+developer package. Get prebuilt binaries of gettext-runtime from
+http://www.gtk.org/download-windows.html .
+
+Autoconfiscated build (with gcc)
+================================
+
+Tor uses gcc 3.4.5 and the rest of the mingw utilities, including MSYS
+from www.mingw.org. Somewhat earlier or later versions of gcc
+presumably also work fine.
+
+Using Cygwin's gcc with the -mno-cygwin switch is not recommended. In
+theory it should work, but Tor hasn't tested that lately. It can
+easily lead to confusing situations where one mixes headers for Cygwin
+from /usr/include with the headers for native software one really
+should use. Ditto for libraries.
+
+If you want to use mingw's gcc, install gcc, win32api, binutils and
+MSYS from www.mingw.org.
+
+Tor invokes configure using:
+
+CC='gcc -mtune=pentium3 -mthreads' CPPFLAGS='-I/opt/gnu/include' \
+	LDFLAGS='-L/opt/gnu/lib -Wl,--enable-auto-image-base' CFLAGS=-O2 \
+	./configure --disable-gtk-doc --prefix=$TARGET
+
+The /opt/gnu mentioned contains the header files for GNU and (import)
+libraries for GNU libintl. The build scripts used to produce the
+prebuilt binaries are included in the "dev" packages.
+
+Please note that the ./configure mechanism should not blindly be used
+to build a GLib to be distributed to other developers because it
+produces a compiler-dependent glibconfig.h. For instance, the typedef
+for gint64 is long long with gcc, but __int64 with MSVC.
+
+Except for this and a few other minor issues, there shouldn't be any
+reason to distribute separate GLib headers and DLLs for gcc and MSVC6
+users, as the compilers generate code that uses the same C runtime
+library.
+
+The DLL generated by either compiler is binary compatible with the
+other one. Thus one either has to manually edit glibconfig.h
+afterwards, or use the supplied glibconfig.h.win32 which has been
+produced by running configure twice, once using gcc and once using
+MSVC, and merging the resulting files with diff -D.
+
+For MSVC7 and later (Visual C++ .NET 2003, Visual C++ 2005, Visual C++
+2008 etc) it is preferred to use specific builds of GLib DLLs that use
+the same C runtime as the code that uses GLib. Such DLLs should be
+named differently than the ones that use msvcrt.dll.
+
+For GLib, the DLL that uses msvcrt.dll is called libglib-2.0-0.dll,
+and the import libraries libglib-2.0.dll.a and glib-2.0.lib. Note that
+the "2.0" is part of the "basename" of the library, it is not
+something that libtool has added. The -0 suffix is added by libtool
+and is the value of "LT_CURRENT - LT_AGE". The 0 should *not* be
+thought to be part of the version number of GLib. The LT_CURRENT -
+LT_AGE value will on purpose be kept as zero as long as binary
+compatibility is maintained. For the gory details, see configure.ac
+and libtool documentation.
+
+Building with Visual Studio
+===========================
+
+A more detailed outline of building GLib with its dependencies can
+now be found on the GNOME wiki:
+
+https://wiki.gnome.org/Projects/GTK%2B/Win32/MSVCCompilationOfGTKStack
+
+Please do not build GLib in paths that contain spaces in them, as
+this may cause problems during compilation and during usage of the
+library.
+
+In an unpacked tarball, you will find in build\win32\vs9 (VS 2008) and
+build\win32\vs10 (VS 2010) a solution file that can be used to build
+the GLib DLLs and some auxiliary programs under VS 2008 and VS 2010
+(Express Edition will suffice with the needed dependencies) respectively.
+Read the README.txt file in those folders for more
+information. Note that you will need a libintl implementation, zlib, and 
+libFFI.
+
+If you are building from a GIT checkout, you will first need to use some
+Unix-like environment or run win32/setup.py, 
+which will expand the VS 2008/2010 project files, the DLL resouce files and
+other miscellanious files required for the build.  Run win32/setup.py
+as follows:
+
+$python win32/setup.py --perl path_to_your_perl.exe
+
+for more usage on this script, run
+$python win32/setup.py -h/--help
+
+[1]: https://wiki.gnome.org/Projects/GTK%2B/Win32/MSVCCompilationOfGTKStack under "Preparations"

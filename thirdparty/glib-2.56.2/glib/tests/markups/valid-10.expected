@@ -1,0 +1,6 @@
+ELEMENT 'foo'
+bar="baz"
+bar2="baz2"
+bar3="baz3"
+  TEXT 'data'
+END 'foo'

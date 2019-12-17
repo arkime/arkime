@@ -1,0 +1,12 @@
+<schemalist>
+  <schema id='base'>
+    <key name='ranged' type='i'>
+      <range min='0' max='22'/>
+      <default>10</default>
+    </key>
+  </schema>
+
+  <schema id='sub' extends='base'>
+    <override name='ranged'>77</override>
+  </schema>
+</schemalist>

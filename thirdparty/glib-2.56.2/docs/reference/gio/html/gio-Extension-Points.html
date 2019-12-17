@@ -1,0 +1,612 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Extension Points: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="extending.html" title="Extending GIO">
+<link rel="prev" href="GIOModule.html" title="GIOModule">
+<link rel="next" href="tools.html" title="GIO Tools">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gio-Extension-Points.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="extending.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GIOModule.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="tools.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-Extension-Points"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-Extension-Points.top_of_page"></a>Extension Points</span></h2>
+<p>Extension Points — Extension Points</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gio-Extension-Points.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Extension-Points.html#g-io-extension-get-name" title="g_io_extension_get_name ()">g_io_extension_get_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Extension-Points.html#g-io-extension-get-priority" title="g_io_extension_get_priority ()">g_io_extension_get_priority</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Extension-Points.html#g-io-extension-get-type" title="g_io_extension_get_type ()">g_io_extension_get_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-Extension-Points.html#GIOExtension" title="GIOExtension"><span class="returnvalue">GIOExtension</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Extension-Points.html#g-io-extension-point-get-extension-by-name" title="g_io_extension_point_get_extension_by_name ()">g_io_extension_point_get_extension_by_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Extension-Points.html#g-io-extension-point-get-extensions" title="g_io_extension_point_get_extensions ()">g_io_extension_point_get_extensions</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Extension-Points.html#g-io-extension-point-get-required-type" title="g_io_extension_point_get_required_type ()">g_io_extension_point_get_required_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-Extension-Points.html#GIOExtension" title="GIOExtension"><span class="returnvalue">GIOExtension</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Extension-Points.html#g-io-extension-point-implement" title="g_io_extension_point_implement ()">g_io_extension_point_implement</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-Extension-Points.html#GIOExtensionPoint" title="GIOExtensionPoint"><span class="returnvalue">GIOExtensionPoint</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Extension-Points.html#g-io-extension-point-lookup" title="g_io_extension_point_lookup ()">g_io_extension_point_lookup</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-Extension-Points.html#GIOExtensionPoint" title="GIOExtensionPoint"><span class="returnvalue">GIOExtensionPoint</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Extension-Points.html#g-io-extension-point-register" title="g_io_extension_point_register ()">g_io_extension_point_register</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Extension-Points.html#g-io-extension-point-set-required-type" title="g_io_extension_point_set_required_type ()">g_io_extension_point_set_required_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../gobject-Type-Information.html#GTypeClass"><span class="returnvalue">GTypeClass</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Extension-Points.html#g-io-extension-ref-class" title="g_io_extension_ref_class ()">g_io_extension_ref_class</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-Extension-Points.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gio-Extension-Points.html#GIOExtension" title="GIOExtension">GIOExtension</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gio-Extension-Points.html#GIOExtensionPoint" title="GIOExtensionPoint">GIOExtensionPoint</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-Extension-Points.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-Extension-Points.description"></a><h2>Description</h2>
+<p><a class="link" href="gio-Extension-Points.html#GIOExtensionPoint" title="GIOExtensionPoint"><span class="type">GIOExtensionPoint</span></a> provides a mechanism for modules to extend the
+functionality of the library or application that loaded it in an 
+organized fashion.  </p>
+<p>An extension point is identified by a name, and it may optionally
+require that any implementation must be of a certain type (or derived
+thereof). Use <a class="link" href="gio-Extension-Points.html#g-io-extension-point-register" title="g_io_extension_point_register ()"><code class="function">g_io_extension_point_register()</code></a> to register an
+extension point, and <a class="link" href="gio-Extension-Points.html#g-io-extension-point-set-required-type" title="g_io_extension_point_set_required_type ()"><code class="function">g_io_extension_point_set_required_type()</code></a> to
+set a required type.</p>
+<p>A module can implement an extension point by specifying the <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> 
+that implements the functionality. Additionally, each implementation
+of an extension point has a name, and a priority. Use
+<a class="link" href="gio-Extension-Points.html#g-io-extension-point-implement" title="g_io_extension_point_implement ()"><code class="function">g_io_extension_point_implement()</code></a> to implement an extension point.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">GIOExtensionPoint</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">ep</span><span class="symbol">;</span>
+
+<span class="comment">// Register an extension point</span>
+<span class="normal">ep </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gio-Extension-Points.html#g-io-extension-point-register">g_io_extension_point_register</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"my-extension-point"</span><span class="symbol">);</span>
+<span class="function"><a href="gio-Extension-Points.html#g-io-extension-point-set-required-type">g_io_extension_point_set_required_type</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ep</span><span class="symbol">,</span><span class="normal"> MY_TYPE_EXAMPLE</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="comment">// Implement an extension point</span>
+<span class="function"><a href="../gobject-Type-Information.html#G-DEFINE-TYPE:CAPS">G_DEFINE_TYPE</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">MyExampleImpl</span><span class="symbol">,</span><span class="normal"> my_example_impl</span><span class="symbol">,</span><span class="normal"> MY_TYPE_EXAMPLE</span><span class="symbol">)</span>
+<span class="function"><a href="gio-Extension-Points.html#g-io-extension-point-implement">g_io_extension_point_implement</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"my-extension-point"</span><span class="symbol">,</span>
+<span class="normal">                                </span><span class="function">my_example_impl_get_type</span><span class="normal"> </span><span class="symbol">(),</span>
+<span class="normal">                                </span><span class="string">"my-example"</span><span class="symbol">,</span>
+<span class="normal">                                </span><span class="number">10</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p> It is up to the code that registered the extension point how
+ it uses the implementations that have been associated with it.
+ Depending on the use case, it may use all implementations, or
+ only the one with the highest priority, or pick a specific
+ one by name.</p>
+<p> To avoid opening all modules just to find out what extension
+ points they implement, GIO makes use of a caching mechanism,
+ see gio-querymodules.
+ You are expected to run this command after installing a
+ GIO module.</p>
+<p> The <code class="literal">GIO_EXTRA_MODULES</code> environment variable can be used to
+ specify additional directories to automatically load modules
+ from. This environment variable has the same syntax as the
+ <code class="literal">PATH</code>. If two modules have the same base name in different
+ directories, then the latter one will be ignored. If additional
+ directories are specified GIO will load modules from the built-in
+ directory last.</p>
+</div>
+<div class="refsect1">
+<a name="gio-Extension-Points.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-io-extension-get-name"></a><h3>g_io_extension_get_name ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+g_io_extension_get_name (<em class="parameter"><code><a class="link" href="gio-Extension-Points.html#GIOExtension" title="GIOExtension"><span class="type">GIOExtension</span></a> *extension</code></em>);</pre>
+<p>Gets the name under which <em class="parameter"><code>extension</code></em>
+ was registered.</p>
+<p>Note that the same type may be registered as extension
+for multiple extension points, under different names.</p>
+<div class="refsect3">
+<a name="g-io-extension-get-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>extension</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Extension-Points.html#GIOExtension" title="GIOExtension"><span class="type">GIOExtension</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-extension-get-name.returns"></a><h4>Returns</h4>
+<p> the name of <em class="parameter"><code>extension</code></em>
+.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-extension-get-priority"></a><h3>g_io_extension_get_priority ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>
+g_io_extension_get_priority (<em class="parameter"><code><a class="link" href="gio-Extension-Points.html#GIOExtension" title="GIOExtension"><span class="type">GIOExtension</span></a> *extension</code></em>);</pre>
+<p>Gets the priority with which <em class="parameter"><code>extension</code></em>
+ was registered.</p>
+<div class="refsect3">
+<a name="g-io-extension-get-priority.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>extension</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Extension-Points.html#GIOExtension" title="GIOExtension"><span class="type">GIOExtension</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-extension-get-priority.returns"></a><h4>Returns</h4>
+<p> the priority of <em class="parameter"><code>extension</code></em>
+</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-extension-get-type"></a><h3>g_io_extension_get_type ()</h3>
+<pre class="programlisting"><a href="../gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+g_io_extension_get_type (<em class="parameter"><code><a class="link" href="gio-Extension-Points.html#GIOExtension" title="GIOExtension"><span class="type">GIOExtension</span></a> *extension</code></em>);</pre>
+<p>Gets the type associated with <em class="parameter"><code>extension</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-io-extension-get-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>extension</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Extension-Points.html#GIOExtension" title="GIOExtension"><span class="type">GIOExtension</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-extension-get-type.returns"></a><h4>Returns</h4>
+<p> the type of <em class="parameter"><code>extension</code></em>
+</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-extension-point-get-extension-by-name"></a><h3>g_io_extension_point_get_extension_by_name ()</h3>
+<pre class="programlisting"><a class="link" href="gio-Extension-Points.html#GIOExtension" title="GIOExtension"><span class="returnvalue">GIOExtension</span></a> *
+g_io_extension_point_get_extension_by_name
+                               (<em class="parameter"><code><a class="link" href="gio-Extension-Points.html#GIOExtensionPoint" title="GIOExtensionPoint"><span class="type">GIOExtensionPoint</span></a> *extension_point</code></em>,
+                                <em class="parameter"><code>const <span class="type">char</span> *name</code></em>);</pre>
+<p>Finds a <a class="link" href="gio-Extension-Points.html#GIOExtension" title="GIOExtension"><span class="type">GIOExtension</span></a> for an extension point by name.</p>
+<div class="refsect3">
+<a name="g-io-extension-point-get-extension-by-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>extension_point</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Extension-Points.html#GIOExtensionPoint" title="GIOExtensionPoint"><span class="type">GIOExtensionPoint</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>the name of the extension to get</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-extension-point-get-extension-by-name.returns"></a><h4>Returns</h4>
+<p>the <a class="link" href="gio-Extension-Points.html#GIOExtension" title="GIOExtension"><span class="type">GIOExtension</span></a> for <em class="parameter"><code>extension_point</code></em>
+that has the
+given name, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there is no extension with that name. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-extension-point-get-extensions"></a><h3>g_io_extension_point_get_extensions ()</h3>
+<pre class="programlisting"><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+g_io_extension_point_get_extensions (<em class="parameter"><code><a class="link" href="gio-Extension-Points.html#GIOExtensionPoint" title="GIOExtensionPoint"><span class="type">GIOExtensionPoint</span></a> *extension_point</code></em>);</pre>
+<p>Gets a list of all extensions that implement this extension point.
+The list is sorted by priority, beginning with the highest priority.</p>
+<div class="refsect3">
+<a name="g-io-extension-point-get-extensions.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>extension_point</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Extension-Points.html#GIOExtensionPoint" title="GIOExtensionPoint"><span class="type">GIOExtensionPoint</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-extension-point-get-extensions.returns"></a><h4>Returns</h4>
+<p>a <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of
+<a href="gio-Extension-Points.html#GIOExtension"><span class="type">GIOExtensions</span></a>. The list is owned by GIO and should not be
+modified. </p>
+<p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GIOExtension][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-extension-point-get-required-type"></a><h3>g_io_extension_point_get_required_type ()</h3>
+<pre class="programlisting"><a href="../gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+g_io_extension_point_get_required_type
+                               (<em class="parameter"><code><a class="link" href="gio-Extension-Points.html#GIOExtensionPoint" title="GIOExtensionPoint"><span class="type">GIOExtensionPoint</span></a> *extension_point</code></em>);</pre>
+<p>Gets the required type for <em class="parameter"><code>extension_point</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-io-extension-point-get-required-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>extension_point</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Extension-Points.html#GIOExtensionPoint" title="GIOExtensionPoint"><span class="type">GIOExtensionPoint</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-extension-point-get-required-type.returns"></a><h4>Returns</h4>
+<p> the <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> that all implementations must have,
+or <a href="../gobject-Type-Information.html#G-TYPE-INVALID:CAPS"><span class="type">G_TYPE_INVALID</span></a> if the extension point has no required type</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-extension-point-implement"></a><h3>g_io_extension_point_implement ()</h3>
+<pre class="programlisting"><a class="link" href="gio-Extension-Points.html#GIOExtension" title="GIOExtension"><span class="returnvalue">GIOExtension</span></a> *
+g_io_extension_point_implement (<em class="parameter"><code>const <span class="type">char</span> *extension_point_name</code></em>,
+                                <em class="parameter"><code><a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> type</code></em>,
+                                <em class="parameter"><code>const <span class="type">char</span> *extension_name</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> priority</code></em>);</pre>
+<p>Registers <em class="parameter"><code>type</code></em>
+ as extension for the extension point with name
+<em class="parameter"><code>extension_point_name</code></em>
+. </p>
+<p>If <em class="parameter"><code>type</code></em>
+ has already been registered as an extension for this 
+extension point, the existing <a class="link" href="gio-Extension-Points.html#GIOExtension" title="GIOExtension"><span class="type">GIOExtension</span></a> object is returned.</p>
+<div class="refsect3">
+<a name="g-io-extension-point-implement.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>extension_point_name</p></td>
+<td class="parameter_description"><p>the name of the extension point</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>the <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> to register as extension </p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>extension_name</p></td>
+<td class="parameter_description"><p>the name for the extension</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>priority</p></td>
+<td class="parameter_description"><p>the priority for the extension</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-extension-point-implement.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="gio-Extension-Points.html#GIOExtension" title="GIOExtension"><span class="type">GIOExtension</span></a> object for <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a>. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-extension-point-lookup"></a><h3>g_io_extension_point_lookup ()</h3>
+<pre class="programlisting"><a class="link" href="gio-Extension-Points.html#GIOExtensionPoint" title="GIOExtensionPoint"><span class="returnvalue">GIOExtensionPoint</span></a> *
+g_io_extension_point_lookup (<em class="parameter"><code>const <span class="type">char</span> *name</code></em>);</pre>
+<p>Looks up an existing extension point.</p>
+<div class="refsect3">
+<a name="g-io-extension-point-lookup.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>the name of the extension point</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-extension-point-lookup.returns"></a><h4>Returns</h4>
+<p>the <a class="link" href="gio-Extension-Points.html#GIOExtensionPoint" title="GIOExtensionPoint"><span class="type">GIOExtensionPoint</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there
+is no registered extension point with the given name. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-extension-point-register"></a><h3>g_io_extension_point_register ()</h3>
+<pre class="programlisting"><a class="link" href="gio-Extension-Points.html#GIOExtensionPoint" title="GIOExtensionPoint"><span class="returnvalue">GIOExtensionPoint</span></a> *
+g_io_extension_point_register (<em class="parameter"><code>const <span class="type">char</span> *name</code></em>);</pre>
+<p>Registers an extension point.</p>
+<div class="refsect3">
+<a name="g-io-extension-point-register.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>The name of the extension point</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-extension-point-register.returns"></a><h4>Returns</h4>
+<p>the new <a class="link" href="gio-Extension-Points.html#GIOExtensionPoint" title="GIOExtensionPoint"><span class="type">GIOExtensionPoint</span></a>. This object is
+owned by GIO and should not be freed. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-extension-point-set-required-type"></a><h3>g_io_extension_point_set_required_type ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_io_extension_point_set_required_type
+                               (<em class="parameter"><code><a class="link" href="gio-Extension-Points.html#GIOExtensionPoint" title="GIOExtensionPoint"><span class="type">GIOExtensionPoint</span></a> *extension_point</code></em>,
+                                <em class="parameter"><code><a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> type</code></em>);</pre>
+<p>Sets the required type for <em class="parameter"><code>extension_point</code></em>
+ to <em class="parameter"><code>type</code></em>
+. 
+All implementations must henceforth have this type.</p>
+<div class="refsect3">
+<a name="g-io-extension-point-set-required-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>extension_point</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Extension-Points.html#GIOExtensionPoint" title="GIOExtensionPoint"><span class="type">GIOExtensionPoint</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>the <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> to require</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-extension-ref-class"></a><h3>g_io_extension_ref_class ()</h3>
+<pre class="programlisting"><a href="../gobject-Type-Information.html#GTypeClass"><span class="returnvalue">GTypeClass</span></a> *
+g_io_extension_ref_class (<em class="parameter"><code><a class="link" href="gio-Extension-Points.html#GIOExtension" title="GIOExtension"><span class="type">GIOExtension</span></a> *extension</code></em>);</pre>
+<p>Gets a reference to the class for the type that is 
+associated with <em class="parameter"><code>extension</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-io-extension-ref-class.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>extension</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Extension-Points.html#GIOExtension" title="GIOExtension"><span class="type">GIOExtension</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-extension-ref-class.returns"></a><h4>Returns</h4>
+<p>the <a href="../gobject-Type-Information.html#GTypeClass"><span class="type">GTypeClass</span></a> for the type of <em class="parameter"><code>extension</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-Extension-Points.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GIOExtension"></a><h3>GIOExtension</h3>
+<pre class="programlisting">typedef struct _GIOExtension GIOExtension;</pre>
+<p><a class="link" href="gio-Extension-Points.html#GIOExtension" title="GIOExtension"><span class="type">GIOExtension</span></a> is an opaque data structure and can only be accessed
+using the following functions.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GIOExtensionPoint"></a><h3>GIOExtensionPoint</h3>
+<pre class="programlisting">typedef struct _GIOExtensionPoint GIOExtensionPoint;</pre>
+<p><a class="link" href="gio-Extension-Points.html#GIOExtensionPoint" title="GIOExtensionPoint"><span class="type">GIOExtensionPoint</span></a> is an opaque data structure and can only be accessed
+using the following functions.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-Extension-Points.see-also"></a><h2>See Also</h2>
+<p>Extending GIO</p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

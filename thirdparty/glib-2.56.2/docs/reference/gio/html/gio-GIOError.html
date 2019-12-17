@@ -1,0 +1,563 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIOError: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="file_ops.html" title="File Operations">
+<link rel="prev" href="GFileEnumerator.html" title="GFileEnumerator">
+<link rel="next" href="GMountOperation.html" title="GMountOperation">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gio-GIOError.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="file_ops.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GFileEnumerator.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GMountOperation.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-GIOError"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-GIOError.top_of_page"></a>GIOError</span></h2>
+<p>GIOError — Error helper functions</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gio-GIOError.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-GIOError.html#GIOErrorEnum" title="enum GIOErrorEnum"><span class="returnvalue">GIOErrorEnum</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GIOError.html#g-io-error-from-errno" title="g_io_error_from_errno ()">g_io_error_from_errno</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-GIOError.html#GIOErrorEnum" title="enum GIOErrorEnum"><span class="returnvalue">GIOErrorEnum</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GIOError.html#g-io-error-from-win32-error" title="g_io_error_from_win32_error ()">g_io_error_from_win32_error</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-GIOError.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gio-GIOError.html#G-IO-ERROR:CAPS" title="G_IO_ERROR">G_IO_ERROR</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="gio-GIOError.html#GIOErrorEnum" title="enum GIOErrorEnum">GIOErrorEnum</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-GIOError.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-GIOError.description"></a><h2>Description</h2>
+<p>Contains helper functions for reporting errors to the user.</p>
+</div>
+<div class="refsect1">
+<a name="gio-GIOError.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-io-error-from-errno"></a><h3>g_io_error_from_errno ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GIOError.html#GIOErrorEnum" title="enum GIOErrorEnum"><span class="returnvalue">GIOErrorEnum</span></a>
+g_io_error_from_errno (<em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> err_no</code></em>);</pre>
+<p>Converts errno.h error codes into GIO error codes. The fallback
+value <a class="link" href="gio-GIOError.html#G-IO-ERROR-FAILED:CAPS"><code class="literal">G_IO_ERROR_FAILED</code></a> is returned for error codes not currently
+handled (but note that future GLib releases may return a more
+specific value instead).</p>
+<p>As <code class="literal">errno</code> is global and may be modified by intermediate function
+calls, you should save its value as soon as the call which sets it</p>
+<div class="refsect3">
+<a name="g-io-error-from-errno.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>err_no</p></td>
+<td class="parameter_description"><p>Error number as defined in errno.h.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-error-from-errno.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="gio-GIOError.html#GIOErrorEnum" title="enum GIOErrorEnum"><span class="type">GIOErrorEnum</span></a> value for the given errno.h error number.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-error-from-win32-error"></a><h3>g_io_error_from_win32_error ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GIOError.html#GIOErrorEnum" title="enum GIOErrorEnum"><span class="returnvalue">GIOErrorEnum</span></a>
+g_io_error_from_win32_error (<em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> error_code</code></em>);</pre>
+<p>Converts some common error codes (as returned from <code class="function">GetLastError()</code>
+or <code class="function">WSAGetLastError()</code>) into GIO error codes. The fallback value
+<a class="link" href="gio-GIOError.html#G-IO-ERROR-FAILED:CAPS"><code class="literal">G_IO_ERROR_FAILED</code></a> is returned for error codes not currently
+handled (but note that future GLib releases may return a more
+specific value instead).</p>
+<p>You can use <a href="../glib-Windows-Compatibility-Functions.html#g-win32-error-message"><code class="function">g_win32_error_message()</code></a> to get a localized string
+corresponding to <em class="parameter"><code>error_code</code></em>
+. (But note that unlike <a href="../glib-String-Utility-Functions.html#g-strerror"><code class="function">g_strerror()</code></a>,
+<a href="../glib-Windows-Compatibility-Functions.html#g-win32-error-message"><code class="function">g_win32_error_message()</code></a> returns a string that must be freed.)</p>
+<div class="refsect3">
+<a name="g-io-error-from-win32-error.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>error_code</p></td>
+<td class="parameter_description"><p>Windows error number.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-error-from-win32-error.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="gio-GIOError.html#GIOErrorEnum" title="enum GIOErrorEnum"><span class="type">GIOErrorEnum</span></a> value for the given error number.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-GIOError.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="G-IO-ERROR:CAPS"></a><h3>G_IO_ERROR</h3>
+<pre class="programlisting">#define G_IO_ERROR g_io_error_quark()
+</pre>
+<p>Error domain for GIO. Errors in this domain will be from the <a class="link" href="gio-GIOError.html#GIOErrorEnum" title="enum GIOErrorEnum"><span class="type">GIOErrorEnum</span></a> enumeration.
+See <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for more information on error domains.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GIOErrorEnum"></a><h3>enum GIOErrorEnum</h3>
+<p>Error codes returned by GIO functions.</p>
+<p>Note that this domain may be extended in future GLib releases. In
+general, new error codes either only apply to new APIs, or else
+replace <a class="link" href="gio-GIOError.html#G-IO-ERROR-FAILED:CAPS"><code class="literal">G_IO_ERROR_FAILED</code></a> in cases that were not explicitly
+distinguished before. You should therefore avoid writing code like</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="../glib-Error-Reporting.html#g-error-matches">g_error_matches</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">error</span><span class="symbol">,</span><span class="normal"> <a href="gio-GIOError.html#G-IO-ERROR:CAPS">G_IO_ERROR</a></span><span class="symbol">,</span><span class="normal"> <a href="gio-GIOError.html#G-IO-ERROR-FAILED:CAPS">G_IO_ERROR_FAILED</a></span><span class="symbol">))</span>
+<span class="normal">  </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="comment">// Assume that this is EPRINTERONFIRE</span>
+<span class="normal">    </span><span class="symbol">...</span>
+<span class="normal">  </span><span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+but should instead treat all unrecognized error codes the same as
+<a class="link" href="gio-GIOError.html#G-IO-ERROR-FAILED:CAPS"><span class="type">G_IO_ERROR_FAILED</span></a>.</p>
+<div class="refsect3">
+<a name="GIOErrorEnum.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-FAILED:CAPS"></a>G_IO_ERROR_FAILED</p></td>
+<td class="enum_member_description">
+<p>Generic error condition for when an operation fails
+    and no more specific <a class="link" href="gio-GIOError.html#GIOErrorEnum" title="enum GIOErrorEnum"><span class="type">GIOErrorEnum</span></a> value is defined.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-NOT-FOUND:CAPS"></a>G_IO_ERROR_NOT_FOUND</p></td>
+<td class="enum_member_description">
+<p>File not found.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-EXISTS:CAPS"></a>G_IO_ERROR_EXISTS</p></td>
+<td class="enum_member_description">
+<p>File already exists.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-IS-DIRECTORY:CAPS"></a>G_IO_ERROR_IS_DIRECTORY</p></td>
+<td class="enum_member_description">
+<p>File is a directory.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-NOT-DIRECTORY:CAPS"></a>G_IO_ERROR_NOT_DIRECTORY</p></td>
+<td class="enum_member_description">
+<p>File is not a directory.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-NOT-EMPTY:CAPS"></a>G_IO_ERROR_NOT_EMPTY</p></td>
+<td class="enum_member_description">
+<p>File is a directory that isn't empty.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-NOT-REGULAR-FILE:CAPS"></a>G_IO_ERROR_NOT_REGULAR_FILE</p></td>
+<td class="enum_member_description">
+<p>File is not a regular file.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-NOT-SYMBOLIC-LINK:CAPS"></a>G_IO_ERROR_NOT_SYMBOLIC_LINK</p></td>
+<td class="enum_member_description">
+<p>File is not a symbolic link.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-NOT-MOUNTABLE-FILE:CAPS"></a>G_IO_ERROR_NOT_MOUNTABLE_FILE</p></td>
+<td class="enum_member_description">
+<p>File cannot be mounted.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-FILENAME-TOO-LONG:CAPS"></a>G_IO_ERROR_FILENAME_TOO_LONG</p></td>
+<td class="enum_member_description">
+<p>Filename is too many characters.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-INVALID-FILENAME:CAPS"></a>G_IO_ERROR_INVALID_FILENAME</p></td>
+<td class="enum_member_description">
+<p>Filename is invalid or contains invalid characters.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-TOO-MANY-LINKS:CAPS"></a>G_IO_ERROR_TOO_MANY_LINKS</p></td>
+<td class="enum_member_description">
+<p>File contains too many symbolic links.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-NO-SPACE:CAPS"></a>G_IO_ERROR_NO_SPACE</p></td>
+<td class="enum_member_description">
+<p>No space left on drive.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-INVALID-ARGUMENT:CAPS"></a>G_IO_ERROR_INVALID_ARGUMENT</p></td>
+<td class="enum_member_description">
+<p>Invalid argument.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-PERMISSION-DENIED:CAPS"></a>G_IO_ERROR_PERMISSION_DENIED</p></td>
+<td class="enum_member_description">
+<p>Permission denied.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-NOT-SUPPORTED:CAPS"></a>G_IO_ERROR_NOT_SUPPORTED</p></td>
+<td class="enum_member_description">
+<p>Operation (or one of its parameters) not supported</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-NOT-MOUNTED:CAPS"></a>G_IO_ERROR_NOT_MOUNTED</p></td>
+<td class="enum_member_description">
+<p>File isn't mounted.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-ALREADY-MOUNTED:CAPS"></a>G_IO_ERROR_ALREADY_MOUNTED</p></td>
+<td class="enum_member_description">
+<p>File is already mounted.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-CLOSED:CAPS"></a>G_IO_ERROR_CLOSED</p></td>
+<td class="enum_member_description">
+<p>File was closed.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-CANCELLED:CAPS"></a>G_IO_ERROR_CANCELLED</p></td>
+<td class="enum_member_description">
+<p>Operation was cancelled. See <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-PENDING:CAPS"></a>G_IO_ERROR_PENDING</p></td>
+<td class="enum_member_description">
+<p>Operations are still pending.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-READ-ONLY:CAPS"></a>G_IO_ERROR_READ_ONLY</p></td>
+<td class="enum_member_description">
+<p>File is read only.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-CANT-CREATE-BACKUP:CAPS"></a>G_IO_ERROR_CANT_CREATE_BACKUP</p></td>
+<td class="enum_member_description">
+<p>Backup couldn't be created.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-WRONG-ETAG:CAPS"></a>G_IO_ERROR_WRONG_ETAG</p></td>
+<td class="enum_member_description">
+<p>File's Entity Tag was incorrect.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-TIMED-OUT:CAPS"></a>G_IO_ERROR_TIMED_OUT</p></td>
+<td class="enum_member_description">
+<p>Operation timed out.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-WOULD-RECURSE:CAPS"></a>G_IO_ERROR_WOULD_RECURSE</p></td>
+<td class="enum_member_description">
+<p>Operation would be recursive.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-BUSY:CAPS"></a>G_IO_ERROR_BUSY</p></td>
+<td class="enum_member_description">
+<p>File is busy.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-WOULD-BLOCK:CAPS"></a>G_IO_ERROR_WOULD_BLOCK</p></td>
+<td class="enum_member_description">
+<p>Operation would block.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-HOST-NOT-FOUND:CAPS"></a>G_IO_ERROR_HOST_NOT_FOUND</p></td>
+<td class="enum_member_description">
+<p>Host couldn't be found (remote operations).</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-WOULD-MERGE:CAPS"></a>G_IO_ERROR_WOULD_MERGE</p></td>
+<td class="enum_member_description">
+<p>Operation would merge files.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-FAILED-HANDLED:CAPS"></a>G_IO_ERROR_FAILED_HANDLED</p></td>
+<td class="enum_member_description">
+<p>Operation failed and a helper program has
+    already interacted with the user. Do not display any error dialog.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-TOO-MANY-OPEN-FILES:CAPS"></a>G_IO_ERROR_TOO_MANY_OPEN_FILES</p></td>
+<td class="enum_member_description">
+<p>The current process has too many files
+    open and can't open any more. Duplicate descriptors do count toward
+    this limit. Since 2.20</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-NOT-INITIALIZED:CAPS"></a>G_IO_ERROR_NOT_INITIALIZED</p></td>
+<td class="enum_member_description">
+<p>The object has not been initialized. Since 2.22</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-ADDRESS-IN-USE:CAPS"></a>G_IO_ERROR_ADDRESS_IN_USE</p></td>
+<td class="enum_member_description">
+<p>The requested address is already in use. Since 2.22</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-PARTIAL-INPUT:CAPS"></a>G_IO_ERROR_PARTIAL_INPUT</p></td>
+<td class="enum_member_description">
+<p>Need more input to finish operation. Since 2.24</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-INVALID-DATA:CAPS"></a>G_IO_ERROR_INVALID_DATA</p></td>
+<td class="enum_member_description">
+<p>The input data was invalid. Since 2.24</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-DBUS-ERROR:CAPS"></a>G_IO_ERROR_DBUS_ERROR</p></td>
+<td class="enum_member_description">
+<p>A remote object generated an error that
+    doesn't correspond to a locally registered <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> error
+    domain. Use <a class="link" href="gio-GDBusError.html#g-dbus-error-get-remote-error" title="g_dbus_error_get_remote_error ()"><code class="function">g_dbus_error_get_remote_error()</code></a> to extract the D-Bus
+    error name and <a class="link" href="gio-GDBusError.html#g-dbus-error-strip-remote-error" title="g_dbus_error_strip_remote_error ()"><code class="function">g_dbus_error_strip_remote_error()</code></a> to fix up the
+    message so it matches what was received on the wire. Since 2.26.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-HOST-UNREACHABLE:CAPS"></a>G_IO_ERROR_HOST_UNREACHABLE</p></td>
+<td class="enum_member_description">
+<p>Host unreachable. Since 2.26</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-NETWORK-UNREACHABLE:CAPS"></a>G_IO_ERROR_NETWORK_UNREACHABLE</p></td>
+<td class="enum_member_description">
+<p>Network unreachable. Since 2.26</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-CONNECTION-REFUSED:CAPS"></a>G_IO_ERROR_CONNECTION_REFUSED</p></td>
+<td class="enum_member_description">
+<p>Connection refused. Since 2.26</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-PROXY-FAILED:CAPS"></a>G_IO_ERROR_PROXY_FAILED</p></td>
+<td class="enum_member_description">
+<p>Connection to proxy server failed. Since 2.26</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-PROXY-AUTH-FAILED:CAPS"></a>G_IO_ERROR_PROXY_AUTH_FAILED</p></td>
+<td class="enum_member_description">
+<p>Proxy authentication failed. Since 2.26</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-PROXY-NEED-AUTH:CAPS"></a>G_IO_ERROR_PROXY_NEED_AUTH</p></td>
+<td class="enum_member_description">
+<p>Proxy server needs authentication. Since 2.26</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-PROXY-NOT-ALLOWED:CAPS"></a>G_IO_ERROR_PROXY_NOT_ALLOWED</p></td>
+<td class="enum_member_description">
+<p>Proxy connection is not allowed by ruleset.
+    Since 2.26</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-BROKEN-PIPE:CAPS"></a>G_IO_ERROR_BROKEN_PIPE</p></td>
+<td class="enum_member_description">
+<p>Broken pipe. Since 2.36</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-CONNECTION-CLOSED:CAPS"></a>G_IO_ERROR_CONNECTION_CLOSED</p></td>
+<td class="enum_member_description">
+<p>Connection closed by peer. Note that this
+    is the same code as <a class="link" href="gio-GIOError.html#G-IO-ERROR-BROKEN-PIPE:CAPS"><code class="literal">G_IO_ERROR_BROKEN_PIPE</code></a>; before 2.44 some
+    "connection closed" errors returned <a class="link" href="gio-GIOError.html#G-IO-ERROR-BROKEN-PIPE:CAPS"><code class="literal">G_IO_ERROR_BROKEN_PIPE</code></a>, but others
+    returned <a class="link" href="gio-GIOError.html#G-IO-ERROR-FAILED:CAPS"><code class="literal">G_IO_ERROR_FAILED</code></a>. Now they should all return the same
+    value, which has this more logical name. Since 2.44.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-NOT-CONNECTED:CAPS"></a>G_IO_ERROR_NOT_CONNECTED</p></td>
+<td class="enum_member_description">
+<p>Transport endpoint is not connected. Since 2.44</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-IO-ERROR-MESSAGE-TOO-LARGE:CAPS"></a>G_IO_ERROR_MESSAGE_TOO_LARGE</p></td>
+<td class="enum_member_description">
+<p>Message too large. Since 2.48.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,10 @@
+<schemalist>
+    <schema id="test">
+      <key name="test" type="s">
+        <choices>
+          <choice />
+        </choices>
+        <default>"a"</default>
+      </key>
+    </schema>
+</schemalist>

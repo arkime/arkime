@@ -1,0 +1,554 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GTlsBackend: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="tls.html" title="TLS (SSL) support">
+<link rel="prev" href="GDtlsServerConnection.html" title="GDtlsServerConnection">
+<link rel="next" href="GTlsDatabase.html" title="GTlsDatabase">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GTlsBackend.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GTlsBackend.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_prerequisites">  <span class="dim">|</span> 
+                  <a href="#GTlsBackend.prerequisites" class="shortcut">Prerequisites</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="tls.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GDtlsServerConnection.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GTlsDatabase.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GTlsBackend"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GTlsBackend.top_of_page"></a>GTlsBackend</span></h2>
+<p>GTlsBackend — TLS backend implementation</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GTlsBackend.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="returnvalue">GTlsBackend</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GTlsBackend.html#g-tls-backend-get-default" title="g_tls_backend_get_default ()">g_tls_backend_get_default</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsBackend.html#g-tls-backend-supports-tls" title="g_tls_backend_supports_tls ()">g_tls_backend_supports_tls</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsBackend.html#g-tls-backend-supports-dtls" title="g_tls_backend_supports_dtls ()">g_tls_backend_supports_dtls</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GTlsDatabase.html" title="GTlsDatabase"><span class="returnvalue">GTlsDatabase</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GTlsBackend.html#g-tls-backend-get-default-database" title="g_tls_backend_get_default_database ()">g_tls_backend_get_default_database</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsBackend.html#g-tls-backend-get-certificate-type" title="g_tls_backend_get_certificate_type ()">g_tls_backend_get_certificate_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsBackend.html#g-tls-backend-get-client-connection-type" title="g_tls_backend_get_client_connection_type ()">g_tls_backend_get_client_connection_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsBackend.html#g-tls-backend-get-server-connection-type" title="g_tls_backend_get_server_connection_type ()">g_tls_backend_get_server_connection_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsBackend.html#g-tls-backend-get-dtls-client-connection-type" title="g_tls_backend_get_dtls_client_connection_type ()">g_tls_backend_get_dtls_client_connection_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsBackend.html#g-tls-backend-get-dtls-server-connection-type" title="g_tls_backend_get_dtls_server_connection_type ()">g_tls_backend_get_dtls_server_connection_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTlsBackend.html#g-tls-backend-get-file-database-type" title="g_tls_backend_get_file_database_type ()">g_tls_backend_get_file_database_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GTlsBackend.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="GTlsBackend.html#G-TLS-BACKEND-EXTENSION-POINT-NAME:CAPS" title="G_TLS_BACKEND_EXTENSION_POINT_NAME">G_TLS_BACKEND_EXTENSION_POINT_NAME</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GTlsBackend.html#GTlsBackend-struct" title="GTlsBackend">GTlsBackend</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GTlsBackend.html#GTlsBackendInterface" title="struct GTlsBackendInterface">GTlsBackendInterface</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GTlsBackend.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/GTypeModule.html">GInterface</a>
+    <span class="lineart">╰──</span> GTlsBackend
+</pre>
+</div>
+<div class="refsect1">
+<a name="GTlsBackend.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GTlsBackend requires
+ <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GTlsBackend.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GTlsBackend.description"></a><h2>Description</h2>
+<p>TLS (Transport Layer Security, aka SSL) and DTLS backend.</p>
+</div>
+<div class="refsect1">
+<a name="GTlsBackend.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-tls-backend-get-default"></a><h3>g_tls_backend_get_default ()</h3>
+<pre class="programlisting"><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="returnvalue">GTlsBackend</span></a> *
+g_tls_backend_get_default (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Gets the default <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> for the system.</p>
+<div class="refsect3">
+<a name="g-tls-backend-get-default.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a>. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-backend-supports-tls"></a><h3>g_tls_backend_supports_tls ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_tls_backend_supports_tls (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);</pre>
+<p>Checks if TLS is supported; if this returns <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> for the default
+<a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a>, it means no "real" TLS backend is available.</p>
+<div class="refsect3">
+<a name="g-tls-backend-supports-tls.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>backend</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-backend-supports-tls.returns"></a><h4>Returns</h4>
+<p> whether or not TLS is supported</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-backend-supports-dtls"></a><h3>g_tls_backend_supports_dtls ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_tls_backend_supports_dtls (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);</pre>
+<p>Checks if DTLS is supported. DTLS support may not be available even if TLS
+support is available, and vice-versa.</p>
+<div class="refsect3">
+<a name="g-tls-backend-supports-dtls.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>backend</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-backend-supports-dtls.returns"></a><h4>Returns</h4>
+<p> whether DTLS is supported</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-48.html#api-index-2.48">2.48</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-backend-get-default-database"></a><h3>g_tls_backend_get_default_database ()</h3>
+<pre class="programlisting"><a class="link" href="GTlsDatabase.html" title="GTlsDatabase"><span class="returnvalue">GTlsDatabase</span></a> *
+g_tls_backend_get_default_database (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);</pre>
+<p>Gets the default <a class="link" href="GTlsDatabase.html" title="GTlsDatabase"><span class="type">GTlsDatabase</span></a> used to verify TLS connections.</p>
+<div class="refsect3">
+<a name="g-tls-backend-get-default-database.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>backend</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-backend-get-default-database.returns"></a><h4>Returns</h4>
+<p>the default database, which should be
+unreffed when done. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-backend-get-certificate-type"></a><h3>g_tls_backend_get_certificate_type ()</h3>
+<pre class="programlisting"><a href="../gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+g_tls_backend_get_certificate_type (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);</pre>
+<p>Gets the <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> of <em class="parameter"><code>backend</code></em>
+'s <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> implementation.</p>
+<div class="refsect3">
+<a name="g-tls-backend-get-certificate-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>backend</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-backend-get-certificate-type.returns"></a><h4>Returns</h4>
+<p> the <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> of <em class="parameter"><code>backend</code></em>
+'s <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a>
+implementation.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-backend-get-client-connection-type"></a><h3>g_tls_backend_get_client_connection_type ()</h3>
+<pre class="programlisting"><a href="../gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+g_tls_backend_get_client_connection_type
+                               (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);</pre>
+<p>Gets the <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> of <em class="parameter"><code>backend</code></em>
+'s <a class="link" href="GTlsClientConnection.html" title="GTlsClientConnection"><span class="type">GTlsClientConnection</span></a> implementation.</p>
+<div class="refsect3">
+<a name="g-tls-backend-get-client-connection-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>backend</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-backend-get-client-connection-type.returns"></a><h4>Returns</h4>
+<p> the <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> of <em class="parameter"><code>backend</code></em>
+'s <a class="link" href="GTlsClientConnection.html" title="GTlsClientConnection"><span class="type">GTlsClientConnection</span></a>
+implementation.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-backend-get-server-connection-type"></a><h3>g_tls_backend_get_server_connection_type ()</h3>
+<pre class="programlisting"><a href="../gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+g_tls_backend_get_server_connection_type
+                               (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);</pre>
+<p>Gets the <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> of <em class="parameter"><code>backend</code></em>
+'s <a class="link" href="GTlsServerConnection.html" title="GTlsServerConnection"><span class="type">GTlsServerConnection</span></a> implementation.</p>
+<div class="refsect3">
+<a name="g-tls-backend-get-server-connection-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>backend</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-backend-get-server-connection-type.returns"></a><h4>Returns</h4>
+<p> the <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> of <em class="parameter"><code>backend</code></em>
+'s <a class="link" href="GTlsServerConnection.html" title="GTlsServerConnection"><span class="type">GTlsServerConnection</span></a>
+implementation.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-backend-get-dtls-client-connection-type"></a><h3>g_tls_backend_get_dtls_client_connection_type ()</h3>
+<pre class="programlisting"><a href="../gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+g_tls_backend_get_dtls_client_connection_type
+                               (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);</pre>
+<p>Gets the <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> of <em class="parameter"><code>backend</code></em>
+’s <a class="link" href="GDtlsClientConnection.html" title="GDtlsClientConnection"><span class="type">GDtlsClientConnection</span></a> implementation.</p>
+<div class="refsect3">
+<a name="g-tls-backend-get-dtls-client-connection-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>backend</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-backend-get-dtls-client-connection-type.returns"></a><h4>Returns</h4>
+<p> the <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> of <em class="parameter"><code>backend</code></em>
+’s <a class="link" href="GDtlsClientConnection.html" title="GDtlsClientConnection"><span class="type">GDtlsClientConnection</span></a>
+implementation, or <a href="../gobject-Type-Information.html#G-TYPE-INVALID:CAPS"><code class="literal">G_TYPE_INVALID</code></a> if this backend doesn’t support DTLS.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-48.html#api-index-2.48">2.48</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-backend-get-dtls-server-connection-type"></a><h3>g_tls_backend_get_dtls_server_connection_type ()</h3>
+<pre class="programlisting"><a href="../gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+g_tls_backend_get_dtls_server_connection_type
+                               (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);</pre>
+<p>Gets the <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> of <em class="parameter"><code>backend</code></em>
+’s <a class="link" href="GDtlsServerConnection.html" title="GDtlsServerConnection"><span class="type">GDtlsServerConnection</span></a> implementation.</p>
+<div class="refsect3">
+<a name="g-tls-backend-get-dtls-server-connection-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>backend</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-backend-get-dtls-server-connection-type.returns"></a><h4>Returns</h4>
+<p> the <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> of <em class="parameter"><code>backend</code></em>
+’s <a class="link" href="GDtlsServerConnection.html" title="GDtlsServerConnection"><span class="type">GDtlsServerConnection</span></a>
+implementation, or <a href="../gobject-Type-Information.html#G-TYPE-INVALID:CAPS"><code class="literal">G_TYPE_INVALID</code></a> if this backend doesn’t support DTLS.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-48.html#api-index-2.48">2.48</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-tls-backend-get-file-database-type"></a><h3>g_tls_backend_get_file_database_type ()</h3>
+<pre class="programlisting"><a href="../gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+g_tls_backend_get_file_database_type (<em class="parameter"><code><a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a> *backend</code></em>);</pre>
+<p>Gets the <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> of <em class="parameter"><code>backend</code></em>
+'s <a class="link" href="GTlsFileDatabase.html" title="GTlsFileDatabase"><span class="type">GTlsFileDatabase</span></a> implementation.</p>
+<div class="refsect3">
+<a name="g-tls-backend-get-file-database-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>backend</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-tls-backend-get-file-database-type.returns"></a><h4>Returns</h4>
+<p> the <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> of backend's <a class="link" href="GTlsFileDatabase.html" title="GTlsFileDatabase"><span class="type">GTlsFileDatabase</span></a> implementation.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GTlsBackend.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="G-TLS-BACKEND-EXTENSION-POINT-NAME:CAPS"></a><h3>G_TLS_BACKEND_EXTENSION_POINT_NAME</h3>
+<pre class="programlisting">#define G_TLS_BACKEND_EXTENSION_POINT_NAME "gio-tls-backend"
+</pre>
+<p>Extension point for TLS functionality via <a class="link" href="GTlsBackend.html" title="GTlsBackend"><span class="type">GTlsBackend</span></a>.
+See Extending GIO.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsBackend-struct"></a><h3>GTlsBackend</h3>
+<pre class="programlisting">typedef struct _GTlsBackend GTlsBackend;</pre>
+<p>TLS (Transport Layer Security, aka SSL) and DTLS backend. This is an
+internal type used to coordinate the different classes implemented
+by a TLS backend.</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTlsBackendInterface"></a><h3>struct GTlsBackendInterface</h3>
+<pre class="programlisting">struct GTlsBackendInterface {
+  GTypeInterface g_iface;
+
+  /* methods */
+  gboolean       ( *supports_tls)               (GTlsBackend *backend);
+  GType          ( *get_certificate_type)       (void);
+  GType          ( *get_client_connection_type) (void);
+  GType          ( *get_server_connection_type) (void);
+  GType          ( *get_file_database_type)     (void);
+  GTlsDatabase * ( *get_default_database)       (GTlsBackend *backend);
+  gboolean       ( *supports_dtls)              (GTlsBackend *backend);
+  GType          ( *get_dtls_client_connection_type) (void);
+  GType          ( *get_dtls_server_connection_type) (void);
+};
+</pre>
+<p>Provides an interface for describing TLS-related types.</p>
+<div class="refsect3">
+<a name="GTlsBackendInterface.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GTlsBackendInterface.supports-tls"></a>supports_tls</code></em> ()</p></td>
+<td class="struct_member_description"><p>returns whether the backend supports TLS.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GTlsBackendInterface.get-certificate-type"></a>get_certificate_type</code></em> ()</p></td>
+<td class="struct_member_description"><p>returns the <a class="link" href="GTlsCertificate.html" title="GTlsCertificate"><span class="type">GTlsCertificate</span></a> implementation type</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GTlsBackendInterface.get-client-connection-type"></a>get_client_connection_type</code></em> ()</p></td>
+<td class="struct_member_description"><p>returns the <a class="link" href="GTlsClientConnection.html" title="GTlsClientConnection"><span class="type">GTlsClientConnection</span></a> implementation type</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GTlsBackendInterface.get-server-connection-type"></a>get_server_connection_type</code></em> ()</p></td>
+<td class="struct_member_description"><p>returns the <a class="link" href="GTlsServerConnection.html" title="GTlsServerConnection"><span class="type">GTlsServerConnection</span></a> implementation type</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GTlsBackendInterface.get-file-database-type"></a>get_file_database_type</code></em> ()</p></td>
+<td class="struct_member_description"><p>returns the <a class="link" href="GTlsFileDatabase.html" title="GTlsFileDatabase"><span class="type">GTlsFileDatabase</span></a> implementation type.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GTlsBackendInterface.get-default-database"></a>get_default_database</code></em> ()</p></td>
+<td class="struct_member_description"><p>returns a default <a class="link" href="GTlsDatabase.html" title="GTlsDatabase"><span class="type">GTlsDatabase</span></a> instance.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GTlsBackendInterface.supports-dtls"></a>supports_dtls</code></em> ()</p></td>
+<td class="struct_member_description"><p>returns whether the backend supports DTLS</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GTlsBackendInterface.get-dtls-client-connection-type"></a>get_dtls_client_connection_type</code></em> ()</p></td>
+<td class="struct_member_description"><p>returns the <a class="link" href="GDtlsClientConnection.html" title="GDtlsClientConnection"><span class="type">GDtlsClientConnection</span></a> implementation type</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GTlsBackendInterface.get-dtls-server-connection-type"></a>get_dtls_server_connection_type</code></em> ()</p></td>
+<td class="struct_member_description"><p>returns the <a class="link" href="GDtlsServerConnection.html" title="GDtlsServerConnection"><span class="type">GDtlsServerConnection</span></a> implementation type</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

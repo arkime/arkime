@@ -1,0 +1,3324 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Threads: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-core.html" title="GLib Core Application Support">
+<link rel="prev" href="glib-The-Main-Event-Loop.html" title="The Main Event Loop">
+<link rel="next" href="glib-Thread-Pools.html" title="Thread Pools">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-Threads.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-core.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-The-Main-Event-Loop.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-Thread-Pools.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Threads"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Threads.top_of_page"></a>Threads</span></h2>
+<p>Threads — portable support for threads, mutexes, locks,
+    conditions and thread private data</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-Threads.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="glib-Threads.html#GThreadFunc" title="GThreadFunc ()">*GThreadFunc</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="returnvalue">GThread</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-thread-new" title="g_thread_new ()">g_thread_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="returnvalue">GThread</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-thread-try-new" title="g_thread_try_new ()">g_thread_try_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="returnvalue">GThread</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-thread-ref" title="g_thread_ref ()">g_thread_ref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-thread-unref" title="g_thread_unref ()">g_thread_unref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-thread-join" title="g_thread_join ()">g_thread_join</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-thread-yield" title="g_thread_yield ()">g_thread_yield</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-thread-exit" title="g_thread_exit ()">g_thread_exit</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="returnvalue">GThread</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-thread-self" title="g_thread_self ()">g_thread_self</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-mutex-init" title="g_mutex_init ()">g_mutex_init</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-mutex-clear" title="g_mutex_clear ()">g_mutex_clear</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-mutex-lock" title="g_mutex_lock ()">g_mutex_lock</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-mutex-trylock" title="g_mutex_trylock ()">g_mutex_trylock</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-mutex-unlock" title="g_mutex_unlock ()">g_mutex_unlock</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Threads.html#GMutexLocker" title="GMutexLocker"><span class="returnvalue">GMutexLocker</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-mutex-locker-new" title="g_mutex_locker_new ()">g_mutex_locker_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-mutex-locker-free" title="g_mutex_locker_free ()">g_mutex_locker_free</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#G-LOCK-DEFINE:CAPS" title="G_LOCK_DEFINE()">G_LOCK_DEFINE</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#G-LOCK-DEFINE-STATIC:CAPS" title="G_LOCK_DEFINE_STATIC()">G_LOCK_DEFINE_STATIC</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#G-LOCK-EXTERN:CAPS" title="G_LOCK_EXTERN()">G_LOCK_EXTERN</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#G-LOCK:CAPS" title="G_LOCK()">G_LOCK</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#G-TRYLOCK:CAPS" title="G_TRYLOCK()">G_TRYLOCK</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#G-UNLOCK:CAPS" title="G_UNLOCK()">G_UNLOCK</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-rec-mutex-init" title="g_rec_mutex_init ()">g_rec_mutex_init</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-rec-mutex-clear" title="g_rec_mutex_clear ()">g_rec_mutex_clear</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-rec-mutex-lock" title="g_rec_mutex_lock ()">g_rec_mutex_lock</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-rec-mutex-trylock" title="g_rec_mutex_trylock ()">g_rec_mutex_trylock</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-rec-mutex-unlock" title="g_rec_mutex_unlock ()">g_rec_mutex_unlock</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-rw-lock-init" title="g_rw_lock_init ()">g_rw_lock_init</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-rw-lock-clear" title="g_rw_lock_clear ()">g_rw_lock_clear</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-rw-lock-writer-lock" title="g_rw_lock_writer_lock ()">g_rw_lock_writer_lock</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-rw-lock-writer-trylock" title="g_rw_lock_writer_trylock ()">g_rw_lock_writer_trylock</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-rw-lock-writer-unlock" title="g_rw_lock_writer_unlock ()">g_rw_lock_writer_unlock</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-rw-lock-reader-lock" title="g_rw_lock_reader_lock ()">g_rw_lock_reader_lock</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-rw-lock-reader-trylock" title="g_rw_lock_reader_trylock ()">g_rw_lock_reader_trylock</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-rw-lock-reader-unlock" title="g_rw_lock_reader_unlock ()">g_rw_lock_reader_unlock</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-cond-init" title="g_cond_init ()">g_cond_init</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-cond-clear" title="g_cond_clear ()">g_cond_clear</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-cond-wait" title="g_cond_wait ()">g_cond_wait</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-cond-timed-wait" title="g_cond_timed_wait ()">g_cond_timed_wait</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-cond-wait-until" title="g_cond_wait_until ()">g_cond_wait_until</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-cond-signal" title="g_cond_signal ()">g_cond_signal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-cond-broadcast" title="g_cond_broadcast ()">g_cond_broadcast</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#G-PRIVATE-INIT:CAPS" title="G_PRIVATE_INIT()">G_PRIVATE_INIT</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-private-get" title="g_private_get ()">g_private_get</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-private-set" title="g_private_set ()">g_private_set</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-private-replace" title="g_private_replace ()">g_private_replace</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-once" title="g_once()">g_once</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-once-init-enter" title="g_once_init_enter ()">g_once_init_enter</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-once-init-leave" title="g_once_init_leave ()">g_once_init_leave</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-bit-lock" title="g_bit_lock ()">g_bit_lock</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-bit-trylock" title="g_bit_trylock ()">g_bit_trylock</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-bit-unlock" title="g_bit_unlock ()">g_bit_unlock</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-pointer-bit-lock" title="g_pointer_bit_lock ()">g_pointer_bit_lock</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-pointer-bit-trylock" title="g_pointer_bit_trylock ()">g_pointer_bit_trylock</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-pointer-bit-unlock" title="g_pointer_bit_unlock ()">g_pointer_bit_unlock</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Threads.html#g-get-num-processors" title="g_get_num_processors ()">g_get_num_processors</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Threads.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Threads.html#G-THREAD-ERROR:CAPS" title="G_THREAD_ERROR">G_THREAD_ERROR</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="glib-Threads.html#GThreadError" title="enum GThreadError">GThreadError</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="glib-Threads.html#GThread" title="GThread">GThread</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">union</td>
+<td class="function_name"><a class="link" href="glib-Threads.html#GMutex" title="union GMutex">GMutex</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Threads.html#GMutexLocker" title="GMutexLocker">GMutexLocker</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="glib-Threads.html#GRecMutex" title="struct GRecMutex">GRecMutex</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock">GRWLock</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="glib-Threads.html#GCond" title="struct GCond">GCond</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="glib-Threads.html#GPrivate" title="struct GPrivate">GPrivate</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="glib-Threads.html#GOnce" title="struct GOnce">GOnce</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="glib-Threads.html#GOnceStatus" title="enum GOnceStatus">GOnceStatus</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Threads.html#G-ONCE-INIT:CAPS" title="G_ONCE_INIT">G_ONCE_INIT</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Threads.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Threads.description"></a><h2>Description</h2>
+<p>Threads act almost like processes, but unlike processes all threads
+of one process share the same memory. This is good, as it provides
+easy communication between the involved threads via this shared
+memory, and it is bad, because strange things (so called
+"Heisenbugs") might happen if the program is not carefully designed.
+In particular, due to the concurrent nature of threads, no
+assumptions on the order of execution of code running in different
+threads can be made, unless order is explicitly forced by the
+programmer through synchronization primitives.</p>
+<p>The aim of the thread-related functions in GLib is to provide a
+portable means for writing multi-threaded software. There are
+primitives for mutexes to protect the access to portions of memory
+(<a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a>, <a class="link" href="glib-Threads.html#GRecMutex" title="struct GRecMutex"><span class="type">GRecMutex</span></a> and <a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a>). There is a facility to use
+individual bits for locks (<a class="link" href="glib-Threads.html#g-bit-lock" title="g_bit_lock ()"><code class="function">g_bit_lock()</code></a>). There are primitives
+for condition variables to allow synchronization of threads (<a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a>).
+There are primitives for thread-private data - data that every
+thread has a private instance of (<a class="link" href="glib-Threads.html#GPrivate" title="struct GPrivate"><span class="type">GPrivate</span></a>). There are facilities
+for one-time initialization (<a class="link" href="glib-Threads.html#GOnce" title="struct GOnce"><span class="type">GOnce</span></a>, <a class="link" href="glib-Threads.html#g-once-init-enter" title="g_once_init_enter ()"><code class="function">g_once_init_enter()</code></a>). Finally,
+there are primitives to create and manage threads (<a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="type">GThread</span></a>).</p>
+<p>The GLib threading system used to be initialized with <a class="link" href="glib-Deprecated-Thread-APIs.html#g-thread-init" title="g_thread_init ()"><code class="function">g_thread_init()</code></a>.
+This is no longer necessary. Since version 2.32, the GLib threading
+system is automatically initialized at the start of your program,
+and all thread-creation functions and synchronization primitives
+are available right away.</p>
+<p>Note that it is not safe to assume that your program has no threads
+even if you don't call <a class="link" href="glib-Threads.html#g-thread-new" title="g_thread_new ()"><code class="function">g_thread_new()</code></a> yourself. GLib and GIO can
+and will create threads for their own purposes in some cases, such
+as when using <a class="link" href="glib-UNIX-specific-utilities-and-integration.html#g-unix-signal-source-new" title="g_unix_signal_source_new ()"><code class="function">g_unix_signal_source_new()</code></a> or when using GDBus.</p>
+<p>Originally, UNIX did not have threads, and therefore some traditional
+UNIX APIs are problematic in threaded programs. Some notable examples
+are</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>C library functions that return data in statically allocated
+buffers, such as <code class="function">strtok()</code> or <code class="function">strerror()</code>. For many of these,
+there are thread-safe variants with a _r suffix, or you can
+look at corresponding GLib APIs (like <a class="link" href="glib-String-Utility-Functions.html#g-strsplit" title="g_strsplit ()"><code class="function">g_strsplit()</code></a> or <a class="link" href="glib-String-Utility-Functions.html#g-strerror" title="g_strerror ()"><code class="function">g_strerror()</code></a>).</p></li>
+<li class="listitem"><p>The functions <code class="function">setenv()</code> and <code class="function">unsetenv()</code> manipulate the process
+environment in a not thread-safe way, and may interfere with <code class="function">getenv()</code>
+calls in other threads. Note that <code class="function">getenv()</code> calls may be hidden behind
+other APIs. For example, GNU <code class="function">gettext()</code> calls <code class="function">getenv()</code> under the
+covers. In general, it is best to treat the environment as readonly.
+If you absolutely have to modify the environment, do it early in
+<code class="function">main()</code>, when no other threads are around yet.</p></li>
+<li class="listitem"><p>The <a class="link" href="glib-running.html#setlocale" title="Locale"><code class="function">setlocale()</code></a> function changes the locale for the entire process,
+affecting all threads. Temporary changes to the locale are often made
+to change the behavior of string scanning or formatting functions
+like <code class="function">scanf()</code> or <code class="function">printf()</code>. GLib offers a number of string APIs
+(like <a class="link" href="glib-String-Utility-Functions.html#g-ascii-formatd" title="g_ascii_formatd ()"><code class="function">g_ascii_formatd()</code></a> or <a class="link" href="glib-String-Utility-Functions.html#g-ascii-strtod" title="g_ascii_strtod ()"><code class="function">g_ascii_strtod()</code></a>) that can often be
+used as an alternative. Or you can use the <code class="function">uselocale()</code> function
+to change the locale only for the current thread.</p></li>
+<li class="listitem"><p>The <code class="function">fork()</code> function only takes the calling thread into the child's
+copy of the process image. If other threads were executing in critical
+sections they could have left mutexes locked which could easily
+cause deadlocks in the new child. For this reason, you should
+call <code class="function">exit()</code> or <code class="function">exec()</code> as soon as possible in the child and only
+make signal-safe library calls before that.</p></li>
+<li class="listitem"><p>The <code class="function">daemon()</code> function uses <code class="function">fork()</code> in a way contrary to what is
+described above. It should not be used with GLib programs.</p></li>
+</ul></div>
+<p>GLib itself is internally completely thread-safe (all global data is
+automatically locked), but individual data structure instances are
+not automatically locked for performance reasons. For example,
+you must coordinate accesses to the same <a class="link" href="glib-Hash-Tables.html#GHashTable" title="GHashTable"><span class="type">GHashTable</span></a> from multiple
+threads. The two notable exceptions from this rule are <a class="link" href="glib-The-Main-Event-Loop.html#GMainLoop" title="GMainLoop"><span class="type">GMainLoop</span></a>
+and <a class="link" href="glib-Asynchronous-Queues.html#GAsyncQueue" title="GAsyncQueue"><span class="type">GAsyncQueue</span></a>, which are thread-safe and need no further
+application-level locking to be accessed from multiple threads.
+Most refcounting functions such as <code class="function">g_object_ref()</code> are also thread-safe.</p>
+<p>A common use for <a href="glib-Threads.html#GThread"><span class="type">GThreads</span></a> is to move a long-running blocking operation out
+of the main thread and into a worker thread. For GLib functions, such as
+single GIO operations, this is not necessary, and complicates the code.
+Instead, the <code class="literal">…<code class="function">_async()</code></code> version of the function should be used from the main
+thread, eliminating the need for locking and synchronisation between multiple
+threads. If an operation does need to be moved to a worker thread, consider
+using <code class="function">g_task_run_in_thread()</code>, or a <a class="link" href="glib-Thread-Pools.html#GThreadPool" title="struct GThreadPool"><span class="type">GThreadPool</span></a>. <a class="link" href="glib-Thread-Pools.html#GThreadPool" title="struct GThreadPool"><span class="type">GThreadPool</span></a> is often a
+better choice than <a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="type">GThread</span></a>, as it handles thread reuse and task queueing;
+<span class="type">GTask</span> uses this internally.</p>
+<p>However, if multiple blocking operations need to be performed in sequence,
+and it is not possible to use <span class="type">GTask</span> for them, moving them to a worker thread
+can clarify the code.</p>
+</div>
+<div class="refsect1">
+<a name="glib-Threads.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="GThreadFunc"></a><h3>GThreadFunc ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+<span class="c_punctuation">(</span>*GThreadFunc<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);</pre>
+<p>Specifies the type of the <em class="parameter"><code>func</code></em>
+ functions passed to <a class="link" href="glib-Threads.html#g-thread-new" title="g_thread_new ()"><code class="function">g_thread_new()</code></a>
+or <a class="link" href="glib-Threads.html#g-thread-try-new" title="g_thread_try_new ()"><code class="function">g_thread_try_new()</code></a>.</p>
+<div class="refsect3">
+<a name="GThreadFunc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>data passed to the thread</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="GThreadFunc.returns"></a><h4>Returns</h4>
+<p> the return value of the thread</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-thread-new"></a><h3>g_thread_new ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="returnvalue">GThread</span></a> *
+g_thread_new (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *name</code></em>,
+              <em class="parameter"><code><a class="link" href="glib-Threads.html#GThreadFunc" title="GThreadFunc ()"><span class="type">GThreadFunc</span></a> func</code></em>,
+              <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>);</pre>
+<p>This function creates a new thread. The new thread starts by invoking
+<em class="parameter"><code>func</code></em>
+ with the argument data. The thread will run until <em class="parameter"><code>func</code></em>
+ returns
+or until <a class="link" href="glib-Threads.html#g-thread-exit" title="g_thread_exit ()"><code class="function">g_thread_exit()</code></a> is called from the new thread. The return value
+of <em class="parameter"><code>func</code></em>
+ becomes the return value of the thread, which can be obtained
+with <a class="link" href="glib-Threads.html#g-thread-join" title="g_thread_join ()"><code class="function">g_thread_join()</code></a>.</p>
+<p>The <em class="parameter"><code>name</code></em>
+ can be useful for discriminating threads in a debugger.
+It is not used for other purposes and does not have to be unique.
+Some systems restrict the length of <em class="parameter"><code>name</code></em>
+ to 16 bytes.</p>
+<p>If the thread can not be created the program aborts. See
+<a class="link" href="glib-Threads.html#g-thread-try-new" title="g_thread_try_new ()"><code class="function">g_thread_try_new()</code></a> if you want to attempt to deal with failures.</p>
+<p>If you are using threads to offload (potentially many) short-lived tasks,
+<a class="link" href="glib-Thread-Pools.html#GThreadPool" title="struct GThreadPool"><span class="type">GThreadPool</span></a> may be more appropriate than manually spawning and tracking
+multiple <a href="glib-Threads.html#GThread"><span class="type">GThreads</span></a>.</p>
+<p>To free the struct returned by this function, use <a class="link" href="glib-Threads.html#g-thread-unref" title="g_thread_unref ()"><code class="function">g_thread_unref()</code></a>.
+Note that <a class="link" href="glib-Threads.html#g-thread-join" title="g_thread_join ()"><code class="function">g_thread_join()</code></a> implicitly unrefs the <a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="type">GThread</span></a> as well.</p>
+<div class="refsect3">
+<a name="g-thread-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>an (optional) name for the new thread. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>func</p></td>
+<td class="parameter_description"><p>a function to execute in the new thread</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>an argument to supply to the new thread</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-thread-new.returns"></a><h4>Returns</h4>
+<p> the new <a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="type">GThread</span></a></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-thread-try-new"></a><h3>g_thread_try_new ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="returnvalue">GThread</span></a> *
+g_thread_try_new (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *name</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Threads.html#GThreadFunc" title="GThreadFunc ()"><span class="type">GThreadFunc</span></a> func</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> data</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>This function is the same as <a class="link" href="glib-Threads.html#g-thread-new" title="g_thread_new ()"><code class="function">g_thread_new()</code></a> except that
+it allows for the possibility of failure.</p>
+<p>If a thread can not be created (due to resource limits),
+<em class="parameter"><code>error</code></em>
+ is set and <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> is returned.</p>
+<div class="refsect3">
+<a name="g-thread-try-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>an (optional) name for the new thread. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>func</p></td>
+<td class="parameter_description"><p>a function to execute in the new thread</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>an argument to supply to the new thread</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for error, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-thread-try-new.returns"></a><h4>Returns</h4>
+<p> the new <a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="type">GThread</span></a>, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if an error occurred</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-thread-ref"></a><h3>g_thread_ref ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="returnvalue">GThread</span></a> *
+g_thread_ref (<em class="parameter"><code><a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="type">GThread</span></a> *thread</code></em>);</pre>
+<p>Increase the reference count on <em class="parameter"><code>thread</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-thread-ref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>thread</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="type">GThread</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-thread-ref.returns"></a><h4>Returns</h4>
+<p> a new reference to <em class="parameter"><code>thread</code></em>
+</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-thread-unref"></a><h3>g_thread_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_thread_unref (<em class="parameter"><code><a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="type">GThread</span></a> *thread</code></em>);</pre>
+<p>Decrease the reference count on <em class="parameter"><code>thread</code></em>
+, possibly freeing all
+resources associated with it.</p>
+<p>Note that each thread holds a reference to its <a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="type">GThread</span></a> while
+it is running, so it is safe to drop your own reference to it
+if you don't need it anymore.</p>
+<div class="refsect3">
+<a name="g-thread-unref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>thread</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="type">GThread</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-thread-join"></a><h3>g_thread_join ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+g_thread_join (<em class="parameter"><code><a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="type">GThread</span></a> *thread</code></em>);</pre>
+<p>Waits until <em class="parameter"><code>thread</code></em>
+ finishes, i.e. the function <em class="parameter"><code>func</code></em>
+, as
+given to <a class="link" href="glib-Threads.html#g-thread-new" title="g_thread_new ()"><code class="function">g_thread_new()</code></a>, returns or <a class="link" href="glib-Threads.html#g-thread-exit" title="g_thread_exit ()"><code class="function">g_thread_exit()</code></a> is called.
+If <em class="parameter"><code>thread</code></em>
+ has already terminated, then <a class="link" href="glib-Threads.html#g-thread-join" title="g_thread_join ()"><code class="function">g_thread_join()</code></a>
+returns immediately.</p>
+<p>Any thread can wait for any other thread by calling <a class="link" href="glib-Threads.html#g-thread-join" title="g_thread_join ()"><code class="function">g_thread_join()</code></a>,
+not just its 'creator'. Calling <a class="link" href="glib-Threads.html#g-thread-join" title="g_thread_join ()"><code class="function">g_thread_join()</code></a> from multiple threads
+for the same <em class="parameter"><code>thread</code></em>
+ leads to undefined behaviour.</p>
+<p>The value returned by <em class="parameter"><code>func</code></em>
+ or given to <a class="link" href="glib-Threads.html#g-thread-exit" title="g_thread_exit ()"><code class="function">g_thread_exit()</code></a> is
+returned by this function.</p>
+<p>g_thread_join() consumes the reference to the passed-in <em class="parameter"><code>thread</code></em>
+.
+This will usually cause the <a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="type">GThread</span></a> struct and associated resources
+to be freed. Use <a class="link" href="glib-Threads.html#g-thread-ref" title="g_thread_ref ()"><code class="function">g_thread_ref()</code></a> to obtain an extra reference if you
+want to keep the GThread alive beyond the <a class="link" href="glib-Threads.html#g-thread-join" title="g_thread_join ()"><code class="function">g_thread_join()</code></a> call.</p>
+<div class="refsect3">
+<a name="g-thread-join.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>thread</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="type">GThread</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-thread-join.returns"></a><h4>Returns</h4>
+<p> the return value of the thread</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-thread-yield"></a><h3>g_thread_yield ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_thread_yield ();</pre>
+<p>Causes the calling thread to voluntarily relinquish the CPU, so
+that other threads can run.</p>
+<p>This function is often used as a method to make busy wait less evil.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-thread-exit"></a><h3>g_thread_exit ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_thread_exit (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> retval</code></em>);</pre>
+<p>Terminates the current thread.</p>
+<p>If another thread is waiting for us using <a class="link" href="glib-Threads.html#g-thread-join" title="g_thread_join ()"><code class="function">g_thread_join()</code></a> then the
+waiting thread will be woken up and get <em class="parameter"><code>retval</code></em>
+ as the return value
+of <a class="link" href="glib-Threads.html#g-thread-join" title="g_thread_join ()"><code class="function">g_thread_join()</code></a>.</p>
+<p>Calling <a class="link" href="glib-Threads.html#g-thread-exit" title="g_thread_exit ()"><code class="function">g_thread_exit()</code></a> with a parameter <em class="parameter"><code>retval</code></em>
+ is equivalent to
+returning <em class="parameter"><code>retval</code></em>
+ from the function <em class="parameter"><code>func</code></em>
+, as given to <a class="link" href="glib-Threads.html#g-thread-new" title="g_thread_new ()"><code class="function">g_thread_new()</code></a>.</p>
+<p>You must only call <a class="link" href="glib-Threads.html#g-thread-exit" title="g_thread_exit ()"><code class="function">g_thread_exit()</code></a> from a thread that you created
+yourself with <a class="link" href="glib-Threads.html#g-thread-new" title="g_thread_new ()"><code class="function">g_thread_new()</code></a> or related APIs. You must not call
+this function from a thread created with another threading library
+or or from within a <a class="link" href="glib-Thread-Pools.html#GThreadPool" title="struct GThreadPool"><span class="type">GThreadPool</span></a>.</p>
+<div class="refsect3">
+<a name="g-thread-exit.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>retval</p></td>
+<td class="parameter_description"><p>the return value of this thread</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-thread-self"></a><h3>g_thread_self ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="returnvalue">GThread</span></a> *
+g_thread_self (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>This function returns the <a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="type">GThread</span></a> corresponding to the
+current thread. Note that this function does not increase
+the reference count of the returned struct.</p>
+<p>This function will return a <a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="type">GThread</span></a> even for threads that
+were not created by GLib (i.e. those created by other threading
+APIs). This may be useful for thread identification purposes
+(i.e. comparisons) but you must not use GLib functions (such
+as <a class="link" href="glib-Threads.html#g-thread-join" title="g_thread_join ()"><code class="function">g_thread_join()</code></a>) on these threads.</p>
+<div class="refsect3">
+<a name="g-thread-self.returns"></a><h4>Returns</h4>
+<p> the <a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="type">GThread</span></a> representing the current thread</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mutex-init"></a><h3>g_mutex_init ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_mutex_init (<em class="parameter"><code><a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> *mutex</code></em>);</pre>
+<p>Initializes a <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> so that it can be used.</p>
+<p>This function is useful to initialize a mutex that has been
+allocated on the stack, or as part of a larger structure.
+It is not necessary to initialize a mutex that has been
+statically allocated.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">struct</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GMutex</span><span class="normal"> m</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="symbol">...</span>
+<span class="cbracket">}</span><span class="normal"> Blob</span><span class="symbol">;</span>
+
+<span class="usertype">Blob</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">b</span><span class="symbol">;</span>
+
+<span class="normal">b </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-Memory-Allocation.html#g-new">g_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Blob</span><span class="symbol">,</span><span class="normal"> </span><span class="number">1</span><span class="symbol">);</span>
+<span class="function"><a href="glib-Threads.html#g-mutex-init">g_mutex_init</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">b</span><span class="symbol">-&gt;</span><span class="normal">m</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>To undo the effect of <a class="link" href="glib-Threads.html#g-mutex-init" title="g_mutex_init ()"><code class="function">g_mutex_init()</code></a> when a mutex is no longer
+needed, use <a class="link" href="glib-Threads.html#g-mutex-clear" title="g_mutex_clear ()"><code class="function">g_mutex_clear()</code></a>.</p>
+<p>Calling <a class="link" href="glib-Threads.html#g-mutex-init" title="g_mutex_init ()"><code class="function">g_mutex_init()</code></a> on an already initialized <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> leads
+to undefined behaviour.</p>
+<div class="refsect3">
+<a name="g-mutex-init.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mutex</p></td>
+<td class="parameter_description"><p>an uninitialized <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mutex-clear"></a><h3>g_mutex_clear ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_mutex_clear (<em class="parameter"><code><a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> *mutex</code></em>);</pre>
+<p>Frees the resources allocated to a mutex with <a class="link" href="glib-Threads.html#g-mutex-init" title="g_mutex_init ()"><code class="function">g_mutex_init()</code></a>.</p>
+<p>This function should not be used with a <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> that has been
+statically allocated.</p>
+<p>Calling <a class="link" href="glib-Threads.html#g-mutex-clear" title="g_mutex_clear ()"><code class="function">g_mutex_clear()</code></a> on a locked mutex leads to undefined
+behaviour.</p>
+<p>Sine: 2.32</p>
+<div class="refsect3">
+<a name="g-mutex-clear.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mutex</p></td>
+<td class="parameter_description"><p>an initialized <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mutex-lock"></a><h3>g_mutex_lock ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_mutex_lock (<em class="parameter"><code><a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> *mutex</code></em>);</pre>
+<p>Locks <em class="parameter"><code>mutex</code></em>
+. If <em class="parameter"><code>mutex</code></em>
+ is already locked by another thread, the
+current thread will block until <em class="parameter"><code>mutex</code></em>
+ is unlocked by the other
+thread.</p>
+<p><a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> is neither guaranteed to be recursive nor to be
+non-recursive.  As such, calling <a class="link" href="glib-Threads.html#g-mutex-lock" title="g_mutex_lock ()"><code class="function">g_mutex_lock()</code></a> on a <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> that has
+already been locked by the same thread results in undefined behaviour
+(including but not limited to deadlocks).</p>
+<div class="refsect3">
+<a name="g-mutex-lock.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mutex</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mutex-trylock"></a><h3>g_mutex_trylock ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_mutex_trylock (<em class="parameter"><code><a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> *mutex</code></em>);</pre>
+<p>Tries to lock <em class="parameter"><code>mutex</code></em>
+. If <em class="parameter"><code>mutex</code></em>
+ is already locked by another thread,
+it immediately returns <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a>. Otherwise it locks <em class="parameter"><code>mutex</code></em>
+ and returns
+<a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>.</p>
+<p><a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> is neither guaranteed to be recursive nor to be
+non-recursive.  As such, calling <a class="link" href="glib-Threads.html#g-mutex-lock" title="g_mutex_lock ()"><code class="function">g_mutex_lock()</code></a> on a <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> that has
+already been locked by the same thread results in undefined behaviour
+(including but not limited to deadlocks or arbitrary return values).</p>
+<div class="refsect3">
+<a name="g-mutex-trylock.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mutex</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-mutex-trylock.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>mutex</code></em>
+could be locked</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mutex-unlock"></a><h3>g_mutex_unlock ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_mutex_unlock (<em class="parameter"><code><a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> *mutex</code></em>);</pre>
+<p>Unlocks <em class="parameter"><code>mutex</code></em>
+. If another thread is blocked in a <a class="link" href="glib-Threads.html#g-mutex-lock" title="g_mutex_lock ()"><code class="function">g_mutex_lock()</code></a>
+call for <em class="parameter"><code>mutex</code></em>
+, it will become unblocked and can lock <em class="parameter"><code>mutex</code></em>
+ itself.</p>
+<p>Calling <a class="link" href="glib-Threads.html#g-mutex-unlock" title="g_mutex_unlock ()"><code class="function">g_mutex_unlock()</code></a> on a mutex that is not locked by the
+current thread leads to undefined behaviour.</p>
+<div class="refsect3">
+<a name="g-mutex-unlock.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mutex</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mutex-locker-new"></a><h3>g_mutex_locker_new ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Threads.html#GMutexLocker" title="GMutexLocker"><span class="returnvalue">GMutexLocker</span></a> *
+g_mutex_locker_new (<em class="parameter"><code><a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> *mutex</code></em>);</pre>
+<p>Lock <em class="parameter"><code>mutex</code></em>
+ and return a new <a class="link" href="glib-Threads.html#GMutexLocker" title="GMutexLocker"><span class="type">GMutexLocker</span></a>. Unlock with
+<a class="link" href="glib-Threads.html#g-mutex-locker-free" title="g_mutex_locker_free ()"><code class="function">g_mutex_locker_free()</code></a>. Using <a class="link" href="glib-Threads.html#g-mutex-unlock" title="g_mutex_unlock ()"><code class="function">g_mutex_unlock()</code></a> on <em class="parameter"><code>mutex</code></em>
+
+while a <a class="link" href="glib-Threads.html#GMutexLocker" title="GMutexLocker"><span class="type">GMutexLocker</span></a> exists can lead to undefined behaviour.</p>
+<p>This is intended to be used with <a class="link" href="glib-Miscellaneous-Macros.html#g-autoptr" title="g_autoptr()"><code class="function">g_autoptr()</code></a>.  Note that <a class="link" href="glib-Miscellaneous-Macros.html#g-autoptr" title="g_autoptr()"><code class="function">g_autoptr()</code></a>
+is only available when using GCC or clang, so the following example
+will only work with those compilers:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">struct</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="symbol">...</span>
+<span class="normal">  </span><span class="usertype">GMutex</span><span class="normal"> mutex</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="symbol">...</span>
+<span class="cbracket">}</span><span class="normal"> MyObject</span><span class="symbol">;</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">my_object_do_stuff</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">MyObject</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="glib-Miscellaneous-Macros.html#g-autoptr">g_autoptr</a></span><span class="symbol">(</span><span class="normal"><a href="glib-Threads.html#GMutexLocker">GMutexLocker</a></span><span class="symbol">)</span><span class="normal"> locker </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-Threads.html#g-mutex-locker-new">g_mutex_locker_new</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">self</span><span class="symbol">-&gt;</span><span class="normal">mutex</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">// Code with mutex locked here</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">cond</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="comment">// No need to unlock</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="comment">// Optionally early unlock</span>
+<span class="normal">  </span><span class="function"><a href="glib-Memory-Allocation.html#g-clear-pointer">g_clear_pointer</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">locker</span><span class="symbol">,</span><span class="normal"> <a href="glib-Threads.html#g-mutex-locker-free">g_mutex_locker_free</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">// Code with mutex unlocked here</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="g-mutex-locker-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mutex</p></td>
+<td class="parameter_description"><p>a mutex to lock</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-mutex-locker-new.returns"></a><h4>Returns</h4>
+<p> a <a class="link" href="glib-Threads.html#GMutexLocker" title="GMutexLocker"><span class="type">GMutexLocker</span></a></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mutex-locker-free"></a><h3>g_mutex_locker_free ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_mutex_locker_free (<em class="parameter"><code><a class="link" href="glib-Threads.html#GMutexLocker" title="GMutexLocker"><span class="type">GMutexLocker</span></a> *locker</code></em>);</pre>
+<p>Unlock <em class="parameter"><code>locker</code></em>
+'s mutex. See <a class="link" href="glib-Threads.html#g-mutex-locker-new" title="g_mutex_locker_new ()"><code class="function">g_mutex_locker_new()</code></a> for details.</p>
+<div class="refsect3">
+<a name="g-mutex-locker-free.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>locker</p></td>
+<td class="parameter_description"><p>a GMutexLocker</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-LOCK-DEFINE:CAPS"></a><h3>G_LOCK_DEFINE()</h3>
+<pre class="programlisting">#define G_LOCK_DEFINE(name)    
+</pre>
+<p>The <span class="type">G_LOCK_</span> macros provide a convenient interface to <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a>.
+<a class="link" href="glib-Threads.html#G-LOCK-DEFINE:CAPS" title="G_LOCK_DEFINE()"><span class="type">G_LOCK_DEFINE</span></a> defines a lock. It can appear in any place where
+variable definitions may appear in programs, i.e. in the first block
+of a function or outside of functions. The <em class="parameter"><code>name</code></em>
+ parameter will be
+mangled to get the name of the <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a>. This means that you
+can use names of existing variables as the parameter - e.g. the name
+of the variable you intend to protect with the lock. Look at our
+<code class="function">give_me_next_number()</code> example using the <a class="link" href="glib-Threads.html#G-LOCK:CAPS" title="G_LOCK()"><span class="type">G_LOCK</span></a> macros:</p>
+<p>Here is an example for using the <a class="link" href="glib-Threads.html#G-LOCK:CAPS" title="G_LOCK()"><span class="type">G_LOCK</span></a> convenience macros:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="function"><a href="glib-Threads.html#G-LOCK-DEFINE:CAPS">G_LOCK_DEFINE</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">current_number</span><span class="symbol">);</span>
+
+<span class="type">int</span>
+<span class="function">give_me_next_number</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">static</span><span class="normal"> </span><span class="type">int</span><span class="normal"> current_number </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="type">int</span><span class="normal"> ret_val</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="function"><a href="glib-Threads.html#G-LOCK:CAPS">G_LOCK</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">current_number</span><span class="symbol">);</span>
+<span class="normal">  ret_val </span><span class="symbol">=</span><span class="normal"> current_number </span><span class="symbol">=</span><span class="normal"> </span><span class="function">calc_next_number</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">current_number</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="glib-Threads.html#G-UNLOCK:CAPS">G_UNLOCK</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">current_number</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> ret_val</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="G-LOCK-DEFINE.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>the name of the lock</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-LOCK-DEFINE-STATIC:CAPS"></a><h3>G_LOCK_DEFINE_STATIC()</h3>
+<pre class="programlisting">#define G_LOCK_DEFINE_STATIC(name)
+</pre>
+<p>This works like <a class="link" href="glib-Threads.html#G-LOCK-DEFINE:CAPS" title="G_LOCK_DEFINE()"><span class="type">G_LOCK_DEFINE</span></a>, but it creates a static object.</p>
+<div class="refsect3">
+<a name="G-LOCK-DEFINE-STATIC.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>the name of the lock</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-LOCK-EXTERN:CAPS"></a><h3>G_LOCK_EXTERN()</h3>
+<pre class="programlisting">#define G_LOCK_EXTERN(name)    
+</pre>
+<p>This declares a lock, that is defined with <a class="link" href="glib-Threads.html#G-LOCK-DEFINE:CAPS" title="G_LOCK_DEFINE()"><span class="type">G_LOCK_DEFINE</span></a> in another
+module.</p>
+<div class="refsect3">
+<a name="G-LOCK-EXTERN.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>the name of the lock</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-LOCK:CAPS"></a><h3>G_LOCK()</h3>
+<pre class="programlisting">#define G_LOCK(name)
+</pre>
+<p>Works like <a class="link" href="glib-Threads.html#g-mutex-lock" title="g_mutex_lock ()"><code class="function">g_mutex_lock()</code></a>, but for a lock defined with
+<a class="link" href="glib-Threads.html#G-LOCK-DEFINE:CAPS" title="G_LOCK_DEFINE()"><span class="type">G_LOCK_DEFINE</span></a>.</p>
+<div class="refsect3">
+<a name="G-LOCK.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>the name of the lock</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TRYLOCK:CAPS"></a><h3>G_TRYLOCK()</h3>
+<pre class="programlisting">#define G_TRYLOCK(name)
+</pre>
+<p>Works like <a class="link" href="glib-Threads.html#g-mutex-trylock" title="g_mutex_trylock ()"><code class="function">g_mutex_trylock()</code></a>, but for a lock defined with
+<a class="link" href="glib-Threads.html#G-LOCK-DEFINE:CAPS" title="G_LOCK_DEFINE()"><span class="type">G_LOCK_DEFINE</span></a>.</p>
+<div class="refsect3">
+<a name="G-TRYLOCK.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>the name of the lock</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="G-TRYLOCK.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>, if the lock could be locked.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-UNLOCK:CAPS"></a><h3>G_UNLOCK()</h3>
+<pre class="programlisting">#define G_UNLOCK(name)
+</pre>
+<p>Works like <a class="link" href="glib-Threads.html#g-mutex-unlock" title="g_mutex_unlock ()"><code class="function">g_mutex_unlock()</code></a>, but for a lock defined with
+<a class="link" href="glib-Threads.html#G-LOCK-DEFINE:CAPS" title="G_LOCK_DEFINE()"><span class="type">G_LOCK_DEFINE</span></a>.</p>
+<div class="refsect3">
+<a name="G-UNLOCK.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>the name of the lock</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-rec-mutex-init"></a><h3>g_rec_mutex_init ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_rec_mutex_init (<em class="parameter"><code><a class="link" href="glib-Threads.html#GRecMutex" title="struct GRecMutex"><span class="type">GRecMutex</span></a> *rec_mutex</code></em>);</pre>
+<p>Initializes a <a class="link" href="glib-Threads.html#GRecMutex" title="struct GRecMutex"><span class="type">GRecMutex</span></a> so that it can be used.</p>
+<p>This function is useful to initialize a recursive mutex
+that has been allocated on the stack, or as part of a larger
+structure.</p>
+<p>It is not necessary to initialise a recursive mutex that has been
+statically allocated.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">struct</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GRecMutex</span><span class="normal"> m</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="symbol">...</span>
+<span class="cbracket">}</span><span class="normal"> Blob</span><span class="symbol">;</span>
+
+<span class="usertype">Blob</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">b</span><span class="symbol">;</span>
+
+<span class="normal">b </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-Memory-Allocation.html#g-new">g_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Blob</span><span class="symbol">,</span><span class="normal"> </span><span class="number">1</span><span class="symbol">);</span>
+<span class="function"><a href="glib-Threads.html#g-rec-mutex-init">g_rec_mutex_init</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">b</span><span class="symbol">-&gt;</span><span class="normal">m</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>Calling <a class="link" href="glib-Threads.html#g-rec-mutex-init" title="g_rec_mutex_init ()"><code class="function">g_rec_mutex_init()</code></a> on an already initialized <a class="link" href="glib-Threads.html#GRecMutex" title="struct GRecMutex"><span class="type">GRecMutex</span></a>
+leads to undefined behaviour.</p>
+<p>To undo the effect of <a class="link" href="glib-Threads.html#g-rec-mutex-init" title="g_rec_mutex_init ()"><code class="function">g_rec_mutex_init()</code></a> when a recursive mutex
+is no longer needed, use <a class="link" href="glib-Threads.html#g-rec-mutex-clear" title="g_rec_mutex_clear ()"><code class="function">g_rec_mutex_clear()</code></a>.</p>
+<div class="refsect3">
+<a name="g-rec-mutex-init.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>rec_mutex</p></td>
+<td class="parameter_description"><p>an uninitialized <a class="link" href="glib-Threads.html#GRecMutex" title="struct GRecMutex"><span class="type">GRecMutex</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-rec-mutex-clear"></a><h3>g_rec_mutex_clear ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_rec_mutex_clear (<em class="parameter"><code><a class="link" href="glib-Threads.html#GRecMutex" title="struct GRecMutex"><span class="type">GRecMutex</span></a> *rec_mutex</code></em>);</pre>
+<p>Frees the resources allocated to a recursive mutex with
+<a class="link" href="glib-Threads.html#g-rec-mutex-init" title="g_rec_mutex_init ()"><code class="function">g_rec_mutex_init()</code></a>.</p>
+<p>This function should not be used with a <a class="link" href="glib-Threads.html#GRecMutex" title="struct GRecMutex"><span class="type">GRecMutex</span></a> that has been
+statically allocated.</p>
+<p>Calling <a class="link" href="glib-Threads.html#g-rec-mutex-clear" title="g_rec_mutex_clear ()"><code class="function">g_rec_mutex_clear()</code></a> on a locked recursive mutex leads
+to undefined behaviour.</p>
+<p>Sine: 2.32</p>
+<div class="refsect3">
+<a name="g-rec-mutex-clear.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>rec_mutex</p></td>
+<td class="parameter_description"><p>an initialized <a class="link" href="glib-Threads.html#GRecMutex" title="struct GRecMutex"><span class="type">GRecMutex</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-rec-mutex-lock"></a><h3>g_rec_mutex_lock ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_rec_mutex_lock (<em class="parameter"><code><a class="link" href="glib-Threads.html#GRecMutex" title="struct GRecMutex"><span class="type">GRecMutex</span></a> *rec_mutex</code></em>);</pre>
+<p>Locks <em class="parameter"><code>rec_mutex</code></em>
+. If <em class="parameter"><code>rec_mutex</code></em>
+ is already locked by another
+thread, the current thread will block until <em class="parameter"><code>rec_mutex</code></em>
+ is
+unlocked by the other thread. If <em class="parameter"><code>rec_mutex</code></em>
+ is already locked
+by the current thread, the 'lock count' of <em class="parameter"><code>rec_mutex</code></em>
+ is increased.
+The mutex will only become available again when it is unlocked
+as many times as it has been locked.</p>
+<div class="refsect3">
+<a name="g-rec-mutex-lock.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>rec_mutex</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GRecMutex" title="struct GRecMutex"><span class="type">GRecMutex</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-rec-mutex-trylock"></a><h3>g_rec_mutex_trylock ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_rec_mutex_trylock (<em class="parameter"><code><a class="link" href="glib-Threads.html#GRecMutex" title="struct GRecMutex"><span class="type">GRecMutex</span></a> *rec_mutex</code></em>);</pre>
+<p>Tries to lock <em class="parameter"><code>rec_mutex</code></em>
+. If <em class="parameter"><code>rec_mutex</code></em>
+ is already locked
+by another thread, it immediately returns <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a>. Otherwise
+it locks <em class="parameter"><code>rec_mutex</code></em>
+ and returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>.</p>
+<div class="refsect3">
+<a name="g-rec-mutex-trylock.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>rec_mutex</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GRecMutex" title="struct GRecMutex"><span class="type">GRecMutex</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-rec-mutex-trylock.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>rec_mutex</code></em>
+could be locked</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-rec-mutex-unlock"></a><h3>g_rec_mutex_unlock ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_rec_mutex_unlock (<em class="parameter"><code><a class="link" href="glib-Threads.html#GRecMutex" title="struct GRecMutex"><span class="type">GRecMutex</span></a> *rec_mutex</code></em>);</pre>
+<p>Unlocks <em class="parameter"><code>rec_mutex</code></em>
+. If another thread is blocked in a
+<a class="link" href="glib-Threads.html#g-rec-mutex-lock" title="g_rec_mutex_lock ()"><code class="function">g_rec_mutex_lock()</code></a> call for <em class="parameter"><code>rec_mutex</code></em>
+, it will become unblocked
+and can lock <em class="parameter"><code>rec_mutex</code></em>
+ itself.</p>
+<p>Calling <a class="link" href="glib-Threads.html#g-rec-mutex-unlock" title="g_rec_mutex_unlock ()"><code class="function">g_rec_mutex_unlock()</code></a> on a recursive mutex that is not
+locked by the current thread leads to undefined behaviour.</p>
+<div class="refsect3">
+<a name="g-rec-mutex-unlock.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>rec_mutex</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GRecMutex" title="struct GRecMutex"><span class="type">GRecMutex</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-rw-lock-init"></a><h3>g_rw_lock_init ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_rw_lock_init (<em class="parameter"><code><a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a> *rw_lock</code></em>);</pre>
+<p>Initializes a <a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a> so that it can be used.</p>
+<p>This function is useful to initialize a lock that has been
+allocated on the stack, or as part of a larger structure.  It is not
+necessary to initialise a reader-writer lock that has been statically
+allocated.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">struct</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GRWLock</span><span class="normal"> l</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="symbol">...</span>
+<span class="cbracket">}</span><span class="normal"> Blob</span><span class="symbol">;</span>
+
+<span class="usertype">Blob</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">b</span><span class="symbol">;</span>
+
+<span class="normal">b </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-Memory-Allocation.html#g-new">g_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Blob</span><span class="symbol">,</span><span class="normal"> </span><span class="number">1</span><span class="symbol">);</span>
+<span class="function"><a href="glib-Threads.html#g-rw-lock-init">g_rw_lock_init</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">b</span><span class="symbol">-&gt;</span><span class="normal">l</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>To undo the effect of <a class="link" href="glib-Threads.html#g-rw-lock-init" title="g_rw_lock_init ()"><code class="function">g_rw_lock_init()</code></a> when a lock is no longer
+needed, use <a class="link" href="glib-Threads.html#g-rw-lock-clear" title="g_rw_lock_clear ()"><code class="function">g_rw_lock_clear()</code></a>.</p>
+<p>Calling <a class="link" href="glib-Threads.html#g-rw-lock-init" title="g_rw_lock_init ()"><code class="function">g_rw_lock_init()</code></a> on an already initialized <a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a> leads
+to undefined behaviour.</p>
+<div class="refsect3">
+<a name="g-rw-lock-init.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>rw_lock</p></td>
+<td class="parameter_description"><p>an uninitialized <a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-rw-lock-clear"></a><h3>g_rw_lock_clear ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_rw_lock_clear (<em class="parameter"><code><a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a> *rw_lock</code></em>);</pre>
+<p>Frees the resources allocated to a lock with <a class="link" href="glib-Threads.html#g-rw-lock-init" title="g_rw_lock_init ()"><code class="function">g_rw_lock_init()</code></a>.</p>
+<p>This function should not be used with a <a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a> that has been
+statically allocated.</p>
+<p>Calling <a class="link" href="glib-Threads.html#g-rw-lock-clear" title="g_rw_lock_clear ()"><code class="function">g_rw_lock_clear()</code></a> when any thread holds the lock
+leads to undefined behaviour.</p>
+<p>Sine: 2.32</p>
+<div class="refsect3">
+<a name="g-rw-lock-clear.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>rw_lock</p></td>
+<td class="parameter_description"><p>an initialized <a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-rw-lock-writer-lock"></a><h3>g_rw_lock_writer_lock ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_rw_lock_writer_lock (<em class="parameter"><code><a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a> *rw_lock</code></em>);</pre>
+<p>Obtain a write lock on <em class="parameter"><code>rw_lock</code></em>
+. If any thread already holds
+a read or write lock on <em class="parameter"><code>rw_lock</code></em>
+, the current thread will block
+until all other threads have dropped their locks on <em class="parameter"><code>rw_lock</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-rw-lock-writer-lock.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>rw_lock</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-rw-lock-writer-trylock"></a><h3>g_rw_lock_writer_trylock ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_rw_lock_writer_trylock (<em class="parameter"><code><a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a> *rw_lock</code></em>);</pre>
+<p>Tries to obtain a write lock on <em class="parameter"><code>rw_lock</code></em>
+. If any other thread holds
+a read or write lock on <em class="parameter"><code>rw_lock</code></em>
+, it immediately returns <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a>.
+Otherwise it locks <em class="parameter"><code>rw_lock</code></em>
+ and returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>.</p>
+<div class="refsect3">
+<a name="g-rw-lock-writer-trylock.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>rw_lock</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-rw-lock-writer-trylock.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>rw_lock</code></em>
+could be locked</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-rw-lock-writer-unlock"></a><h3>g_rw_lock_writer_unlock ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_rw_lock_writer_unlock (<em class="parameter"><code><a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a> *rw_lock</code></em>);</pre>
+<p>Release a write lock on <em class="parameter"><code>rw_lock</code></em>
+.</p>
+<p>Calling <a class="link" href="glib-Threads.html#g-rw-lock-writer-unlock" title="g_rw_lock_writer_unlock ()"><code class="function">g_rw_lock_writer_unlock()</code></a> on a lock that is not held
+by the current thread leads to undefined behaviour.</p>
+<div class="refsect3">
+<a name="g-rw-lock-writer-unlock.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>rw_lock</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-rw-lock-reader-lock"></a><h3>g_rw_lock_reader_lock ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_rw_lock_reader_lock (<em class="parameter"><code><a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a> *rw_lock</code></em>);</pre>
+<p>Obtain a read lock on <em class="parameter"><code>rw_lock</code></em>
+. If another thread currently holds
+the write lock on <em class="parameter"><code>rw_lock</code></em>
+ or blocks waiting for it, the current
+thread will block. Read locks can be taken recursively.</p>
+<p>It is implementation-defined how many threads are allowed to
+hold read locks on the same lock simultaneously. If the limit is hit,
+or if a deadlock is detected, a critical warning will be emitted.</p>
+<div class="refsect3">
+<a name="g-rw-lock-reader-lock.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>rw_lock</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-rw-lock-reader-trylock"></a><h3>g_rw_lock_reader_trylock ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_rw_lock_reader_trylock (<em class="parameter"><code><a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a> *rw_lock</code></em>);</pre>
+<p>Tries to obtain a read lock on <em class="parameter"><code>rw_lock</code></em>
+ and returns <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if
+the read lock was successfully obtained. Otherwise it
+returns <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a>.</p>
+<div class="refsect3">
+<a name="g-rw-lock-reader-trylock.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>rw_lock</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-rw-lock-reader-trylock.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>rw_lock</code></em>
+could be locked</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-rw-lock-reader-unlock"></a><h3>g_rw_lock_reader_unlock ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_rw_lock_reader_unlock (<em class="parameter"><code><a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a> *rw_lock</code></em>);</pre>
+<p>Release a read lock on <em class="parameter"><code>rw_lock</code></em>
+.</p>
+<p>Calling <a class="link" href="glib-Threads.html#g-rw-lock-reader-unlock" title="g_rw_lock_reader_unlock ()"><code class="function">g_rw_lock_reader_unlock()</code></a> on a lock that is not held
+by the current thread leads to undefined behaviour.</p>
+<div class="refsect3">
+<a name="g-rw-lock-reader-unlock.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>rw_lock</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-cond-init"></a><h3>g_cond_init ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_cond_init (<em class="parameter"><code><a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> *cond</code></em>);</pre>
+<p>Initialises a <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> so that it can be used.</p>
+<p>This function is useful to initialise a <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> that has been
+allocated as part of a larger structure.  It is not necessary to
+initialise a <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> that has been statically allocated.</p>
+<p>To undo the effect of <a class="link" href="glib-Threads.html#g-cond-init" title="g_cond_init ()"><code class="function">g_cond_init()</code></a> when a <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> is no longer
+needed, use <a class="link" href="glib-Threads.html#g-cond-clear" title="g_cond_clear ()"><code class="function">g_cond_clear()</code></a>.</p>
+<p>Calling <a class="link" href="glib-Threads.html#g-cond-init" title="g_cond_init ()"><code class="function">g_cond_init()</code></a> on an already-initialised <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> leads
+to undefined behaviour.</p>
+<div class="refsect3">
+<a name="g-cond-init.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>cond</p></td>
+<td class="parameter_description"><p>an uninitialized <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-cond-clear"></a><h3>g_cond_clear ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_cond_clear (<em class="parameter"><code><a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> *cond</code></em>);</pre>
+<p>Frees the resources allocated to a <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> with <a class="link" href="glib-Threads.html#g-cond-init" title="g_cond_init ()"><code class="function">g_cond_init()</code></a>.</p>
+<p>This function should not be used with a <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> that has been
+statically allocated.</p>
+<p>Calling <a class="link" href="glib-Threads.html#g-cond-clear" title="g_cond_clear ()"><code class="function">g_cond_clear()</code></a> for a <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> on which threads are
+blocking leads to undefined behaviour.</p>
+<div class="refsect3">
+<a name="g-cond-clear.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>cond</p></td>
+<td class="parameter_description"><p>an initialised <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-cond-wait"></a><h3>g_cond_wait ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_cond_wait (<em class="parameter"><code><a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> *cond</code></em>,
+             <em class="parameter"><code><a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> *mutex</code></em>);</pre>
+<p>Atomically releases <em class="parameter"><code>mutex</code></em>
+ and waits until <em class="parameter"><code>cond</code></em>
+ is signalled.
+When this function returns, <em class="parameter"><code>mutex</code></em>
+ is locked again and owned by the
+calling thread.</p>
+<p>When using condition variables, it is possible that a spurious wakeup
+may occur (ie: <a class="link" href="glib-Threads.html#g-cond-wait" title="g_cond_wait ()"><code class="function">g_cond_wait()</code></a> returns even though <a class="link" href="glib-Threads.html#g-cond-signal" title="g_cond_signal ()"><code class="function">g_cond_signal()</code></a> was
+not called).  It's also possible that a stolen wakeup may occur.
+This is when <a class="link" href="glib-Threads.html#g-cond-signal" title="g_cond_signal ()"><code class="function">g_cond_signal()</code></a> is called, but another thread acquires
+<em class="parameter"><code>mutex</code></em>
+ before this thread and modifies the state of the program in
+such a way that when <a class="link" href="glib-Threads.html#g-cond-wait" title="g_cond_wait ()"><code class="function">g_cond_wait()</code></a> is able to return, the expected
+condition is no longer met.</p>
+<p>For this reason, <a class="link" href="glib-Threads.html#g-cond-wait" title="g_cond_wait ()"><code class="function">g_cond_wait()</code></a> must always be used in a loop.  See
+the documentation for <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> for a complete example.</p>
+<div class="refsect3">
+<a name="g-cond-wait.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>cond</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mutex</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> that is currently locked</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-cond-timed-wait"></a><h3>g_cond_timed_wait ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_cond_timed_wait (<em class="parameter"><code><a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> *cond</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> *mutex</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Date-and-Time-Functions.html#GTimeVal" title="struct GTimeVal"><span class="type">GTimeVal</span></a> *abs_time</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_cond_timed_wait</code> has been deprecated since version 2.32 and should not be used in newly-written code.</p>
+<p>Use <a class="link" href="glib-Threads.html#g-cond-wait-until" title="g_cond_wait_until ()"><code class="function">g_cond_wait_until()</code></a> instead.</p>
+</div>
+<p>Waits until this thread is woken up on <em class="parameter"><code>cond</code></em>
+, but not longer than
+until the time specified by <em class="parameter"><code>abs_time</code></em>
+. The <em class="parameter"><code>mutex</code></em>
+ is unlocked before
+falling asleep and locked again before resuming.</p>
+<p>If <em class="parameter"><code>abs_time</code></em>
+ is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>, <a class="link" href="glib-Threads.html#g-cond-timed-wait" title="g_cond_timed_wait ()"><code class="function">g_cond_timed_wait()</code></a> acts like <a class="link" href="glib-Threads.html#g-cond-wait" title="g_cond_wait ()"><code class="function">g_cond_wait()</code></a>.</p>
+<p>This function can be used even if <a class="link" href="glib-Deprecated-Thread-APIs.html#g-thread-init" title="g_thread_init ()"><code class="function">g_thread_init()</code></a> has not yet been
+called, and, in that case, will immediately return <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a>.</p>
+<p>To easily calculate <em class="parameter"><code>abs_time</code></em>
+ a combination of <a class="link" href="glib-Date-and-Time-Functions.html#g-get-current-time" title="g_get_current_time ()"><code class="function">g_get_current_time()</code></a>
+and <a class="link" href="glib-Date-and-Time-Functions.html#g-time-val-add" title="g_time_val_add ()"><code class="function">g_time_val_add()</code></a> can be used.</p>
+<div class="refsect3">
+<a name="g-cond-timed-wait.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>cond</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mutex</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> that is currently locked</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>abs_time</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Date-and-Time-Functions.html#GTimeVal" title="struct GTimeVal"><span class="type">GTimeVal</span></a>, determining the final time</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-cond-timed-wait.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>cond</code></em>
+was signalled, or <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> on timeout</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-cond-wait-until"></a><h3>g_cond_wait_until ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_cond_wait_until (<em class="parameter"><code><a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> *cond</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> *mutex</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint64" title="gint64"><span class="type">gint64</span></a> end_time</code></em>);</pre>
+<p>Waits until either <em class="parameter"><code>cond</code></em>
+ is signalled or <em class="parameter"><code>end_time</code></em>
+ has passed.</p>
+<p>As with <a class="link" href="glib-Threads.html#g-cond-wait" title="g_cond_wait ()"><code class="function">g_cond_wait()</code></a> it is possible that a spurious or stolen wakeup
+could occur.  For that reason, waiting on a condition variable should
+always be in a loop, based on an explicitly-checked predicate.</p>
+<p><a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> is returned if the condition variable was signalled (or in the
+case of a spurious wakeup).  <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> is returned if <em class="parameter"><code>end_time</code></em>
+ has
+passed.</p>
+<p>The following code shows how to correctly perform a timed wait on a
+condition variable (extending the example presented in the
+documentation for <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a>):</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal"><a href="glib-Basic-Types.html#gpointer">gpointer</a></span>
+<span class="function">pop_data_timed</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">gint64</span><span class="normal"> end_time</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">gpointer</span><span class="normal"> data</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="function"><a href="glib-Threads.html#g-mutex-lock">g_mutex_lock</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">data_mutex</span><span class="symbol">);</span>
+
+<span class="normal">  end_time </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-Date-and-Time-Functions.html#g-get-monotonic-time">g_get_monotonic_time</a></span><span class="normal"> </span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="number">5</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> <a href="glib-GDateTime.html#G-TIME-SPAN-SECOND:CAPS">G_TIME_SPAN_SECOND</a></span><span class="symbol">;</span>
+<span class="normal">  </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">current_data</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function"><a href="glib-Threads.html#g-cond-wait-until">g_cond_wait_until</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">data_cond</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">data_mutex</span><span class="symbol">,</span><span class="normal"> end_time</span><span class="symbol">))</span>
+<span class="normal">      </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="comment">// timeout has passed.</span>
+<span class="normal">        </span><span class="function"><a href="glib-Threads.html#g-mutex-unlock">g_mutex_unlock</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">data_mutex</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="normal">      </span><span class="cbracket">}</span>
+
+<span class="normal">  </span><span class="comment">// there is data for us</span>
+<span class="normal">  data </span><span class="symbol">=</span><span class="normal"> current_data</span><span class="symbol">;</span>
+<span class="normal">  current_data </span><span class="symbol">=</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="function"><a href="glib-Threads.html#g-mutex-unlock">g_mutex_unlock</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">data_mutex</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> data</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>Notice that the end time is calculated once, before entering the
+loop and reused.  This is the motivation behind the use of absolute
+time on this API -- if a relative time of 5 seconds were passed
+directly to the call and a spurious wakeup occurred, the program would
+have to start over waiting again (which would lead to a total wait
+time of more than 5 seconds).</p>
+<div class="refsect3">
+<a name="g-cond-wait-until.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>cond</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mutex</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> that is currently locked</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>end_time</p></td>
+<td class="parameter_description"><p>the monotonic time to wait until</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-cond-wait-until.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> on a signal, <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> on a timeout</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-cond-signal"></a><h3>g_cond_signal ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_cond_signal (<em class="parameter"><code><a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> *cond</code></em>);</pre>
+<p>If threads are waiting for <em class="parameter"><code>cond</code></em>
+, at least one of them is unblocked.
+If no threads are waiting for <em class="parameter"><code>cond</code></em>
+, this function has no effect.
+It is good practice to hold the same lock as the waiting thread
+while calling this function, though not required.</p>
+<div class="refsect3">
+<a name="g-cond-signal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>cond</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-cond-broadcast"></a><h3>g_cond_broadcast ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_cond_broadcast (<em class="parameter"><code><a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> *cond</code></em>);</pre>
+<p>If threads are waiting for <em class="parameter"><code>cond</code></em>
+, all of them are unblocked.
+If no threads are waiting for <em class="parameter"><code>cond</code></em>
+, this function has no effect.
+It is good practice to lock the same mutex as the waiting threads
+while calling this function, though not required.</p>
+<div class="refsect3">
+<a name="g-cond-broadcast.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>cond</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-PRIVATE-INIT:CAPS"></a><h3>G_PRIVATE_INIT()</h3>
+<pre class="programlisting">#define G_PRIVATE_INIT(notify)
+</pre>
+<p>A macro to assist with the static initialisation of a <a class="link" href="glib-Threads.html#GPrivate" title="struct GPrivate"><span class="type">GPrivate</span></a>.</p>
+<p>This macro is useful for the case that a <a class="link" href="glib-Datasets.html#GDestroyNotify" title="GDestroyNotify ()"><span class="type">GDestroyNotify</span></a> function
+should be associated with the key.  This is needed when the key will be
+used to point at memory that should be deallocated when the thread
+exits.</p>
+<p>Additionally, the <a class="link" href="glib-Datasets.html#GDestroyNotify" title="GDestroyNotify ()"><span class="type">GDestroyNotify</span></a> will also be called on the previous
+value stored in the key when <a class="link" href="glib-Threads.html#g-private-replace" title="g_private_replace ()"><code class="function">g_private_replace()</code></a> is used.</p>
+<p>If no <a class="link" href="glib-Datasets.html#GDestroyNotify" title="GDestroyNotify ()"><span class="type">GDestroyNotify</span></a> is needed, then use of this macro is not
+required -- if the <a class="link" href="glib-Threads.html#GPrivate" title="struct GPrivate"><span class="type">GPrivate</span></a> is declared in static scope then it will
+be properly initialised by default (ie: to all zeros).  See the
+examples below.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">static</span><span class="normal"> </span><span class="usertype">GPrivate</span><span class="normal"> name_key </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-Threads.html#G-PRIVATE-INIT:CAPS">G_PRIVATE_INIT</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="glib-Memory-Allocation.html#g-free">g_free</a></span><span class="symbol">);</span>
+
+<span class="comment">// return value should not be freed</span>
+<span class="keyword">const</span><span class="normal"> <a href="glib-Basic-Types.html#gchar">gchar</a> </span><span class="symbol">*</span>
+<span class="function">get_local_name</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> </span><span class="function"><a href="glib-Threads.html#g-private-get">g_private_get</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">name_key</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="type">void</span>
+<span class="function">set_local_name</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">name</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="glib-Threads.html#g-private-replace">g_private_replace</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">name_key</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="glib-String-Utility-Functions.html#g-strdup">g_strdup</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">name</span><span class="symbol">));</span>
+<span class="cbracket">}</span>
+
+
+<span class="keyword">static</span><span class="normal"> </span><span class="usertype">GPrivate</span><span class="normal"> count_key</span><span class="symbol">;</span><span class="normal">   </span><span class="comment">// no free function</span>
+
+<span class="normal"><a href="glib-Basic-Types.html#gint">gint</a></span>
+<span class="function">get_local_count</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> </span><span class="function"><a href="glib-Type-Conversion-Macros.html#GPOINTER-TO-INT:CAPS">GPOINTER_TO_INT</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="glib-Threads.html#g-private-get">g_private_get</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">count_key</span><span class="symbol">));</span>
+<span class="cbracket">}</span>
+
+<span class="type">void</span>
+<span class="function">set_local_count</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">gint</span><span class="normal"> count</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="glib-Threads.html#g-private-set">g_private_set</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">count_key</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="glib-Type-Conversion-Macros.html#GINT-TO-POINTER:CAPS">GINT_TO_POINTER</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">count</span><span class="symbol">));</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="G-PRIVATE-INIT.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>notify</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Datasets.html#GDestroyNotify" title="GDestroyNotify ()"><span class="type">GDestroyNotify</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-private-get"></a><h3>g_private_get ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+g_private_get (<em class="parameter"><code><a class="link" href="glib-Threads.html#GPrivate" title="struct GPrivate"><span class="type">GPrivate</span></a> *key</code></em>);</pre>
+<p>Returns the current value of the thread local variable <em class="parameter"><code>key</code></em>
+.</p>
+<p>If the value has not yet been set in this thread, <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> is returned.
+Values are never copied between threads (when a new thread is
+created, for example).</p>
+<div class="refsect3">
+<a name="g-private-get.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GPrivate" title="struct GPrivate"><span class="type">GPrivate</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-private-get.returns"></a><h4>Returns</h4>
+<p> the thread-local value</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-private-set"></a><h3>g_private_set ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_private_set (<em class="parameter"><code><a class="link" href="glib-Threads.html#GPrivate" title="struct GPrivate"><span class="type">GPrivate</span></a> *key</code></em>,
+               <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> value</code></em>);</pre>
+<p>Sets the thread local variable <em class="parameter"><code>key</code></em>
+ to have the value <em class="parameter"><code>value</code></em>
+ in the
+current thread.</p>
+<p>This function differs from <a class="link" href="glib-Threads.html#g-private-replace" title="g_private_replace ()"><code class="function">g_private_replace()</code></a> in the following way:
+the <a class="link" href="glib-Datasets.html#GDestroyNotify" title="GDestroyNotify ()"><span class="type">GDestroyNotify</span></a> for <em class="parameter"><code>key</code></em>
+ is not called on the old value.</p>
+<div class="refsect3">
+<a name="g-private-set.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GPrivate" title="struct GPrivate"><span class="type">GPrivate</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>the new value</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-private-replace"></a><h3>g_private_replace ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_private_replace (<em class="parameter"><code><a class="link" href="glib-Threads.html#GPrivate" title="struct GPrivate"><span class="type">GPrivate</span></a> *key</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> value</code></em>);</pre>
+<p>Sets the thread local variable <em class="parameter"><code>key</code></em>
+ to have the value <em class="parameter"><code>value</code></em>
+ in the
+current thread.</p>
+<p>This function differs from <a class="link" href="glib-Threads.html#g-private-set" title="g_private_set ()"><code class="function">g_private_set()</code></a> in the following way: if
+the previous value was non-<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> then the <a class="link" href="glib-Datasets.html#GDestroyNotify" title="GDestroyNotify ()"><span class="type">GDestroyNotify</span></a> handler for
+<em class="parameter"><code>key</code></em>
+ is run on it.</p>
+<div class="refsect3">
+<a name="g-private-replace.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GPrivate" title="struct GPrivate"><span class="type">GPrivate</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>the new value</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-once"></a><h3>g_once()</h3>
+<pre class="programlisting">#define             g_once(once, func, arg)</pre>
+<p>The first call to this routine by a process with a given <a class="link" href="glib-Threads.html#GOnce" title="struct GOnce"><span class="type">GOnce</span></a>
+struct calls <em class="parameter"><code>func</code></em>
+ with the given argument. Thereafter, subsequent
+calls to <a class="link" href="glib-Threads.html#g-once" title="g_once()"><code class="function">g_once()</code></a>  with the same <a class="link" href="glib-Threads.html#GOnce" title="struct GOnce"><span class="type">GOnce</span></a> struct do not call <em class="parameter"><code>func</code></em>
+
+again, but return the stored result of the first call. On return
+from <a class="link" href="glib-Threads.html#g-once" title="g_once()"><code class="function">g_once()</code></a>, the status of <em class="parameter"><code>once</code></em>
+ will be <a class="link" href="glib-Threads.html#G-ONCE-STATUS-READY:CAPS"><code class="literal">G_ONCE_STATUS_READY</code></a>.</p>
+<p>For example, a mutex or a thread-specific data key must be created
+exactly once. In a threaded environment, calling <a class="link" href="glib-Threads.html#g-once" title="g_once()"><code class="function">g_once()</code></a> ensures
+that the initialization is serialized across multiple threads.</p>
+<p>Calling <a class="link" href="glib-Threads.html#g-once" title="g_once()"><code class="function">g_once()</code></a> recursively on the same <a class="link" href="glib-Threads.html#GOnce" title="struct GOnce"><span class="type">GOnce</span></a> struct in
+<em class="parameter"><code>func</code></em>
+ will lead to a deadlock.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal"><a href="glib-Basic-Types.html#gpointer">gpointer</a></span>
+<span class="function">get_debug_flags</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">GOnce</span><span class="normal"> my_once </span><span class="symbol">=</span><span class="normal"> <a href="glib-Threads.html#G-ONCE-INIT:CAPS">G_ONCE_INIT</a></span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="function"><a href="glib-Threads.html#g-once">g_once</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">my_once</span><span class="symbol">,</span><span class="normal"> parse_debug_flags</span><span class="symbol">,</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> my_once</span><span class="symbol">.</span><span class="normal">retval</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="g-once.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>once</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Threads.html#GOnce" title="struct GOnce"><span class="type">GOnce</span></a> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>func</p></td>
+<td class="parameter_description"><p>the <a class="link" href="glib-Threads.html#GThreadFunc" title="GThreadFunc ()"><span class="type">GThreadFunc</span></a> function associated to <em class="parameter"><code>once</code></em>
+. This function
+is called only once, regardless of the number of times it and
+its associated <a class="link" href="glib-Threads.html#GOnce" title="struct GOnce"><span class="type">GOnce</span></a> struct are passed to <a class="link" href="glib-Threads.html#g-once" title="g_once()"><code class="function">g_once()</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>arg</p></td>
+<td class="parameter_description"><p>data to be passed to <em class="parameter"><code>func</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-once-init-enter"></a><h3>g_once_init_enter ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_once_init_enter (<em class="parameter"><code>volatile <span class="type">void</span> *location</code></em>);</pre>
+<p>Function to be called when starting a critical initialization
+section. The argument <em class="parameter"><code>location</code></em>
+ must point to a static
+0-initialized variable that will be set to a value other than 0 at
+the end of the initialization section. In combination with
+<a class="link" href="glib-Threads.html#g-once-init-leave" title="g_once_init_leave ()"><code class="function">g_once_init_leave()</code></a> and the unique address <em class="parameter"><code>value_location</code></em>
+, it can
+be ensured that an initialization section will be executed only once
+during a program's life time, and that concurrent threads are
+blocked until initialization completed. To be used in constructs
+like this:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">static</span><span class="normal"> </span><span class="usertype">gsize</span><span class="normal"> initialization_value </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+
+<span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="glib-Threads.html#g-once-init-enter">g_once_init_enter</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">initialization_value</span><span class="symbol">))</span>
+<span class="normal">  </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="usertype">gsize</span><span class="normal"> setup_value </span><span class="symbol">=</span><span class="normal"> </span><span class="number">42</span><span class="symbol">;</span><span class="normal"> </span><span class="comment">// initialization code here</span>
+
+<span class="normal">    </span><span class="function"><a href="glib-Threads.html#g-once-init-leave">g_once_init_leave</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">initialization_value</span><span class="symbol">,</span><span class="normal"> setup_value</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="cbracket">}</span>
+
+<span class="comment">// use initialization_value here</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="g-once-init-enter.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>location</p></td>
+<td class="parameter_description"><p>location of a static initializable variable
+containing 0. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-once-init-enter.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the initialization section should be entered,
+<a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> and blocks otherwise</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-14.html#api-index-2.14">2.14</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-once-init-leave"></a><h3>g_once_init_leave ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_once_init_leave (<em class="parameter"><code>volatile <span class="type">void</span> *location</code></em>,
+                   <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> result</code></em>);</pre>
+<p>Counterpart to <a class="link" href="glib-Threads.html#g-once-init-enter" title="g_once_init_enter ()"><code class="function">g_once_init_enter()</code></a>. Expects a location of a static
+0-initialized initialization variable, and an initialization value
+other than 0. Sets the variable to the initialization value, and
+releases concurrent threads blocking in <a class="link" href="glib-Threads.html#g-once-init-enter" title="g_once_init_enter ()"><code class="function">g_once_init_enter()</code></a> on this
+initialization variable.</p>
+<div class="refsect3">
+<a name="g-once-init-leave.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>location</p></td>
+<td class="parameter_description"><p>location of a static initializable variable
+containing 0. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>new non-0 value for *<em class="parameter"><code>value_location</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-14.html#api-index-2.14">2.14</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bit-lock"></a><h3>g_bit_lock ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_bit_lock (<em class="parameter"><code>volatile <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> *address</code></em>,
+            <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> lock_bit</code></em>);</pre>
+<p>Sets the indicated <em class="parameter"><code>lock_bit</code></em>
+ in <em class="parameter"><code>address</code></em>
+.  If the bit is already
+set, this call will block until <a class="link" href="glib-Threads.html#g-bit-unlock" title="g_bit_unlock ()"><code class="function">g_bit_unlock()</code></a> unsets the
+corresponding bit.</p>
+<p>Attempting to lock on two different bits within the same integer is
+not supported and will very probably cause deadlocks.</p>
+<p>The value of the bit that is set is (1u &lt;&lt; <em class="parameter"><code>bit</code></em>
+).  If <em class="parameter"><code>bit</code></em>
+ is not
+between 0 and 31 then the result is undefined.</p>
+<p>This function accesses <em class="parameter"><code>address</code></em>
+ atomically.  All other accesses to
+<em class="parameter"><code>address</code></em>
+ must be atomic in order for this function to work
+reliably.</p>
+<div class="refsect3">
+<a name="g-bit-lock.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a pointer to an integer</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>lock_bit</p></td>
+<td class="parameter_description"><p>a bit value between 0 and 31</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bit-trylock"></a><h3>g_bit_trylock ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_bit_trylock (<em class="parameter"><code>volatile <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> *address</code></em>,
+               <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> lock_bit</code></em>);</pre>
+<p>Sets the indicated <em class="parameter"><code>lock_bit</code></em>
+ in <em class="parameter"><code>address</code></em>
+, returning <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if
+successful.  If the bit is already set, returns <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> immediately.</p>
+<p>Attempting to lock on two different bits within the same integer is
+not supported.</p>
+<p>The value of the bit that is set is (1u &lt;&lt; <em class="parameter"><code>bit</code></em>
+).  If <em class="parameter"><code>bit</code></em>
+ is not
+between 0 and 31 then the result is undefined.</p>
+<p>This function accesses <em class="parameter"><code>address</code></em>
+ atomically.  All other accesses to
+<em class="parameter"><code>address</code></em>
+ must be atomic in order for this function to work
+reliably.</p>
+<div class="refsect3">
+<a name="g-bit-trylock.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a pointer to an integer</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>lock_bit</p></td>
+<td class="parameter_description"><p>a bit value between 0 and 31</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-bit-trylock.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the lock was acquired</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bit-unlock"></a><h3>g_bit_unlock ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_bit_unlock (<em class="parameter"><code>volatile <a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> *address</code></em>,
+              <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> lock_bit</code></em>);</pre>
+<p>Clears the indicated <em class="parameter"><code>lock_bit</code></em>
+ in <em class="parameter"><code>address</code></em>
+.  If another thread is
+currently blocked in <a class="link" href="glib-Threads.html#g-bit-lock" title="g_bit_lock ()"><code class="function">g_bit_lock()</code></a> on this same bit then it will be
+woken up.</p>
+<p>This function accesses <em class="parameter"><code>address</code></em>
+ atomically.  All other accesses to
+<em class="parameter"><code>address</code></em>
+ must be atomic in order for this function to work
+reliably.</p>
+<div class="refsect3">
+<a name="g-bit-unlock.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a pointer to an integer</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>lock_bit</p></td>
+<td class="parameter_description"><p>a bit value between 0 and 31</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-pointer-bit-lock"></a><h3>g_pointer_bit_lock ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_pointer_bit_lock (<em class="parameter"><code>volatile <span class="type">void</span> *address</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> lock_bit</code></em>);</pre>
+<p>This is equivalent to g_bit_lock, but working on pointers (or other
+pointer-sized values).</p>
+<p>For portability reasons, you may only lock on the bottom 32 bits of
+the pointer.</p>
+<div class="refsect3">
+<a name="g-pointer-bit-lock.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a pointer to a <span class="type">gpointer-sized</span> value. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>lock_bit</p></td>
+<td class="parameter_description"><p>a bit value between 0 and 31</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-pointer-bit-trylock"></a><h3>g_pointer_bit_trylock ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_pointer_bit_trylock (<em class="parameter"><code>volatile <span class="type">void</span> *address</code></em>,
+                       <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> lock_bit</code></em>);</pre>
+<p>This is equivalent to g_bit_trylock, but working on pointers (or
+other pointer-sized values).</p>
+<p>For portability reasons, you may only lock on the bottom 32 bits of
+the pointer.</p>
+<div class="refsect3">
+<a name="g-pointer-bit-trylock.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a pointer to a <span class="type">gpointer-sized</span> value. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>lock_bit</p></td>
+<td class="parameter_description"><p>a bit value between 0 and 31</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-pointer-bit-trylock.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the lock was acquired</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-pointer-bit-unlock"></a><h3>g_pointer_bit_unlock ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_pointer_bit_unlock (<em class="parameter"><code>volatile <span class="type">void</span> *address</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> lock_bit</code></em>);</pre>
+<p>This is equivalent to g_bit_unlock, but working on pointers (or other
+pointer-sized values).</p>
+<p>For portability reasons, you may only lock on the bottom 32 bits of
+the pointer.</p>
+<div class="refsect3">
+<a name="g-pointer-bit-unlock.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>a pointer to a <span class="type">gpointer-sized</span> value. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>lock_bit</p></td>
+<td class="parameter_description"><p>a bit value between 0 and 31</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-get-num-processors"></a><h3>g_get_num_processors ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#guint" title="guint ()"><span class="returnvalue">guint</span></a>
+g_get_num_processors (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Determine the approximate number of threads that the system will
+schedule simultaneously for this process.  This is intended to be
+used as a parameter to <a class="link" href="glib-Thread-Pools.html#g-thread-pool-new" title="g_thread_pool_new ()"><code class="function">g_thread_pool_new()</code></a> for CPU bound tasks and
+similar cases.</p>
+<div class="refsect3">
+<a name="g-get-num-processors.returns"></a><h4>Returns</h4>
+<p> Number of schedulable threads, always greater than 0</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-36.html#api-index-2.36">2.36</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Threads.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="G-THREAD-ERROR:CAPS"></a><h3>G_THREAD_ERROR</h3>
+<pre class="programlisting">#define G_THREAD_ERROR g_thread_error_quark ()
+</pre>
+<p>The error domain of the GLib thread subsystem.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GThreadError"></a><h3>enum GThreadError</h3>
+<p>Possible errors of thread related functions.</p>
+<div class="refsect3">
+<a name="GThreadError.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody><tr>
+<td class="enum_member_name"><p><a name="G-THREAD-ERROR-AGAIN:CAPS"></a>G_THREAD_ERROR_AGAIN</p></td>
+<td class="enum_member_description">
+<p>a thread couldn't be created due to resource
+                       shortage. Try again later.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GThread"></a><h3>GThread</h3>
+<pre class="programlisting">typedef struct {
+} GThread;
+</pre>
+<p>The <a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="type">GThread</span></a> struct represents a running thread. This struct
+is returned by <a class="link" href="glib-Threads.html#g-thread-new" title="g_thread_new ()"><code class="function">g_thread_new()</code></a> or <a class="link" href="glib-Threads.html#g-thread-try-new" title="g_thread_try_new ()"><code class="function">g_thread_try_new()</code></a>. You can
+obtain the <a class="link" href="glib-Threads.html#GThread" title="GThread"><span class="type">GThread</span></a> struct representing the current thread by
+calling <a class="link" href="glib-Threads.html#g-thread-self" title="g_thread_self ()"><code class="function">g_thread_self()</code></a>.</p>
+<p>GThread is refcounted, see <a class="link" href="glib-Threads.html#g-thread-ref" title="g_thread_ref ()"><code class="function">g_thread_ref()</code></a> and <a class="link" href="glib-Threads.html#g-thread-unref" title="g_thread_unref ()"><code class="function">g_thread_unref()</code></a>.
+The thread represented by it holds a reference while it is running,
+and <a class="link" href="glib-Threads.html#g-thread-join" title="g_thread_join ()"><code class="function">g_thread_join()</code></a> consumes the reference that it is given, so
+it is normally not necessary to manage GThread references
+explicitly.</p>
+<p>The structure is opaque -- none of its fields may be directly
+accessed.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMutex"></a><h3>union GMutex</h3>
+<p>The <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> struct is an opaque data structure to represent a mutex
+(mutual exclusion). It can be used to protect data against shared
+access.</p>
+<p>Take for example the following function:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="type">int</span>
+<span class="function">give_me_next_number</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">static</span><span class="normal"> </span><span class="type">int</span><span class="normal"> current_number </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="comment">// now do a very complicated calculation to calculate the new</span>
+<span class="normal">  </span><span class="comment">// number, this might for example be a random number generator</span>
+<span class="normal">  current_number </span><span class="symbol">=</span><span class="normal"> </span><span class="function">calc_next_number</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">current_number</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> current_number</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+It is easy to see that this won't work in a multi-threaded
+application. There current_number must be protected against shared
+access. A <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> can be used as a solution to this problem:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="type">int</span>
+<span class="function">give_me_next_number</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">static</span><span class="normal"> </span><span class="usertype">GMutex</span><span class="normal"> mutex</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="keyword">static</span><span class="normal"> </span><span class="type">int</span><span class="normal"> current_number </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="type">int</span><span class="normal"> ret_val</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="function"><a href="glib-Threads.html#g-mutex-lock">g_mutex_lock</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">mutex</span><span class="symbol">);</span>
+<span class="normal">  ret_val </span><span class="symbol">=</span><span class="normal"> current_number </span><span class="symbol">=</span><span class="normal"> </span><span class="function">calc_next_number</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">current_number</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="glib-Threads.html#g-mutex-unlock">g_mutex_unlock</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">mutex</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> ret_val</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+Notice that the <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> is not initialised to any particular value.
+Its placement in static storage ensures that it will be initialised
+to all-zeros, which is appropriate.</p>
+<p>If a <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> is placed in other contexts (eg: embedded in a struct)
+then it must be explicitly initialised using <a class="link" href="glib-Threads.html#g-mutex-init" title="g_mutex_init ()"><code class="function">g_mutex_init()</code></a>.</p>
+<p>A <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> should only be accessed via g_mutex_ functions.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMutexLocker"></a><h3>GMutexLocker</h3>
+<pre class="programlisting">typedef void GMutexLocker;
+</pre>
+<p>Opaque type. See <a class="link" href="glib-Threads.html#g-mutex-locker-new" title="g_mutex_locker_new ()"><code class="function">g_mutex_locker_new()</code></a> for details.</p>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GRecMutex"></a><h3>struct GRecMutex</h3>
+<pre class="programlisting">struct GRecMutex {
+};
+</pre>
+<p>The GRecMutex struct is an opaque data structure to represent a
+recursive mutex. It is similar to a <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> with the difference
+that it is possible to lock a GRecMutex multiple times in the same
+thread without deadlock. When doing so, care has to be taken to
+unlock the recursive mutex as often as it has been locked.</p>
+<p>If a <a class="link" href="glib-Threads.html#GRecMutex" title="struct GRecMutex"><span class="type">GRecMutex</span></a> is allocated in static storage then it can be used
+without initialisation.  Otherwise, you should call
+<a class="link" href="glib-Threads.html#g-rec-mutex-init" title="g_rec_mutex_init ()"><code class="function">g_rec_mutex_init()</code></a> on it and <a class="link" href="glib-Threads.html#g-rec-mutex-clear" title="g_rec_mutex_clear ()"><code class="function">g_rec_mutex_clear()</code></a> when done.</p>
+<p>A GRecMutex should only be accessed with the
+g_rec_mutex_ functions.</p>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GRWLock"></a><h3>struct GRWLock</h3>
+<pre class="programlisting">struct GRWLock {
+};
+</pre>
+<p>The GRWLock struct is an opaque data structure to represent a
+reader-writer lock. It is similar to a <a class="link" href="glib-Threads.html#GMutex" title="union GMutex"><span class="type">GMutex</span></a> in that it allows
+multiple threads to coordinate access to a shared resource.</p>
+<p>The difference to a mutex is that a reader-writer lock discriminates
+between read-only ('reader') and full ('writer') access. While only
+one thread at a time is allowed write access (by holding the 'writer'
+lock via <a class="link" href="glib-Threads.html#g-rw-lock-writer-lock" title="g_rw_lock_writer_lock ()"><code class="function">g_rw_lock_writer_lock()</code></a>), multiple threads can gain
+simultaneous read-only access (by holding the 'reader' lock via
+<a class="link" href="glib-Threads.html#g-rw-lock-reader-lock" title="g_rw_lock_reader_lock ()"><code class="function">g_rw_lock_reader_lock()</code></a>).</p>
+<p>Here is an example for an array with access functions:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">GRWLock</span><span class="normal"> lock</span><span class="symbol">;</span>
+<span class="usertype">GPtrArray</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">array</span><span class="symbol">;</span>
+
+<span class="normal"><a href="glib-Basic-Types.html#gpointer">gpointer</a></span>
+<span class="function">my_array_get</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">guint</span><span class="normal"> index</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">gpointer</span><span class="normal"> retval </span><span class="symbol">=</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">array</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="function"><a href="glib-Threads.html#g-rw-lock-reader-lock">g_rw_lock_reader_lock</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">lock</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">index </span><span class="symbol">&lt;</span><span class="normal"> array</span><span class="symbol">-&gt;</span><span class="normal">len</span><span class="symbol">)</span>
+<span class="normal">    retval </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-Pointer-Arrays.html#g-ptr-array-index">g_ptr_array_index</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">array</span><span class="symbol">,</span><span class="normal"> index</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="glib-Threads.html#g-rw-lock-reader-unlock">g_rw_lock_reader_unlock</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">lock</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> retval</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+
+<span class="type">void</span>
+<span class="function">my_array_set</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">guint</span><span class="normal"> index</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">gpointer</span><span class="normal"> data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="glib-Threads.html#g-rw-lock-writer-lock">g_rw_lock_writer_lock</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">lock</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">array</span><span class="symbol">)</span>
+<span class="normal">    array </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-Pointer-Arrays.html#g-ptr-array-new">g_ptr_array_new</a></span><span class="normal"> </span><span class="symbol">();</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">index </span><span class="symbol">&gt;=</span><span class="normal"> array</span><span class="symbol">-&gt;</span><span class="normal">len</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="function"><a href="glib-Pointer-Arrays.html#g-ptr-array-set-size">g_ptr_array_set_size</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">array</span><span class="symbol">,</span><span class="normal"> index</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="glib-Pointer-Arrays.html#g-ptr-array-index">g_ptr_array_index</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">array</span><span class="symbol">,</span><span class="normal"> index</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> data</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="function"><a href="glib-Threads.html#g-rw-lock-writer-unlock">g_rw_lock_writer_unlock</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">lock</span><span class="symbol">);</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+This example shows an array which can be accessed by many readers
+(the <code class="function">my_array_get()</code> function) simultaneously, whereas the writers
+(the <code class="function">my_array_set()</code> function) will only be allowed one at a time
+and only if no readers currently access the array. This is because
+of the potentially dangerous resizing of the array. Using these
+functions is fully multi-thread safe now.</p>
+<p>If a <a class="link" href="glib-Threads.html#GRWLock" title="struct GRWLock"><span class="type">GRWLock</span></a> is allocated in static storage then it can be used
+without initialisation.  Otherwise, you should call
+<a class="link" href="glib-Threads.html#g-rw-lock-init" title="g_rw_lock_init ()"><code class="function">g_rw_lock_init()</code></a> on it and <a class="link" href="glib-Threads.html#g-rw-lock-clear" title="g_rw_lock_clear ()"><code class="function">g_rw_lock_clear()</code></a> when done.</p>
+<p>A GRWLock should only be accessed with the g_rw_lock_ functions.</p>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GCond"></a><h3>struct GCond</h3>
+<pre class="programlisting">struct GCond {
+};
+</pre>
+<p>The <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> struct is an opaque data structure that represents a
+condition. Threads can block on a <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> if they find a certain
+condition to be false. If other threads change the state of this
+condition they signal the <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a>, and that causes the waiting
+threads to be woken up.</p>
+<p>Consider the following example of a shared variable.  One or more
+threads can wait for data to be published to the variable and when
+another thread publishes the data, it can signal one of the waiting
+threads to wake up to collect the data.</p>
+<p>Here is an example for using GCond to block a thread until a condition
+is satisfied:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">gpointer</span><span class="normal"> current_data </span><span class="symbol">=</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="usertype">GMutex</span><span class="normal"> data_mutex</span><span class="symbol">;</span>
+<span class="usertype">GCond</span><span class="normal"> data_cond</span><span class="symbol">;</span>
+
+<span class="type">void</span>
+<span class="function">push_data</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">gpointer</span><span class="normal"> data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="glib-Threads.html#g-mutex-lock">g_mutex_lock</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">data_mutex</span><span class="symbol">);</span>
+<span class="normal">  current_data </span><span class="symbol">=</span><span class="normal"> data</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="function"><a href="glib-Threads.html#g-cond-signal">g_cond_signal</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">data_cond</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="glib-Threads.html#g-mutex-unlock">g_mutex_unlock</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">data_mutex</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="normal"><a href="glib-Basic-Types.html#gpointer">gpointer</a></span>
+<span class="function">pop_data</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">gpointer</span><span class="normal"> data</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="function"><a href="glib-Threads.html#g-mutex-lock">g_mutex_lock</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">data_mutex</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">current_data</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="function"><a href="glib-Threads.html#g-cond-wait">g_cond_wait</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">data_cond</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">data_mutex</span><span class="symbol">);</span>
+<span class="normal">  data </span><span class="symbol">=</span><span class="normal"> current_data</span><span class="symbol">;</span>
+<span class="normal">  current_data </span><span class="symbol">=</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="normal">  </span><span class="function"><a href="glib-Threads.html#g-mutex-unlock">g_mutex_unlock</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">data_mutex</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> data</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+Whenever a thread calls <code class="function">pop_data()</code> now, it will wait until
+current_data is non-<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>, i.e. until some other thread
+has called <code class="function">push_data()</code>.</p>
+<p>The example shows that use of a condition variable must always be
+paired with a mutex.  Without the use of a mutex, there would be a
+race between the check of <em class="parameter"><code>current_data</code></em>
+ by the while loop in
+<code class="function">pop_data()</code> and waiting. Specifically, another thread could set
+<em class="parameter"><code>current_data</code></em>
+ after the check, and signal the cond (with nobody
+waiting on it) before the first thread goes to sleep. <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> is
+specifically useful for its ability to release the mutex and go
+to sleep atomically.</p>
+<p>It is also important to use the <a class="link" href="glib-Threads.html#g-cond-wait" title="g_cond_wait ()"><code class="function">g_cond_wait()</code></a> and <a class="link" href="glib-Threads.html#g-cond-wait-until" title="g_cond_wait_until ()"><code class="function">g_cond_wait_until()</code></a>
+functions only inside a loop which checks for the condition to be
+true.  See <a class="link" href="glib-Threads.html#g-cond-wait" title="g_cond_wait ()"><code class="function">g_cond_wait()</code></a> for an explanation of why the condition may
+not be true even after it returns.</p>
+<p>If a <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> is allocated in static storage then it can be used
+without initialisation.  Otherwise, you should call <a class="link" href="glib-Threads.html#g-cond-init" title="g_cond_init ()"><code class="function">g_cond_init()</code></a>
+on it and <a class="link" href="glib-Threads.html#g-cond-clear" title="g_cond_clear ()"><code class="function">g_cond_clear()</code></a> when done.</p>
+<p>A <a class="link" href="glib-Threads.html#GCond" title="struct GCond"><span class="type">GCond</span></a> should only be accessed via the g_cond_ functions.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GPrivate"></a><h3>struct GPrivate</h3>
+<pre class="programlisting">struct GPrivate {
+};
+</pre>
+<p>The <a class="link" href="glib-Threads.html#GPrivate" title="struct GPrivate"><span class="type">GPrivate</span></a> struct is an opaque data structure to represent a
+thread-local data key. It is approximately equivalent to the
+<code class="function">pthread_setspecific()</code>/<code class="function">pthread_getspecific()</code> APIs on POSIX and to
+<code class="function">TlsSetValue()</code>/<code class="function">TlsGetValue()</code> on Windows.</p>
+<p>If you don't already know why you might want this functionality,
+then you probably don't need it.</p>
+<p><a class="link" href="glib-Threads.html#GPrivate" title="struct GPrivate"><span class="type">GPrivate</span></a> is a very limited resource (as far as 128 per program,
+shared between all libraries). It is also not possible to destroy a
+<a class="link" href="glib-Threads.html#GPrivate" title="struct GPrivate"><span class="type">GPrivate</span></a> after it has been used. As such, it is only ever acceptable
+to use <a class="link" href="glib-Threads.html#GPrivate" title="struct GPrivate"><span class="type">GPrivate</span></a> in static scope, and even then sparingly so.</p>
+<p>See <a class="link" href="glib-Threads.html#G-PRIVATE-INIT:CAPS" title="G_PRIVATE_INIT()"><code class="function">G_PRIVATE_INIT()</code></a> for a couple of examples.</p>
+<p>The <a class="link" href="glib-Threads.html#GPrivate" title="struct GPrivate"><span class="type">GPrivate</span></a> structure should be considered opaque.  It should only
+be accessed via the g_private_ functions.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GOnce"></a><h3>struct GOnce</h3>
+<pre class="programlisting">struct GOnce {
+  volatile GOnceStatus status;
+  volatile gpointer retval;
+};
+</pre>
+<p>A <a class="link" href="glib-Threads.html#GOnce" title="struct GOnce"><span class="type">GOnce</span></a> struct controls a one-time initialization function. Any
+one-time initialization function must have its own unique <a class="link" href="glib-Threads.html#GOnce" title="struct GOnce"><span class="type">GOnce</span></a>
+struct.</p>
+<div class="refsect3">
+<a name="GOnce.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p>volatile <a class="link" href="glib-Threads.html#GOnceStatus" title="enum GOnceStatus"><span class="type">GOnceStatus</span></a> <em class="structfield"><code><a name="GOnce.status"></a>status</code></em>;</p></td>
+<td class="struct_member_description"><p>the status of the <a class="link" href="glib-Threads.html#GOnce" title="struct GOnce"><span class="type">GOnce</span></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p>volatile <a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> <em class="structfield"><code><a name="GOnce.retval"></a>retval</code></em>;</p></td>
+<td class="struct_member_description"><p>the value returned by the call to the function, if <em class="parameter"><code>status</code></em>
+is <a class="link" href="glib-Threads.html#G-ONCE-STATUS-READY:CAPS"><code class="literal">G_ONCE_STATUS_READY</code></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GOnceStatus"></a><h3>enum GOnceStatus</h3>
+<p>The possible statuses of a one-time initialization function
+controlled by a <a class="link" href="glib-Threads.html#GOnce" title="struct GOnce"><span class="type">GOnce</span></a> struct.</p>
+<div class="refsect3">
+<a name="GOnceStatus.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-ONCE-STATUS-NOTCALLED:CAPS"></a>G_ONCE_STATUS_NOTCALLED</p></td>
+<td class="enum_member_description">
+<p>the function has not been called yet.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-ONCE-STATUS-PROGRESS:CAPS"></a>G_ONCE_STATUS_PROGRESS</p></td>
+<td class="enum_member_description">
+<p>the function call is currently in progress.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-ONCE-STATUS-READY:CAPS"></a>G_ONCE_STATUS_READY</p></td>
+<td class="enum_member_description">
+<p>the function has been called.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-ONCE-INIT:CAPS"></a><h3>G_ONCE_INIT</h3>
+<pre class="programlisting">#define G_ONCE_INIT { G_ONCE_STATUS_NOTCALLED, NULL }
+</pre>
+<p>A <a class="link" href="glib-Threads.html#GOnce" title="struct GOnce"><span class="type">GOnce</span></a> must be initialized with this macro before it can be used.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">GOnce</span><span class="normal"> my_once </span><span class="symbol">=</span><span class="normal"> <a href="glib-Threads.html#G-ONCE-INIT:CAPS">G_ONCE_INIT</a></span><span class="symbol">;</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Threads.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="glib-Thread-Pools.html#GThreadPool" title="struct GThreadPool"><span class="type">GThreadPool</span></a>, <a class="link" href="glib-Asynchronous-Queues.html#GAsyncQueue" title="GAsyncQueue"><span class="type">GAsyncQueue</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Running GLib Applications: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib.html" title="GLib Overview">
+<link rel="prev" href="glib-compiling.html" title="Compiling GLib Applications">
+<link rel="next" href="glib-changes.html" title="Changes to GLib">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-compiling.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-changes.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-running"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle">Running GLib Applications</span></h2>
+<p>Running GLib Applications — 
+How to run and debug your GLib application
+</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="id-1.2.7.3"></a><h2>Running and debugging GLib Applications</h2>
+<div class="refsect2">
+<a name="id-1.2.7.3.2"></a><h3>Environment variables</h3>
+<p>
+  The runtime behaviour of GLib applications can be influenced by a
+  number of environment variables.
+</p>
+<p><b>Standard variables. </b>
+    GLib reads standard environment variables like <code class="envar">LANG</code>,
+    <code class="envar">PATH</code>, <code class="envar">HOME</code>, <code class="envar">TMPDIR</code>,
+    <code class="envar">TZ</code> and <code class="envar">LOGNAME</code>.
+  </p>
+<p><b>XDG directories. </b>
+    GLib consults the environment variables <code class="envar">XDG_DATA_HOME</code>,
+    <code class="envar">XDG_DATA_DIRS</code>, <code class="envar">XDG_CONFIG_HOME</code>,
+    <code class="envar">XDG_CONFIG_DIRS</code>, <code class="envar">XDG_CACHE_HOME</code> and
+    <code class="envar">XDG_RUNTIME_DIR</code> for the various XDG directories.
+    For more information, see the <a class="ulink" href="http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html" target="_top">XDG basedir spec</a>.
+  </p>
+<p><a name="G_FILENAME_ENCODING"></a><b><code class="envar">G_FILENAME_ENCODING</code>. </b>
+    This environment variable can be set to a comma-separated list of character
+    set names. GLib assumes that filenames are encoded in the first character
+    set from that list rather than in UTF-8. The special token "@locale" can be
+    used to specify the character set for the current locale.
+  </p>
+<p><a name="G_BROKEN_FILENAMES"></a><b><code class="envar">G_BROKEN_FILENAMES</code>. </b>
+    If this environment variable is set, GLib assumes that filenames are in
+    the locale encoding rather than in UTF-8. G_FILENAME_ENCODING takes
+    priority over G_BROKEN_FILENAMES.
+  </p>
+<p><a name="G_MESSAGES_PREFIXED"></a><b><code class="envar">G_MESSAGES_PREFIXED</code>. </b>
+    A list of log levels for which messages should be prefixed by the
+    program name and PID of the application. The default is to prefix
+    everything except <code class="literal">G_LOG_LEVEL_MESSAGE</code> and
+    <code class="literal">G_LOG_LEVEL_INFO</code>.
+    The possible values are
+    <code class="literal">error</code>,
+    <code class="literal">warning</code>,
+    <code class="literal">critical</code>,
+    <code class="literal">message</code>,
+    <code class="literal">info</code> and
+    <code class="literal">debug</code>.
+    You can also use the special values
+    <code class="literal">all</code> and
+    <code class="literal">help</code>.
+  
+    This environment variable only affects the default log handler,
+    g_log_default_handler().
+  </p>
+<p><a name="G_MESSAGES_DEBUG"></a><b><code class="envar">G_MESSAGES_DEBUG</code>. </b>
+    A space-separated list of log domains for which informational
+    and debug messages should be printed. By default, these
+    messages are not printed.
+  
+    You can also use the special value <code class="literal">all</code>.
+  
+    This environment variable only affects the default log handler,
+    g_log_default_handler().
+  </p>
+<p><a name="G-DEBUG:CAPS"></a><b><code class="envar">G_DEBUG</code>. </b>
+    This environment variable can be set to a list of debug options,
+    which cause GLib to print out different types of debugging information.
+    </p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term">fatal-warnings</span></p></td>
+<td><p>Causes GLib to abort the program at the first call
+           to g_warning() or g_critical().</p></td>
+</tr>
+<tr>
+<td><p><span class="term">fatal-criticals</span></p></td>
+<td><p>Causes GLib to abort the program at the first call
+           to g_critical().</p></td>
+</tr>
+<tr>
+<td><p><span class="term">gc-friendly</span></p></td>
+<td><p>Newly allocated memory that isn't directly initialized,
+          as well as memory being freed will be reset to 0. The point here is
+          to allow memory checkers and similar programs that use Boehm GC alike
+          algorithms to produce more accurate results.</p></td>
+</tr>
+<tr>
+<td><p><span class="term">resident-modules</span></p></td>
+<td><p>All modules loaded by GModule will be made resident.
+          This can be useful for tracking memory leaks in modules which are
+          later unloaded; but it can also hide bugs where code is accessed
+          after the module would have normally been unloaded.</p></td>
+</tr>
+<tr>
+<td><p><span class="term">bind-now-modules</span></p></td>
+<td><p>All modules loaded by GModule will bind their symbols
+          at load time, even when the code uses %G_MODULE_BIND_LAZY.</p></td>
+</tr>
+</tbody>
+</table></div>
+<p>
+    The special value all can be used to turn on all debug options.
+    The special value help can be used to print all available options.
+  </p>
+<p><a name="G_SLICE"></a><b><code class="envar">G_SLICE</code>. </b>
+    This environment variable allows reconfiguration of the GSlice
+    memory allocator.
+    </p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term">always-malloc</span></p></td>
+<td><p>This will cause all slices allocated through
+          g_slice_alloc() and released by g_slice_free1() to be actually
+          allocated via direct calls to g_malloc() and g_free().
+          This is most useful for memory checkers and similar programs that
+          use Boehm GC alike algorithms to produce more accurate results.
+          It can also be in conjunction with debugging features of the system's
+          malloc() implementation such as glibc's MALLOC_CHECK_=2 to debug
+          erroneous slice allocation code, although
+          <code class="literal">debug-blocks</code> is usually a better suited debugging
+          tool.</p></td>
+</tr>
+<tr>
+<td><p><span class="term">debug-blocks</span></p></td>
+<td>
+<p>Using this option (present since GLib 2.13) engages
+          extra code which performs sanity checks on the released memory
+          slices. Invalid slice addresses or slice sizes will be reported and
+          lead to a program halt. This option is for debugging scenarios.
+          In particular, client packages sporting their own test suite should
+          <span class="emphasis"><em>always enable this option when running tests</em></span>.
+          Global slice validation is ensured by storing size and address
+          information for each allocated chunk, and maintaining a global
+          hash table of that data. That way, multi-thread scalability is
+          given up, and memory consumption is increased. However, the
+          resulting code usually performs acceptably well, possibly better
+          than with comparable memory checking carried out using external
+          tools.</p>
+<p>An example of a memory corruption scenario that cannot be
+          reproduced with <code class="literal">G_SLICE=always-malloc</code>, but will
+          be caught by <code class="literal">G_SLICE=debug-blocks</code> is as follows:
+          </p>
+<pre class="programlisting">
+            void *slist = g_slist_alloc (); /* void* gives up type-safety */
+            g_list_free (slist);            /* corruption: sizeof (GSList) != sizeof (GList) */
+          </pre>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p>
+    The special value all can be used to turn on all options.
+    The special value help can be used to print all available options.
+  </p>
+<p><a name="G_RANDOM_VERSION"></a><b><code class="envar">G_RANDOM_VERSION</code>. </b>
+    If this environment variable is set to '2.0', the outdated
+    pseudo-random number seeding and generation algorithms from
+    GLib 2.0 are used instead of the newer, better ones. You should
+    only set this variable if you have sequences of numbers that were
+    generated with Glib 2.0 that you need to reproduce exactly.
+  </p>
+<p><a name="LIBCHARSET_ALIAS_DIR"></a><b><code class="envar">LIBCHARSET_ALIAS_DIR</code>. </b>
+    Allows to specify a nonstandard location for the
+    <code class="filename">charset.aliases</code> file that is used by the
+    character set conversion routines. The default location is the
+    <em class="replaceable"><code>libdir</code></em> specified at compilation time.
+  </p>
+<p><a name="TZDIR"></a><b><code class="envar">TZDIR</code>. </b>
+    Allows to specify a nonstandard location for the timezone data files
+    that are used by the #GDateTime API. The default location is under
+    <code class="filename">/usr/share/zoneinfo</code>. For more information,
+    also look at the <span class="command"><strong>tzset</strong></span> manual page.
+  </p>
+<p><a name="G_ENABLE_DIAGNOSTIC"></a><b><code class="envar">G_ENABLE_DIAGNOSTIC</code>. </b>
+    If set to a non-zero value, this environment variable enables
+    diagnostic messages, like deprecation messages for GObject properties
+    and signals.
+  </p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="setlocale"></a><h3>Locale</h3>
+<p>
+A number of interfaces in GLib depend on the current locale in which
+an application is running. Therefore, most GLib-using applications should
+call <code class="function">setlocale (LC_ALL, "")</code> to set up the current
+locale.
+</p>
+<p>
+On Windows, in a C program there are several locale concepts
+that not necessarily are synchronized. On one hand, there is the
+system default ANSI code-page, which determines what encoding is used
+for file names handled by the C library's functions and the Win32
+API. (We are talking about the "narrow" functions here that take
+character pointers, not the "wide" ones.)
+</p>
+<p>
+On the other hand, there is the C library's current locale. The
+character set (code-page) used by that is not necessarily the same as
+the system default ANSI code-page. Strings in this character set are
+returned by functions like <code class="function">strftime()</code>.
+</p>
+</div>
+<p>
+GLib ships with a set of Python macros for the GDB debugger. These includes pretty
+printers for lists, hashtables and GObject types. It also has a backtrace filter
+that makes backtraces with signal emissions easier to read.
+</p>
+<p>
+To use this you need a version of GDB that supports Python scripting; anything
+from 7.0 should be fine. You then need to install GLib in the same prefix as
+GDB so that the Python GDB autoloaded files get installed in the right place
+for GDB to pick up.
+</p>
+<p>
+General pretty printing should just happen without having to do anything special.
+To get the signal emission filtered backtrace you must use the "new-backtrace" command
+instead of the standard one.
+</p>
+<p>
+There is also a new command called gforeach that can be used to apply a command
+on each item in a list. E.g. you can do
+</p>
+<pre class="programlisting">
+gforeach i in some_list_variable: print *(GtkWidget *)l
+</pre>
+<p>
+Which would print the contents of each widget in a list of widgets.
+</p>
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.3.8"></a><h3>SystemTap</h3>
+<p>
+<a class="ulink" href="http://sourceware.org/systemtap/" target="_top">SystemTap</a> is a dynamic whole-system
+analysis toolkit.  GLib ships with a file <code class="filename">libglib-2.0.so.*.stp</code> which defines a
+set of probe points, which you can hook into with custom SystemTap scripts.
+See the files <code class="filename">libglib-2.0.so.*.stp</code>, <code class="filename">libgobject-2.0.so.*.stp</code>
+and <code class="filename">libgio-2.0.so.*.stp</code> which
+are in your shared SystemTap scripts directory.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.3.9"></a><h3>Memory statistics</h3>
+<p>
+g_mem_profile() will output a summary g_malloc() memory usage, if memory
+profiling has been enabled by calling
+<code class="literal">g_mem_set_vtable (glib_mem_profiler_table)</code> upon startup.
+</p>
+<p>
+If GLib has been configured with <code class="option">--enable-debug=yes</code>,
+then g_slice_debug_tree_statistics() can be called in a debugger to
+output details about the memory usage of the slice allocator.
+</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

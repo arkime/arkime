@@ -1,0 +1,514 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GFileMonitor: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="file_mon.html" title="File System Monitoring">
+<link rel="prev" href="file_mon.html" title="File System Monitoring">
+<link rel="next" href="utils.html" title="File-related Utilities">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GFileMonitor.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GFileMonitor.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GFileMonitor.properties" class="shortcut">Properties</a></span><span id="nav_signals">  <span class="dim">|</span> 
+                  <a href="#GFileMonitor.signals" class="shortcut">Signals</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="file_mon.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="file_mon.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="utils.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GFileMonitor"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GFileMonitor.top_of_page"></a>GFileMonitor</span></h2>
+<p>GFileMonitor — File Monitor</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GFileMonitor.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GFileMonitor.html#g-file-monitor-cancel" title="g_file_monitor_cancel ()">g_file_monitor_cancel</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GFileMonitor.html#g-file-monitor-is-cancelled" title="g_file_monitor_is_cancelled ()">g_file_monitor_is_cancelled</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GFileMonitor.html#g-file-monitor-set-rate-limit" title="g_file_monitor_set_rate_limit ()">g_file_monitor_set_rate_limit</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GFileMonitor.html#g-file-monitor-emit-event" title="g_file_monitor_emit_event ()">g_file_monitor_emit_event</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GFileMonitor.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GFileMonitor.html#GFileMonitor--cancelled" title="The “cancelled” property">cancelled</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a></td>
+<td class="property_name"><a class="link" href="GFileMonitor.html#GFileMonitor--rate-limit" title="The “rate-limit” property">rate-limit</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GFileMonitor.signals"></a><h2>Signals</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="signals_return">
+<col width="300px" class="signals_name">
+<col width="200px" class="signals_flags">
+</colgroup>
+<tbody><tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GFileMonitor.html#GFileMonitor-changed" title="The “changed” signal">changed</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GFileMonitor.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="GFileMonitor.html#GFileMonitorEvent" title="enum GFileMonitorEvent">GFileMonitorEvent</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GFileMonitor.html#GFileMonitor-struct" title="GFileMonitor">GFileMonitor</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GFileMonitor.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GFileMonitor
+</pre>
+</div>
+<div class="refsect1">
+<a name="GFileMonitor.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GFileMonitor.description"></a><h2>Description</h2>
+<p>Monitors a file or directory for changes.</p>
+<p>To obtain a <a class="link" href="GFileMonitor.html" title="GFileMonitor"><span class="type">GFileMonitor</span></a> for a file or directory, use
+<a class="link" href="GFile.html#g-file-monitor" title="g_file_monitor ()"><code class="function">g_file_monitor()</code></a>, <a class="link" href="GFile.html#g-file-monitor-file" title="g_file_monitor_file ()"><code class="function">g_file_monitor_file()</code></a>, or
+<a class="link" href="GFile.html#g-file-monitor-directory" title="g_file_monitor_directory ()"><code class="function">g_file_monitor_directory()</code></a>.</p>
+<p>To get informed about changes to the file or directory you are
+monitoring, connect to the <a class="link" href="GFileMonitor.html#GFileMonitor-changed" title="The “changed” signal"><span class="type">“changed”</span></a> signal. The
+signal will be emitted in the
+<a href="../glib-The-Main-Event-Loop.html#g-main-context-push-thread-default">thread-default main context</a>
+of the thread that the monitor was created in
+(though if the global default main context is blocked, this may
+cause notifications to be blocked even if the thread-default
+context is still running).</p>
+</div>
+<div class="refsect1">
+<a name="GFileMonitor.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-file-monitor-cancel"></a><h3>g_file_monitor_cancel ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_file_monitor_cancel (<em class="parameter"><code><a class="link" href="GFileMonitor.html" title="GFileMonitor"><span class="type">GFileMonitor</span></a> *monitor</code></em>);</pre>
+<p>Cancels a file monitor.</p>
+<div class="refsect3">
+<a name="g-file-monitor-cancel.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>monitor</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GFileMonitor.html" title="GFileMonitor"><span class="type">GFileMonitor</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-file-monitor-cancel.returns"></a><h4>Returns</h4>
+<p> always <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-monitor-is-cancelled"></a><h3>g_file_monitor_is_cancelled ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_file_monitor_is_cancelled (<em class="parameter"><code><a class="link" href="GFileMonitor.html" title="GFileMonitor"><span class="type">GFileMonitor</span></a> *monitor</code></em>);</pre>
+<p>Returns whether the monitor is canceled.</p>
+<div class="refsect3">
+<a name="g-file-monitor-is-cancelled.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>monitor</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GFileMonitor.html" title="GFileMonitor"><span class="type">GFileMonitor</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-file-monitor-is-cancelled.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if monitor is canceled. <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-monitor-set-rate-limit"></a><h3>g_file_monitor_set_rate_limit ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_file_monitor_set_rate_limit (<em class="parameter"><code><a class="link" href="GFileMonitor.html" title="GFileMonitor"><span class="type">GFileMonitor</span></a> *monitor</code></em>,
+                               <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> limit_msecs</code></em>);</pre>
+<p>Sets the rate limit to which the <em class="parameter"><code>monitor</code></em>
+ will report
+consecutive change events to the same file.</p>
+<div class="refsect3">
+<a name="g-file-monitor-set-rate-limit.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>monitor</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GFileMonitor.html" title="GFileMonitor"><span class="type">GFileMonitor</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>limit_msecs</p></td>
+<td class="parameter_description"><p>a non-negative integer with the limit in milliseconds
+to poll for changes</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-monitor-emit-event"></a><h3>g_file_monitor_emit_event ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_file_monitor_emit_event (<em class="parameter"><code><a class="link" href="GFileMonitor.html" title="GFileMonitor"><span class="type">GFileMonitor</span></a> *monitor</code></em>,
+                           <em class="parameter"><code><a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> *child</code></em>,
+                           <em class="parameter"><code><a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> *other_file</code></em>,
+                           <em class="parameter"><code><a class="link" href="GFileMonitor.html#GFileMonitorEvent" title="enum GFileMonitorEvent"><span class="type">GFileMonitorEvent</span></a> event_type</code></em>);</pre>
+<p>Emits the <a class="link" href="GFileMonitor.html#GFileMonitor-changed" title="The “changed” signal"><span class="type">“changed”</span></a> signal if a change
+has taken place. Should be called from file monitor
+implementations only.</p>
+<p>Implementations are responsible to call this method from the
+<a href="../glib-The-Main-Event-Loop.html#g-main-context-push-thread-default">thread-default main context</a> of the
+thread that the monitor was created in.</p>
+<div class="refsect3">
+<a name="g-file-monitor-emit-event.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>monitor</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GFileMonitor.html" title="GFileMonitor"><span class="type">GFileMonitor</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>child</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>other_file</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>event_type</p></td>
+<td class="parameter_description"><p>a set of <a class="link" href="GFileMonitor.html#GFileMonitorEvent" title="enum GFileMonitorEvent"><span class="type">GFileMonitorEvent</span></a> flags.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GFileMonitor.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GFileMonitorEvent"></a><h3>enum GFileMonitorEvent</h3>
+<p>Specifies what type of event a monitor event is.</p>
+<div class="refsect3">
+<a name="GFileMonitorEvent.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-MONITOR-EVENT-CHANGED:CAPS"></a>G_FILE_MONITOR_EVENT_CHANGED</p></td>
+<td class="enum_member_description">
+<p>a file changed.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-MONITOR-EVENT-CHANGES-DONE-HINT:CAPS"></a>G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT</p></td>
+<td class="enum_member_description">
+<p>a hint that this was probably the last change in a set of changes.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-MONITOR-EVENT-DELETED:CAPS"></a>G_FILE_MONITOR_EVENT_DELETED</p></td>
+<td class="enum_member_description">
+<p>a file was deleted.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-MONITOR-EVENT-CREATED:CAPS"></a>G_FILE_MONITOR_EVENT_CREATED</p></td>
+<td class="enum_member_description">
+<p>a file was created.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-MONITOR-EVENT-ATTRIBUTE-CHANGED:CAPS"></a>G_FILE_MONITOR_EVENT_ATTRIBUTE_CHANGED</p></td>
+<td class="enum_member_description">
+<p>a file attribute was changed.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-MONITOR-EVENT-PRE-UNMOUNT:CAPS"></a>G_FILE_MONITOR_EVENT_PRE_UNMOUNT</p></td>
+<td class="enum_member_description">
+<p>the file location will soon be unmounted.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-MONITOR-EVENT-UNMOUNTED:CAPS"></a>G_FILE_MONITOR_EVENT_UNMOUNTED</p></td>
+<td class="enum_member_description">
+<p>the file location was unmounted.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-MONITOR-EVENT-MOVED:CAPS"></a>G_FILE_MONITOR_EVENT_MOVED</p></td>
+<td class="enum_member_description">
+<p>the file was moved -- only sent if the
+  (deprecated) <a class="link" href="GFile.html#G-FILE-MONITOR-SEND-MOVED:CAPS"><code class="literal">G_FILE_MONITOR_SEND_MOVED</code></a> flag is set</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-MONITOR-EVENT-RENAMED:CAPS"></a>G_FILE_MONITOR_EVENT_RENAMED</p></td>
+<td class="enum_member_description">
+<p>the file was renamed within the
+  current directory -- only sent if the <a class="link" href="GFile.html#G-FILE-MONITOR-WATCH-MOVES:CAPS"><code class="literal">G_FILE_MONITOR_WATCH_MOVES</code></a>
+  flag is set.  Since: 2.46.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-MONITOR-EVENT-MOVED-IN:CAPS"></a>G_FILE_MONITOR_EVENT_MOVED_IN</p></td>
+<td class="enum_member_description">
+<p>the file was moved into the
+  monitored directory from another location -- only sent if the
+  <a class="link" href="GFile.html#G-FILE-MONITOR-WATCH-MOVES:CAPS"><code class="literal">G_FILE_MONITOR_WATCH_MOVES</code></a> flag is set.  Since: 2.46.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-MONITOR-EVENT-MOVED-OUT:CAPS"></a>G_FILE_MONITOR_EVENT_MOVED_OUT</p></td>
+<td class="enum_member_description">
+<p>the file was moved out of the
+  monitored directory to another location -- only sent if the
+  <a class="link" href="GFile.html#G-FILE-MONITOR-WATCH-MOVES:CAPS"><code class="literal">G_FILE_MONITOR_WATCH_MOVES</code></a> flag is set.  Since: 2.46</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GFileMonitor-struct"></a><h3>GFileMonitor</h3>
+<pre class="programlisting">typedef struct _GFileMonitor GFileMonitor;</pre>
+<p>Watches for changes to a file.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GFileMonitor.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GFileMonitor--cancelled"></a><h3>The <code class="literal">“cancelled”</code> property</h3>
+<pre class="programlisting">  “cancelled”                <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether the monitor has been cancelled.</p>
+<p>Flags: Read</p>
+<p>Default value: FALSE</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GFileMonitor--rate-limit"></a><h3>The <code class="literal">“rate-limit”</code> property</h3>
+<pre class="programlisting">  “rate-limit”               <a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a></pre>
+<p>The limit of the monitor to watch for changes, in milliseconds.</p>
+<p>Flags: Read / Write</p>
+<p>Allowed values: &gt;= 0</p>
+<p>Default value: 800</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GFileMonitor.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="GFileMonitor-changed"></a><h3>The <code class="literal">“changed”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GFileMonitor.html" title="GFileMonitor"><span class="type">GFileMonitor</span></a>     *monitor,
+               <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>            *file,
+               <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>            *other_file,
+               <a class="link" href="GFileMonitor.html#GFileMonitorEvent" title="enum GFileMonitorEvent"><span class="type">GFileMonitorEvent</span></a> event_type,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>          user_data)</pre>
+<p>Emitted when <em class="parameter"><code>file</code></em>
+ has been changed.</p>
+<p>If using <a class="link" href="GFile.html#G-FILE-MONITOR-WATCH-MOVES:CAPS"><code class="literal">G_FILE_MONITOR_WATCH_MOVES</code></a> on a directory monitor, and
+the information is available (and if supported by the backend),
+<em class="parameter"><code>event_type</code></em>
+ may be <a class="link" href="GFileMonitor.html#G-FILE-MONITOR-EVENT-RENAMED:CAPS"><code class="literal">G_FILE_MONITOR_EVENT_RENAMED</code></a>,
+<a class="link" href="GFileMonitor.html#G-FILE-MONITOR-EVENT-MOVED-IN:CAPS"><code class="literal">G_FILE_MONITOR_EVENT_MOVED_IN</code></a> or <a class="link" href="GFileMonitor.html#G-FILE-MONITOR-EVENT-MOVED-OUT:CAPS"><code class="literal">G_FILE_MONITOR_EVENT_MOVED_OUT</code></a>.</p>
+<p>In all cases <em class="parameter"><code>file</code></em>
+ will be a child of the monitored directory.  For
+renames, <em class="parameter"><code>file</code></em>
+ will be the old name and <em class="parameter"><code>other_file</code></em>
+ is the new
+name.  For "moved in" events, <em class="parameter"><code>file</code></em>
+ is the name of the file that
+appeared and <em class="parameter"><code>other_file</code></em>
+ is the old name that it was moved from (in
+another directory).  For "moved out" events, <em class="parameter"><code>file</code></em>
+ is the name of
+the file that used to be in this directory and <em class="parameter"><code>other_file</code></em>
+ is the
+name of the file at its new location.</p>
+<p>It makes sense to treat <a class="link" href="GFileMonitor.html#G-FILE-MONITOR-EVENT-MOVED-IN:CAPS"><code class="literal">G_FILE_MONITOR_EVENT_MOVED_IN</code></a> as
+equivalent to <a class="link" href="GFileMonitor.html#G-FILE-MONITOR-EVENT-CREATED:CAPS"><code class="literal">G_FILE_MONITOR_EVENT_CREATED</code></a> and
+<a class="link" href="GFileMonitor.html#G-FILE-MONITOR-EVENT-MOVED-OUT:CAPS"><code class="literal">G_FILE_MONITOR_EVENT_MOVED_OUT</code></a> as equivalent to
+<a class="link" href="GFileMonitor.html#G-FILE-MONITOR-EVENT-DELETED:CAPS"><code class="literal">G_FILE_MONITOR_EVENT_DELETED</code></a>, with extra information.
+<a class="link" href="GFileMonitor.html#G-FILE-MONITOR-EVENT-RENAMED:CAPS"><code class="literal">G_FILE_MONITOR_EVENT_RENAMED</code></a> is equivalent to a delete/create
+pair.  This is exactly how the events will be reported in the case
+that the <a class="link" href="GFile.html#G-FILE-MONITOR-WATCH-MOVES:CAPS"><code class="literal">G_FILE_MONITOR_WATCH_MOVES</code></a> flag is not in use.</p>
+<p>If using the deprecated flag <a class="link" href="GFile.html#G-FILE-MONITOR-SEND-MOVED:CAPS"><code class="literal">G_FILE_MONITOR_SEND_MOVED</code></a> flag and <em class="parameter"><code>event_type</code></em>
+ is
+<a class="link" href="GFileMonitor.html#G-FILE-MONITOR-EVENT-MOVED:CAPS"><span class="type">G_FILE_MONITOR_EVENT_MOVED</span></a>, <em class="parameter"><code>file</code></em>
+ will be set to a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> containing the
+old path, and <em class="parameter"><code>other_file</code></em>
+ will be set to a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> containing the new path.</p>
+<p>In all the other cases, <em class="parameter"><code>other_file</code></em>
+ will be set to <a href="../glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a>.</p>
+<div class="refsect3">
+<a name="GFileMonitor-changed.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>monitor</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GFileMonitor.html" title="GFileMonitor"><span class="type">GFileMonitor</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>file</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>other_file</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>event_type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GFileMonitor.html#GFileMonitorEvent" title="enum GFileMonitorEvent"><span class="type">GFileMonitorEvent</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

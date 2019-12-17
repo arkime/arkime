@@ -1,0 +1,2 @@
+ELEMENT 'foo'
+ERROR Error on line 1: Entity name 'bar' is not known

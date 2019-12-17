@@ -1,0 +1,362 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIOScheduler: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="async.html" title="Asynchronous I/O">
+<link rel="prev" href="GTask.html" title="GTask">
+<link rel="next" href="GSimpleAsyncResult.html" title="GSimpleAsyncResult">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gio-GIOScheduler.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="async.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GTask.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GSimpleAsyncResult.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-GIOScheduler"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-GIOScheduler.top_of_page"></a>GIOScheduler</span></h2>
+<p>GIOScheduler — I/O Scheduler</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gio-GIOScheduler.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="gio-GIOScheduler.html#GIOSchedulerJobFunc" title="GIOSchedulerJobFunc ()">*GIOSchedulerJobFunc</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GIOScheduler.html#g-io-scheduler-push-job" title="g_io_scheduler_push_job ()">g_io_scheduler_push_job</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GIOScheduler.html#g-io-scheduler-cancel-all-jobs" title="g_io_scheduler_cancel_all_jobs ()">g_io_scheduler_cancel_all_jobs</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GIOScheduler.html#g-io-scheduler-job-send-to-mainloop" title="g_io_scheduler_job_send_to_mainloop ()">g_io_scheduler_job_send_to_mainloop</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GIOScheduler.html#g-io-scheduler-job-send-to-mainloop-async" title="g_io_scheduler_job_send_to_mainloop_async ()">g_io_scheduler_job_send_to_mainloop_async</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-GIOScheduler.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gio-GIOScheduler.html#GIOSchedulerJob" title="GIOSchedulerJob">GIOSchedulerJob</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-GIOScheduler.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-GIOScheduler.description"></a><h2>Description</h2>
+<p>As of GLib 2.36, <span class="type">GIOScheduler</span> is deprecated in favor of
+<a href="../glib-Thread-Pools.html#GThreadPool"><span class="type">GThreadPool</span></a> and <a class="link" href="GTask.html" title="GTask"><span class="type">GTask</span></a>.</p>
+<p>Schedules asynchronous I/O operations. <span class="type">GIOScheduler</span> integrates 
+into the main event loop (<a href="../glib-The-Main-Event-Loop.html#GMainLoop"><span class="type">GMainLoop</span></a>) and uses threads.</p>
+</div>
+<div class="refsect1">
+<a name="gio-GIOScheduler.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="GIOSchedulerJobFunc"></a><h3>GIOSchedulerJobFunc ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+<span class="c_punctuation">(</span>*GIOSchedulerJobFunc<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="gio-GIOScheduler.html#GIOSchedulerJob" title="GIOSchedulerJob"><span class="type">GIOSchedulerJob</span></a> *job</code></em>,
+                        <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                        <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>I/O Job function.</p>
+<p>Long-running jobs should periodically check the <em class="parameter"><code>cancellable</code></em>
+
+to see if they have been cancelled.</p>
+<div class="refsect3">
+<a name="GIOSchedulerJobFunc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>job</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GIOScheduler.html#GIOSchedulerJob" title="GIOSchedulerJob"><span class="type">GIOSchedulerJob</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>the data to pass to callback function</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="GIOSchedulerJobFunc.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if this function should be called again to
+complete the job, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if the job is complete (or cancelled)</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-scheduler-push-job"></a><h3>g_io_scheduler_push_job ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_io_scheduler_push_job (<em class="parameter"><code><a class="link" href="gio-GIOScheduler.html#GIOSchedulerJobFunc" title="GIOSchedulerJobFunc ()"><span class="type">GIOSchedulerJobFunc</span></a> job_func</code></em>,
+                         <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                         <em class="parameter"><code><a href="../glib-Datasets.html#GDestroyNotify"><span class="type">GDestroyNotify</span></a> notify</code></em>,
+                         <em class="parameter"><code><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a> io_priority</code></em>,
+                         <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_io_scheduler_push_job</code> is deprecated and should not be used in newly-written code.</p>
+<p>use <a href="../glib-Thread-Pools.html#GThreadPool"><span class="type">GThreadPool</span></a> or <a class="link" href="GTask.html#g-task-run-in-thread" title="g_task_run_in_thread ()"><code class="function">g_task_run_in_thread()</code></a></p>
+</div>
+<p>Schedules the I/O job to run in another thread.</p>
+<p><em class="parameter"><code>notify</code></em>
+ will be called on <em class="parameter"><code>user_data</code></em>
+ after <em class="parameter"><code>job_func</code></em>
+ has returned,
+regardless whether the job was cancelled or has run to completion.</p>
+<p>If <em class="parameter"><code>cancellable</code></em>
+ is not <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, it can be used to cancel the I/O job
+by calling <a class="link" href="GCancellable.html#g-cancellable-cancel" title="g_cancellable_cancel ()"><code class="function">g_cancellable_cancel()</code></a> or by calling 
+<a class="link" href="gio-GIOScheduler.html#g-io-scheduler-cancel-all-jobs" title="g_io_scheduler_cancel_all_jobs ()"><code class="function">g_io_scheduler_cancel_all_jobs()</code></a>.</p>
+<div class="refsect3">
+<a name="g-io-scheduler-push-job.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>job_func</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GIOScheduler.html#GIOSchedulerJobFunc" title="GIOSchedulerJobFunc ()"><span class="type">GIOSchedulerJobFunc</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>data to pass to <em class="parameter"><code>job_func</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>notify</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Datasets.html#GDestroyNotify"><span class="type">GDestroyNotify</span></a> for <em class="parameter"><code>user_data</code></em>
+, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>io_priority</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GAsyncResult.html#io-priority" title="I/O Priority">I/O priority</a>
+of the request.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-scheduler-cancel-all-jobs"></a><h3>g_io_scheduler_cancel_all_jobs ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_io_scheduler_cancel_all_jobs (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_io_scheduler_cancel_all_jobs</code> is deprecated and should not be used in newly-written code.</p>
+<p>You should never call this function, since you don't
+know how other libraries in your program might be making use of
+gioscheduler.</p>
+</div>
+<p>Cancels all cancellable I/O jobs. </p>
+<p>A job is cancellable if a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> was passed into
+<a class="link" href="gio-GIOScheduler.html#g-io-scheduler-push-job" title="g_io_scheduler_push_job ()"><code class="function">g_io_scheduler_push_job()</code></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-scheduler-job-send-to-mainloop"></a><h3>g_io_scheduler_job_send_to_mainloop ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_io_scheduler_job_send_to_mainloop (<em class="parameter"><code><a class="link" href="gio-GIOScheduler.html#GIOSchedulerJob" title="GIOSchedulerJob"><span class="type">GIOSchedulerJob</span></a> *job</code></em>,
+                                     <em class="parameter"><code><a href="../glib-The-Main-Event-Loop.html#GSourceFunc"><span class="type">GSourceFunc</span></a> func</code></em>,
+                                     <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                                     <em class="parameter"><code><a href="../glib-Datasets.html#GDestroyNotify"><span class="type">GDestroyNotify</span></a> notify</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_io_scheduler_job_send_to_mainloop</code> is deprecated and should not be used in newly-written code.</p>
+<p>Use <a href="../glib-The-Main-Event-Loop.html#g-main-context-invoke"><code class="function">g_main_context_invoke()</code></a>.</p>
+</div>
+<p>Used from an I/O job to send a callback to be run in the thread
+that the job was started from, waiting for the result (and thus
+blocking the I/O job).</p>
+<div class="refsect3">
+<a name="g-io-scheduler-job-send-to-mainloop.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>job</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GIOScheduler.html#GIOSchedulerJob" title="GIOSchedulerJob"><span class="type">GIOSchedulerJob</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>func</p></td>
+<td class="parameter_description"><p>a <a href="../glib-The-Main-Event-Loop.html#GSourceFunc"><span class="type">GSourceFunc</span></a> callback that will be called in the original thread</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>data to pass to <em class="parameter"><code>func</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>notify</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Datasets.html#GDestroyNotify"><span class="type">GDestroyNotify</span></a> for <em class="parameter"><code>user_data</code></em>
+, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-io-scheduler-job-send-to-mainloop.returns"></a><h4>Returns</h4>
+<p> The return value of <em class="parameter"><code>func</code></em>
+</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-io-scheduler-job-send-to-mainloop-async"></a><h3>g_io_scheduler_job_send_to_mainloop_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_io_scheduler_job_send_to_mainloop_async
+                               (<em class="parameter"><code><a class="link" href="gio-GIOScheduler.html#GIOSchedulerJob" title="GIOSchedulerJob"><span class="type">GIOSchedulerJob</span></a> *job</code></em>,
+                                <em class="parameter"><code><a href="../glib-The-Main-Event-Loop.html#GSourceFunc"><span class="type">GSourceFunc</span></a> func</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                                <em class="parameter"><code><a href="../glib-Datasets.html#GDestroyNotify"><span class="type">GDestroyNotify</span></a> notify</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_io_scheduler_job_send_to_mainloop_async</code> is deprecated and should not be used in newly-written code.</p>
+<p>Use <a href="../glib-The-Main-Event-Loop.html#g-main-context-invoke"><code class="function">g_main_context_invoke()</code></a>.</p>
+</div>
+<p>Used from an I/O job to send a callback to be run asynchronously in
+the thread that the job was started from. The callback will be run
+when the main loop is available, but at that time the I/O job might
+have finished. The return value from the callback is ignored.</p>
+<p>Note that if you are passing the <em class="parameter"><code>user_data</code></em>
+ from <a class="link" href="gio-GIOScheduler.html#g-io-scheduler-push-job" title="g_io_scheduler_push_job ()"><code class="function">g_io_scheduler_push_job()</code></a>
+on to this function you have to ensure that it is not freed before
+<em class="parameter"><code>func</code></em>
+ is called, either by passing <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> as <em class="parameter"><code>notify</code></em>
+ to 
+<a class="link" href="gio-GIOScheduler.html#g-io-scheduler-push-job" title="g_io_scheduler_push_job ()"><code class="function">g_io_scheduler_push_job()</code></a> or by using refcounting for <em class="parameter"><code>user_data</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-io-scheduler-job-send-to-mainloop-async.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>job</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GIOScheduler.html#GIOSchedulerJob" title="GIOSchedulerJob"><span class="type">GIOSchedulerJob</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>func</p></td>
+<td class="parameter_description"><p>a <a href="../glib-The-Main-Event-Loop.html#GSourceFunc"><span class="type">GSourceFunc</span></a> callback that will be called in the original thread</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>data to pass to <em class="parameter"><code>func</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>notify</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Datasets.html#GDestroyNotify"><span class="type">GDestroyNotify</span></a> for <em class="parameter"><code>user_data</code></em>
+, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-GIOScheduler.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GIOSchedulerJob"></a><h3>GIOSchedulerJob</h3>
+<pre class="programlisting">typedef struct _GIOSchedulerJob GIOSchedulerJob;</pre>
+<p>Opaque class for defining and scheduling IO jobs.</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,578 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GVfs: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="extending.html" title="Extending GIO">
+<link rel="prev" href="extending.html" title="Extending GIO">
+<link rel="next" href="GIOModule.html" title="GIOModule">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GVfs.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GVfs.object-hierarchy" class="shortcut">Object Hierarchy</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="extending.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="extending.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GIOModule.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GVfs"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GVfs.top_of_page"></a>GVfs</span></h2>
+<p>GVfs — Virtual File System</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GVfs.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="GVfs.html#GVfsFileLookupFunc" title="GVfsFileLookupFunc ()">*GVfsFileLookupFunc</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GVfs.html#g-vfs-get-file-for-path" title="g_vfs_get_file_for_path ()">g_vfs_get_file_for_path</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GVfs.html#g-vfs-get-file-for-uri" title="g_vfs_get_file_for_uri ()">g_vfs_get_file_for_uri</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GVfs.html#g-vfs-parse-name" title="g_vfs_parse_name ()">g_vfs_parse_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GVfs.html" title="GVfs"><span class="returnvalue">GVfs</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GVfs.html#g-vfs-get-default" title="g_vfs_get_default ()">g_vfs_get_default</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GVfs.html" title="GVfs"><span class="returnvalue">GVfs</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GVfs.html#g-vfs-get-local" title="g_vfs_get_local ()">g_vfs_get_local</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GVfs.html#g-vfs-is-active" title="g_vfs_is_active ()">g_vfs_is_active</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> * const *
+</td>
+<td class="function_name">
+<a class="link" href="GVfs.html#g-vfs-get-supported-uri-schemes" title="g_vfs_get_supported_uri_schemes ()">g_vfs_get_supported_uri_schemes</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GVfs.html#g-vfs-register-uri-scheme" title="g_vfs_register_uri_scheme ()">g_vfs_register_uri_scheme</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GVfs.html#g-vfs-unregister-uri-scheme" title="g_vfs_unregister_uri_scheme ()">g_vfs_unregister_uri_scheme</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GVfs.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GVfs.html#GVfs-struct" title="GVfs">GVfs</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="GVfs.html#G-VFS-EXTENSION-POINT-NAME:CAPS" title="G_VFS_EXTENSION_POINT_NAME">G_VFS_EXTENSION_POINT_NAME</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GVfs.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GVfs
+</pre>
+</div>
+<div class="refsect1">
+<a name="GVfs.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GVfs.description"></a><h2>Description</h2>
+<p>Entry point for using GIO functionality.</p>
+</div>
+<div class="refsect1">
+<a name="GVfs.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="GVfsFileLookupFunc"></a><h3>GVfsFileLookupFunc ()</h3>
+<pre class="programlisting"><a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *
+<span class="c_punctuation">(</span>*GVfsFileLookupFunc<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> *vfs</code></em>,
+                       <em class="parameter"><code>const <span class="type">char</span> *identifier</code></em>,
+                       <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>This function type is used by <a class="link" href="GVfs.html#g-vfs-register-uri-scheme" title="g_vfs_register_uri_scheme ()"><code class="function">g_vfs_register_uri_scheme()</code></a> to make it
+possible for a client to associate an URI scheme to a different <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>
+implementation.</p>
+<p>The client should return a reference to the new file that has been
+created for <em class="parameter"><code>uri</code></em>
+, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to continue with the default implementation.</p>
+<div class="refsect3">
+<a name="GVfsFileLookupFunc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>vfs</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>identifier</p></td>
+<td class="parameter_description"><p>the identifier to lookup a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> for. This can either
+be an URI or a parse name as returned by <a class="link" href="GFile.html#g-file-get-parse-name" title="g_file_get_parse_name ()"><code class="function">g_file_get_parse_name()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data passed to the function</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="GVfsFileLookupFunc.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> for <em class="parameter"><code>identifier</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-50.html#api-index-2.50">2.50</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-vfs-get-file-for-path"></a><h3>g_vfs_get_file_for_path ()</h3>
+<pre class="programlisting"><a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *
+g_vfs_get_file_for_path (<em class="parameter"><code><a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> *vfs</code></em>,
+                         <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);</pre>
+<p>Gets a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> for <em class="parameter"><code>path</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-vfs-get-file-for-path.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>vfs</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>path</p></td>
+<td class="parameter_description"><p>a string containing a VFS path.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-vfs-get-file-for-path.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>.
+Free the returned object with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-vfs-get-file-for-uri"></a><h3>g_vfs_get_file_for_uri ()</h3>
+<pre class="programlisting"><a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *
+g_vfs_get_file_for_uri (<em class="parameter"><code><a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> *vfs</code></em>,
+                        <em class="parameter"><code>const <span class="type">char</span> *uri</code></em>);</pre>
+<p>Gets a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> for <em class="parameter"><code>uri</code></em>
+.</p>
+<p>This operation never fails, but the returned object
+might not support any I/O operation if the URI
+is malformed or if the URI scheme is not supported.</p>
+<div class="refsect3">
+<a name="g-vfs-get-file-for-uri.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>vfs</p></td>
+<td class="parameter_description"><p>a<a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>uri</p></td>
+<td class="parameter_description"><p>a string containing a URI</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-vfs-get-file-for-uri.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>.
+Free the returned object with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-vfs-parse-name"></a><h3>g_vfs_parse_name ()</h3>
+<pre class="programlisting"><a class="link" href="GFile.html" title="GFile"><span class="returnvalue">GFile</span></a> *
+g_vfs_parse_name (<em class="parameter"><code><a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> *vfs</code></em>,
+                  <em class="parameter"><code>const <span class="type">char</span> *parse_name</code></em>);</pre>
+<p>This operation never fails, but the returned object might
+not support any I/O operations if the <em class="parameter"><code>parse_name</code></em>
+ cannot
+be parsed by the <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> module.</p>
+<div class="refsect3">
+<a name="g-vfs-parse-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>vfs</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>parse_name</p></td>
+<td class="parameter_description"><p>a string to be parsed by the VFS module.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-vfs-parse-name.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> for the given <em class="parameter"><code>parse_name</code></em>
+.
+Free the returned object with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-vfs-get-default"></a><h3>g_vfs_get_default ()</h3>
+<pre class="programlisting"><a class="link" href="GVfs.html" title="GVfs"><span class="returnvalue">GVfs</span></a> *
+g_vfs_get_default (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Gets the default <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> for the system.</p>
+<div class="refsect3">
+<a name="g-vfs-get-default.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a>. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-vfs-get-local"></a><h3>g_vfs_get_local ()</h3>
+<pre class="programlisting"><a class="link" href="GVfs.html" title="GVfs"><span class="returnvalue">GVfs</span></a> *
+g_vfs_get_local (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Gets the local <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> for the system.</p>
+<div class="refsect3">
+<a name="g-vfs-get-local.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a>. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-vfs-is-active"></a><h3>g_vfs_is_active ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_vfs_is_active (<em class="parameter"><code><a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> *vfs</code></em>);</pre>
+<p>Checks if the VFS is active.</p>
+<div class="refsect3">
+<a name="g-vfs-is-active.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>vfs</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-vfs-is-active.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if construction of the <em class="parameter"><code>vfs</code></em>
+was successful
+and it is now active.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-vfs-get-supported-uri-schemes"></a><h3>g_vfs_get_supported_uri_schemes ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> * const *
+g_vfs_get_supported_uri_schemes (<em class="parameter"><code><a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> *vfs</code></em>);</pre>
+<p>Gets a list of URI schemes supported by <em class="parameter"><code>vfs</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-vfs-get-supported-uri-schemes.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>vfs</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-vfs-get-supported-uri-schemes.returns"></a><h4>Returns</h4>
+<p>a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of strings.
+The returned array belongs to GIO and must
+not be freed or modified. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-vfs-register-uri-scheme"></a><h3>g_vfs_register_uri_scheme ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_vfs_register_uri_scheme (<em class="parameter"><code><a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> *vfs</code></em>,
+                           <em class="parameter"><code>const <span class="type">char</span> *scheme</code></em>,
+                           <em class="parameter"><code><a class="link" href="GVfs.html#GVfsFileLookupFunc" title="GVfsFileLookupFunc ()"><span class="type">GVfsFileLookupFunc</span></a> uri_func</code></em>,
+                           <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> uri_data</code></em>,
+                           <em class="parameter"><code><a href="../glib-Datasets.html#GDestroyNotify"><span class="type">GDestroyNotify</span></a> uri_destroy</code></em>,
+                           <em class="parameter"><code><a class="link" href="GVfs.html#GVfsFileLookupFunc" title="GVfsFileLookupFunc ()"><span class="type">GVfsFileLookupFunc</span></a> parse_name_func</code></em>,
+                           <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> parse_name_data</code></em>,
+                           <em class="parameter"><code><a href="../glib-Datasets.html#GDestroyNotify"><span class="type">GDestroyNotify</span></a> parse_name_destroy</code></em>);</pre>
+<p>Registers <em class="parameter"><code>uri_func</code></em>
+ and <em class="parameter"><code>parse_name_func</code></em>
+ as the <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> URI and parse name
+lookup functions for URIs with a scheme matching <em class="parameter"><code>scheme</code></em>
+.
+Note that <em class="parameter"><code>scheme</code></em>
+ is registered only within the running application, as
+opposed to desktop-wide as it happens with GVfs backends.</p>
+<p>When a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> is requested with an URI containing <em class="parameter"><code>scheme</code></em>
+ (e.g. through
+<a class="link" href="GFile.html#g-file-new-for-uri" title="g_file_new_for_uri ()"><code class="function">g_file_new_for_uri()</code></a>), <em class="parameter"><code>uri_func</code></em>
+ will be called to allow a custom
+constructor. The implementation of <em class="parameter"><code>uri_func</code></em>
+ should not be blocking, and
+must not call <a class="link" href="GVfs.html#g-vfs-register-uri-scheme" title="g_vfs_register_uri_scheme ()"><code class="function">g_vfs_register_uri_scheme()</code></a> or <a class="link" href="GVfs.html#g-vfs-unregister-uri-scheme" title="g_vfs_unregister_uri_scheme ()"><code class="function">g_vfs_unregister_uri_scheme()</code></a>.</p>
+<p>When <a class="link" href="GFile.html#g-file-parse-name" title="g_file_parse_name ()"><code class="function">g_file_parse_name()</code></a> is called with a parse name obtained from such file,
+<em class="parameter"><code>parse_name_func</code></em>
+ will be called to allow the <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> to be created again. In
+that case, it's responsibility of <em class="parameter"><code>parse_name_func</code></em>
+ to make sure the parse
+name matches what the custom <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> implementation returned when
+<a class="link" href="GFile.html#g-file-get-parse-name" title="g_file_get_parse_name ()"><code class="function">g_file_get_parse_name()</code></a> was previously called. The implementation of
+<em class="parameter"><code>parse_name_func</code></em>
+ should not be blocking, and must not call
+<a class="link" href="GVfs.html#g-vfs-register-uri-scheme" title="g_vfs_register_uri_scheme ()"><code class="function">g_vfs_register_uri_scheme()</code></a> or <a class="link" href="GVfs.html#g-vfs-unregister-uri-scheme" title="g_vfs_unregister_uri_scheme ()"><code class="function">g_vfs_unregister_uri_scheme()</code></a>.</p>
+<p>It's an error to call this function twice with the same scheme. To unregister
+a custom URI scheme, use <a class="link" href="GVfs.html#g-vfs-unregister-uri-scheme" title="g_vfs_unregister_uri_scheme ()"><code class="function">g_vfs_unregister_uri_scheme()</code></a>.</p>
+<div class="refsect3">
+<a name="g-vfs-register-uri-scheme.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>vfs</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>scheme</p></td>
+<td class="parameter_description"><p>an URI scheme, e.g. "http"</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>uri_func</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GVfs.html#GVfsFileLookupFunc" title="GVfsFileLookupFunc ()"><span class="type">GVfsFileLookupFunc</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid until the GDestroyNotify argument is called."><span class="acronym">scope notified</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>uri_data</p></td>
+<td class="parameter_description"><p>custom data passed to be passed to <em class="parameter"><code>uri_func</code></em>
+, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>uri_destroy</p></td>
+<td class="parameter_description"><p>function to be called when unregistering the
+URI scheme, or when <em class="parameter"><code>vfs</code></em>
+is disposed, to free the resources used
+by the URI lookup function. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>parse_name_func</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GVfs.html#GVfsFileLookupFunc" title="GVfsFileLookupFunc ()"><span class="type">GVfsFileLookupFunc</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid until the GDestroyNotify argument is called."><span class="acronym">scope notified</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>parse_name_data</p></td>
+<td class="parameter_description"><p>custom data passed to be passed to
+<em class="parameter"><code>parse_name_func</code></em>
+, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>parse_name_destroy</p></td>
+<td class="parameter_description"><p>function to be called when unregistering the
+URI scheme, or when <em class="parameter"><code>vfs</code></em>
+is disposed, to free the resources used
+by the parse name lookup function. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-vfs-register-uri-scheme.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>scheme</code></em>
+was successfully registered, or <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if a handler
+for <em class="parameter"><code>scheme</code></em>
+already exists.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-50.html#api-index-2.50">2.50</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-vfs-unregister-uri-scheme"></a><h3>g_vfs_unregister_uri_scheme ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_vfs_unregister_uri_scheme (<em class="parameter"><code><a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> *vfs</code></em>,
+                             <em class="parameter"><code>const <span class="type">char</span> *scheme</code></em>);</pre>
+<p>Unregisters the URI handler for <em class="parameter"><code>scheme</code></em>
+ previously registered with
+<a class="link" href="GVfs.html#g-vfs-register-uri-scheme" title="g_vfs_register_uri_scheme ()"><code class="function">g_vfs_register_uri_scheme()</code></a>.</p>
+<div class="refsect3">
+<a name="g-vfs-unregister-uri-scheme.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>vfs</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>scheme</p></td>
+<td class="parameter_description"><p>an URI scheme, e.g. "http"</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-vfs-unregister-uri-scheme.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>scheme</code></em>
+was successfully unregistered, or <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if a
+handler for <em class="parameter"><code>scheme</code></em>
+does not exist.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-50.html#api-index-2.50">2.50</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GVfs.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GVfs-struct"></a><h3>GVfs</h3>
+<pre class="programlisting">typedef struct _GVfs GVfs;</pre>
+<p>Virtual File System object.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VFS-EXTENSION-POINT-NAME:CAPS"></a><h3>G_VFS_EXTENSION_POINT_NAME</h3>
+<pre class="programlisting">#define G_VFS_EXTENSION_POINT_NAME "gio-vfs"
+</pre>
+<p>Extension point for <a class="link" href="GVfs.html" title="GVfs"><span class="type">GVfs</span></a> functionality.
+See Extending GIO.</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

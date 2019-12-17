@@ -1,0 +1,2 @@
+ELEMENT 'foo'
+ERROR Error on line 1: Character reference '0' does not encode a permitted character

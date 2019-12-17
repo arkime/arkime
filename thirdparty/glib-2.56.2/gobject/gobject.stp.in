@@ -1,0 +1,199 @@
+global gobject_types_2_0_@LT_CURRENT@_@LT_REVISION@
+global gobject_type_names_2_0_@LT_CURRENT@_@LT_REVISION@
+global gobject_signal_names_2_0_@LT_CURRENT@_@LT_REVISION@
+
+/* These are needed to keep track of gtype and signal names for the below
+ * probes.
+ */
+probe process("@ABS_GLIB_RUNTIME_LIBDIR@/libgobject-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("type__new")
+{
+  gobject_types_2_0_@LT_CURRENT@_@LT_REVISION@[pid(),user_string($arg1)] = $arg3;
+  gobject_type_names_2_0_@LT_CURRENT@_@LT_REVISION@[pid(),$arg3] = user_string($arg1);
+}
+probe process("@ABS_GLIB_RUNTIME_LIBDIR@/libgobject-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("signal__new")
+{
+  gobject_signal_names_2_0_@LT_CURRENT@_@LT_REVISION@[pid(),$arg1] = user_string($arg2);
+}
+
+/**
+ * probe gobject.type_new - Called when any entity registered with the #GType system is created
+ * @name: String name of type
+ * @parent_gtype: The parent #GType of this type
+ * @gtype: The #GType for this type
+ */
+probe gobject.type_new = process("@ABS_GLIB_RUNTIME_LIBDIR@/libgobject-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("type__new")
+{
+  name = user_string($arg1); 
+  parent_gtype = $arg2; 
+  gtype = $arg3; 
+  probestr = sprintf("gobject.type_new(%s, %d) -> %d", name, parent_gtype, gtype);
+}
+
+/**
+ * probe gobject.object_new - Called when a #GObject is created
+ * @object: Raw pointer to object
+ * @gtype: #GType for this object
+ * @type: String name of object type
+ */
+probe gobject.object_new = process("@ABS_GLIB_RUNTIME_LIBDIR@/libgobject-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("object__new")
+{
+  object = $arg1; 
+  gtype = $arg2; 
+  type = gobject_type_names_2_0_@LT_CURRENT@_@LT_REVISION@[pid(),$arg2];
+  probestr = sprintf("gobject.object_new(%s) -> %p", type, object);
+}
+
+/**
+ * probe gobject.object_ref - Called when a new reference is added to a #GObject
+ * @object: Raw pointer to object
+ * @gtype: #GType for this object
+ * @type: String name of object type
+ * @old_refcount: Original value of the reference count
+ * @refcount: New value of the reference count
+ */
+probe gobject.object_ref = process("@ABS_GLIB_RUNTIME_LIBDIR@/libgobject-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("object__ref")
+{
+  object = $arg1; 
+  gtype = $arg2; 
+  type = gobject_type_names_2_0_@LT_CURRENT@_@LT_REVISION@[pid(),gtype];
+  old_refcount = $arg3; 
+  refcount = old_refcount+1; 
+  probestr = sprintf("gobject.object_ref(%p[%s]) -> %d", object, type, refcount);
+}
+
+/**
+ * probe gobject.object_unref - Called when a reference is removed from a #GObject
+ * @object: Raw pointer to object
+ * @gtype: #GType for this object
+ * @type: String name of object type
+ * @old_refcount: Original value of the reference count
+ */
+probe gobject.object_unref = process("@ABS_GLIB_RUNTIME_LIBDIR@/libgobject-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("object__unref")
+{
+  object = $arg1; 
+  gtype = $arg2; 
+  type = gobject_type_names_2_0_@LT_CURRENT@_@LT_REVISION@[pid(),gtype];
+  old_refcount = $arg3; 
+  refcount = old_refcount-1; 
+  probestr = sprintf("gobject.object_unref(%p [%s]) -> %d", object, type, refcount);
+}
+
+/**
+ * probe gobject.object_dispose - Called when a g_object_dispose() run for a #GObject is initiated
+ * @object: Raw pointer to object
+ * @gtype: #GType for this object
+ * @type: String name of object type
+ * @last_unref: FIXME
+ */
+probe gobject.object_dispose = process("@ABS_GLIB_RUNTIME_LIBDIR@/libgobject-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("object__dispose")
+{
+  object = $arg1; 
+  gtype = $arg2; 
+  type = gobject_type_names_2_0_@LT_CURRENT@_@LT_REVISION@[pid(),$arg2];
+  last_unref = $arg3; 
+  probestr = sprintf("gobject.object_dispose(%p[%s])", object, type);
+}
+
+/**
+ * probe gobject.object_dispose_end - Called when a g_object_dispose() run for a #GObject is completed
+ * @object: Raw pointer to object
+ * @gtype: #GType for this object
+ * @type: String name of object type
+ * @last_unref: FIXME
+ */
+probe gobject.object_dispose_end = process("@ABS_GLIB_RUNTIME_LIBDIR@/libgobject-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("object__dispose__end")
+{
+  object = $arg1; 
+  gtype = $arg2; 
+  type = gobject_type_names_2_0_@LT_CURRENT@_@LT_REVISION@[pid(),$arg2];
+  last_unref = $arg3; 
+  probestr = sprintf("gobject.object_dispose_end(%p[%s])", object, type);
+}
+
+/**
+ * probe gobject.object_finalize - Called when finalization for a #GObject is started
+ * @object: Raw pointer to object
+ * @gtype: #GType for this object
+ * @type: String name of object type
+ */
+probe gobject.object_finalize = process("@ABS_GLIB_RUNTIME_LIBDIR@/libgobject-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("object__finalize")
+{
+  object = $arg1; 
+  gtype = $arg2; 
+  type = gobject_type_names_2_0_@LT_CURRENT@_@LT_REVISION@[pid(),$arg2];
+  probestr = sprintf("gobject.object_finalize(%p[%s])", object, type);
+}
+
+/**
+ * probe gobject.object_finalize - Called when finalization for a #GObject is completed
+ * @object: Raw pointer to object
+ * @gtype: #GType for this object
+ * @type: String name of object type
+ */
+probe gobject.object_finalize_end = process("@ABS_GLIB_RUNTIME_LIBDIR@/libgobject-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("object__finalize__end")
+{
+  object = $arg1; 
+  gtype = $arg2; 
+  type = gobject_type_names_2_0_@LT_CURRENT@_@LT_REVISION@[pid(),$arg2];
+  probestr = sprintf("gobject.object_finalize_end(%p[%s])", object, type);
+}
+
+/**
+ * probe gobject.signal_new - Called when a new signal is registered for a #GObject
+ * @gsignal: Integer value for this signal
+ * @name: String name for this signal
+ * @gtype: #GType for the type which will gain the new signal
+ * @type: String name of the type which will gain the new signal
+ */
+probe gobject.signal_new = process("@ABS_GLIB_RUNTIME_LIBDIR@/libgobject-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("signal__new")
+{
+  gsignal = $arg1; 
+  name = user_string($arg2); 
+  gtype = $arg3; 
+  type = gobject_type_names_2_0_@LT_CURRENT@_@LT_REVISION@[pid(),$arg3];
+  probestr = sprintf("gobject.signal_new(%s, %s) -> %d", name, type, gsignal);
+}
+
+/**
+ * probe gobject.signal_emit - Called when a signal emission for a #GObject is started
+ * @gsignal: Integer value for this signal
+ * @detail: String containing signal "detail"
+ * @signal: String name of the signal
+ * @object: Raw pointer for object emitting signal
+ * @gtype: #GType for the type emitting the signal
+ * @type: String name of the type emitting the signal
+ */
+probe gobject.signal_emit = process("@ABS_GLIB_RUNTIME_LIBDIR@/libgobject-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("signal__emit")
+{
+  gsignal = $arg1; 
+  detail = $arg2; 
+  signal = gobject_signal_names_2_0_@LT_CURRENT@_@LT_REVISION@[pid(),$arg1];
+  if (detail != 0)
+    signal = signal . "::" . gquarks[pid(), detail]
+  object = $arg3; 
+  gtype = $arg4; 
+  type = gobject_type_names_2_0_@LT_CURRENT@_@LT_REVISION@[pid(),$arg4];
+  probestr = sprintf("gobject.signal_emit(%p[%s], %s)", object, type, signal);
+}
+
+/**
+ * probe gobject.signal_emit_end - Called when a signal emission for a #GObject is completed
+ * @gsignal: Integer value for this signal
+ * @detail: String containing signal "detail"
+ * @signal: String name of the signal
+ * @object: Raw pointer for object emitting signal
+ * @gtype: #GType for the type emitting the signal
+ * @type: String name of the type emitting the signal
+ */
+probe gobject.signal_emit_end = process("@ABS_GLIB_RUNTIME_LIBDIR@/libgobject-2.0.so.0.@LT_CURRENT@.@LT_REVISION@").mark("signal__emit__end")
+{
+  gsignal = $arg1; 
+  detail = $arg2; 
+  signal = gobject_signal_names_2_0_@LT_CURRENT@_@LT_REVISION@[pid(),$arg1];
+  if (detail != 0)
+    signal = signal . "::" . gquarks[pid(), detail]
+  object = $arg3; 
+  gtype = $arg4; 
+  type = gobject_type_names_2_0_@LT_CURRENT@_@LT_REVISION@[pid(),$arg4];
+  probestr = sprintf("gobject.signal_emit_end(%p[%s], %s)", object, type, signal);
+}

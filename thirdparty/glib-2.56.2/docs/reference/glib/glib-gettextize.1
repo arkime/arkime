@@ -1,0 +1,79 @@
+'\" t
+.\"     Title: glib-gettextize
+.\"    Author: Owen Taylor
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 08/17/2018
+.\"    Manual: User Commands
+.\"    Source: GLib
+.\"  Language: English
+.\"
+.TH "GLIB\-GETTEXTIZE" "1" "" "GLib" "User Commands"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+glib-gettextize \- gettext internationalization utility
+.SH "SYNOPSIS"
+.HP \w'\fBglib\-gettextize\fR\ 'u
+\fBglib\-gettextize\fR [OPTION...] [DIRECTORY]
+.SH "DESCRIPTION"
+.PP
+\fBglib\-gettextize\fR
+helps to prepare a source package for being internationalized through
+gettext\&. It is a variant of the
+\fBgettextize\fR
+that ships with
+gettext\&.
+.PP
+\fBglib\-gettextize\fR
+differs from
+\fBgettextize\fR
+in that it doesn\*(Aqt create an
+intl/
+subdirectory and doesn\*(Aqt modify
+po/ChangeLog
+(note that newer versions of
+\fBgettextize\fR
+behave like this when called with the
+\fB\-\-no\-changelog\fR
+option)\&.
+.SH "OPTIONS"
+.PP
+\fB\-\-help\fR
+.RS 4
+print help and exit
+.RE
+.PP
+\fB\-\-version\fR
+.RS 4
+print version information and exit
+.RE
+.PP
+\fB\-c\fR, \fB\-\-copy\fR
+.RS 4
+copy files instead of making symlinks
+.RE
+.PP
+\fB\-f\fR, \fB\-\-force\fR
+.RS 4
+force writing of new files even if old ones exist
+.RE
+.SH "SEE ALSO"
+.PP
+\fBgettextize\fR(1)

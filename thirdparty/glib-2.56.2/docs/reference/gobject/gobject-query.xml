@@ -1,0 +1,123 @@
+<refentry id="gobject-query" lang="en">
+
+<refentryinfo>
+  <title>gobject-query</title>
+  <productname>GObject</productname>
+  <authorgroup>
+    <author>
+      <contrib>Developer</contrib>
+      <firstname>Tim</firstname>
+      <surname>Janik</surname>
+    </author>
+  </authorgroup>
+</refentryinfo>
+
+<refmeta>
+<refentrytitle>gobject-query</refentrytitle>
+<manvolnum>1</manvolnum>
+<refmiscinfo class="manual">User Commands</refmiscinfo>
+</refmeta>
+
+<refnamediv>
+<refname>gobject-query</refname>
+<refpurpose>display a tree of types</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>gobject-query</command>
+<arg choice="plain">froots</arg>
+<arg choice="opt" rep="repeat">OPTION</arg>
+</cmdsynopsis>
+<cmdsynopsis>
+<command>gobject-query</command>
+<arg choice="plain">tree</arg>
+<arg choice="opt" rep="repeat">OPTION</arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+<para>
+<command>gobject-query</command> is a small utility that draws a tree of
+types.
+</para>
+
+<para>
+<command>gobject-query</command> takes a mandatory argument that specifies
+whether it should iterate over the fundamental types or print a type tree.
+</para>
+</refsect1>
+
+<refsect1><title>Commands</title>
+<variablelist>
+<varlistentry>
+<term><option>froots</option></term>
+<listitem><para>
+iterate over fundamental roots
+</para></listitem>
+</varlistentry>
+<varlistentry>
+<term><option>tree</option></term>
+<listitem><para>
+print type tree
+</para></listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+
+<refsect1><title>Options</title>
+<variablelist>
+
+<varlistentry>
+<term><option>-r</option> <replaceable>TYPE</replaceable></term>
+<listitem><para>
+specify the root type
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-n</option></term>
+<listitem><para>
+don't descend type tree
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-b</option> <replaceable>STRING</replaceable></term>
+<listitem><para>
+specify indent string
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-i</option> <replaceable>STRING</replaceable></term>
+<listitem><para>
+specify incremental indent string
+</para></listitem>
+</varlistentry>
+
+
+<varlistentry>
+<term><option>-s</option> <replaceable>NUMBER</replaceable></term>
+<listitem><para>
+specify line spacing
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-h</option>, <option>--help</option></term>
+<listitem><para>
+Print brief help and exit.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-v</option>, <option>--version</option></term>
+<listitem><para>
+Print version and exit.
+</para></listitem>
+</varlistentry>
+
+</variablelist>
+</refsect1>
+</refentry>

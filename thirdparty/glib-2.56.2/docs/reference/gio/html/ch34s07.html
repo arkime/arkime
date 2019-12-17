@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Data conversion: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="ch34.html" title="Migrating from GConf to GSettings">
+<link rel="prev" href="ch34s06.html" title="Schema conversion">
+<link rel="next" href="ch35.html" title="Migrating to GDBus">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch34.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="ch34s06.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="ch35.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="id-1.5.4.8"></a>Data conversion</h2></div></div></div>
+<p>
+        GConf comes with a GSettings backend that can be used to
+        facility the transition to the GSettings API until you are
+        ready to make the jump to a different backend (most likely
+        dconf). To use it, you need to set the <code class="envar">GSETTINGS_BACKEND</code>
+        to 'gconf', e.g. by using
+</p>
+<pre class="programlisting">
+  g_setenv ("GSETTINGS_BACKEND", "gconf", TRUE);
+</pre>
+<p>
+        early on in your program. Note that this backend is meant purely
+        as a transition tool, and should not be used in production.
+      </p>
+<p>
+        GConf also comes with a utility called
+        <span class="command"><strong>gsettings-data-convert</strong></span>, which is designed to help
+        with the task of migrating user settings from GConf into another
+        GSettings backend. It can be run manually, but it is designed to be
+        executed automatically, every time a user logs in. It keeps track of
+        the data migrations that it has already done, and it is harmless to
+        run it more than once.
+      </p>
+<p>
+        To make use of this utility, you must install a keyfile in the
+        directory <code class="filename">/usr/share/GConf/gsettings</code> which
+        lists the GSettings keys and GConf paths to map to each other, for
+        each schema that you want to migrate user data for.
+      </p>
+<p>
+        Here is an example:
+        </p>
+<pre class="programlisting">
+
+[org.gnome.fonts]
+antialiasing = /desktop/gnome/font_rendering/antialiasing
+dpi = /desktop/gnome/font_rendering/dpi
+hinting = /desktop/gnome/font_rendering/hinting
+rgba-order = /desktop/gnome/font_rendering/rgba_order
+
+[apps.myapp:/path/to/myapps/]
+some-odd-key1 = /apps/myapp/some_ODD-key1
+
+        </pre>
+<p>
+        The last key demonstrates that it may be necessary to modify the key
+        name to comply with stricter GSettings key name rules. Of course,
+        that means your application must use the new key names when looking
+        up settings in GSettings.
+      </p>
+<p>
+        The last group in the example also shows how to handle the case
+        of 'relocatable' schemas, which don't have a fixed path. You can
+        specify the path to use in the group name, separated by a colon.
+      </p>
+<p>
+        There are some limitations: <span class="command"><strong>gsettings-data-convert</strong></span>
+        does not do any transformation of the values. And it does not handle
+        complex GConf types other than lists of strings or integers.
+      </p>
+<p>
+        Don't forget to require GConf 2.31.1 or newer in your configure
+        script if you are making use of the GConf backend or the conversion
+        utility.
+      </p>
+<p>
+        If, as an application developer, you are interested in manually
+        ensuring that <span class="command"><strong>gsettings-data-convert</strong></span> has been
+        invoked (for example, to deal with the case where the user is
+        logged in during a distribution upgrade or for non-XDG desktop
+        environments which do not run the command as an autostart) you
+        may invoke it manually during your program initialisation.  This
+        is not recommended for all application authors -- it is your
+        choice if this use case concerns you enough.
+      </p>
+<p>
+        Internally, <span class="command"><strong>gsettings-data-convert</strong></span> uses a
+        keyfile to track which settings have been migrated.  The
+        following code fragment will check that keyfile to see if your
+        data conversion script has been run yet and, if not, will
+        attempt to invoke the tool to run it.  You should adapt it to
+        your application as you see fit.
+      </p>
+<p>
+        </p>
+<pre class="programlisting">
+
+static void
+ensure_migrated (const gchar *name)
+{
+  gboolean needed = TRUE;
+  GKeyFile *kf;
+  gchar **list;
+  gsize i, n;
+
+  kf = g_key_file_new ();
+
+  g_key_file_load_from_data_dirs (kf, "gsettings-data-convert",
+                                  NULL, G_KEY_FILE_NONE, NULL);
+  list = g_key_file_get_string_list (kf, "State", "converted", &amp;n, NULL);
+
+  if (list)
+    {
+      for (i = 0; i &lt; n; i++)
+        if (strcmp (list[i], name) == 0)
+          {
+            needed = FALSE;
+            break;
+          }
+
+      g_strfreev (list);
+    }
+
+  g_key_file_free (kf);
+
+  if (needed)
+    g_spawn_command_line_sync ("gsettings-data-convert",
+                               NULL, NULL, NULL, NULL);
+}
+
+
+        </pre>
+<p>
+      </p>
+<p>
+        Although there is the possibility that the
+        <span class="command"><strong>gsettings-data-convert</strong></span> script will end up
+        running multiple times concurrently with this approach, it is
+        believed that this is safe.
+      </p>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+]>
+<refentry id="gdbus-ChangingInterfaceV1">
+  <refmeta>    <refentrytitle role="top_of_page" id="gdbus-interface-ChangingInterfaceV1.top_of_page">ChangingInterfaceV1</refentrytitle>
+  <indexterm zone="gdbus-interface-ChangingInterfaceV1.top_of_page"><primary sortas="ChangingInterfaceV1">ChangingInterfaceV1</primary></indexterm>
+  </refmeta>  <refnamediv>    <refname>ChangingInterfaceV1</refname>    <refpurpose></refpurpose>  </refnamediv>  <refsynopsisdiv role="synopsis">
+    <title role="synopsis.title">Methods</title>
+    <synopsis>
+<link linkend="gdbus-method-ChangingInterfaceV1.FooMethod">FooMethod</link> ();
+<link linkend="gdbus-method-ChangingInterfaceV1.BarMethod">BarMethod</link> ();
+<link linkend="gdbus-method-ChangingInterfaceV1.BazMethod">BazMethod</link> ();
+</synopsis>
+  </refsynopsisdiv>
+  <refsect1 role="signal_proto">
+    <title role="signal_proto.title">Signals</title>
+    <synopsis>
+<link linkend="gdbus-signal-ChangingInterfaceV1.FooSignal">FooSignal</link> ();
+<link linkend="gdbus-signal-ChangingInterfaceV1.BarSignal">BarSignal</link> ();
+<link linkend="gdbus-signal-ChangingInterfaceV1.BazSignal">BazSignal</link> ();
+</synopsis>
+  </refsect1>
+<refsect1 role="desc" id="gdbus-interface-ChangingInterfaceV1">
+  <title role="desc.title">Description</title>
+  <para></para>
+</refsect1>
+<refsect1 role="details" id="gdbus-methods-ChangingInterfaceV1">
+  <title role="details.title">Method Details</title>
+<refsect2 role="method" id="gdbus-method-ChangingInterfaceV1.FooMethod">
+  <title>The FooMethod() method</title>
+  <indexterm zone="gdbus-method-ChangingInterfaceV1.FooMethod"><primary sortas="ChangingInterfaceV1.FooMethod">ChangingInterfaceV1.FooMethod()</primary></indexterm>
+<programlisting>
+FooMethod ();
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-ChangingInterfaceV1.BarMethod">
+  <title>The BarMethod() method</title>
+  <indexterm zone="gdbus-method-ChangingInterfaceV1.BarMethod"><primary sortas="ChangingInterfaceV1.BarMethod">ChangingInterfaceV1.BarMethod()</primary></indexterm>
+<programlisting>
+BarMethod ();
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-ChangingInterfaceV1.BazMethod">
+  <title>The BazMethod() method</title>
+  <indexterm zone="gdbus-method-ChangingInterfaceV1.BazMethod"><primary sortas="ChangingInterfaceV1.BazMethod">ChangingInterfaceV1.BazMethod()</primary></indexterm>
+<programlisting>
+BazMethod ();
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+<refsect1 role="details" id="gdbus-signals-ChangingInterfaceV1">
+  <title role="details.title">Signal Details</title>
+<refsect2 role="signal" id="gdbus-signal-ChangingInterfaceV1.FooSignal">
+  <title>The "FooSignal" signal</title>
+  <indexterm zone="gdbus-signal-ChangingInterfaceV1.FooSignal"><primary sortas="ChangingInterfaceV1::FooSignal">ChangingInterfaceV1::FooSignal</primary></indexterm>
+<programlisting>
+FooSignal ();
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="signal" id="gdbus-signal-ChangingInterfaceV1.BarSignal">
+  <title>The "BarSignal" signal</title>
+  <indexterm zone="gdbus-signal-ChangingInterfaceV1.BarSignal"><primary sortas="ChangingInterfaceV1::BarSignal">ChangingInterfaceV1::BarSignal</primary></indexterm>
+<programlisting>
+BarSignal ();
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="signal" id="gdbus-signal-ChangingInterfaceV1.BazSignal">
+  <title>The "BazSignal" signal</title>
+  <indexterm zone="gdbus-signal-ChangingInterfaceV1.BazSignal"><primary sortas="ChangingInterfaceV1::BazSignal">ChangingInterfaceV1::BazSignal</primary></indexterm>
+<programlisting>
+BazSignal ();
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+</refentry>
+

@@ -1,0 +1,769 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GAsyncInitable: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="failable_initialization.html" title="Failable Initialization">
+<link rel="prev" href="GInitable.html" title="GInitable">
+<link rel="next" href="subprocesses.html" title="Subprocesses">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GAsyncInitable.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GAsyncInitable.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_prerequisites">  <span class="dim">|</span> 
+                  <a href="#GAsyncInitable.prerequisites" class="shortcut">Prerequisites</a></span><span id="nav_implementations">  <span class="dim">|</span> 
+                  <a href="#GAsyncInitable.implementations" class="shortcut">Known Implementations</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="failable_initialization.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GInitable.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="subprocesses.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GAsyncInitable"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GAsyncInitable.top_of_page"></a>GAsyncInitable</span></h2>
+<p>GAsyncInitable — Asynchronously failable object initialization interface</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GAsyncInitable.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GAsyncInitable.html#g-async-initable-init-async" title="g_async_initable_init_async ()">g_async_initable_init_async</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GAsyncInitable.html#g-async-initable-init-finish" title="g_async_initable_init_finish ()">g_async_initable_init_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GAsyncInitable.html#g-async-initable-new-async" title="g_async_initable_new_async ()">g_async_initable_new_async</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="returnvalue">GObject</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GAsyncInitable.html#g-async-initable-new-finish" title="g_async_initable_new_finish ()">g_async_initable_new_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GAsyncInitable.html#g-async-initable-new-valist-async" title="g_async_initable_new_valist_async ()">g_async_initable_new_valist_async</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GAsyncInitable.html#g-async-initable-newv-async" title="g_async_initable_newv_async ()">g_async_initable_newv_async</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GAsyncInitable.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GAsyncInitable.html#GAsyncInitable-struct" title="GAsyncInitable">GAsyncInitable</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GAsyncInitable.html#GAsyncInitableIface" title="struct GAsyncInitableIface">GAsyncInitableIface</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GAsyncInitable.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/GTypeModule.html">GInterface</a>
+    <span class="lineart">╰──</span> GAsyncInitable
+</pre>
+</div>
+<div class="refsect1">
+<a name="GAsyncInitable.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GAsyncInitable requires
+ <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GAsyncInitable.implementations"></a><h2>Known Implementations</h2>
+<p>
+GAsyncInitable is implemented by
+ <a class="link" href="GDBusConnection.html" title="GDBusConnection">GDBusConnection</a>,  <a class="link" href="GDBusObjectManagerClient.html" title="GDBusObjectManagerClient">GDBusObjectManagerClient</a> and  <a class="link" href="GDBusProxy.html" title="GDBusProxy">GDBusProxy</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GAsyncInitable.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GAsyncInitable.description"></a><h2>Description</h2>
+<p>This is the asynchronous version of <a class="link" href="GInitable.html" title="GInitable"><span class="type">GInitable</span></a>; it behaves the same
+in all ways except that initialization is asynchronous. For more details
+see the descriptions on <a class="link" href="GInitable.html" title="GInitable"><span class="type">GInitable</span></a>.</p>
+<p>A class may implement both the <a class="link" href="GInitable.html" title="GInitable"><span class="type">GInitable</span></a> and <a class="link" href="GAsyncInitable.html" title="GAsyncInitable"><span class="type">GAsyncInitable</span></a> interfaces.</p>
+<p>Users of objects implementing this are not intended to use the interface
+method directly; instead it will be used automatically in various ways.
+For C applications you generally just call <a class="link" href="GAsyncInitable.html#g-async-initable-new-async" title="g_async_initable_new_async ()"><code class="function">g_async_initable_new_async()</code></a>
+directly, or indirectly via a <code class="function">foo_thing_new_async()</code> wrapper. This will call
+<a class="link" href="GAsyncInitable.html#g-async-initable-init-async" title="g_async_initable_init_async ()"><code class="function">g_async_initable_init_async()</code></a> under the cover, calling back with <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> and
+a set <a href="../glib-Error-Reporting.html#GError"><code class="literal">GError</code></a> on failure.</p>
+<p>A typical implementation might look something like this:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">enum</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">   NOT_INITIALIZED</span><span class="symbol">,</span>
+<span class="normal">   INITIALIZING</span><span class="symbol">,</span>
+<span class="normal">   INITIALIZED</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">_foo_ready_cb</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">Foo</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GList</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">l</span><span class="symbol">;</span>
+
+<span class="normal">  self</span><span class="symbol">-&gt;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">state </span><span class="symbol">=</span><span class="normal"> INITIALIZED</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">l </span><span class="symbol">=</span><span class="normal"> self</span><span class="symbol">-&gt;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">init_results</span><span class="symbol">;</span><span class="normal"> l </span><span class="symbol">!=</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span><span class="normal"> l </span><span class="symbol">=</span><span class="normal"> l</span><span class="symbol">-&gt;</span><span class="normal">next</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="usertype">GTask</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">task </span><span class="symbol">=</span><span class="normal"> l</span><span class="symbol">-&gt;</span><span class="normal">data</span><span class="symbol">;</span>
+
+<span class="normal">      </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">-&gt;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">success</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="function"><a href="GTask.html#g-task-return-boolean">g_task_return_boolean</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">task</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#TRUE:CAPS">TRUE</a></span><span class="symbol">);</span>
+<span class="normal">      </span><span class="keyword">else</span>
+<span class="normal">        </span><span class="function"><a href="GTask.html#g-task-return-new-error">g_task_return_new_error</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">task</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">...);</span>
+<span class="normal">      </span><span class="function"><a href="../gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">task</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">  </span><span class="function"><a href="../glib-Doubly-Linked-Lists.html#g-list-free">g_list_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">-&gt;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">init_results</span><span class="symbol">);</span>
+<span class="normal">  self</span><span class="symbol">-&gt;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">init_results </span><span class="symbol">=</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">foo_init_async</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GAsyncInitable</span><span class="normal">       </span><span class="symbol">*</span><span class="normal">initable</span><span class="symbol">,</span>
+<span class="normal">                </span><span class="type">int</span><span class="normal">                   io_priority</span><span class="symbol">,</span>
+<span class="normal">                </span><span class="usertype">GCancellable</span><span class="normal">         </span><span class="symbol">*</span><span class="normal">cancellable</span><span class="symbol">,</span>
+<span class="normal">                </span><span class="usertype">GAsyncReadyCallback</span><span class="normal">   callback</span><span class="symbol">,</span>
+<span class="normal">                </span><span class="usertype">gpointer</span><span class="normal">              user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">Foo</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">self </span><span class="symbol">=</span><span class="normal"> </span><span class="function">FOO</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">initable</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="usertype">GTask</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">task</span><span class="symbol">;</span>
+
+<span class="normal">  task </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GTask.html#g-task-new">g_task_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">initable</span><span class="symbol">,</span><span class="normal"> cancellable</span><span class="symbol">,</span><span class="normal"> callback</span><span class="symbol">,</span><span class="normal"> user_data</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">switch</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">-&gt;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">state</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="keyword">case</span><span class="normal"> NOT_INITIALIZED</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="function">_foo_get_ready</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">);</span>
+<span class="normal">        self</span><span class="symbol">-&gt;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">init_results </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="../glib-Doubly-Linked-Lists.html#g-list-append">g_list_append</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">-&gt;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">init_results</span><span class="symbol">,</span>
+<span class="normal">                                                  task</span><span class="symbol">);</span>
+<span class="normal">        self</span><span class="symbol">-&gt;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">state </span><span class="symbol">=</span><span class="normal"> INITIALIZING</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="keyword">case</span><span class="normal"> INITIALIZING</span><span class="symbol">:</span>
+<span class="normal">        self</span><span class="symbol">-&gt;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">init_results </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="../glib-Doubly-Linked-Lists.html#g-list-append">g_list_append</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">-&gt;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">init_results</span><span class="symbol">,</span>
+<span class="normal">                                                  task</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="keyword">case</span><span class="normal"> INITIALIZED</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">self</span><span class="symbol">-&gt;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">success</span><span class="symbol">)</span>
+<span class="normal">          </span><span class="function"><a href="GTask.html#g-task-return-new-error">g_task_return_new_error</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">task</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">...);</span>
+<span class="normal">        </span><span class="keyword">else</span>
+<span class="normal">          </span><span class="function"><a href="GTask.html#g-task-return-boolean">g_task_return_boolean</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">task</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#TRUE:CAPS">TRUE</a></span><span class="symbol">);</span>
+<span class="normal">        </span><span class="function"><a href="../gobject-The-Base-Object-Type.html#g-object-unref">g_object_unref</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">task</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> <a href="../glib-Basic-Types.html#gboolean">gboolean</a></span>
+<span class="function">foo_init_finish</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GAsyncInitable</span><span class="normal">       </span><span class="symbol">*</span><span class="normal">initable</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="usertype">GAsyncResult</span><span class="normal">         </span><span class="symbol">*</span><span class="normal">result</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="usertype">GError</span><span class="normal">              </span><span class="symbol">**</span><span class="normal">error</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-return-val-if-fail">g_return_val_if_fail</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="GTask.html#g-task-is-valid">g_task_is_valid</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">result</span><span class="symbol">,</span><span class="normal"> initable</span><span class="symbol">),</span><span class="normal"> <a href="../glib-Standard-Macros.html#FALSE:CAPS">FALSE</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> </span><span class="function"><a href="GTask.html#g-task-propagate-boolean">g_task_propagate_boolean</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">G_TASK</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">result</span><span class="symbol">),</span><span class="normal"> error</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">foo_async_initable_iface_init</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">gpointer</span><span class="normal"> g_iface</span><span class="symbol">,</span>
+<span class="normal">                               </span><span class="usertype">gpointer</span><span class="normal"> data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GAsyncInitableIface</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">iface </span><span class="symbol">=</span><span class="normal"> g_iface</span><span class="symbol">;</span>
+
+<span class="normal">  iface</span><span class="symbol">-&gt;</span><span class="normal">init_async </span><span class="symbol">=</span><span class="normal"> foo_init_async</span><span class="symbol">;</span>
+<span class="normal">  iface</span><span class="symbol">-&gt;</span><span class="normal">init_finish </span><span class="symbol">=</span><span class="normal"> foo_init_finish</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+</div>
+<div class="refsect1">
+<a name="GAsyncInitable.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-async-initable-init-async"></a><h3>g_async_initable_init_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_async_initable_init_async (<em class="parameter"><code><a class="link" href="GAsyncInitable.html" title="GAsyncInitable"><span class="type">GAsyncInitable</span></a> *initable</code></em>,
+                             <em class="parameter"><code><span class="type">int</span> io_priority</code></em>,
+                             <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                             <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                             <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Starts asynchronous initialization of the object implementing the
+interface. This must be done before any real use of the object after
+initial construction. If the object also implements <a class="link" href="GInitable.html" title="GInitable"><span class="type">GInitable</span></a> you can
+optionally call <a class="link" href="GInitable.html#g-initable-init" title="g_initable_init ()"><code class="function">g_initable_init()</code></a> instead.</p>
+<p>This method is intended for language bindings. If writing in C,
+<a class="link" href="GAsyncInitable.html#g-async-initable-new-async" title="g_async_initable_new_async ()"><code class="function">g_async_initable_new_async()</code></a> should typically be used instead.</p>
+<p>When the initialization is finished, <em class="parameter"><code>callback</code></em>
+ will be called. You can
+then call <a class="link" href="GAsyncInitable.html#g-async-initable-init-finish" title="g_async_initable_init_finish ()"><code class="function">g_async_initable_init_finish()</code></a> to get the result of the
+initialization.</p>
+<p>Implementations may also support cancellation. If <em class="parameter"><code>cancellable</code></em>
+ is not
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, then initialization can be cancelled by triggering the cancellable
+object from another thread. If the operation was cancelled, the error
+<a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a> will be returned. If <em class="parameter"><code>cancellable</code></em>
+ is not <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, and
+the object doesn't support cancellable initialization, the error
+<a class="link" href="gio-GIOError.html#G-IO-ERROR-NOT-SUPPORTED:CAPS"><code class="literal">G_IO_ERROR_NOT_SUPPORTED</code></a> will be returned.</p>
+<p>As with <a class="link" href="GInitable.html" title="GInitable"><span class="type">GInitable</span></a>, if the object is not initialized, or initialization
+returns with an error, then all operations on the object except
+<a href="../gobject-The-Base-Object-Type.html#g-object-ref"><code class="function">g_object_ref()</code></a> and <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a> are considered to be invalid, and
+have undefined behaviour. They will often fail with <a href="../glib-Message-Logging.html#g-critical"><code class="function">g_critical()</code></a> or
+<a href="../glib-Message-Logging.html#g-warning"><code class="function">g_warning()</code></a>, but this must not be relied on.</p>
+<p>Callers should not assume that a class which implements <a class="link" href="GAsyncInitable.html" title="GAsyncInitable"><span class="type">GAsyncInitable</span></a> can
+be initialized multiple times; for more information, see <a class="link" href="GInitable.html#g-initable-init" title="g_initable_init ()"><code class="function">g_initable_init()</code></a>.
+If a class explicitly supports being initialized multiple times,
+implementation requires yielding all subsequent calls to <code class="function">init_async()</code> on the
+results of the first call.</p>
+<p>For classes that also support the <a class="link" href="GInitable.html" title="GInitable"><span class="type">GInitable</span></a> interface, the default
+implementation of this method will run the <a class="link" href="GInitable.html#g-initable-init" title="g_initable_init ()"><code class="function">g_initable_init()</code></a> function
+in a thread, so if you want to support asynchronous initialization via
+threads, just implement the <a class="link" href="GAsyncInitable.html" title="GAsyncInitable"><span class="type">GAsyncInitable</span></a> interface without overriding
+any interface methods.</p>
+<div class="refsect3">
+<a name="g-async-initable-init-async.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>initable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncInitable.html" title="GAsyncInitable"><span class="type">GAsyncInitable</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>io_priority</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GAsyncResult.html#io-priority" title="I/O Priority">I/O priority</a> of the operation</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> to call when the request is satisfied</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>the data to pass to callback function</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-async-initable-init-finish"></a><h3>g_async_initable_init_finish ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_async_initable_init_finish (<em class="parameter"><code><a class="link" href="GAsyncInitable.html" title="GAsyncInitable"><span class="type">GAsyncInitable</span></a> *initable</code></em>,
+                              <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *res</code></em>,
+                              <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Finishes asynchronous initialization and returns the result.
+See <a class="link" href="GAsyncInitable.html#g-async-initable-init-async" title="g_async_initable_init_async ()"><code class="function">g_async_initable_init_async()</code></a>.</p>
+<div class="refsect3">
+<a name="g-async-initable-init-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>initable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncInitable.html" title="GAsyncInitable"><span class="type">GAsyncInitable</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>res</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> location to store the error occurring, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to
+ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-async-initable-init-finish.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if successful. If an error has occurred, this function
+will return <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> and set <em class="parameter"><code>error</code></em>
+appropriately if present.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-async-initable-new-async"></a><h3>g_async_initable_new_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_async_initable_new_async (<em class="parameter"><code><a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> object_type</code></em>,
+                            <em class="parameter"><code><span class="type">int</span> io_priority</code></em>,
+                            <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                            <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                            <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                            <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *first_property_name</code></em>,
+                            <em class="parameter"><code>...</code></em>);</pre>
+<p>Helper function for constructing <a class="link" href="GAsyncInitable.html" title="GAsyncInitable"><span class="type">GAsyncInitable</span></a> object. This is
+similar to <a href="../gobject-The-Base-Object-Type.html#g-object-new"><code class="function">g_object_new()</code></a> but also initializes the object asynchronously.</p>
+<p>When the initialization is finished, <em class="parameter"><code>callback</code></em>
+ will be called. You can
+then call <a class="link" href="GAsyncInitable.html#g-async-initable-new-finish" title="g_async_initable_new_finish ()"><code class="function">g_async_initable_new_finish()</code></a> to get the new object and check
+for any errors.</p>
+<div class="refsect3">
+<a name="g-async-initable-new-async.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>object_type</p></td>
+<td class="parameter_description"><p>a <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> supporting <a class="link" href="GAsyncInitable.html" title="GAsyncInitable"><span class="type">GAsyncInitable</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>io_priority</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GAsyncResult.html#io-priority" title="I/O Priority">I/O priority</a> of the operation</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> to call when the initialization is
+finished</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>the data to pass to callback function</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>first_property_name</p></td>
+<td class="parameter_description"><p>the name of the first property, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if no
+properties. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>the value of the first property, followed by other property
+value pairs, and ended by <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-async-initable-new-finish"></a><h3>g_async_initable_new_finish ()</h3>
+<pre class="programlisting"><a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="returnvalue">GObject</span></a> *
+g_async_initable_new_finish (<em class="parameter"><code><a class="link" href="GAsyncInitable.html" title="GAsyncInitable"><span class="type">GAsyncInitable</span></a> *initable</code></em>,
+                             <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *res</code></em>,
+                             <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Finishes the async construction for the various g_async_initable_new
+calls, returning the created object or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error.</p>
+<div class="refsect3">
+<a name="g-async-initable-new-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>initable</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GAsyncInitable.html" title="GAsyncInitable"><span class="type">GAsyncInitable</span></a> from the callback</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>res</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> from the callback</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for errors, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-async-initable-new-finish.returns"></a><h4>Returns</h4>
+<p>a newly created <a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a>,
+or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. Free with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GObject.Object][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-async-initable-new-valist-async"></a><h3>g_async_initable_new_valist_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_async_initable_new_valist_async (<em class="parameter"><code><a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> object_type</code></em>,
+                                   <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *first_property_name</code></em>,
+                                   <em class="parameter"><code><span class="type">va_list</span> var_args</code></em>,
+                                   <em class="parameter"><code><span class="type">int</span> io_priority</code></em>,
+                                   <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                   <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                   <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Helper function for constructing <a class="link" href="GAsyncInitable.html" title="GAsyncInitable"><span class="type">GAsyncInitable</span></a> object. This is
+similar to <a href="../gobject-The-Base-Object-Type.html#g-object-new-valist"><code class="function">g_object_new_valist()</code></a> but also initializes the object
+asynchronously.</p>
+<p>When the initialization is finished, <em class="parameter"><code>callback</code></em>
+ will be called. You can
+then call <a class="link" href="GAsyncInitable.html#g-async-initable-new-finish" title="g_async_initable_new_finish ()"><code class="function">g_async_initable_new_finish()</code></a> to get the new object and check
+for any errors.</p>
+<div class="refsect3">
+<a name="g-async-initable-new-valist-async.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>object_type</p></td>
+<td class="parameter_description"><p>a <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> supporting <a class="link" href="GAsyncInitable.html" title="GAsyncInitable"><span class="type">GAsyncInitable</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>first_property_name</p></td>
+<td class="parameter_description"><p>the name of the first property, followed by
+the value, and other property value pairs, and ended by <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>var_args</p></td>
+<td class="parameter_description"><p>The var args list generated from <em class="parameter"><code>first_property_name</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>io_priority</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GAsyncResult.html#io-priority" title="I/O Priority">I/O priority</a> of the operation</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> to call when the initialization is
+finished</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>the data to pass to callback function</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-async-initable-newv-async"></a><h3>g_async_initable_newv_async ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_async_initable_newv_async (<em class="parameter"><code><a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> object_type</code></em>,
+                             <em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> n_parameters</code></em>,
+                             <em class="parameter"><code><a href="../gobject-The-Base-Object-Type.html#GParameter"><span class="type">GParameter</span></a> *parameters</code></em>,
+                             <em class="parameter"><code><span class="type">int</span> io_priority</code></em>,
+                             <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                             <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                             <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_async_initable_newv_async</code> has been deprecated since version 2.54 and should not be used in newly-written code.</p>
+<p>Use <a href="../gobject-The-Base-Object-Type.html#g-object-new-with-properties"><code class="function">g_object_new_with_properties()</code></a> and
+<a class="link" href="GAsyncInitable.html#g-async-initable-init-async" title="g_async_initable_init_async ()"><code class="function">g_async_initable_init_async()</code></a> instead. See <a href="../gobject-The-Base-Object-Type.html#GParameter"><span class="type">GParameter</span></a> for more information.</p>
+</div>
+<p>Helper function for constructing <a class="link" href="GAsyncInitable.html" title="GAsyncInitable"><span class="type">GAsyncInitable</span></a> object. This is
+similar to <a href="../gobject-The-Base-Object-Type.html#g-object-newv"><code class="function">g_object_newv()</code></a> but also initializes the object asynchronously.</p>
+<p>When the initialization is finished, <em class="parameter"><code>callback</code></em>
+ will be called. You can
+then call <a class="link" href="GAsyncInitable.html#g-async-initable-new-finish" title="g_async_initable_new_finish ()"><code class="function">g_async_initable_new_finish()</code></a> to get the new object and check
+for any errors.</p>
+<div class="refsect3">
+<a name="g-async-initable-newv-async.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>object_type</p></td>
+<td class="parameter_description"><p>a <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> supporting <a class="link" href="GAsyncInitable.html" title="GAsyncInitable"><span class="type">GAsyncInitable</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n_parameters</p></td>
+<td class="parameter_description"><p>the number of parameters in <em class="parameter"><code>parameters</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>parameters</p></td>
+<td class="parameter_description"><p>the parameters to use to construct the object</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>io_priority</p></td>
+<td class="parameter_description"><p>the <a class="link" href="GAsyncResult.html#io-priority" title="I/O Priority">I/O priority</a> of the operation</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> to call when the initialization is
+finished</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>the data to pass to callback function</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GAsyncInitable.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GAsyncInitable-struct"></a><h3>GAsyncInitable</h3>
+<pre class="programlisting">typedef struct _GAsyncInitable GAsyncInitable;</pre>
+<p>Interface for asynchronously initializable objects.</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GAsyncInitableIface"></a><h3>struct GAsyncInitableIface</h3>
+<pre class="programlisting">struct GAsyncInitableIface {
+  GTypeInterface g_iface;
+
+  /* Virtual Table */
+
+  void     (* init_async)  (GAsyncInitable      *initable,
+			    int                  io_priority,
+			    GCancellable        *cancellable,
+			    GAsyncReadyCallback  callback,
+			    gpointer             user_data);
+  gboolean (* init_finish) (GAsyncInitable      *initable,
+			    GAsyncResult        *res,
+			    GError             **error);
+};
+</pre>
+<p>Provides an interface for asynchronous initializing object such that
+initialization may fail.</p>
+<div class="refsect3">
+<a name="GAsyncInitableIface.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GAsyncInitableIface.init-async"></a>init_async</code></em> ()</p></td>
+<td class="struct_member_description"><p>Starts initialization of the object.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GAsyncInitableIface.init-finish"></a>init_finish</code></em> ()</p></td>
+<td class="struct_member_description"><p>Finishes initialization of the object.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GAsyncInitable.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="GInitable.html" title="GInitable"><span class="type">GInitable</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

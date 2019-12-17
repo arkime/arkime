@@ -1,0 +1,406 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GPollableOutputStream: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="streaming.html" title="Streaming I/O">
+<link rel="prev" href="GPollableInputStream.html" title="GPollableInputStream">
+<link rel="next" href="gio-gpollableutils.html" title="gpollableutils">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GPollableOutputStream.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GPollableOutputStream.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_prerequisites">  <span class="dim">|</span> 
+                  <a href="#GPollableOutputStream.prerequisites" class="shortcut">Prerequisites</a></span><span id="nav_implementations">  <span class="dim">|</span> 
+                  <a href="#GPollableOutputStream.implementations" class="shortcut">Known Implementations</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="streaming.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GPollableInputStream.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gio-gpollableutils.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GPollableOutputStream"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GPollableOutputStream.top_of_page"></a>GPollableOutputStream</span></h2>
+<p>GPollableOutputStream — Interface for pollable output streams</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GPollableOutputStream.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GPollableOutputStream.html#g-pollable-output-stream-can-poll" title="g_pollable_output_stream_can_poll ()">g_pollable_output_stream_can_poll</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GPollableOutputStream.html#g-pollable-output-stream-is-writable" title="g_pollable_output_stream_is_writable ()">g_pollable_output_stream_is_writable</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-The-Main-Event-Loop.html#GSource"><span class="returnvalue">GSource</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GPollableOutputStream.html#g-pollable-output-stream-create-source" title="g_pollable_output_stream_create_source ()">g_pollable_output_stream_create_source</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gssize"><span class="returnvalue">gssize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GPollableOutputStream.html#g-pollable-output-stream-write-nonblocking" title="g_pollable_output_stream_write_nonblocking ()">g_pollable_output_stream_write_nonblocking</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GPollableOutputStream.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GPollableOutputStream.html#GPollableOutputStream-struct" title="GPollableOutputStream">GPollableOutputStream</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GPollableOutputStream.html#GPollableOutputStreamInterface" title="struct GPollableOutputStreamInterface">GPollableOutputStreamInterface</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GPollableOutputStream.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/GTypeModule.html">GInterface</a>
+    <span class="lineart">╰──</span> GPollableOutputStream
+</pre>
+</div>
+<div class="refsect1">
+<a name="GPollableOutputStream.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GPollableOutputStream requires
+ <a class="link" href="GOutputStream.html" title="GOutputStream">GOutputStream</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GPollableOutputStream.implementations"></a><h2>Known Implementations</h2>
+<p>
+GPollableOutputStream is implemented by
+ <a class="link" href="gio-GConverterOutputstream.html#GConverterOutputStream">GConverterOutputStream</a>,  <a class="link" href="GMemoryOutputStream.html" title="GMemoryOutputStream">GMemoryOutputStream</a> and  <a class="link" href="GUnixOutputStream.html" title="GUnixOutputStream">GUnixOutputStream</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GPollableOutputStream.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GPollableOutputStream.description"></a><h2>Description</h2>
+<p><a class="link" href="GPollableOutputStream.html" title="GPollableOutputStream"><span class="type">GPollableOutputStream</span></a> is implemented by <a href="GOutputStream.html#GOutputStream-struct"><span class="type">GOutputStreams</span></a> that
+can be polled for readiness to write. This can be used when
+interfacing with a non-GIO API that expects
+UNIX-file-descriptor-style asynchronous I/O rather than GIO-style.</p>
+</div>
+<div class="refsect1">
+<a name="GPollableOutputStream.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-pollable-output-stream-can-poll"></a><h3>g_pollable_output_stream_can_poll ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_pollable_output_stream_can_poll (<em class="parameter"><code><a class="link" href="GPollableOutputStream.html" title="GPollableOutputStream"><span class="type">GPollableOutputStream</span></a> *stream</code></em>);</pre>
+<p>Checks if <em class="parameter"><code>stream</code></em>
+ is actually pollable. Some classes may implement
+<a class="link" href="GPollableOutputStream.html" title="GPollableOutputStream"><span class="type">GPollableOutputStream</span></a> but have only certain instances of that
+class be pollable. If this method returns <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a>, then the behavior
+of other <a class="link" href="GPollableOutputStream.html" title="GPollableOutputStream"><span class="type">GPollableOutputStream</span></a> methods is undefined.</p>
+<p>For any given stream, the value returned by this method is constant;
+a stream cannot switch from pollable to non-pollable or vice versa.</p>
+<div class="refsect3">
+<a name="g-pollable-output-stream-can-poll.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GPollableOutputStream.html" title="GPollableOutputStream"><span class="type">GPollableOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-pollable-output-stream-can-poll.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>stream</code></em>
+is pollable, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if not.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-pollable-output-stream-is-writable"></a><h3>g_pollable_output_stream_is_writable ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_pollable_output_stream_is_writable (<em class="parameter"><code><a class="link" href="GPollableOutputStream.html" title="GPollableOutputStream"><span class="type">GPollableOutputStream</span></a> *stream</code></em>);</pre>
+<p>Checks if <em class="parameter"><code>stream</code></em>
+ can be written.</p>
+<p>Note that some stream types may not be able to implement this 100%
+reliably, and it is possible that a call to <a class="link" href="GOutputStream.html#g-output-stream-write" title="g_output_stream_write ()"><code class="function">g_output_stream_write()</code></a>
+after this returns <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> would still block. To guarantee
+non-blocking behavior, you should always use
+<a class="link" href="GPollableOutputStream.html#g-pollable-output-stream-write-nonblocking" title="g_pollable_output_stream_write_nonblocking ()"><code class="function">g_pollable_output_stream_write_nonblocking()</code></a>, which will return a
+<a class="link" href="gio-GIOError.html#G-IO-ERROR-WOULD-BLOCK:CAPS"><code class="literal">G_IO_ERROR_WOULD_BLOCK</code></a> error rather than blocking.</p>
+<div class="refsect3">
+<a name="g-pollable-output-stream-is-writable.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GPollableOutputStream.html" title="GPollableOutputStream"><span class="type">GPollableOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-pollable-output-stream-is-writable.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>stream</code></em>
+is writable, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if not. If an error
+has occurred on <em class="parameter"><code>stream</code></em>
+, this will result in
+<a class="link" href="GPollableOutputStream.html#g-pollable-output-stream-is-writable" title="g_pollable_output_stream_is_writable ()"><code class="function">g_pollable_output_stream_is_writable()</code></a> returning <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>, and the
+next attempt to write will return the error.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-pollable-output-stream-create-source"></a><h3>g_pollable_output_stream_create_source ()</h3>
+<pre class="programlisting"><a href="../glib-The-Main-Event-Loop.html#GSource"><span class="returnvalue">GSource</span></a> *
+g_pollable_output_stream_create_source
+                               (<em class="parameter"><code><a class="link" href="GPollableOutputStream.html" title="GPollableOutputStream"><span class="type">GPollableOutputStream</span></a> *stream</code></em>,
+                                <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>);</pre>
+<p>Creates a <a href="../glib-The-Main-Event-Loop.html#GSource"><span class="type">GSource</span></a> that triggers when <em class="parameter"><code>stream</code></em>
+ can be written, or
+<em class="parameter"><code>cancellable</code></em>
+ is triggered or an error occurs. The callback on the
+source is of the <a class="link" href="gio-gpollableutils.html#GPollableSourceFunc" title="GPollableSourceFunc ()"><span class="type">GPollableSourceFunc</span></a> type.</p>
+<p>As with <a class="link" href="GPollableOutputStream.html#g-pollable-output-stream-is-writable" title="g_pollable_output_stream_is_writable ()"><code class="function">g_pollable_output_stream_is_writable()</code></a>, it is possible that
+the stream may not actually be writable even after the source
+triggers, so you should use <a class="link" href="GPollableOutputStream.html#g-pollable-output-stream-write-nonblocking" title="g_pollable_output_stream_write_nonblocking ()"><code class="function">g_pollable_output_stream_write_nonblocking()</code></a>
+rather than <a class="link" href="GOutputStream.html#g-output-stream-write" title="g_output_stream_write ()"><code class="function">g_output_stream_write()</code></a> from the callback.</p>
+<div class="refsect3">
+<a name="g-pollable-output-stream-create-source.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GPollableOutputStream.html" title="GPollableOutputStream"><span class="type">GPollableOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-pollable-output-stream-create-source.returns"></a><h4>Returns</h4>
+<p>a new <a href="../glib-The-Main-Event-Loop.html#GSource"><span class="type">GSource</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-pollable-output-stream-write-nonblocking"></a><h3>g_pollable_output_stream_write_nonblocking ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gssize"><span class="returnvalue">gssize</span></a>
+g_pollable_output_stream_write_nonblocking
+                               (<em class="parameter"><code><a class="link" href="GPollableOutputStream.html" title="GPollableOutputStream"><span class="type">GPollableOutputStream</span></a> *stream</code></em>,
+                                <em class="parameter"><code>const <span class="type">void</span> *buffer</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> count</code></em>,
+                                <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Attempts to write up to <em class="parameter"><code>count</code></em>
+ bytes from <em class="parameter"><code>buffer</code></em>
+ to <em class="parameter"><code>stream</code></em>
+, as
+with <a class="link" href="GOutputStream.html#g-output-stream-write" title="g_output_stream_write ()"><code class="function">g_output_stream_write()</code></a>. If <em class="parameter"><code>stream</code></em>
+ is not currently writable,
+this will immediately return <a class="link" href="gio-GIOError.html#G-IO-ERROR-WOULD-BLOCK:CAPS"><code class="literal">G_IO_ERROR_WOULD_BLOCK</code></a>, and you can
+use <a class="link" href="GPollableOutputStream.html#g-pollable-output-stream-create-source" title="g_pollable_output_stream_create_source ()"><code class="function">g_pollable_output_stream_create_source()</code></a> to create a <a href="../glib-The-Main-Event-Loop.html#GSource"><span class="type">GSource</span></a>
+that will be triggered when <em class="parameter"><code>stream</code></em>
+ is writable.</p>
+<p>Note that since this method never blocks, you cannot actually
+use <em class="parameter"><code>cancellable</code></em>
+ to cancel it. However, it will return an error
+if <em class="parameter"><code>cancellable</code></em>
+ has already been cancelled when you call, which
+may happen if you call this method after a source triggers due
+to having been cancelled.</p>
+<p>Also note that if <a class="link" href="gio-GIOError.html#G-IO-ERROR-WOULD-BLOCK:CAPS"><code class="literal">G_IO_ERROR_WOULD_BLOCK</code></a> is returned some underlying
+transports like D/TLS require that you send the same <em class="parameter"><code>buffer</code></em>
+ and <em class="parameter"><code>count</code></em>
+.</p>
+<p>Virtual: write_nonblocking</p>
+<div class="refsect3">
+<a name="g-pollable-output-stream-write-nonblocking.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GPollableOutputStream.html" title="GPollableOutputStream"><span class="type">GPollableOutputStream</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>buffer</p></td>
+<td class="parameter_description"><p>a buffer to write
+data from. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=count][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>count</p></td>
+<td class="parameter_description"><p>the number of bytes you want to write</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> for error reporting, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-pollable-output-stream-write-nonblocking.returns"></a><h4>Returns</h4>
+<p> the number of bytes written, or -1 on error (including
+<a class="link" href="gio-GIOError.html#G-IO-ERROR-WOULD-BLOCK:CAPS"><code class="literal">G_IO_ERROR_WOULD_BLOCK</code></a>).</p>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GPollableOutputStream.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GPollableOutputStream-struct"></a><h3>GPollableOutputStream</h3>
+<pre class="programlisting">typedef struct _GPollableOutputStream GPollableOutputStream;</pre>
+<p>An interface for a <a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a> that can be polled for readability.</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GPollableOutputStreamInterface"></a><h3>struct GPollableOutputStreamInterface</h3>
+<pre class="programlisting">struct GPollableOutputStreamInterface {
+  GTypeInterface g_iface;
+
+  /* Virtual Table */
+  gboolean     (*can_poll)          (GPollableOutputStream  *stream);
+
+  gboolean     (*is_writable)       (GPollableOutputStream  *stream);
+  GSource *    (*create_source)     (GPollableOutputStream  *stream,
+				     GCancellable           *cancellable);
+  gssize       (*write_nonblocking) (GPollableOutputStream  *stream,
+				     const void             *buffer,
+				     gsize                   count,
+				     GError                **error);
+};
+</pre>
+<p>The interface for pollable output streams.</p>
+<p>The default implementation of <em class="parameter"><code>can_poll</code></em>
+ always returns <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>.</p>
+<p>The default implementation of <em class="parameter"><code>write_nonblocking</code></em>
+ calls
+<a class="link" href="GPollableOutputStream.html#g-pollable-output-stream-is-writable" title="g_pollable_output_stream_is_writable ()"><code class="function">g_pollable_output_stream_is_writable()</code></a>, and then calls
+<a class="link" href="GOutputStream.html#g-output-stream-write" title="g_output_stream_write ()"><code class="function">g_output_stream_write()</code></a> if it returns <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>. This means you only
+need to override it if it is possible that your <em class="parameter"><code>is_writable</code></em>
+
+implementation may return <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> when the stream is not actually
+writable.</p>
+<div class="refsect3">
+<a name="GPollableOutputStreamInterface.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GPollableOutputStreamInterface.can-poll"></a>can_poll</code></em> ()</p></td>
+<td class="struct_member_description"><p>Checks if the <a class="link" href="GPollableOutputStream.html" title="GPollableOutputStream"><span class="type">GPollableOutputStream</span></a> instance is actually pollable</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GPollableOutputStreamInterface.is-writable"></a>is_writable</code></em> ()</p></td>
+<td class="struct_member_description"><p>Checks if the stream is writable</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GPollableOutputStreamInterface.create-source"></a>create_source</code></em> ()</p></td>
+<td class="struct_member_description"><p>Creates a <a href="../glib-The-Main-Event-Loop.html#GSource"><span class="type">GSource</span></a> to poll the stream</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GPollableOutputStreamInterface.write-nonblocking"></a>write_nonblocking</code></em> ()</p></td>
+<td class="struct_member_description"><p>Does a non-blocking write or returns
+<a class="link" href="gio-GIOError.html#G-IO-ERROR-WOULD-BLOCK:CAPS"><code class="literal">G_IO_ERROR_WOULD_BLOCK</code></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GPollableOutputStream.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a>, <a class="link" href="GFileDescriptorBased.html" title="GFileDescriptorBased"><span class="type">GFileDescriptorBased</span></a>, <a class="link" href="GPollableInputStream.html" title="GPollableInputStream"><span class="type">GPollableInputStream</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

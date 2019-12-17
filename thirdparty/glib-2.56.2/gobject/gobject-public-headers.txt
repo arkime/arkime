@@ -1,0 +1,1 @@
+gobject-autocleanups.h glib-types.h gbinding.h gboxed.h gclosure.h genums.h gmarshal.h gobject.h gparam.h gparamspecs.h gsignal.h gsourceclosure.h gtype.h gtypemodule.h gtypeplugin.h gvalue.h gvaluearray.h gvaluecollector.h gvaluetypes.h gobjectnotifyqueue.c

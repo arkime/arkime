@@ -1,0 +1,7 @@
+<schemalist>
+  <schema id="org.gtk.schemasourcecheck" path="/tests/">
+    <key name="enabled" type="b">
+      <default>true</default>
+    </key>
+  </schema>
+</schemalist>

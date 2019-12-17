@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GUuid: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-utilities.html" title="GLib Utilities">
+<link rel="prev" href="glib-Windows-Compatibility-Functions.html" title="Windows Compatibility Functions">
+<link rel="next" href="glib-data-types.html" title="GLib Data Types">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-GUuid.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-utilities.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Windows-Compatibility-Functions.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-data-types.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-GUuid"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-GUuid.top_of_page"></a>GUuid</span></h2>
+<p>GUuid — a universally unique identifier</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-GUuid.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-GUuid.html#g-uuid-string-is-valid" title="g_uuid_string_is_valid ()">g_uuid_string_is_valid</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-GUuid.html#g-uuid-string-random" title="g_uuid_string_random ()">g_uuid_string_random</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-GUuid.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib.h&gt;
+#include &lt;glib/gi18n.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-GUuid.description"></a><h2>Description</h2>
+<p>A UUID, or Universally unique identifier, is intended to uniquely
+identify information in a distributed environment. For the
+definition of UUID, see <a class="ulink" href="https://tools.ietf.org/html/rfc4122.html" target="_top">RFC 4122</a>.</p>
+<p>The creation of UUIDs does not require a centralized authority.</p>
+<p>UUIDs are of relatively small size (128 bits, or 16 bytes). The
+common string representation (ex:
+1d6c0810-2bd6-45f3-9890-0268422a6f14) needs 37 bytes.</p>
+<p>The UUID specification defines 5 versions, and calling
+<a class="link" href="glib-GUuid.html#g-uuid-string-random" title="g_uuid_string_random ()"><code class="function">g_uuid_string_random()</code></a> will generate a unique (or rather random)
+UUID of the most common version, version 4.</p>
+</div>
+<div class="refsect1">
+<a name="glib-GUuid.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-uuid-string-is-valid"></a><h3>g_uuid_string_is_valid ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_uuid_string_is_valid (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *str</code></em>);</pre>
+<p>Parses the string <em class="parameter"><code>str</code></em>
+ and verify if it is a UUID.</p>
+<p>The function accepts the following syntax:</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>simple forms (e.g. <code class="literal">f81d4fae-7dec-11d0-a765-00a0c91e6bf6</code>)</p></li></ul></div>
+<p>Note that hyphens are required within the UUID string itself,
+as per the aforementioned RFC.</p>
+<div class="refsect3">
+<a name="g-uuid-string-is-valid.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>str</p></td>
+<td class="parameter_description"><p>a string representing a UUID</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-uuid-string-is-valid.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if <em class="parameter"><code>str</code></em>
+is a valid UUID, <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-52.html#api-index-2.52">2.52</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-uuid-string-random"></a><h3>g_uuid_string_random ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_uuid_string_random (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Generates a random UUID (RFC 4122 version 4) as a string.</p>
+<div class="refsect3">
+<a name="g-uuid-string-random.returns"></a><h4>Returns</h4>
+<p>A string that should be freed with <a class="link" href="glib-Memory-Allocation.html#g-free" title="g_free ()"><code class="function">g_free()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-52.html#api-index-2.52">2.52</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-GUuid.other_details"></a><h2>Types and Values</h2>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

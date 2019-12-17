@@ -1,0 +1,1 @@
+ERROR Error on line 1 char 10: Odd character '≈', expected a '=' after attribute name 'bar' of element 'foo'

@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="glib-version-paths.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros">
+    <GLibBundledPCREDefines>PCRE_STATIC;LINK_SIZE=2;MAX_NAME_SIZE=32;MAX_NAME_COUNT=10000;NEWLINE=-1;POSIX_MALLOC_THRESHOLD=10;MATCH_LIMIT=10000000;MATCH_LIMIT_RECURSION=10000000;SUPPORT_UCP;SUPPORT_UTF;SUPPORT_UTF8;G_LOG_DOMAIN="GLib-GRegex"</GLibBundledPCREDefines>
+    <GlibBundledPCREExportDefines>PCRE_EXP_DECL=__declspec(dllexport)extern;PCRE_EXP_DEFN=</GlibBundledPCREExportDefines>
+    <GLibBundledPCREUndefs>-UBSR_ANYCRLF -UEBCDIC</GLibBundledPCREUndefs>
+    <LocalCharsetDefs>LIBDIR="blah"</LocalCharsetDefs>
+    <DllExportDefines>DLL_EXPORT</DllExportDefines>
+    <UseSystemPCREDefines>USE_SYSTEM_PCRE</UseSystemPCREDefines>
+    <GLibInBuildMacro>GLIB_COMPILATION</GLibInBuildMacro>
+    <GioInBuildMacro>GIO_COMPILATION</GioInBuildMacro>
+    <GLibBuildDefines>$(GLibInBuildMacro);$(DllExportDefines);G_LOG_DOMAIN="GLib"</GLibBuildDefines>
+    <GThreadBuildDefines>G_LOG_DOMAIN="GThread"</GThreadBuildDefines>
+    <GModuleBuildDefines>G_LOG_DOMAIN="GModule"</GModuleBuildDefines>
+    <GObjectBuildDefines>GOBJECT_COMPILATION;$(DllExportDefines);G_LOG_DOMAIN="GLib-GObject"</GObjectBuildDefines>
+    <GioBuildDefines>$(GioInBuildMacro);G_LOG_DOMAIN="GLib-GIO";$(DllExportDefines)</GioBuildDefines>
+    <WindowsNetworkingLibs>ws2_32.lib;shlwapi.lib;dnsapi.lib;iphlpapi.lib</WindowsNetworkingLibs>
+  </PropertyGroup>
+  <PropertyGroup>
+    <_PropertySheetDisplayName>glibbuilddefinesprops</_PropertySheetDisplayName>
+    <OutDir>$(SolutionDir)$(Configuration)\$(PlatformName)\bin\</OutDir>
+    <IntDir>$(SolutionDir)$(Configuration)\$(PlatformName)\obj\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\..;..\..\glib;$(GlibEtcInstallRoot)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ForcedIncludeFiles>msvc_recommended_pragmas.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/d2Zi+ %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>intl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions Condition="'$(VisualStudioVersion)|$(Platform)' == '11.0|x64'">/HIGHENTROPYVA %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(VisualStudioVersion)|$(Platform)' == '12.0|x64'">/HIGHENTROPYVA %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(VisualStudioVersion)|$(Platform)' == '14.0|x64'">/HIGHENTROPYVA %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(VisualStudioVersion)|$(Platform)' == '15.0|x64'">/HIGHENTROPYVA %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>$(GlibEtcInstallRoot)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="GLibBundledPCREDefines">
+      <Value>$(GLibBundledPCREDefines)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GlibBundledPCREExportDefines">
+      <Value>$(GlibBundledPCREExportDefines)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GLibBundledPCREUndefs">
+      <Value>$(GLibBundledPCREUndefs)</Value>
+    </BuildMacro>
+    <BuildMacro Include="LocalCharsetDefs">
+      <Value>$(LocalCharsetDefs)</Value>
+    </BuildMacro>
+    <BuildMacro Include="DllExportDefines">
+      <Value>$(DllExportDefines)</Value>
+    </BuildMacro>
+    <BuildMacro Include="UseSystemPCREDefines">
+      <Value>$(UseSystemPCREDefines)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GLibInBuildMacro">
+      <Value>$(GLibInBuildMacro)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GioInBuildMacro">
+      <Value>$(GioInBuildMacro)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GLibBuildDefines">
+      <Value>$(GLibBuildDefines)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GThreadBuildDefines">
+      <Value>$(GThreadBuildDefines)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GModuleBuildDefines">
+      <Value>$(GModuleBuildDefines)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GObjectBuildDefines">
+      <Value>$(GObjectBuildDefines)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GioBuildDefines">
+      <Value>$(GioBuildDefines)</Value>
+    </BuildMacro>
+    <BuildMacro Include="WindowsNetworkingLibs">
+      <Value>$(WindowsNetworkingLibs)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

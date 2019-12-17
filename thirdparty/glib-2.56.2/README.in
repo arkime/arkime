@@ -1,0 +1,366 @@
+General Information
+===================
+
+This is GLib version @GLIB_VERSION@. GLib is the low-level core
+library that forms the basis for projects such as GTK+ and GNOME. It
+provides data structure handling for C, portability wrappers, and
+interfaces for such runtime functionality as an event loop, threads,
+dynamic loading, and an object system.
+
+The official download locations are:
+  ftp://ftp.gtk.org/pub/glib
+  http://download.gnome.org/sources/glib
+
+The official web site is:
+  http://www.gtk.org/
+
+Information about mailing lists can be found at
+  http://www.gtk.org/mailing-lists.php
+
+To subscribe, send mail to gtk-list-request@gnome.org
+with the subject "subscribe".
+
+Installation
+============
+
+See the file 'INSTALL'
+
+How to report bugs
+==================
+
+Bugs should be reported to the GNOME bug tracking system.
+(http://bugzilla.gnome.org, product glib.) You will need
+to create an account for yourself.
+
+In the bug report please include:
+
+* Information about your system. For instance:
+
+   - What operating system and version
+   - For Linux, what version of the C library
+
+  And anything else you think is relevant.
+
+* How to reproduce the bug.
+
+  If you can reproduce it with one of the test programs that are built
+  in the tests/ subdirectory, that will be most convenient.  Otherwise,
+  please include a short test program that exhibits the behavior.
+  As a last resort, you can also provide a pointer to a larger piece
+  of software that can be downloaded.
+
+* If the bug was a crash, the exact text that was printed out
+  when the crash occured.
+
+* Further information such as stack traces may be useful, but
+  is not necessary.
+
+Patches
+=======
+
+Patches should also be submitted to bugzilla.gnome.org. If the
+patch fixes an existing bug, add the patch as an attachment
+to that bug report.
+
+Otherwise, enter a new bug report that describes the patch,
+and attach the patch to that bug report.
+
+Patches should be in unified diff form. (The -up option to GNU diff.)
+
+Notes about GLib 2.48
+=====================
+
+* The system copy of PCRE is now used by default to implement GRegex.
+  Configure with --with-pcre=internal if a system PCRE version
+  is unavailable or undesired.
+
+Notes about GLib 2.46
+=====================
+
+* GTask no longer imposes a fixed limit on the number of tasks that
+  can be run_in_thread() simultaneously, since doing this inevitably
+  results in deadlocks in some use cases. Instead, it now has a base
+  number of threads that can be used "for free", but will gradually
+  add more threads to the pool if too much time passes without any
+  tasks completing.
+
+  The exact behavior may continue to change in the future, and it's
+  possible that some future version of GLib may not do any
+  rate-limiting at all. As a result, you should no longer assume that
+  GTask will rate-limit tasks itself (or, by extension, that calls to
+  certain async gio methods will automatically be rate-limited for
+  you). If you have a very large number of tasks to run, and don't
+  want them to all run at once, you should rate-limit them yourself.
+
+Notes about GLib 2.40
+=====================
+
+* g_test_run() no longer runs tests in exactly the order they are
+  registered; instead, it groups them according to test suites (ie,
+  path components) like the documentation always claimed it did. In
+  some cases, this can result in a sub-optimal ordering of tests,
+  relative to the old behavior. The fix is to change the test paths to
+  properly group together the tests that should run together. (eg, if
+  you want to run test_foo_simple(), test_bar_simple(), and
+  test_foo_using_bar() in that order, they should have test paths like
+  "/simple/foo", "/simple/bar", "/complex/foo-using-bar", not
+  "/foo/simple", "/bar/simple", "/foo/using-bar" (which would result
+  in test_foo_using_bar() running before test_bar_simple()).
+
+  (The behavior actually changed in GLib 2.36, but it was not
+  documented at the time, since we didn't realize it mattered.)
+
+Notes about GLib 2.36
+=====================
+
+* It is no longer necessary to call g_type_init().  If you are
+  loading GLib as a dynamic module, you should be careful to avoid
+  unloading it, then subsequently loading it again.  This never
+  really worked before, but it is now explicitly undefined behavior.
+  Note that if g_type_init() was the only explicit use of a GObject
+  API and you are using linker flags such as --no-add-needed, then
+  you may have to artificially use some GObject call to keep the
+  linker from optimizing away -lgobject. We recommend to use
+  g_type_ensure (G_TYPE_OBJECT) for this purpose.
+
+* This release contains an incompatible change to the g_get_home_dir()
+  function.  Previously, this function would effectively ignore the HOME
+  environment variable and always return the value from /etc/password.
+  As of this version, the HOME variable is used if it is set and the
+  value from /etc/passwd is only used as a fallback.
+
+* The 'flowinfo' and 'scope_id' fields of GInetSocketAddress
+  (introduced in GLib 2.32) have been fixed to be in host byte order
+  rather than network byte order. This is an incompatible change, but
+  the previous behavior was clearly broken, so it seems unlikely that
+  anyone was using it.
+
+Notes about GLib 2.34
+=====================
+
+* GIO now looks for thumbnails in XDG_CACHE_HOME, following a
+  recent alignment of the thumbnail spec with the basedir spec.
+
+* The default values for GThreadPools max_unused_threads and
+  max_idle_time settings have been changed to 2 and 15*1000,
+  respectively.
+
+Notes about GLib 2.32
+=====================
+
+* It is no longer necessary to use g_thread_init() or to link against
+  libgthread.  libglib is now always thread-enabled. Custom thread
+  system implementations are no longer supported (including errorcheck
+  mutexes).
+
+* The thread and synchronisation APIs have been updated.
+  GMutex and GCond can be statically allocated without explicit
+  initialisation, as can new types GRWLock and GRecMutex.  The
+  GStatic_______ variants of these types have been deprecated.  GPrivate
+  can also be statically allocated and has a nicer API (deprecating
+  GStaticPrivate).  Finally, g_thread_create() has been replaced with a
+  substantially simplified g_thread_new().
+
+* The g_once_init_enter()/_leave() functions have been replaced with
+  macros that allow for a pointer to any gsize-sized object, not just a
+  gsize*.  The assertions to ensure that a pointer to a correctly-sized
+  object is being used will not work with generic pointers (ie: (void*)
+  and (gpointer) casts) which would have worked with the old version.
+
+* It is now mandatory to include glib.h instead of individual headers.
+
+* The -uninstalled variants of the pkg-config files have been dropped.
+
+* For a long time, gobject-2.0.pc mistakenly declared a public
+  dependency on gthread-2.0.pc (when the dependency should have been
+  private).  This means that programs got away with calling
+  g_thread_init() without explicitly listing gthread-2.0.pc among their
+  dependencies.
+
+  gthread has now been removed as a gobject dependency, which will cause
+  such programs to break.
+
+  The fix for this problem is either to declare an explicit dependency
+  on gthread-2.0.pc (if you care about compatibility with older GLib
+  versions) or to stop calling g_thread_init().
+
+* g_debug() output is no longer enabled by default.  It can be enabled
+  on a per-domain basis with the G_MESSAGES_DEBUG environment variable
+  like
+    G_MESSAGES_DEBUG=domain1,domain2
+  or
+    G_MESSAGES_DEBUG=all
+
+Notes about GLib 2.30
+=====================
+
+* GObject includes a generic marshaller, g_cclosure_marshal_generic.
+  To use it, simply specify NULL as the marshaller in g_signal_new().
+  The generic marshaller is implemented with libffi, and consequently
+  GObject depends on libffi now.
+
+Notes about GLib 2.28
+=====================
+
+* The GApplication API has changed compared to the version that was
+  included in the 2.25 development snapshots. Existing users will need
+  adjustments.
+
+Notes about GLib 2.26
+=====================
+
+* Nothing noteworthy.
+
+Notes about GLib 2.24
+=====================
+
+* It is now allowed to call g_thread_init(NULL) multiple times, and
+  to call glib functions before g_thread_init(NULL) is called
+  (although the later is mainly a change in docs as this worked before
+  too). See the GThread reference documentation for the details.
+
+* GObject now links to GThread and threads are enabled automatically
+  when g_type_init() is called.
+
+* GObject no longer allows to call g_object_set() on construct-only properties
+  while an object is being initialized. If this behavior is needed, setting a
+  custom constructor that just chains up will re-enable this functionality.
+
+* GMappedFile on an empty file now returns NULL for the contents instead of
+  returning an empty string. The documentation specifically states that code
+  may not rely on nul-termination here so any breakage caused by this change
+  is a bug in application code.
+
+Notes about GLib 2.22
+=====================
+
+* Repeated calls to g_simple_async_result_set_op_res_gpointer used
+  to leak the data. This has been fixed to always call the provided
+  destroy notify.
+
+Notes about GLib 2.20
+=====================
+
+* The functions for launching applications (e.g. g_app_info_launch() +
+  friends) now passes a FUSE file:// URI if possible (requires gvfs
+  with the FUSE daemon to be running and operational). With gvfs 2.26,
+  FUSE file:// URIs will be mapped back to gio URIs in the GFile
+  constructors. The intent of this change is to better integrate
+  POSIX-only applications, see bug #528670 for the rationale.  The
+  only user-visible change is when an application needs to examine an
+  URI passed to it (e.g. as a positional parameter). Instead of
+  looking at the given URI, the application will now need to look at
+  the result of g_file_get_uri() after having constructed a GFile
+  object with the given URI.
+
+Notes about GLib 2.18
+=====================
+
+* The recommended way of using GLib has always been to only include the
+  toplevel headers glib.h, glib-object.h and gio.h. GLib enforces this by
+  generating an error when individual headers are directly included.
+  To help with the transition, the enforcement is not turned on by
+  default for GLib headers (it is turned on for GObject and GIO).
+  To turn it on, define the preprocessor symbol G_DISABLE_SINGLE_INCLUDES.
+
+Notes about GLib 2.16
+=====================
+
+* GLib now includes GIO, which adds optional dependencies against libattr
+  and libselinux for extended attribute and SELinux support. Use
+  --disable-xattr and --disable-selinux to build without these.
+
+Notes about GLib 2.10
+=====================
+
+* The functions g_snprintf() and g_vsnprintf() have been removed from
+  the gprintf.h header, since they are already declared in glib.h. This
+  doesn't break documented use of gprintf.h, but people have been known
+  to include gprintf.h without including glib.h.
+
+* The Unicode support has been updated to Unicode 4.1. This adds several
+  new members to the GUnicodeBreakType enumeration.
+
+* The support for Solaris threads has been retired. Solaris has provided
+  POSIX threads for long enough now to have them available on every
+  Solaris platform.
+
+* 'make check' has been changed to validate translations by calling
+  msgfmt with the -c option. As a result, it may fail on systems with
+  older gettext implementations (GNU gettext < 0.14.1, or Solaris gettext).
+  'make check' will also fail on systems where the C compiler does not
+  support ELF visibility attributes.
+
+* The GMemChunk API has been deprecated in favour of a new 'slice
+  allocator'. See the g_slice documentation for more details.
+
+* A new type, GInitiallyUnowned, has been introduced, which is
+  intended to serve as a common implementation of the 'floating reference'
+  concept that is e.g. used by GtkObject. Note that changing the
+  inheritance hierarchy of a type can cause problems for language
+  bindings and other code which needs to work closely with the type
+  system. Therefore, switching to GInitiallyUnowned should be done
+  carefully. g_object_compat_control() has been added to GLib 2.8.5
+  to help with the transition.
+
+Notes about GLib 2.6.0
+======================
+
+* GLib 2.6 introduces the concept of 'GLib filename encoding', which is the
+  on-disk encoding on Unix, but UTF-8 on Windows. All GLib functions
+  returning or accepting pathnames have been changed to expect
+  filenames in this encoding, and the common POSIX functions dealing
+  with pathnames have been wrapped. These wrappers are declared in the
+  header <glib/gstdio.h> which must be included explicitly; it is not
+  included through <glib.h>.
+
+  On current (NT-based) Windows versions, where the on-disk file names
+  are Unicode, these wrappers use the wide-character API in the C
+  library. Thus applications can handle file names containing any
+  Unicode characters through GLib's own API and its POSIX wrappers,
+  not just file names restricted to characters in the system codepage.
+
+  To keep binary compatibility with applications compiled against
+  older versions of GLib, the Windows DLL still provides entry points
+  with the old semantics using the old names, and applications
+  compiled against GLib 2.6 will actually use new names for the
+  functions. This is transparent to the programmer.
+
+  When compiling against GLib 2.6, applications intended to be
+  portable to Windows must take the UTF-8 file name encoding into
+  consideration, and use the gstdio wrappers to access files whose
+  names have been constructed from strings returned from GLib.
+
+* Likewise, g_get_user_name() and g_get_real_name() have been changed
+  to return UTF-8 on Windows, while keeping the old semantics for
+  applications compiled against older versions of GLib.
+
+* The GLib uses an '_' prefix to indicate private symbols that
+  must not be used by applications. On some platforms, symbols beginning
+  with prefixes such as _g will be exported from the library, on others not.
+  In no case can applications use these private symbols. In addition to that,
+  GLib+ 2.6 makes several symbols private which were not in any installed
+  header files and were never intended to be exported.
+
+* To reduce code size and improve efficiency, GLib, when compiled
+  with the GNU toolchain, has separate internal and external entry
+  points for exported functions. The internal names, which begin with
+  IA__, may be seen when debugging a GLib program.
+
+* On Windows, GLib no longer opens a console window when printing
+  warning messages if stdout or stderr are invalid, as they are in
+  "Windows subsystem" (GUI) applications. Simply redirect stdout or
+  stderr if you need to see them.
+
+* The child watch functionality tends to reveal a bug in many
+  thread implementations (in particular the older LinuxThreads
+  implementation on Linux) where it's not possible to call waitpid()
+  for a child created in a different thread. For this reason, for
+  maximum portability, you should structure your code to fork all
+  child processes that you want to wait for from the main thread.
+
+* A problem was recently discovered with g_signal_connect_object();
+  it doesn't actually disconnect the signal handler once the object being
+  connected to dies, just disables it. See the API docs for the function
+  for further details and the correct workaround that will continue to
+  work with future versions of GLib.

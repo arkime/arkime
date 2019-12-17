@@ -1,0 +1,7 @@
+<schemalist>
+  <schema id="wrong-category" path="/tests/" gettext-domain="test">
+    <key name="test" type="s">
+      <default l10n="not-a-category">'foo'</default>
+    </key>
+  </schema>
+</schemalist>

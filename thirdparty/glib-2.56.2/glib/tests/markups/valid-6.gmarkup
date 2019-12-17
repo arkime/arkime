@@ -1,0 +1,4 @@
+<!DOCTYPE foo "foo" [
+<!ELEMENT foo ANY >
+]>
+<foo></foo>

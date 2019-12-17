@@ -1,0 +1,713 @@
+<?xml version='1.0' encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+]>
+<chapter id="chapter-gobject">
+  <title>The GObject base class</title>
+
+  <para>
+    The previous chapter discussed the details of GLib's Dynamic Type System.
+    The GObject library also contains an implementation for a base fundamental
+    type named <link linkend="GObject"><type>GObject</type></link>.
+  </para>
+
+  <para>
+    <link linkend="GObject"><type>GObject</type></link> is a fundamental classed instantiable type. It implements:
+    <itemizedlist>
+      <listitem><para>Memory management with reference counting</para></listitem>
+      <listitem><para>Construction/Destruction of instances</para></listitem>
+      <listitem><para>Generic per-object properties with set/get function pairs</para></listitem>
+      <listitem><para>Easy use of signals</para></listitem>
+    </itemizedlist>
+    All the GNOME libraries which use the GLib type system (like GTK+ and GStreamer)
+    inherit from <link linkend="GObject"><type>GObject</type></link> which is why it is important to understand
+    the details of how it works.
+  </para>
+
+  <sect1 id="gobject-instantiation">
+    <title>Object instantiation</title>
+
+    <para>
+      The <function><link linkend="g-object-new">g_object_new</link></function>
+      family of functions can be used to instantiate any GType which inherits
+      from the GObject base type. All these functions make sure the class and
+      instance structures have been correctly initialized by GLib's type system
+      and then invoke at one point or another the constructor class method
+      which is used to:
+      <itemizedlist>
+        <listitem><para>
+            Allocate and clear memory through <function><link linkend="g-type-create-instance">g_type_create_instance</link></function>,
+          </para></listitem>
+        <listitem><para>
+            Initialize the object's instance with the construction properties.
+          </para></listitem>
+      </itemizedlist>
+     Although one can expect all class and instance members (except the fields
+     pointing to the parents) to be set to zero, some consider it good practice
+     to explicitly set them.
+    </para>
+
+    <para>
+      Once all construction operations have been completed and constructor
+      properties set, the constructed class method is called.
+    </para>
+
+    <para>
+      Objects which inherit from GObject are allowed to override this
+      constructed class method.
+      The example below shows how <type>ViewerFile</type> overrides the parent's construction process:
+<informalexample><programlisting>
+#define VIEWER_TYPE_FILE viewer_file_get_type ()
+G_DECLARE_FINAL_TYPE (ViewerFile, viewer_file, VIEWER, FILE, GObject)
+
+struct _ViewerFile
+{
+  GObject parent_instance;
+
+  /* instance members */
+};
+
+/* will create viewer_file_get_type and set viewer_file_parent_class */
+G_DEFINE_TYPE (ViewerFile, viewer_file, G_TYPE_OBJECT)
+
+static void
+viewer_file_constructed (GObject *obj)
+{
+  /* update the object state depending on constructor properties */
+
+  /* Always chain up to the parent constructed function to complete object
+   * initialisation. */
+  G_OBJECT_CLASS (viewer_file_parent_class)-&gt;constructed (obj);
+}
+
+static void
+viewer_file_class_init (ViewerFileClass *klass)
+{
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+  object_class-&gt;constructed = viewer_file_constructed;
+}
+
+static void
+viewer_file_init (ViewerFile *self)
+{
+  /* initialize the object */
+}
+
+</programlisting></informalexample>
+      If the user instantiates an object <type>ViewerFile</type> with:
+<informalexample><programlisting>
+ViewerFile *file = g_object_new (VIEWER_TYPE_FILE, NULL);
+</programlisting></informalexample>        
+      If this is the first instantiation of such an object, the
+      <function>viewer_file_class_init</function> function will be invoked
+      after any <function>viewer_file_base_class_init</function> function.
+      This will make sure the class structure of this new object is
+      correctly initialized. Here, <function>viewer_file_class_init</function>
+      is expected to override the object's class methods and setup the
+      class' own methods. In the example above, the <literal>constructed</literal>
+      method is the only overridden method: it is set to
+      <function>viewer_file_constructed</function>.
+    </para>
+
+    <para>
+      Once <function><link linkend="g-object-new">g_object_new</link></function> has obtained a reference to an initialized
+      class structure, it invokes its constructor method to create an instance of the new 
+      object, if the constructor has been overridden in <function>viewer_file_class_init</function>.
+      Overridden constructors must chain up to their parent’s constructor. In
+      order to find the parent class and chain up to the parent class
+      constructor, we can use the <literal>viewer_file_parent_class</literal>
+      pointer that has been set up for us by the
+      <link linkend="G-DEFINE-TYPE:CAPS"><literal>G_DEFINE_TYPE</literal></link>
+      macro.
+    </para>
+
+    <para>
+      Finally, at one point or another, <function>g_object_constructor</function> is invoked
+      by the last constructor in the chain. This function allocates the object's instance buffer
+      through <function><link linkend="g-type-create-instance">g_type_create_instance</link></function>
+      which means that the <function>instance_init</function> function is invoked at this point if one
+      was registered. After <function>instance_init</function> returns, the object is fully initialized and should be 
+      ready to have its methods called by the user. When
+      <function><link linkend="g-type-create-instance">g_type_create_instance</link></function>
+      returns, <function>g_object_constructor</function> sets the construction properties
+      (i.e. the properties which were given to <function><link linkend="g-object-new">g_object_new</link></function>) and returns
+      to the user's constructor.
+    </para>
+
+    <para>
+      The process described above might seem a bit complicated, but it can be
+      summarized easily by the table below which lists the functions invoked
+      by <function><link linkend="g-object-new">g_object_new</link></function>
+      and their order of invocation:
+    </para>
+
+    <para>
+      <table id="gobject-construction-table">
+        <title><function><link linkend="g-object-new">g_object_new</link></function></title>
+        <tgroup cols="3">
+          <colspec colwidth="*" colnum="1" align="left"/>
+          <colspec colwidth="*" colnum="2" align="left"/>
+          <colspec colwidth="8*" colnum="3" align="left"/>
+
+          <thead>
+            <row>
+              <entry>Invocation time</entry>
+              <entry>Function invoked</entry>
+              <entry>Function's parameters</entry>
+              <entry>Remark</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry morerows="3">First call to <function><link linkend="g-object-new">g_object_new</link></function> for target type</entry>
+              <entry>target type's <function>base_init</function> function</entry>
+              <entry>On the inheritance tree of classes from fundamental type to target type. 
+                <function>base_init</function> is invoked once for each class structure.</entry>
+              <entry>Never used in practice. Unlikely you will need it.</entry>
+            </row>
+            <row>
+              <!--entry>First call to <function><link linkend="g-object-new">g_object_new</link></function> for target type</entry-->
+              <entry>target type's <function>class_init</function> function</entry>
+              <entry>On target type's class structure</entry>
+              <entry>
+                Here, you should make sure to initialize or override class methods (that is,
+                assign to each class' method its function pointer) and create the signals and
+                the properties associated to your object.
+              </entry>
+            </row>
+            <row>
+              <!--entry>First call to <function><link linkend="g-object-new">g_object_new</link></function> for target type</entry-->
+              <entry>interface's <function>base_init</function> function</entry>
+              <entry>On interface's vtable</entry>
+              <entry></entry>
+            </row>
+            <row>
+              <!--entry>First call to <function><link linkend="g-object-new">g_object_new</link></function> for target type</entry-->
+              <entry>interface's <function>interface_init</function> function</entry>
+              <entry>On interface's vtable</entry>
+              <entry></entry>
+            </row>
+            <row>
+              <entry morerows="2">Each call to <function><link linkend="g-object-new">g_object_new</link></function> for target type</entry>
+              <entry>target type's class <function>constructor</function> method: <function>GObjectClass->constructor</function></entry>
+              <entry>On object's instance</entry>
+              <entry>
+                If you need to handle construct properties in a custom way, or implement a singleton class, override the constructor
+                method and make sure to chain up to the object's
+                parent class before doing your own initialization.
+                In doubt, do not override the constructor method.
+              </entry>
+            </row>
+            <row>
+              <!--entry>Each call to <function><link linkend="g-object-new">g_object_new</link></function> for target type</entry-->
+              <entry>type's <function>instance_init</function> function</entry>
+              <entry>On the inheritance tree of classes from fundamental type to target type. 
+              the <function>instance_init</function> provided for each type is invoked once for each instance 
+              structure.</entry>
+              <entry>
+                Provide an <function>instance_init</function> function to initialize your object before its construction
+                properties are set. This is the preferred way to initialize a GObject instance.
+                This function is equivalent to C++ constructors.
+              </entry>
+            </row>
+            <row>
+              <!--entry>Each call to <function><link linkend="g-object-new">g_object_new</link></function> for target type</entry-->
+              <entry>target type's class <function>constructed</function> method: <function>GObjectClass->constructed</function></entry>
+              <entry>On object's instance</entry>
+              <entry>
+                If you need to perform object initialization steps after all construct properties have been set.
+                This is the final step in the object initialization process, and is only called if the <function>constructor</function>
+                method returned a new object instance (rather than, for example, an existing singleton).
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </para>
+
+    <para>
+      Readers should feel concerned about one little twist in the order in
+      which functions are invoked: while, technically, the class' constructor
+      method is called <emphasis>before</emphasis> the GType's <function>instance_init</function>
+      function (since <function><link linkend="g-type-create-instance">g_type_create_instance</link></function> which calls <function>instance_init</function> is called by
+      <function>g_object_constructor</function> which is the top-level class 
+      constructor method and to which users are expected to chain to), the
+      user's code which runs in a user-provided constructor will always
+      run <emphasis>after</emphasis> GType's <function>instance_init</function> function since the
+      user-provided constructor <emphasis>must</emphasis> (you've been warned)
+      chain up <emphasis>before</emphasis> doing anything useful.
+    </para>
+  </sect1>
+
+  <sect1 id="gobject-memory">
+    <title>Object memory management</title>
+
+    <para>
+      The memory-management API for GObjects is a bit complicated but the idea behind it
+      is pretty simple: the goal is to provide a flexible model based on reference counting
+      which can be integrated in applications which use or require different memory management
+      models (such as garbage collection). The methods which are used to
+      manipulate this reference count are described below.
+    </para>
+
+    <sect2 id="gobject-memory-refcount">
+      <title>Reference count</title>
+
+      <para>
+        The functions <function><link linkend="g-object-ref">g_object_ref</link></function>/<function><link linkend="g-object-unref">g_object_unref</link></function> respectively 
+        increase and decrease the reference count. These functions are
+        thread-safe.
+        <function><link linkend="g-clear-object">g_clear_object</link></function>
+        is a convenience wrapper around <function>g_object_unref</function>
+        which also clears the pointer passed to it.
+      </para>
+      <para>
+        The reference count is initialized to one by 
+        <function><link linkend="g-object-new">g_object_new</link></function> which means that the caller
+        is currently the sole owner of the newly-created reference.
+        When the reference count reaches zero, that is, 
+        when <function><link linkend="g-object-unref">g_object_unref</link></function> is called by the last client holding
+        a reference to the object, the <emphasis>dispose</emphasis> and the 
+        <emphasis>finalize</emphasis> class methods are invoked.
+      </para>
+      <para>
+        Finally, after <emphasis>finalize</emphasis> is invoked, 
+        <function><link linkend="g-type-free-instance">g_type_free_instance</link></function> is called to free the object instance.
+        Depending on the memory allocation policy decided when the type was registered (through
+        one of the <function>g_type_register_*</function> functions), the object's instance 
+        memory will be freed or returned to the object pool for this type.
+        Once the object has been freed, if it was the last instance of the type, the type's class
+        will be destroyed as described in <xref linkend="gtype-instantiable-classed"/> and 
+          <xref linkend="gtype-non-instantiable-classed"/>.
+      </para>
+
+      <para>
+        The table below summarizes the destruction process of a GObject:
+        <table id="gobject-destruction-table">
+          <title><function><link linkend="g-object-unref">g_object_unref</link></function></title>
+          <tgroup cols="3">
+            <colspec colwidth="*" colnum="1" align="left"/>
+            <colspec colwidth="*" colnum="2" align="left"/>
+            <colspec colwidth="8*" colnum="3" align="left"/>
+
+            <thead>
+              <row>
+                <entry>Invocation time</entry>
+                <entry>Function invoked</entry>
+                <entry>Function's parameters</entry>
+                <entry>Remark</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry morerows="1">Last call to <function><link linkend="g-object-unref">g_object_unref</link></function> for an instance
+                  of target type
+                 </entry>
+                <entry>target type's dispose class function</entry>
+                <entry>GObject instance</entry>
+                <entry>
+                  When dispose ends, the object should not hold any reference to any other
+                  member object. The object is also expected to be able to answer client
+                  method invocations (with possibly an error code but no memory violation)
+                  until finalize is executed. dispose can be executed more than once.
+                dispose should chain up to its parent implementation just before returning
+                to the caller.
+                </entry>
+              </row>
+              <row>
+                <!--entry>Last call to <function><link linkend="g-object-unref">g_object_unref</link></function> for an instance
+                  of target type
+                </entry-->
+                <entry>target type's finalize class function</entry>
+                <entry>GObject instance</entry>
+                <entry>
+                  Finalize is expected to complete the destruction process initiated by
+                  dispose. It should complete the object's destruction. finalize will be
+                  executed only once.
+                finalize should chain up to its parent implementation just before returning
+                to the caller.
+                  The reason why the destruction process is split is two different phases is
+                  explained in <xref linkend="gobject-memory-cycles"/>.
+                </entry>
+              </row>
+              <row>
+                <entry morerows="3">Last call to <function><link linkend="g-object-unref">g_object_unref</link></function> for the last
+                  instance of target type
+                 </entry>
+                <entry>interface's <function>interface_finalize</function> function</entry>
+                <entry>On interface's vtable</entry>
+                <entry>Never used in practice. Unlikely you will need it.</entry>
+              </row>
+              <row>
+                <!--entry>Last call to <function><link linkend="g-object-unref">g_object_unref</link></function>for the last
+                  instance of target type
+                 </entry-->
+                <entry>interface's <function>base_finalize</function> function</entry>
+                <entry>On interface's vtable</entry>
+                <entry>Never used in practice. Unlikely you will need it.</entry>
+              </row>
+              <row>
+                <!--entry>Last call to <function><link linkend="g-object-unref">g_object_unref</link></function> for the last
+                  instance of target type
+                 </entry-->
+                <entry>target type's <function>class_finalize</function> function</entry>
+                <entry>On target type's class structure</entry>
+                <entry>Never used in practice. Unlikely you will need it.</entry>
+              </row>
+              <row>
+                <!--entry>Last call to <function><link linkend="g-object-unref">g_object_unref</link></function> for the last
+                  instance of target type
+                 </entry-->
+                <entry>type's <function>base_finalize</function> function</entry>
+                <entry>On the inheritance tree of classes from fundamental type to target type.
+                  <function>base_init</function> is invoked once for each class structure.</entry>
+                <entry>Never used in practice. Unlikely you will need it.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>                
+      </para>
+
+    </sect2>
+
+    <sect2 id="gobject-memory-weakref">
+      <title>Weak References</title>
+    
+      <para>
+      Weak references are used to monitor object finalization:
+      <function><link linkend="g-object-weak-ref">g_object_weak_ref</link></function> adds a monitoring callback which does
+      not hold a reference to the object but which is invoked when the object runs 
+      its dispose method. As such, each weak ref can be invoked more than once upon
+      object finalization (since dispose can run more than once during object 
+      finalization).
+      </para>
+
+      <para>
+        <function><link linkend="g-object-weak-unref">g_object_weak_unref</link></function> can be used to remove a monitoring
+        callback from the object. 
+      </para>
+  
+      <para>
+        Weak references are also used to implement <function><link linkend="g-object-add-weak-pointer">g_object_add_weak_pointer</link></function>
+        and <function><link linkend="g-object-remove-weak-pointer">g_object_remove_weak_pointer</link></function>. These functions add a weak reference
+        to the object they are applied to which makes sure to nullify the pointer given by the user
+        when object is finalized.
+      </para>
+
+      <para>
+        Similarly, <link linkend="GWeakRef"><type>GWeakRef</type></link> can be
+        used to implement weak references if thread safety is required.
+      </para>
+    </sect2>
+  
+    <sect2 id="gobject-memory-cycles">
+      <title>Reference counts and cycles</title>
+
+      <para>
+        GObject's memory management model was designed to be easily integrated in existing code
+        using garbage collection. This is why the destruction process is split in two phases:
+        the first phase, executed in the dispose handler is supposed to release all references
+        to other member objects. The second phase, executed by the finalize handler is supposed
+        to complete the object's destruction process. Object methods should be able to run
+        without program error in-between the two phases.
+      </para>
+  
+      <para>
+        This two-step destruction process is very useful to break reference counting cycles.
+        While the detection of the cycles is up to the external code, once the cycles have been
+        detected, the external code can invoke <function><link linkend="g-object-run-dispose">g_object_run_dispose</link></function> which 
+        will indeed break any existing cycles since it will run the dispose handler associated
+        to the object and thus release all references to other objects.
+      </para>
+  
+      <para>
+        This explains one of the rules about the dispose handler stated earlier:
+        the dispose handler can be invoked multiple times. Let's say we
+        have a reference count cycle: object A references B which itself references object A.
+        Let's say we have detected the cycle and we want to destroy the two objects. One way to 
+        do this would be to invoke <function><link linkend="g-object-run-dispose">g_object_run_dispose</link></function> on one of the 
+        objects.
+      </para>
+  
+      <para>
+        If object A releases all its references to all objects, this means it releases its
+        reference to object B. If object B was not owned by anyone else, this is its last
+        reference count which means this last unref runs B's dispose handler which, in turn,
+        releases B's reference on object A. If this is A's last reference count, this last 
+        unref runs A's dispose handler which is running for the second time before
+        A's finalize handler is invoked !
+      </para>
+  
+      <para>
+        The above example, which might seem a bit contrived, can really happen if
+        GObjects are being handled by language bindings — hence the rules for
+        object destruction should be closely followed.
+      </para>
+    </sect2>
+  </sect1>
+
+  <sect1 id="gobject-properties">
+    <title>Object properties</title>
+  
+    <para>
+      One of GObject's nice features is its generic get/set mechanism for object
+      properties. When an object
+      is instantiated, the object's <function>class_init</function> handler should be used to register
+      the object's properties with <function><link linkend="g-object-class-install-properties">g_object_class_install_properties</link></function>.
+    </para>
+  
+    <para>
+      The best way to understand how object properties work is by looking at a real example
+      of how it is used:
+<informalexample><programlisting>
+/************************************************/
+/* Implementation                               */
+/************************************************/
+
+enum
+{
+  PROP_FILENAME = 1,
+  PROP_ZOOM_LEVEL,
+  N_PROPERTIES
+};
+
+static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
+
+static void
+viewer_file_set_property (GObject      *object,
+                          guint         property_id,
+                          const GValue *value,
+                          GParamSpec   *pspec)
+{
+  ViewerFile *self = VIEWER_FILE (object);
+
+  switch (property_id)
+    {
+    case PROP_FILENAME:
+      g_free (self-&gt;priv-&gt;filename);
+      self-&gt;priv-&gt;filename = g_value_dup_string (value);
+      g_print ("filename: %s\n", self-&gt;priv-&gt;filename);
+      break;
+
+    case PROP_ZOOM_LEVEL:
+      self-&gt;priv-&gt;zoom_level = g_value_get_uint (value);
+      g_print ("zoom level: &percnt;u\n", self-&gt;priv-&gt;zoom_level);
+      break;
+
+    default:
+      /* We don't have any other property... */
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+    }
+}
+
+static void
+viewer_file_get_property (GObject    *object,
+                          guint       property_id,
+                          GValue     *value,
+                          GParamSpec *pspec)
+{
+  ViewerFile *self = VIEWER_FILE (object);
+
+  switch (property_id)
+    {
+    case PROP_FILENAME:
+      g_value_set_string (value, self-&gt;priv-&gt;filename);
+      break;
+
+    case PROP_ZOOM_LEVEL:
+      g_value_set_uint (value, self-&gt;priv-&gt;zoom_level);
+      break;
+
+    default:
+      /* We don't have any other property... */
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+    }
+}
+
+static void
+viewer_file_class_init (ViewerFileClass *klass)
+{
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+  object_class-&gt;set_property = viewer_file_set_property;
+  object_class-&gt;get_property = viewer_file_get_property;
+
+  obj_properties[PROP_FILENAME] =
+    g_param_spec_string ("filename",
+                         "Filename",
+                         "Name of the file to load and display from.",
+                         NULL  /* default value */,
+                         G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
+
+  obj_properties[PROP_ZOOM_LEVEL] =
+    g_param_spec_uint ("zoom-level",
+                       "Zoom level",
+                       "Zoom level to view the file at.",
+                       0  /* minimum value */,
+                       10 /* maximum value */,
+                       2  /* default value */,
+                       G_PARAM_READWRITE));
+
+  g_object_class_install_properties (object_class,
+                                     N_PROPERTIES,
+                                     obj_properties);
+}
+
+/************************************************/
+/* Use                                          */
+/************************************************/
+
+ViewerFile *file;
+GValue val = G_VALUE_INIT;
+
+file = g_object_new (VIEWER_TYPE_FILE, NULL);
+
+g_value_init (&amp;val, G_TYPE_UINT);
+g_value_set_char (&amp;val, 11);
+
+g_object_set_property (G_OBJECT (file), "zoom-level", &amp;val);
+
+g_value_unset (&amp;val);
+</programlisting></informalexample>
+      The client code above looks simple but a lot of things happen under the hood:
+    </para>
+  
+    <para>
+      <function><link linkend="g-object-set-property">g_object_set_property</link></function> first ensures a property
+      with this name was registered in <emphasis>file</emphasis>'s <function>class_init</function> handler. If so it walks the class hierarchy,
+      from bottom-most most-derived type, to top-most fundamental type to find the class
+      which registered that property. It then tries to convert the user-provided
+      <link linkend="GValue"><type>GValue</type></link>
+      into a <type>GValue</type> whose type is that of the associated property.
+    </para>
+
+    <para>
+      If the user provides a <type>signed char</type> <type>GValue</type>, as is shown
+      here, and if the object's property was registered as an <type>unsigned int</type>,
+      <function><link linkend="g-value-transform">g_value_transform</link></function> will try to transform the input signed char into
+      an unsigned int. Of course, the success of the transformation depends on the availability
+      of the required transform function. In practice, there will almost always be a transformation
+      <footnote>
+        <para>Its behaviour might not be what you expect but it is up to you to actually avoid
+          relying on these transformations.
+        </para>
+      </footnote>
+      which matches and conversion will be carried out if needed.
+    </para>
+  
+    <para>
+      After transformation, the <link linkend="GValue"><type>GValue</type></link> is validated by 
+      <function><link linkend="g-param-value-validate">g_param_value_validate</link></function> which makes sure the user's
+      data stored in the <link linkend="GValue"><type>GValue</type></link> matches the characteristics specified by
+      the property's <link linkend="GParamSpec"><type>GParamSpec</type></link>.
+      Here, the <link linkend="GParamSpec"><type>GParamSpec</type></link> we 
+      provided in <function>class_init</function> has a validation function which makes sure that the GValue
+      contains a value which respects the minimum and maximum bounds of the 
+      <link linkend="GParamSpec"><type>GParamSpec</type></link>. In the example above, the client's GValue does not
+      respect these constraints (it is set to 11, while the maximum is 10). As such, the
+      <function><link linkend="g-object-set-property">g_object_set_property</link></function> function will return with an error.
+    </para>
+  
+    <para>
+      If the user's GValue had been set to a valid value, <function><link linkend="g-object-set-property">g_object_set_property</link></function>
+      would have proceeded with calling the object's
+      <function>set_property</function> class method. Here, since our
+      implementation of <type>ViewerFile</type> did override this method, execution would jump to
+      <function>viewer_file_set_property</function> after having retrieved from the 
+      <link linkend="GParamSpec"><type>GParamSpec</type></link> the <emphasis>param_id</emphasis>
+      <footnote>
+        <para>
+          It should be noted that the param_id used here need only to uniquely identify each 
+          <link linkend="GParamSpec"><type>GParamSpec</type></link> within the <type>ViewerFileClass</type> such that the switch
+          used in the set and get methods actually works. Of course, this locally-unique 
+          integer is purely an optimization: it would have been possible to use a set of 
+          <emphasis>if (strcmp (a, b) == 0) {} else if (strcmp (a, b) == 0) {}</emphasis> statements.
+        </para>
+      </footnote>
+      which had been stored by
+      <function><link linkend="g-object-class-install-property">g_object_class_install_property</link></function>.
+    </para>
+  
+    <para>
+      Once the property has been set by the object's
+      <function>set_property</function> class method, execution
+      returns to <function><link linkend="g-object-set-property">g_object_set_property</link></function> which makes sure that
+      the "notify" signal is emitted on the object's instance with the changed property as
+      parameter unless notifications were frozen by <function><link linkend="g-object-freeze-notify">g_object_freeze_notify</link></function>.
+    </para>
+  
+    <para>
+      <function><link linkend="g-object-thaw-notify">g_object_thaw_notify</link></function> can be used to re-enable notification of 
+      property modifications through the
+      <link linkend="GObject-notify"><type>“notify”</type></link> signal. It is important to remember that
+      even if properties are changed while property change notification is frozen, the "notify"
+      signal will be emitted once for each of these changed properties as soon as the property
+      change notification is thawed: no property change is lost for the "notify"
+      signal, although multiple notifications for a single property are
+      compressed. Signals can only be delayed by the notification freezing
+      mechanism.
+    </para>
+    
+    <para>
+      It sounds like a tedious task to set up GValues every time when one wants to modify a property.
+      In practice one will rarely do this. The functions <function><link linkend="g-object-set-property">g_object_set_property</link></function>
+      and <function><link linkend="g-object-get-property">g_object_get_property</link></function>
+      are meant to be used by language bindings. For application there is an easier way and
+      that is described next.
+    </para>
+
+    <sect2 id="gobject-multi-properties">
+      <title>Accessing multiple properties at once</title>
+  
+      <para>
+        It is interesting to note that the <function><link linkend="g-object-set">g_object_set</link></function> and 
+        <function><link linkend="g-object-set-valist">g_object_set_valist</link></function> (variadic version) functions can be used to set
+        multiple properties at once. The client code shown above can then be re-written as:
+<informalexample><programlisting>
+ViewerFile *file;
+file = /* */;
+g_object_set (G_OBJECT (file),
+              "zoom-level", 6, 
+              "filename", "~/some-file.txt", 
+              NULL);
+</programlisting></informalexample>
+        This saves us from managing the GValues that we were needing to handle when using
+        <function><link linkend="g-object-set-property">g_object_set_property</link></function>.
+        The code above will trigger one notify signal emission for each property modified.
+      </para>
+    
+      <para>
+        Equivalent <function>_get</function> versions are also available:
+        <function><link linkend="g-object-get">g_object_get</link></function>
+        and <function><link linkend="g-object-get-valist">g_object_get_valist</link></function> (variadic version) can be used to get numerous
+        properties at once.
+      </para>
+      
+      <para>
+        These high level functions have one drawback — they don't provide a return value.
+        One should pay attention to the argument types and ranges when using them.
+        A known source of errors is to pass a different type from what the
+        property expects; for instance, passing an integer when the property
+        expects a floating point value and thus shifting all subsequent parameters
+        by some number of bytes. Also forgetting the terminating
+        <literal>NULL</literal> will lead to undefined behaviour.
+      </para>
+    
+      <para>
+        This explains how <function><link linkend="g-object-new">g_object_new</link></function>,
+        <function><link linkend="g-object-newv">g_object_newv</link></function> and <function><link linkend="g-object-new-valist">g_object_new_valist</link></function> 
+        work: they parse the user-provided variable number of parameters and invoke
+        <function><link linkend="g-object-set">g_object_set</link></function> on the parameters only after the object has been successfully constructed.
+        The "notify" signal will be emitted for each property set.
+      </para>
+    
+    </sect2>
+
+<!-- @todo tell here about how to pass use handle properties in derived classes -->
+
+  </sect1>
+
+</chapter>

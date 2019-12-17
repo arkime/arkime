@@ -1,0 +1,7 @@
+<schemalist>
+  <schema id='org.gtk.test.schema'>
+    <key name='test' type='s'>
+      <aliases/>
+    </key>
+  </schema>
+</schemalist>

@@ -1,0 +1,1348 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Character Set Conversion: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-utilities.html" title="GLib Utilities">
+<link rel="prev" href="glib-String-Utility-Functions.html" title="String Utility Functions">
+<link rel="next" href="glib-Unicode-Manipulation.html" title="Unicode Manipulation">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-Character-Set-Conversion.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-utilities.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-String-Utility-Functions.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-Unicode-Manipulation.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Character-Set-Conversion"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Character-Set-Conversion.top_of_page"></a>Character Set Conversion</span></h2>
+<p>Character Set Conversion — convert strings between different character sets</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-Character-Set-Conversion.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Character-Set-Conversion.html#g-convert" title="g_convert ()">g_convert</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Character-Set-Conversion.html#g-convert-with-fallback" title="g_convert_with_fallback ()">g_convert_with_fallback</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Character-Set-Conversion.html#g-convert-with-iconv" title="g_convert_with_iconv ()">g_convert_with_iconv</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Character-Set-Conversion.html#GIConv" title="GIConv"><span class="returnvalue">GIConv</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Character-Set-Conversion.html#g-iconv-open" title="g_iconv_open ()">g_iconv_open</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Character-Set-Conversion.html#g-iconv" title="g_iconv ()">g_iconv</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Character-Set-Conversion.html#g-iconv-close" title="g_iconv_close ()">g_iconv_close</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Character-Set-Conversion.html#g-locale-to-utf8" title="g_locale_to_utf8 ()">g_locale_to_utf8</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Character-Set-Conversion.html#g-filename-to-utf8" title="g_filename_to_utf8 ()">g_filename_to_utf8</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Character-Set-Conversion.html#g-filename-from-utf8" title="g_filename_from_utf8 ()">g_filename_from_utf8</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Character-Set-Conversion.html#g-get-filename-charsets" title="g_get_filename_charsets ()">g_get_filename_charsets</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Character-Set-Conversion.html#g-filename-display-name" title="g_filename_display_name ()">g_filename_display_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Character-Set-Conversion.html#g-filename-display-basename" title="g_filename_display_basename ()">g_filename_display_basename</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Character-Set-Conversion.html#g-locale-from-utf8" title="g_locale_from_utf8 ()">g_locale_from_utf8</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Character-Set-Conversion.html#g-get-charset" title="g_get_charset ()">g_get_charset</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Character-Set-Conversion.html#g-get-codeset" title="g_get_codeset ()">g_get_codeset</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Character-Set-Conversion.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="glib-Character-Set-Conversion.html#GIConv" title="GIConv">GIConv</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Character-Set-Conversion.html#G-CONVERT-ERROR:CAPS" title="G_CONVERT_ERROR">G_CONVERT_ERROR</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="glib-Character-Set-Conversion.html#GConvertError" title="enum GConvertError">GConvertError</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Character-Set-Conversion.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gmodule.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Character-Set-Conversion.description"></a><h2>Description</h2>
+<p>The <a class="link" href="glib-Character-Set-Conversion.html#g-convert" title="g_convert ()"><code class="function">g_convert()</code></a> family of function wraps the functionality of <code class="function">iconv()</code>.
+In addition to pure character set conversions, GLib has functions to
+deal with the extra complications of encodings for file names.</p>
+<div class="refsect3">
+<a name="id-1.5.3.6.3"></a><h4>File Name Encodings</h4>
+<p>Historically, UNIX has not had a defined encoding for file names:
+a file name is valid as long as it does not have path separators
+in it ("/"). However, displaying file names may require conversion:
+from the character set in which they were created, to the character
+set in which the application operates. Consider the Spanish file name
+"Presentación.sxi". If the application which created it uses
+ISO-8859-1 for its encoding,</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal">Character</span><span class="symbol">:</span><span class="normal">  P  r  e  s  e  n  t  a  c  i  ó  n  </span><span class="symbol">.</span><span class="normal">  s  x  i</span>
+<span class="usertype">Hex</span><span class="normal"> code</span><span class="symbol">:</span><span class="normal">   </span><span class="number">50</span><span class="normal"> </span><span class="number">72</span><span class="normal"> </span><span class="number">65</span><span class="normal"> </span><span class="number">73</span><span class="normal"> </span><span class="number">65</span><span class="normal"> 6e </span><span class="number">74</span><span class="normal"> </span><span class="number">61</span><span class="normal"> </span><span class="number">63</span><span class="normal"> </span><span class="number">69</span><span class="normal"> f3 6e 2e </span><span class="number">73</span><span class="normal"> </span><span class="number">78</span><span class="normal"> </span><span class="number">69</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+However, if the application use UTF-8, the actual file name on
+disk would look like this:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal">Character</span><span class="symbol">:</span><span class="normal">  P  r  e  s  e  n  t  a  c  i  ó     n  </span><span class="symbol">.</span><span class="normal">  s  x  i</span>
+<span class="usertype">Hex</span><span class="normal"> code</span><span class="symbol">:</span><span class="normal">   </span><span class="number">50</span><span class="normal"> </span><span class="number">72</span><span class="normal"> </span><span class="number">65</span><span class="normal"> </span><span class="number">73</span><span class="normal"> </span><span class="number">65</span><span class="normal"> 6e </span><span class="number">74</span><span class="normal"> </span><span class="number">61</span><span class="normal"> </span><span class="number">63</span><span class="normal"> </span><span class="number">69</span><span class="normal"> c3 b3 6e 2e </span><span class="number">73</span><span class="normal"> </span><span class="number">78</span><span class="normal"> </span><span class="number">69</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+Glib uses UTF-8 for its strings, and GUI toolkits like GTK+ that use
+GLib do the same thing. If you get a file name from the file system,
+for example, from <code class="function">readdir()</code> or from <a class="link" href="glib-File-Utilities.html#g-dir-read-name" title="g_dir_read_name ()"><code class="function">g_dir_read_name()</code></a>, and you wish
+to display the file name to the user, you  will need to convert it
+into UTF-8. The opposite case is when the user types the name of a
+file they wish to save: the toolkit will give you that string in
+UTF-8 encoding, and you will need to convert it to the character
+set used for file names before you can create the file with <code class="function">open()</code>
+or <code class="function">fopen()</code>.</p>
+<p>By default, GLib assumes that file names on disk are in UTF-8
+encoding. This is a valid assumption for file systems which
+were created relatively recently: most applications use UTF-8
+encoding for their strings, and that is also what they use for
+the file names they create. However, older file systems may
+still contain file names created in "older" encodings, such as
+ISO-8859-1. In this case, for compatibility reasons, you may want
+to instruct GLib to use that particular encoding for file names
+rather than UTF-8. You can do this by specifying the encoding for
+file names in the <a class="link" href="glib-running.html#G_FILENAME_ENCODING" title="G_FILENAME_ENCODING"><code class="literal">G_FILENAME_ENCODING</code></a>
+environment variable. For example, if your installation uses
+ISO-8859-1 for file names, you can put this in your <code class="literal">~/.profile</code>:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">export</span><span class="normal"> G_FILENAME_ENCODING</span><span class="symbol">=</span><span class="normal">ISO</span><span class="symbol">-</span><span class="number">8859</span><span class="symbol">-</span><span class="number">1</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+GLib provides the functions <a class="link" href="glib-Character-Set-Conversion.html#g-filename-to-utf8" title="g_filename_to_utf8 ()"><code class="function">g_filename_to_utf8()</code></a> and
+<a class="link" href="glib-Character-Set-Conversion.html#g-filename-from-utf8" title="g_filename_from_utf8 ()"><code class="function">g_filename_from_utf8()</code></a> to perform the necessary conversions.
+These functions convert file names from the encoding specified
+in <code class="literal">G_FILENAME_ENCODING</code> to UTF-8 and vice-versa. This
+diagram illustrates how
+these functions are used to convert between UTF-8 and the
+encoding for file names in the file system.</p>
+</div>
+<div class="refsect3">
+<a name="id-1.5.3.6.4"></a><h4>Conversion between file name encodings # {<span class="type">file-name-encodings-diagram</span>)</h4>
+<p><span class="inlinemediaobject"><img src="file-name-encodings.png"></span></p>
+</div>
+<div class="refsect3">
+<a name="id-1.5.3.6.5"></a><h4>Checklist for Application Writers</h4>
+<p>This section is a practical summary of the detailed
+things to do to make sure your applications process file
+name encodings correctly.</p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem"><p>If you get a file name from the file system from a function
+such as <code class="function">readdir()</code> or <code class="function">gtk_file_chooser_get_filename()</code>, you do
+not need to do any conversion to pass that file name to
+functions like <code class="function">open()</code>, <code class="function">rename()</code>, or <code class="function">fopen()</code> -- those are "raw"
+file names which the file system understands.</p></li>
+<li class="listitem">
+<p>If you need to display a file name, convert it to UTF-8 first
+by using <a class="link" href="glib-Character-Set-Conversion.html#g-filename-to-utf8" title="g_filename_to_utf8 ()"><code class="function">g_filename_to_utf8()</code></a>. If conversion fails, display a
+string like "Unknown file name". Do not convert this string back
+into the encoding used for file names if you wish to pass it to
+the file system; use the original file name instead.</p>
+<p>For example, the document window of a word processor could display
+"Unknown file name" in its title bar but still let the user save
+the file, as it would keep the raw file name internally. This
+can happen if the user has not set the <code class="literal">G_FILENAME_ENCODING</code>
+environment variable even though he has files whose names are
+not encoded in UTF-8.</p>
+</li>
+<li class="listitem"><p>If your user interface lets the user type a file name for saving
+or renaming, convert it to the encoding used for file names in
+the file system by using <a class="link" href="glib-Character-Set-Conversion.html#g-filename-from-utf8" title="g_filename_from_utf8 ()"><code class="function">g_filename_from_utf8()</code></a>. Pass the converted
+file name to functions like <code class="function">fopen()</code>. If conversion fails, ask the
+user to enter a different file name. This can happen if the user
+types Japanese characters when <code class="literal">G_FILENAME_ENCODING</code> is set to
+<code class="literal">ISO-8859-1</code>, for example.</p></li>
+</ol></div>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Character-Set-Conversion.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-convert"></a><h3>g_convert ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_convert (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *str</code></em>,
+           <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> len</code></em>,
+           <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *to_codeset</code></em>,
+           <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *from_codeset</code></em>,
+           <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *bytes_read</code></em>,
+           <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *bytes_written</code></em>,
+           <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Converts a string from one character set to another.</p>
+<p>Note that you should use <a class="link" href="glib-Character-Set-Conversion.html#g-iconv" title="g_iconv ()"><code class="function">g_iconv()</code></a> for streaming conversions. 
+Despite the fact that <em class="parameter"><code>bytes_read</code></em>
+ can return information about partial
+characters, the g_convert_... functions are not generally suitable
+for streaming. If the underlying converter maintains internal state,
+then this won't be preserved across successive calls to <a class="link" href="glib-Character-Set-Conversion.html#g-convert" title="g_convert ()"><code class="function">g_convert()</code></a>,
+<a class="link" href="glib-Character-Set-Conversion.html#g-convert-with-iconv" title="g_convert_with_iconv ()"><code class="function">g_convert_with_iconv()</code></a> or <a class="link" href="glib-Character-Set-Conversion.html#g-convert-with-fallback" title="g_convert_with_fallback ()"><code class="function">g_convert_with_fallback()</code></a>. (An example of
+this is the GNU C converter for CP1255 which does not emit a base
+character until it knows that the next character is not a mark that
+could combine with the base character.)</p>
+<p>Using extensions such as "//TRANSLIT" may not work (or may not work
+well) on many platforms.  Consider using <a class="link" href="glib-String-Utility-Functions.html#g-str-to-ascii" title="g_str_to_ascii ()"><code class="function">g_str_to_ascii()</code></a> instead.</p>
+<div class="refsect3">
+<a name="g-convert.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>str</p></td>
+<td class="parameter_description"><p>the string to convert. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=len][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>len</p></td>
+<td class="parameter_description"><p>the length of the string in bytes, or -1 if the string is
+nul-terminated (Note that some encodings may allow nul
+bytes to occur inside strings. In that case, using -1
+for the <em class="parameter"><code>len</code></em>
+parameter is unsafe)</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>to_codeset</p></td>
+<td class="parameter_description"><p>name of character set into which to convert <em class="parameter"><code>str</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>from_codeset</p></td>
+<td class="parameter_description"><p>character set of <em class="parameter"><code>str</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_read</p></td>
+<td class="parameter_description"><p>location to store the number of bytes in
+the input string that were successfully converted, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>.
+Even if the conversion was successful, this may be
+less than <em class="parameter"><code>len</code></em>
+if there were partial characters
+at the end of the input. If the error
+<a class="link" href="glib-Character-Set-Conversion.html#G-CONVERT-ERROR-ILLEGAL-SEQUENCE:CAPS"><span class="type">G_CONVERT_ERROR_ILLEGAL_SEQUENCE</span></a> occurs, the value
+stored will be the byte offset after the last valid
+input sequence. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_written</p></td>
+<td class="parameter_description"><p>the number of bytes stored in
+the output buffer (not including the terminating nul). </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location to store the error occurring, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> to ignore
+errors. Any of the errors in <a class="link" href="glib-Character-Set-Conversion.html#GConvertError" title="enum GConvertError"><span class="type">GConvertError</span></a> may occur.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-convert.returns"></a><h4>Returns</h4>
+<p>If the conversion was successful, a newly allocated buffer
+containing the converted string, which must be freed with <a class="link" href="glib-Memory-Allocation.html#g-free" title="g_free ()"><code class="function">g_free()</code></a>.
+Otherwise <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> and <em class="parameter"><code>error</code></em>
+will be set. </p>
+<p><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=bytes_written][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-convert-with-fallback"></a><h3>g_convert_with_fallback ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_convert_with_fallback (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *str</code></em>,
+                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> len</code></em>,
+                         <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *to_codeset</code></em>,
+                         <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *from_codeset</code></em>,
+                         <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *fallback</code></em>,
+                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *bytes_read</code></em>,
+                         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *bytes_written</code></em>,
+                         <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Converts a string from one character set to another, possibly
+including fallback sequences for characters not representable
+in the output. Note that it is not guaranteed that the specification
+for the fallback sequences in <em class="parameter"><code>fallback</code></em>
+ will be honored. Some
+systems may do an approximate conversion from <em class="parameter"><code>from_codeset</code></em>
+
+to <em class="parameter"><code>to_codeset</code></em>
+ in their <code class="function">iconv()</code> functions, 
+in which case GLib will simply return that approximate conversion.</p>
+<p>Note that you should use <a class="link" href="glib-Character-Set-Conversion.html#g-iconv" title="g_iconv ()"><code class="function">g_iconv()</code></a> for streaming conversions. 
+Despite the fact that <em class="parameter"><code>bytes_read</code></em>
+ can return information about partial
+characters, the g_convert_... functions are not generally suitable
+for streaming. If the underlying converter maintains internal state,
+then this won't be preserved across successive calls to <a class="link" href="glib-Character-Set-Conversion.html#g-convert" title="g_convert ()"><code class="function">g_convert()</code></a>,
+<a class="link" href="glib-Character-Set-Conversion.html#g-convert-with-iconv" title="g_convert_with_iconv ()"><code class="function">g_convert_with_iconv()</code></a> or <a class="link" href="glib-Character-Set-Conversion.html#g-convert-with-fallback" title="g_convert_with_fallback ()"><code class="function">g_convert_with_fallback()</code></a>. (An example of
+this is the GNU C converter for CP1255 which does not emit a base
+character until it knows that the next character is not a mark that
+could combine with the base character.)</p>
+<div class="refsect3">
+<a name="g-convert-with-fallback.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>str</p></td>
+<td class="parameter_description"><p>the string to convert. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=len][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>len</p></td>
+<td class="parameter_description"><p>the length of the string in bytes, or -1 if the string is
+nul-terminated (Note that some encodings may allow nul
+bytes to occur inside strings. In that case, using -1
+for the <em class="parameter"><code>len</code></em>
+parameter is unsafe)</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>to_codeset</p></td>
+<td class="parameter_description"><p>name of character set into which to convert <em class="parameter"><code>str</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>from_codeset</p></td>
+<td class="parameter_description"><p>character set of <em class="parameter"><code>str</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>fallback</p></td>
+<td class="parameter_description"><p>UTF-8 string to use in place of characters not
+present in the target encoding. (The string must be
+representable in the target encoding).
+If <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>, characters not in the target encoding will
+be represented as Unicode escapes \uxxxx or \Uxxxxyyyy.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_read</p></td>
+<td class="parameter_description"><p>location to store the number of bytes in
+the input string that were successfully converted, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>.
+Even if the conversion was successful, this may be
+less than <em class="parameter"><code>len</code></em>
+if there were partial characters
+at the end of the input. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_written</p></td>
+<td class="parameter_description"><p>the number of bytes stored in
+the output buffer (not including the terminating nul). </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location to store the error occurring, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> to ignore
+errors. Any of the errors in <a class="link" href="glib-Character-Set-Conversion.html#GConvertError" title="enum GConvertError"><span class="type">GConvertError</span></a> may occur.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-convert-with-fallback.returns"></a><h4>Returns</h4>
+<p>If the conversion was successful, a newly allocated buffer
+containing the converted string, which must be freed with <a class="link" href="glib-Memory-Allocation.html#g-free" title="g_free ()"><code class="function">g_free()</code></a>.
+Otherwise <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> and <em class="parameter"><code>error</code></em>
+will be set. </p>
+<p><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=bytes_written][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-convert-with-iconv"></a><h3>g_convert_with_iconv ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_convert_with_iconv (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *str</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> len</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Character-Set-Conversion.html#GIConv" title="GIConv"><span class="type">GIConv</span></a> converter</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *bytes_read</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *bytes_written</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Converts a string from one character set to another. </p>
+<p>Note that you should use <a class="link" href="glib-Character-Set-Conversion.html#g-iconv" title="g_iconv ()"><code class="function">g_iconv()</code></a> for streaming conversions. 
+Despite the fact that <em class="parameter"><code>bytes_read</code></em>
+ can return information about partial
+characters, the g_convert_... functions are not generally suitable
+for streaming. If the underlying converter maintains internal state,
+then this won't be preserved across successive calls to <a class="link" href="glib-Character-Set-Conversion.html#g-convert" title="g_convert ()"><code class="function">g_convert()</code></a>,
+<a class="link" href="glib-Character-Set-Conversion.html#g-convert-with-iconv" title="g_convert_with_iconv ()"><code class="function">g_convert_with_iconv()</code></a> or <a class="link" href="glib-Character-Set-Conversion.html#g-convert-with-fallback" title="g_convert_with_fallback ()"><code class="function">g_convert_with_fallback()</code></a>. (An example of
+this is the GNU C converter for CP1255 which does not emit a base
+character until it knows that the next character is not a mark that
+could combine with the base character.)</p>
+<p>Characters which are valid in the input character set, but which have no
+representation in the output character set will result in a
+<a class="link" href="glib-Character-Set-Conversion.html#G-CONVERT-ERROR-ILLEGAL-SEQUENCE:CAPS"><code class="literal">G_CONVERT_ERROR_ILLEGAL_SEQUENCE</code></a> error. This is in contrast to the <code class="function">iconv()</code>
+specification, which leaves this behaviour implementation defined. Note that
+this is the same error code as is returned for an invalid byte sequence in
+the input character set. To get defined behaviour for conversion of
+unrepresentable characters, use <a class="link" href="glib-Character-Set-Conversion.html#g-convert-with-fallback" title="g_convert_with_fallback ()"><code class="function">g_convert_with_fallback()</code></a>.</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-convert-with-iconv.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>str</p></td>
+<td class="parameter_description"><p>the string to convert. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=len][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>len</p></td>
+<td class="parameter_description"><p>the length of the string in bytes, or -1 if the string is
+nul-terminated (Note that some encodings may allow nul
+bytes to occur inside strings. In that case, using -1
+for the <em class="parameter"><code>len</code></em>
+parameter is unsafe)</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>converter</p></td>
+<td class="parameter_description"><p>conversion descriptor from <a class="link" href="glib-Character-Set-Conversion.html#g-iconv-open" title="g_iconv_open ()"><code class="function">g_iconv_open()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_read</p></td>
+<td class="parameter_description"><p>location to store the number of bytes in
+the input string that were successfully converted, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>.
+Even if the conversion was successful, this may be
+less than <em class="parameter"><code>len</code></em>
+if there were partial characters
+at the end of the input. If the error
+<a class="link" href="glib-Character-Set-Conversion.html#G-CONVERT-ERROR-ILLEGAL-SEQUENCE:CAPS"><span class="type">G_CONVERT_ERROR_ILLEGAL_SEQUENCE</span></a> occurs, the value
+stored will be the byte offset after the last valid
+input sequence. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_written</p></td>
+<td class="parameter_description"><p>the number of bytes stored in
+the output buffer (not including the terminating nul). </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location to store the error occurring, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> to ignore
+errors. Any of the errors in <a class="link" href="glib-Character-Set-Conversion.html#GConvertError" title="enum GConvertError"><span class="type">GConvertError</span></a> may occur.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-convert-with-iconv.returns"></a><h4>Returns</h4>
+<p>If the conversion was successful, a newly allocated buffer
+containing the converted string, which must be freed with
+<a class="link" href="glib-Memory-Allocation.html#g-free" title="g_free ()"><code class="function">g_free()</code></a>. Otherwise <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> and <em class="parameter"><code>error</code></em>
+will be set. </p>
+<p><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=bytes_written][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-iconv-open"></a><h3>g_iconv_open ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Character-Set-Conversion.html#GIConv" title="GIConv"><span class="returnvalue">GIConv</span></a>
+g_iconv_open (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *to_codeset</code></em>,
+              <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *from_codeset</code></em>);</pre>
+<p>Same as the standard UNIX routine <code class="function">iconv_open()</code>, but
+may be implemented via libiconv on UNIX flavors that lack
+a native implementation.</p>
+<p>GLib provides <a class="link" href="glib-Character-Set-Conversion.html#g-convert" title="g_convert ()"><code class="function">g_convert()</code></a> and <a class="link" href="glib-Character-Set-Conversion.html#g-locale-to-utf8" title="g_locale_to_utf8 ()"><code class="function">g_locale_to_utf8()</code></a> which are likely
+more convenient than the raw iconv wrappers.</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-iconv-open.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>to_codeset</p></td>
+<td class="parameter_description"><p>destination codeset</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>from_codeset</p></td>
+<td class="parameter_description"><p>source codeset</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-iconv-open.returns"></a><h4>Returns</h4>
+<p> a "conversion descriptor", or (GIConv)-1 if
+opening the converter failed.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-iconv"></a><h3>g_iconv ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="returnvalue">gsize</span></a>
+g_iconv (<em class="parameter"><code><a class="link" href="glib-Character-Set-Conversion.html#GIConv" title="GIConv"><span class="type">GIConv</span></a> converter</code></em>,
+         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> **inbuf</code></em>,
+         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *inbytes_left</code></em>,
+         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> **outbuf</code></em>,
+         <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *outbytes_left</code></em>);</pre>
+<p>Same as the standard UNIX routine <code class="function">iconv()</code>, but
+may be implemented via libiconv on UNIX flavors that lack
+a native implementation.</p>
+<p>GLib provides <a class="link" href="glib-Character-Set-Conversion.html#g-convert" title="g_convert ()"><code class="function">g_convert()</code></a> and <a class="link" href="glib-Character-Set-Conversion.html#g-locale-to-utf8" title="g_locale_to_utf8 ()"><code class="function">g_locale_to_utf8()</code></a> which are likely
+more convenient than the raw iconv wrappers.</p>
+<p>Note that the behaviour of <code class="function">iconv()</code> for characters which are valid in the
+input character set, but which have no representation in the output character
+set, is implementation defined. This function may return success (with a
+positive number of non-reversible conversions as replacement characters were
+used), or it may return -1 and set an error such as <code class="literal">EILSEQ</code>, in such a
+situation.</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-iconv.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>converter</p></td>
+<td class="parameter_description"><p>conversion descriptor from <a class="link" href="glib-Character-Set-Conversion.html#g-iconv-open" title="g_iconv_open ()"><code class="function">g_iconv_open()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>inbuf</p></td>
+<td class="parameter_description"><p>bytes to convert</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>inbytes_left</p></td>
+<td class="parameter_description"><p>inout parameter, bytes remaining to convert in <em class="parameter"><code>inbuf</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>outbuf</p></td>
+<td class="parameter_description"><p>converted output bytes</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>outbytes_left</p></td>
+<td class="parameter_description"><p>inout parameter, bytes available to fill in <em class="parameter"><code>outbuf</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-iconv.returns"></a><h4>Returns</h4>
+<p> count of non-reversible conversions, or -1 on error</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-iconv-close"></a><h3>g_iconv_close ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+g_iconv_close (<em class="parameter"><code><a class="link" href="glib-Character-Set-Conversion.html#GIConv" title="GIConv"><span class="type">GIConv</span></a> converter</code></em>);</pre>
+<p>Same as the standard UNIX routine <code class="function">iconv_close()</code>, but
+may be implemented via libiconv on UNIX flavors that lack
+a native implementation. Should be called to clean up
+the conversion descriptor from <a class="link" href="glib-Character-Set-Conversion.html#g-iconv-open" title="g_iconv_open ()"><code class="function">g_iconv_open()</code></a> when
+you are done converting things.</p>
+<p>GLib provides <a class="link" href="glib-Character-Set-Conversion.html#g-convert" title="g_convert ()"><code class="function">g_convert()</code></a> and <a class="link" href="glib-Character-Set-Conversion.html#g-locale-to-utf8" title="g_locale_to_utf8 ()"><code class="function">g_locale_to_utf8()</code></a> which are likely
+more convenient than the raw iconv wrappers.</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-iconv-close.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>converter</p></td>
+<td class="parameter_description"><p>a conversion descriptor from <a class="link" href="glib-Character-Set-Conversion.html#g-iconv-open" title="g_iconv_open ()"><code class="function">g_iconv_open()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-iconv-close.returns"></a><h4>Returns</h4>
+<p> -1 on error, 0 on success</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-locale-to-utf8"></a><h3>g_locale_to_utf8 ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_locale_to_utf8 (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *opsysstring</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> len</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *bytes_read</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *bytes_written</code></em>,
+                  <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Converts a string which is in the encoding used for strings by
+the C runtime (usually the same as that used by the operating
+system) in the <a class="link" href="glib-running.html#setlocale" title="Locale">current locale</a> into a UTF-8 string.</p>
+<p>If the source encoding is not UTF-8 and the conversion output contains a
+nul character, the error <a class="link" href="glib-Character-Set-Conversion.html#G-CONVERT-ERROR-EMBEDDED-NUL:CAPS"><code class="literal">G_CONVERT_ERROR_EMBEDDED_NUL</code></a> is set and the
+function returns <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>.
+If the source encoding is UTF-8, an embedded nul character is treated with
+the <a class="link" href="glib-Character-Set-Conversion.html#G-CONVERT-ERROR-ILLEGAL-SEQUENCE:CAPS"><code class="literal">G_CONVERT_ERROR_ILLEGAL_SEQUENCE</code></a> error for backward compatibility with
+earlier versions of this library. Use <a class="link" href="glib-Character-Set-Conversion.html#g-convert" title="g_convert ()"><code class="function">g_convert()</code></a> to produce output that
+may contain embedded nul characters.</p>
+<div class="refsect3">
+<a name="g-locale-to-utf8.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>opsysstring</p></td>
+<td class="parameter_description"><p>a string in the
+encoding of the current locale. On Windows
+this means the system codepage. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=len][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>len</p></td>
+<td class="parameter_description"><p>the length of the string, or -1 if the string is
+nul-terminated (Note that some encodings may allow nul
+bytes to occur inside strings. In that case, using -1
+for the <em class="parameter"><code>len</code></em>
+parameter is unsafe)</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_read</p></td>
+<td class="parameter_description"><p>location to store the number of bytes in the
+input string that were successfully converted, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>.
+Even if the conversion was successful, this may be
+less than <em class="parameter"><code>len</code></em>
+if there were partial characters
+at the end of the input. If the error
+<a class="link" href="glib-Character-Set-Conversion.html#G-CONVERT-ERROR-ILLEGAL-SEQUENCE:CAPS"><code class="literal">G_CONVERT_ERROR_ILLEGAL_SEQUENCE</code></a> occurs, the value
+stored will be the byte offset after the last valid
+input sequence. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_written</p></td>
+<td class="parameter_description"><p>the number of bytes stored in the output
+buffer (not including the terminating nul). </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location to store the error occurring, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> to ignore
+errors. Any of the errors in <a class="link" href="glib-Character-Set-Conversion.html#GConvertError" title="enum GConvertError"><span class="type">GConvertError</span></a> may occur.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-locale-to-utf8.returns"></a><h4>Returns</h4>
+<p>The converted string, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> on an error. </p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> utf8]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-filename-to-utf8"></a><h3>g_filename_to_utf8 ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_filename_to_utf8 (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *opsysstring</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> len</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *bytes_read</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *bytes_written</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Converts a string which is in the encoding used by GLib for
+filenames into a UTF-8 string. Note that on Windows GLib uses UTF-8
+for filenames; on other platforms, this function indirectly depends on 
+the <a class="link" href="glib-running.html#setlocale" title="Locale">current locale</a>.</p>
+<p>The input string shall not contain nul characters even if the <em class="parameter"><code>len</code></em>
+
+argument is positive. A nul character found inside the string will result
+in error <a class="link" href="glib-Character-Set-Conversion.html#G-CONVERT-ERROR-ILLEGAL-SEQUENCE:CAPS"><code class="literal">G_CONVERT_ERROR_ILLEGAL_SEQUENCE</code></a>.
+If the source encoding is not UTF-8 and the conversion output contains a
+nul character, the error <a class="link" href="glib-Character-Set-Conversion.html#G-CONVERT-ERROR-EMBEDDED-NUL:CAPS"><code class="literal">G_CONVERT_ERROR_EMBEDDED_NUL</code></a> is set and the
+function returns <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>. Use <a class="link" href="glib-Character-Set-Conversion.html#g-convert" title="g_convert ()"><code class="function">g_convert()</code></a> to produce output that
+may contain embedded nul characters.</p>
+<div class="refsect3">
+<a name="g-filename-to-utf8.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>opsysstring</p></td>
+<td class="parameter_description"><p>a string in the encoding for filenames. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>len</p></td>
+<td class="parameter_description"><p>the length of the string, or -1 if the string is
+nul-terminated (Note that some encodings may allow nul
+bytes to occur inside strings. In that case, using -1
+for the <em class="parameter"><code>len</code></em>
+parameter is unsafe)</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_read</p></td>
+<td class="parameter_description"><p>location to store the number of bytes in the
+input string that were successfully converted, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>.
+Even if the conversion was successful, this may be
+less than <em class="parameter"><code>len</code></em>
+if there were partial characters
+at the end of the input. If the error
+<a class="link" href="glib-Character-Set-Conversion.html#G-CONVERT-ERROR-ILLEGAL-SEQUENCE:CAPS"><code class="literal">G_CONVERT_ERROR_ILLEGAL_SEQUENCE</code></a> occurs, the value
+stored will be the byte offset after the last valid
+input sequence. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_written</p></td>
+<td class="parameter_description"><p>the number of bytes stored in the output
+buffer (not including the terminating nul). </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location to store the error occurring, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> to ignore
+errors. Any of the errors in <a class="link" href="glib-Character-Set-Conversion.html#GConvertError" title="enum GConvertError"><span class="type">GConvertError</span></a> may occur.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-filename-to-utf8.returns"></a><h4>Returns</h4>
+<p>The converted string, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> on an error. </p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> utf8]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-filename-from-utf8"></a><h3>g_filename_from_utf8 ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_filename_from_utf8 (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *utf8string</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> len</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *bytes_read</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *bytes_written</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Converts a string from UTF-8 to the encoding GLib uses for
+filenames. Note that on Windows GLib uses UTF-8 for filenames;
+on other platforms, this function indirectly depends on the 
+<a class="link" href="glib-running.html#setlocale" title="Locale">current locale</a>.</p>
+<p>The input string shall not contain nul characters even if the <em class="parameter"><code>len</code></em>
+
+argument is positive. A nul character found inside the string will result
+in error <a class="link" href="glib-Character-Set-Conversion.html#G-CONVERT-ERROR-ILLEGAL-SEQUENCE:CAPS"><code class="literal">G_CONVERT_ERROR_ILLEGAL_SEQUENCE</code></a>. If the filename encoding is
+not UTF-8 and the conversion output contains a nul character, the error
+<a class="link" href="glib-Character-Set-Conversion.html#G-CONVERT-ERROR-EMBEDDED-NUL:CAPS"><code class="literal">G_CONVERT_ERROR_EMBEDDED_NUL</code></a> is set and the function returns <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>.</p>
+<div class="refsect3">
+<a name="g-filename-from-utf8.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>utf8string</p></td>
+<td class="parameter_description"><p>a UTF-8 encoded string. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> utf8]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>len</p></td>
+<td class="parameter_description"><p>the length of the string, or -1 if the string is
+nul-terminated.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_read</p></td>
+<td class="parameter_description"><p>location to store the number of bytes in
+the input string that were successfully converted, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>.
+Even if the conversion was successful, this may be
+less than <em class="parameter"><code>len</code></em>
+if there were partial characters
+at the end of the input. If the error
+<a class="link" href="glib-Character-Set-Conversion.html#G-CONVERT-ERROR-ILLEGAL-SEQUENCE:CAPS"><code class="literal">G_CONVERT_ERROR_ILLEGAL_SEQUENCE</code></a> occurs, the value
+stored will be the byte offset after the last valid
+input sequence. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_written</p></td>
+<td class="parameter_description"><p>the number of bytes stored in
+the output buffer (not including the terminating nul). </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location to store the error occurring, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> to ignore
+errors. Any of the errors in <a class="link" href="glib-Character-Set-Conversion.html#GConvertError" title="enum GConvertError"><span class="type">GConvertError</span></a> may occur.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-filename-from-utf8.returns"></a><h4>Returns</h4>
+<p>The converted string, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> on an error. </p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-get-filename-charsets"></a><h3>g_get_filename_charsets ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_get_filename_charsets (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> ***charsets</code></em>);</pre>
+<p>Determines the preferred character sets used for filenames.
+The first character set from the <em class="parameter"><code>charsets</code></em>
+ is the filename encoding, the
+subsequent character sets are used when trying to generate a displayable
+representation of a filename, see <a class="link" href="glib-Character-Set-Conversion.html#g-filename-display-name" title="g_filename_display_name ()"><code class="function">g_filename_display_name()</code></a>.</p>
+<p>On Unix, the character sets are determined by consulting the
+environment variables <code class="literal">G_FILENAME_ENCODING</code> and <code class="literal">G_BROKEN_FILENAMES</code>.
+On Windows, the character set used in the GLib API is always UTF-8
+and said environment variables have no effect.</p>
+<p><code class="literal">G_FILENAME_ENCODING</code> may be set to a comma-separated list of
+character set names. The special token "@locale" is taken
+to  mean the character set for the <a class="link" href="glib-running.html#setlocale" title="Locale">current locale</a>.
+If <code class="literal">G_FILENAME_ENCODING</code> is not set, but <code class="literal">G_BROKEN_FILENAMES</code> is,
+the character set of the current locale is taken as the filename
+encoding. If neither environment variable  is set, UTF-8 is taken
+as the filename encoding, but the character set of the current locale
+is also put in the list of encodings.</p>
+<p>The returned <em class="parameter"><code>charsets</code></em>
+ belong to GLib and must not be freed.</p>
+<p>Note that on Unix, regardless of the locale character set or
+<code class="literal">G_FILENAME_ENCODING</code> value, the actual file names present 
+on a system might be in any random encoding or just gibberish.</p>
+<div class="refsect3">
+<a name="g-get-filename-charsets.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>filename_charsets</p></td>
+<td class="parameter_description"><p>return location for the <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>-terminated list of encoding names. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>][<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-get-filename-charsets.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the filename encoding is UTF-8.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-6.html#api-index-2.6">2.6</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-filename-display-name"></a><h3>g_filename_display_name ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_filename_display_name (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *filename</code></em>);</pre>
+<p>Converts a filename into a valid UTF-8 string. The conversion is 
+not necessarily reversible, so you should keep the original around 
+and use the return value of this function only for display purposes.
+Unlike <a class="link" href="glib-Character-Set-Conversion.html#g-filename-to-utf8" title="g_filename_to_utf8 ()"><code class="function">g_filename_to_utf8()</code></a>, the result is guaranteed to be non-<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> 
+even if the filename actually isn't in the GLib file name encoding.</p>
+<p>If GLib cannot make sense of the encoding of <em class="parameter"><code>filename</code></em>
+, as a last resort it 
+replaces unknown characters with U+FFFD, the Unicode replacement character.
+You can search the result for the UTF-8 encoding of this character (which is
+"\357\277\275" in octal notation) to find out if <em class="parameter"><code>filename</code></em>
+ was in an invalid
+encoding.</p>
+<p>If you know the whole pathname of the file you should use
+<a class="link" href="glib-Character-Set-Conversion.html#g-filename-display-basename" title="g_filename_display_basename ()"><code class="function">g_filename_display_basename()</code></a>, since that allows location-based
+translation of filenames.</p>
+<div class="refsect3">
+<a name="g-filename-display-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>filename</p></td>
+<td class="parameter_description"><p>a pathname hopefully in the
+GLib file name encoding. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-filename-display-name.returns"></a><h4>Returns</h4>
+<p> a newly allocated string containing
+a rendition of the filename in valid UTF-8</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-6.html#api-index-2.6">2.6</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-filename-display-basename"></a><h3>g_filename_display_basename ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_filename_display_basename (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *filename</code></em>);</pre>
+<p>Returns the display basename for the particular filename, guaranteed
+to be valid UTF-8. The display name might not be identical to the filename,
+for instance there might be problems converting it to UTF-8, and some files
+can be translated in the display.</p>
+<p>If GLib cannot make sense of the encoding of <em class="parameter"><code>filename</code></em>
+, as a last resort it 
+replaces unknown characters with U+FFFD, the Unicode replacement character.
+You can search the result for the UTF-8 encoding of this character (which is
+"\357\277\275" in octal notation) to find out if <em class="parameter"><code>filename</code></em>
+ was in an invalid
+encoding.</p>
+<p>You must pass the whole absolute pathname to this functions so that
+translation of well known locations can be done.</p>
+<p>This function is preferred over <a class="link" href="glib-Character-Set-Conversion.html#g-filename-display-name" title="g_filename_display_name ()"><code class="function">g_filename_display_name()</code></a> if you know the
+whole path, as it allows translation.</p>
+<div class="refsect3">
+<a name="g-filename-display-basename.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>filename</p></td>
+<td class="parameter_description"><p>an absolute pathname in the
+GLib file name encoding. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-filename-display-basename.returns"></a><h4>Returns</h4>
+<p> a newly allocated string containing
+a rendition of the basename of the filename in valid UTF-8</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-6.html#api-index-2.6">2.6</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-locale-from-utf8"></a><h3>g_locale_from_utf8 ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_locale_from_utf8 (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *utf8string</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> len</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *bytes_read</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> *bytes_written</code></em>,
+                    <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Converts a string from UTF-8 to the encoding used for strings by
+the C runtime (usually the same as that used by the operating
+system) in the <a class="link" href="glib-running.html#setlocale" title="Locale">current locale</a>. On Windows this means
+the system codepage.</p>
+<p>The input string shall not contain nul characters even if the <em class="parameter"><code>len</code></em>
+
+argument is positive. A nul character found inside the string will result
+in error <a class="link" href="glib-Character-Set-Conversion.html#G-CONVERT-ERROR-ILLEGAL-SEQUENCE:CAPS"><code class="literal">G_CONVERT_ERROR_ILLEGAL_SEQUENCE</code></a>. Use <a class="link" href="glib-Character-Set-Conversion.html#g-convert" title="g_convert ()"><code class="function">g_convert()</code></a> to convert
+input that may contain embedded nul characters.</p>
+<div class="refsect3">
+<a name="g-locale-from-utf8.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>utf8string</p></td>
+<td class="parameter_description"><p>a UTF-8 encoded string </p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>len</p></td>
+<td class="parameter_description"><p>the length of the string, or -1 if the string is
+nul-terminated.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_read</p></td>
+<td class="parameter_description"><p>location to store the number of bytes in the
+input string that were successfully converted, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>.
+Even if the conversion was successful, this may be
+less than <em class="parameter"><code>len</code></em>
+if there were partial characters
+at the end of the input. If the error
+<a class="link" href="glib-Character-Set-Conversion.html#G-CONVERT-ERROR-ILLEGAL-SEQUENCE:CAPS"><code class="literal">G_CONVERT_ERROR_ILLEGAL_SEQUENCE</code></a> occurs, the value
+stored will be the byte offset after the last valid
+input sequence. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_written</p></td>
+<td class="parameter_description"><p>the number of bytes stored in the output
+buffer (not including the terminating nul). </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location to store the error occurring, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> to ignore
+errors. Any of the errors in <a class="link" href="glib-Character-Set-Conversion.html#GConvertError" title="enum GConvertError"><span class="type">GConvertError</span></a> may occur.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-locale-from-utf8.returns"></a><h4>Returns</h4>
+<p>A newly-allocated buffer containing the converted string,
+or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> on an error, and error will be set. </p>
+<p><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=bytes_written][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-get-charset"></a><h3>g_get_charset ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_get_charset (<em class="parameter"><code>const <span class="type">char</span> **charset</code></em>);</pre>
+<p>Obtains the character set for the <a class="link" href="glib-running.html#setlocale" title="Locale">current locale</a>; you
+might use this character set as an argument to <a class="link" href="glib-Character-Set-Conversion.html#g-convert" title="g_convert ()"><code class="function">g_convert()</code></a>, to convert
+from the current locale's encoding to some other encoding. (Frequently
+<a class="link" href="glib-Character-Set-Conversion.html#g-locale-to-utf8" title="g_locale_to_utf8 ()"><code class="function">g_locale_to_utf8()</code></a> and <a class="link" href="glib-Character-Set-Conversion.html#g-locale-from-utf8" title="g_locale_from_utf8 ()"><code class="function">g_locale_from_utf8()</code></a> are nice shortcuts, though.)</p>
+<p>On Windows the character set returned by this function is the
+so-called system default ANSI code-page. That is the character set
+used by the "narrow" versions of C library and Win32 functions that
+handle file names. It might be different from the character set
+used by the C library's current locale.</p>
+<p>On Linux, the character set is found by consulting <code class="function">nl_langinfo()</code> if
+available. If not, the environment variables <code class="literal">LC_ALL</code>, <code class="literal">LC_CTYPE</code>, <code class="literal">LANG</code>
+and <code class="literal">CHARSET</code> are queried in order.</p>
+<p>The return value is <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the locale's encoding is UTF-8, in that
+case you can perhaps avoid calling <a class="link" href="glib-Character-Set-Conversion.html#g-convert" title="g_convert ()"><code class="function">g_convert()</code></a>.</p>
+<p>The string returned in <em class="parameter"><code>charset</code></em>
+ is not allocated, and should not be
+freed.</p>
+<div class="refsect3">
+<a name="g-get-charset.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>charset</p></td>
+<td class="parameter_description"><p>return location for character set
+name, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-get-charset.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if the returned charset is UTF-8</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-get-codeset"></a><h3>g_get_codeset ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_get_codeset (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Gets the character set for the current locale.</p>
+<div class="refsect3">
+<a name="g-get-codeset.returns"></a><h4>Returns</h4>
+<p> a newly allocated string containing the name
+of the character set. This string must be freed with <a class="link" href="glib-Memory-Allocation.html#g-free" title="g_free ()"><code class="function">g_free()</code></a>.</p>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Character-Set-Conversion.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GIConv"></a><h3>GIConv</h3>
+<pre class="programlisting">typedef struct _GIConv *GIConv;
+</pre>
+<p>The GIConv struct wraps an <code class="function">iconv()</code> conversion descriptor. It contains
+private data and should only be accessed using the following functions.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-CONVERT-ERROR:CAPS"></a><h3>G_CONVERT_ERROR</h3>
+<pre class="programlisting">#define G_CONVERT_ERROR g_convert_error_quark()
+</pre>
+<p>Error domain for character set conversions. Errors in this domain will
+be from the <a class="link" href="glib-Character-Set-Conversion.html#GConvertError" title="enum GConvertError"><span class="type">GConvertError</span></a> enumeration. See <a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> for information on
+error domains.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GConvertError"></a><h3>enum GConvertError</h3>
+<p>Error codes returned by character set conversion routines.</p>
+<div class="refsect3">
+<a name="GConvertError.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-CONVERT-ERROR-NO-CONVERSION:CAPS"></a>G_CONVERT_ERROR_NO_CONVERSION</p></td>
+<td class="enum_member_description">
+<p>Conversion between the requested character
+    sets is not supported.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-CONVERT-ERROR-ILLEGAL-SEQUENCE:CAPS"></a>G_CONVERT_ERROR_ILLEGAL_SEQUENCE</p></td>
+<td class="enum_member_description">
+<p>Invalid byte sequence in conversion input;
+   or the character sequence could not be represented in the target
+   character set.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-CONVERT-ERROR-FAILED:CAPS"></a>G_CONVERT_ERROR_FAILED</p></td>
+<td class="enum_member_description">
+<p>Conversion failed for some reason.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-CONVERT-ERROR-PARTIAL-INPUT:CAPS"></a>G_CONVERT_ERROR_PARTIAL_INPUT</p></td>
+<td class="enum_member_description">
+<p>Partial character sequence at end of input.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-CONVERT-ERROR-BAD-URI:CAPS"></a>G_CONVERT_ERROR_BAD_URI</p></td>
+<td class="enum_member_description">
+<p>URI is invalid.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-CONVERT-ERROR-NOT-ABSOLUTE-PATH:CAPS"></a>G_CONVERT_ERROR_NOT_ABSOLUTE_PATH</p></td>
+<td class="enum_member_description">
+<p>Pathname is not an absolute path.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-CONVERT-ERROR-NO-MEMORY:CAPS"></a>G_CONVERT_ERROR_NO_MEMORY</p></td>
+<td class="enum_member_description">
+<p>No memory available. Since: 2.40</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-CONVERT-ERROR-EMBEDDED-NUL:CAPS"></a>G_CONVERT_ERROR_EMBEDDED_NUL</p></td>
+<td class="enum_member_description">
+<p>An embedded NUL character is present in
+    conversion output where a NUL-terminated string is expected.
+    Since: 2.56</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,822 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GAction: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="application.html" title="Application support">
+<link rel="prev" href="GSimpleActionGroup.html" title="GSimpleActionGroup">
+<link rel="next" href="GSimpleAction.html" title="GSimpleAction">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GAction.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GAction.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_prerequisites">  <span class="dim">|</span> 
+                  <a href="#GAction.prerequisites" class="shortcut">Prerequisites</a></span><span id="nav_implementations">  <span class="dim">|</span> 
+                  <a href="#GAction.implementations" class="shortcut">Known Implementations</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GAction.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="application.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GSimpleActionGroup.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GSimpleAction.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GAction"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GAction.top_of_page"></a>GAction</span></h2>
+<p>GAction — An action interface</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GAction.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GAction.html#g-action-name-is-valid" title="g_action_name_is_valid ()">g_action_name_is_valid</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GAction.html#g-action-get-name" title="g_action_get_name ()">g_action_get_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-GVariantType.html#GVariantType"><span class="returnvalue">GVariantType</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GAction.html#g-action-get-parameter-type" title="g_action_get_parameter_type ()">g_action_get_parameter_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-GVariantType.html#GVariantType"><span class="returnvalue">GVariantType</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GAction.html#g-action-get-state-type" title="g_action_get_state_type ()">g_action_get_state_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GAction.html#g-action-get-state-hint" title="g_action_get_state_hint ()">g_action_get_state_hint</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GAction.html#g-action-get-enabled" title="g_action_get_enabled ()">g_action_get_enabled</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GAction.html#g-action-get-state" title="g_action_get_state ()">g_action_get_state</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GAction.html#g-action-change-state" title="g_action_change_state ()">g_action_change_state</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GAction.html#g-action-activate" title="g_action_activate ()">g_action_activate</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GAction.html#g-action-parse-detailed-name" title="g_action_parse_detailed_name ()">g_action_parse_detailed_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GAction.html#g-action-print-detailed-name" title="g_action_print_detailed_name ()">g_action_print_detailed_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GAction.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GAction.html#GAction--enabled" title="The “enabled” property">enabled</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<td class="property_name"><a class="link" href="GAction.html#GAction--name" title="The “name” property">name</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a> *</td>
+<td class="property_name"><a class="link" href="GAction.html#GAction--parameter-type" title="The “parameter-type” property">parameter-type</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *</td>
+<td class="property_name"><a class="link" href="GAction.html#GAction--state" title="The “state” property">state</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a> *</td>
+<td class="property_name"><a class="link" href="GAction.html#GAction--state-type" title="The “state-type” property">state-type</a></td>
+<td class="property_flags">Read</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GAction.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GAction.html#GAction-struct" title="GAction">GAction</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GAction.html#GActionInterface" title="struct GActionInterface">GActionInterface</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GAction.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/GTypeModule.html">GInterface</a>
+    <span class="lineart">╰──</span> GAction
+</pre>
+</div>
+<div class="refsect1">
+<a name="GAction.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GAction requires
+ <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GAction.implementations"></a><h2>Known Implementations</h2>
+<p>
+GAction is implemented by
+ <a class="link" href="GPropertyAction.html" title="GPropertyAction">GPropertyAction</a> and  <a class="link" href="GSimpleAction.html" title="GSimpleAction">GSimpleAction</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GAction.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GAction.description"></a><h2>Description</h2>
+<p><a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> represents a single named action.</p>
+<p>The main interface to an action is that it can be activated with
+<a class="link" href="GAction.html#g-action-activate" title="g_action_activate ()"><code class="function">g_action_activate()</code></a>.  This results in the 'activate' signal being
+emitted.  An activation has a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> parameter (which may be
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>).  The correct type for the parameter is determined by a static
+parameter type (which is given at construction time).</p>
+<p>An action may optionally have a state, in which case the state may be
+set with <a class="link" href="GAction.html#g-action-change-state" title="g_action_change_state ()"><code class="function">g_action_change_state()</code></a>.  This call takes a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a>.  The
+correct type for the state is determined by a static state type
+(which is given at construction time).</p>
+<p>The state may have a hint associated with it, specifying its valid
+range.</p>
+<p><a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> is merely the interface to the concept of an action, as
+described above.  Various implementations of actions exist, including
+<a class="link" href="GSimpleAction.html" title="GSimpleAction"><span class="type">GSimpleAction</span></a>.</p>
+<p>In all cases, the implementing class is responsible for storing the
+name of the action, the parameter type, the enabled state, the
+optional state type and the state and emitting the appropriate
+signals when these change.  The implementor is responsible for filtering
+calls to <a class="link" href="GAction.html#g-action-activate" title="g_action_activate ()"><code class="function">g_action_activate()</code></a> and <a class="link" href="GAction.html#g-action-change-state" title="g_action_change_state ()"><code class="function">g_action_change_state()</code></a> for type
+safety and for the state being enabled.</p>
+<p>Probably the only useful thing to do with a <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> is to put it
+inside of a <a class="link" href="GSimpleActionGroup.html" title="GSimpleActionGroup"><span class="type">GSimpleActionGroup</span></a>.</p>
+</div>
+<div class="refsect1">
+<a name="GAction.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-action-name-is-valid"></a><h3>g_action_name_is_valid ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_action_name_is_valid (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *action_name</code></em>);</pre>
+<p>Checks if <em class="parameter"><code>action_name</code></em>
+ is valid.</p>
+<p><em class="parameter"><code>action_name</code></em>
+ is valid if it consists only of alphanumeric characters,
+plus '-' and '.'.  The empty string is not a valid action name.</p>
+<p>It is an error to call this function with a non-utf8 <em class="parameter"><code>action_name</code></em>
+.
+<em class="parameter"><code>action_name</code></em>
+ must not be <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p>
+<div class="refsect3">
+<a name="g-action-name-is-valid.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>action_name</p></td>
+<td class="parameter_description"><p>an potential action name</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-action-name-is-valid.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>action_name</code></em>
+is valid</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-action-get-name"></a><h3>g_action_get_name ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_action_get_name (<em class="parameter"><code><a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> *action</code></em>);</pre>
+<p>Queries the name of <em class="parameter"><code>action</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-action-get-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>action</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-action-get-name.returns"></a><h4>Returns</h4>
+<p> the name of the action</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-action-get-parameter-type"></a><h3>g_action_get_parameter_type ()</h3>
+<pre class="programlisting">const <a href="../glib-GVariantType.html#GVariantType"><span class="returnvalue">GVariantType</span></a> *
+g_action_get_parameter_type (<em class="parameter"><code><a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> *action</code></em>);</pre>
+<p>Queries the type of the parameter that must be given when activating
+<em class="parameter"><code>action</code></em>
+.</p>
+<p>When activating the action using <a class="link" href="GAction.html#g-action-activate" title="g_action_activate ()"><code class="function">g_action_activate()</code></a>, the <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a>
+given to that function must be of the type returned by this function.</p>
+<p>In the case that this function returns <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, you must not give any
+<a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a>, but <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> instead.</p>
+<div class="refsect3">
+<a name="g-action-get-parameter-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>action</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-action-get-parameter-type.returns"></a><h4>Returns</h4>
+<p>the parameter type. </p>
+<p><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-action-get-state-type"></a><h3>g_action_get_state_type ()</h3>
+<pre class="programlisting">const <a href="../glib-GVariantType.html#GVariantType"><span class="returnvalue">GVariantType</span></a> *
+g_action_get_state_type (<em class="parameter"><code><a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> *action</code></em>);</pre>
+<p>Queries the type of the state of <em class="parameter"><code>action</code></em>
+.</p>
+<p>If the action is stateful (e.g. created with
+<a class="link" href="GSimpleAction.html#g-simple-action-new-stateful" title="g_simple_action_new_stateful ()"><code class="function">g_simple_action_new_stateful()</code></a>) then this function returns the
+<a href="../glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a> of the state.  This is the type of the initial value
+given as the state. All calls to <a class="link" href="GAction.html#g-action-change-state" title="g_action_change_state ()"><code class="function">g_action_change_state()</code></a> must give a
+<a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> of this type and <a class="link" href="GAction.html#g-action-get-state" title="g_action_get_state ()"><code class="function">g_action_get_state()</code></a> will return a
+<a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> of the same type.</p>
+<p>If the action is not stateful (e.g. created with <a class="link" href="GSimpleAction.html#g-simple-action-new" title="g_simple_action_new ()"><code class="function">g_simple_action_new()</code></a>)
+then this function will return <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. In that case, <a class="link" href="GAction.html#g-action-get-state" title="g_action_get_state ()"><code class="function">g_action_get_state()</code></a>
+will return <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> and you must not call <a class="link" href="GAction.html#g-action-change-state" title="g_action_change_state ()"><code class="function">g_action_change_state()</code></a>.</p>
+<div class="refsect3">
+<a name="g-action-get-state-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>action</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-action-get-state-type.returns"></a><h4>Returns</h4>
+<p>the state type, if the action is stateful. </p>
+<p><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-action-get-state-hint"></a><h3>g_action_get_state_hint ()</h3>
+<pre class="programlisting"><a href="../glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+g_action_get_state_hint (<em class="parameter"><code><a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> *action</code></em>);</pre>
+<p>Requests a hint about the valid range of values for the state of
+<em class="parameter"><code>action</code></em>
+.</p>
+<p>If <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> is returned it either means that the action is not stateful
+or that there is no hint about the valid range of values for the
+state of the action.</p>
+<p>If a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> array is returned then each item in the array is a
+possible value for the state.  If a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> pair (ie: two-tuple) is
+returned then the tuple specifies the inclusive lower and upper bound
+of valid values for the state.</p>
+<p>In any case, the information is merely a hint.  It may be possible to
+have a state value outside of the hinted range and setting a value
+within the range may fail.</p>
+<p>The return value (if non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>) should be freed with
+<a href="../glib-GVariant.html#g-variant-unref"><code class="function">g_variant_unref()</code></a> when it is no longer required.</p>
+<div class="refsect3">
+<a name="g-action-get-state-hint.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>action</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-action-get-state-hint.returns"></a><h4>Returns</h4>
+<p>the state range hint. </p>
+<p><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-action-get-enabled"></a><h3>g_action_get_enabled ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_action_get_enabled (<em class="parameter"><code><a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> *action</code></em>);</pre>
+<p>Checks if <em class="parameter"><code>action</code></em>
+ is currently enabled.</p>
+<p>An action must be enabled in order to be activated or in order to
+have its state changed from outside callers.</p>
+<div class="refsect3">
+<a name="g-action-get-enabled.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>action</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-action-get-enabled.returns"></a><h4>Returns</h4>
+<p> whether the action is enabled</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-action-get-state"></a><h3>g_action_get_state ()</h3>
+<pre class="programlisting"><a href="../glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+g_action_get_state (<em class="parameter"><code><a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> *action</code></em>);</pre>
+<p>Queries the current state of <em class="parameter"><code>action</code></em>
+.</p>
+<p>If the action is not stateful then <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> will be returned.  If the
+action is stateful then the type of the return value is the type
+given by <a class="link" href="GAction.html#g-action-get-state-type" title="g_action_get_state_type ()"><code class="function">g_action_get_state_type()</code></a>.</p>
+<p>The return value (if non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>) should be freed with
+<a href="../glib-GVariant.html#g-variant-unref"><code class="function">g_variant_unref()</code></a> when it is no longer required.</p>
+<div class="refsect3">
+<a name="g-action-get-state.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>action</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-action-get-state.returns"></a><h4>Returns</h4>
+<p>the current state of the action. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-action-change-state"></a><h3>g_action_change_state ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_action_change_state (<em class="parameter"><code><a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> *action</code></em>,
+                       <em class="parameter"><code><a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *value</code></em>);</pre>
+<p>Request for the state of <em class="parameter"><code>action</code></em>
+ to be changed to <em class="parameter"><code>value</code></em>
+.</p>
+<p>The action must be stateful and <em class="parameter"><code>value</code></em>
+ must be of the correct type.
+See <a class="link" href="GAction.html#g-action-get-state-type" title="g_action_get_state_type ()"><code class="function">g_action_get_state_type()</code></a>.</p>
+<p>This call merely requests a change.  The action may refuse to change
+its state or may change its state to something other than <em class="parameter"><code>value</code></em>
+.
+See <a class="link" href="GAction.html#g-action-get-state-hint" title="g_action_get_state_hint ()"><code class="function">g_action_get_state_hint()</code></a>.</p>
+<p>If the <em class="parameter"><code>value</code></em>
+ GVariant is floating, it is consumed.</p>
+<div class="refsect3">
+<a name="g-action-change-state.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>action</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>the new state</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-action-activate"></a><h3>g_action_activate ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_action_activate (<em class="parameter"><code><a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> *action</code></em>,
+                   <em class="parameter"><code><a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *parameter</code></em>);</pre>
+<p>Activates the action.</p>
+<p><em class="parameter"><code>parameter</code></em>
+ must be the correct type of parameter for the action (ie:
+the parameter type given at construction time).  If the parameter
+type was <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> then <em class="parameter"><code>parameter</code></em>
+ must also be <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p>
+<p>If the <em class="parameter"><code>parameter</code></em>
+ GVariant is floating, it is consumed.</p>
+<div class="refsect3">
+<a name="g-action-activate.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>action</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>parameter</p></td>
+<td class="parameter_description"><p>the parameter to the activation. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-action-parse-detailed-name"></a><h3>g_action_parse_detailed_name ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_action_parse_detailed_name (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *detailed_name</code></em>,
+                              <em class="parameter"><code><a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> **action_name</code></em>,
+                              <em class="parameter"><code><a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> **target_value</code></em>,
+                              <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Parses a detailed action name into its separate name and target
+components.</p>
+<p>Detailed action names can have three formats.</p>
+<p>The first format is used to represent an action name with no target
+value and consists of just an action name containing no whitespace
+nor the characters ':', '(' or ')'.  For example: "app.action".</p>
+<p>The second format is used to represent an action with a target value
+that is a non-empty string consisting only of alphanumerics, plus '-'
+and '.'.  In that case, the action name and target value are
+separated by a double colon ("::").  For example:
+"app.action::target".</p>
+<p>The third format is used to represent an action with any type of
+target value, including strings.  The target value follows the action
+name, surrounded in parens.  For example: "app.action(42)".  The
+target value is parsed using <a href="../glib-GVariant.html#g-variant-parse"><code class="function">g_variant_parse()</code></a>.  If a tuple-typed
+value is desired, it must be specified in the same way, resulting in
+two sets of parens, for example: "app.action((1,2,3))".  A string
+target can be specified this way as well: "app.action('target')".
+For strings, this third format must be used if * target value is
+empty or contains characters other than alphanumerics, '-' and '.'.</p>
+<div class="refsect3">
+<a name="g-action-parse-detailed-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>detailed_name</p></td>
+<td class="parameter_description"><p>a detailed action name</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>action_name</p></td>
+<td class="parameter_description"><p>the action name. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>target_value</p></td>
+<td class="parameter_description"><p>the target value, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> for no target. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-action-parse-detailed-name.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if successful, else <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> with <em class="parameter"><code>error</code></em>
+set</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-action-print-detailed-name"></a><h3>g_action_print_detailed_name ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_action_print_detailed_name (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *action_name</code></em>,
+                              <em class="parameter"><code><a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *target_value</code></em>);</pre>
+<p>Formats a detailed action name from <em class="parameter"><code>action_name</code></em>
+ and <em class="parameter"><code>target_value</code></em>
+.</p>
+<p>It is an error to call this function with an invalid action name.</p>
+<p>This function is the opposite of <a class="link" href="GAction.html#g-action-parse-detailed-name" title="g_action_parse_detailed_name ()"><code class="function">g_action_parse_detailed_name()</code></a>.
+It will produce a string that can be parsed back to the <em class="parameter"><code>action_name</code></em>
+
+and <em class="parameter"><code>target_value</code></em>
+ by that function.</p>
+<p>See that function for the types of strings that will be printed by
+this function.</p>
+<div class="refsect3">
+<a name="g-action-print-detailed-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>action_name</p></td>
+<td class="parameter_description"><p>a valid action name</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>target_value</p></td>
+<td class="parameter_description"><p>a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> target value, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-action-print-detailed-name.returns"></a><h4>Returns</h4>
+<p> a detailed format string</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GAction.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GAction-struct"></a><h3>GAction</h3>
+<pre class="programlisting">typedef struct _GAction GAction;</pre>
+<p><a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> is an opaque data structure and can only be accessed
+using the following functions.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GActionInterface"></a><h3>struct GActionInterface</h3>
+<pre class="programlisting">struct GActionInterface {
+  GTypeInterface g_iface;
+
+  /* virtual functions */
+  const gchar *        (* get_name)             (GAction  *action);
+  const GVariantType * (* get_parameter_type)   (GAction  *action);
+  const GVariantType * (* get_state_type)       (GAction  *action);
+  GVariant *           (* get_state_hint)       (GAction  *action);
+
+  gboolean             (* get_enabled)          (GAction  *action);
+  GVariant *           (* get_state)            (GAction  *action);
+
+  void                 (* change_state)         (GAction  *action,
+                                                 GVariant *value);
+  void                 (* activate)             (GAction  *action,
+                                                 GVariant *parameter);
+};
+</pre>
+<p>The virtual function table for <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a>.</p>
+<div class="refsect3">
+<a name="GActionInterface.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GActionInterface.get-name"></a>get_name</code></em> ()</p></td>
+<td class="struct_member_description"><p>the virtual function pointer for <a class="link" href="GAction.html#g-action-get-name" title="g_action_get_name ()"><code class="function">g_action_get_name()</code></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GActionInterface.get-parameter-type"></a>get_parameter_type</code></em> ()</p></td>
+<td class="struct_member_description"><p>the virtual function pointer for <a class="link" href="GAction.html#g-action-get-parameter-type" title="g_action_get_parameter_type ()"><code class="function">g_action_get_parameter_type()</code></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GActionInterface.get-state-type"></a>get_state_type</code></em> ()</p></td>
+<td class="struct_member_description"><p>the virtual function pointer for <a class="link" href="GAction.html#g-action-get-state-type" title="g_action_get_state_type ()"><code class="function">g_action_get_state_type()</code></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GActionInterface.get-state-hint"></a>get_state_hint</code></em> ()</p></td>
+<td class="struct_member_description"><p>the virtual function pointer for <a class="link" href="GAction.html#g-action-get-state-hint" title="g_action_get_state_hint ()"><code class="function">g_action_get_state_hint()</code></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GActionInterface.get-enabled"></a>get_enabled</code></em> ()</p></td>
+<td class="struct_member_description"><p>the virtual function pointer for <a class="link" href="GAction.html#g-action-get-enabled" title="g_action_get_enabled ()"><code class="function">g_action_get_enabled()</code></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GActionInterface.get-state"></a>get_state</code></em> ()</p></td>
+<td class="struct_member_description"><p>the virtual function pointer for <a class="link" href="GAction.html#g-action-get-state" title="g_action_get_state ()"><code class="function">g_action_get_state()</code></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GActionInterface.change-state"></a>change_state</code></em> ()</p></td>
+<td class="struct_member_description"><p>the virtual function pointer for <a class="link" href="GAction.html#g-action-change-state" title="g_action_change_state ()"><code class="function">g_action_change_state()</code></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GActionInterface.activate"></a>activate</code></em> ()</p></td>
+<td class="struct_member_description"><p>the virtual function pointer for <a class="link" href="GAction.html#g-action-activate" title="g_action_activate ()"><code class="function">g_action_activate()</code></a>.  Note that <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> does not have an
+'activate' signal but that implementations of it may have one.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GAction.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GAction--enabled"></a><h3>The <code class="literal">“enabled”</code> property</h3>
+<pre class="programlisting">  “enabled”                  <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>If <em class="parameter"><code>action</code></em>
+ is currently enabled.</p>
+<p>If the action is disabled then calls to <a class="link" href="GAction.html#g-action-activate" title="g_action_activate ()"><code class="function">g_action_activate()</code></a> and
+<a class="link" href="GAction.html#g-action-change-state" title="g_action_change_state ()"><code class="function">g_action_change_state()</code></a> have no effect.</p>
+<p>Flags: Read</p>
+<p>Default value: TRUE</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GAction--name"></a><h3>The <code class="literal">“name”</code> property</h3>
+<pre class="programlisting">  “name”                     <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>The name of the action.  This is mostly meaningful for identifying
+the action once it has been added to a <a class="link" href="GActionGroup.html" title="GActionGroup"><span class="type">GActionGroup</span></a>. It is immutable.</p>
+<p>Flags: Read</p>
+<p>Default value: NULL</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GAction--parameter-type"></a><h3>The <code class="literal">“parameter-type”</code> property</h3>
+<pre class="programlisting">  “parameter-type”           <a href="../glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a> *</pre>
+<p>The type of the parameter that must be given when activating the
+action. This is immutable, and may be <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if no parameter is needed when
+activating the action.</p>
+<p>Flags: Read</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GAction--state"></a><h3>The <code class="literal">“state”</code> property</h3>
+<pre class="programlisting">  “state”                    <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *</pre>
+<p>The state of the action, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the action is stateless.</p>
+<p>Flags: Read</p>
+<p>Allowed values: GVariant&lt;*&gt;</p>
+<p>Default value: NULL</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GAction--state-type"></a><h3>The <code class="literal">“state-type”</code> property</h3>
+<pre class="programlisting">  “state-type”               <a href="../glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a> *</pre>
+<p>The <a href="../glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a> of the state that the action has, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the
+action is stateless. This is immutable.</p>
+<p>Flags: Read</p>
+<p class="since">Since: <a class="link" href="api-index-2-28.html#api-index-2.28">2.28</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

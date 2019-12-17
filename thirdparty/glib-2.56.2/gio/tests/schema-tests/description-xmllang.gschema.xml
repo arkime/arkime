@@ -1,0 +1,13 @@
+<schemalist>
+  <schema path="/org/gnome/gnome-screenshot/" id="org.gnome.gnome-screenshot">
+    <key type="b" name="take-window-shot">
+      <default>false</default>
+      <summary>Bla</summary>
+      <description>Window-specific screenshot (deprecated)</description>
+      <description xml:lang="an">Captura especifica de finestra (obsoleto)</description>
+      <description xml:lang="ar">لقطة شاشة مختصّة بنافذة (مُبطل)</description>
+      <description xml:lang="as">উইন্ডোৰ ক্ষেত্ৰত নিৰ্দিষ্ট স্ক্ৰিনশ্বট (স্খলিত)</description>
+      <description xml:lang="ast">Captura específica de ventana (obsoleto)</description>
+    </key>
+  </schema>
+</schemalist>

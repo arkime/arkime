@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+ ProjectType="Visual C++"
+ Version="9.00"
+ Name="gio"
+ ProjectGUID="{F3D1583C-5613-4809-BD98-7CC1C1276F92}"
+ RootNamespace="gio"
+ TargetFrameworkVersion="131072"
+ >
+ <Platforms>
+  <Platform
+   Name="Win32"
+  />
+  <Platform
+   Name="x64"
+  />
+ </Platforms>
+ <ToolFiles>
+ </ToolFiles>
+ <Configurations>
+  <Configuration
+   Name="Debug|Win32"
+   InheritedPropertySheets=".\glib-gen-srcs.vsprops"
+   ConfigurationType="2"
+   CharacterSet="2"
+   >
+   <Tool
+    Name="VCCLCompilerTool"
+    Optimization="0"
+    AdditionalIncludeDirectories="..\..\gio,..\..\gmodule"
+    PreprocessorDefinitions="_DEBUG;$(GioBuildDefines)"
+    MinimalRebuild="true"
+    BasicRuntimeChecks="3"
+    RuntimeLibrary="3"
+    UsePrecompiledHeader="0"
+    WarningLevel="3"
+    DebugInformationFormat="4"
+    CompileAs="1"
+   />
+   <Tool
+    Name="VCLinkerTool"
+    AdditionalDependencies="zlib1.lib $(WindowsNetworkingLibs)"
+    OutputFile="$(OutDir)\$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).dll"
+    LinkIncremental="2"
+    GenerateDebugInformation="true"
+    SubSystem="2"
+    DataExecutionPrevention="0"
+    ImportLibrary="$(TargetDir)$(ProjectName)-$(ApiVersion).lib"
+    TargetMachine="1"
+   />
+  </Configuration>
+  <Configuration
+   Name="Release|Win32"
+   InheritedPropertySheets=".\glib-gen-srcs.vsprops"
+   ConfigurationType="2"
+   CharacterSet="2"
+   WholeProgramOptimization="1"
+   >
+   <Tool
+    Name="VCCLCompilerTool"
+    AdditionalIncludeDirectories="..\..\gio,..\..\gmodule"
+    PreprocessorDefinitions="$(GioBuildDefines)"
+    RuntimeLibrary="2"
+    UsePrecompiledHeader="0"
+    WarningLevel="3"
+    DebugInformationFormat="3"
+    CompileAs="1"
+   />
+   <Tool
+    Name="VCLinkerTool"
+    AdditionalDependencies="zlib1.lib $(WindowsNetworkingLibs)"
+    OutputFile="$(OutDir)\$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).dll"
+    LinkIncremental="1"
+    GenerateDebugInformation="true"
+    SubSystem="2"
+    OptimizeReferences="2"
+    EnableCOMDATFolding="2"
+    DataExecutionPrevention="0"
+    ImportLibrary="$(TargetDir)$(ProjectName)-$(ApiVersion).lib"
+    TargetMachine="1"
+   />
+  </Configuration>
+  <Configuration
+   Name="Debug|x64"
+   InheritedPropertySheets=".\glib-gen-srcs.vsprops"
+   ConfigurationType="2"
+   CharacterSet="2"
+   >
+   <Tool
+    Name="VCCLCompilerTool"
+    Optimization="0"
+    AdditionalIncludeDirectories="..\..\gio,..\..\gmodule"
+    PreprocessorDefinitions="_DEBUG;$(GioBuildDefines)"
+    MinimalRebuild="true"
+    BasicRuntimeChecks="3"
+    RuntimeLibrary="3"
+    UsePrecompiledHeader="0"
+    WarningLevel="3"
+    DebugInformationFormat="3"
+    CompileAs="1"
+   />
+   <Tool
+    Name="VCLinkerTool"
+    AdditionalDependencies="zlib1.lib $(WindowsNetworkingLibs)"
+    OutputFile="$(OutDir)\$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).dll"
+    LinkIncremental="2"
+    GenerateDebugInformation="true"
+    SubSystem="2"
+    DataExecutionPrevention="0"
+    ImportLibrary="$(TargetDir)$(ProjectName)-$(ApiVersion).lib"
+    TargetMachine="17"
+   />
+  </Configuration>
+  <Configuration
+   Name="Release|x64"
+   InheritedPropertySheets=".\glib-gen-srcs.vsprops"
+   ConfigurationType="2"
+   CharacterSet="2"
+   WholeProgramOptimization="1"
+   >
+   <Tool
+    Name="VCCLCompilerTool"
+    AdditionalIncludeDirectories="..\..\gio,..\..\gmodule"
+    PreprocessorDefinitions="$(GioBuildDefines)"
+    RuntimeLibrary="2"
+    UsePrecompiledHeader="0"
+    WarningLevel="3"
+    DebugInformationFormat="3"
+    CompileAs="1"
+   />
+   <Tool
+    Name="VCLinkerTool"
+    AdditionalDependencies="zlib1.lib $(WindowsNetworkingLibs)"
+    OutputFile="$(OutDir)\$(GlibDllPrefix)$(ProjectName)$(GlibDllSuffix).dll"
+    LinkIncremental="1"
+    GenerateDebugInformation="true"
+    SubSystem="2"
+    OptimizeReferences="2"
+    EnableCOMDATFolding="2"
+    DataExecutionPrevention="0"
+    ImportLibrary="$(TargetDir)$(ProjectName)-$(ApiVersion).lib"
+    TargetMachine="17"
+   />
+  </Configuration>
+ </Configurations>
+ <References>
+ </References>
+ <Files>
+  <Filter
+   Name="Source Files"
+   Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+   UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+   >
+   <File RelativePath="..\..\gio\gappinfo.c" />
+   <File RelativePath="..\..\gio\gasynchelper.c" />
+   <File RelativePath="..\..\gio\gasyncinitable.c" />
+   <File RelativePath="..\..\gio\gasyncresult.c" />
+   <File RelativePath="..\..\gio\gbufferedinputstream.c" />
+   <File RelativePath="..\..\gio\gbufferedoutputstream.c" />
+   <File RelativePath="..\..\gio\gbytesicon.c" />
+   <File RelativePath="..\..\gio\gcancellable.c" />
+   <File RelativePath="..\..\gio\gcharsetconverter.c" />
+   <File RelativePath="..\..\gio\gcontextspecificgroup.c" />
+   <File RelativePath="..\..\gio\gconverter.c" />
+   <File RelativePath="..\..\gio\gconverterinputstream.c" />
+   <File RelativePath="..\..\gio\gconverteroutputstream.c" />
+   <File RelativePath="..\..\gio\gcredentials.c" />
+   <File RelativePath="..\..\gio\gdatagrambased.c" />
+   <File RelativePath="..\..\gio\gdatainputstream.c" />
+   <File RelativePath="..\..\gio\gdataoutputstream.c" />
+   <File RelativePath="..\..\gio\gdrive.c" />
+   <File RelativePath="..\..\gio\gdummyfile.c" />
+   <File RelativePath="..\..\gio\gdummyproxyresolver.c" />
+   <File RelativePath="..\..\gio\gdummytlsbackend.c" />
+   <File RelativePath="..\..\gio\gemblem.c" />
+   <File RelativePath="..\..\gio\gemblemedicon.c" />
+   <File RelativePath="..\..\gio\gfile.c" />
+   <File RelativePath="..\..\gio\gfileattribute.c" />
+   <File RelativePath="..\..\gio\gfileenumerator.c" />
+   <File RelativePath="..\..\gio\gfileicon.c" />
+   <File RelativePath="..\..\gio\gfileinfo.c" />
+   <File RelativePath="..\..\gio\gfileinputstream.c" />
+   <File RelativePath="..\..\gio\gfilemonitor.c" />
+   <File RelativePath="..\..\gio\gfilenamecompleter.c" />
+   <File RelativePath="..\..\gio\gfileoutputstream.c" />
+   <File RelativePath="..\..\gio\gfileiostream.c" />
+   <File RelativePath="..\..\gio\gfilterinputstream.c" />
+   <File RelativePath="..\..\gio\gfilteroutputstream.c" />
+   <File RelativePath="..\..\gio\gicon.c" />
+   <File RelativePath="..\..\gio\ginetaddress.c" />
+   <File RelativePath="..\..\gio\ginetaddressmask.c" />
+   <File RelativePath="..\..\gio\ginetsocketaddress.c" />
+   <File RelativePath="..\..\gio\ginitable.c" />
+   <File RelativePath="..\..\gio\ginputstream.c" />
+   <File RelativePath="..\..\gio\gioerror.c" />
+   <File RelativePath="..\..\gio\giomodule.c" />
+   <File RelativePath="..\..\gio\giomodule-priv.c" />
+   <File RelativePath="..\..\gio\gioscheduler.c" />
+   <File RelativePath="..\..\gio\giostream.c" />
+   <File RelativePath="..\..\gio\gloadableicon.c" />
+   <File RelativePath="..\..\gio\gmount.c" />
+   <File RelativePath="..\..\gio\gmemoryinputstream.c" />
+   <File RelativePath="..\..\gio\gmemoryoutputstream.c" />
+   <File RelativePath="..\..\gio\gmountoperation.c" />
+   <File RelativePath="..\..\gio\gnativevolumemonitor.c" />
+   <File RelativePath="..\..\gio\gnativesocketaddress.c" />
+   <File RelativePath="..\..\gio\gnetworkaddress.c" />
+   <File RelativePath="..\..\gio\gnetworking.c" />
+   <File RelativePath="..\..\gio\gnetworkmonitor.c" />
+   <File RelativePath="..\..\gio\gnetworkmonitorbase.c" />
+   <File RelativePath="..\..\gio\gnetworkservice.c" />
+   <File RelativePath="..\..\gio\goutputstream.c" />
+   <File RelativePath="..\..\gio\gpermission.c" />
+   <File RelativePath="..\..\gio\gpollableinputstream.c" />
+   <File RelativePath="..\..\gio\gpollableoutputstream.c" />
+   <File RelativePath="..\..\gio\gpollableutils.c" />
+   <File RelativePath="..\..\gio\gpollfilemonitor.c" />
+   <File RelativePath="..\..\gio\gproxy.c" />
+   <File RelativePath="..\..\gio\gproxyaddress.c" />
+   <File RelativePath="..\..\gio\gproxyaddressenumerator.c" />
+   <File RelativePath="..\..\gio\gproxyresolver.c" />
+   <File RelativePath="..\..\gio\gresolver.c" />
+   <File RelativePath="..\..\gio\gresource.c" />
+   <File RelativePath="..\..\gio\gresourcefile.c" />
+   <File RelativePath="..\..\gio\gseekable.c" />
+   <File RelativePath="..\..\gio\gsimpleasyncresult.c" />
+   <File RelativePath="..\..\gio\gsimpleiostream.c" />
+   <File RelativePath="..\..\gio\gsimplepermission.c" />
+   <File RelativePath="..\..\gio\gsocket.c" />
+   <File RelativePath="..\..\gio\gsocketaddress.c" />
+   <File RelativePath="..\..\gio\gsocketaddressenumerator.c" />
+   <File RelativePath="..\..\gio\gsocketclient.c" />
+   <File RelativePath="..\..\gio\gsocketconnectable.c" />
+   <File RelativePath="..\..\gio\gsocketconnection.c" />
+   <File RelativePath="..\..\gio\gsocketcontrolmessage.c" />
+   <File RelativePath="..\..\gio\gsocketinputstream.c" />
+   <File RelativePath="..\..\gio\gsocketlistener.c" />
+   <File RelativePath="..\..\gio\gsocketoutputstream.c" />
+   <File RelativePath="..\..\gio\gsubprocesslauncher.c" />
+   <File RelativePath="..\..\gio\gsubprocess.c" />
+   <File RelativePath="..\..\gio\gsocketservice.c" />
+   <File RelativePath="..\..\gio\gsrvtarget.c" />
+   <File RelativePath="..\..\gio\gsimpleproxyresolver.c" />
+   <File RelativePath="..\..\gio\gtask.c" />
+   <File RelativePath="..\..\gio\gtcpconnection.c" />
+   <File RelativePath="..\..\gio\gtcpwrapperconnection.c" />
+   <File RelativePath="..\..\gio\gthreadedsocketservice.c" />
+   <File RelativePath="..\..\gio\gthemedicon.c" />
+   <File RelativePath="..\..\gio\gthreadedresolver.c" />
+   <File RelativePath="..\..\gio\gtlsbackend.c" />
+   <File RelativePath="..\..\gio\gtlscertificate.c" />
+   <File RelativePath="..\..\gio\gtlsclientconnection.c" />
+   <File RelativePath="..\..\gio\gtlsconnection.c" />
+   <File RelativePath="..\..\gio\gtlsdatabase.c" />
+   <File RelativePath="..\..\gio\gtlsfiledatabase.c" />
+   <File RelativePath="..\..\gio\gtlsinteraction.c" />
+   <File RelativePath="..\..\gio\gtlspassword.c" />
+   <File RelativePath="..\..\gio\gtlsserverconnection.c" />
+   <File RelativePath="..\..\gio\gdtlsconnection.c" />
+   <File RelativePath="..\..\gio\gdtlsclientconnection.c" />
+   <File RelativePath="..\..\gio\gdtlsserverconnection.c" />
+   <File RelativePath="..\..\gio\gunionvolumemonitor.c" />
+   <File RelativePath="..\..\gio\gvfs.c" />
+   <File RelativePath="..\..\gio\gvolume.c" />
+   <File RelativePath="..\..\gio\gvolumemonitor.c" />
+   <File RelativePath="..\..\gio\gzlibcompressor.c" />
+   <File RelativePath="..\..\gio\gzlibdecompressor.c" />
+   <File RelativePath="..\..\gio\gioenumtypes.c" />
+   <File RelativePath="..\..\gio\glistmodel.c" />
+   <File RelativePath="..\..\gio\gliststore.c" />
+   <File RelativePath="..\..\gio\gapplication.c" />
+   <File RelativePath="..\..\gio\gapplicationcommandline.c" />
+   <File RelativePath="..\..\gio\gapplicationimpl-dbus.c" />
+   <File RelativePath="..\..\gio\gactiongroup.c" />
+   <File RelativePath="..\..\gio\gactionmap.c" />
+   <File RelativePath="..\..\gio\gsimpleactiongroup.c" />
+   <File RelativePath="..\..\gio\gremoteactiongroup.c" />
+   <File RelativePath="..\..\gio\gactiongroupexporter.c" />
+   <File RelativePath="..\..\gio\gdbusactiongroup.c" />
+   <File RelativePath="..\..\gio\gaction.c" />
+   <File RelativePath="..\..\gio\gpropertyaction.c" />
+   <File RelativePath="..\..\gio\gsimpleaction.c" />
+   <File RelativePath="..\..\gio\gmenumodel.c" />
+   <File RelativePath="..\..\gio\gmenu.c" />
+   <File RelativePath="..\..\gio\gmenuexporter.c" />
+   <File RelativePath="..\..\gio\gdbusmenumodel.c" />
+   <File RelativePath="..\..\gio\gnotification.c" />
+   <File RelativePath="..\..\gio\gnotificationbackend.c" />
+   <File RelativePath="..\..\gio\gdbusutils.c" />
+   <File RelativePath="..\..\gio\gdbusaddress.c" />
+   <File RelativePath="..\..\gio\gdbusauthobserver.c" />
+   <File RelativePath="..\..\gio\gdbusauth.c" />
+   <File RelativePath="..\..\gio\gdbusauthmechanism.c" />
+   <File RelativePath="..\..\gio\gdbusauthmechanismanon.c" />
+   <File RelativePath="..\..\gio\gdbusauthmechanismexternal.c" />
+   <File RelativePath="..\..\gio\gdbusauthmechanismsha1.c" />
+   <File RelativePath="..\..\gio\gdbuserror.c" />
+   <File RelativePath="..\..\gio\gdbusconnection.c" />
+   <File RelativePath="..\..\gio\gdbusmessage.c" />
+   <File RelativePath="..\..\gio\gdbusnameowning.c" />
+   <File RelativePath="..\..\gio\gdbusnamewatching.c" />
+   <File RelativePath="..\..\gio\gdbusproxy.c" />
+   <File RelativePath="..\..\gio\gdbusprivate.c" />
+   <File RelativePath="..\..\gio\gdbusintrospection.c" />
+   <File RelativePath="..\..\gio\gdbusmethodinvocation.c" />
+   <File RelativePath="..\..\gio\gdbusserver.c" />
+   <File RelativePath="..\..\gio\gdbusinterface.c" />
+   <File RelativePath="..\..\gio\gdbusinterfaceskeleton.c" />
+   <File RelativePath="..\..\gio\gdbusobject.c" />
+   <File RelativePath="..\..\gio\gdbusobjectskeleton.c" />
+   <File RelativePath="..\..\gio\gdbusobjectproxy.c" />
+   <File RelativePath="..\..\gio\gdbusobjectmanager.c" />
+   <File RelativePath="..\..\gio\gdbusobjectmanagerclient.c" />
+   <File RelativePath="..\..\gio\gdbusobjectmanagerserver.c" />
+   <File RelativePath="..\..\gio\gtestdbus.c" />
+   <File RelativePath="..\..\gio\ghttpproxy.c" />
+   <File RelativePath="..\..\gio\glocalfile.c" />
+   <File RelativePath="..\..\gio\glocalfileenumerator.c" />
+   <File RelativePath="..\..\gio\glocalfileinfo.c" />
+   <File RelativePath="..\..\gio\glocalfileinputstream.c" />
+   <File RelativePath="..\..\gio\glocalfilemonitor.c" />
+   <File RelativePath="..\..\gio\glocalfileoutputstream.c" />
+   <File RelativePath="..\..\gio\glocalfileiostream.c" />
+   <File RelativePath="..\..\gio\glocalvfs.c" />
+   <File RelativePath="..\..\gio\gsocks4proxy.c" />
+   <File RelativePath="..\..\gio\gsocks4aproxy.c" />
+   <File RelativePath="..\..\gio\gsocks5proxy.c" />
+   <File RelativePath="..\..\gio\thumbnail-verify.c" />
+   <File RelativePath="..\..\gio\gdbusdaemon.c" />
+   <File RelativePath="..\..\gio\gdbus-daemon-generated.c" />
+   <File RelativePath="..\..\gio\gwin32registrykey.c" />
+   <File RelativePath="..\..\gio\gwin32mount.c" />
+   <File RelativePath="..\..\gio\gwin32volumemonitor.c" />
+   <File RelativePath="..\..\gio\gwin32inputstream.c" />
+   <File RelativePath="..\..\gio\gwin32outputstream.c" />
+   <File RelativePath="..\..\gio\gwin32networkmonitor.c" />
+   <File RelativePath="..\..\gio\gwin32appinfo.c" />
+   <File RelativePath="..\..\gio\gcontenttype-win32.c" />
+   <File RelativePath="..\..\gio\gregistrysettingsbackend.c" />
+   <File RelativePath="..\..\gio\win32\gwinhttpfile.c" />
+   <File RelativePath="..\..\gio\win32\gwinhttpfileinputstream.c" />
+   <File RelativePath="..\..\gio\win32\gwinhttpfileoutputstream.c" />
+   <File RelativePath="..\..\gio\win32\gwinhttpvfs.c" />
+   <File RelativePath="..\..\gio\win32\gwin32fsmonitorutils.c" />
+   <File RelativePath="..\..\gio\win32\gwin32filemonitor.c" />
+   <File RelativePath="..\..\gio\gvdb\gvdb-reader.c" />
+   <File RelativePath="..\..\gio\gdelayedsettingsbackend.c" />
+   <File RelativePath="..\..\gio\gkeyfilesettingsbackend.c" />
+   <File RelativePath="..\..\gio\gmemorysettingsbackend.c" />
+   <File RelativePath="..\..\gio\gnullsettingsbackend.c" />
+   <File RelativePath="..\..\gio\gsettingsbackend.c" />
+   <File RelativePath="..\..\gio\gsettingsschema.c" />
+   <File RelativePath="..\..\gio\gsettings-mapping.c" />
+   <File RelativePath="..\..\gio\gsettings.c" />
+  </Filter>
+  <Filter
+   Name="Header Files"
+   Filter="h;hpp;hxx;hm;inl;inc;xsd"
+   UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+   >
+  </Filter>
+  <Filter
+   Name="Resource Files"
+   Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+   UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+   >
+   <File RelativePath="..\..\gio\gnetworking.h.win32">
+    <FileConfiguration Name="Debug|Win32">
+     <Tool
+      Name="VCCustomBuildTool"
+      Description="Copying gnetworking.h from gnetworking.h.win32..."
+      CommandLine="$(GenGNetworkingH)"
+      Outputs="..\..\gio\gnetworking.h"
+     />
+    </FileConfiguration>
+    <FileConfiguration Name="Release|Win32">
+     <Tool
+      Name="VCCustomBuildTool"
+      Description="Copying gnetworking.h from gnetworking.h.win32..."
+      CommandLine="$(GenGNetworkingH)"
+      Outputs="..\..\gio\gnetworking.h"
+     />
+    </FileConfiguration>
+    <FileConfiguration Name="Debug|x64">
+     <Tool
+      Name="VCCustomBuildTool"
+      Description="Copying gnetworking.h from gnetworking.h.win32..."
+      CommandLine="$(GenGNetworkingH)"
+      Outputs="..\..\gio\gnetworking.h"
+     />
+    </FileConfiguration>
+    <FileConfiguration Name="Release|x64">
+     <Tool
+      Name="VCCustomBuildTool"
+      Description="Copying gnetworking.h from gnetworking.h.win32..."
+      CommandLine="$(GenGNetworkingH)"
+      Outputs="..\..\gio\gnetworking.h"
+     />
+    </FileConfiguration>
+   </File>
+   <File RelativePath="..\..\gio\gio.rc" />
+  </Filter>
+ </Files>
+</VisualStudioProject>

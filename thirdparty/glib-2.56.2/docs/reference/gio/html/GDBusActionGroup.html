@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GDBusActionGroup: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="application.html" title="Application support">
+<link rel="prev" href="gio-GActionGroup-exporter.html" title="GActionGroup exporter">
+<link rel="next" href="GMenuModel.html" title="GMenuModel">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GDBusActionGroup.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GDBusActionGroup.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_interfaces">  <span class="dim">|</span> 
+                  <a href="#GDBusActionGroup.implemented-interfaces" class="shortcut">Implemented Interfaces</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="application.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gio-GActionGroup-exporter.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GMenuModel.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GDBusActionGroup"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GDBusActionGroup.top_of_page"></a>GDBusActionGroup</span></h2>
+<p>GDBusActionGroup — A D-Bus GActionGroup implementation</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GDBusActionGroup.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody><tr>
+<td class="function_type">
+<a class="link" href="GDBusActionGroup.html" title="GDBusActionGroup"><span class="returnvalue">GDBusActionGroup</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusActionGroup.html#g-dbus-action-group-get" title="g_dbus_action_group_get ()">g_dbus_action_group_get</a> <span class="c_punctuation">()</span>
+</td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDBusActionGroup.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GDBusActionGroup.html#GDBusActionGroup-struct" title="GDBusActionGroup">GDBusActionGroup</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDBusActionGroup.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GDBusActionGroup
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusActionGroup.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GDBusActionGroup implements
+ <a class="link" href="GActionGroup.html" title="GActionGroup">GActionGroup</a> and  <a class="link" href="GRemoteActionGroup.html" title="GRemoteActionGroup">GRemoteActionGroup</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GDBusActionGroup.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusActionGroup.description"></a><h2>Description</h2>
+<p><a class="link" href="GDBusActionGroup.html" title="GDBusActionGroup"><span class="type">GDBusActionGroup</span></a> is an implementation of the <a class="link" href="GActionGroup.html" title="GActionGroup"><span class="type">GActionGroup</span></a>
+interface that can be used as a proxy for an action group
+that is exported over D-Bus with <a class="link" href="gio-GActionGroup-exporter.html#g-dbus-connection-export-action-group" title="g_dbus_connection_export_action_group ()"><code class="function">g_dbus_connection_export_action_group()</code></a>.</p>
+</div>
+<div class="refsect1">
+<a name="GDBusActionGroup.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-dbus-action-group-get"></a><h3>g_dbus_action_group_get ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusActionGroup.html" title="GDBusActionGroup"><span class="returnvalue">GDBusActionGroup</span></a> *
+g_dbus_action_group_get (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                         <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *bus_name</code></em>,
+                         <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>);</pre>
+<p>Obtains a <a class="link" href="GDBusActionGroup.html" title="GDBusActionGroup"><span class="type">GDBusActionGroup</span></a> for the action group which is exported at
+the given <em class="parameter"><code>bus_name</code></em>
+ and <em class="parameter"><code>object_path</code></em>
+.</p>
+<p>The thread default main context is taken at the time of this call.
+All signals on the menu model (and any linked models) are reported
+with respect to this context.  All calls on the returned menu model
+(and linked models) must also originate from this same context, with
+the thread default main context unchanged.</p>
+<p>This call is non-blocking.  The returned action group may or may not
+already be filled in.  The correct thing to do is connect the signals
+for the action group to monitor for changes and then to call
+<a class="link" href="GActionGroup.html#g-action-group-list-actions" title="g_action_group_list_actions ()"><code class="function">g_action_group_list_actions()</code></a> to get the initial list.</p>
+<div class="refsect3">
+<a name="g-dbus-action-group-get.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bus_name</p></td>
+<td class="parameter_description"><p>the bus name which exports the action
+group or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>connection</code></em>
+is not a message bus connection. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>object_path</p></td>
+<td class="parameter_description"><p>the object path at which the action group is exported</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-action-group-get.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GDBusActionGroup.html" title="GDBusActionGroup"><span class="type">GDBusActionGroup</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusActionGroup.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GDBusActionGroup-struct"></a><h3>GDBusActionGroup</h3>
+<pre class="programlisting">typedef struct _GDBusActionGroup GDBusActionGroup;</pre>
+<p><a class="link" href="GDBusActionGroup.html" title="GDBusActionGroup"><span class="type">GDBusActionGroup</span></a> is an opaque data structure and can only be accessed
+using the following functions.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusActionGroup.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="gio-GActionGroup-exporter.html" title="GActionGroup exporter">GActionGroup exporter</a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>How to define and implement a new GObject: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="pt02.html" title="Part IV. Tutorial">
+<link rel="prev" href="pt02.html" title="Part IV. Tutorial">
+<link rel="next" href="howto-gobject-code.html" title="Boilerplate code">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="pt02.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="pt02.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="howto-gobject-code.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="chapter">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="howto-gobject"></a>How to define and implement a new GObject</h2></div></div></div>
+<div class="toc"><dl class="toc">
+<dt><span class="sect1"><a href="howto-gobject.html#howto-gobject-header">Boilerplate header code</a></span></dt>
+<dt><span class="sect1"><a href="howto-gobject-code.html">Boilerplate code</a></span></dt>
+<dt><span class="sect1"><a href="howto-gobject-construction.html">Object construction</a></span></dt>
+<dt><span class="sect1"><a href="howto-gobject-destruction.html">Object destruction</a></span></dt>
+<dt><span class="sect1"><a href="howto-gobject-methods.html">Object methods</a></span></dt>
+<dd><dl>
+<dt><span class="sect2"><a href="howto-gobject-methods.html#non-virtual-public-methods">Non-virtual public methods</a></span></dt>
+<dt><span class="sect2"><a href="howto-gobject-methods.html#virtual-public-methods">Virtual public methods</a></span></dt>
+<dt><span class="sect2"><a href="howto-gobject-methods.html#virtual-private-methods">Virtual private Methods</a></span></dt>
+</dl></dd>
+<dt><span class="sect1"><a href="howto-gobject-chainup.html">Chaining up</a></span></dt>
+</dl></div>
+<p>
+    This chapter focuses on the implementation of a subtype of GObject, for
+    example to create a custom class hierarchy, or to subclass a GTK+ widget.
+  </p>
+<p>
+    Throughout the chapter, a running example of a file viewer program is used,
+    which has a <span class="type">ViewerFile</span> class to represent a single file being
+    viewed, and various derived classes for different types of files with
+    special functionality, such as audio files. The example application also
+    supports editing files (for example, to tweak a photo being viewed), using
+    a <span class="type">ViewerEditable</span> interface.
+  </p>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="howto-gobject-header"></a>Boilerplate header code</h2></div></div></div>
+<p>
+      The first step before writing the code for your GObject is to write the
+      type's header which contains the needed type, function and macro
+      definitions. Each of these elements is nothing but a convention which
+      is followed by almost all users of GObject, and has been refined over
+      multiple years of experience developing GObject-based code. If you are
+      writing a library, it is particularly important for you to adhere closely
+      to these conventions; users of your library will assume that you have.
+      Even if not writing a library, it will help other people who want to work
+      on your project.
+    </p>
+<p>
+      Pick a name convention for your headers and source code and stick to it:
+      </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>use a dash to separate the prefix from the typename:
+        <code class="filename">viewer-file.h</code> and <code class="filename">viewer-file.c</code>
+        (this is the convention used by Nautilus and most GNOME libraries).</p></li>
+<li class="listitem"><p>use an underscore to separate the prefix from the
+        typename: <code class="filename">viewer_file.h</code> and
+        <code class="filename">viewer_file.c</code>.</p></li>
+<li class="listitem"><p>Do not separate the prefix from the typename:
+        <code class="filename">viewerfile.h</code> and <code class="filename">viewerfile.c</code>.
+        (this is the convention used by GTK+)</p></li>
+</ul></div>
+<p>
+      Some people like the first two solutions better: it makes reading file
+      names easier for those with poor eyesight.
+    </p>
+<p>
+      The basic conventions for any header which exposes a GType are described
+      in <a class="xref" href="gtype-conventions.html" title="Conventions">the section called “Conventions”</a>.
+    </p>
+<p>
+      If you want to declare a type named ‘file’ in namespace ‘viewer’, name the
+      type instance <code class="function">ViewerFile</code> and its class
+      <code class="function">ViewerFileClass</code> (names are case sensitive). The
+      recommended method of declaring a type differs based on whether the type
+      is final or derivable.
+    </p>
+<p>
+      Final types cannot be subclassed further, and should be the default choice
+      for new types — changing a final type to be derivable is always a change
+      that will be compatible with existing uses of the code, but the converse
+      will often cause problems. Final types are declared using
+      <a class="link" href="gobject-Type-Information.html#G-DECLARE-FINAL-TYPE:CAPS" title="G_DECLARE_FINAL_TYPE()"><code class="function">G_DECLARE_FINAL_TYPE</code></a>,
+      and require a structure to hold the instance data to be declared in the
+      source code (not the header file).
+
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="comment">/*</span>
+<span class="comment"> * Copyright/Licensing information.</span>
+<span class="comment"> */</span>
+
+<span class="comment">/* inclusion guard */</span>
+<span class="preproc">#ifndef</span><span class="normal"> __VIEWER_FILE_H__</span>
+<span class="preproc">#define</span><span class="normal"> __VIEWER_FILE_H__</span>
+
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;glib-object.h&gt;</span>
+<span class="comment">/*</span>
+<span class="comment"> * Potentially, include other headers on which this header depends.</span>
+<span class="comment"> */</span>
+
+<span class="normal"><a href="../glib-Miscellaneous-Macros.html#G-BEGIN-DECLS:CAPS">G_BEGIN_DECLS</a></span>
+
+<span class="comment">/*</span>
+<span class="comment"> * Type declaration.</span>
+<span class="comment"> */</span>
+<span class="preproc">#define</span><span class="normal"> </span><span class="usertype">VIEWER_TYPE_FILE</span><span class="normal"> </span><span class="function">viewer_file_get_type</span><span class="normal"> </span><span class="symbol">()</span>
+<span class="function"><a href="gobject-Type-Information.html#G-DECLARE-FINAL-TYPE:CAPS">G_DECLARE_FINAL_TYPE</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ViewerFile</span><span class="symbol">,</span><span class="normal"> viewer_file</span><span class="symbol">,</span><span class="normal"> VIEWER</span><span class="symbol">,</span><span class="normal"> FILE</span><span class="symbol">,</span><span class="normal"> <a href="gobject-The-Base-Object-Type.html#GObject-struct">GObject</a></span><span class="symbol">)</span>
+
+<span class="comment">/*</span>
+<span class="comment"> * Method definitions.</span>
+<span class="comment"> */</span>
+<span class="usertype">ViewerFile</span><span class="normal"> </span><span class="symbol">*</span><span class="function">viewer_file_new</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">);</span>
+
+<span class="normal"><a href="../glib-Miscellaneous-Macros.html#G-END-DECLS:CAPS">G_END_DECLS</a></span>
+
+<span class="preproc">#endif</span><span class="normal"> </span><span class="comment">/* __VIEWER_FILE_H__ */</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+    </p>
+<p>
+      Derivable types <span class="emphasis"><em>can</em></span> be subclassed further, and their class and
+      instance structures form part of the public API which must not be changed
+      if API stability is cared about. They are declared using
+      <a class="link" href="gobject-Type-Information.html#G-DECLARE-DERIVABLE-TYPE:CAPS" title="G_DECLARE_DERIVABLE_TYPE()"><code class="function">G_DECLARE_DERIVABLE_TYPE</code></a>:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="comment">/*</span>
+<span class="comment"> * Copyright/Licensing information.</span>
+<span class="comment"> */</span>
+
+<span class="comment">/* inclusion guard */</span>
+<span class="preproc">#ifndef</span><span class="normal"> __VIEWER_FILE_H__</span>
+<span class="preproc">#define</span><span class="normal"> __VIEWER_FILE_H__</span>
+
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;glib-object.h&gt;</span>
+<span class="comment">/*</span>
+<span class="comment"> * Potentially, include other headers on which this header depends.</span>
+<span class="comment"> */</span>
+
+<span class="normal"><a href="../glib-Miscellaneous-Macros.html#G-BEGIN-DECLS:CAPS">G_BEGIN_DECLS</a></span>
+
+<span class="comment">/*</span>
+<span class="comment"> * Type declaration.</span>
+<span class="comment"> */</span>
+<span class="preproc">#define</span><span class="normal"> </span><span class="usertype">VIEWER_TYPE_FILE</span><span class="normal"> </span><span class="function">viewer_file_get_type</span><span class="normal"> </span><span class="symbol">()</span>
+<span class="function"><a href="gobject-Type-Information.html#G-DECLARE-DERIVABLE-TYPE:CAPS">G_DECLARE_DERIVABLE_TYPE</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ViewerFile</span><span class="symbol">,</span><span class="normal"> viewer_file</span><span class="symbol">,</span><span class="normal"> VIEWER</span><span class="symbol">,</span><span class="normal"> FILE</span><span class="symbol">,</span><span class="normal"> <a href="gobject-The-Base-Object-Type.html#GObject-struct">GObject</a></span><span class="symbol">)</span>
+
+<span class="keyword">struct</span><span class="normal"> </span><span class="classname">_ViewerFileClass</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GObjectClass</span><span class="normal"> parent_class</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="comment">/* Class virtual function fields. */</span>
+<span class="normal">  </span><span class="type">void</span><span class="normal"> </span><span class="symbol">(*</span><span class="normal"> open</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerFile</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">file</span><span class="symbol">,</span>
+<span class="normal">                 </span><span class="usertype">GError</span><span class="normal">     </span><span class="symbol">**</span><span class="normal">error</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">/* Padding to allow adding up to 12 new virtual functions without</span>
+<span class="comment">   * breaking ABI. */</span>
+<span class="normal">  </span><span class="usertype">gpointer</span><span class="normal"> padding</span><span class="symbol">[</span><span class="number">12</span><span class="symbol">];</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+
+<span class="comment">/*</span>
+<span class="comment"> * Method definitions.</span>
+<span class="comment"> */</span>
+<span class="usertype">ViewerFile</span><span class="normal"> </span><span class="symbol">*</span><span class="function">viewer_file_new</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">);</span>
+
+<span class="normal"><a href="../glib-Miscellaneous-Macros.html#G-END-DECLS:CAPS">G_END_DECLS</a></span>
+
+<span class="preproc">#endif</span><span class="normal"> </span><span class="comment">/* __VIEWER_FILE_H__ */</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+    </p>
+<p>
+      The convention for header includes is to add the minimum number of
+      <code class="function">#include</code> directives to the top of your headers needed
+      to compile that header. This
+      allows client code to simply <code class="function">#include "viewer-file.h"</code>,
+      without needing to know the prerequisites for
+      <code class="filename">viewer-file.h</code>.
+    </p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

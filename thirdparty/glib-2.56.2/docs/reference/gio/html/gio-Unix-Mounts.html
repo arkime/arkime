@@ -1,0 +1,1583 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Unix Mounts: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="volume_mon.html" title="Volumes and Drives">
+<link rel="prev" href="GDrive.html" title="GDrive">
+<link rel="next" href="icons.html" title="Icons">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gio-Unix-Mounts.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#gio-Unix-Mounts.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_signals">  <span class="dim">|</span> 
+                  <a href="#gio-Unix-Mounts.signals" class="shortcut">Signals</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="volume_mon.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GDrive.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="icons.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-Unix-Mounts"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-Unix-Mounts.top_of_page"></a>Unix Mounts</span></h2>
+<p>Unix Mounts — UNIX mounts</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gio-Unix-Mounts.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-free" title="g_unix_mount_free ()">g_unix_mount_free</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-compare" title="g_unix_mount_compare ()">g_unix_mount_compare</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="returnvalue">GUnixMountEntry</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-copy" title="g_unix_mount_copy ()">g_unix_mount_copy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-get-mount-path" title="g_unix_mount_get_mount_path ()">g_unix_mount_get_mount_path</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-get-device-path" title="g_unix_mount_get_device_path ()">g_unix_mount_get_device_path</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-get-fs-type" title="g_unix_mount_get_fs_type ()">g_unix_mount_get_fs_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-is-readonly" title="g_unix_mount_is_readonly ()">g_unix_mount_is_readonly</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-is-system-internal" title="g_unix_mount_is_system_internal ()">g_unix_mount_is_system_internal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-guess-icon" title="g_unix_mount_guess_icon ()">g_unix_mount_guess_icon</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-guess-symbolic-icon" title="g_unix_mount_guess_symbolic_icon ()">g_unix_mount_guess_symbolic_icon</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-guess-name" title="g_unix_mount_guess_name ()">g_unix_mount_guess_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-guess-can-eject" title="g_unix_mount_guess_can_eject ()">g_unix_mount_guess_can_eject</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-guess-should-display" title="g_unix_mount_guess_should_display ()">g_unix_mount_guess_should_display</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-point-free" title="g_unix_mount_point_free ()">g_unix_mount_point_free</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-point-compare" title="g_unix_mount_point_compare ()">g_unix_mount_point_compare</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="returnvalue">GUnixMountPoint</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-point-copy" title="g_unix_mount_point_copy ()">g_unix_mount_point_copy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-point-get-mount-path" title="g_unix_mount_point_get_mount_path ()">g_unix_mount_point_get_mount_path</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-point-get-device-path" title="g_unix_mount_point_get_device_path ()">g_unix_mount_point_get_device_path</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-point-get-fs-type" title="g_unix_mount_point_get_fs_type ()">g_unix_mount_point_get_fs_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-point-get-options" title="g_unix_mount_point_get_options ()">g_unix_mount_point_get_options</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-point-is-readonly" title="g_unix_mount_point_is_readonly ()">g_unix_mount_point_is_readonly</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-point-is-user-mountable" title="g_unix_mount_point_is_user_mountable ()">g_unix_mount_point_is_user_mountable</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-point-is-loopback" title="g_unix_mount_point_is_loopback ()">g_unix_mount_point_is_loopback</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-point-guess-icon" title="g_unix_mount_point_guess_icon ()">g_unix_mount_point_guess_icon</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-point-guess-symbolic-icon" title="g_unix_mount_point_guess_symbolic_icon ()">g_unix_mount_point_guess_symbolic_icon</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-point-guess-name" title="g_unix_mount_point_guess_name ()">g_unix_mount_point_guess_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-point-guess-can-eject" title="g_unix_mount_point_guess_can_eject ()">g_unix_mount_point_guess_can_eject</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-points-get" title="g_unix_mount_points_get ()">g_unix_mount_points_get</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mounts-get" title="g_unix_mounts_get ()">g_unix_mounts_get</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="returnvalue">GUnixMountEntry</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-at" title="g_unix_mount_at ()">g_unix_mount_at</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mounts-changed-since" title="g_unix_mounts_changed_since ()">g_unix_mounts_changed_since</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-points-changed-since" title="g_unix_mount_points_changed_since ()">g_unix_mount_points_changed_since</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-Unix-Mounts.html#GUnixMountMonitor"><span class="returnvalue">GUnixMountMonitor</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-monitor-get" title="g_unix_mount_monitor_get ()">g_unix_mount_monitor_get</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-Unix-Mounts.html#GUnixMountMonitor"><span class="returnvalue">GUnixMountMonitor</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-monitor-new" title="g_unix_mount_monitor_new ()">g_unix_mount_monitor_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-monitor-set-rate-limit" title="g_unix_mount_monitor_set_rate_limit ()">g_unix_mount_monitor_set_rate_limit</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-is-mount-path-system-internal" title="g_unix_is_mount_path_system_internal ()">g_unix_is_mount_path_system_internal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-is-system-fs-type" title="g_unix_is_system_fs_type ()">g_unix_is_system_fs_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Unix-Mounts.html#g-unix-is-system-device-path" title="g_unix_is_system_device_path ()">g_unix_is_system_device_path</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-Unix-Mounts.signals"></a><h2>Signals</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="signals_return">
+<col width="300px" class="signals_name">
+<col width="200px" class="signals_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="gio-Unix-Mounts.html#GUnixMountMonitor-mountpoints-changed" title="The “mountpoints-changed” signal">mountpoints-changed</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="gio-Unix-Mounts.html#GUnixMountMonitor-mounts-changed" title="The “mounts-changed” signal">mounts-changed</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<a name="GUnixMountPoint"></a><a name="GUnixMountEntry"></a><a name="GUnixMountMonitor"></a><div class="refsect1">
+<a name="gio-Unix-Mounts.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint-struct" title="GUnixMountPoint">GUnixMountPoint</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry-struct" title="GUnixMountEntry">GUnixMountEntry</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gio-Unix-Mounts.html#GUnixMountMonitor-struct" title="GUnixMountMonitor">GUnixMountMonitor</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-Unix-Mounts.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Boxed-Types.html">GBoxed</a>
+    <span class="lineart">├──</span> GUnixMountEntry
+    <span class="lineart">╰──</span> GUnixMountPoint
+    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GUnixMountMonitor
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-Unix-Mounts.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gunixmounts.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-Unix-Mounts.description"></a><h2>Description</h2>
+<p>Routines for managing mounted UNIX mount points and paths.</p>
+<p>Note that <code class="literal">&amp;lt;gio/gunixmounts.h&gt;</code> belongs to the UNIX-specific GIO
+interfaces, thus you have to use the <code class="literal">gio-unix-2.0.pc</code> pkg-config
+file when using it.</p>
+</div>
+<div class="refsect1">
+<a name="gio-Unix-Mounts.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-unix-mount-free"></a><h3>g_unix_mount_free ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_unix_mount_free (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a> *mount_entry</code></em>);</pre>
+<p>Frees a unix mount.</p>
+<div class="refsect3">
+<a name="g-unix-mount-free.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_entry</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-compare"></a><h3>g_unix_mount_compare ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>
+g_unix_mount_compare (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a> *mount1</code></em>,
+                      <em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a> *mount2</code></em>);</pre>
+<p>Compares two unix mounts.</p>
+<div class="refsect3">
+<a name="g-unix-mount-compare.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>mount1</p></td>
+<td class="parameter_description"><p>first <a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a> to compare.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mount2</p></td>
+<td class="parameter_description"><p>second <a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a> to compare.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-compare.returns"></a><h4>Returns</h4>
+<p> 1, 0 or -1 if <em class="parameter"><code>mount1</code></em>
+is greater than, equal to,
+or less than <em class="parameter"><code>mount2</code></em>
+, respectively. </p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-copy"></a><h3>g_unix_mount_copy ()</h3>
+<pre class="programlisting"><a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="returnvalue">GUnixMountEntry</span></a> *
+g_unix_mount_copy (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a> *mount_entry</code></em>);</pre>
+<p>Makes a copy of <em class="parameter"><code>mount_entry</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-unix-mount-copy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_entry</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-copy.returns"></a><h4>Returns</h4>
+<p>a new <a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: 2.54</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-get-mount-path"></a><h3>g_unix_mount_get_mount_path ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+g_unix_mount_get_mount_path (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a> *mount_entry</code></em>);</pre>
+<p>Gets the mount path for a unix mount.</p>
+<div class="refsect3">
+<a name="g-unix-mount-get-mount-path.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_entry</p></td>
+<td class="parameter_description"><p>input <a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a> to get the mount path for.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-get-mount-path.returns"></a><h4>Returns</h4>
+<p>the mount path for <em class="parameter"><code>mount_entry</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-get-device-path"></a><h3>g_unix_mount_get_device_path ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+g_unix_mount_get_device_path (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a> *mount_entry</code></em>);</pre>
+<p>Gets the device path for a unix mount.</p>
+<div class="refsect3">
+<a name="g-unix-mount-get-device-path.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_entry</p></td>
+<td class="parameter_description"><p>a <span class="type">GUnixMount</span>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-get-device-path.returns"></a><h4>Returns</h4>
+<p>a string containing the device path. </p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-get-fs-type"></a><h3>g_unix_mount_get_fs_type ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+g_unix_mount_get_fs_type (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a> *mount_entry</code></em>);</pre>
+<p>Gets the filesystem type for the unix mount.</p>
+<div class="refsect3">
+<a name="g-unix-mount-get-fs-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_entry</p></td>
+<td class="parameter_description"><p>a <span class="type">GUnixMount</span>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-get-fs-type.returns"></a><h4>Returns</h4>
+<p> a string containing the file system type.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-is-readonly"></a><h3>g_unix_mount_is_readonly ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_unix_mount_is_readonly (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a> *mount_entry</code></em>);</pre>
+<p>Checks if a unix mount is mounted read only.</p>
+<div class="refsect3">
+<a name="g-unix-mount-is-readonly.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_entry</p></td>
+<td class="parameter_description"><p>a <span class="type">GUnixMount</span>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-is-readonly.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>mount_entry</code></em>
+is read only.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-is-system-internal"></a><h3>g_unix_mount_is_system_internal ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_unix_mount_is_system_internal (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a> *mount_entry</code></em>);</pre>
+<p>Checks if a Unix mount is a system mount. This is the Boolean OR of
+<a class="link" href="gio-Unix-Mounts.html#g-unix-is-system-fs-type" title="g_unix_is_system_fs_type ()"><code class="function">g_unix_is_system_fs_type()</code></a>, <a class="link" href="gio-Unix-Mounts.html#g-unix-is-system-device-path" title="g_unix_is_system_device_path ()"><code class="function">g_unix_is_system_device_path()</code></a> and
+<a class="link" href="gio-Unix-Mounts.html#g-unix-is-mount-path-system-internal" title="g_unix_is_mount_path_system_internal ()"><code class="function">g_unix_is_mount_path_system_internal()</code></a> on <em class="parameter"><code>mount_entry</code></em>
+’s properties.</p>
+<p>The definition of what a ‘system’ mount entry is may change over time as new
+file system types and device paths are ignored.</p>
+<div class="refsect3">
+<a name="g-unix-mount-is-system-internal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_entry</p></td>
+<td class="parameter_description"><p>a <span class="type">GUnixMount</span>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-is-system-internal.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the unix mount is for a system path.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-guess-icon"></a><h3>g_unix_mount_guess_icon ()</h3>
+<pre class="programlisting"><a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+g_unix_mount_guess_icon (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a> *mount_entry</code></em>);</pre>
+<p>Guesses the icon of a Unix mount.</p>
+<div class="refsect3">
+<a name="g-unix-mount-guess-icon.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_entry</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-guess-icon.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-guess-symbolic-icon"></a><h3>g_unix_mount_guess_symbolic_icon ()</h3>
+<pre class="programlisting"><a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+g_unix_mount_guess_symbolic_icon (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a> *mount_entry</code></em>);</pre>
+<p>Guesses the symbolic icon of a Unix mount.</p>
+<div class="refsect3">
+<a name="g-unix-mount-guess-symbolic-icon.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_entry</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-guess-symbolic-icon.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-guess-name"></a><h3>g_unix_mount_guess_name ()</h3>
+<pre class="programlisting"><span class="returnvalue">char</span> *
+g_unix_mount_guess_name (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a> *mount_entry</code></em>);</pre>
+<p>Guesses the name of a Unix mount. 
+The result is a translated string.</p>
+<div class="refsect3">
+<a name="g-unix-mount-guess-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_entry</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-guess-name.returns"></a><h4>Returns</h4>
+<p> A newly allocated string that must
+be freed with <a href="../glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-guess-can-eject"></a><h3>g_unix_mount_guess_can_eject ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_unix_mount_guess_can_eject (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a> *mount_entry</code></em>);</pre>
+<p>Guesses whether a Unix mount can be ejected.</p>
+<div class="refsect3">
+<a name="g-unix-mount-guess-can-eject.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_entry</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-guess-can-eject.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>mount_entry</code></em>
+is deemed to be ejectable.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-guess-should-display"></a><h3>g_unix_mount_guess_should_display ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_unix_mount_guess_should_display (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a> *mount_entry</code></em>);</pre>
+<p>Guesses whether a Unix mount should be displayed in the UI.</p>
+<div class="refsect3">
+<a name="g-unix-mount-guess-should-display.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_entry</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-guess-should-display.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>mount_entry</code></em>
+is deemed to be displayable.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-point-free"></a><h3>g_unix_mount_point_free ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_unix_mount_point_free (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a> *mount_point</code></em>);</pre>
+<p>Frees a unix mount point.</p>
+<div class="refsect3">
+<a name="g-unix-mount-point-free.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_point</p></td>
+<td class="parameter_description"><p>unix mount point to free.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-point-compare"></a><h3>g_unix_mount_point_compare ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gint"><span class="returnvalue">gint</span></a>
+g_unix_mount_point_compare (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a> *mount1</code></em>,
+                            <em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a> *mount2</code></em>);</pre>
+<p>Compares two unix mount points.</p>
+<div class="refsect3">
+<a name="g-unix-mount-point-compare.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>mount1</p></td>
+<td class="parameter_description"><p>a <span class="type">GUnixMount</span>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mount2</p></td>
+<td class="parameter_description"><p>a <span class="type">GUnixMount</span>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-point-compare.returns"></a><h4>Returns</h4>
+<p> 1, 0 or -1 if <em class="parameter"><code>mount1</code></em>
+is greater than, equal to,
+or less than <em class="parameter"><code>mount2</code></em>
+, respectively.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-point-copy"></a><h3>g_unix_mount_point_copy ()</h3>
+<pre class="programlisting"><a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="returnvalue">GUnixMountPoint</span></a> *
+g_unix_mount_point_copy (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a> *mount_point</code></em>);</pre>
+<p>Makes a copy of <em class="parameter"><code>mount_point</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-unix-mount-point-copy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_point</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-point-copy.returns"></a><h4>Returns</h4>
+<p>a new <a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: 2.54</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-point-get-mount-path"></a><h3>g_unix_mount_point_get_mount_path ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+g_unix_mount_point_get_mount_path (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a> *mount_point</code></em>);</pre>
+<p>Gets the mount path for a unix mount point.</p>
+<div class="refsect3">
+<a name="g-unix-mount-point-get-mount-path.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_point</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-point-get-mount-path.returns"></a><h4>Returns</h4>
+<p>a string containing the mount path. </p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-point-get-device-path"></a><h3>g_unix_mount_point_get_device_path ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+g_unix_mount_point_get_device_path (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a> *mount_point</code></em>);</pre>
+<p>Gets the device path for a unix mount point.</p>
+<div class="refsect3">
+<a name="g-unix-mount-point-get-device-path.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_point</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-point-get-device-path.returns"></a><h4>Returns</h4>
+<p>a string containing the device path. </p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-point-get-fs-type"></a><h3>g_unix_mount_point_get_fs_type ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+g_unix_mount_point_get_fs_type (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a> *mount_point</code></em>);</pre>
+<p>Gets the file system type for the mount point.</p>
+<div class="refsect3">
+<a name="g-unix-mount-point-get-fs-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_point</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-point-get-fs-type.returns"></a><h4>Returns</h4>
+<p> a string containing the file system type.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-point-get-options"></a><h3>g_unix_mount_point_get_options ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+g_unix_mount_point_get_options (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a> *mount_point</code></em>);</pre>
+<p>Gets the options for the mount point.</p>
+<div class="refsect3">
+<a name="g-unix-mount-point-get-options.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_point</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-point-get-options.returns"></a><h4>Returns</h4>
+<p> a string containing the options.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-point-is-readonly"></a><h3>g_unix_mount_point_is_readonly ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_unix_mount_point_is_readonly (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a> *mount_point</code></em>);</pre>
+<p>Checks if a unix mount point is read only.</p>
+<div class="refsect3">
+<a name="g-unix-mount-point-is-readonly.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_point</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-point-is-readonly.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if a mount point is read only.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-point-is-user-mountable"></a><h3>g_unix_mount_point_is_user_mountable ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_unix_mount_point_is_user_mountable (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a> *mount_point</code></em>);</pre>
+<p>Checks if a unix mount point is mountable by the user.</p>
+<div class="refsect3">
+<a name="g-unix-mount-point-is-user-mountable.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_point</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-point-is-user-mountable.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the mount point is user mountable.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-point-is-loopback"></a><h3>g_unix_mount_point_is_loopback ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_unix_mount_point_is_loopback (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a> *mount_point</code></em>);</pre>
+<p>Checks if a unix mount point is a loopback device.</p>
+<div class="refsect3">
+<a name="g-unix-mount-point-is-loopback.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_point</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-point-is-loopback.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the mount point is a loopback. <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise. </p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-point-guess-icon"></a><h3>g_unix_mount_point_guess_icon ()</h3>
+<pre class="programlisting"><a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+g_unix_mount_point_guess_icon (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a> *mount_point</code></em>);</pre>
+<p>Guesses the icon of a Unix mount point.</p>
+<div class="refsect3">
+<a name="g-unix-mount-point-guess-icon.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_point</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-point-guess-icon.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-point-guess-symbolic-icon"></a><h3>g_unix_mount_point_guess_symbolic_icon ()</h3>
+<pre class="programlisting"><a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+g_unix_mount_point_guess_symbolic_icon
+                               (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a> *mount_point</code></em>);</pre>
+<p>Guesses the symbolic icon of a Unix mount point.</p>
+<div class="refsect3">
+<a name="g-unix-mount-point-guess-symbolic-icon.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_point</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-point-guess-symbolic-icon.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-point-guess-name"></a><h3>g_unix_mount_point_guess_name ()</h3>
+<pre class="programlisting"><span class="returnvalue">char</span> *
+g_unix_mount_point_guess_name (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a> *mount_point</code></em>);</pre>
+<p>Guesses the name of a Unix mount point. 
+The result is a translated string.</p>
+<div class="refsect3">
+<a name="g-unix-mount-point-guess-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_point</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-point-guess-name.returns"></a><h4>Returns</h4>
+<p> A newly allocated string that must
+be freed with <a href="../glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-point-guess-can-eject"></a><h3>g_unix_mount_point_guess_can_eject ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_unix_mount_point_guess_can_eject (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a> *mount_point</code></em>);</pre>
+<p>Guesses whether a Unix mount point can be ejected.</p>
+<div class="refsect3">
+<a name="g-unix-mount-point-guess-can-eject.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_point</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-point-guess-can-eject.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>mount_point</code></em>
+is deemed to be ejectable.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-points-get"></a><h3>g_unix_mount_points_get ()</h3>
+<pre class="programlisting"><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+g_unix_mount_points_get (<em class="parameter"><code><a href="../glib-Basic-Types.html#guint64"><span class="type">guint64</span></a> *time_read</code></em>);</pre>
+<p>Gets a <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of <a class="link" href="gio-Unix-Mounts.html#GUnixMountPoint"><span class="type">GUnixMountPoint</span></a> containing the unix mount points.
+If <em class="parameter"><code>time_read</code></em>
+ is set, it will be filled with the mount timestamp,
+allowing for checking if the mounts have changed with
+<a class="link" href="gio-Unix-Mounts.html#g-unix-mount-points-changed-since" title="g_unix_mount_points_changed_since ()"><code class="function">g_unix_mount_points_changed_since()</code></a>.</p>
+<div class="refsect3">
+<a name="g-unix-mount-points-get.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>time_read</p></td>
+<td class="parameter_description"><p>guint64 to contain a timestamp. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-points-get.returns"></a><h4>Returns</h4>
+<p>a <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of the UNIX mountpoints. </p>
+<p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GUnixMountPoint][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mounts-get"></a><h3>g_unix_mounts_get ()</h3>
+<pre class="programlisting"><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+g_unix_mounts_get (<em class="parameter"><code><a href="../glib-Basic-Types.html#guint64"><span class="type">guint64</span></a> *time_read</code></em>);</pre>
+<p>Gets a <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of <a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a> containing the unix mounts.
+If <em class="parameter"><code>time_read</code></em>
+ is set, it will be filled with the mount
+timestamp, allowing for checking if the mounts have changed
+with <a class="link" href="gio-Unix-Mounts.html#g-unix-mounts-changed-since" title="g_unix_mounts_changed_since ()"><code class="function">g_unix_mounts_changed_since()</code></a>.</p>
+<div class="refsect3">
+<a name="g-unix-mounts-get.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>time_read</p></td>
+<td class="parameter_description"><p>guint64 to contain a timestamp, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mounts-get.returns"></a><h4>Returns</h4>
+<p>a <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of the UNIX mounts. </p>
+<p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GUnixMountEntry][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-at"></a><h3>g_unix_mount_at ()</h3>
+<pre class="programlisting"><a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="returnvalue">GUnixMountEntry</span></a> *
+g_unix_mount_at (<em class="parameter"><code>const <span class="type">char</span> *mount_path</code></em>,
+                 <em class="parameter"><code><a href="../glib-Basic-Types.html#guint64"><span class="type">guint64</span></a> *time_read</code></em>);</pre>
+<p>Gets a <a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a> for a given mount path. If <em class="parameter"><code>time_read</code></em>
+
+is set, it will be filled with a unix timestamp for checking
+if the mounts have changed since with <a class="link" href="gio-Unix-Mounts.html#g-unix-mounts-changed-since" title="g_unix_mounts_changed_since ()"><code class="function">g_unix_mounts_changed_since()</code></a>.</p>
+<div class="refsect3">
+<a name="g-unix-mount-at.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>mount_path</p></td>
+<td class="parameter_description"><p>path for a possible unix mount. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>time_read</p></td>
+<td class="parameter_description"><p>guint64 to contain a timestamp. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-at.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountEntry"><span class="type">GUnixMountEntry</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mounts-changed-since"></a><h3>g_unix_mounts_changed_since ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_unix_mounts_changed_since (<em class="parameter"><code><a href="../glib-Basic-Types.html#guint64"><span class="type">guint64</span></a> time</code></em>);</pre>
+<p>Checks if the unix mounts have changed since a given unix time.</p>
+<div class="refsect3">
+<a name="g-unix-mounts-changed-since.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>time</p></td>
+<td class="parameter_description"><p>guint64 to contain a timestamp.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mounts-changed-since.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the mounts have changed since <em class="parameter"><code>time</code></em>
+. </p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-points-changed-since"></a><h3>g_unix_mount_points_changed_since ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_unix_mount_points_changed_since (<em class="parameter"><code><a href="../glib-Basic-Types.html#guint64"><span class="type">guint64</span></a> time</code></em>);</pre>
+<p>Checks if the unix mount points have changed since a given unix time.</p>
+<div class="refsect3">
+<a name="g-unix-mount-points-changed-since.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>time</p></td>
+<td class="parameter_description"><p>guint64 to contain a timestamp.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-mount-points-changed-since.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the mount points have changed since <em class="parameter"><code>time</code></em>
+. </p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-monitor-get"></a><h3>g_unix_mount_monitor_get ()</h3>
+<pre class="programlisting"><a class="link" href="gio-Unix-Mounts.html#GUnixMountMonitor"><span class="returnvalue">GUnixMountMonitor</span></a> *
+g_unix_mount_monitor_get (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Gets the <a class="link" href="gio-Unix-Mounts.html#GUnixMountMonitor"><span class="type">GUnixMountMonitor</span></a> for the current thread-default main
+context.</p>
+<p>The mount monitor can be used to monitor for changes to the list of
+mounted filesystems as well as the list of mount points (ie: fstab
+entries).</p>
+<p>You must only call <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a> on the return value from under
+the same main context as you called this function.</p>
+<div class="refsect3">
+<a name="g-unix-mount-monitor-get.returns"></a><h4>Returns</h4>
+<p>the <a class="link" href="gio-Unix-Mounts.html#GUnixMountMonitor"><span class="type">GUnixMountMonitor</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-monitor-new"></a><h3>g_unix_mount_monitor_new ()</h3>
+<pre class="programlisting"><a class="link" href="gio-Unix-Mounts.html#GUnixMountMonitor"><span class="returnvalue">GUnixMountMonitor</span></a> *
+g_unix_mount_monitor_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_unix_mount_monitor_new</code> has been deprecated since version 2.44 and should not be used in newly-written code.</p>
+<p>Use <a class="link" href="gio-Unix-Mounts.html#g-unix-mount-monitor-get" title="g_unix_mount_monitor_get ()"><code class="function">g_unix_mount_monitor_get()</code></a> instead.</p>
+</div>
+<p>Deprecated alias for <a class="link" href="gio-Unix-Mounts.html#g-unix-mount-monitor-get" title="g_unix_mount_monitor_get ()"><code class="function">g_unix_mount_monitor_get()</code></a>.</p>
+<p>This function was never a true constructor, which is why it was
+renamed.</p>
+<div class="refsect3">
+<a name="g-unix-mount-monitor-new.returns"></a><h4>Returns</h4>
+<p> a <a class="link" href="gio-Unix-Mounts.html#GUnixMountMonitor"><span class="type">GUnixMountMonitor</span></a>.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-mount-monitor-set-rate-limit"></a><h3>g_unix_mount_monitor_set_rate_limit ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_unix_mount_monitor_set_rate_limit (<em class="parameter"><code><a class="link" href="gio-Unix-Mounts.html#GUnixMountMonitor"><span class="type">GUnixMountMonitor</span></a> *mount_monitor</code></em>,
+                                     <em class="parameter"><code><span class="type">int</span> limit_msec</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_unix_mount_monitor_set_rate_limit</code> has been deprecated since version 2.44 and should not be used in newly-written code.</p>
+<p>This function does nothing.  Don't call it.</p>
+</div>
+<p>This function does nothing.</p>
+<p>Before 2.44, this was a partially-effective way of controlling the
+rate at which events would be reported under some uncommon
+circumstances.  Since <em class="parameter"><code>mount_monitor</code></em>
+ is a singleton, it also meant
+that calling this function would have side effects for other users of
+the monitor.</p>
+<div class="refsect3">
+<a name="g-unix-mount-monitor-set-rate-limit.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>mount_monitor</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-Unix-Mounts.html#GUnixMountMonitor"><span class="type">GUnixMountMonitor</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>limit_msec</p></td>
+<td class="parameter_description"><p>a integer with the limit in milliseconds to
+poll for changes.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-18.html#api-index-2.18">2.18</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-is-mount-path-system-internal"></a><h3>g_unix_is_mount_path_system_internal ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_unix_is_mount_path_system_internal (<em class="parameter"><code>const <span class="type">char</span> *mount_path</code></em>);</pre>
+<p>Determines if <em class="parameter"><code>mount_path</code></em>
+ is considered an implementation of the
+OS. This is primarily used for hiding mountable and mounted volumes
+that only are used in the OS and has little to no relevance to the
+casual user.</p>
+<div class="refsect3">
+<a name="g-unix-is-mount-path-system-internal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>mount_path</p></td>
+<td class="parameter_description"><p>a mount path, e.g. <code class="literal">/media/disk</code> or <code class="literal">/usr</code>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> filename]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-is-mount-path-system-internal.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>mount_path</code></em>
+is considered an implementation detail
+of the OS.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-is-system-fs-type"></a><h3>g_unix_is_system_fs_type ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_unix_is_system_fs_type (<em class="parameter"><code>const <span class="type">char</span> *fs_type</code></em>);</pre>
+<p>Determines if <em class="parameter"><code>fs_type</code></em>
+ is considered a type of file system which is only
+used in implementation of the OS. This is primarily used for hiding
+mounted volumes that are intended as APIs for programs to read, and system
+administrators at a shell; rather than something that should, for example,
+appear in a GUI. For example, the Linux <code class="literal">/proc</code> filesystem.</p>
+<p>The list of file system types considered ‘system’ ones may change over time.</p>
+<div class="refsect3">
+<a name="g-unix-is-system-fs-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>fs_type</p></td>
+<td class="parameter_description"><p>a file system type, e.g. <code class="literal">procfs</code> or <code class="literal">tmpfs</code></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-is-system-fs-type.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>fs_type</code></em>
+is considered an implementation detail of the OS.</p>
+</div>
+<p class="since">Since: 2.56</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-unix-is-system-device-path"></a><h3>g_unix_is_system_device_path ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_unix_is_system_device_path (<em class="parameter"><code>const <span class="type">char</span> *device_path</code></em>);</pre>
+<p>Determines if <em class="parameter"><code>device_path</code></em>
+ is considered a block device path which is only
+used in implementation of the OS. This is primarily used for hiding
+mounted volumes that are intended as APIs for programs to read, and system
+administrators at a shell; rather than something that should, for example,
+appear in a GUI. For example, the Linux <code class="literal">/proc</code> filesystem.</p>
+<p>The list of device paths considered ‘system’ ones may change over time.</p>
+<div class="refsect3">
+<a name="g-unix-is-system-device-path.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>device_path</p></td>
+<td class="parameter_description"><p>a device path, e.g. <code class="literal">/dev/loop0</code> or <code class="literal">nfsd</code></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-unix-is-system-device-path.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>device_path</code></em>
+is considered an implementation detail of
+the OS.</p>
+</div>
+<p class="since">Since: 2.56</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-Unix-Mounts.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GUnixMountPoint-struct"></a><h3>GUnixMountPoint</h3>
+<pre class="programlisting">typedef struct _GUnixMountPoint GUnixMountPoint;</pre>
+<p>Defines a Unix mount point (e.g. &lt;filename&gt;/dev&lt;/filename&gt;).
+This corresponds roughly to a fstab entry.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GUnixMountEntry-struct"></a><h3>GUnixMountEntry</h3>
+<pre class="programlisting">typedef struct _GUnixMountEntry GUnixMountEntry;</pre>
+<p>Defines a Unix mount entry (e.g. &lt;filename&gt;/media/cdrom&lt;/filename&gt;).
+This corresponds roughly to a mtab entry.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GUnixMountMonitor-struct"></a><h3>GUnixMountMonitor</h3>
+<pre class="programlisting">typedef struct _GUnixMountMonitor GUnixMountMonitor;</pre>
+<p>Watches <span class="type">GUnixMounts</span> for changes.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-Unix-Mounts.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="GUnixMountMonitor-mountpoints-changed"></a><h3>The <code class="literal">“mountpoints-changed”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="gio-Unix-Mounts.html#GUnixMountMonitor"><span class="type">GUnixMountMonitor</span></a> *monitor,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>           user_data)</pre>
+<p>Emitted when the unix mount points have changed.</p>
+<div class="refsect3">
+<a name="GUnixMountMonitor-mountpoints-changed.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>monitor</p></td>
+<td class="parameter_description"><p>the object on which the signal is emitted</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GUnixMountMonitor-mounts-changed"></a><h3>The <code class="literal">“mounts-changed”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="gio-Unix-Mounts.html#GUnixMountMonitor"><span class="type">GUnixMountMonitor</span></a> *monitor,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>           user_data)</pre>
+<p>Emitted when the unix mounts have changed.</p>
+<div class="refsect3">
+<a name="GUnixMountMonitor-mounts-changed.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>monitor</p></td>
+<td class="parameter_description"><p>the object on which the signal is emitted</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,661 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Owning Bus Names: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="gdbus-convenience.html" title="High-level D-Bus Support">
+<link rel="prev" href="gdbus-convenience.html" title="High-level D-Bus Support">
+<link rel="next" href="gio-Watching-Bus-Names.html" title="Watching Bus Names">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gio-Owning-Bus-Names.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="gdbus-convenience.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gdbus-convenience.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gio-Watching-Bus-Names.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-Owning-Bus-Names"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-Owning-Bus-Names.top_of_page"></a>Owning Bus Names</span></h2>
+<p>Owning Bus Names — Simple API for owning bus names</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gio-Owning-Bus-Names.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="gio-Owning-Bus-Names.html#GBusAcquiredCallback" title="GBusAcquiredCallback ()">*GBusAcquiredCallback</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="gio-Owning-Bus-Names.html#GBusNameAcquiredCallback" title="GBusNameAcquiredCallback ()">*GBusNameAcquiredCallback</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="gio-Owning-Bus-Names.html#GBusNameLostCallback" title="GBusNameLostCallback ()">*GBusNameLostCallback</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()">g_bus_own_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name-on-connection" title="g_bus_own_name_on_connection ()">g_bus_own_name_on_connection</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Owning-Bus-Names.html#g-bus-unown-name" title="g_bus_unown_name ()">g_bus_unown_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name-with-closures" title="g_bus_own_name_with_closures ()">g_bus_own_name_with_closures</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name-on-connection-with-closures" title="g_bus_own_name_on_connection_with_closures ()">g_bus_own_name_on_connection_with_closures</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-Owning-Bus-Names.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags">GBusNameOwnerFlags</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-Owning-Bus-Names.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-Owning-Bus-Names.description"></a><h2>Description</h2>
+<p>Convenience API for owning bus names.</p>
+<p>A simple example for owning a name can be found in
+<a class="ulink" href="https://git.gnome.org/browse/glib/tree/gio/tests/gdbus-example-own-name.c" target="_top">gdbus-example-own-name.c</a></p>
+</div>
+<div class="refsect1">
+<a name="gio-Owning-Bus-Names.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="GBusAcquiredCallback"></a><h3>GBusAcquiredCallback ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+<span class="c_punctuation">(</span>*GBusAcquiredCallback<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                         <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                         <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Invoked when a connection to a message bus has been obtained.</p>
+<div class="refsect3">
+<a name="GBusAcquiredCallback.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>The <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> to a message bus.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>The name that is requested to be owned.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>User data passed to <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GBusNameAcquiredCallback"></a><h3>GBusNameAcquiredCallback ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+<span class="c_punctuation">(</span>*GBusNameAcquiredCallback<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                             <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                             <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Invoked when the name is acquired.</p>
+<div class="refsect3">
+<a name="GBusNameAcquiredCallback.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>The <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> on which to acquired the name.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>The name being owned.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>User data passed to <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a> or <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name-on-connection" title="g_bus_own_name_on_connection ()"><code class="function">g_bus_own_name_on_connection()</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GBusNameLostCallback"></a><h3>GBusNameLostCallback ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+<span class="c_punctuation">(</span>*GBusNameLostCallback<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                         <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                         <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Invoked when the name is lost or <em class="parameter"><code>connection</code></em>
+ has been closed.</p>
+<div class="refsect3">
+<a name="GBusNameLostCallback.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>The <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> on which to acquire the name or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if
+the connection was disconnected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>The name being owned.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>User data passed to <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a> or <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name-on-connection" title="g_bus_own_name_on_connection ()"><code class="function">g_bus_own_name_on_connection()</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bus-own-name"></a><h3>g_bus_own_name ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+g_bus_own_name (<em class="parameter"><code><a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a> bus_type</code></em>,
+                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> flags</code></em>,
+                <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusAcquiredCallback" title="GBusAcquiredCallback ()"><span class="type">GBusAcquiredCallback</span></a> bus_acquired_handler</code></em>,
+                <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameAcquiredCallback" title="GBusNameAcquiredCallback ()"><span class="type">GBusNameAcquiredCallback</span></a> name_acquired_handler</code></em>,
+                <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameLostCallback" title="GBusNameLostCallback ()"><span class="type">GBusNameLostCallback</span></a> name_lost_handler</code></em>,
+                <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                <em class="parameter"><code><a href="../glib-Datasets.html#GDestroyNotify"><span class="type">GDestroyNotify</span></a> user_data_free_func</code></em>);</pre>
+<p>Starts acquiring <em class="parameter"><code>name</code></em>
+ on the bus specified by <em class="parameter"><code>bus_type</code></em>
+ and calls
+<em class="parameter"><code>name_acquired_handler</code></em>
+ and <em class="parameter"><code>name_lost_handler</code></em>
+ when the name is
+acquired respectively lost. Callbacks will be invoked in the 
+<a href="../glib-The-Main-Event-Loop.html#g-main-context-push-thread-default">thread-default main context</a>
+of the thread you are calling this function from.</p>
+<p>You are guaranteed that one of the <em class="parameter"><code>name_acquired_handler</code></em>
+ and <em class="parameter"><code>name_lost_handler</code></em>
+
+callbacks will be invoked after calling this function - there are three
+possible cases:</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p><em class="parameter"><code>name_lost_handler</code></em>
+ with a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> connection (if a connection to the bus
+can't be made).</p></li>
+<li class="listitem"><p><em class="parameter"><code>bus_acquired_handler</code></em>
+ then <em class="parameter"><code>name_lost_handler</code></em>
+ (if the name can't be
+obtained)</p></li>
+<li class="listitem"><p><em class="parameter"><code>bus_acquired_handler</code></em>
+ then <em class="parameter"><code>name_acquired_handler</code></em>
+ (if the name was
+obtained).</p></li>
+</ul></div>
+<p>When you are done owning the name, just call <a class="link" href="gio-Owning-Bus-Names.html#g-bus-unown-name" title="g_bus_unown_name ()"><code class="function">g_bus_unown_name()</code></a>
+with the owner id this function returns.</p>
+<p>If the name is acquired or lost (for example another application
+could acquire the name if you allow replacement or the application
+currently owning the name exits), the handlers are also invoked.
+If the <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> that is used for attempting to own the name
+closes, then <em class="parameter"><code>name_lost_handler</code></em>
+ is invoked since it is no longer
+possible for other processes to access the process.</p>
+<p>You cannot use <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a> several times for the same name (unless
+interleaved with calls to <a class="link" href="gio-Owning-Bus-Names.html#g-bus-unown-name" title="g_bus_unown_name ()"><code class="function">g_bus_unown_name()</code></a>) - only the first call
+will work.</p>
+<p>Another guarantee is that invocations of <em class="parameter"><code>name_acquired_handler</code></em>
+
+and <em class="parameter"><code>name_lost_handler</code></em>
+ are guaranteed to alternate; that
+is, if <em class="parameter"><code>name_acquired_handler</code></em>
+ is invoked then you are
+guaranteed that the next time one of the handlers is invoked, it
+will be <em class="parameter"><code>name_lost_handler</code></em>
+. The reverse is also true.</p>
+<p>If you plan on exporting objects (using e.g.
+<a class="link" href="GDBusConnection.html#g-dbus-connection-register-object" title="g_dbus_connection_register_object ()"><code class="function">g_dbus_connection_register_object()</code></a>), note that it is generally too late
+to export the objects in <em class="parameter"><code>name_acquired_handler</code></em>
+. Instead, you can do this
+in <em class="parameter"><code>bus_acquired_handler</code></em>
+ since you are guaranteed that this will run
+before <em class="parameter"><code>name</code></em>
+ is requested from the bus.</p>
+<p>This behavior makes it very simple to write applications that wants
+to own names and export objects.
+Simply register objects to be exported in <em class="parameter"><code>bus_acquired_handler</code></em>
+ and
+unregister the objects (if any) in <em class="parameter"><code>name_lost_handler</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-bus-own-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>bus_type</p></td>
+<td class="parameter_description"><p>the type of bus to own a name on</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>the well-known name to own</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>a set of flags from the <a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> enumeration</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bus_acquired_handler</p></td>
+<td class="parameter_description"><p>handler to invoke when connected to the bus of type <em class="parameter"><code>bus_type</code></em>
+or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name_acquired_handler</p></td>
+<td class="parameter_description"><p>handler to invoke when <em class="parameter"><code>name</code></em>
+is acquired or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name_lost_handler</p></td>
+<td class="parameter_description"><p>handler to invoke when <em class="parameter"><code>name</code></em>
+is lost or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data to pass to handlers</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data_free_func</p></td>
+<td class="parameter_description"><p>function for freeing <em class="parameter"><code>user_data</code></em>
+or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-bus-own-name.returns"></a><h4>Returns</h4>
+<p> an identifier (never 0) that an be used with
+<a class="link" href="gio-Owning-Bus-Names.html#g-bus-unown-name" title="g_bus_unown_name ()"><code class="function">g_bus_unown_name()</code></a> to stop owning the name.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bus-own-name-on-connection"></a><h3>g_bus_own_name_on_connection ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+g_bus_own_name_on_connection (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                              <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                              <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> flags</code></em>,
+                              <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameAcquiredCallback" title="GBusNameAcquiredCallback ()"><span class="type">GBusNameAcquiredCallback</span></a> name_acquired_handler</code></em>,
+                              <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameLostCallback" title="GBusNameLostCallback ()"><span class="type">GBusNameLostCallback</span></a> name_lost_handler</code></em>,
+                              <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                              <em class="parameter"><code><a href="../glib-Datasets.html#GDestroyNotify"><span class="type">GDestroyNotify</span></a> user_data_free_func</code></em>);</pre>
+<p>Like <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a> but takes a <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> instead of a
+<a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a>.</p>
+<div class="refsect3">
+<a name="g-bus-own-name-on-connection.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>the well-known name to own</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>a set of flags from the <a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> enumeration</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name_acquired_handler</p></td>
+<td class="parameter_description"><p>handler to invoke when <em class="parameter"><code>name</code></em>
+is acquired or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name_lost_handler</p></td>
+<td class="parameter_description"><p>handler to invoke when <em class="parameter"><code>name</code></em>
+is lost or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data to pass to handlers</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data_free_func</p></td>
+<td class="parameter_description"><p>function for freeing <em class="parameter"><code>user_data</code></em>
+or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-bus-own-name-on-connection.returns"></a><h4>Returns</h4>
+<p> an identifier (never 0) that an be used with
+<a class="link" href="gio-Owning-Bus-Names.html#g-bus-unown-name" title="g_bus_unown_name ()"><code class="function">g_bus_unown_name()</code></a> to stop owning the name</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bus-unown-name"></a><h3>g_bus_unown_name ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_bus_unown_name (<em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> owner_id</code></em>);</pre>
+<p>Stops owning a name.</p>
+<div class="refsect3">
+<a name="g-bus-unown-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>owner_id</p></td>
+<td class="parameter_description"><p>an identifier obtained from <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bus-own-name-with-closures"></a><h3>g_bus_own_name_with_closures ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+g_bus_own_name_with_closures (<em class="parameter"><code><a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a> bus_type</code></em>,
+                              <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                              <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> flags</code></em>,
+                              <em class="parameter"><code><a href="../gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> *bus_acquired_closure</code></em>,
+                              <em class="parameter"><code><a href="../gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> *name_acquired_closure</code></em>,
+                              <em class="parameter"><code><a href="../gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> *name_lost_closure</code></em>);</pre>
+<p>Version of <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a> using closures instead of callbacks for
+easier binding in other languages.</p>
+<p><span class="annotation">[<acronym title="Rename the original symbol's name to SYMBOL."><span class="acronym">rename-to</span></acronym> g_bus_own_name]</span></p>
+<div class="refsect3">
+<a name="g-bus-own-name-with-closures.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>bus_type</p></td>
+<td class="parameter_description"><p>the type of bus to own a name on</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>the well-known name to own</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>a set of flags from the <a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> enumeration</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bus_acquired_closure</p></td>
+<td class="parameter_description"><p><a href="../gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> to invoke when connected to
+the bus of type <em class="parameter"><code>bus_type</code></em>
+or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name_acquired_closure</p></td>
+<td class="parameter_description"><p><a href="../gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> to invoke when <em class="parameter"><code>name</code></em>
+is
+acquired or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name_lost_closure</p></td>
+<td class="parameter_description"><p><a href="../gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> to invoke when <em class="parameter"><code>name</code></em>
+is lost or
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-bus-own-name-with-closures.returns"></a><h4>Returns</h4>
+<p> an identifier (never 0) that an be used with
+<a class="link" href="gio-Owning-Bus-Names.html#g-bus-unown-name" title="g_bus_unown_name ()"><code class="function">g_bus_unown_name()</code></a> to stop owning the name.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-bus-own-name-on-connection-with-closures"></a><h3>g_bus_own_name_on_connection_with_closures ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+g_bus_own_name_on_connection_with_closures
+                               (<em class="parameter"><code><a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> *connection</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                                <em class="parameter"><code><a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> flags</code></em>,
+                                <em class="parameter"><code><a href="../gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> *name_acquired_closure</code></em>,
+                                <em class="parameter"><code><a href="../gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> *name_lost_closure</code></em>);</pre>
+<p>Version of <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name-on-connection" title="g_bus_own_name_on_connection ()"><code class="function">g_bus_own_name_on_connection()</code></a> using closures instead of
+callbacks for easier binding in other languages.</p>
+<p><span class="annotation">[<acronym title="Rename the original symbol's name to SYMBOL."><span class="acronym">rename-to</span></acronym> g_bus_own_name_on_connection]</span></p>
+<div class="refsect3">
+<a name="g-bus-own-name-on-connection-with-closures.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>the well-known name to own</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>a set of flags from the <a class="link" href="gio-Owning-Bus-Names.html#GBusNameOwnerFlags" title="enum GBusNameOwnerFlags"><span class="type">GBusNameOwnerFlags</span></a> enumeration</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name_acquired_closure</p></td>
+<td class="parameter_description"><p><a href="../gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> to invoke when <em class="parameter"><code>name</code></em>
+is
+acquired or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name_lost_closure</p></td>
+<td class="parameter_description"><p><a href="../gobject-Closures.html#GClosure"><span class="type">GClosure</span></a> to invoke when <em class="parameter"><code>name</code></em>
+is lost
+or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-bus-own-name-on-connection-with-closures.returns"></a><h4>Returns</h4>
+<p> an identifier (never 0) that an be used with
+<a class="link" href="gio-Owning-Bus-Names.html#g-bus-unown-name" title="g_bus_unown_name ()"><code class="function">g_bus_unown_name()</code></a> to stop owning the name.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-Owning-Bus-Names.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GBusNameOwnerFlags"></a><h3>enum GBusNameOwnerFlags</h3>
+<p>Flags used in <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a>.</p>
+<div class="refsect3">
+<a name="GBusNameOwnerFlags.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-BUS-NAME-OWNER-FLAGS-NONE:CAPS"></a>G_BUS_NAME_OWNER_FLAGS_NONE</p></td>
+<td class="enum_member_description">
+<p>No flags set.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-BUS-NAME-OWNER-FLAGS-ALLOW-REPLACEMENT:CAPS"></a>G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT</p></td>
+<td class="enum_member_description">
+<p>Allow another message bus connection to claim the name.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-BUS-NAME-OWNER-FLAGS-REPLACE:CAPS"></a>G_BUS_NAME_OWNER_FLAGS_REPLACE</p></td>
+<td class="enum_member_description">
+<p>If another message bus connection owns the name and have
+specified <a class="link" href="gio-Owning-Bus-Names.html#G-BUS-NAME-OWNER-FLAGS-ALLOW-REPLACEMENT:CAPS"><span class="type">G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT</span></a>, then take the name from the other connection.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-BUS-NAME-OWNER-FLAGS-DO-NOT-QUEUE:CAPS"></a>G_BUS_NAME_OWNER_FLAGS_DO_NOT_QUEUE</p></td>
+<td class="enum_member_description">
+<p>If another message bus connection owns the name, immediately
+return an error from <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a> rather than entering the waiting queue for that name. (Since 2.54)</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

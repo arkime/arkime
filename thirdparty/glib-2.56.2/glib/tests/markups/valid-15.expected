@@ -1,0 +1,3 @@
+ELEMENT 'test'
+  TEXT '<bla>bla'
+END 'test'

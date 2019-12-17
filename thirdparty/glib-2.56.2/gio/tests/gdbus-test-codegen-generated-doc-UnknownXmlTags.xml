@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+]>
+<refentry id="gdbus-UnknownXmlTags">
+  <refmeta>    <refentrytitle role="top_of_page" id="gdbus-interface-UnknownXmlTags.top_of_page">UnknownXmlTags</refentrytitle>
+  <indexterm zone="gdbus-interface-UnknownXmlTags.top_of_page"><primary sortas="UnknownXmlTags">UnknownXmlTags</primary></indexterm>
+  </refmeta>  <refnamediv>    <refname>UnknownXmlTags</refname>    <refpurpose></refpurpose>  </refnamediv>  <refsynopsisdiv role="synopsis">
+    <title role="synopsis.title">Methods</title>
+    <synopsis>
+<link linkend="gdbus-method-UnknownXmlTags.CanSetTimezone">CanSetTimezone</link> (OUT i value);
+</synopsis>
+  </refsynopsisdiv>
+  <refsect1 role="signal_proto">
+    <title role="signal_proto.title">Signals</title>
+    <synopsis>
+<link linkend="gdbus-signal-UnknownXmlTags.SomeSignal">SomeSignal</link> ();
+</synopsis>
+  </refsect1>
+  <refsect1 role="properties">
+    <title role="properties.title">Properties</title>
+    <synopsis>
+<link linkend="gdbus-property-UnknownXmlTags.SomeProperty">SomeProperty</link>  readwrite  s
+</synopsis>
+  </refsect1>
+<refsect1 role="desc" id="gdbus-interface-UnknownXmlTags">
+  <title role="desc.title">Description</title>
+  <para></para>
+</refsect1>
+<refsect1 role="details" id="gdbus-methods-UnknownXmlTags">
+  <title role="details.title">Method Details</title>
+<refsect2 role="method" id="gdbus-method-UnknownXmlTags.CanSetTimezone">
+  <title>The CanSetTimezone() method</title>
+  <indexterm zone="gdbus-method-UnknownXmlTags.CanSetTimezone"><primary sortas="UnknownXmlTags.CanSetTimezone">UnknownXmlTags.CanSetTimezone()</primary></indexterm>
+<programlisting>
+CanSetTimezone (OUT i value);
+</programlisting>
+<para></para>
+<variablelist role="params">
+<varlistentry>
+  <term><literal>OUT i <parameter>value</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+</refsect1>
+<refsect1 role="details" id="gdbus-signals-UnknownXmlTags">
+  <title role="details.title">Signal Details</title>
+<refsect2 role="signal" id="gdbus-signal-UnknownXmlTags.SomeSignal">
+  <title>The "SomeSignal" signal</title>
+  <indexterm zone="gdbus-signal-UnknownXmlTags.SomeSignal"><primary sortas="UnknownXmlTags::SomeSignal">UnknownXmlTags::SomeSignal</primary></indexterm>
+<programlisting>
+SomeSignal ();
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+<refsect1 role="details" id="gdbus-properties-UnknownXmlTags">
+  <title role="details.title">Property Details</title>
+<refsect2 role="property" id="gdbus-property-UnknownXmlTags.SomeProperty">
+  <title>The "SomeProperty" property</title>
+  <indexterm zone="gdbus-property-UnknownXmlTags.SomeProperty"><primary sortas="UnknownXmlTags:SomeProperty">UnknownXmlTags:SomeProperty</primary></indexterm>
+<programlisting>
+SomeProperty  readwrite  s
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+</refentry>
+

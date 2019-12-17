@@ -1,0 +1,443 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>D-Bus Addresses: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="gdbus-lowlevel.html" title="Low-level D-Bus Support">
+<link rel="prev" href="gio-D-Bus-Utilities.html" title="D-Bus Utilities">
+<link rel="next" href="gio-D-Bus-Introspection-Data.html" title="D-Bus Introspection Data">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gio-D-Bus-Addresses.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="gdbus-lowlevel.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gio-D-Bus-Utilities.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gio-D-Bus-Introspection-Data.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-D-Bus-Addresses"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-D-Bus-Addresses.top_of_page"></a>D-Bus Addresses</span></h2>
+<p>D-Bus Addresses — D-Bus connection endpoints</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gio-D-Bus-Addresses.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Addresses.html#g-dbus-is-address" title="g_dbus_is_address ()">g_dbus_is_address</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Addresses.html#g-dbus-is-supported-address" title="g_dbus_is_supported_address ()">g_dbus_is_supported_address</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Addresses.html#g-dbus-address-get-stream" title="g_dbus_address_get_stream ()">g_dbus_address_get_stream</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GIOStream.html" title="GIOStream"><span class="returnvalue">GIOStream</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Addresses.html#g-dbus-address-get-stream-finish" title="g_dbus_address_get_stream_finish ()">g_dbus_address_get_stream_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GIOStream.html" title="GIOStream"><span class="returnvalue">GIOStream</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Addresses.html#g-dbus-address-get-stream-sync" title="g_dbus_address_get_stream_sync ()">g_dbus_address_get_stream_sync</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Addresses.html#g-dbus-address-get-for-bus-sync" title="g_dbus_address_get_for_bus_sync ()">g_dbus_address_get_for_bus_sync</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-D-Bus-Addresses.html#g-dbus-address-escape-value" title="g_dbus_address_escape_value ()">g_dbus_address_escape_value</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-D-Bus-Addresses.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-D-Bus-Addresses.description"></a><h2>Description</h2>
+<p>Routines for working with D-Bus addresses. A D-Bus address is a string
+like <code class="literal">unix:tmpdir=/tmp/my-app-name</code>. The exact format of addresses
+is explained in detail in the
+<a class="ulink" href="http://dbus.freedesktop.org/doc/dbus-specification.html#addresses" target="_top">D-Bus specification</a>.</p>
+<p>TCP D-Bus connections are supported, but accessing them via a proxy is
+currently not supported.</p>
+</div>
+<div class="refsect1">
+<a name="gio-D-Bus-Addresses.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-dbus-is-address"></a><h3>g_dbus_is_address ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_dbus_is_address (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *string</code></em>);</pre>
+<p>Checks if <em class="parameter"><code>string</code></em>
+ is a
+<a class="ulink" href="https://dbus.freedesktop.org/doc/dbus-specification.html#addresses" target="_top">D-Bus address</a>.</p>
+<p>This doesn't check if <em class="parameter"><code>string</code></em>
+ is actually supported by <a class="link" href="GDBusServer.html" title="GDBusServer"><span class="type">GDBusServer</span></a>
+or <a class="link" href="GDBusConnection.html" title="GDBusConnection"><span class="type">GDBusConnection</span></a> - use <a class="link" href="gio-D-Bus-Addresses.html#g-dbus-is-supported-address" title="g_dbus_is_supported_address ()"><code class="function">g_dbus_is_supported_address()</code></a> to do more
+checks.</p>
+<div class="refsect3">
+<a name="g-dbus-is-address.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>A string.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-is-address.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>string</code></em>
+is a valid D-Bus address, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-is-supported-address"></a><h3>g_dbus_is_supported_address ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_dbus_is_supported_address (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *string</code></em>,
+                             <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Like <a class="link" href="gio-D-Bus-Addresses.html#g-dbus-is-address" title="g_dbus_is_address ()"><code class="function">g_dbus_is_address()</code></a> but also checks if the library supports the
+transports in <em class="parameter"><code>string</code></em>
+ and that key/value pairs for each transport
+are valid. See the specification of the
+<a class="ulink" href="https://dbus.freedesktop.org/doc/dbus-specification.html#addresses" target="_top">D-Bus address format</a>.</p>
+<div class="refsect3">
+<a name="g-dbus-is-supported-address.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>A string.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>Return location for error or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-is-supported-address.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>string</code></em>
+is a valid D-Bus address that is
+supported by this library, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if <em class="parameter"><code>error</code></em>
+is set.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-address-get-stream"></a><h3>g_dbus_address_get_stream ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_address_get_stream (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *address</code></em>,
+                           <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                           <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                           <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Asynchronously connects to an endpoint specified by <em class="parameter"><code>address</code></em>
+ and
+sets up the connection so it is in a state to run the client-side
+of the D-Bus authentication conversation. <em class="parameter"><code>address</code></em>
+ must be in the
+<a class="ulink" href="https://dbus.freedesktop.org/doc/dbus-specification.html#addresses" target="_top">D-Bus address format</a>.</p>
+<p>When the operation is finished, <em class="parameter"><code>callback</code></em>
+ will be invoked. You can
+then call <a class="link" href="gio-D-Bus-Addresses.html#g-dbus-address-get-stream-finish" title="g_dbus_address_get_stream_finish ()"><code class="function">g_dbus_address_get_stream_finish()</code></a> to get the result of
+the operation.</p>
+<p>This is an asynchronous failable function. See
+<a class="link" href="gio-D-Bus-Addresses.html#g-dbus-address-get-stream-sync" title="g_dbus_address_get_stream_sync ()"><code class="function">g_dbus_address_get_stream_sync()</code></a> for the synchronous version.</p>
+<div class="refsect3">
+<a name="g-dbus-address-get-stream.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>A valid D-Bus address.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> to call when the request is satisfied.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>Data to pass to <em class="parameter"><code>callback</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-address-get-stream-finish"></a><h3>g_dbus_address_get_stream_finish ()</h3>
+<pre class="programlisting"><a class="link" href="GIOStream.html" title="GIOStream"><span class="returnvalue">GIOStream</span></a> *
+g_dbus_address_get_stream_finish (<em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *res</code></em>,
+                                  <em class="parameter"><code><a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> **out_guid</code></em>,
+                                  <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Finishes an operation started with <a class="link" href="gio-D-Bus-Addresses.html#g-dbus-address-get-stream" title="g_dbus_address_get_stream ()"><code class="function">g_dbus_address_get_stream()</code></a>.</p>
+<div class="refsect3">
+<a name="g-dbus-address-get-stream-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>res</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> obtained from the GAsyncReadyCallback passed to <a class="link" href="gio-D-Bus-Addresses.html#g-dbus-address-get-stream" title="g_dbus_address_get_stream ()"><code class="function">g_dbus_address_get_stream()</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>out_guid</p></td>
+<td class="parameter_description"><p><a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> or return location to store the GUID extracted from <em class="parameter"><code>address</code></em>
+, if any. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>][<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>Return location for error or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-address-get-stream-finish.returns"></a><h4>Returns</h4>
+<p>A <a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>error</code></em>
+is set. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-address-get-stream-sync"></a><h3>g_dbus_address_get_stream_sync ()</h3>
+<pre class="programlisting"><a class="link" href="GIOStream.html" title="GIOStream"><span class="returnvalue">GIOStream</span></a> *
+g_dbus_address_get_stream_sync (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *address</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> **out_guid</code></em>,
+                                <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Synchronously connects to an endpoint specified by <em class="parameter"><code>address</code></em>
+ and
+sets up the connection so it is in a state to run the client-side
+of the D-Bus authentication conversation. <em class="parameter"><code>address</code></em>
+ must be in the
+<a class="ulink" href="https://dbus.freedesktop.org/doc/dbus-specification.html#addresses" target="_top">D-Bus address format</a>.</p>
+<p>This is a synchronous failable function. See
+<a class="link" href="gio-D-Bus-Addresses.html#g-dbus-address-get-stream" title="g_dbus_address_get_stream ()"><code class="function">g_dbus_address_get_stream()</code></a> for the asynchronous version.</p>
+<div class="refsect3">
+<a name="g-dbus-address-get-stream-sync.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>address</p></td>
+<td class="parameter_description"><p>A valid D-Bus address.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>out_guid</p></td>
+<td class="parameter_description"><p><a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> or return location to store the GUID extracted from <em class="parameter"><code>address</code></em>
+, if any. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>][<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>Return location for error or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-address-get-stream-sync.returns"></a><h4>Returns</h4>
+<p>A <a class="link" href="GIOStream.html" title="GIOStream"><span class="type">GIOStream</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>error</code></em>
+is set. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-address-get-for-bus-sync"></a><h3>g_dbus_address_get_for_bus_sync ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_address_get_for_bus_sync (<em class="parameter"><code><a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a> bus_type</code></em>,
+                                 <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Synchronously looks up the D-Bus address for the well-known message
+bus instance specified by <em class="parameter"><code>bus_type</code></em>
+. This may involve using various
+platform specific mechanisms.</p>
+<p>The returned address will be in the
+<a class="ulink" href="https://dbus.freedesktop.org/doc/dbus-specification.html#addresses" target="_top">D-Bus address format</a>.</p>
+<div class="refsect3">
+<a name="g-dbus-address-get-for-bus-sync.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>bus_type</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDBusConnection.html#GBusType" title="enum GBusType"><span class="type">GBusType</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for error or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-address-get-for-bus-sync.returns"></a><h4>Returns</h4>
+<p> a valid D-Bus address string for <em class="parameter"><code>bus_type</code></em>
+or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if
+<em class="parameter"><code>error</code></em>
+is set</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-address-escape-value"></a><h3>g_dbus_address_escape_value ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_dbus_address_escape_value (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *string</code></em>);</pre>
+<p>Escape <em class="parameter"><code>string</code></em>
+ so it can appear in a D-Bus address as the value
+part of a key-value pair.</p>
+<p>For instance, if <em class="parameter"><code>string</code></em>
+ is <code class="literal">/run/bus-for-:0</code>,
+this function would return <code class="literal">/run/bus-for-%3A0</code>,
+which could be used in a D-Bus address like
+<code class="literal">unix:nonce-tcp:host=127.0.0.1,port=42,noncefile=/run/bus-for-%3A0</code>.</p>
+<div class="refsect3">
+<a name="g-dbus-address-escape-value.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>string</p></td>
+<td class="parameter_description"><p>an unescaped string to be included in a D-Bus address
+as the value in a key-value pair</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-address-escape-value.returns"></a><h4>Returns</h4>
+<p>a copy of <em class="parameter"><code>string</code></em>
+with all
+non-optionally-escaped bytes escaped. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-36.html#api-index-2.36">2.36</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-D-Bus-Addresses.other_details"></a><h2>Types and Values</h2>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

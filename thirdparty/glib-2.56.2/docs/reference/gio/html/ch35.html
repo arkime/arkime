@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Migrating to GDBus: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="migrating.html" title="Part III. Migrating to GIO">
+<link rel="prev" href="ch34s07.html" title="Data conversion">
+<link rel="next" href="ch35s02.html" title="API comparison">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="migrating.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="ch34s07.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="ch35s02.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="chapter">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="id-1.5.5"></a>Migrating to GDBus</h2></div></div></div>
+<div class="toc"><dl class="toc">
+<dt><span class="section"><a href="ch35.html#id-1.5.5.2">Conceptual differences</a></span></dt>
+<dt><span class="section"><a href="ch35s02.html">API comparison</a></span></dt>
+<dt><span class="section"><a href="ch35s03.html">Owning bus names</a></span></dt>
+<dt><span class="section"><a href="ch35s04.html">Creating proxies for well-known names</a></span></dt>
+<dt><span class="section"><a href="gdbus-example-gdbus-codegen.html">Using gdbus-codegen</a></span></dt>
+</dl></div>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="id-1.5.5.2"></a>Conceptual differences</h2></div></div></div>
+<p>
+      The central concepts of D-Bus are modelled in a very similar way
+      in dbus-glib and GDBus. Both have a objects representing connections,
+      proxies and method invocations. But there are some important
+      differences:
+      </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>
+          dbus-glib uses the <a class="ulink" href="http://www.freedesktop.org/wiki/Software/dbus#ReferenceImplementation.28dbus-daemonandlibdbus.29" target="_top">libdbus
+          reference implementation</a>, GDBus doesn't. Instead, it
+          relies on GIO streams as transport layer, and has its own
+          implementation for the D-Bus connection setup and
+          authentication. Apart from using streams as transport,
+          avoiding libdbus also lets GDBus avoid some thorny
+          multithreading issues.
+        </p></li>
+<li class="listitem"><p>
+          dbus-glib uses the GObject type system for method arguments and
+          return values, including a homegrown container specialization
+          mechanism. GDBus relies on the <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> type system which is
+          explicitly designed to match D-Bus types.
+        </p></li>
+<li class="listitem"><p>
+          dbus-glib models only D-Bus interfaces and does not provide
+          any types for objects. GDBus models both D-Bus interfaces
+          (via the <a class="link" href="GDBusInterface.html" title="GDBusInterface"><span class="type">GDBusInterface</span></a>, <a class="link" href="GDBusProxy.html" title="GDBusProxy"><span class="type">GDBusProxy</span></a> and
+          <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a> types) and objects (via the
+          <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a>, <a class="link" href="GDBusObjectSkeleton.html" title="GDBusObjectSkeleton"><span class="type">GDBusObjectSkeleton</span></a> and <a class="link" href="GDBusObjectProxy.html" title="GDBusObjectProxy"><span class="type">GDBusObjectProxy</span></a> types).
+        </p></li>
+<li class="listitem"><p>
+          GDBus includes native support for the <a class="ulink" href="http://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-properties" target="_top">org.freedesktop.DBus.Properties</a> (via the <a class="link" href="GDBusProxy.html" title="GDBusProxy"><span class="type">GDBusProxy</span></a> type) and <a class="ulink" href="http://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-objectmanager" target="_top">org.freedesktop.DBus.ObjectManager</a> D-Bus interfaces, dbus-glib doesn't.
+        </p></li>
+<li class="listitem"><p>
+          The typical way to export an object in dbus-glib involves
+          generating glue code from XML introspection data using
+          <span class="command"><strong>dbus-binding-tool</strong></span>. GDBus provides a
+          similar tool called <span class="command"><strong>gdbus-codegen</strong></span> that
+          can also generate Docbook D-Bus interface documentation.
+        </p></li>
+<li class="listitem"><p>
+          dbus-glib doesn't provide any convenience API for owning and
+          watching bus names, GDBus provides the <a class="link" href="gio-Owning-Bus-Names.html#g-bus-own-name" title="g_bus_own_name ()"><code class="function">g_bus_own_name()</code></a> and
+          <a class="link" href="gio-Watching-Bus-Names.html#g-bus-watch-name" title="g_bus_watch_name ()"><code class="function">g_bus_watch_name()</code></a> family of convenience functions.
+        </p></li>
+<li class="listitem"><p>
+          GDBus provides API to parse, generate and work with <a class="link" href="gio-D-Bus-Introspection-Data.html" title="D-Bus Introspection Data">Introspection
+          XML</a>, dbus-glib doesn't.
+        </p></li>
+<li class="listitem"><p>
+          GTestDBus provides API to create isolated unit tests GDBus Test Scaffolding.
+        </p></li>
+</ul></div>
+<p>
+    </p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

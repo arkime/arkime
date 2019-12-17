@@ -1,0 +1,50 @@
+ELEMENT 'foobar'
+ERROR Error on line 49 char 2: Invalid UTF-8 encoded text in name - not valid '
+Παν語
+
+This is a list of ways to say hello in various languages. Its purpose is to illustrate a number of scripts.
+
+(Converted into UTF-8)
+
+---------------------------------------------------------
+Arabic	السلام عليكم
+Czech	(česky)	Dobrý den
+Danish	(Dansk)	Hej, Goddag
+English	Hello
+Esperanto	Saluton
+Estonian	Tere, Tervist
+FORTRAN	PROGRAM
+Finnish	(Suomi)	Hei
+French	(Français)	Bonjour, Salut
+German	(Deutsch Nord)	Guten Tag
+German	(Deutsch Süd)	Grüß Gott
+Greek	(Ελληνικά)	Γειά σας
+Hebrew	שלום
+Hindi	नमस्ते, �मस्कार।
+Italiano	Ciao, Buon giorno
+Maltese	Ċaw, Saħħa
+Nederlands, Vlaams	Hallo, Dag
+Norwegian	(Norsk)	Hei, God dag
+Polish	Dzień dobry, Hej
+Russian	(Русский)	Здравствуйте!‎
+Slovak	Dobrý deň
+Spanish	(Español)	‎¡Hola!‎
+Swedish	(Svenska)	Hej, Goddag
+Thai	(ภาษาไทย)	สวัสดีครับ, สวัสดีค่ะ
+Turkish	(Türkçe)	Merhaba
+Vietnamese	(Tiếng Việt)	Xin Chào
+Yiddish	(ײַדישע)	דאָס הײַזעלע 
+
+Japanese	(日本語)	こんにちは, ｺﾝﾆﾁﾊ
+Chinese	(中文,普通话,汉语)	你好
+Cantonese	(粵語,廣東話)	早晨, 你好
+Korean	(한글)	안녕하세요, 안녕하십니까
+
+Difference among chinese characters in GB, JIS, KSC, BIG5:‎
+ GB	--	元气	开发
+ JIS	--	元気	開発
+ KSC	--	元氣	開發
+ BIG5	--	元氣	開發
+
+
+'

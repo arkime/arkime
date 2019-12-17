@@ -1,0 +1,9 @@
+  <!-- Comment -->
+<?PI ?>
+<foobar>
+<e1>Hi &amp; this is some text inside an element Two 'E' chars as character refs: &#69; &#x45; and some 'J': &#74; &#x4A;</e1>
+<e2:foo> Text <childfree/> with some <nested>nested elements</nested> and entities &quot;&amp;  &lt; &gt;&gt; &apos; and whitespace    </e2:foo>
+<tag ab="fo&lt;o" bar="foo" baz="blah">This element has attributes</tag>
+<nochildren a="b" xyz="qrs"/>
+</foobar>
+   

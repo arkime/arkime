@@ -1,0 +1,652 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Memory Slices: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-core.html" title="GLib Core Application Support">
+<link rel="prev" href="glib-Memory-Allocation.html" title="Memory Allocation">
+<link rel="next" href="glib-IO-Channels.html" title="IO Channels">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-Memory-Slices.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-core.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Memory-Allocation.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-IO-Channels.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Memory-Slices"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Memory-Slices.top_of_page"></a>Memory Slices</span></h2>
+<p>Memory Slices — efficient way to allocate groups of equal-sized
+    chunks of memory</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-Memory-Slices.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Memory-Slices.html#g-slice-alloc" title="g_slice_alloc ()">g_slice_alloc</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Memory-Slices.html#g-slice-alloc0" title="g_slice_alloc0 ()">g_slice_alloc0</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Memory-Slices.html#g-slice-copy" title="g_slice_copy ()">g_slice_copy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Memory-Slices.html#g-slice-free1" title="g_slice_free1 ()">g_slice_free1</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Memory-Slices.html#g-slice-free-chain-with-offset" title="g_slice_free_chain_with_offset ()">g_slice_free_chain_with_offset</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Memory-Slices.html#g-slice-new" title="g_slice_new()">g_slice_new</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Memory-Slices.html#g-slice-new0" title="g_slice_new0()">g_slice_new0</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Memory-Slices.html#g-slice-dup" title="g_slice_dup()">g_slice_dup</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Memory-Slices.html#g-slice-free" title="g_slice_free()">g_slice_free</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="glib-Memory-Slices.html#g-slice-free-chain" title="g_slice_free_chain()">g_slice_free_chain</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Memory-Slices.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gmodule.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Memory-Slices.description"></a><h2>Description</h2>
+<p>Memory slices provide a space-efficient and multi-processing scalable
+way to allocate equal-sized pieces of memory, just like the original
+<span class="type">GMemChunks</span> (from GLib 2.8), while avoiding their excessive
+memory-waste, scalability and performance problems.</p>
+<p>To achieve these goals, the slice allocator uses a sophisticated,
+layered design that has been inspired by Bonwick's slab allocator
+(<a class="ulink" href="http://citeseer.ist.psu.edu/bonwick94slab.html" target="_top">Bonwick94</a>
+Jeff Bonwick, The slab allocator: An object-caching kernel
+memory allocator. USENIX 1994, and
+<a class="ulink" href="http://citeseer.ist.psu.edu/bonwick01magazines.html" target="_top">Bonwick01</a>
+Bonwick and Jonathan Adams, Magazines and vmem: Extending the
+slab allocator to many cpu's and arbitrary resources. USENIX 2001)</p>
+<p>It uses <code class="function">posix_memalign()</code> to optimize allocations of many equally-sized
+chunks, and has per-thread free lists (the so-called magazine layer)
+to quickly satisfy allocation requests of already known structure sizes.
+This is accompanied by extra caching logic to keep freed memory around
+for some time before returning it to the system. Memory that is unused
+due to alignment constraints is used for cache colorization (random
+distribution of chunk addresses) to improve CPU cache utilization. The
+caching layer of the slice allocator adapts itself to high lock contention
+to improve scalability.</p>
+<p>The slice allocator can allocate blocks as small as two pointers, and
+unlike <code class="function">malloc()</code>, it does not reserve extra space per block. For large block
+sizes, <a class="link" href="glib-Memory-Slices.html#g-slice-new" title="g_slice_new()"><code class="function">g_slice_new()</code></a> and <a class="link" href="glib-Memory-Slices.html#g-slice-alloc" title="g_slice_alloc ()"><code class="function">g_slice_alloc()</code></a> will automatically delegate to the
+system <code class="function">malloc()</code> implementation. For newly written code it is recommended
+to use the new <code class="literal">g_slice</code> API instead of <a class="link" href="glib-Memory-Allocation.html#g-malloc" title="g_malloc ()"><code class="function">g_malloc()</code></a> and
+friends, as long as objects are not resized during their lifetime and the
+object size used at allocation time is still available when freeing.</p>
+<p>Here is an example for using the slice allocator:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">mem</span><span class="symbol">[</span><span class="number">10000</span><span class="symbol">];</span>
+<span class="usertype">gint</span><span class="normal"> i</span><span class="symbol">;</span>
+
+<span class="comment">// Allocate 10000 blocks.</span>
+<span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">10000</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">  </span><span class="cbracket">{</span>
+<span class="normal">    mem</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-Memory-Slices.html#g-slice-alloc">g_slice_alloc</a></span><span class="normal"> </span><span class="symbol">(</span><span class="number">50</span><span class="symbol">);</span>
+
+<span class="normal">    </span><span class="comment">// Fill in the memory with some junk.</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">j </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">50</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span>
+<span class="normal">      mem</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">][</span><span class="normal">j</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> i </span><span class="symbol">*</span><span class="normal"> j</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="cbracket">}</span>
+
+<span class="comment">// Now free all of the blocks.</span>
+<span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">10000</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">  </span><span class="function"><a href="glib-Memory-Slices.html#g-slice-free1">g_slice_free1</a></span><span class="normal"> </span><span class="symbol">(</span><span class="number">50</span><span class="symbol">,</span><span class="normal"> mem</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>And here is an example for using the using the slice allocator
+with data structures:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">GRealArray</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">array</span><span class="symbol">;</span>
+
+<span class="comment">// Allocate one block, using the g_slice_new() macro.</span>
+<span class="normal">array </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-Memory-Slices.html#g-slice-new">g_slice_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">GRealArray</span><span class="symbol">);</span>
+
+<span class="comment">// We can now use array just like a normal pointer to a structure.</span>
+<span class="normal">array</span><span class="symbol">-&gt;</span><span class="normal">data            </span><span class="symbol">=</span><span class="normal"> <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="normal">array</span><span class="symbol">-&gt;</span><span class="normal">len             </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">array</span><span class="symbol">-&gt;</span><span class="normal">alloc           </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">array</span><span class="symbol">-&gt;</span><span class="normal">zero_terminated </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">zero_terminated </span><span class="symbol">?</span><span class="normal"> </span><span class="number">1</span><span class="normal"> </span><span class="symbol">:</span><span class="normal"> </span><span class="number">0</span><span class="symbol">);</span>
+<span class="normal">array</span><span class="symbol">-&gt;</span><span class="normal">clear           </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">clear </span><span class="symbol">?</span><span class="normal"> </span><span class="number">1</span><span class="normal"> </span><span class="symbol">:</span><span class="normal"> </span><span class="number">0</span><span class="symbol">);</span>
+<span class="normal">array</span><span class="symbol">-&gt;</span><span class="normal">elt_size        </span><span class="symbol">=</span><span class="normal"> elt_size</span><span class="symbol">;</span>
+
+<span class="comment">// We can free the block, so it can be reused.</span>
+<span class="function"><a href="glib-Memory-Slices.html#g-slice-free">g_slice_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">GRealArray</span><span class="symbol">,</span><span class="normal"> array</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+</div>
+<div class="refsect1">
+<a name="glib-Memory-Slices.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-slice-alloc"></a><h3>g_slice_alloc ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+g_slice_alloc (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> block_size</code></em>);</pre>
+<p>Allocates a block of memory from the slice allocator.
+The block address handed out can be expected to be aligned
+to at least 1 * sizeof (void*),
+though in general slices are 2 * sizeof (void*) bytes aligned,
+if a <code class="function">malloc()</code> fallback implementation is used instead,
+the alignment may be reduced in a libc dependent fashion.
+Note that the underlying slice allocation mechanism can
+be changed with the <a class="link" href="glib-running.html#G_SLICE" title="G_SLICE"><code class="literal">G_SLICE=always-malloc</code></a>
+environment variable.</p>
+<div class="refsect3">
+<a name="g-slice-alloc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>block_size</p></td>
+<td class="parameter_description"><p>the number of bytes to allocate</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-slice-alloc.returns"></a><h4>Returns</h4>
+<p> a pointer to the allocated memory block, which will be <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if and
+only if <em class="parameter"><code>mem_size</code></em>
+is 0</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-10.html#api-index-2.10">2.10</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-slice-alloc0"></a><h3>g_slice_alloc0 ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+g_slice_alloc0 (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> block_size</code></em>);</pre>
+<p>Allocates a block of memory via <a class="link" href="glib-Memory-Slices.html#g-slice-alloc" title="g_slice_alloc ()"><code class="function">g_slice_alloc()</code></a> and initializes
+the returned memory to 0. Note that the underlying slice allocation
+mechanism can be changed with the <a class="link" href="glib-running.html#G_SLICE" title="G_SLICE"><code class="literal">G_SLICE=always-malloc</code></a>
+environment variable.</p>
+<div class="refsect3">
+<a name="g-slice-alloc0.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>block_size</p></td>
+<td class="parameter_description"><p>the number of bytes to allocate</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-slice-alloc0.returns"></a><h4>Returns</h4>
+<p> a pointer to the allocated block, which will be <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if and only
+if <em class="parameter"><code>mem_size</code></em>
+is 0</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-10.html#api-index-2.10">2.10</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-slice-copy"></a><h3>g_slice_copy ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+g_slice_copy (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> block_size</code></em>,
+              <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gconstpointer" title="gconstpointer"><span class="type">gconstpointer</span></a> mem_block</code></em>);</pre>
+<p>Allocates a block of memory from the slice allocator
+and copies <em class="parameter"><code>block_size</code></em>
+ bytes into it from <em class="parameter"><code>mem_block</code></em>
+.</p>
+<p><em class="parameter"><code>mem_block</code></em>
+ must be non-<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if <em class="parameter"><code>block_size</code></em>
+ is non-zero.</p>
+<div class="refsect3">
+<a name="g-slice-copy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>block_size</p></td>
+<td class="parameter_description"><p>the number of bytes to allocate</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mem_block</p></td>
+<td class="parameter_description"><p>the memory to copy</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-slice-copy.returns"></a><h4>Returns</h4>
+<p> a pointer to the allocated memory block, which will be <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if and
+only if <em class="parameter"><code>mem_size</code></em>
+is 0</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-14.html#api-index-2.14">2.14</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-slice-free1"></a><h3>g_slice_free1 ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_slice_free1 (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> block_size</code></em>,
+               <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> mem_block</code></em>);</pre>
+<p>Frees a block of memory.</p>
+<p>The memory must have been allocated via <a class="link" href="glib-Memory-Slices.html#g-slice-alloc" title="g_slice_alloc ()"><code class="function">g_slice_alloc()</code></a> or
+<a class="link" href="glib-Memory-Slices.html#g-slice-alloc0" title="g_slice_alloc0 ()"><code class="function">g_slice_alloc0()</code></a> and the <em class="parameter"><code>block_size</code></em>
+ has to match the size
+specified upon allocation. Note that the exact release behaviour
+can be changed with the <code class="literal">G_DEBUG=gc-friendly</code> environment
+variable, also see <a class="link" href="glib-running.html#G_SLICE" title="G_SLICE"><code class="literal">G_SLICE</code></a> for related debugging options.</p>
+<p>If <em class="parameter"><code>mem_block</code></em>
+ is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>, this function does nothing.</p>
+<div class="refsect3">
+<a name="g-slice-free1.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>block_size</p></td>
+<td class="parameter_description"><p>the size of the block</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mem_block</p></td>
+<td class="parameter_description"><p>a pointer to the block to free</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-10.html#api-index-2.10">2.10</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-slice-free-chain-with-offset"></a><h3>g_slice_free_chain_with_offset ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_slice_free_chain_with_offset (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> block_size</code></em>,
+                                <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> mem_chain</code></em>,
+                                <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> next_offset</code></em>);</pre>
+<p>Frees a linked list of memory blocks of structure type <em class="parameter"><code>type</code></em>
+.</p>
+<p>The memory blocks must be equal-sized, allocated via
+<a class="link" href="glib-Memory-Slices.html#g-slice-alloc" title="g_slice_alloc ()"><code class="function">g_slice_alloc()</code></a> or <a class="link" href="glib-Memory-Slices.html#g-slice-alloc0" title="g_slice_alloc0 ()"><code class="function">g_slice_alloc0()</code></a> and linked together by a
+<em class="parameter"><code>next</code></em>
+ pointer (similar to <a class="link" href="glib-Singly-Linked-Lists.html#GSList" title="struct GSList"><span class="type">GSList</span></a>). The offset of the <em class="parameter"><code>next</code></em>
+
+field in each block is passed as third argument.
+Note that the exact release behaviour can be changed with the
+<code class="literal">G_DEBUG=gc-friendly</code> environment variable, also see
+<a class="link" href="glib-running.html#G_SLICE" title="G_SLICE"><code class="literal">G_SLICE</code></a> for related debugging options.</p>
+<p>If <em class="parameter"><code>mem_chain</code></em>
+ is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>, this function does nothing.</p>
+<div class="refsect3">
+<a name="g-slice-free-chain-with-offset.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>block_size</p></td>
+<td class="parameter_description"><p>the size of the blocks</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mem_chain</p></td>
+<td class="parameter_description"><p>a pointer to the first block of the chain</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>next_offset</p></td>
+<td class="parameter_description"><p>the offset of the <em class="parameter"><code>next</code></em>
+field in the blocks</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-10.html#api-index-2.10">2.10</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-slice-new"></a><h3>g_slice_new()</h3>
+<pre class="programlisting">#define             g_slice_new(type)</pre>
+<p>A convenience macro to allocate a block of memory from the
+slice allocator.</p>
+<p>It calls <a class="link" href="glib-Memory-Slices.html#g-slice-alloc" title="g_slice_alloc ()"><code class="function">g_slice_alloc()</code></a> with <code class="literal">sizeof (@type)</code> and casts the
+returned pointer to a pointer of the given type, avoiding a type
+cast in the source code. Note that the underlying slice allocation
+mechanism can be changed with the <a class="link" href="glib-running.html#G_SLICE" title="G_SLICE"><code class="literal">G_SLICE=always-malloc</code></a>
+environment variable.</p>
+<p>This can never return <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> as the minimum allocation size from
+<code class="literal">sizeof (@type)</code> is 1 byte.</p>
+<div class="refsect3">
+<a name="g-slice-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>the type to allocate, typically a structure name</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-slice-new.returns"></a><h4>Returns</h4>
+<p>a pointer to the allocated block, cast to a pointer
+to <em class="parameter"><code>type</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-10.html#api-index-2.10">2.10</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-slice-new0"></a><h3>g_slice_new0()</h3>
+<pre class="programlisting">#define             g_slice_new0(type)</pre>
+<p>A convenience macro to allocate a block of memory from the
+slice allocator and set the memory to 0.</p>
+<p>It calls <a class="link" href="glib-Memory-Slices.html#g-slice-alloc0" title="g_slice_alloc0 ()"><code class="function">g_slice_alloc0()</code></a> with <code class="literal">sizeof (@type)</code>
+and casts the returned pointer to a pointer of the given type,
+avoiding a type cast in the source code.
+Note that the underlying slice allocation mechanism can
+be changed with the <a class="link" href="glib-running.html#G_SLICE" title="G_SLICE"><code class="literal">G_SLICE=always-malloc</code></a>
+environment variable.</p>
+<p>This can never return <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> as the minimum allocation size from
+<code class="literal">sizeof (@type)</code> is 1 byte.</p>
+<div class="refsect3">
+<a name="g-slice-new0.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>the type to allocate, typically a structure name</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-slice-new0.returns"></a><h4>Returns</h4>
+<p>a pointer to the allocated block, cast to a pointer
+to <em class="parameter"><code>type</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-10.html#api-index-2.10">2.10</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-slice-dup"></a><h3>g_slice_dup()</h3>
+<pre class="programlisting">#define             g_slice_dup(type, mem)</pre>
+<p>A convenience macro to duplicate a block of memory using
+the slice allocator.</p>
+<p>It calls <a class="link" href="glib-Memory-Slices.html#g-slice-copy" title="g_slice_copy ()"><code class="function">g_slice_copy()</code></a> with <code class="literal">sizeof (@type)</code>
+and casts the returned pointer to a pointer of the given type,
+avoiding a type cast in the source code.
+Note that the underlying slice allocation mechanism can
+be changed with the <a class="link" href="glib-running.html#G_SLICE" title="G_SLICE"><code class="literal">G_SLICE=always-malloc</code></a>
+environment variable.</p>
+<p>This can never return <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>.</p>
+<div class="refsect3">
+<a name="g-slice-dup.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>the type to duplicate, typically a structure name</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mem</p></td>
+<td class="parameter_description"><p>the memory to copy into the allocated block. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-slice-dup.returns"></a><h4>Returns</h4>
+<p>a pointer to the allocated block, cast to a pointer
+to <em class="parameter"><code>type</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-14.html#api-index-2.14">2.14</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-slice-free"></a><h3>g_slice_free()</h3>
+<pre class="programlisting">#define             g_slice_free(type, mem)</pre>
+<p>A convenience macro to free a block of memory that has
+been allocated from the slice allocator.</p>
+<p>It calls <a class="link" href="glib-Memory-Slices.html#g-slice-free1" title="g_slice_free1 ()"><code class="function">g_slice_free1()</code></a> using <code class="literal">sizeof (type)</code>
+as the block size.
+Note that the exact release behaviour can be changed with the
+<code class="literal">G_DEBUG=gc-friendly</code> environment variable, also see
+<a class="link" href="glib-running.html#G_SLICE" title="G_SLICE"><code class="literal">G_SLICE</code></a> for related debugging options.</p>
+<p>If <em class="parameter"><code>mem</code></em>
+ is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>, this macro does nothing.</p>
+<div class="refsect3">
+<a name="g-slice-free.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>the type of the block to free, typically a structure name</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mem</p></td>
+<td class="parameter_description"><p>a pointer to the block to free</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-10.html#api-index-2.10">2.10</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-slice-free-chain"></a><h3>g_slice_free_chain()</h3>
+<pre class="programlisting">#define             g_slice_free_chain(type, mem_chain, next)</pre>
+<p>Frees a linked list of memory blocks of structure type <em class="parameter"><code>type</code></em>
+.
+The memory blocks must be equal-sized, allocated via
+<a class="link" href="glib-Memory-Slices.html#g-slice-alloc" title="g_slice_alloc ()"><code class="function">g_slice_alloc()</code></a> or <a class="link" href="glib-Memory-Slices.html#g-slice-alloc0" title="g_slice_alloc0 ()"><code class="function">g_slice_alloc0()</code></a> and linked together by
+a <em class="parameter"><code>next</code></em>
+ pointer (similar to <a class="link" href="glib-Singly-Linked-Lists.html#GSList" title="struct GSList"><span class="type">GSList</span></a>). The name of the
+<em class="parameter"><code>next</code></em>
+ field in <em class="parameter"><code>type</code></em>
+ is passed as third argument.
+Note that the exact release behaviour can be changed with the
+<code class="literal">G_DEBUG=gc-friendly</code> environment variable, also see
+<a class="link" href="glib-running.html#G_SLICE" title="G_SLICE"><code class="literal">G_SLICE</code></a> for related debugging options.</p>
+<p>If <em class="parameter"><code>mem_chain</code></em>
+ is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>, this function does nothing.</p>
+<div class="refsect3">
+<a name="g-slice-free-chain.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>the type of the <em class="parameter"><code>mem_chain</code></em>
+blocks</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mem_chain</p></td>
+<td class="parameter_description"><p>a pointer to the first block of the chain</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>next</p></td>
+<td class="parameter_description"><p>the field name of the next pointer in <em class="parameter"><code>type</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-10.html#api-index-2.10">2.10</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Memory-Slices.other_details"></a><h2>Types and Values</h2>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

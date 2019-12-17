@@ -1,0 +1,11 @@
+<schemalist>
+    <schema id="test">
+      <key name="test" type="as">
+        <choices>
+          <choice value="first" />
+          <choice value="last" />
+        </choices>
+        <default>["first","last","second"]</default>
+      </key>
+    </schema>
+</schemalist>

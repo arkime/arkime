@@ -1,0 +1,1 @@
+ERROR Error on line 2 char 2: Odd character '>', expected a '=' after attribute name 'bar' of element 'fail'

@@ -1,0 +1,65 @@
+option('runtime_libdir',
+       type : 'string',
+       value : '',
+       description : 'install runtime libraries relative to libdir')
+
+option('iconv',
+       type : 'combo',
+       choices : ['libc', 'gnu', 'native'],
+       value : 'libc',
+       description : 'iconv implementation to use (\'libc\' = \'Part of the C stdlib\'; \'gnu\' = \'GNU\'s iconv\'; \'native\' = \'A separate iconv\')')
+
+option('charsetalias_dir',
+       type : 'string',
+       value : '',
+       description : 'directory for charset.alias dir (default to \'libdir\' if unset)')
+
+option('gio_module_dir',
+       type : 'string',
+       value : '',
+       description : 'load gio modules from this directory (default to \'libdir/gio/modules\' if unset)')
+
+option('selinux',
+       type : 'boolean',
+       value : true,
+       description : 'build with selinux support')
+
+option('xattr',
+       type : 'boolean',
+       value : true,
+       description : 'build with xattr support')
+
+option('libmount',
+       type : 'boolean',
+       value : true,
+       description : 'build with libmount support')
+
+option('internal_pcre',
+       type : 'boolean',
+       value : false,
+       description : 'whether to use internal PCRE')
+
+option('man',
+       type : 'boolean',
+       value : false,
+       description : 'generate man pages (requires xsltproc)')
+
+option('dtrace',
+       type : 'boolean',
+       value : false,
+       description : 'include tracing support for dtrace')
+
+option('systemtap',
+       type : 'boolean',
+       value : false,
+       description : 'include tracing support for systemtap')
+
+option('tapset_install_dir',
+       type : 'string',
+       value : '',
+       description : 'path where systemtap tapsets are installed')
+
+option('gtk_doc',
+       type : 'boolean',
+       value : false,
+       description : 'use gtk-doc to build documentation')

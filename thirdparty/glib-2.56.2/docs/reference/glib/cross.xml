@@ -1,0 +1,208 @@
+<?xml version="1.0"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+]>
+<refentry id="glib-cross-compiling" revision="8 Apr 2003">
+<refmeta>
+<refentrytitle>Cross-compiling the GLib package</refentrytitle>
+<manvolnum>3</manvolnum>
+<refmiscinfo>GLib Library</refmiscinfo>
+</refmeta>
+
+<refnamediv>
+<refname>Cross-compiling the GLib Package</refname>
+<refpurpose>
+How to cross-compile GLib
+</refpurpose>
+</refnamediv>
+
+    <refsect1 id="cross">
+      <title>Building the Library for a different architecture</title>
+      <para>
+        Cross-compilation is the process of compiling a program or
+        library on a different architecture or operating system then
+        it will be run upon. GLib is slightly more difficult to 
+        cross-compile than many packages because much of GLib is
+        about hiding differences between different systems. 
+      </para>
+      <para>
+        These notes cover things specific to cross-compiling GLib;
+        for general information about cross-compilation, see the
+        <application>autoconf</application> info pages.
+      </para>
+      <para>
+        GLib tries to detect as much information as possible about
+        the target system by compiling and linking programs without
+        actually running anything; however, some information GLib
+        needs is not available this way. This information needs
+        to be provided to the configure script via a "cache file"
+        or by setting the cache variables in your environment.
+      </para>
+      <para>
+        As an example of using a cache file, to cross compile for
+        the "MingW32" Win32 runtime environment on a Linux system,
+        create a file 'win32.cache' with the following contents:
+      </para>
+      <programlisting> 
+glib_cv_long_long_format=I64
+glib_cv_stack_grows=no
+      </programlisting>
+      <para>
+        Then execute the following commands:
+      </para>
+      <programlisting>
+PATH=/path/to/mingw32-compiler/bin:$PATH
+chmod a-w win32.cache   # prevent configure from changing it
+./configure --cache-file=win32.cache --host=mingw32
+      </programlisting>
+      <para>
+        The complete list of cache file variables follows. Most
+         of these won't need to be set in most cases.
+      </para>
+    </refsect1>
+    <refsect1 id="cache-file-variables">
+      <title>Cache file variables</title>
+      <formalpara>
+        <title>glib_cv_long_long_format=[ll/q/I64]</title>
+        
+        <para>
+           Format used by <function>printf()</function> and 
+           <function>scanf()</function> for 64 bit integers. "ll" is 
+           the C99 standard, and what is used by the 'trio' library
+           that GLib builds if your <function>printf()</function> is 
+           insufficiently capable.
+           Doesn't need to be set if you are compiling using trio.
+        </para>
+      </formalpara>
+      <formalpara>
+        <title>glib_cv_stack_grows=[yes/no]</title>
+
+        <para>
+           Whether the stack grows up or down. Most places will want "no",
+           A few architectures, such as PA-RISC need "yes".
+        </para>
+      </formalpara>
+      <formalpara>
+        <title>glib_cv_working_bcopy=[yes/no]</title>
+
+        <para>
+           Whether your <function>bcopy()</function> can handle overlapping 
+           copies. Only needs to be set if you don't have 
+           <function>memmove()</function>. (Very unlikely)
+	</para>
+      </formalpara>
+      <formalpara>
+         <title>glib_cv_sane_realloc=[yes/no]</title>
+
+         <para>  
+            Whether your <function>realloc()</function> conforms to ANSI C 
+            and can handle <literal>NULL</literal> as the first argument. 
+            Defaults to "yes" and probably doesn't need to be set.
+	</para>
+      </formalpara>
+      <formalpara>
+         <title>glib_cv_have_strlcpy=[yes/no]</title>
+
+         <para>
+            Whether you have <function>strlcpy()</function> that matches 
+            OpenBSD. Defaults to "no", which is safe, since GLib uses a 
+            built-in version in that case.
+	</para>
+      </formalpara>
+      <formalpara>
+         <title>glib_cv_have_qsort_r=[yes/no]</title>
+
+         <para>
+           Whether you have <function>qsort_r()</function> that matches
+           BSD. Defaults to "no", which is safe, since GLib uses a
+           built-in version in that case.
+         </para>
+      </formalpara>
+      <formalpara>
+         <title>glib_cv_va_val_copy=[yes/no]</title>
+   
+         <para>
+            Whether <type>va_list</type> can be copied as a pointer. If set 
+            to "no", then <function>memcopy()</function> will be used. Only 
+            matters if you don't have <function>va_copy()</function> or 
+            <function>__va_copy()</function>. (So, doesn't matter for GCC.) 
+            Defaults to "yes" which is slightly more common than "no".
+	</para>
+      </formalpara>
+      <formalpara>
+         <title>glib_cv_rtldglobal_broken=[yes/no]</title>
+ 
+         <para>
+            Whether you have a bug found in OSF/1 v5.0. Defaults to "no".
+         </para>
+      </formalpara>
+      <formalpara>
+         <title>glib_cv_uscore=[yes/no]</title>
+
+         <para>
+            Whether an underscore needs to be prepended to symbols when
+            looking them up via <function>dlsym()</function>. Only needs to 
+            be set if your system uses
+	    <function>dlopen()</function>/<function>dlsym()</function>.
+	 </para>
+      </formalpara>
+      <formalpara>
+         <title>ac_cv_func_posix_getpwuid_r=[yes/no]</title>
+
+         <para>
+            Whether you have a getpwuid_r function (in your C library,
+	    not your thread library) that conforms to the POSIX spec.
+            (Takes a 'struct passwd **' as the final argument)
+         </para>
+      </formalpara>
+      <formalpara>
+         <title>ac_cv_func_nonposix_getpwuid_r=[yes/no]</title>
+ 
+         <para>
+            Whether you have some variant of <function>getpwuid_r()</function>
+            that doesn't conform to to the POSIX spec, but GLib might be able
+            to use (or might segfault.) Only needs to be set if 
+	    <literal>ac_cv_func_posix_getpwuid_r</literal> is not set. It's 
+            safest to set this to "no".
+         </para>
+      </formalpara>
+      <formalpara>
+         <title>ac_cv_func_posix_getgrgid_r=[yes/no]</title>
+ 
+         <para>
+            Whether you have a getgrgid_r function that conforms to
+            the POSIX spec.
+         </para>
+      </formalpara>
+      <formalpara>
+         <title>glib_cv_use_pid_surrogate=[yes/no]</title>
+
+         <para>
+            Whether to use a <function>setpriority()</function> on the PID of 
+            the thread as a method for setting the priority of threads. This 
+            only needs to be set when using POSIX threads.
+         </para>
+      </formalpara>
+      <formalpara>
+         <title>ac_cv_func_printf_unix98=[yes/no]</title>
+
+         <para>
+           Whether your <function>printf()</function> family supports Unix98 
+           style <literal>%N$</literal> positional parameters. Defaults to
+	"no".
+         </para>
+      </formalpara>
+      <formalpara>
+         <title>ac_cv_func_vsnprintf_c99=[yes/no]</title>
+
+         <para>
+            Whether you have a <function>vsnprintf()</function> with C99 
+            semantics. (C99 semantics means returning the number of bytes 
+            that would have been written had the output buffer had enough 
+            space.) Defaults to "no".
+         </para>
+      </formalpara>
+
+    </refsect1>    
+
+</refentry>

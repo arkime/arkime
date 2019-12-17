@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>glib-compile-schemas: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="tools.html" title="GIO Tools">
+<link rel="prev" href="gsettings-tool.html" title="gsettings">
+<link rel="next" href="glib-compile-resources.html" title="glib-compile-resources">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="tools.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gsettings-tool.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-compile-resources.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div lang="en" class="refentry">
+<a name="glib-compile-schemas"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle">glib-compile-schemas</span></h2>
+<p>glib-compile-schemas — GSettings schema compiler</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<h2>Synopsis</h2>
+<div class="cmdsynopsis"><p><code class="command">glib-compile-schemas</code>  [OPTION...] {DIRECTORY}</p></div>
+</div>
+<div class="refsect1">
+<a name="id-1.4.26.4.5"></a><h2>Description</h2>
+<p><span class="command"><strong>glib-compile-schemas</strong></span> compiles all the GSettings XML
+schema files in <em class="replaceable"><code>DIRECTORY</code></em> into a binary file
+with the name <code class="filename">gschemas.compiled</code> that can be used
+by <a class="link" href="GSettings.html" title="GSettings"><span class="type">GSettings</span></a>. The XML schema
+files must have the filename extension <code class="filename">.gschema.xml</code>.
+For a detailed description of the XML file format, see the
+<a class="link" href="GSettings.html" title="GSettings"><span class="type">GSettings</span></a> documentation.
+</p>
+<p>
+At runtime, GSettings looks for schemas in the
+<code class="filename">glib-2.0/schemas</code> subdirectories of all directories
+specified in the <code class="envar">XDG_DATA_DIRS</code> environment variable. The
+usual location to install schema files is
+<code class="filename">/usr/share/glib-2.0/schemas</code>.
+</p>
+<p>
+In addition to schema files, glib-compile-schemas reads 'vendor override'
+files, which are key files that can override default values for keys in
+the schemas. The group names in the key files are the schema id, and the
+values are written in serialized GVariant form.
+Vendor override files must have the filename extension
+<code class="filename">.gschema.override</code>.
+</p>
+<p>
+By convention, vendor override files begin with <code class="filename">nn_</code>
+where <code class="filename">nn</code> is a number from 00 to 99.  Higher
+numbered files have higher priority (eg: if the same override is made in
+a file numbered 10 and then again in a file numbered 20, the override
+from 20 will take precedence).
+</p>
+</div>
+<div class="refsect1">
+<a name="id-1.4.26.4.6"></a><h2>Options</h2>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><code class="option">-h</code>, <code class="option">--help</code></span></p></td>
+<td><p>
+Print help and exit
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--version</code></span></p></td>
+<td><p>
+Print program version and exit
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--targetdir=<em class="replaceable"><code>TARGET</code></em></code></span></p></td>
+<td><p>
+Store <code class="filename">gschemas.compiled</code> in the <em class="replaceable"><code>TARGET</code></em> directory instead of <em class="replaceable"><code>DIRECTORY</code></em>.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--strict</code></span></p></td>
+<td><p>
+Abort on any errors in schemas. Without this option, faulty schema files are
+simply omitted from the resulting compiled schema.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--dry-run</code></span></p></td>
+<td><p>
+Don't write <code class="filename">gschemas.compiled</code>. This option can be used
+to check <code class="filename">.gschema.xml</code> sources for errors.
+</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="option">--allow-any-name</code></span></p></td>
+<td><p>
+Do not enforce restrictions on key names. Note that this option is purely
+to facility the transition from GConf, and will be removed at some time
+in the future.
+</p></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

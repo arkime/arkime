@@ -1,0 +1,330 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GDBusInterface: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="gdbus-convenience.html" title="High-level D-Bus Support">
+<link rel="prev" href="gio-Watching-Bus-Names.html" title="Watching Bus Names">
+<link rel="next" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GDBusInterface.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GDBusInterface.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_prerequisites">  <span class="dim">|</span> 
+                  <a href="#GDBusInterface.prerequisites" class="shortcut">Prerequisites</a></span><span id="nav_implementations">  <span class="dim">|</span> 
+                  <a href="#GDBusInterface.implementations" class="shortcut">Known Implementations</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="gdbus-convenience.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gio-Watching-Bus-Names.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GDBusInterfaceSkeleton.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GDBusInterface"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GDBusInterface.top_of_page"></a>GDBusInterface</span></h2>
+<p>GDBusInterface — Base type for D-Bus interfaces</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GDBusInterface.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="returnvalue">GDBusInterfaceInfo</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusInterface.html#g-dbus-interface-get-info" title="g_dbus_interface_get_info ()">g_dbus_interface_get_info</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusObject.html" title="GDBusObject"><span class="returnvalue">GDBusObject</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusInterface.html#g-dbus-interface-get-object" title="g_dbus_interface_get_object ()">g_dbus_interface_get_object</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDBusObject.html" title="GDBusObject"><span class="returnvalue">GDBusObject</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDBusInterface.html#g-dbus-interface-dup-object" title="g_dbus_interface_dup_object ()">g_dbus_interface_dup_object</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDBusInterface.html#g-dbus-interface-set-object" title="g_dbus_interface_set_object ()">g_dbus_interface_set_object</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDBusInterface.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GDBusInterface.html#GDBusInterface-struct" title="GDBusInterface">GDBusInterface</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GDBusInterface.html#GDBusInterfaceIface" title="struct GDBusInterfaceIface">GDBusInterfaceIface</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDBusInterface.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/GTypeModule.html">GInterface</a>
+    <span class="lineart">╰──</span> GDBusInterface
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusInterface.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GDBusInterface requires
+ <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GDBusInterface.implementations"></a><h2>Known Implementations</h2>
+<p>
+GDBusInterface is implemented by
+ <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton">GDBusInterfaceSkeleton</a> and  <a class="link" href="GDBusProxy.html" title="GDBusProxy">GDBusProxy</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GDBusInterface.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDBusInterface.description"></a><h2>Description</h2>
+<p>The <a class="link" href="GDBusInterface.html" title="GDBusInterface"><span class="type">GDBusInterface</span></a> type is the base type for D-Bus interfaces both
+on the service side (see <a class="link" href="GDBusInterfaceSkeleton.html" title="GDBusInterfaceSkeleton"><span class="type">GDBusInterfaceSkeleton</span></a>) and client side
+(see <a class="link" href="GDBusProxy.html" title="GDBusProxy"><span class="type">GDBusProxy</span></a>).</p>
+</div>
+<div class="refsect1">
+<a name="GDBusInterface.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-dbus-interface-get-info"></a><h3>g_dbus_interface_get_info ()</h3>
+<pre class="programlisting"><a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="returnvalue">GDBusInterfaceInfo</span></a> *
+g_dbus_interface_get_info (<em class="parameter"><code><a class="link" href="GDBusInterface.html" title="GDBusInterface"><span class="type">GDBusInterface</span></a> *interface_</code></em>);</pre>
+<p>Gets D-Bus introspection information for the D-Bus interface
+implemented by <em class="parameter"><code>interface_</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-interface-get-info.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>interface_</p></td>
+<td class="parameter_description"><p>An exported D-Bus interface.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-interface-get-info.returns"></a><h4>Returns</h4>
+<p>A <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a>. Do not free. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-get-object"></a><h3>g_dbus_interface_get_object ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusObject.html" title="GDBusObject"><span class="returnvalue">GDBusObject</span></a> *
+g_dbus_interface_get_object (<em class="parameter"><code><a class="link" href="GDBusInterface.html" title="GDBusInterface"><span class="type">GDBusInterface</span></a> *interface_</code></em>);</pre>
+<p>Gets the <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a> that <em class="parameter"><code>interface_</code></em>
+ belongs to, if any.</p>
+<p>It is not safe to use the returned object if <em class="parameter"><code>interface_</code></em>
+ or
+the returned object is being used from other threads. See
+<a class="link" href="GDBusInterface.html#g-dbus-interface-dup-object" title="g_dbus_interface_dup_object ()"><code class="function">g_dbus_interface_dup_object()</code></a> for a thread-safe alternative.</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-dbus-interface-get-object.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>interface_</p></td>
+<td class="parameter_description"><p>An exported D-Bus interface</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-interface-get-object.returns"></a><h4>Returns</h4>
+<p>A <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. The returned
+reference belongs to <em class="parameter"><code>interface_</code></em>
+and should not be freed. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-dup-object"></a><h3>g_dbus_interface_dup_object ()</h3>
+<pre class="programlisting"><a class="link" href="GDBusObject.html" title="GDBusObject"><span class="returnvalue">GDBusObject</span></a> *
+g_dbus_interface_dup_object (<em class="parameter"><code><a class="link" href="GDBusInterface.html" title="GDBusInterface"><span class="type">GDBusInterface</span></a> *interface_</code></em>);</pre>
+<p>Gets the <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a> that <em class="parameter"><code>interface_</code></em>
+ belongs to, if any.</p>
+<p><span class="annotation">[<acronym title="Rename the original symbol's name to SYMBOL."><span class="acronym">rename-to</span></acronym> g_dbus_interface_get_object]</span></p>
+<div class="refsect3">
+<a name="g-dbus-interface-dup-object.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>interface_</p></td>
+<td class="parameter_description"><p>An exported D-Bus interface.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-dbus-interface-dup-object.returns"></a><h4>Returns</h4>
+<p>A <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. The returned
+reference should be freed with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-dbus-interface-set-object"></a><h3>g_dbus_interface_set_object ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_dbus_interface_set_object (<em class="parameter"><code><a class="link" href="GDBusInterface.html" title="GDBusInterface"><span class="type">GDBusInterface</span></a> *interface_</code></em>,
+                             <em class="parameter"><code><a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a> *object</code></em>);</pre>
+<p>Sets the <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a> for <em class="parameter"><code>interface_</code></em>
+ to <em class="parameter"><code>object</code></em>
+.</p>
+<p>Note that <em class="parameter"><code>interface_</code></em>
+ will hold a weak reference to <em class="parameter"><code>object</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-dbus-interface-set-object.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>interface_</p></td>
+<td class="parameter_description"><p>An exported D-Bus interface.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>object</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDBusInterface.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GDBusInterface-struct"></a><h3>GDBusInterface</h3>
+<pre class="programlisting">typedef struct _GDBusInterface GDBusInterface;</pre>
+<p>Base type for D-Bus interfaces.</p>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDBusInterfaceIface"></a><h3>struct GDBusInterfaceIface</h3>
+<pre class="programlisting">struct GDBusInterfaceIface {
+  GTypeInterface parent_iface;
+
+  /* Virtual Functions */
+  GDBusInterfaceInfo   *(*get_info)   (GDBusInterface      *interface_);
+  GDBusObject          *(*get_object) (GDBusInterface      *interface_);
+  void                  (*set_object) (GDBusInterface      *interface_,
+                                       GDBusObject         *object);
+  GDBusObject          *(*dup_object) (GDBusInterface      *interface_);
+};
+</pre>
+<p>Base type for D-Bus interfaces.</p>
+<div class="refsect3">
+<a name="GDBusInterfaceIface.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><a href="../gobject-Type-Information.html#GTypeInterface"><span class="type">GTypeInterface</span></a> <em class="structfield"><code><a name="GDBusInterfaceIface.parent-iface"></a>parent_iface</code></em>;</p></td>
+<td class="struct_member_description"><p>The parent interface.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDBusInterfaceIface.get-info"></a>get_info</code></em> ()</p></td>
+<td class="struct_member_description"><p>Returns a <a class="link" href="gio-D-Bus-Introspection-Data.html#GDBusInterfaceInfo"><span class="type">GDBusInterfaceInfo</span></a>. See <a class="link" href="GDBusInterface.html#g-dbus-interface-get-info" title="g_dbus_interface_get_info ()"><code class="function">g_dbus_interface_get_info()</code></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDBusInterfaceIface.get-object"></a>get_object</code></em> ()</p></td>
+<td class="struct_member_description"><p>Gets the enclosing <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a>. See <a class="link" href="GDBusInterface.html#g-dbus-interface-get-object" title="g_dbus_interface_get_object ()"><code class="function">g_dbus_interface_get_object()</code></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDBusInterfaceIface.set-object"></a>set_object</code></em> ()</p></td>
+<td class="struct_member_description"><p>Sets the enclosing <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a>. See <a class="link" href="GDBusInterface.html#g-dbus-interface-set-object" title="g_dbus_interface_set_object ()"><code class="function">g_dbus_interface_set_object()</code></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDBusInterfaceIface.dup-object"></a>dup_object</code></em> ()</p></td>
+<td class="struct_member_description"><p>Gets a reference to the enclosing <a class="link" href="GDBusObject.html" title="GDBusObject"><span class="type">GDBusObject</span></a>. See <a class="link" href="GDBusInterface.html#g-dbus-interface-dup-object" title="g_dbus_interface_dup_object ()"><code class="function">g_dbus_interface_dup_object()</code></a>. Added in 2.32.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,365 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC '-//OASIS//DTD DocBook XML V4.5//EN'
+                      'http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd' [
+<!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
+<!ENTITY version SYSTEM "version.xml">
+]>
+<book lang="en" id="gio" xmlns:xi="http://www.w3.org/2003/XInclude">
+<title>GIO Reference Manual</title>
+  <bookinfo>
+    <title>GIO Reference Manual</title>
+    <releaseinfo>
+      for GIO &version;
+      The latest version of this documentation can be found on-line at
+      <ulink role="online-location" url="https://developer.gnome.org/gio/unstable/">https://developer.gnome.org/gio/unstable/</ulink>.
+    </releaseinfo>
+  </bookinfo>
+
+  <xi:include href="xml/overview.xml"/>
+
+  <part>
+  <title>API Reference</title>
+    <chapter id="file_ops">
+        <title>File Operations</title>
+        <xi:include href="xml/gfile.xml"/>
+        <xi:include href="xml/gfileattribute.xml"/>
+        <xi:include href="xml/gfileinfo.xml"/>
+        <xi:include href="xml/gfileenumerator.xml"/>
+        <xi:include href="xml/gioerror.xml"/>
+        <xi:include href="xml/gmountoperation.xml"/>
+    </chapter>
+    <chapter id="file_mon">
+        <title>File System Monitoring</title>
+        <xi:include href="xml/gfilemonitor.xml"/>
+    </chapter>
+    <chapter id="utils">
+        <title>File-related Utilities</title>
+        <xi:include href="xml/gfilenamecompleter.xml"/>
+    </chapter>
+    <chapter id="async">
+        <title>Asynchronous I/O</title>
+        <xi:include href="xml/gcancellable.xml"/>
+        <xi:include href="xml/gasyncresult.xml"/>
+        <xi:include href="xml/gtask.xml"/>
+        <xi:include href="xml/gioscheduler.xml"/>
+        <xi:include href="xml/gsimpleasyncresult.xml"/>
+    </chapter>
+    <chapter id="conversion">
+        <title>Data conversion</title>
+        <xi:include href="xml/gconverter.xml"/>
+        <xi:include href="xml/gcharsetconverter.xml"/>
+        <xi:include href="xml/gzcompressor.xml"/>
+        <xi:include href="xml/gzdecompressor.xml"/>
+    </chapter>
+    <chapter id="streaming">
+        <title>Streaming I/O</title>
+        <xi:include href="xml/gseekable.xml"/>
+        <xi:include href="xml/ginputstream.xml"/>
+        <xi:include href="xml/goutputstream.xml"/>
+        <xi:include href="xml/giostream.xml"/>
+        <xi:include href="xml/gsimpleiostream.xml"/>
+        <xi:include href="xml/gfileinputstream.xml"/>
+        <xi:include href="xml/gfileoutputstream.xml"/>
+        <xi:include href="xml/gfileiostream.xml"/>
+        <xi:include href="xml/gfiledescriptorbased.xml"/>
+        <xi:include href="xml/gfilterinputstream.xml"/>
+        <xi:include href="xml/gfilteroutputstream.xml"/>
+        <xi:include href="xml/gmemoryinputstream.xml"/>
+        <xi:include href="xml/gmemoryoutputstream.xml"/>
+        <xi:include href="xml/gbufferedinputstream.xml"/>
+        <xi:include href="xml/gbufferedoutputstream.xml"/>
+        <xi:include href="xml/gdatainputstream.xml"/>
+        <xi:include href="xml/gdataoutputstream.xml"/>
+        <xi:include href="xml/gunixinputstream.xml"/>
+        <xi:include href="xml/gunixoutputstream.xml"/>
+        <xi:include href="xml/gwin32inputstream.xml"/>
+        <xi:include href="xml/gwin32outputstream.xml"/>
+        <xi:include href="xml/gconverterinputstream.xml"/>
+        <xi:include href="xml/gconverteroutputstream.xml"/>
+        <xi:include href="xml/gpollableinputstream.xml"/>
+        <xi:include href="xml/gpollableoutputstream.xml"/>
+        <xi:include href="xml/gpollableutils.xml"/>
+    </chapter>
+    <chapter id="types">
+        <title>File types and applications</title>
+        <xi:include href="xml/gcontenttype.xml"/>
+        <xi:include href="xml/gappinfo.xml"/>
+        <xi:include href="xml/gappinfomonitor.xml"/>
+        <xi:include href="xml/gdesktopappinfo.xml"/>
+    </chapter>
+    <chapter id="volume_mon">
+        <title>Volumes and Drives</title>
+        <xi:include href="xml/gvolumemonitor.xml"/>
+        <xi:include href="xml/gvolume.xml"/>
+        <xi:include href="xml/gmount.xml"/>
+        <xi:include href="xml/gdrive.xml"/>
+        <xi:include href="xml/gunixmounts.xml"/>
+    </chapter>
+    <chapter id="icons">
+        <title>Icons</title>
+        <xi:include href="xml/gicon.xml"/>
+        <xi:include href="xml/gfileicon.xml"/>
+        <xi:include href="xml/gbytesicon.xml"/>
+        <xi:include href="xml/gloadableicon.xml"/>
+        <xi:include href="xml/gthemedicon.xml"/>
+        <xi:include href="xml/gemblemedicon.xml"/>
+        <xi:include href="xml/gemblem.xml"/>
+    </chapter>
+    <chapter id="failable_initialization">
+        <title>Failable Initialization</title>
+        <xi:include href="xml/ginitable.xml"/>
+        <xi:include href="xml/gasyncinitable.xml"/>
+    </chapter>
+    <chapter id="subprocesses">
+      <title>Subprocesses</title>
+      <xi:include href="xml/gsubprocess.xml"/>
+      <xi:include href="xml/gsubprocesslauncher.xml"/>
+    </chapter>
+    <chapter id="networking">
+      <title>Low-level network support</title>
+      <xi:include href="xml/gsocket.xml"/>
+      <xi:include href="xml/gdatagrambased.xml"/>
+      <xi:include href="xml/ginetaddress.xml"/>
+      <xi:include href="xml/ginetaddressmask.xml"/>
+      <xi:include href="xml/gsocketaddress.xml"/>
+      <xi:include href="xml/ginetsocketaddress.xml"/>
+      <xi:include href="xml/gunixsocketaddress.xml"/>
+      <xi:include href="xml/gsocketcontrolmessage.xml"/>
+      <xi:include href="xml/gunixfdlist.xml"/>
+      <xi:include href="xml/gunixfdmessage.xml"/>
+      <xi:include href="xml/gcredentials.xml"/>
+      <xi:include href="xml/gunixcredentialsmessage.xml"/>
+      <xi:include href="xml/gproxy.xml"/>
+      <xi:include href="xml/gproxyaddress.xml"/>
+      <xi:include href="xml/gnetworking.xml"/>
+    </chapter>
+    <chapter id="highlevel-socket">
+      <title>High-level network functionallity</title>
+      <xi:include href="xml/gsocketclient.xml"/>
+      <xi:include href="xml/gsocketconnection.xml"/>
+      <xi:include href="xml/gunixconnection.xml"/>
+      <xi:include href="xml/gtcpconnection.xml"/>
+      <xi:include href="xml/gtcpwrapperconnection.xml"/>
+      <xi:include href="xml/gsocketlistener.xml"/>
+      <xi:include href="xml/gsocketservice.xml"/>
+      <xi:include href="xml/gthreadedsocketservice.xml"/>
+      <xi:include href="xml/gnetworkmonitor.xml"/>
+    </chapter>
+    <chapter id="tls">
+      <title>TLS (SSL) support</title>
+      <xi:include href="xml/gtls.xml"/>
+      <xi:include href="xml/gtlscertificate.xml"/>
+      <xi:include href="xml/gtlsconnection.xml"/>
+      <xi:include href="xml/gtlsclientconnection.xml"/>
+      <xi:include href="xml/gtlsserverconnection.xml"/>
+      <xi:include href="xml/gdtlsconnection.xml"/>
+      <xi:include href="xml/gdtlsclientconnection.xml"/>
+      <xi:include href="xml/gdtlsserverconnection.xml"/>
+      <xi:include href="xml/gtlsbackend.xml"/>
+      <xi:include href="xml/gtlsdatabase.xml"/>
+      <xi:include href="xml/gtlsfiledatabase.xml"/>
+      <xi:include href="xml/gtlsinteraction.xml"/>
+      <xi:include href="xml/gtlspassword.xml"/>
+    </chapter>
+    <chapter id="resolver">
+      <title>DNS resolution</title>
+      <xi:include href="xml/gresolver.xml"/>
+      <xi:include href="xml/gproxyresolver.xml"/>
+      <xi:include href="xml/gsimpleproxyresolver.xml"/>
+      <xi:include href="xml/gsocketconnectable.xml"/>
+      <xi:include href="xml/gsocketaddressenumerator.xml"/>
+      <xi:include href="xml/gproxyaddressenumerator.xml"/>
+      <xi:include href="xml/gnetworkaddress.xml"/>
+      <xi:include href="xml/gnetworkservice.xml"/>
+      <xi:include href="xml/gsrvtarget.xml"/>
+    </chapter>
+    <chapter id="gdbus-lowlevel">
+      <title>Low-level D-Bus Support</title>
+      <xi:include href="xml/gdbusutils.xml"/>
+      <xi:include href="xml/gdbusaddress.xml"/>
+      <xi:include href="xml/gdbusintrospection.xml"/>
+      <xi:include href="xml/gdbuserror.xml"/>
+      <xi:include href="xml/gdbusmessage.xml"/>
+      <xi:include href="xml/gdbusconnection.xml"/>
+      <xi:include href="xml/gdbusmethodinvocation.xml"/>
+      <xi:include href="xml/gdbusserver.xml"/>
+      <xi:include href="xml/gdbusauthobserver.xml"/>
+    </chapter>
+    <chapter id="gdbus-convenience">
+      <title>High-level D-Bus Support</title>
+      <xi:include href="xml/gdbusnameowning.xml"/>
+      <xi:include href="xml/gdbusnamewatching.xml"/>
+      <xi:include href="xml/gdbusinterface.xml"/>
+      <xi:include href="xml/gdbusinterfaceskeleton.xml"/>
+      <xi:include href="xml/gdbusproxy.xml"/>
+      <xi:include href="xml/gdbusobject.xml"/>
+      <xi:include href="xml/gdbusobjectskeleton.xml"/>
+      <xi:include href="xml/gdbusobjectproxy.xml"/>
+      <xi:include href="xml/gdbusobjectmanager.xml"/>
+      <xi:include href="xml/gdbusobjectmanagerserver.xml"/>
+      <xi:include href="xml/gdbusobjectmanagerclient.xml"/>
+    </chapter>
+    <chapter id="settings">
+        <title>Settings</title>
+        <xi:include href="xml/gsettings.xml"/>
+        <xi:include href="xml/gsettingsbackend.xml"/>
+        <xi:include href="xml/gsettingsschema.xml"/>
+    </chapter>
+    <chapter id="resources">
+        <title>Resources</title>
+        <xi:include href="xml/gresource.xml"/>
+    </chapter>
+    <chapter id='permissions'>
+        <title>Permissions</title>
+        <xi:include href="xml/gpermission.xml"/>
+        <xi:include href="xml/gsimplepermission.xml"/>
+    </chapter>
+    <chapter id='data-models'>
+        <title>Data Models</title>
+        <xi:include href="xml/glistmodel.xml"/>
+        <xi:include href="xml/gliststore.xml"/>
+    </chapter>
+    <chapter id='registry'>
+        <title>Win32 registry support</title>
+        <xi:include href="xml/gwin32registrykey.xml"/>
+    </chapter>
+    <chapter id="application">
+        <title>Application support</title>
+        <xi:include href="xml/gapplication.xml"/>
+        <xi:include href="xml/gapplicationcommandline.xml"/>
+        <xi:include href="xml/gactiongroup.xml"/>
+        <xi:include href="xml/gactionmap.xml"/>
+        <xi:include href="xml/gsimpleactiongroup.xml"/>
+        <xi:include href="xml/gaction.xml"/>
+        <xi:include href="xml/gsimpleaction.xml"/>
+        <xi:include href="xml/gpropertyaction.xml"/>
+        <xi:include href="xml/gremoteactiongroup.xml"/>
+        <xi:include href="xml/gactiongroupexporter.xml"/>
+        <xi:include href="xml/gdbusactiongroup.xml"/>
+        <xi:include href="xml/gmenumodel.xml"/>
+        <xi:include href="xml/gmenu.xml"/>
+        <xi:include href="xml/gmenuexporter.xml"/>
+        <xi:include href="xml/gdbusmenumodel.xml"/>
+        <xi:include href="xml/gnotification.xml"/>
+    </chapter>
+    <chapter id="extending">
+        <title>Extending GIO</title>
+        <xi:include href="xml/gvfs.xml"/>
+        <xi:include href="xml/giomodule.xml"/>
+        <xi:include href="xml/extensionpoints.xml"/>
+    </chapter>
+    <chapter id="tools">
+        <title>GIO Tools</title>
+        <xi:include href="gio-querymodules.xml"/>
+        <xi:include href="gsettings.xml"/>
+        <xi:include href="glib-compile-schemas.xml"/>
+        <xi:include href="glib-compile-resources.xml"/>
+        <xi:include href="gdbus.xml"/>
+        <xi:include href="xml/gdbus-codegen.xml"/>
+        <xi:include href="gresource.xml"/>
+        <xi:include href="gapplication.xml"/>
+        <xi:include href="gio.xml"/>
+    </chapter>
+    <chapter id="testing">
+        <title>GIO Testing</title>
+        <xi:include href="xml/gtestdbus.xml"/>
+    </chapter>
+  </part>
+
+  <part id="migrating">
+    <title>Migrating to GIO</title>
+    <xi:include href="xml/migrating-posix.xml"/>
+    <xi:include href="xml/migrating-gnome-vfs.xml"/>
+    <xi:include href="xml/migrating-gconf.xml"/>
+    <xi:include href="xml/migrating-gdbus.xml"/>
+  </part>
+
+  <chapter id="gio-hierarchy">
+    <title>Object Hierarchy</title>
+      <xi:include href="xml/tree_index.sgml"/>
+  </chapter>
+  
+  <index id="api-index-full">
+    <title id="index-all">Index</title>
+    <xi:include href="xml/api-index-full.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-deprecated" role="deprecated">
+    <title>Index of deprecated symbols</title>
+    <xi:include href="xml/api-index-deprecated.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-18" role="2.18">
+    <title>Index of new symbols in 2.18</title>
+    <xi:include href="xml/api-index-2.18.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-20" role="2.20">
+    <title>Index of new symbols in 2.20</title>
+    <xi:include href="xml/api-index-2.20.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-22" role="2.22">
+    <title>Index of new symbols in 2.22</title>
+    <xi:include href="xml/api-index-2.22.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-24" role="2.24">
+    <title>Index of new symbols in 2.24</title>
+    <xi:include href="xml/api-index-2.24.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-26" role="2.26">
+    <title>Index of new symbols in 2.26</title>
+    <xi:include href="xml/api-index-2.26.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-28" role="2.28">
+    <title>Index of new symbols in 2.28</title>
+    <xi:include href="xml/api-index-2.28.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-30" role="2.30">
+    <title>Index of new symbols in 2.30</title>
+    <xi:include href="xml/api-index-2.30.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-32" role="2.32">
+    <title>Index of new symbols in 2.32</title>
+    <xi:include href="xml/api-index-2.32.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-34" role="2.34">
+    <title>Index of new symbols in 2.34</title>
+    <xi:include href="xml/api-index-2.34.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-36" role="2.36">
+    <title>Index of new symbols in 2.36</title>
+    <xi:include href="xml/api-index-2.36.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-38" role="2.38">
+    <title>Index of new symbols in 2.38</title>
+    <xi:include href="xml/api-index-2.38.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-40" role="2.40">
+    <title>Index of new symbols in 2.40</title>
+    <xi:include href="xml/api-index-2.40.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-42" role="2.42">
+    <title>Index of new symbols in 2.42</title>
+    <xi:include href="xml/api-index-2.42.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-44" role="2.44">
+    <title>Index of new symbols in 2.44</title>
+    <xi:include href="xml/api-index-2.44.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-46" role="2.46">
+    <title>Index of new symbols in 2.46</title>
+    <xi:include href="xml/api-index-2.46.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-48" role="2.48">
+    <title>Index of new symbols in 2.48</title>
+    <xi:include href="xml/api-index-2.48.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-50" role="2.50">
+    <title>Index of new symbols in 2.50</title>
+    <xi:include href="xml/api-index-2.50.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="api-index-2-52" role="2.52">
+    <title>Index of new symbols in 2.52</title>
+    <xi:include href="xml/api-index-2.52.xml"><xi:fallback /></xi:include>
+  </index>
+
+  <xi:include href="xml/annotation-glossary.xml"><xi:fallback /></xi:include>
+
+</book>

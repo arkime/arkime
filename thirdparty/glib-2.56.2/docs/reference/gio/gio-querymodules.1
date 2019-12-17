@@ -1,0 +1,44 @@
+'\" t
+.\"     Title: gio-querymodules
+.\"    Author: Alexander Larsson
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 08/17/2018
+.\"    Manual: User Commands
+.\"    Source: GIO
+.\"  Language: English
+.\"
+.TH "GIO\-QUERYMODULES" "1" "" "GIO" "User Commands"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+gio-querymodules \- GIO module cache creation
+.SH "SYNOPSIS"
+.HP \w'\fBgio\-querymodules\fR\ 'u
+\fBgio\-querymodules\fR {DIRECTORY...}
+.SH "DESCRIPTION"
+.PP
+\fBgio\-querymodules\fR
+creates a
+giomodule\&.cache
+file in the listed directories\&. This file lists the implemented extension points for each module that has been found\&. It is used by GIO at runtime to avoid opening all modules just to find out which extension points they are implementing\&.
+.PP
+GIO modules are usually installed in the
+gio/modules
+subdirectory of libdir\&.

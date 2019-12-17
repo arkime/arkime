@@ -1,0 +1,1187 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GMountOperation: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="file_ops.html" title="File Operations">
+<link rel="prev" href="gio-GIOError.html" title="GIOError">
+<link rel="next" href="file_mon.html" title="File System Monitoring">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GMountOperation.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GMountOperation.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GMountOperation.properties" class="shortcut">Properties</a></span><span id="nav_signals">  <span class="dim">|</span> 
+                  <a href="#GMountOperation.signals" class="shortcut">Signals</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="file_ops.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gio-GIOError.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="file_mon.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GMountOperation"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GMountOperation.top_of_page"></a>GMountOperation</span></h2>
+<p>GMountOperation — Object used for authentication and user interaction</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GMountOperation.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GMountOperation.html" title="GMountOperation"><span class="returnvalue">GMountOperation</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GMountOperation.html#g-mount-operation-new" title="g_mount_operation_new ()">g_mount_operation_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="GMountOperation.html#g-mount-operation-get-username" title="g_mount_operation_get_username ()">g_mount_operation_get_username</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMountOperation.html#g-mount-operation-set-username" title="g_mount_operation_set_username ()">g_mount_operation_set_username</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="GMountOperation.html#g-mount-operation-get-password" title="g_mount_operation_get_password ()">g_mount_operation_get_password</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMountOperation.html#g-mount-operation-set-password" title="g_mount_operation_set_password ()">g_mount_operation_set_password</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GMountOperation.html#g-mount-operation-get-anonymous" title="g_mount_operation_get_anonymous ()">g_mount_operation_get_anonymous</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMountOperation.html#g-mount-operation-set-anonymous" title="g_mount_operation_set_anonymous ()">g_mount_operation_set_anonymous</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="GMountOperation.html#g-mount-operation-get-domain" title="g_mount_operation_get_domain ()">g_mount_operation_get_domain</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMountOperation.html#g-mount-operation-set-domain" title="g_mount_operation_set_domain ()">g_mount_operation_set_domain</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GMountOperation.html#GPasswordSave" title="enum GPasswordSave"><span class="returnvalue">GPasswordSave</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GMountOperation.html#g-mount-operation-get-password-save" title="g_mount_operation_get_password_save ()">g_mount_operation_get_password_save</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMountOperation.html#g-mount-operation-set-password-save" title="g_mount_operation_set_password_save ()">g_mount_operation_set_password_save</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">int</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMountOperation.html#g-mount-operation-get-choice" title="g_mount_operation_get_choice ()">g_mount_operation_get_choice</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMountOperation.html#g-mount-operation-set-choice" title="g_mount_operation_set_choice ()">g_mount_operation_set_choice</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GMountOperation.html#g-mount-operation-reply" title="g_mount_operation_reply ()">g_mount_operation_reply</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GMountOperation.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GMountOperation.html#GMountOperation--anonymous" title="The “anonymous” property">anonymous</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a></td>
+<td class="property_name"><a class="link" href="GMountOperation.html#GMountOperation--choice" title="The “choice” property">choice</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<td class="property_name"><a class="link" href="GMountOperation.html#GMountOperation--domain" title="The “domain” property">domain</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<td class="property_name"><a class="link" href="GMountOperation.html#GMountOperation--password" title="The “password” property">password</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
+<tr>
+<td class="property_type"><a class="link" href="GMountOperation.html#GPasswordSave" title="enum GPasswordSave"><span class="type">GPasswordSave</span></a></td>
+<td class="property_name"><a class="link" href="GMountOperation.html#GMountOperation--password-save" title="The “password-save” property">password-save</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<td class="property_name"><a class="link" href="GMountOperation.html#GMountOperation--username" title="The “username” property">username</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GMountOperation.signals"></a><h2>Signals</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="signals_return">
+<col width="300px" class="signals_name">
+<col width="200px" class="signals_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GMountOperation.html#GMountOperation-aborted" title="The “aborted” signal">aborted</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GMountOperation.html#GMountOperation-ask-password" title="The “ask-password” signal">ask-password</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GMountOperation.html#GMountOperation-ask-question" title="The “ask-question” signal">ask-question</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GMountOperation.html#GMountOperation-reply" title="The “reply” signal">reply</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GMountOperation.html#GMountOperation-show-processes" title="The “show-processes” signal">show-processes</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GMountOperation.html#GMountOperation-show-unmount-progress" title="The “show-unmount-progress” signal">show-unmount-progress</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GMountOperation.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="GMountOperation.html#GAskPasswordFlags" title="enum GAskPasswordFlags">GAskPasswordFlags</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="GMountOperation.html#GPasswordSave" title="enum GPasswordSave">GPasswordSave</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GMountOperation.html#GMountOperation-struct" title="GMountOperation">GMountOperation</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="GMountOperation.html#GMountOperationResult" title="enum GMountOperationResult">GMountOperationResult</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GMountOperation.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GMountOperation
+</pre>
+</div>
+<div class="refsect1">
+<a name="GMountOperation.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GMountOperation.description"></a><h2>Description</h2>
+<p><a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> provides a mechanism for interacting with the user.
+It can be used for authenticating mountable operations, such as loop
+mounting files, hard drive partitions or server locations. It can
+also be used to ask the user questions or show a list of applications
+preventing unmount or eject operations from completing.</p>
+<p>Note that <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> is used for more than just <a class="link" href="GMount.html" title="GMount"><span class="type">GMount</span></a>
+objects – for example it is also used in <a class="link" href="GDrive.html#g-drive-start" title="g_drive_start ()"><code class="function">g_drive_start()</code></a> and
+<a class="link" href="GDrive.html#g-drive-stop" title="g_drive_stop ()"><code class="function">g_drive_stop()</code></a>.</p>
+<p>Users should instantiate a subclass of this that implements all the
+various callbacks to show the required dialogs, such as
+<span class="type">GtkMountOperation</span>. If no user interaction is desired (for example
+when automounting filesystems at login time), usually <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> can be
+passed, see each method taking a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> for details.</p>
+</div>
+<div class="refsect1">
+<a name="GMountOperation.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-mount-operation-new"></a><h3>g_mount_operation_new ()</h3>
+<pre class="programlisting"><a class="link" href="GMountOperation.html" title="GMountOperation"><span class="returnvalue">GMountOperation</span></a> *
+g_mount_operation_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Creates a new mount operation.</p>
+<div class="refsect3">
+<a name="g-mount-operation-new.returns"></a><h4>Returns</h4>
+<p> a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mount-operation-get-username"></a><h3>g_mount_operation_get_username ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+g_mount_operation_get_username (<em class="parameter"><code><a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *op</code></em>);</pre>
+<p>Get the user name from the mount operation.</p>
+<div class="refsect3">
+<a name="g-mount-operation-get-username.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>op</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-mount-operation-get-username.returns"></a><h4>Returns</h4>
+<p> a string containing the user name.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mount-operation-set-username"></a><h3>g_mount_operation_set_username ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_mount_operation_set_username (<em class="parameter"><code><a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *op</code></em>,
+                                <em class="parameter"><code>const <span class="type">char</span> *username</code></em>);</pre>
+<p>Sets the user name within <em class="parameter"><code>op</code></em>
+ to <em class="parameter"><code>username</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-mount-operation-set-username.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>op</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>username</p></td>
+<td class="parameter_description"><p>input username.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mount-operation-get-password"></a><h3>g_mount_operation_get_password ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+g_mount_operation_get_password (<em class="parameter"><code><a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *op</code></em>);</pre>
+<p>Gets a password from the mount operation.</p>
+<div class="refsect3">
+<a name="g-mount-operation-get-password.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>op</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-mount-operation-get-password.returns"></a><h4>Returns</h4>
+<p> a string containing the password within <em class="parameter"><code>op</code></em>
+.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mount-operation-set-password"></a><h3>g_mount_operation_set_password ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_mount_operation_set_password (<em class="parameter"><code><a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *op</code></em>,
+                                <em class="parameter"><code>const <span class="type">char</span> *password</code></em>);</pre>
+<p>Sets the mount operation's password to <em class="parameter"><code>password</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-mount-operation-set-password.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>op</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>password</p></td>
+<td class="parameter_description"><p>password to set.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mount-operation-get-anonymous"></a><h3>g_mount_operation_get_anonymous ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_mount_operation_get_anonymous (<em class="parameter"><code><a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *op</code></em>);</pre>
+<p>Check to see whether the mount operation is being used 
+for an anonymous user.</p>
+<div class="refsect3">
+<a name="g-mount-operation-get-anonymous.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>op</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-mount-operation-get-anonymous.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if mount operation is anonymous. </p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mount-operation-set-anonymous"></a><h3>g_mount_operation_set_anonymous ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_mount_operation_set_anonymous (<em class="parameter"><code><a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *op</code></em>,
+                                 <em class="parameter"><code><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> anonymous</code></em>);</pre>
+<p>Sets the mount operation to use an anonymous user if <em class="parameter"><code>anonymous</code></em>
+ is <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>.</p>
+<div class="refsect3">
+<a name="g-mount-operation-set-anonymous.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>op</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>anonymous</p></td>
+<td class="parameter_description"><p>boolean value.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mount-operation-get-domain"></a><h3>g_mount_operation_get_domain ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+g_mount_operation_get_domain (<em class="parameter"><code><a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *op</code></em>);</pre>
+<p>Gets the domain of the mount operation.</p>
+<div class="refsect3">
+<a name="g-mount-operation-get-domain.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>op</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-mount-operation-get-domain.returns"></a><h4>Returns</h4>
+<p> a string set to the domain. </p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mount-operation-set-domain"></a><h3>g_mount_operation_set_domain ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_mount_operation_set_domain (<em class="parameter"><code><a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *op</code></em>,
+                              <em class="parameter"><code>const <span class="type">char</span> *domain</code></em>);</pre>
+<p>Sets the mount operation's domain.</p>
+<div class="refsect3">
+<a name="g-mount-operation-set-domain.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>op</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>domain</p></td>
+<td class="parameter_description"><p>the domain to set.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mount-operation-get-password-save"></a><h3>g_mount_operation_get_password_save ()</h3>
+<pre class="programlisting"><a class="link" href="GMountOperation.html#GPasswordSave" title="enum GPasswordSave"><span class="returnvalue">GPasswordSave</span></a>
+g_mount_operation_get_password_save (<em class="parameter"><code><a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *op</code></em>);</pre>
+<p>Gets the state of saving passwords for the mount operation.</p>
+<div class="refsect3">
+<a name="g-mount-operation-get-password-save.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>op</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-mount-operation-get-password-save.returns"></a><h4>Returns</h4>
+<p> a <a class="link" href="GMountOperation.html#GPasswordSave" title="enum GPasswordSave"><span class="type">GPasswordSave</span></a> flag. </p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mount-operation-set-password-save"></a><h3>g_mount_operation_set_password_save ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_mount_operation_set_password_save (<em class="parameter"><code><a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *op</code></em>,
+                                     <em class="parameter"><code><a class="link" href="GMountOperation.html#GPasswordSave" title="enum GPasswordSave"><span class="type">GPasswordSave</span></a> save</code></em>);</pre>
+<p>Sets the state of saving passwords for the mount operation.</p>
+<div class="refsect3">
+<a name="g-mount-operation-set-password-save.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>op</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>save</p></td>
+<td class="parameter_description"><p>a set of <a class="link" href="GMountOperation.html#GPasswordSave" title="enum GPasswordSave"><span class="type">GPasswordSave</span></a> flags.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mount-operation-get-choice"></a><h3>g_mount_operation_get_choice ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>
+g_mount_operation_get_choice (<em class="parameter"><code><a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *op</code></em>);</pre>
+<p>Gets a choice from the mount operation.</p>
+<div class="refsect3">
+<a name="g-mount-operation-get-choice.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>op</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-mount-operation-get-choice.returns"></a><h4>Returns</h4>
+<p> an integer containing an index of the user's choice from
+the choice's list, or <code class="literal">0</code>.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mount-operation-set-choice"></a><h3>g_mount_operation_set_choice ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_mount_operation_set_choice (<em class="parameter"><code><a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *op</code></em>,
+                              <em class="parameter"><code><span class="type">int</span> choice</code></em>);</pre>
+<p>Sets a default choice for the mount operation.</p>
+<div class="refsect3">
+<a name="g-mount-operation-set-choice.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>op</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>choice</p></td>
+<td class="parameter_description"><p>an integer.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-mount-operation-reply"></a><h3>g_mount_operation_reply ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_mount_operation_reply (<em class="parameter"><code><a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *op</code></em>,
+                         <em class="parameter"><code><a class="link" href="GMountOperation.html#GMountOperationResult" title="enum GMountOperationResult"><span class="type">GMountOperationResult</span></a> result</code></em>);</pre>
+<p>Emits the <a class="link" href="GMountOperation.html#GMountOperation-reply" title="The “reply” signal"><span class="type">“reply”</span></a> signal.</p>
+<div class="refsect3">
+<a name="g-mount-operation-reply.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>op</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html#GMountOperationResult" title="enum GMountOperationResult"><span class="type">GMountOperationResult</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GMountOperation.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GAskPasswordFlags"></a><h3>enum GAskPasswordFlags</h3>
+<p><a class="link" href="GMountOperation.html#GAskPasswordFlags" title="enum GAskPasswordFlags"><span class="type">GAskPasswordFlags</span></a> are used to request specific information from the
+user, or to notify the user of their choices in an authentication
+situation.</p>
+<div class="refsect3">
+<a name="GAskPasswordFlags.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-ASK-PASSWORD-NEED-PASSWORD:CAPS"></a>G_ASK_PASSWORD_NEED_PASSWORD</p></td>
+<td class="enum_member_description">
+<p>operation requires a password.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-ASK-PASSWORD-NEED-USERNAME:CAPS"></a>G_ASK_PASSWORD_NEED_USERNAME</p></td>
+<td class="enum_member_description">
+<p>operation requires a username.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-ASK-PASSWORD-NEED-DOMAIN:CAPS"></a>G_ASK_PASSWORD_NEED_DOMAIN</p></td>
+<td class="enum_member_description">
+<p>operation requires a domain.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-ASK-PASSWORD-SAVING-SUPPORTED:CAPS"></a>G_ASK_PASSWORD_SAVING_SUPPORTED</p></td>
+<td class="enum_member_description">
+<p>operation supports saving settings.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-ASK-PASSWORD-ANONYMOUS-SUPPORTED:CAPS"></a>G_ASK_PASSWORD_ANONYMOUS_SUPPORTED</p></td>
+<td class="enum_member_description">
+<p>operation supports anonymous users.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GPasswordSave"></a><h3>enum GPasswordSave</h3>
+<p><a class="link" href="GMountOperation.html#GPasswordSave" title="enum GPasswordSave"><span class="type">GPasswordSave</span></a> is used to indicate the lifespan of a saved password.</p>
+<p><span class="type">Gvfs</span> stores passwords in the Gnome keyring when this flag allows it
+to, and later retrieves it again from there.</p>
+<div class="refsect3">
+<a name="GPasswordSave.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-PASSWORD-SAVE-NEVER:CAPS"></a>G_PASSWORD_SAVE_NEVER</p></td>
+<td class="enum_member_description">
+<p>never save a password.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-PASSWORD-SAVE-FOR-SESSION:CAPS"></a>G_PASSWORD_SAVE_FOR_SESSION</p></td>
+<td class="enum_member_description">
+<p>save a password for the session.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-PASSWORD-SAVE-PERMANENTLY:CAPS"></a>G_PASSWORD_SAVE_PERMANENTLY</p></td>
+<td class="enum_member_description">
+<p>save a password permanently.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMountOperation-struct"></a><h3>GMountOperation</h3>
+<pre class="programlisting">typedef struct _GMountOperation GMountOperation;</pre>
+<p>Class for providing authentication methods for mounting operations,
+such as mounting a file locally, or authenticating with a server.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMountOperationResult"></a><h3>enum GMountOperationResult</h3>
+<p><a class="link" href="GMountOperation.html#GMountOperationResult" title="enum GMountOperationResult"><span class="type">GMountOperationResult</span></a> is returned as a result when a request for
+information is send by the mounting operation.</p>
+<div class="refsect3">
+<a name="GMountOperationResult.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-MOUNT-OPERATION-HANDLED:CAPS"></a>G_MOUNT_OPERATION_HANDLED</p></td>
+<td class="enum_member_description">
+<p>The request was fulfilled and the
+    user specified data is now available</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-MOUNT-OPERATION-ABORTED:CAPS"></a>G_MOUNT_OPERATION_ABORTED</p></td>
+<td class="enum_member_description">
+<p>The user requested the mount operation
+    to be aborted</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-MOUNT-OPERATION-UNHANDLED:CAPS"></a>G_MOUNT_OPERATION_UNHANDLED</p></td>
+<td class="enum_member_description">
+<p>The request was unhandled (i.e. not
+    implemented)</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GMountOperation.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GMountOperation--anonymous"></a><h3>The <code class="literal">“anonymous”</code> property</h3>
+<pre class="programlisting">  “anonymous”                <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether to use an anonymous user when authenticating.</p>
+<p>Flags: Read / Write</p>
+<p>Default value: FALSE</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMountOperation--choice"></a><h3>The <code class="literal">“choice”</code> property</h3>
+<pre class="programlisting">  “choice”                   <a href="../glib-Basic-Types.html#gint"><span class="type">gint</span></a></pre>
+<p>The index of the user's choice when a question is asked during the
+
+mount operation. See the <a class="link" href="GMountOperation.html#GMountOperation-ask-question" title="The “ask-question” signal"><span class="type">“ask-question”</span></a> signal.</p>
+<p>Flags: Read / Write</p>
+<p>Allowed values: &gt;= 0</p>
+<p>Default value: 0</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMountOperation--domain"></a><h3>The <code class="literal">“domain”</code> property</h3>
+<pre class="programlisting">  “domain”                   <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>The domain to use for the mount operation.</p>
+<p>Flags: Read / Write</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMountOperation--password"></a><h3>The <code class="literal">“password”</code> property</h3>
+<pre class="programlisting">  “password”                 <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>The password that is used for authentication when carrying out
+the mount operation.</p>
+<p>Flags: Read / Write</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMountOperation--password-save"></a><h3>The <code class="literal">“password-save”</code> property</h3>
+<pre class="programlisting">  “password-save”            <a class="link" href="GMountOperation.html#GPasswordSave" title="enum GPasswordSave"><span class="type">GPasswordSave</span></a></pre>
+<p>Determines if and how the password information should be saved.</p>
+<p>Flags: Read / Write</p>
+<p>Default value: G_PASSWORD_SAVE_NEVER</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMountOperation--username"></a><h3>The <code class="literal">“username”</code> property</h3>
+<pre class="programlisting">  “username”                 <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>The user name that is used for authentication when carrying out
+the mount operation.</p>
+<p>Flags: Read / Write</p>
+<p>Default value: NULL</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GMountOperation.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="GMountOperation-aborted"></a><h3>The <code class="literal">“aborted”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *gmountoperation,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>         user_data)</pre>
+<p>Emitted by the backend when e.g. a device becomes unavailable
+while a mount operation is in progress.</p>
+<p>Implementations of GMountOperation should handle this signal
+by dismissing open password dialogs.</p>
+<div class="refsect3">
+<a name="GMountOperation-aborted.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+<p class="since">Since: <a class="link" href="api-index-2-20.html#api-index-2.20">2.20</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMountOperation-ask-password"></a><h3>The <code class="literal">“ask-password”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>  *op,
+               <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>            *message,
+               <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>            *default_user,
+               <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>            *default_domain,
+               <a class="link" href="GMountOperation.html#GAskPasswordFlags" title="enum GAskPasswordFlags"><span class="type">GAskPasswordFlags</span></a> flags,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>          user_data)</pre>
+<p>Emitted when a mount operation asks the user for a password.</p>
+<p>If the message contains a line break, the first line should be
+presented as a heading. For example, it may be used as the
+primary text in a <span class="type">GtkMessageDialog</span>.</p>
+<div class="refsect3">
+<a name="GMountOperation-ask-password.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>op</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> requesting a password.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>string containing a message to display to the user.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>default_user</p></td>
+<td class="parameter_description"><p>string containing the default user name.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>default_domain</p></td>
+<td class="parameter_description"><p>string containing the default domain.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>a set of <a class="link" href="GMountOperation.html#GAskPasswordFlags" title="enum GAskPasswordFlags"><span class="type">GAskPasswordFlags</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMountOperation-ask-question"></a><h3>The <code class="literal">“ask-question”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *op,
+               <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>           *message,
+               <a href="../glib-String-Utility-Functions.html#GStrv"><span class="type">GStrv</span></a>            choices,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>         user_data)</pre>
+<p>Emitted when asking the user a question and gives a list of
+choices for the user to choose from.</p>
+<p>If the message contains a line break, the first line should be
+presented as a heading. For example, it may be used as the
+primary text in a <span class="type">GtkMessageDialog</span>.</p>
+<div class="refsect3">
+<a name="GMountOperation-ask-question.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>op</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> asking a question.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>string containing a message to display to the user.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>choices</p></td>
+<td class="parameter_description"><p>an array of strings for each possible choice.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMountOperation-reply"></a><h3>The <code class="literal">“reply”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>      *op,
+               <a class="link" href="GMountOperation.html#GMountOperationResult" title="enum GMountOperationResult"><span class="type">GMountOperationResult</span></a> result,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>              user_data)</pre>
+<p>Emitted when the user has replied to the mount operation.</p>
+<div class="refsect3">
+<a name="GMountOperation-reply.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>op</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html#GMountOperationResult" title="enum GMountOperationResult"><span class="type">GMountOperationResult</span></a> indicating how the request was handled</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMountOperation-show-processes"></a><h3>The <code class="literal">“show-processes”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *op,
+               <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>           *message,
+               <a href="../glib-Arrays.html#GArray"><span class="type">GArray</span></a>          *processes,
+               <a href="../glib-String-Utility-Functions.html#GStrv"><span class="type">GStrv</span></a>            choices,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>         user_data)</pre>
+<p>Emitted when one or more processes are blocking an operation
+e.g. unmounting/ejecting a <a class="link" href="GMount.html" title="GMount"><span class="type">GMount</span></a> or stopping a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p>
+<p>Note that this signal may be emitted several times to update the
+list of blocking processes as processes close files. The
+application should only respond with <a class="link" href="GMountOperation.html#g-mount-operation-reply" title="g_mount_operation_reply ()"><code class="function">g_mount_operation_reply()</code></a> to
+the latest signal (setting <a class="link" href="GMountOperation.html#GMountOperation--choice" title="The “choice” property"><span class="type">“choice”</span></a> to the choice
+the user made).</p>
+<p>If the message contains a line break, the first line should be
+presented as a heading. For example, it may be used as the
+primary text in a <span class="type">GtkMessageDialog</span>.</p>
+<div class="refsect3">
+<a name="GMountOperation-show-processes.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>op</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>string containing a message to display to the user.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>processes</p></td>
+<td class="parameter_description"><p>an array of <a href="../glib-The-Main-Event-Loop.html#GPid"><span class="type">GPid</span></a> for processes
+blocking the operation. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GPid]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>choices</p></td>
+<td class="parameter_description"><p>an array of strings for each possible choice.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMountOperation-show-unmount-progress"></a><h3>The <code class="literal">“show-unmount-progress”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *op,
+               <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>           *message,
+               <a href="../glib-Basic-Types.html#gint64"><span class="type">gint64</span></a>           time_left,
+               <a href="../glib-Basic-Types.html#gint64"><span class="type">gint64</span></a>           bytes_left,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>         user_data)</pre>
+<p>Emitted when an unmount operation has been busy for more than some time
+(typically 1.5 seconds).</p>
+<p>When unmounting or ejecting a volume, the kernel might need to flush
+pending data in its buffers to the volume stable storage, and this operation
+can take a considerable amount of time. This signal may be emitted several
+times as long as the unmount operation is outstanding, and then one
+last time when the operation is completed, with <em class="parameter"><code>bytes_left</code></em>
+ set to zero.</p>
+<p>Implementations of GMountOperation should handle this signal by
+showing an UI notification, and then dismiss it, or show another notification
+of completion, when <em class="parameter"><code>bytes_left</code></em>
+ reaches zero.</p>
+<p>If the message contains a line break, the first line should be
+presented as a heading. For example, it may be used as the
+primary text in a <span class="type">GtkMessageDialog</span>.</p>
+<div class="refsect3">
+<a name="GMountOperation-show-unmount-progress.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>op</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>:</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>string containing a mesage to display to the user</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>time_left</p></td>
+<td class="parameter_description"><p>the estimated time left before the operation completes,
+in microseconds, or -1</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>bytes_left</p></td>
+<td class="parameter_description"><p>the amount of bytes to be written before the operation
+completes (or -1 if such amount is not known), or zero if the operation
+is completed</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

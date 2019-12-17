@@ -1,0 +1,3 @@
+ELEMENT 'foo'
+  TEXT 'data'
+ERROR Error on line 1 char 11: ' ' is not a valid character following a '<' character; it may not begin an element name

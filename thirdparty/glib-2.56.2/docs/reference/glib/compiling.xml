@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+]>
+<refentry id="glib-compiling" revision="17 Jan 2002">
+<refmeta>
+<refentrytitle>Compiling GLib Applications</refentrytitle>
+<manvolnum>3</manvolnum>
+<refmiscinfo>GLib Library</refmiscinfo>
+</refmeta>
+
+<refnamediv>
+<refname>Compiling GLib Applications</refname>
+<refpurpose>
+How to compile your GLib application
+</refpurpose>
+</refnamediv>
+
+<refsect1>
+<title>Compiling GLib Applications on UNIX</title>
+
+<para>
+To compile a GLib application, you need to tell the compiler where to
+find the GLib header files and libraries. This is done with the
+<application>pkg-config</application> utility.
+</para>
+<para>
+The following interactive shell session demonstrates how
+<application>pkg-config</application> is used (the actual output on
+your system may be different):
+<programlisting>
+$ pkg-config --cflags glib-2.0
+ -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include
+$ pkg-config --libs glib-2.0
+ -L/usr/lib -lm -lglib-2.0
+</programlisting>
+</para>
+<para>
+See the <ulink url="http://www.freedesktop.org/wiki/Software/pkg-config">pkg-config website</ulink>
+for more information about <application>pkg-config</application>.
+</para>
+<para>
+If your application uses or <structname>GObject</structname>
+features, it must be compiled and linked with the options returned
+by the following <application>pkg-config</application> invocation:
+<programlisting>
+$ pkg-config --cflags --libs gobject-2.0
+</programlisting>
+</para>
+<para>
+If your application uses modules, it must be compiled and linked
+with the options returned by one of the following
+<application>pkg-config</application> invocations:
+<programlisting>
+$ pkg-config --cflags --libs gmodule-no-export-2.0
+$ pkg-config --cflags --libs gmodule-2.0
+</programlisting>
+The difference between the two is that gmodule-2.0 adds
+<option>--export-dynamic</option> to the linker flags,
+which is often not needed.
+</para>
+<para>
+The simplest way to compile a program is to use the "backticks"
+feature of the shell. If you enclose a command in backticks
+(<emphasis>not single quotes</emphasis>), then its output will
+be substituted into the command line before execution. So to
+compile a GLib Hello, World, you would type the following:
+<programlisting>
+$ cc hello.c `pkg-config --cflags --libs glib-2.0` -o hello
+</programlisting>
+</para>
+<note><para>
+Note that the name of the file must come before the other options
+(such as <emphasis>pkg-config</emphasis>), or else you may get an
+error from the linker.
+</para></note>
+
+<para>
+Deprecated GLib functions are annotated to make the compiler
+emit warnings when they are used (e.g. with gcc, you need to use
+the -Wdeprecated-declarations option). If these warnings are
+problematic, they can be turned off by defining the preprocessor
+symbol %GLIB_DISABLE_DEPRECATION_WARNINGS by using the commandline
+option <literal>-DGLIB_DISABLE_DEPRECATION_WARNINGS</literal>
+</para>
+
+<para>
+GLib deprecation annotations are versioned; by defining the
+macros %GLIB_VERSION_MIN_REQUIRED and %GLIB_VERSION_MAX_ALLOWED,
+you can specify the range of GLib versions whose API you want
+to use. APIs that were deprecated before or introduced after
+this range will trigger compiler warnings.
+</para>
+
+<para>
+The older deprecation mechanism of hiding deprecated interfaces
+entirely from the compiler by using the preprocessor symbol
+G_DISABLE_DEPRECATED is still used for deprecated macros,
+enumeration values, etc. To detect uses of these in your code,
+use the commandline option <literal>-DG_DISABLE_DEPRECATED</literal>.
+</para>
+
+<para>
+The recommended way of using GLib has always been to only include the
+toplevel headers <filename>glib.h</filename>,
+<filename>glib-object.h</filename>, <filename>gio.h</filename>.
+Starting with 2.32, GLib enforces this by generating an error
+when individual headers are directly included.
+</para>
+
+<para>
+Still, there are some exceptions; these headers have to be included
+separately:
+<filename>gmodule.h</filename>,
+<filename>glib-unix.h</filename>,
+<filename>glib/gi18n-lib.h</filename> or
+<filename>glib/gi18n.h</filename> (see
+the <link linkend="glib-I18N">Internationalization section</link>),
+<filename>glib/gprintf.h</filename> and
+<filename>glib/gstdio.h</filename>
+(we don't want to pull in all of stdio).
+</para>
+
+</refsect1>
+
+</refentry>

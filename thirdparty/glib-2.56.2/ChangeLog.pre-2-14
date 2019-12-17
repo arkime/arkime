@@ -1,0 +1,1963 @@
+2007-11-07  Matthias Clasen <mclasen@redhat.com>
+
+	=== Branch for 2.14 ===
+
+2007-11-07  Matthias Clasen <mclasen@redhat.com>
+
+	* glib/gspawn.c (g_spawn_async_with_pipes): Slightly improve
+	the wording of the docs.  (#492677, Areg Beketovski)
+
+2007-11-07  Matthias Clasen <mclasen@redhat.com>
+
+	* glib/pcre/Makefile.am: Add an include to fix builddir != srcdir
+	builds.  (#494602, Yevgen Muntyan)
+
+2007-11-07  Tor Lillqvist  <tml@novell.com>
+
+	* glib/update-pcre/notdll.patch: Not needed, just use -DPCRE_STATIC.
+
+	* glib/update-pcre/Makefile.am: Drop notdll.patch.
+
+	* glib/update-pcre/Makefile.am-1
+	* glib/update-pcre/update.sh
+	* glib/pcre/Makefile.am
+	* glib/Makefile.am: Use -DPCRE_STATIC.
+
+	* tests/gio-test.c
+	* tests/mainloop-test.c
+	* tests/spawn-test.c: #define pipe(fds) _pipe(fds, 4096,
+	_O_BINARY) on Windows
+
+	* tests/regex-test.c (test_expand): Don't print NULL with %s.
+
+2007-11-07  Matthias Clasen <mclasen@redhat.com>
+
+	* configure.in: Bump version
+
+	* === Released 2.14.3 ===
+
+	* NEWS: Updates
+
+2007-11-06  Matthias Clasen <mclasen@redhat.com>
+
+	* glib/pcre/*: Update the internal copy of PCRE to 7.4
+
+2007-10-22  Tor Lillqvist  <tml@novell.com>
+
+	* glib/gutils.c (_glib_gettext): Plug small one-time leak on
+	Windows. (#488068, Daniel Atallah)
+
+2007-10-21  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/gdate.c (g_date_strftime):
+	* glib/gmain.c (g_main_context_check):
+	* glib/gregex.c (g_match_info_fetch_all), (g_regex_split_full):
+	* glib/gthread.c (g_once_init_enter_impl), (g_once_init_leave):
+	* glib/gthread.h:
+	* glib/gutf8.c (g_utf16_to_utf8), (g_utf16_to_ucs4):
+	* tests/errorcheck-mutex-test.c (lock_locked_mutex),
+	(trylock_locked_mutex), (unlock_unlocked_mutex),
+	(free_locked_mutex), (wait_on_unlocked_mutex),
+	(wait_on_otherwise_locked_mutex), (timed_wait_on_unlocked_mutex),
+	(timed_wait_on_otherwise_locked_mutex):
+	Fix warnings from sparse. (#487491, Kjartan Maraas)
+
+2007-10-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Bump version
+
+2007-10-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* === Released 2.14.2 ===
+
+	* NEWS: Updates
+
+	* configure.in: Check for sys/resource.h
+
+	* glib/gspawn.c: Improve the fdwalk implementation on Linux
+	to only walk over actually open file descriptors. (#469231, 
+	Lennart Poettering)
+
+2007-10-13  Sven Herzberg  <herzi@gnome-de.org>
+
+	Reviewed by Tim Janik.
+
+	Created marshallers that don't throw gcc warnings when compiling with
+	-WUnused (fixes #359165).
+
+	* gobject/glib-genmarshal.c: decorate return_value and invocation_hint
+	with G_GNUC_UNUSED
+
+2007-10-04  Tor Lillqvist  <tml@novell.com>
+
+	* glibconfig.h.win32.in: Always define G_CAN_INLINE. Even MSVC6 is
+	capable of inlining. (#483337, Steve Lhomme)
+
+2007-09-19  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/ghook.c (g_hook_free): Check for NULL finalizer. (#476849, Areg
+	Beketovski)
+
+2007-09-19  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Bump version
+
+	* === Released 2.14.1 ===
+
+2007-09-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gutils.h (GUserDirectory): Fix doc formatting.
+	* glib/gmain.c (g_main_depth): Fix doc formatting.
+
+2007-09-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Replace -pthread by -lpthread for 
+	Freebsd, too.  (#475619, Roy Marples)
+
+2007-09-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: When compiling against system pcre, 
+	add a private dependency to the pc file. This should
+	fix static builds with system pcre.  (#475923)
+
+	* glib-2.0.pc.in: Add a Requires.private line
+
+2007-09-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* NEWS: Updates
+
+2007-09-14 15:07:28  Tim Janik  <timj@gtk.org>
+
+	* glib/gutf8.c (g_utf8_strreverse): applied fix for bug #476840.
+
+	* tests/utf8-pointer.c (test_misc): added test for g_utf8_strreverse().
+
+2007-09-11  Marco Barisione <marco@barisione.org>
+
+	* glib/Makefile.am:
+	* configure.in: propagate the pcre flags to libglib and not to all
+	parts of glib. (#475854, dmacks@netspace.org)
+
+	* configure.in: fix a typo in the previous commit. (#475854, comment
+	#4)
+
+2007-09-11  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Define G_ATOMIC_ARM.
+
+	* glib/gatomic.c: Add Arm implementation of atomic
+	operations.  (#457601, Jussi Laako)
+
+2007-09-10  Marco Barisione <marco@barisione.org>
+
+	* glib/gregex.c: define PCRE_ERROR_NULLWSLIMIT if it's not defined by
+	PCRE, has PCRE 7.3 removed this definition. (#475474)
+	* configure.in: bump PCRE requirement to version 7.2.
+	* glib/gregex.c: use pcre_get_stringnumber() in
+	get_matched_substring_number() if G_REGEX_DUPNAMES was not set.
+	(#444765, Yevgen Muntyan)
+	* glib/gregex.c: change the type of ref_count from guint to gint, so
+	we can remove some ugly casts.
+
+2007-09-05  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/gregex.c: Fix header inclusion. (#473879, Peter Kjellerstedt)
+
+Wed Aug 29 12:08:40 2007  Tim Janik  <timj@imendio.com>
+
+	* glib/gthread.h (g_once_init_enter): fixed compiler warning about
+	loosing volatile qualifier, bug #457641.
+
+2007-08-24  Michael Natterer  <mitch@imendio.com>
+
+	* glib/gslice.[ch]: make g_slice_copy() take a gconstpointer
+	instead of a gpointer.
+
+2007-08-22  Cody Russell  <bratsche@gnome.org>
+
+	* glib/gprintf.c: Document all printf functions to use
+	"bytes" terminology rather than "characters". (#469051)
+
+2007-08-20  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/guniprop.c: Document that g_unichar_get_script() is
+	equivalent to pango_script_for_unichar().
+
+2007-08-20  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/gmappedfile.c:
+	* glib/gregex.c:
+	* glib/gstdio.c:
+	Fix typos (#468694).
+
+2007-08-14  Cody Russell  <bratsche@gnome.org>
+
+	* gobject/gsignal.c: g_type_default_interface_ref() was not
+	ensuring working g_signal_list_ids.  Added checks for
+	!G_TYPE_IS_INTERFACE (itype).
+	(#465625, by some guy who calls himself Yeti)
+
+Tue Aug 14 02:06:10 2007  Tim Janik  <timj@imendio.com>
+
+	* glib/gthread.c (g_once_init_enter_impl): prevent race covered
+	by g_once_init_enter(), by checking for previous initializations
+	before entering initialisation branch.
+
+	* tests/onceinit.c: added multi-thread/multi-initializer stress test
+	using unoptimized g_once_init_enter_impl().
+
+Mon Aug 13 14:30:15 2007  Tim Janik  <timj@imendio.com>
+
+	* tests/onceinit.c (main): fixed array size typo.
+
+Mon Aug 13 14:21:44 2007  Tim Janik  <timj@imendio.com>
+
+	* tests/onceinit.c: test g_once_init_*() before and after
+	g_thread_init() and test concurrency resolution.
+
+Mon Aug 13 14:18:22 2007  Tim Janik  <timj@imendio.com>
+
+	* glib/gthread.c (g_thread_create_full): prevent linking a freed
+	GThread	structure into global thread list in error cases.
+
+2007-08-08  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gmarkup.c (append_escaped_text): Handle restricted
+	characters by converting them to numeric character 
+	entities.  (#464145, Andreas Monitzer)
+
+	* tests/markup-escape-test.c: Add tests for restricted
+	characters and numeric character entities. 
+
+2007-08-08  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib.symbols:
+	* glib/Makefile.am:
+	* glib/abicheck.sh: Make it work regardless of --enable-debug
+
+2007-08-08  Tristan Van Berkom <tvb@gnome.org>
+
+	* docs/reference/gobject/tmpl/gparamspec.sgml: Fixed minor typo in docs.
+
+2007-08-07  Matthias Clasen  <mclasen@redhat.com>
+
+	* MAINTAINERS: Update for new format regulations
+
+2007-08-03  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Bump version
+
+	* === Released 2.14.0 ===
+
+	* NEWS: Updates
+
+	* configure.in: Bump version to 2.14.0
+
+2007-08-03  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gregex.c: Revert the J handling change,
+	since it doesn't work.
+
+2007-08-03  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gregex.c: Fix a C99ism.  (#462549, Kazuki IWAMOTO)
+
+2007-08-03  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gregex.c: Handle J changes in the pattern
+	correctly.  (#444765, Yevgen Muntyan)
+
+2007-08-03  Pramod Raghavendra  <pramodleo@yahoo.co.uk>
+
+	* configure.in: Added kn to ALL_LINGUAS
+
+2007-08-01  Tor Lillqvist  <tml@novell.com>
+
+	* glib/update-pcre/notdll.patch: Update so it applies again.
+
+	* glib/pcre/pcre.h: Corresponding change.
+
+	* glib/gutils.c (get_special_folder): Drop leftover use of a
+	union.
+
+	* glibconfig.h.win32.in: Update to match what configure produces.
+
+2007-07-31  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/pcre/*: Update the internal PCRE to 7.2
+
+2007-07-31  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/pltcheck.sh: Fix some glitches
+
+	* glib/gregex.c: Remove debug spew
+
+2007-07-21  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gunidecomp.c:
+	* glib/gregex.c:
+	* glib/gstring.c: Various doc cleanups.
+
+2007-07-20  Alexander Larsson  <alexl@redhat.com>
+
+        * configure.in:
+	Add goffset type (64bit file size)
+	Add G_MAXSSIZE and G_MINSSIZE
+
+2007-07-20  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib.symbols: Fix the build.
+
+2007-07-19  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/glib.symbols:
+	* glib/gunicode.h:
+	* glib/gunicodeprivate.h:
+	* glib/gunidecomp.c (g_unichar_combining_class):
+	* glib/guniprop.c (has_more_above):
+	Make g_unichar_combining_class() public. (#453998)
+
+Fri Jul 13 01:01:46 2007  Tim Janik  <timj@imendio.com>
+
+	* glib/gthread.[hc]: more atomic ops pointer cast fixes. this time it'll
+	work with atomic op macros *and* atomic op functions.
+
+Fri Jul 13 00:50:40 2007  Tim Janik  <timj@imendio.com>
+
+	* glib/gthread.[hc]: fixed missing pointer casts when using atomic ops.
+
+2007-07-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Bump version
+
+	* === Released 2.13.7 ===
+
+	* NEWS: Updates
+
+Thu Jul 12 17:31:08 2007  Tim Janik  <timj@imendio.com>
+
+	* tests/slice-concurrent.c: beautified output somewhat. fixed long
+	sleeps by reducing sleep accumulating and using randomized re-scheduling
+	(which works on UP and SMP). increased possible blocksizes.
+
+Thu Jul 12 17:26:05 2007  Tim Janik  <timj@imendio.com>
+
+	* tests/slice-concurrent.c: added GSLice test from Stefan Westerfeld,
+	bug #433314.
+
+Thu Jul 12 15:46:40 2007  Tim Janik  <timj@imendio.com>
+
+	* glib/gslice.c: migrate per-thread magazine caches from single-thread
+	scenario to first thread using GSlice after g_thread_init(); based on
+	a patch by Tor Lillqvist, fixes #331853.
+	removed warning about g_thread_init() being called after other glib
+	functions (in particular g_slice* calls), because GSlice can cope
+	with this now and the rest of glib is believed to cope as well.
+
+	* tests/slice-threadinit.c: new test program which tests GSlice working
+	across g_thread_init() calls.
+
+2007-07-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/pltcheck.sh: Add g_once_init_enter to the whitelist of
+	symbols allowed to have a local PLT entry, to fix 'make check'.
+
+Tue Jul 10 12:24:35 2007  Tim Janik  <timj@imendio.com>
+
+	* glib/gthread.[hc]: implemented g_once_init_enter(),
+	g_once_init_enter_impl() and g_once_init_leave(), based on a patch by
+	Antoine Tremblay, fixes #65041.
+	adapted exported inline function mechanism from gutils.[hc] for inlining
+	g_once_init_enter_impl() in gthread.[hc].
+
+2007-07-09  Matthias Clasen  <mclasen@redhat.com>
+
+	* NEWS: Updates
+
+2007-07-09  Loïc Minier  <lool@dooz.org>
+
+	* tests/refcount/closures.c: (main): Output newlines after thousand
+	iterations of the inner-loop of the closures test; this helps having
+	smaller lines and continuously outputting new lines.  (#447048).
+
+2007-07-09  Ryan Lortie  <desrt@desrt.ca>
+
+	* glib/gfileutils.c (write_to_temp_file): save errno to prevent it
+	being clobbered by call to g_filename_display_name().  Bug #453796.
+
+2007-07-09  Matthias Clasen  <mclasen@redhat.com>
+
+	* m4macros/glib-gettext.m4: Fix a small problem with
+	msgfmt -c detection.  (#341988, Laszlo Peter)
+
+2007-07-07  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gmarkup.c (g_markup_parse_context_end_parse): Handle
+	all states.  (#454473)
+
+2007-07-06  Tor Lillqvist  <tml@novell.com>
+
+	* glib/giowin32.c (g_io_win32_check): When WSAEnumNetworkEvents()
+	signals FD_CONNECT that means that the connection attempt
+	finished, either successfully or failed. Test explicitly whether
+	the connnection succeeded and set either G_IO_OUT if it did,
+	G_IO_ERR|G_IO_HUP if it failed.
+
+	Make sure we never set both G_IO_OUT and G_IO_HUP simultaneously
+	because in Unix poll(2) POLLOUT and POLLHUP are mutually
+	exclusive.
+
+	Ignore whether the caller wants to watch G_IO_HUP or not. Always
+	select for FD_CLOSE because Unix poll(2) also ignores whether
+	POLLHUP in set the requested events bitmask or not.
+
+Fri Jun 29 2007  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Bump version
+
+	* === Released 2.13.6 ===
+
+	* NEWS: Updates
+
+Mon Jun 25 16:43:13 2007  Tim Janik  <timj@gtk.org>
+
+	* glib/ghash.c: g_hash_table_find(), g_hash_table_foreach():
+	document performance caveats for linear order searches.
+
+2007-06-22  Mathias Hasselmann  <mathias.hasselmann@gmx.de>
+
+	* glib/gstring.c: Use memcpy in g_string_append_vprintf (#57693).
+
+2007-06-18  Mathias Hasselmann  <mathias.hasselmann@gmx.de>
+
+	* glib/gstring.c: Restore old behaviour of 
+	g_string_append_vprintf: g_vasprintf seems to be faster
+	than g_printf_string_upper_bound (#57693).
+
+2007-06-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gutils.c (g_get_home_dir): Add some motivation.
+
+2007-06-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Bump version
+
+	* === Released 2.13.5 ===
+
+	* NEWS: Updates
+
+2007-06-18  Emmanuele Bassi  <ebassi@gnome.org>
+
+	* glib/gmain.h:
+	* glib/gmain.c:
+	* glib/glib.symbols: Add g_timeout_add_seconds_full() variant
+	to g_timeout_add_seconds(), accepting a destroy notification
+	function and a priority. (#448819)
+
+2007-06-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gutils (g_get_current_dir): Prevent segfaults on
+	long paths.  (#447935, Robby Griffin)
+
+2007-06-17  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/gdataset.c (g_quark_from_string),
+	(g_quark_from_static_string): Accept NULL and return GQuark
+	value of zero. (#446859)
+
+2007-06-16  Mathias Hasselmann  <mathias.hasselmann@gmx.de>
+
+	* glib/gstring.c: Correctly use g_printf_string_upper_bound
+	in g_string_append_vprintf. Fixes #447933.
+
+2007-06-15  Sebastian Wilhelmi  <wilhelmi@google.com>
+
+	* docs/reference/glib/tmpl/threads.sgml: Extended the comments on
+	those functions, that are NOOPs, before g_thread_init() has been
+	called. (#447583)
+
+	* glib/gthread.c (g_static_mutex_free): Clarified comment to
+	remind myself, that calling g_static_mutex_free() before
+	g_thread_init() is safe.
+
+2007-06-15  Cody Russell  <bratsche@gnome.org>
+
+	* docs/reference/gobject/tmpl/gboxed.sgml:
+	* docs/reference/gobject/gobject-sections.txt:
+	* glib/gregex.c:
+	* gobject/gboxed.[ch]:
+	* gobject/gobject.symbols: Added GRegex boxed type.
+	(#445065, Carlos Garnacho)
+
+2007-06-15  Sebastian Wilhelmi  <wilhelmi@google.com>
+
+	* glib/gregex.c: Replaced & by &amp; in <programlisting> to make
+	gtk-doc happy.
+
+2007-06-14  Ryan Lortie  <desrt@desrt.ca>
+
+	* docs/reference/glib/glib-sections.txt:
+	* glib/glib/symbols:
+	* glib/gstring.[ch] (g_string_printf_internal): Improve
+	performance by removing the use of an intermediate g_malloc'd
+	buffer.  Rename to g_string_append_vprintf, document, and expose
+	along with g_string_vprintf as new public API (#57693).
+
+2007-06-15  Mathias Hasselmann  <mathias.hasselmann@gmx.de>
+
+	* build, tests/string-test.c, glib/glib.symbols, 
+	glib/gstring.c, glib/gstring.h: Introduce g_string_overwrite(_len)?
+	for overwriting parts of strings (#368686, Samuel Cormier-Iijima)
+
+2007-06-14  Cody Russell  <bratsche@gnome.org>
+
+	* gobject/gtype.c (g_type_class_add_private): Check for 0-sized
+	private data. (#443869)
+
+2007-06-14  Matthias Clasen  <mclasen@redhat.com>
+	
+	* glib/gmain.c (g_timeout_add_seconds): Fix doc typos.  (#447534,
+	Vincent Untz)
+
+2007-06-13  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/pltcheck.sh: Whitelist g_atomic_{int,pointer}_[gs]et() as
+	we don't alias them intentionally. (#354522)
+
+2007-06-13  Sven Neumann  <sven@gimp.org>
+
+	* glib/gslice.[ch] added g_slice_copy() and g_slice_dup() (#442029).
+
+	* glib/glib.symbols: updated.
+
+2007-06-12  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/gunicode.h: Add more G_GNUC_CONST and G_GNUC_PURE.
+
+2007-06-11  Emmanuele Bassi  <ebassi@gnome.org>
+
+	* glib/gutils.c (maybe_expire_user_special_dirs),
+	(g_get_user_special_dir): Remove the cache expiration logic: it
+	makes g_get_user_special_dir() not thread-safe. Document the fact
+	that on some platform the value might be changed by the user and
+	that GLib won't be able to reflect the change.
+
+2007-06-11  Tor Lillqvist  <tml@novell.com>
+
+	* glib/gwin32.c (g_win32_get_package_installation_directory)
+	(g_win32_get_package_installation_subdirectory): Update doc
+	comments. Mention that it is not recommeded to use the Registry
+	features.
+
+2007-06-06  Tor Lillqvist  <tml@novell.com>
+
+	* glib/gutils.c: Add definitions for more CSIDL_* constants in
+	case missing from headers. Use CSIDL_PERSONAL instead of
+	CSIDL_MYDOCUMENTS as CSIDL_MYDOCUMENTS seems to be a new thing
+	that doesn't work in XP SP2 even.
+
+2007-06-06  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gutils.c (g_get_user_special_dir): Fall back to
+	$HOME/Desktop for the DESKTOP directory, like 
+	xdg_user_dir_lookup() does.
+
+2007-06-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Bump version
+
+	* === Released 2.13.4 ===
+
+	* NEWS: Updates
+
+2007-06-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gkeyfile.c (g_key_file_is_key_name):
+	(g_key_file_is_group_name): Don't assume the string is
+	valid UTF-8, since it may be user data.  (#444161, Ben Combee)
+
+2007-06-05  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/gutf8.c: Add not to g_utf8_get_char_validated() about
+	nul-terminated strings.
+
+2007-06-05  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gutils.c (g_get_user_special_dir): Don't deadlock
+	when running with threads.  (#444121, Christian Persch)
+
+2007-06-05  Vincent Untz  <vuntz@gnome.org>
+
+	* glib/goption.c: (g_option_context_get_help): don't replace the usage
+	line with the description for optional parameters, but append the
+	description. (#444130)
+
+2007-06-04  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Bump version
+	
+	* === Released 2.13.3 ===
+
+	* NEWS: Updates
+
+2007-06-04  Matthias Clasen  <mclasen@redhat.com>
+	
+	Add support for a number of special directories, as 
+	defined by the xdg-user-dirs specification.  (#432651,
+	Bastien Nocera, Emmanuele Bassi, Michael Natterer)
+
+	* glib/glib.symbols:
+	* glib/gutils.[hc]: Add the GUserDirectory enum and
+	g_get_user_special_dir(), with implementations based
+	on the xdg-user-dirs spec and on native interfaces
+	for Win32 and Carbon.
+	
+	* configure.in: Add Carbon checks.
+
+	* tests/tetsglib.c: Test g_get_user_special_dir().
+	
+2007-06-03  Yevgen Muntyan  <muntyan@tamu.edu>
+
+	* glib/gregex.c: fixed g_regex_fetch_named* for cases when (?J)
+	is used inside a pattern (#442265, comment #12).
+	* tests/regex-test.c: Test it.
+
+2007-06-03  Matthias Clasen <mclasen@redhat.com>
+
+	* NEWS: Updates
+
+2007-06-03  Yevgen Muntyan  <muntyan@tamu.edu>
+
+	Some API additions and changes (#442265).
+
+	* glib/gregex.c:
+	* glib/gregex.h: new functions: g_regex_ref(), g_regex_unref() which
+	replaces g_regex_free(); g_match_info_get_regex(), g_match_info_get_string();
+	g_regex_check_replacement().
+	Made g_match_info_expand_references() accept NULL; changed GRegexEvalCallback
+	to take only arguments which are likely to be actualy used.
+
+	* docs/reference/glib/glib-sections.txt:
+	* glib/glib.symbols: Added new functions.
+
+	* tests/regex-test.c: Test them.
+
+	* docs/reference/glib/tmpl/gregex.sgml: Updated GRegexEvalCallback docs.
+
+2007-05-31  Matthias Clasen <mclasen@redhat.com>
+
+	* README.win32: Fix a typo.  (#423708, Olivier Delhomme)
+
+2007-05-30  Dan Winship  <danw@novell.com>
+
+	* glib/gkeyfile.h: add defines for desktop file handling. #339225,
+	original patch from Vincent Untz.
+
+2007-05-29  Cody Russell  <bratsche@gnome.org>
+
+	* configure.in: Fix a sed script that doesn't correctly detect
+	i586-mingw32-gcc-3.4 compiler, and was causing -Wno-pointer-sign
+	errors when building with that compiler. (#440896, Yevgen Muntyan)
+
+2007-05-29  Marco Barisione <marco@barisione.org>
+
+	* glib/gregex.c: Fix g_regex_fetch_named() and
+	g_regex_fetch_named_pos() when G_REGEX_DUPNAMES is used  (#434358,
+	Yevgen Muntyan and #419376, Marco Barisione, patch by Yevgen Muntyan)
+
+2007-05-25  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/guniprop.c (g_unichar_iswide), (g_unichar_iswide_cjk):
+	Update to Markus Kuhn's updated wcwidth for Unicode 5.0.
+
+2007-05-22  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Bump version
+
+	* === Released 2.13.2 ===
+
+	* README.in:
+	* NEWS: Updates
+
+2007-05-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Try again to move the compiler-dependency
+	of G_GNUC_INTERNAL to runtime.
+
+2007-05-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Don't let PERL_PATH be ''.  (#356769, Joseph Sacco)
+
+2007-05-17  Michael Natterer  <mitch@imendio.com>
+
+	* configure.in: hotfix: revert last change to fix the build on OS X.
+
+2007-05-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/goption.c (g_option_context_set_translate_func): Fix
+	a doc typo.  (#439232, Vincent Untz)
+
+2007-05-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Move the compiler-dependency in the G_GNUC_INTERNAL
+	definition from configure-time to runtime (of the compiler).
+	(#438869, Damien Carbery)
+
+	* glib/gdebug.h:
+	* glib/gmessages.h:
+	* glib/gunicodeprivate.h:
+	* glib/gthreadprivate.h: Move G_GNUC_INTERNAL before function
+	declarations to fix compilation with sun studio.  (#438873,
+	Damien Carbery)
+
+2007-05-14  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gslice.h:
+	* glib/gslice.c:
+	* glib/glib.symbols: Make g_slice_debug_tree_statistics() 
+	debug-only functionality again.
+
+2007-05-14  Christian Persch  <chpe@gnome.org>
+
+	* docs/reference/glib/tmpl/string_utils.sgml: Improve g_strerror and
+	g_strsignal docs. Bug #438293.
+
+2007-05-13  Tor Lillqvist  <tml@novell.com>
+
+	* glib/gwin32.h: Drop the pipe() macro. Defining macros outside of
+	its namespace that look like POSIX functions is not GLib's
+	business in my opinion. This means pipe()-using code that has
+	relied on this definition will need changing to call _pipe() on
+	Windows, and make the decision itself on what size pipe buffer to
+	use, and whether to use text or binary mode, and whether the pipe
+	handles should be inheritable or not.
+
+	* glib/gspawn-win32.c (make_pipe): Use _pipe() instead of pipe().
+
+2007-05-11  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/goption.c: Allow G_OPTION_ARG_CALLBACK for 
+	G_OPTION_REMAINING.  (#437297, Dave Benson)
+
+	* tests/option-test.c: Add a test for this.
+
+2007-05-04  Dan Winship  <danw@novell.com>
+
+	* glib/gkeyfile.c (g_key_file_get_boolean)
+	(g_key_file_get_boolean_list, g_key_file_get_integer)
+	(g_key_file_get_integer_list, g_key_file_get_double)
+	(g_key_file_get_double_list): Document the error return values
+	rather than calling them undefined. #435885.
+
+2007-05-03  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/glib.symbols:
+	* glib/gunicode.h:
+	* glib/guniprop.c (g_unichar_ismark):
+	Add g_unichar_ismark(). Patch from Yevgen Muntyan. Fixes #339991.
+
+2007-05-03  Matthias Clasen <mclasen@redhat.com>
+
+	* configure.in: Bump version
+
+	* === Released 2.13.1 ===
+
+2007-05-02  Matthias Clasen <mclasen@redhat.com>
+
+	* tests/threadpool-test.c:  Stop unused threads before
+	the last test, to make the test terminate reliably.
+
+	* NEWS: Updates
+
+2007-05-02  Marco Barisione <marco@barisione.org>
+
+	* glib/gregex.c: Made more clear that the string passed to the match
+	functions cannot be freed before using g_match_info_fetch() and
+	similar functions, and fixed a typo.
+
+2007-04-30  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib.symbols:
+	* glib/gregex.[hc]: Add g_regex_get_max_backref() and
+	g_regex_get_capture_count().  (#419371, Marco Barisione)
+	
+2007-04-30  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib.symbols:
+	* glib/gregex.[hc]: Split GRegex into GRegex and GMatchInfo.
+	(#419368, Marco Barisione)
+
+	* tests/regex-test.c: Adapt.
+
+2007-04-30  Chris Wilson  <chris@chris-wilson.co.uk>
+
+	* glib/gbookmarkfile.c (g_bookmark_file_get_app_info):
+	Include the gshell.h header file (to define g_shell_[un]quote)
+	and correct the order of the arguments to g_propagate_error(), as
+	spotted by gcc.
+
+2007-04-29  Emmanuele Bassi  <ebassi@gnome.org>
+
+	* glib/gbookmarkfile.c:
+	(g_bookmark_file_set_app_info): Quote the passed command line...
+	
+	(g_bookmark_file_get_app_info): ... and unquote it when giving it
+	back. (#432274)
+
+2007-04-27  Matthias Clasen <mclasen@redhat.com>
+
+	* glib/gstrfuncs.c: small coding style cleanups.
+
+2007-04-27  Chris Wilson  <chris@chris-wilson.co.uk>
+
+	* glib/gregex.h: Remove trailing comma at end of enumerator list.
+
+2007-04-27  Tor Lillqvist  <tml@novell.com>
+
+	* glib/gstdio.c (g_mkdir): Document that the mode argument is
+	ignored on Windows
+	(g_stat): Document that st_mode is mostly useless on Windows.
+
+2007-04-25  Paolo Borelli  <pborelli@katamail.com>
+
+	* glib/gstrfuncs.c (g_strsplit): small cleanup. (#433387)
+
+2007-04-24  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib.symbols:
+	* glib/goption.h:
+	* glib/goption.c (g_option_context_get_help): New function to
+	get the formatted help string.  (#336089, Dom Lachowicz)
+
+2007-04-24  Michael Natterer  <mitch@imendio.com>
+
+	* tests/gobject/paramspec-test.c: test all GParamSpecString
+	validations with static and allocated strings.
+
+2007-04-19  William Jon McCann  <mccann@jhu.edu>
+
+	* glib/gkeyfile.[ch]: (find_file_in_data_dirs),
+	(g_key_file_load_from_dirs), (g_key_file_load_from_data_dirs):
+	Add g_key_file_load_from_dirs for looking through a search
+	path for a key-file. (#355334)
+
+2007-04-15  Tor Lillqvist  <tml@novell.com>
+
+	* build: Include the build module using the svn:externals
+	mechanism.
+
+	* Makefile.am
+	* configure: Add the references to build back.
+
+2007-04-11  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gspawn.c (g_spawn_async): Fix a doc typo.  (#427285, 
+	Jochen Baier)
+
+2007-04-11  Emmanuele Bassi  <ebassi@gnome.org>
+
+	* glib/ghash.[ch]: Add g_hash_table_get_keys() and
+	g_hash_table_get_values(), API to retrieve the keys
+	and values inside an hash table in list form. (#413133)
+
+	* glib/glib.symbols: Update symbols.
+
+	* tests/hash-test.c: Exercise newly added functions.
+
+2007-04-11  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Use CFLAGS/LDFLAGS in addition to 
+	PCRE_CFLAGS/PCRE_LIBS when checking system PCRE.  (#421607, 
+	Paul Jarc)
+
+2007-03-27  Emmanuele Bassi  <ebassi@gnome.org>
+
+	* glib/gdate.h: Remove old comment and forward declaration of
+	struct tm: gdate.h includes time.h now.
+
+2007-03-23  Matthias Clasen  <mclasen@redhat.com> 
+
+	* tests/gobject/Makefile.am: Handle $RANDOM missing.  (#356843,
+	Paul Jarc)
+
+2007-03-22  Matthias Clasen  <mclasen@redhat.com> 
+
+	* glib/guniprop.c: Fix corner-cases of upper/lowercase conversion.
+	(#418217, Denis Jacquerye)
+
+2007-03-22  Chris Wilson  <chris@chris-wilson.co.uk>
+
+	* glib/gkeyfile.c: Track whether the last key=value pair in a group
+	is a blank line and during to_data() only insert a new blank line
+	betweens group in its absence. This allows the beautification of the
+	GKeyFile and prevents newlines being inserted indefinitely. (#420686)
+
+	* tests/keyfile-test.c (test_reload_idempotency): Test that after a 
+	single beautification pass, g_key_file_to_data() does not alter its
+	input data.
+
+2007-03-21  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/pcre/Makefile.am: Make builddir != srcdir work.  (#419900)
+
+2007-03-19  Paolo Borelli  <pborelli@katamail.com>
+
+	* glib/gutf8.c (fast_validate_len): remove unneeded checks.
+
+2007-03-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gregex.c: Cosmetic fixes
+
+2007-03-17  Marco Barisione <marco@barisione.org>
+
+	* glib/update-pcre/table-reduction.patch:
+	* glib/update-pcre/make_utt.py:
+	* glib/update-pcre/utt.patch: Add forgotten files
+
+	* glib/update-pcre/update.sh: Call python directly instead of relying
+	on shebang. Also copy the changes from glib/pcre/makefile.msc to this
+	file
+
+2007-03-17  Hans Breuer  <hans@breuer.org>
+
+	* glib/makefile.msc.in glib/pcre/makefile.msc 
+	  glib/update-pcre/update.sh : define PCRE_STATIC to reflect the 
+	inclusion of pcre as LIB, not stand-alone DLL. Also set NEWLINE=-1
+	to match any newline by default, use of ../../build/win32/make.msc
+
+	* glib/gregex.h : minimal includes of <glib/*.H> instead of <glib.h>
+
+	* glib/gnulib/makefile.msc : make use of ../../build/win32/make.msc
+
+	* tests/regex-test.c(verbose): don't pass a string containing '%' 
+	as first parameter to g_print ()
+	(test_match) : for the unexpected case output pattern and string
+	escaped
+
+	* tests/child-test.c tests/slice-color.c : fix c99ism
+	* tests/slice-test.c : fix c99ism and gccism
+	* tests/mapping-test.c tests/base-64-tests.c : don't 
+	#include <unistd.h> unconditionally
+	* tests/option-test.c : use G_GINT64_CONSTANT() instead of direct LL
+
+	* tests/makefile.msc.in : more tests build
+
+2007-03-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gsequence.[hc]:
+	* glib/glib.symbols:
+	* tests/sequence-test.c: Move the consistency
+	checks to the test.
+
+2007-03-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Bump version
+
+	* === Released 2.13.0 ===
+
+	* NEWS: Updates
+
+2007-03-16  Matthias Clasen  <mclasen@redhat.com>
+	
+	* glib/glib.symbols:
+	* glib/gsequence.h: Add the test function to the header,
+	since it is exported.
+
+	* glib/gbase64.c (g_base64_decode): Warn if the input
+	is too short.  (#418862, Halton Huo)
+
+Fri Mar 16 11:24:51 2007  Tim Janik  <timj@imendio.com>
+
+	* glib/gscanner.[hc]: reverted premature commit which broke
+	GScanner ABI and API, #415323.
+
+2007-03-16  Chris Wilson  <chris@chris-wilson.co.uk>
+
+	* glib/gkeyfile.c: Convert to GSlice and check for redundant
+	clears. (#418637)
+
+2007-03-15  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gscanner.[hc]: Revert recent changes that break
+	existing users of GScanner.
+
+2007-03-15  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gscanner.c (g_scanner_get_token_ll): Fix a typo
+	in the last commit.  (#415323, Richard Hult)
+
+2007-03-15  Tor Lillqvist  <tml@novell.com>
+
+	* glib/gnulib/Makefile.am (INCLUDES): Add -I$(top_srcdir)/glib so
+	that gregex.h finds <glib.h>.
+
+	* glib/update-pcre/Makefille.am-1: Add -DGLIB_COMPILATION so that
+	we don't think g_ascii_table is dllimport.
+
+	* glib/pcre/Makefile.am: Corresponding change.
+
+	* glib/update-pcre/notdll.patch: New file. Drop
+	dllimport/dllexport magic for the pcre symbols.
+
+	* glib/update-pcre/Makefile.am: Dist it.
+
+	* glib/update-pcre/update.sh: Apply notdll.patch.
+
+	* glib/pcre/pcre.h: Corresponding change.
+
+2007-03-15  Tor Lillqvist  <tml@novell.com>
+
+	* glib/gtypes.h: Add comment to avoid misleading people with the
+	large number of digits in G_PI etc. (#404338)
+
+2007-03-15  Tor Lillqvist  <tml@novell.com>
+
+	* config.h.win32.in: Update to match what configure produces.
+
+2007-03-15  Marco Barisione <marco@barisione.org>
+
+	Add GRegex for regular expression matching.  (#50075)
+
+	* configure.in: Handle GRegex compilation.
+
+	* glib/gregex.c:
+	* glib/gregex.h: Code for GRegex.
+
+	* glib/Makefile.am:
+	* glib/makefile.msc.in: Updated makefiles.
+
+	* glib/pcre/*: Internal copy of PCRE.
+
+	* glib/update-pcre/*: Stuff to automatically update the internal PCRE
+	to a newer version.
+
+	* tests/regex-test.c:
+	* tests/Makefile.am:
+	* tests/makefile.msc.in: Add tests for GRegex.
+
+2007-03-15  Chris Wilson  <chris@chris-wilson.co.uk>
+
+	* glib/gmain.c (g_main_dispatch): Replace a
+	g_slist_prepend/g_slist_remove pair with an on-stack link
+	and open coding. (#416094)
+
+2007-03-15  Matthias Clasen  <mclasen@redhat.com>
+
+	Fix two glitches in the Unicode case conversion
+	functions (#418217,  Denis Jacquerye)
+
+	* glib/guniprop.c (g_unichar_toupper): Handle zero entries
+	in special_case_table correctly.
+	(g_unichar_totitle): Fall back to g_unichar_toupper.
+
+2007-03-15  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gscanner.[hc]: Some optimizations, use a lookup
+	table for character classes, pre-allocate GStrings with
+	reasonable sizes.  (#415323, Charlie Brej)
+
+2007-03-14  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gkeyfile.c (g_key_file_get_double): Fix a 
+	small typo.  (#417847, Bobby Jack)
+
+2007-03-08  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gstrfuncs.c (g_strtoll): Return negative values.
+	(#416062)
+
+	* tests/strtoll-test.c: Add more testcases.
+
+2007-03-06  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gstring.c (g_str_equal): Clarify docs.  (#364026, 
+	Bastian Nocera)
+
+2007-03-06  Matthew Barnes  <mbarnes@redhat.com>
+
+	* glib/gqueue.h:
+	* glib/gqueue.c: Add G_QUEUE_INIT, g_queue_init(), and
+	g_queue_clear() to better support statically allocated
+	queues.  (#413244)
+
+2007-03-06  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gkeyfile.c (g_key_file_parse_value_as_boolean):
+	Remove a NULL check that didn't do any good.  (#360904,
+	Paolo Borelli)
+
+2007-03-06  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gmarkup.c (g_markup_parse_context_parse): Report
+	more accurate position for invalid UTF-8.  (#350802,
+	Simon Budig)
+
+2007-03-06  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gbase64.c: Add NULL checks to the base64 
+	functions that take pointers.  (#399611, Martyn Russell)
+
+2007-03-06  Matthias Clasen  <mclasen@redhat.com>
+
+	Work with Solaris gettext (#341988, Laszlo Peter)
+
+	* m4macros/glib-gettext.m4: Make GLIB_WITH_NLS define
+	MSGFMT_OPTS if msgfmt supports -c.
+
+	* po/Makefile.in.in: Use MSGFMT_OPTS when calling
+	msgfmt.
+
+2007-03-06  Matthias Clasen  <mclasen@redhat.com>
+
+	* tests/Makefile.am: Apply a patch by Loïc Minier
+	to fix building with -Wl,-z,defs.  (#149144)
+
+2007-03-03  Thierry Randrianiriana  <randrianiriana@gmail.com>
+
+	* po/mg.po: Added Malagasy translation.
+	* configure.in: Added Malagasy 'mg' to ALL_LINGUAS
+
+2007-03-01  Ihar Hrachyshka <iharh@gnome.org>
+	* configure.in: Added be@latin to ALL_LINGUAS.
+
+2007-02-17  Tor Lillqvist  <tml@novell.com>
+
+	* glib/gdate.c (win32_strftime_helper): New Win32-only
+	function. Use the wide character Win32 API to do the work of
+	strftime(): GetThreadLocale(), GetLocaleInfoW(), GetDateFormatW()
+	and GetTimeFormatW().
+	(g_date_strftime): On Windows use win32_strftime_helper()
+	instead of strftime() to avoid codepage issues with strftime().
+	Unfortunately using wcsftime() would not help either. (#404832)
+
+2007-02-16  Soren Sandmann <sandmann@redhat.com>
+
+	* tests/sequence-test.c: For move, test moving between two
+	sequences. Add test for swap.
+
+	* glib/gsequence.c: Replace splay tree with a treap.
+	(check_node): Add checks for the treap invariants.
+
+2007-02-10  Hans Breuer  <hans@breuer.org>
+
+	* glib/makefile.msc.in : added gsequence.obj
+
+Fri Feb  9 17:46:18 2007  Søren Sandmann  <sandmann@redhat.com>
+
+	* glib/gsequence.c (g_sequence_get_end_iter): Remove assertion.
+	* glib/gsequence.c (is_end): Return TRUE if the iter doesn't have
+	a parent.
+	* glib/gsequence.c: Fix grammar of comment.
+	* glib/gsequence.c (node_update_fields): Use a temporary variable
+	for the n_nodes.
+
+2007-02-07  Soren Sandmann <sandmann@daimi.au.dk>
+
+	* tests/sequence-test.c (compare_items): Force an arbitrary order
+	on otherwise identical items.
+
+	* glib/gsequence.c: Add comment discussing splay trees vs. other trees.
+	* glib/gsequence.c (is_end): Add fast path for the common case
+	when the node is not actually the end node.
+
+2007-02-05  Soren Sandmann <sandmann@daimi.au.dk>
+
+	* glib/gsequence.c (g_sequence_sort_iter): Don't prohibit access
+	until after the g_sequence_move_range() call.  Bug 404759,
+	Christian Persch.
+
+       * tests/sequence-test.c: Formatting fix.
+
+2007-02-03  Soren Sandmann <sandmann@daimi.au.dk>
+
+	* glib/gsequence.c (struct _GSequence): Add a new 'real_sequence'
+	field.
+	(g_sequence_new): Initialize real_sequence to the sequence
+	(g_sequence_sort_iter): Set real_sequence of the temporary
+	sequence to the real sequence.
+	(g_sequence_sort_changed_iter): Same
+	(g_sequence_insert_sorted_iter): Same
+	(g_sequence_search_iter): Same
+	(g_sequence_iter_get_sequence): Return real_sequence
+
+	* tests/sequence-test.c (compare_iters): Insert assertions that
+	the iters point to the sequence being manipulated.
+
+2007-02-03  Soren Sandmann <sandmann@daimi.au.dk>
+
+	* glib/gsequence.[ch]: New files implementing GSequence, a list
+	implemented using a binary tree.
+	* glib/glib.h, glib/glib.symbols: Update for GSequence.
+	* docs/reference: Add documentation for GSequence
+	* tests: Add sequence-test.c, a thorough test of all of
+	the GSequence API.
+
+2007-01-30  Matthias Clasen <mclasen@redhat.com>
+
+	* glib/glib.symbols:
+	* glib/gslice.h:
+	* glib/gslice.c: Don't make ABI depend on G_ENABLE_DEBUG,
+	just add an empty g_slice_debug_tree_statistics () implementation
+	in the !G_ENABLE_DEBUG case.
+
+2007-01-26  Matthias Clasen <mclasen@redhat.com>
+
+	* configure.in: Define G_GNUC_INTERNAL for Sun Studio
+	as __hidden.  (#342981, Brian Cameron)
+
+	* glib/gconvert.c:
+	* glib/gutf8.c: Move G_GNUC_INTERNAL uses to the right
+	spot.
+
+2007-01-26  Matthias Clasen <mclasen@redhat.com>
+
+	* gmem.c:
+	* gslice.c:
+	* gmessages.c:
+	* gutils.c: Make some structs which are used only once
+	non-static.
+
+2007-01-24  Benjamin Otte <otte@gnome.org>
+
+	* glib/gprintf.c (g_sprintf): Clarify the documentation
+	regarding overflows (wording by Jan Schmidt)
+
+2007-01-23  Roozbeh Pournader  <roozbeh@farsiweb.info>
+
+	* README: Remove mention of no-longer-existing PATCH
+	keyword in bugzilla. (#396899)
+
+2007-01-23  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gutf8.c (g_utf8_get_char_validated): Clarify
+	the behaviour is max_len is zero.  (#400044,
+	Benjamin Dauvergne)
+
+2007-01-23  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/goption.c (print_help): Use bitwise &
+	when operating on flags.  (#399971, Jon Oberheide)
+
+2007-01-19  Matthias Clasen  <mclasen@redhat.com>
+
+	Some file list updates (#398069, Owen Taylor)
+
+	* docs/Changes-2.0.txt
+	* docs/reference/README.cvs-commits
+	* glib.spec.in: Remove obsolete files
+
+	* tests/Makefile.am:
+	* glib/libcharset/Makefile.am:
+	* gobject/Makefile.am:
+	* Makefile.am: Add some missing files to EXTRA_DIST
+
+	* tests/timeloop-basic.c: Make it build
+	* HACKING: Small updates
+
+2007-01-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gdate.c (g_date_set_time): Fix a typo.  (#398203,
+	Owen Taylor)
+
+2007-01-17  Tor Lillqvist  <tml@novell.com>
+
+	* config.h.win32.in
+	* glib/galloca.h
+	* glib/gbacktrace.h
+	* glib/gwin32.c
+	* glibconfig.h.win32.in
+	* README.win32: More minor tweaks for Digital Mars
+	compiler. (#346808, Serhat Sevki Dincer)
+
+2007-01-17  Tor Lillqvist  <tml@novell.com>
+
+	* glib-zip.in: DLLs are always installed in "bin" with current
+	libtool, drop unnecessary logic to check where they are. Include
+	also the COPYING file.
+
+2007-01-17  Tor Lillqvist  <tml@novell.com>
+
+	* glib/galloca.h: Use <malloc.h> also with Digital Mars compiler
+	on Win32. (#346808, Serhat Sevki Dincer)
+
+2007-01-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gthread.h:
+	* glib/gthread.c:
+	* glib/glib.symbols: Revert an accidental ABI break by
+	moving gettime out of the GThreadFunctions struct and making
+	it a separate variable.  (#397139, Joe Marcus Clarke)
+
+	* gthread/*.c: Adapt.
+
+2007-01-16  Tor Lillqvist  <tml@novell.com>
+
+	* glib/gthread.c (gettime): GetSystemTimeAsFileTime() returns 100s
+	of nanoseconds since 1601, so offset to Unix epoch (1970) and
+	multiply by 100 to get nanoseconds which is what we want.
+
+2007-01-15  Tor Lillqvist  <tml@novell.com>
+
+	* glib/gmain.h (struct _GPollFD): Fix mistake in my last commit.
+
+2005-01-15  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/giochannel.c:
+	* glib/gbookmarkfile.c: Remove redundant NULL-checks.
+	(#369668, Morten Welinder)
+
+2005-01-15  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gthread.c:
+	* gthread/gthread-posix.c: Correct the gettime calculations
+	once more.  (#395203, Chris Wilson)
+
+2007-01-15  Tor Lillqvist  <tml@novell.com>
+
+	* glib/gmain.h (struct _GPollFD): Prepare for potential Win64
+	build: Use gint64 for the fd field on Win64, as we want to be able
+	to store a HANDLE in it. (#395422) (Other changes will surely also
+	be necessary when building on Win64, at least in giowin32.c.)
+
+2007-01-15  Tor Lillqvist  <tml@novell.com>
+
+	* glib/gwin32.c (g_win32_getlocale): Simplify greatly. Instead of
+	hardcoding a large switch statement, just ask Windows for the
+	ISO639 and ISO3166 codes. Tack on @Latn or @Cyrl for those
+	languages which can alternatively be written in Latin or
+	Cyrillic. Fixes #395419.
+
+2007-01-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gkeyfile.c: Rework the handling of invalid
+	keys/groups again. We are back to being liberal about
+	what we accept, and only reject things that would lead
+	to non-rereadable keyfiles.
+
+	* tests/keyfile-test.c: Adapt tests.
+
+2007-01-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gutils.c (g_get_home_dir): Clarify docs.  (#394687,
+	Marc Brockschmidt)
+
+2007-01-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gthread.c: Include windows.h and fix
+	include order. (#394258, Kazuki Iwamoto)
+
+2007-01-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Make G_GNUC_INTERNAL a no-op for
+	gcc 2.95.    (#329031, David Schleef, Marc Brockschmidt)
+
+2007-01-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* gthread/gthread-posix.c:
+	* glib/gtimer.c:
+	* glib/gthread.c: Fix errors in the recently moved
+	time calculations.  (#395203, Chris Wilson)
+
+2007-01-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Actually link gthread against librt.
+	(#394641, Marco Pesenti Gritti)
+
+2007-01-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gkeyfile.c (g_key_file_is_key_name): Grr, allow '*' in keys,
+	too.  (#394262)
+
+2007-01-09  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/gutils.h: Use a more optimized g_bit_storage() when gcc is
+	available.  (#371670, Daniel Elstner)
+
+2007-01-08  Matthias Clasen  <mclasen@redhat.com>
+
+	* gthread/gthread-posix.c (g_thread_impl_init): Don't
+	use _SC_MONOTONIC_CLOCK unless USE_CLOCK_GETTIME is
+	defined.  (#394150)
+
+2007-01-07  Matthias Clasen  <mclasen@redhat.com>
+
+	Don't link glib against libpthread.  (#393812)
+
+	* configure.in: Link gthread against librt, not glib itself.
+
+	* glib/gthread.h:
+	* glib/gthread.c: Add a new thread function, gettime.
+
+	* glib/gtimer.c: Use gettime instead of directly working with
+	the various system interfaces.
+
+	* gthread/gthread-impl.c:
+	* gthread/gthread-posix.c:
+	* gthread/gthread-win32.c: Implement gettime.
+
+2007-01-07  Matthias Clasen  <mclasen@redhat.com>
+
+	* m4macros/glib-2.0.m4: Use PKG_PROG_PKG_CONFIG.  (#392636,
+	Yevgen Muntyan)
+
+2007-01-07  Tor Lillqvist  <tml@novell.com>
+
+	* glib/giowin32.c: Handle GIOChannels for file descriptors
+	connected to the console separately. This would typically be the
+	fd 0, 1, or 2 (if not redirected) in a console application. For
+	such fds we don't need a separate thread, as console HANDLEs are
+	waitable objects. (#359202, Michiel de Hoon)
+
+2007-01-04  Behdad Esfahbod  <behdad@gnome.org>
+
+	* tests/bit-test.c (builtin_bit_nth_lsf1), (builtin_bit_nth_lsf2),
+	(builtin_bit_nth_msf): Fix tests on x86_64.
+
+2007-01-03  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/goption.c (_g_unichar_get_width), (_g_utf8_strwidth),
+	(calculate_max_length), (print_entry), (print_help): Take zerowidth
+	and double-width chars into consideration when computing width of a
+	string.  Also fix another bug in width computation. (#346955)
+
+	* glib/guniprop.c (g_unichar_iszerowidth): Fix typo.  It was not
+	working correctly.
+
+2007-01-03  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/glib.symbols:
+	* glib/gunicode.h:
+	* glib/guniprop.c: Add g_unichar_iszerowidth(). (#347645)
+
+2007-01-03  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/gutils.h: Fix bug in g_bit_nth_lsf (#371631) and use
+	__builtin_clzl for g_bit_storage if available (#371670).
+
+	* tests/Makefile.am:
+	* tests/bit-test.c: New test, to test g_bit_* operations against
+	naive and builtin implementations.
+
+2007-01-02  Behdad Esfahbod  <behdad@gnome.org>
+
+	* configure.in: Avoid more warnings from running libtool --config.
+	(#391364)
+
+2007-01-03  Michael Natterer  <mitch@imendio.com>
+
+	* removed all .cvsignore files. SVN doesn't need them.
+
+2007-01-02  Emmanuele Bassi  <ebassi@gnome.org>
+
+	* glib/gbookmarkfile.c (expand_exec_line): Add support for
+	expanding the desktop entry spec variables %U (list of URIs)
+	and %F (list of filenames), so that using the command line
+	from the Exec and TryExec key of a desktop entry file works
+	as intended.
+
+2007-01-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Avoid warnings from running libtool --config.
+	(#391364, Loïc Minier)
+
+2007-01-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gbookmarkfile.c (g_bookmark_file_get_app_info):
+	Return an error if the uri is bad. (#391370, Maciej Piechotka)
+
+2007-01-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/glib.symbols: Guard g_slice_debug_tree_statistics
+	by G_ENABLE_DEBUG.  (#390940, Kazuki Iwamoto)
+
+2007-01-02  Michael Natterer  <mitch@imendio.com>
+
+	* configure.in
+	* Makefile.am: remove references to build/ until a proper decision
+	has been made what to do with it.
+
+2007-01-01  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib-gettextize.in: Silence autoconf warnings about
+	datarootdir.  (#391367, Loïc Minier)
+
+2006-12-31  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gslice.c: Fix some C99isms.  (#390913, Kazuki Iwamoto)
+
+Fri Dec 29 13:28:07 2006  Tim Janik  <timj@imendio.com>
+
+	* glib/gslice.c: turned detection of too late g_thread_init() calls
+	into a warning. this is a temporary work-around for some head-room
+	to fix affected programs, memory corruption still occours regardless.
+
+2006-12-29  Matthias Clasen  <mclasen@redhat.com>
+
+	* tests/gobject/Makefile.am:
+	* tests/gobject/dynamictype.c: New test for dynamic type
+	registration macros.
+
+Thu Dec 28 21:14:45 2006  Tim Janik  <timj@imendio.com>
+
+	* glib/gslice.c: removed pthread-dependant debugging bits, the code
+	was already converted to GMutex. this obsoletes Tor's recent fixups.
+
+2006-12-28  Tor Lillqvist  <tml@novell.com>
+
+	* glib/gutils.h (G_WIN32_DLLMAIN_FOR_DLL_NAME)
+	* glib/gutils.c (get_windows_directory_root): : Use only the wide
+	character API here, too.
+
+	* glib/gslice.c: Make it compile on Win32 without pthreads: Use a
+	Win32 critical section instead.
+
+	* glib/gmessages.c (g_logv): On Win32, if we get a fatal error
+	message while being debugged we break into the debugger with
+	G_BREAKPOINT(). Don't call abort() if the user is foolhardy enough
+	to continue after the breakpoint. The user presumably knows what
+	he is doing and deserves what he gets. (#376645, Andreas Köhler)
+
+Thu Dec 28 12:50:31 2006  Tim Janik  <timj@imendio.com>
+
+	* glib/gslice.h, glib/gslice.c: implemented static debugging
+	hash-tree to validate slice adresses and sizes with G_SLICE=debug-blocks.
+	use abort() to exit in mem_error() to allow catching of these in gdb.
+	abort programs with a descriptive error message if g_thread_init() is
+	called after GSlice was in use. previously this just silently corrupted
+	the magazines.
+
+	* glib/ghash.c (struct _GHashNode): reordered fields to keep 8-byte
+	pointer alignment on 64bit systems and request smaller slice sizes
+	on 32bit systems.
+
+	* tests/slice-test.c: support '~' option flag to introduce slice
+	allocation/release corruption with a significant probability. this
+	allowes testing of G_SLICE=debug-blocks.
+
+2006-12-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gconvert.[hc]:
+	* glib/gfileutils.c:
+	* glib/giochannel.c:
+	* glib/goption.c:
+	* glib/gspawn.c:
+	* glib/gunicollate.c:
+	* glib/gutils.c:
+	* tests/timeloop-basic.c:
+	Consistently use gsize rather than size_t.  (#333310,
+	Morten Welinder)
+
+2006-12-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Use AC_CACHE_CHECK for the nl_langinfo
+	check.  (#304517, Lőrinczy Zsigmond)
+
+2006-12-27  Tor Lillqvist  <tml@novell.com>
+
+	* glib/gwin32.h
+	* glib/gwin32.c (get_package_directory_from_module)
+	(g_win32_get_package_installation_directory)
+	(g_win32_get_package_installation_subdirectory): Add const to
+	gchar* arguments. (#384523, Yevgen Muntyan)
+
+2006-12-27  Ryan Lortie  <desrt@desrt.ca>
+
+	* glib/ghash.c: cache the value of the hash function
+	in the GHashNode.  this speeds up resizing the hash
+	table and it also allows a slight optimisation on
+	lookups.  (#388332)
+
+2006-12-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gunicollate.c (g_utf8_collate_key): Don't modify
+	the current locale.  (#389300)
+
+2006-12-26  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gutf8.c: Add hints for locale-dependent interfaces.
+	* glib/gconvert.c: Add hints for locale-dependent interfaces.
+
+	* glib/gconvert.c (g_get_filename_charsets): Improve
+	formatting of docs.
+
+2006-12-26  Behdad Esfahbod  <behdad@gnome.org>
+
+	* configure.in: Use libtool to determine shared library suffix.
+	(#357245)
+
+2006-12-24  Matthias Clasen  <mclasen@redhat.com>
+
+	* tests/run-collate-tests.sh:
+	* tests/unicode-collate.c: Silently skip tests if
+	we can't set LC_COLLATE to en_US.  (#336438)
+
+2006-12-19  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gkeyfile.c (g_key_file_is_key_name): Accept
+	'/', '+' and '.' in key names, since gnome-vfs uses
+	mime types as keys in some cache.
+
+	* tests/keyfile-test.c: Tests for the above.
+
+2006-12-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Fix the broken poll test.  (#387260,
+	Christian Persch)
+
+	* glib/gmain.c (child_watch_helper_thread): Readd a
+	return which was removed as dead code a while ago.
+	icc may consider it dead, but gcc doesn't like non-void
+	functions without a return...  (#354707)
+
+	* tests/Makefile.am: Try a different fix for bug 346373.
+
+2006-12-18  Matthias Clasen  <mclasen@redhat.com>
+
+	Fix bug 161288:
+
+	* configure.in: Check for wcslen.
+
+	* glib/gnulib/vasnprintf.c: Handle wcslen missing.
+
+2006-12-18  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gkeyfile.c: Accept '@' in locale names.
+
+	* glib/gkeyfile.c: Tighten up the check for allowed
+	key and group names.  (#343191, Tommi Komulainen)
+
+	* tests/keyfile-test.c: Test handling of key and group names.
+
+	* tests/Makefile.am: Don't use $RANDOM if the shell doesn't
+	have it.  (#346373, Thomas Klausner)
+
+2006-12-17  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/gstring.c: Improve docs about string functions taking a
+	length.  (#378727)
+
+2006-12-17  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gconvert.c:
+	* glib/gutf8.c (_g_charset_get_aliases): Put the G_GNUC_INTERNAL
+	where gcc doesn't complain about it.
+
+	* glib/ghash.c: Make ref_count an int to avoid compiler
+	warnings.
+
+	* configure.in: Use AC_LANG_SOURCE for the clock test.
+
+	* glib/gthreadpool.h:
+	* glib/gthreadpool.c (g_thread_pool_free): Don't use "wait"
+	as parameter name.  (#379207, Christian Biere)
+
+	* glib/gspawn.c: Refer to g_child_watch_add() in addition
+	to waitpid().
+
+	* glib/gstrfuncs.c (g_strndup, g_strnfill): Move docs
+	inline, and improve wording.  (#372598, Behdad Esfahbod)
+
+	* glib/gspawn.c: Add some pointers to the gdk_spawn_
+	variants.  (#338134, Federico Mena Quintero)
+
+	* configure.in: Make montonic clock test work again. Does
+	AC_COMPILE_IFELSE not get confdefs ? Also, move the clock
+	tests below the thread checks to fix #364663.
+
+	* tests/run-markup-tests.sh: Don't use diff -u  (#380801,
+	Marek Rouchal)
+
+	* glib/gspawn.c: Fix the recent fdwalk()-related changes
+	to not break mapping-test.  (#286838, Marco Barisione)
+
+	* glib/gstring.c (g_string_chunk_new): Don't shadow size.
+	(#386760, Kazuki IWAMOTO)
+
+2006-12-16  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gstring.c: Move more documentation inline.
+
+	* configure.in: Use AC_COMPILE_IFELSE for the monotonic
+	clock test.  (#362918, Han-Wen Nienhuys, Jeremy Lainé)
+
+	* glib/gstring.c: Move documentation inline.
+
+2006-12-15  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/giochannel.h: Make ref_count a gint to avoid
+	compiler warnings.  (#321977, Andrew Paprocki)
+
+	* configure.in: On Solaris, set CFLAGS and LDFLAGS that
+	work both with Sun cc and gcc.  (#315061, Lazlo Peter)
+
+	* glib/gspawn.c: Undefine READ_OK to fix the build on
+	old versions of Darwin.  (#327800)
+
+	* glib/glib.symbols:
+	* glib/gstring.[hc] (g_string_chunk_clear): Add a function
+	for clearing a GStringChunk. (#364608, Matt Barnes)
+
+	* glib/guniprop.c (interval_compare): Avoid a compiler
+	warning.
+
+	* glib/gspawn.c (do_exec): Call set_cloexec() with
+	the right parameters.  (#386252, Guillaume Desmottes)
+
+2006-12-15  Matthias Clasen  <mclasen@redhat.com>
+
+	Fix #357585, Padraig O'Briain.
+
+	* configure.in: Check for fdwalk.
+
+	* glib/gspawn.c (do_exec): Use fdwalk() to close all
+	file descriptors.
+
+	* glib/gspawn.c (fdwalk): Fallback implementation of
+	fdwalk.
+
+2006-12-14  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gconvert.c (open_converter): Don't use alloca
+	and avoid allocating memory for small keys that are
+	already cached.  (#172406, Morten Welinder)
+
+	* glib/gmain.c (g_child_watch_add_full): Improve the docs.
+	(#345569, Tim-Philipp Müller)
+
+	* glib/gkeyfile.c (g_key_file_add_group): If the group
+	is already there, make it current.  (#385910, Joe Halliwell)
+
+	* tests/keyfile-test.c: Add a test for duplicate groups/keys.
+
+2006-12-13  Matthias Clasen  <mclasen@redhat.com>
+
+	* m4macros/glib-gettext.m4: Require AC_CANONICAL_HOST in
+	GLIB_WITH_NLS.  (#385132, Laszlo Peter)
+
+2006-12-12  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Add a check for broken poll on Mac OS X.
+
+	* glib/gmain.c: Use poll emulation on OS X.  (#302672, Toby Peterson,
+	patch by Dave Vasilevsky)
+
+2006-12-11  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gatomic.c: Don't use local numeric labels in
+	inline assembler on AIX.  (#316434, Hans Rosenfeld)
+
+	* glib/gunicode.h (g_utf8_next_char): Cast to const char *,
+	not char *.  (#138153, Nikolai Weibull)
+
+Wed Nov 22 16:09:13 2006  Tim Janik  <timj@gtk.org>
+
+	* glib/gmacros.h: added G_GNUC_MAY_ALIAS, suggested by Mathias
+	Hasselmann in bug #335341, fixes bug #335853.
+
+2006-11-15  Matthias Clasen  <mclasen@redhat.com>
+
+	* m4macros/glib-gettext.m4: Apply a patch from James
+	Henstridge for compatibility with automake 2.60 (#343825)
+
+2006-11-14  Behdad Esfahbod  <behdad@gnome.org>
+
+	* sanity_check: Replace bash-specific == with sh-understood =.
+	Fixes bug #373864.
+
+2006-11-05  Hans Breuer  <hans@breuer.org>
+
+	* glib/makefile.msc.in : glib/ version not the gobject/
+	one I accidentially commited. Fixes bug #371074.
+
+2006-11-05  Tor Lillqvist  <tml@novell.com>
+
+	* makefile.mingw
+	* gmodule/makefile.mingw.in
+	* glib/makefile.mingw.in
+	* gobject/makefile.mingw.in
+	* gthread/makefile.mingw.in
+	* tests/makefile.mingw.in: Remove from CVS. Haven't been
+	maintained or distributed for long.
+
+2006-10-26  Pascal Terjan  <pterjan@linuxfr.org>
+
+	* glib/libcharset/localcharset.c: Fix small leak on failed
+	realloc in _g_locale_get_charset_aliases (#338582)
+
+2006-10-16  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/gnulib/Makefile.am: Add $(GLIB_DEBUG_FLAGS).  (#362543,
+	Peter Kjellerstedt)
+
+2006-10-15  Sebastian Wilhelmi  <seppi@seppi.de>
+
+	* tests/Makefile.am: Compile errorcheck-mutex-test with thread
+	libraries explicitly. (#74748, Javier Villavicencio)
+
+2006-10-08  Matthias Clasen  <mclasen@redhat.com>
+
+	Add a way to obtain Unicode script information.  (#348348,
+	Marco Barisione)
+
+	* glib/glib.symbols:
+	* glib/gunicode.h: Add GUnicodeScript enumeration and
+	g_unichar_get_script.
+
+	* glib/guniprop.c: Implement g_unichar_get_script.
+
+	* glib/gscripttable.h: Generated private header containing
+	script tables.
+
+	* glib/gen-script-table.pl: Script to generate gscripttable.h.
+
+	* glib/Makefile.am: Update
+
+2006-10-08  Matthias Clasen  <mclasen@redhat.com>
+
+	* tests/run-markup-tests.sh: Small portability fix.  (#347944,
+	Dan McMahill)
+
+2006-10-07  Tor Lillqvist  <tml@novell.com>
+
+	* glib/gwin32.c (get_package_directory_from_module)
+	(g_win32_get_package_installation_directory): g_strdup the keys
+	that we are passed before adding them to the hash tables, to guard
+	against the caller freeing them. (#355955, Andreas Köhler)
+
+2006-10-06  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gtimer.c: Fix a typo.  (#359190)
+
+2006-10-02  Behdad Esfahbod  <behdad@gnome.org>
+
+	* glib/Makefile.am:
+	* gobject/Makefile.am:
+	Include pltcheck.sh in EXTRA_DIST, and remove redefinition of TESTS.
+	(#358966)
+
+2006-10-01  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gtimer.c (g_usleep): Use nsleep to implement
+	g_usleep on AIX.  (#321974, Andrew Paprocki)
+
+	* configure.in: Check for nsleep
+
+	* glib/gmain.c: Fix typos in doc comments.
+	(#358421, Tom Tromey)
+
+2006-09-30  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/pltcheck.sh: A script to check PLT entries.
+	* glib/Makefile.am (TESTS): Run pltcheck.sh
+
+	* glib/*: Fix includes to correct some issues with
+	PLT entries.  (#354522, Behdad Esfahbod)
+
+2006-09-17  Hans Breuer  <hans@breuer.org>
+
+	* glib/makefile.msc.in gobject/makefile.msc.in : better filtering
+	of G_GNUC_* stuff when generating .def files. Now also works with
+	newer (less tolerant) linkers, e.g. from vc2500e
+
+2006-09-10  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gbacktrace.c: Assume string.h is available.
+	(#354523, Behdad Esfahbod)
+
+	* configure.in: Bump version to 2.13.0
+
+	* glib/glib.symbols:
+	* glib/gmain.[hc]: Add functions to create approximate
+	timeouts.  (#353942, Arjan van de Ven)
+
+	* glib/gstdio.c (g_rename): Initialize save_errno.
+	(#355206, Mike Edenfield)
+
+2006-09-03  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gerror.c: Allocate GErrors using the slice allocator.
+	(#354054, Matt Barnes)
+
+2006-09-02  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gtimer.c: Forgotten HAVE_CLOCK_GETTIME.
+
+2006-09-02  Tor Lillqvist  <tml@novell.com>
+
+	* glib/gutils.c (g_get_any_init_do): Correct C99ism (mixed
+	declarations and code) in Win32 ifdef branch. (#353903, Mike
+	Edenfield)
+
+2006-09-01  Abel Cheung  <abel@oaka.org>
+
+	* configure.in: Added 'dz' 'hy' to ALL_LINGUAS.
+
+2006-09-01  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Check for CLOCK_MONOTONIC.
+
+	* glib/gtimer.c: Only use clock_gettime if we
+	have a monotonic clock.
+
+2006-08-31  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Add missing includes to a few test
+	programs.  (#353580, Chris Wilson)
+
+2006-08-30  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gmarkup.c (g_markup_vprintf_escaped): Don't call
+	va_end on caller-provided va_args.  (#353584, Chris Wilson)
+
+2006-08-29  Tor Lillqvist  <tml@novell.com>
+
+	Remove support for Windows 9x/ME, as will be done also in Pango
+	and GTK+. GTK+ hasn't worked on Win9x since 2.6 or 2.8 anyway, so
+	it's pretty pointless to keep the Win9x code in here either. If
+	somebody is interested, the code can always be found in older GLib
+	versions, and in CVS.
+
+	* glib/gdir.c
+	* glib/gfileutils.c
+	* glib/gspawn-win32-helper.c
+	* glib/gspawn-win32.c
+	* glib/gstdio.c
+	* glib/gutils.c
+	* glib/gwin32.c
+	* glib/gwin32.h: Remove the G_WIN32_IS_NT_BASED() and
+	G_WIN32_HAVE_WIDECHAR_API() tests and their false (Win9x)
+	branches, and any variables or static functions used only by the
+	Win9x branches.
+
+	* glib/gwin32.c (g_win32_windows_version_init): Call g_error() if
+	run on Win9x.
+
+2006-08-27  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Fix pthread compiler flag detection.
+
+	* glib/gtimer.c: Use Posix monotonic clocks instead of
+	gettimeofday when available.  (#336114, William Jon McCann)
+
+2006-08-26  Matthias Clasen  <mclasen@redhat.com>
+
+	* glib/gutils.h:
+	* glib/gscanner.c: Fix some typos.  (#351741, Kjartan Maraas)
+
+2006-08-25  Matthias Clasen  <mclasen@redhat.com>
+
+	* configure.in: Fix the pthread compiler flag detection.
+
+	* glib/gunicode.h:
+	* glib/gutf8.c (_g_utf8_make_valid): Rename make_valid_utf8
+	from gconvert.c, move it to gutf8.c, and export it privately.
+
+	* glib/gconvert.c (g_filename_display_name): Adjust callers.
+
+	* glib/gkeyfile.c: Use _g_utf8_make_valid() in a number of
+	places to ensure error messages are valid UTF-8.  (#351853,
+	Simon Budig)
+
+2006-08-22  Matthias Clasen <mclasen@redhat.com>
+
+	* Branch for 2.12

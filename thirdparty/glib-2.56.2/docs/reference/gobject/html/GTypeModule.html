@@ -1,0 +1,849 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GTypeModule: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="rn01.html" title="API Reference">
+<link rel="prev" href="GTypePlugin.html" title="GTypePlugin">
+<link rel="next" href="gobject-The-Base-Object-Type.html" title="GObject">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GTypeModule.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GTypeModule.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_interfaces">  <span class="dim">|</span> 
+                  <a href="#GTypeModule.implemented-interfaces" class="shortcut">Implemented Interfaces</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="rn01.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GTypePlugin.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gobject-The-Base-Object-Type.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GTypeModule"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GTypeModule.top_of_page"></a>GTypeModule</span></h2>
+<p>GTypeModule — Type loading modules</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GTypeModule.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTypeModule.html#g-type-module-use" title="g_type_module_use ()">g_type_module_use</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GTypeModule.html#g-type-module-unuse" title="g_type_module_unuse ()">g_type_module_unuse</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GTypeModule.html#g-type-module-set-name" title="g_type_module_set_name ()">g_type_module_set_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="returnvalue">GType</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTypeModule.html#g-type-module-register-type" title="g_type_module_register_type ()">g_type_module_register_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GTypeModule.html#g-type-module-add-interface" title="g_type_module_add_interface ()">g_type_module_add_interface</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="returnvalue">GType</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTypeModule.html#g-type-module-register-enum" title="g_type_module_register_enum ()">g_type_module_register_enum</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="returnvalue">GType</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GTypeModule.html#g-type-module-register-flags" title="g_type_module_register_flags ()">g_type_module_register_flags</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="GTypeModule.html#G-DEFINE-DYNAMIC-TYPE:CAPS" title="G_DEFINE_DYNAMIC_TYPE()">G_DEFINE_DYNAMIC_TYPE</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="GTypeModule.html#G-DEFINE-DYNAMIC-TYPE-EXTENDED:CAPS" title="G_DEFINE_DYNAMIC_TYPE_EXTENDED()">G_DEFINE_DYNAMIC_TYPE_EXTENDED</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="GTypeModule.html#G-IMPLEMENT-INTERFACE-DYNAMIC:CAPS" title="G_IMPLEMENT_INTERFACE_DYNAMIC()">G_IMPLEMENT_INTERFACE_DYNAMIC</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="GTypeModule.html#G-ADD-PRIVATE-DYNAMIC:CAPS" title="G_ADD_PRIVATE_DYNAMIC()">G_ADD_PRIVATE_DYNAMIC</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GTypeModule.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GTypeModule.html#GTypeModule-struct" title="struct GTypeModule">GTypeModule</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GTypeModule.html#GTypeModuleClass" title="struct GTypeModuleClass">GTypeModuleClass</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GTypeModule.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a class="link" href="gobject-The-Base-Object-Type.html#GObject">GObject</a>
+    <span class="lineart">╰──</span> GTypeModule
+</pre>
+</div>
+<div class="refsect1">
+<a name="GTypeModule.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GTypeModule implements
+ <a class="link" href="GTypePlugin.html" title="GTypePlugin">GTypePlugin</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GTypeModule.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib-object.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GTypeModule.description"></a><h2>Description</h2>
+<p><a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a> provides a simple implementation of the <a class="link" href="GTypePlugin.html" title="GTypePlugin"><span class="type">GTypePlugin</span></a>
+interface. The model of <a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a> is a dynamically loaded module
+which implements some number of types and interface implementations.
+When the module is loaded, it registers its types and interfaces
+using <a class="link" href="GTypeModule.html#g-type-module-register-type" title="g_type_module_register_type ()"><code class="function">g_type_module_register_type()</code></a> and <a class="link" href="GTypeModule.html#g-type-module-add-interface" title="g_type_module_add_interface ()"><code class="function">g_type_module_add_interface()</code></a>.
+As long as any instances of these types and interface implementations
+are in use, the module is kept loaded. When the types and interfaces
+are gone, the module may be unloaded. If the types and interfaces
+become used again, the module will be reloaded. Note that the last
+unref cannot happen in module code, since that would lead to the
+caller's code being unloaded before <a class="link" href="gobject-The-Base-Object-Type.html#g-object-unref" title="g_object_unref ()"><code class="function">g_object_unref()</code></a> returns to it.</p>
+<p>Keeping track of whether the module should be loaded or not is done by
+using a use count - it starts at zero, and whenever it is greater than
+zero, the module is loaded. The use count is maintained internally by
+the type system, but also can be explicitly controlled by
+<a class="link" href="GTypeModule.html#g-type-module-use" title="g_type_module_use ()"><code class="function">g_type_module_use()</code></a> and <a class="link" href="GTypeModule.html#g-type-module-unuse" title="g_type_module_unuse ()"><code class="function">g_type_module_unuse()</code></a>. Typically, when loading
+a module for the first type, <a class="link" href="GTypeModule.html#g-type-module-use" title="g_type_module_use ()"><code class="function">g_type_module_use()</code></a> will be used to load
+it so that it can initialize its types. At some later point, when the
+module no longer needs to be loaded except for the type
+implementations it contains, <a class="link" href="GTypeModule.html#g-type-module-unuse" title="g_type_module_unuse ()"><code class="function">g_type_module_unuse()</code></a> is called.</p>
+<p><a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a> does not actually provide any implementation of module
+loading and unloading. To create a particular module type you must
+derive from <a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a> and implement the load and unload functions
+in <a class="link" href="GTypeModule.html#GTypeModuleClass" title="struct GTypeModuleClass"><span class="type">GTypeModuleClass</span></a>.</p>
+</div>
+<div class="refsect1">
+<a name="GTypeModule.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-type-module-use"></a><h3>g_type_module_use ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_type_module_use (<em class="parameter"><code><a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a> *module</code></em>);</pre>
+<p>Increases the use count of a <a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a> by one. If the
+use count was zero before, the plugin will be loaded.
+If loading the plugin fails, the use count is reset to 
+its prior value.</p>
+<div class="refsect3">
+<a name="g-type-module-use.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>module</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-type-module-use.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if the plugin needed to be loaded and
+loading the plugin failed.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-type-module-unuse"></a><h3>g_type_module_unuse ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_type_module_unuse (<em class="parameter"><code><a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a> *module</code></em>);</pre>
+<p>Decreases the use count of a <a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a> by one. If the
+result is zero, the module will be unloaded. (However, the
+<a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a> will not be freed, and types associated with the
+<a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a> are not unregistered. Once a <a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a> is
+initialized, it must exist forever.)</p>
+<div class="refsect3">
+<a name="g-type-module-unuse.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>module</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-type-module-set-name"></a><h3>g_type_module_set_name ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_type_module_set_name (<em class="parameter"><code><a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a> *module</code></em>,
+                        <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);</pre>
+<p>Sets the name for a <a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a></p>
+<div class="refsect3">
+<a name="g-type-module-set-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>module</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>a human-readable name to use in error messages.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-type-module-register-type"></a><h3>g_type_module_register_type ()</h3>
+<pre class="programlisting"><a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="returnvalue">GType</span></a>
+g_type_module_register_type (<em class="parameter"><code><a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a> *module</code></em>,
+                             <em class="parameter"><code><a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> parent_type</code></em>,
+                             <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *type_name</code></em>,
+                             <em class="parameter"><code>const <a class="link" href="gobject-Type-Information.html#GTypeInfo" title="struct GTypeInfo"><span class="type">GTypeInfo</span></a> *type_info</code></em>,
+                             <em class="parameter"><code><a class="link" href="gobject-Type-Information.html#GTypeFlags" title="enum GTypeFlags"><span class="type">GTypeFlags</span></a> flags</code></em>);</pre>
+<p>Looks up or registers a type that is implemented with a particular
+type plugin. If a type with name <em class="parameter"><code>type_name</code></em>
+ was previously registered,
+the <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> identifier for the type is returned, otherwise the type
+is newly registered, and the resulting <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> identifier returned.</p>
+<p>When reregistering a type (typically because a module is unloaded
+then reloaded, and reinitialized), <em class="parameter"><code>module</code></em>
+ and <em class="parameter"><code>parent_type</code></em>
+ must
+be the same as they were previously.</p>
+<p>As long as any instances of the type exist, the type plugin will
+not be unloaded.</p>
+<p>Since 2.56 if <em class="parameter"><code>module</code></em>
+ is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> this will call <a class="link" href="gobject-Type-Information.html#g-type-register-static" title="g_type_register_static ()"><code class="function">g_type_register_static()</code></a>
+instead. This can be used when making a static build of the module.</p>
+<div class="refsect3">
+<a name="g-type-module-register-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>module</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>parent_type</p></td>
+<td class="parameter_description"><p>the type for the parent class</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>type_name</p></td>
+<td class="parameter_description"><p>name for the type</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>type_info</p></td>
+<td class="parameter_description"><p>type information structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>flags field providing details about the type</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-type-module-register-type.returns"></a><h4>Returns</h4>
+<p> the new or existing type ID</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-type-module-add-interface"></a><h3>g_type_module_add_interface ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_type_module_add_interface (<em class="parameter"><code><a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a> *module</code></em>,
+                             <em class="parameter"><code><a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> instance_type</code></em>,
+                             <em class="parameter"><code><a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> interface_type</code></em>,
+                             <em class="parameter"><code>const <a class="link" href="gobject-Type-Information.html#GInterfaceInfo" title="struct GInterfaceInfo"><span class="type">GInterfaceInfo</span></a> *interface_info</code></em>);</pre>
+<p>Registers an additional interface for a type, whose interface lives
+in the given type plugin. If the interface was already registered
+for the type in this plugin, nothing will be done.</p>
+<p>As long as any instances of the type exist, the type plugin will
+not be unloaded.</p>
+<p>Since 2.56 if <em class="parameter"><code>module</code></em>
+ is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> this will call <a class="link" href="gobject-Type-Information.html#g-type-add-interface-static" title="g_type_add_interface_static ()"><code class="function">g_type_add_interface_static()</code></a>
+instead. This can be used when making a static build of the module.</p>
+<div class="refsect3">
+<a name="g-type-module-add-interface.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>module</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>instance_type</p></td>
+<td class="parameter_description"><p>type to which to add the interface.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>interface_type</p></td>
+<td class="parameter_description"><p>interface type to add</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>interface_info</p></td>
+<td class="parameter_description"><p>type information structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-type-module-register-enum"></a><h3>g_type_module_register_enum ()</h3>
+<pre class="programlisting"><a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="returnvalue">GType</span></a>
+g_type_module_register_enum (<em class="parameter"><code><a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a> *module</code></em>,
+                             <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                             <em class="parameter"><code>const <a class="link" href="gobject-Enumeration-and-Flag-Types.html#GEnumValue" title="struct GEnumValue"><span class="type">GEnumValue</span></a> *const_static_values</code></em>);</pre>
+<p>Looks up or registers an enumeration that is implemented with a particular
+type plugin. If a type with name <em class="parameter"><code>type_name</code></em>
+ was previously registered,
+the <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> identifier for the type is returned, otherwise the type
+is newly registered, and the resulting <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> identifier returned.</p>
+<p>As long as any instances of the type exist, the type plugin will
+not be unloaded.</p>
+<p>Since 2.56 if <em class="parameter"><code>module</code></em>
+ is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> this will call <a class="link" href="gobject-Type-Information.html#g-type-register-static" title="g_type_register_static ()"><code class="function">g_type_register_static()</code></a>
+instead. This can be used when making a static build of the module.</p>
+<div class="refsect3">
+<a name="g-type-module-register-enum.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>module</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>name for the type</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>const_static_values</p></td>
+<td class="parameter_description"><p>an array of <a class="link" href="gobject-Enumeration-and-Flag-Types.html#GEnumValue" title="struct GEnumValue"><span class="type">GEnumValue</span></a> structs for the
+possible enumeration values. The array is
+terminated by a struct with all members being
+0.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-type-module-register-enum.returns"></a><h4>Returns</h4>
+<p> the new or existing type ID</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-6.html#api-index-2.6">2.6</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-type-module-register-flags"></a><h3>g_type_module_register_flags ()</h3>
+<pre class="programlisting"><a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="returnvalue">GType</span></a>
+g_type_module_register_flags (<em class="parameter"><code><a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a> *module</code></em>,
+                              <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                              <em class="parameter"><code>const <a class="link" href="gobject-Enumeration-and-Flag-Types.html#GFlagsValue" title="struct GFlagsValue"><span class="type">GFlagsValue</span></a> *const_static_values</code></em>);</pre>
+<p>Looks up or registers a flags type that is implemented with a particular
+type plugin. If a type with name <em class="parameter"><code>type_name</code></em>
+ was previously registered,
+the <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> identifier for the type is returned, otherwise the type
+is newly registered, and the resulting <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> identifier returned.</p>
+<p>As long as any instances of the type exist, the type plugin will
+not be unloaded.</p>
+<p>Since 2.56 if <em class="parameter"><code>module</code></em>
+ is <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> this will call <a class="link" href="gobject-Type-Information.html#g-type-register-static" title="g_type_register_static ()"><code class="function">g_type_register_static()</code></a>
+instead. This can be used when making a static build of the module.</p>
+<div class="refsect3">
+<a name="g-type-module-register-flags.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>module</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>name for the type</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>const_static_values</p></td>
+<td class="parameter_description"><p>an array of <a class="link" href="gobject-Enumeration-and-Flag-Types.html#GFlagsValue" title="struct GFlagsValue"><span class="type">GFlagsValue</span></a> structs for the
+possible flags values. The array is
+terminated by a struct with all members being
+0.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-type-module-register-flags.returns"></a><h4>Returns</h4>
+<p> the new or existing type ID</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-6.html#api-index-2.6">2.6</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-DEFINE-DYNAMIC-TYPE:CAPS"></a><h3>G_DEFINE_DYNAMIC_TYPE()</h3>
+<pre class="programlisting">#define G_DEFINE_DYNAMIC_TYPE(TN, t_n, T_P)          G_DEFINE_DYNAMIC_TYPE_EXTENDED (TN, t_n, T_P, 0, {})
+</pre>
+<p>A convenience macro for dynamic type implementations, which declares a
+class initialization function, an instance initialization function (see 
+<a class="link" href="gobject-Type-Information.html#GTypeInfo" title="struct GTypeInfo"><span class="type">GTypeInfo</span></a> for information about these) and a static variable named 
+<code class="literal">t_n</code>_parent_class pointing to the parent class. Furthermore,
+it defines a <code class="literal">*_get_type()</code> and a static <code class="literal">*_register_type()</code> functions
+for use in your <code class="literal"><code class="function">module_init()</code></code>.</p>
+<p>See <a class="link" href="GTypeModule.html#G-DEFINE-DYNAMIC-TYPE-EXTENDED:CAPS" title="G_DEFINE_DYNAMIC_TYPE_EXTENDED()"><code class="function">G_DEFINE_DYNAMIC_TYPE_EXTENDED()</code></a> for an example.</p>
+<div class="refsect3">
+<a name="G-DEFINE-DYNAMIC-TYPE.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>TN</p></td>
+<td class="parameter_description"><p>The name of the new type, in Camel case.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>t_n</p></td>
+<td class="parameter_description"><p>The name of the new type, in lowercase, with words
+separated by '_'.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>T_P</p></td>
+<td class="parameter_description"><p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> of the parent type.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-14.html#api-index-2.14">2.14</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-DEFINE-DYNAMIC-TYPE-EXTENDED:CAPS"></a><h3>G_DEFINE_DYNAMIC_TYPE_EXTENDED()</h3>
+<pre class="programlisting">#define             G_DEFINE_DYNAMIC_TYPE_EXTENDED(TypeName, type_name, TYPE_PARENT, flags, CODE)</pre>
+<p>A more general version of <a class="link" href="GTypeModule.html#G-DEFINE-DYNAMIC-TYPE:CAPS" title="G_DEFINE_DYNAMIC_TYPE()"><code class="function">G_DEFINE_DYNAMIC_TYPE()</code></a> which
+allows to specify <a class="link" href="gobject-Type-Information.html#GTypeFlags" title="enum GTypeFlags"><span class="type">GTypeFlags</span></a> and custom code.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="function"><a href="GTypeModule.html#G-DEFINE-DYNAMIC-TYPE-EXTENDED:CAPS">G_DEFINE_DYNAMIC_TYPE_EXTENDED</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">GtkGadget</span><span class="symbol">,</span>
+<span class="normal">                                gtk_gadget</span><span class="symbol">,</span>
+<span class="normal">                                GTK_TYPE_THING</span><span class="symbol">,</span>
+<span class="normal">                                </span><span class="number">0</span><span class="symbol">,</span>
+<span class="normal">                                </span><span class="function"><a href="GTypeModule.html#G-IMPLEMENT-INTERFACE-DYNAMIC:CAPS">G_IMPLEMENT_INTERFACE_DYNAMIC</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">TYPE_GIZMO</span><span class="symbol">,</span>
+<span class="normal">                                                               gtk_gadget_gizmo_init</span><span class="symbol">));</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+expands to</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal">     </span><span class="function">gtk_gadget_init</span><span class="normal">              </span><span class="symbol">(</span><span class="usertype">GtkGadget</span><span class="normal">      </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">);</span>
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal">     </span><span class="function">gtk_gadget_class_init</span><span class="normal">        </span><span class="symbol">(</span><span class="usertype">GtkGadgetClass</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">klass</span><span class="symbol">);</span>
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal">     </span><span class="function">gtk_gadget_class_finalize</span><span class="normal">    </span><span class="symbol">(</span><span class="usertype">GtkGadgetClass</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">klass</span><span class="symbol">);</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="usertype">gpointer</span><span class="normal"> gtk_gadget_parent_class </span><span class="symbol">=</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">;</span>
+<span class="keyword">static</span><span class="normal"> </span><span class="usertype">GType</span><span class="normal">    gtk_gadget_type_id </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal">     </span><span class="function">gtk_gadget_class_intern_init</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">gpointer</span><span class="normal"> klass</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  gtk_gadget_parent_class </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gobject-Type-Information.html#g-type-class-peek-parent">g_type_class_peek_parent</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">klass</span><span class="symbol">);</span><span class="normal"> </span>
+<span class="normal">  </span><span class="function">gtk_gadget_class_init</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">GtkGadgetClass</span><span class="symbol">*)</span><span class="normal"> klass</span><span class="symbol">);</span><span class="normal"> </span>
+<span class="cbracket">}</span>
+
+<span class="normal"><a href="gobject-Type-Information.html#GType">GType</a></span>
+<span class="function">gtk_gadget_get_type</span><span class="normal"> </span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> gtk_gadget_type_id</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">gtk_gadget_register_type</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GTypeModule</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">type_module</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">GTypeInfo</span><span class="normal"> g_define_type_info </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">sizeof</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">GtkGadgetClass</span><span class="symbol">),</span>
+<span class="normal">    </span><span class="symbol">(</span><span class="normal"><a href="gobject-Type-Information.html#GBaseInitFunc">GBaseInitFunc</a></span><span class="symbol">)</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span>
+<span class="normal">    </span><span class="symbol">(</span><span class="normal"><a href="gobject-Type-Information.html#GBaseFinalizeFunc">GBaseFinalizeFunc</a></span><span class="symbol">)</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span>
+<span class="normal">    </span><span class="symbol">(</span><span class="normal"><a href="gobject-Type-Information.html#GClassInitFunc">GClassInitFunc</a></span><span class="symbol">)</span><span class="normal"> gtk_gadget_class_intern_init</span><span class="symbol">,</span>
+<span class="normal">    </span><span class="symbol">(</span><span class="normal"><a href="gobject-Type-Information.html#GClassFinalizeFunc">GClassFinalizeFunc</a></span><span class="symbol">)</span><span class="normal"> gtk_gadget_class_finalize</span><span class="symbol">,</span>
+<span class="normal">    <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal">   </span><span class="comment">// class_data</span>
+<span class="normal">    </span><span class="keyword">sizeof</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">GtkGadget</span><span class="symbol">),</span>
+<span class="normal">    </span><span class="number">0</span><span class="symbol">,</span><span class="normal">      </span><span class="comment">// n_preallocs</span>
+<span class="normal">    </span><span class="symbol">(</span><span class="normal"><a href="gobject-Type-Information.html#GInstanceInitFunc">GInstanceInitFunc</a></span><span class="symbol">)</span><span class="normal"> gtk_gadget_init</span><span class="symbol">,</span><span class="normal"> </span>
+<span class="normal">    NULL    </span><span class="comment">// value_table</span>
+<span class="normal">  </span><span class="cbracket">}</span><span class="symbol">;</span>
+<span class="normal">  gtk_gadget_type_id </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="GTypeModule.html#g-type-module-register-type">g_type_module_register_type</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">type_module</span><span class="symbol">,</span>
+<span class="normal">                                                    GTK_TYPE_THING</span><span class="symbol">,</span>
+<span class="normal">                                                    </span><span class="string">"GtkGadget"</span><span class="symbol">,</span>
+<span class="normal">                                                    </span><span class="symbol">&amp;</span><span class="normal">g_define_type_info</span><span class="symbol">,</span>
+<span class="normal">                                                    </span><span class="symbol">(</span><span class="normal"><a href="gobject-Type-Information.html#GTypeFlags">GTypeFlags</a></span><span class="symbol">)</span><span class="normal"> flags</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">GInterfaceInfo</span><span class="normal"> g_implement_interface_info </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="symbol">(</span><span class="normal"><a href="gobject-Type-Information.html#GInterfaceInitFunc">GInterfaceInitFunc</a></span><span class="symbol">)</span><span class="normal"> gtk_gadget_gizmo_init</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="function"><a href="GTypeModule.html#g-type-module-add-interface">g_type_module_add_interface</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">type_module</span><span class="symbol">,</span><span class="normal"> g_define_type_id</span><span class="symbol">,</span><span class="normal"> TYPE_GIZMO</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">g_implement_interface_info</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="cbracket">}</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="G-DEFINE-DYNAMIC-TYPE-EXTENDED.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>TypeName</p></td>
+<td class="parameter_description"><p>The name of the new type, in Camel case.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>type_name</p></td>
+<td class="parameter_description"><p>The name of the new type, in lowercase, with words
+separated by '_'.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>TYPE_PARENT</p></td>
+<td class="parameter_description"><p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> of the parent type.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p><a class="link" href="gobject-Type-Information.html#GTypeFlags" title="enum GTypeFlags"><span class="type">GTypeFlags</span></a> to pass to <a class="link" href="GTypeModule.html#g-type-module-register-type" title="g_type_module_register_type ()"><code class="function">g_type_module_register_type()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>CODE</p></td>
+<td class="parameter_description"><p>Custom code that gets inserted in the *_get_type() function.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-14.html#api-index-2.14">2.14</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-IMPLEMENT-INTERFACE-DYNAMIC:CAPS"></a><h3>G_IMPLEMENT_INTERFACE_DYNAMIC()</h3>
+<pre class="programlisting">#define             G_IMPLEMENT_INTERFACE_DYNAMIC(TYPE_IFACE, iface_init)</pre>
+<p>A convenience macro to ease interface addition in the <em class="parameter"><code>_C_</code></em>
+ section
+of <a class="link" href="GTypeModule.html#G-DEFINE-DYNAMIC-TYPE-EXTENDED:CAPS" title="G_DEFINE_DYNAMIC_TYPE_EXTENDED()"><code class="function">G_DEFINE_DYNAMIC_TYPE_EXTENDED()</code></a>. See <a class="link" href="GTypeModule.html#G-DEFINE-DYNAMIC-TYPE-EXTENDED:CAPS" title="G_DEFINE_DYNAMIC_TYPE_EXTENDED()"><code class="function">G_DEFINE_DYNAMIC_TYPE_EXTENDED()</code></a>
+for an example.</p>
+<p>Note that this macro can only be used together with the
+G_DEFINE_DYNAMIC_TYPE_EXTENDED macros, since it depends on variable
+names from that macro.</p>
+<div class="refsect3">
+<a name="G-IMPLEMENT-INTERFACE-DYNAMIC.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>TYPE_IFACE</p></td>
+<td class="parameter_description"><p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> of the interface to add</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>iface_init</p></td>
+<td class="parameter_description"><p>The interface init function</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-ADD-PRIVATE-DYNAMIC:CAPS"></a><h3>G_ADD_PRIVATE_DYNAMIC()</h3>
+<pre class="programlisting">#define             G_ADD_PRIVATE_DYNAMIC(TypeName)</pre>
+<p>A convenience macro to ease adding private data to instances of a new dynamic
+type in the <em class="parameter"><code>_C_</code></em>
+ section of <a class="link" href="GTypeModule.html#G-DEFINE-DYNAMIC-TYPE-EXTENDED:CAPS" title="G_DEFINE_DYNAMIC_TYPE_EXTENDED()"><code class="function">G_DEFINE_DYNAMIC_TYPE_EXTENDED()</code></a>. See
+<a class="link" href="gobject-Type-Information.html#G-ADD-PRIVATE:CAPS" title="G_ADD_PRIVATE()"><code class="function">G_ADD_PRIVATE()</code></a> for details, it is similar but for static types.</p>
+<p>Note that this macro can only be used together with the
+G_DEFINE_DYNAMIC_TYPE_EXTENDED macros, since it depends on variable
+names from that macro.</p>
+<div class="refsect3">
+<a name="G-ADD-PRIVATE-DYNAMIC.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>TypeName</p></td>
+<td class="parameter_description"><p>the name of the type in CamelCase</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GTypeModule.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GTypeModule-struct"></a><h3>struct GTypeModule</h3>
+<pre class="programlisting">struct GTypeModule {
+  gchar *name;
+};
+</pre>
+<p>The members of the GTypeModule structure should not 
+be accessed directly, except for the <em class="parameter"><code>name</code></em>
+ field.</p>
+<div class="refsect3">
+<a name="GTypeModule.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody><tr>
+<td class="struct_member_name"><p><a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GTypeModule-struct.name"></a>name</code></em>;</p></td>
+<td class="struct_member_description"><p>the name of the module</p></td>
+<td class="struct_member_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GTypeModuleClass"></a><h3>struct GTypeModuleClass</h3>
+<pre class="programlisting">struct GTypeModuleClass {
+  GObjectClass parent_class;
+
+  gboolean (* load)   (GTypeModule *module);
+  void     (* unload) (GTypeModule *module);
+};
+</pre>
+<p>In order to implement dynamic loading of types based on <a class="link" href="GTypeModule.html" title="GTypeModule"><span class="type">GTypeModule</span></a>, 
+the <em class="parameter"><code>load</code></em>
+ and <em class="parameter"><code>unload</code></em>
+ functions in <a class="link" href="GTypeModule.html#GTypeModuleClass" title="struct GTypeModuleClass"><span class="type">GTypeModuleClass</span></a> must be implemented.</p>
+<div class="refsect3">
+<a name="GTypeModuleClass.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GTypeModuleClass.load"></a>load</code></em> ()</p></td>
+<td class="struct_member_description"><p>loads the module and registers one or more types using
+<a class="link" href="GTypeModule.html#g-type-module-register-type" title="g_type_module_register_type ()"><code class="function">g_type_module_register_type()</code></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GTypeModuleClass.unload"></a>unload</code></em> ()</p></td>
+<td class="struct_member_description"><p>unloads the module</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GTypeModule.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="GTypePlugin.html" title="GTypePlugin"><span class="type">GTypePlugin</span></a>, <a href="../glib-Dynamic-Loading-of-Modules.html#GModule"><span class="type">GModule</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

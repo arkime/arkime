@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Name=Desktop Icons
+Comment=Classic session desktop file for desktop icons
+Exec=true --no-default-window --force-desktop
+OnlyShowIn=GNOME;
+NoDisplay=true
+X-GNOME-Bugzilla-Bugzilla=GNOME
+X-GNOME-Bugzilla-Product=nautilus
+X-GNOME-Bugzilla-Component=general
+X-GNOME-Bugzilla-Version=3.10.0
+X-GNOME-Autostart-Phase=Desktop
+X-GNOME-Autostart-Notify=true
+X-GNOME-AutoRestart=true
+X-GNOME-Provides=filemanager

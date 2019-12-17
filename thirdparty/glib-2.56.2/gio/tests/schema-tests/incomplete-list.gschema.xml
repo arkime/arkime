@@ -1,0 +1,7 @@
+<schemalist>
+  <schema id="incomplete-list" path="/tests/">
+    <key name="test" type="ai">
+      <default>[1,2,3</default>
+    </key>
+  </schema>
+</schemalist>

@@ -1,0 +1,7 @@
+<schemalist>
+  <schema id='org.gtk.test.schema'>
+    <key name='test' type='s'>
+      <range min='22' max='27'/>
+    </key>
+  </schema>
+</schemalist>

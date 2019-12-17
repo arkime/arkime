@@ -1,0 +1,5 @@
+ELEMENT 'foo'
+  TEXT ''
+  PASS '<![CDATA[ some <<<<>>>> CDATA ]]>'
+  TEXT ''
+END 'foo'

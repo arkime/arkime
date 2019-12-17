@@ -1,0 +1,388 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GBufferedOutputStream: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="streaming.html" title="Streaming I/O">
+<link rel="prev" href="GBufferedInputStream.html" title="GBufferedInputStream">
+<link rel="next" href="GDataInputStream.html" title="GDataInputStream">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GBufferedOutputStream.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GBufferedOutputStream.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_interfaces">  <span class="dim">|</span> 
+                  <a href="#GBufferedOutputStream.implemented-interfaces" class="shortcut">Implemented Interfaces</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GBufferedOutputStream.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="streaming.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GBufferedInputStream.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GDataInputStream.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GBufferedOutputStream"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GBufferedOutputStream.top_of_page"></a>GBufferedOutputStream</span></h2>
+<p>GBufferedOutputStream — Buffered Output Stream</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GBufferedOutputStream.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GOutputStream.html" title="GOutputStream"><span class="returnvalue">GOutputStream</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GBufferedOutputStream.html#g-buffered-output-stream-new" title="g_buffered_output_stream_new ()">g_buffered_output_stream_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GOutputStream.html" title="GOutputStream"><span class="returnvalue">GOutputStream</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GBufferedOutputStream.html#g-buffered-output-stream-new-sized" title="g_buffered_output_stream_new_sized ()">g_buffered_output_stream_new_sized</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gsize"><span class="returnvalue">gsize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GBufferedOutputStream.html#g-buffered-output-stream-get-buffer-size" title="g_buffered_output_stream_get_buffer_size ()">g_buffered_output_stream_get_buffer_size</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GBufferedOutputStream.html#g-buffered-output-stream-set-buffer-size" title="g_buffered_output_stream_set_buffer_size ()">g_buffered_output_stream_set_buffer_size</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GBufferedOutputStream.html#g-buffered-output-stream-get-auto-grow" title="g_buffered_output_stream_get_auto_grow ()">g_buffered_output_stream_get_auto_grow</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GBufferedOutputStream.html#g-buffered-output-stream-set-auto-grow" title="g_buffered_output_stream_set_auto_grow ()">g_buffered_output_stream_set_auto_grow</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GBufferedOutputStream.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GBufferedOutputStream.html#GBufferedOutputStream--auto-grow" title="The “auto-grow” property">auto-grow</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a></td>
+<td class="property_name"><a class="link" href="GBufferedOutputStream.html#GBufferedOutputStream--buffer-size" title="The “buffer-size” property">buffer-size</a></td>
+<td class="property_flags">Read / Write / Construct</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GBufferedOutputStream.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GBufferedOutputStream.html#GBufferedOutputStream-struct" title="GBufferedOutputStream">GBufferedOutputStream</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GBufferedOutputStream.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> <a class="link" href="GOutputStream.html" title="GOutputStream">GOutputStream</a>
+        <span class="lineart">╰──</span> <a class="link" href="GFilterOutputStream.html" title="GFilterOutputStream">GFilterOutputStream</a>
+            <span class="lineart">╰──</span> GBufferedOutputStream
+</pre>
+</div>
+<div class="refsect1">
+<a name="GBufferedOutputStream.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GBufferedOutputStream implements
+ <a class="link" href="GSeekable.html" title="GSeekable">GSeekable</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GBufferedOutputStream.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GBufferedOutputStream.description"></a><h2>Description</h2>
+<p>Buffered output stream implements <a class="link" href="GFilterOutputStream.html" title="GFilterOutputStream"><span class="type">GFilterOutputStream</span></a> and provides 
+for buffered writes. </p>
+<p>By default, <a class="link" href="GBufferedOutputStream.html" title="GBufferedOutputStream"><span class="type">GBufferedOutputStream</span></a>'s buffer size is set at 4 kilobytes.</p>
+<p>To create a buffered output stream, use <a class="link" href="GBufferedOutputStream.html#g-buffered-output-stream-new" title="g_buffered_output_stream_new ()"><code class="function">g_buffered_output_stream_new()</code></a>, 
+or <a class="link" href="GBufferedOutputStream.html#g-buffered-output-stream-new-sized" title="g_buffered_output_stream_new_sized ()"><code class="function">g_buffered_output_stream_new_sized()</code></a> to specify the buffer's size 
+at construction.</p>
+<p>To get the size of a buffer within a buffered input stream, use 
+<a class="link" href="GBufferedOutputStream.html#g-buffered-output-stream-get-buffer-size" title="g_buffered_output_stream_get_buffer_size ()"><code class="function">g_buffered_output_stream_get_buffer_size()</code></a>. To change the size of a 
+buffered output stream's buffer, use 
+<a class="link" href="GBufferedOutputStream.html#g-buffered-output-stream-set-buffer-size" title="g_buffered_output_stream_set_buffer_size ()"><code class="function">g_buffered_output_stream_set_buffer_size()</code></a>. Note that the buffer's 
+size cannot be reduced below the size of the data within the buffer.</p>
+</div>
+<div class="refsect1">
+<a name="GBufferedOutputStream.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-buffered-output-stream-new"></a><h3>g_buffered_output_stream_new ()</h3>
+<pre class="programlisting"><a class="link" href="GOutputStream.html" title="GOutputStream"><span class="returnvalue">GOutputStream</span></a> *
+g_buffered_output_stream_new (<em class="parameter"><code><a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a> *base_stream</code></em>);</pre>
+<p>Creates a new buffered output stream for a base stream.</p>
+<div class="refsect3">
+<a name="g-buffered-output-stream-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>base_stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-buffered-output-stream-new.returns"></a><h4>Returns</h4>
+<p> a <a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a> for the given <em class="parameter"><code>base_stream</code></em>
+.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-buffered-output-stream-new-sized"></a><h3>g_buffered_output_stream_new_sized ()</h3>
+<pre class="programlisting"><a class="link" href="GOutputStream.html" title="GOutputStream"><span class="returnvalue">GOutputStream</span></a> *
+g_buffered_output_stream_new_sized (<em class="parameter"><code><a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a> *base_stream</code></em>,
+                                    <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> size</code></em>);</pre>
+<p>Creates a new buffered output stream with a given buffer size.</p>
+<div class="refsect3">
+<a name="g-buffered-output-stream-new-sized.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>base_stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>size</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-buffered-output-stream-new-sized.returns"></a><h4>Returns</h4>
+<p> a <a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a> with an internal buffer set to <em class="parameter"><code>size</code></em>
+.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-buffered-output-stream-get-buffer-size"></a><h3>g_buffered_output_stream_get_buffer_size ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gsize"><span class="returnvalue">gsize</span></a>
+g_buffered_output_stream_get_buffer_size
+                               (<em class="parameter"><code><a class="link" href="GBufferedOutputStream.html" title="GBufferedOutputStream"><span class="type">GBufferedOutputStream</span></a> *stream</code></em>);</pre>
+<p>Gets the size of the buffer in the <em class="parameter"><code>stream</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-buffered-output-stream-get-buffer-size.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GBufferedOutputStream.html" title="GBufferedOutputStream"><span class="type">GBufferedOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-buffered-output-stream-get-buffer-size.returns"></a><h4>Returns</h4>
+<p> the current size of the buffer.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-buffered-output-stream-set-buffer-size"></a><h3>g_buffered_output_stream_set_buffer_size ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_buffered_output_stream_set_buffer_size
+                               (<em class="parameter"><code><a class="link" href="GBufferedOutputStream.html" title="GBufferedOutputStream"><span class="type">GBufferedOutputStream</span></a> *stream</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> size</code></em>);</pre>
+<p>Sets the size of the internal buffer to <em class="parameter"><code>size</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-buffered-output-stream-set-buffer-size.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GBufferedOutputStream.html" title="GBufferedOutputStream"><span class="type">GBufferedOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>size</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-buffered-output-stream-get-auto-grow"></a><h3>g_buffered_output_stream_get_auto_grow ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_buffered_output_stream_get_auto_grow
+                               (<em class="parameter"><code><a class="link" href="GBufferedOutputStream.html" title="GBufferedOutputStream"><span class="type">GBufferedOutputStream</span></a> *stream</code></em>);</pre>
+<p>Checks if the buffer automatically grows as data is added.</p>
+<div class="refsect3">
+<a name="g-buffered-output-stream-get-auto-grow.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GBufferedOutputStream.html" title="GBufferedOutputStream"><span class="type">GBufferedOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-buffered-output-stream-get-auto-grow.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <em class="parameter"><code>stream</code></em>
+'s buffer automatically grows,
+<a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-buffered-output-stream-set-auto-grow"></a><h3>g_buffered_output_stream_set_auto_grow ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_buffered_output_stream_set_auto_grow
+                               (<em class="parameter"><code><a class="link" href="GBufferedOutputStream.html" title="GBufferedOutputStream"><span class="type">GBufferedOutputStream</span></a> *stream</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> auto_grow</code></em>);</pre>
+<p>Sets whether or not the <em class="parameter"><code>stream</code></em>
+'s buffer should automatically grow.
+If <em class="parameter"><code>auto_grow</code></em>
+ is true, then each write will just make the buffer
+larger, and you must manually flush the buffer to actually write out
+the data to the underlying stream.</p>
+<div class="refsect3">
+<a name="g-buffered-output-stream-set-auto-grow.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>stream</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GBufferedOutputStream.html" title="GBufferedOutputStream"><span class="type">GBufferedOutputStream</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>auto_grow</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GBufferedOutputStream.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GBufferedOutputStream-struct"></a><h3>GBufferedOutputStream</h3>
+<pre class="programlisting">typedef struct _GBufferedOutputStream GBufferedOutputStream;</pre>
+<p>An implementation of <a class="link" href="GFilterOutputStream.html" title="GFilterOutputStream"><span class="type">GFilterOutputStream</span></a> with a sized buffer.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GBufferedOutputStream.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GBufferedOutputStream--auto-grow"></a><h3>The <code class="literal">“auto-grow”</code> property</h3>
+<pre class="programlisting">  “auto-grow”                <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether the buffer should automatically grow.</p>
+<p>Flags: Read / Write</p>
+<p>Default value: FALSE</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GBufferedOutputStream--buffer-size"></a><h3>The <code class="literal">“buffer-size”</code> property</h3>
+<pre class="programlisting">  “buffer-size”              <a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a></pre>
+<p>The size of the backend buffer.</p>
+<p>Flags: Read / Write / Construct</p>
+<p>Allowed values: &gt;= 1</p>
+<p>Default value: 4096</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GBufferedOutputStream.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="GFilterOutputStream.html" title="GFilterOutputStream"><span class="type">GFilterOutputStream</span></a>, <a class="link" href="GOutputStream.html" title="GOutputStream"><span class="type">GOutputStream</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<refentry id="gtester">
+
+<refentryinfo>
+<title>gtester</title>
+<productname>GLib</productname>
+<authorgroup>
+<author>
+<contrib>Developer</contrib>
+<firstname>Tim</firstname>
+<surname>Janik</surname>
+</author>
+<author>
+<contrib>Developer</contrib>
+<firstname>Sven</firstname>
+<surname>Herzberg</surname>
+</author>
+</authorgroup>
+</refentryinfo>
+
+<refmeta>
+<refentrytitle>gtester</refentrytitle>
+<manvolnum>1</manvolnum>
+<refmiscinfo class="manual">User Commands</refmiscinfo>
+</refmeta>
+
+<refnamediv>
+<refname>gtester</refname>
+<refpurpose>test running utility</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>gtester</command>
+<arg choice="opt" rep="repeat">OPTION</arg>
+<arg>testprogram</arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+<para><command>gtester</command> is a utility to run unit tests that have
+been written using the GLib test framework.
+</para>
+<para>
+When called with the <option>-o</option> option, <command>gtester</command>
+writes an XML report of the test results, which can be converted
+into HTML using the <command>gtester-report</command> utility.
+</para>
+</refsect1>
+
+<refsect1><title>Options</title>
+<variablelist>
+
+<varlistentry>
+<term><option>-h</option>, <option>--help</option></term>
+<listitem><para>
+print help and exit
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-v</option>, <option>--version</option></term>
+<listitem><para>
+print version information and exit
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--g-fatal-warnings</option></term>
+<listitem><para>
+make warnings fatal
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-k</option>, <option>--keep-going</option></term>
+<listitem><para>
+continue running after tests failed
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-l</option></term>
+<listitem><para>
+list paths of available test cases
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-m=<replaceable>MODE</replaceable></option></term>
+<listitem><para>
+    run test cases in <replaceable>MODE</replaceable>, which can be one of:
+
+    <variablelist>
+      <varlistentry>
+      <term><option>perf</option></term>
+      <listitem><para>
+          run performance tests
+      </para></listitem>
+      </varlistentry>
+
+      <varlistentry>
+      <term><option>slow</option>, <option>thorough</option></term>
+      <listitem><para>
+          run slow tests, or repeat non-deterministic tests more often
+      </para></listitem>
+      </varlistentry>
+
+      <varlistentry>
+      <term><option>quick</option></term>
+      <listitem><para>
+          do not run slow or performance tests, or do extra repeats
+          of non-deterministic tests (default)
+      </para></listitem>
+      </varlistentry>
+
+      <varlistentry>
+      <term><option>undefined</option></term>
+      <listitem><para>
+          run test cases that deliberately provoke checks or assertion
+          failures, if implemented (default)
+      </para></listitem>
+      </varlistentry>
+
+      <varlistentry>
+      <term><option>no-undefined</option></term>
+      <listitem><para>
+          do not run test cases that deliberately provoke checks or
+          assertion failures
+      </para></listitem>
+      </varlistentry>
+    </variablelist>
+
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-p=<replaceable>TESTPATH</replaceable></option></term>
+<listitem><para>
+only run test cases matching <replaceable>TESTPATH</replaceable>
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-s=<replaceable>TESTPATH</replaceable></option></term>
+<listitem><para>
+skip test cases matching <replaceable>TESTPATH</replaceable>
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--seed=<replaceable>SEEDSTRING</replaceable></option></term>
+<listitem><para>
+run all test cases with random number seed <replaceable>SEEDSTRING</replaceable>
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-o=<replaceable>LOGFILE</replaceable></option></term>
+<listitem><para>
+write the test log to <replaceable>LOGFILE</replaceable>
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>-q</option>, <option>--quiet</option></term>
+<listitem><para>
+suppress per test binary output
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--verbose</option></term>
+<listitem><para>
+report success per testcase
+</para></listitem>
+</varlistentry>
+
+</variablelist>
+</refsect1>
+
+<refsect1><title>See also</title>
+<para>
+<citerefentry>
+<refentrytitle>gtester-report</refentrytitle>
+<manvolnum>1</manvolnum>
+</citerefentry>
+</para>
+</refsect1>
+</refentry>

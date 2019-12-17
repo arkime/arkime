@@ -1,0 +1,1478 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Simple XML Subset Parser: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="glib-utilities.html" title="GLib Utilities">
+<link rel="prev" href="glib-regex-syntax.html" title="Regular expression syntax">
+<link rel="next" href="glib-Key-value-file-parser.html" title="Key-value file parser">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-Simple-XML-Subset-Parser.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="glib-utilities.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-regex-syntax.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="glib-Key-value-file-parser.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Simple-XML-Subset-Parser"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Simple-XML-Subset-Parser.top_of_page"></a>Simple XML Subset Parser</span></h2>
+<p>Simple XML Subset Parser — parses a subset of XML</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-Simple-XML-Subset-Parser.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-escape-text" title="g_markup_escape_text ()">g_markup_escape_text</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-printf-escaped" title="g_markup_printf_escaped ()">g_markup_printf_escaped</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-vprintf-escaped" title="g_markup_vprintf_escaped ()">g_markup_vprintf_escaped</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="returnvalue">GMarkupParseContext</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-new" title="g_markup_parse_context_new ()">g_markup_parse_context_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-parse" title="g_markup_parse_context_parse ()">g_markup_parse_context_parse</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-end-parse" title="g_markup_parse_context_end_parse ()">g_markup_parse_context_end_parse</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-free" title="g_markup_parse_context_free ()">g_markup_parse_context_free</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-get-position" title="g_markup_parse_context_get_position ()">g_markup_parse_context_get_position</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-get-element" title="g_markup_parse_context_get_element ()">g_markup_parse_context_get_element</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="glib-Singly-Linked-Lists.html#GSList" title="struct GSList"><span class="returnvalue">GSList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-get-element-stack" title="g_markup_parse_context_get_element_stack ()">g_markup_parse_context_get_element_stack</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-get-user-data" title="g_markup_parse_context_get_user_data ()">g_markup_parse_context_get_user_data</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-push" title="g_markup_parse_context_push ()">g_markup_parse_context_push</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-pop" title="g_markup_parse_context_pop ()">g_markup_parse_context_pop</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="returnvalue">GMarkupParseContext</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-ref" title="g_markup_parse_context_ref ()">g_markup_parse_context_ref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-unref" title="g_markup_parse_context_unref ()">g_markup_parse_context_unref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-collect-attributes" title="g_markup_collect_attributes ()">g_markup_collect_attributes</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Simple-XML-Subset-Parser.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupError" title="enum GMarkupError">GMarkupError</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="glib-Simple-XML-Subset-Parser.html#G-MARKUP-ERROR:CAPS" title="G_MARKUP_ERROR">G_MARKUP_ERROR</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseFlags" title="enum GMarkupParseFlags">GMarkupParseFlags</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext">GMarkupParseContext</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParser" title="struct GMarkupParser">GMarkupParser</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupCollectType" title="enum GMarkupCollectType">GMarkupCollectType</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Simple-XML-Subset-Parser.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Simple-XML-Subset-Parser.description"></a><h2>Description</h2>
+<p>The "GMarkup" parser is intended to parse a simple markup format
+that's a subset of XML. This is a small, efficient, easy-to-use
+parser. It should not be used if you expect to interoperate with
+other applications generating full-scale XML. However, it's very
+useful for application data files, config files, etc. where you
+know your application will be the only one writing the file.
+Full-scale XML parsers should be able to parse the subset used by
+GMarkup, so you can easily migrate to full-scale XML at a later
+time if the need arises.</p>
+<p>GMarkup is not guaranteed to signal an error on all invalid XML;
+the parser may accept documents that an XML parser would not.
+However, XML documents which are not well-formed (which is a
+weaker condition than being valid. See the
+<a class="ulink" href="http://www.w3.org/TR/REC-xml/" target="_top">XML specification</a>
+for definitions of these terms.) are not considered valid GMarkup
+documents.</p>
+<p>Simplifications to XML include:</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>Only UTF-8 encoding is allowed</p></li>
+<li class="listitem"><p>No user-defined entities</p></li>
+<li class="listitem"><p>Processing instructions, comments and the doctype declaration
+are "passed through" but are not interpreted in any way</p></li>
+<li class="listitem"><p>No DTD or validation</p></li>
+</ul></div>
+<p>The markup format does support:</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>Elements</p></li>
+<li class="listitem"><p>Attributes</p></li>
+<li class="listitem"><p>5 standard entities: &amp; &lt; &gt; " '</p></li>
+<li class="listitem"><p>Character references</p></li>
+<li class="listitem"><p>Sections marked as CDATA</p></li>
+</ul></div>
+</div>
+<div class="refsect1">
+<a name="glib-Simple-XML-Subset-Parser.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-markup-escape-text"></a><h3>g_markup_escape_text ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_markup_escape_text (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *text</code></em>,
+                      <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> length</code></em>);</pre>
+<p>Escapes text so that the markup parser will parse it verbatim.
+Less than, greater than, ampersand, etc. are replaced with the
+corresponding entities. This function would typically be used
+when writing out a file to be parsed with the markup parser.</p>
+<p>Note that this function doesn't protect whitespace and line endings
+from being processed according to the XML rules for normalization
+of line endings and attribute values.</p>
+<p>Note also that this function will produce character references in
+the range of &amp;<span class="type">x1</span>; ... &amp;<span class="type">x1f</span>; for all control sequences
+except for tabstop, newline and carriage return.  The character
+references in this range are not valid XML 1.0, but they are
+valid XML 1.1 and will be accepted by the GMarkup parser.</p>
+<div class="refsect3">
+<a name="g-markup-escape-text.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>text</p></td>
+<td class="parameter_description"><p>some valid UTF-8 text</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>length</p></td>
+<td class="parameter_description"><p>length of <em class="parameter"><code>text</code></em>
+in bytes, or -1 if the text is nul-terminated</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-markup-escape-text.returns"></a><h4>Returns</h4>
+<p> a newly allocated string with the escaped text</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-markup-printf-escaped"></a><h3>g_markup_printf_escaped ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_markup_printf_escaped (<em class="parameter"><code>const <span class="type">char</span> *format</code></em>,
+                         <em class="parameter"><code>...</code></em>);</pre>
+<p>Formats arguments according to <em class="parameter"><code>format</code></em>
+, escaping
+all string and character arguments in the fashion
+of <a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-escape-text" title="g_markup_escape_text ()"><code class="function">g_markup_escape_text()</code></a>. This is useful when you
+want to insert literal strings into XML-style markup
+output, without having to worry that the strings
+might themselves contain markup.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">const</span><span class="normal"> </span><span class="type">char</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">store </span><span class="symbol">=</span><span class="normal"> </span><span class="string">"Fortnum &amp; Mason"</span><span class="symbol">;</span>
+<span class="keyword">const</span><span class="normal"> </span><span class="type">char</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">item </span><span class="symbol">=</span><span class="normal"> </span><span class="string">"Tea"</span><span class="symbol">;</span>
+<span class="type">char</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">output</span><span class="symbol">;</span>
+
+<span class="normal">output </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-Simple-XML-Subset-Parser.html#g-markup-printf-escaped">g_markup_printf_escaped</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"&lt;purchase&gt;"</span>
+<span class="normal">                                  </span><span class="string">"&lt;store&gt;%s&lt;/store&gt;"</span>
+<span class="normal">                                  </span><span class="string">"&lt;item&gt;%s&lt;/item&gt;"</span>
+<span class="normal">                                  </span><span class="string">"&lt;/purchase&gt;"</span><span class="symbol">,</span>
+<span class="normal">                                  store</span><span class="symbol">,</span><span class="normal"> item</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="g-markup-printf-escaped.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>format</p></td>
+<td class="parameter_description"><p>printf() style format string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>the arguments to insert in the format string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-markup-printf-escaped.returns"></a><h4>Returns</h4>
+<p> newly allocated result from formatting
+operation. Free with <a class="link" href="glib-Memory-Allocation.html#g-free" title="g_free ()"><code class="function">g_free()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-markup-vprintf-escaped"></a><h3>g_markup_vprintf_escaped ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_markup_vprintf_escaped (<em class="parameter"><code>const <span class="type">char</span> *format</code></em>,
+                          <em class="parameter"><code><span class="type">va_list</span> args</code></em>);</pre>
+<p>Formats the data in <em class="parameter"><code>args</code></em>
+ according to <em class="parameter"><code>format</code></em>
+, escaping
+all string and character arguments in the fashion
+of <a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-escape-text" title="g_markup_escape_text ()"><code class="function">g_markup_escape_text()</code></a>. See <a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-printf-escaped" title="g_markup_printf_escaped ()"><code class="function">g_markup_printf_escaped()</code></a>.</p>
+<div class="refsect3">
+<a name="g-markup-vprintf-escaped.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>format</p></td>
+<td class="parameter_description"><p>printf() style format string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>args</p></td>
+<td class="parameter_description"><p>variable argument list, similar to <code class="function">vprintf()</code></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-markup-vprintf-escaped.returns"></a><h4>Returns</h4>
+<p> newly allocated result from formatting
+operation. Free with <a class="link" href="glib-Memory-Allocation.html#g-free" title="g_free ()"><code class="function">g_free()</code></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-markup-parse-context-new"></a><h3>g_markup_parse_context_new ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="returnvalue">GMarkupParseContext</span></a> *
+g_markup_parse_context_new (<em class="parameter"><code>const <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParser" title="struct GMarkupParser"><span class="type">GMarkupParser</span></a> *parser</code></em>,
+                            <em class="parameter"><code><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseFlags" title="enum GMarkupParseFlags"><span class="type">GMarkupParseFlags</span></a> flags</code></em>,
+                            <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                            <em class="parameter"><code><a class="link" href="glib-Datasets.html#GDestroyNotify" title="GDestroyNotify ()"><span class="type">GDestroyNotify</span></a> user_data_dnotify</code></em>);</pre>
+<p>Creates a new parse context. A parse context is used to parse
+marked-up documents. You can feed any number of documents into
+a context, as long as no errors occur; once an error occurs,
+the parse context can't continue to parse text (you have to
+free it and create a new parse context).</p>
+<div class="refsect3">
+<a name="g-markup-parse-context-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>parser</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParser" title="struct GMarkupParser"><span class="type">GMarkupParser</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>one or more <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseFlags" title="enum GMarkupParseFlags"><span class="type">GMarkupParseFlags</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data to pass to <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParser" title="struct GMarkupParser"><span class="type">GMarkupParser</span></a> functions</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data_dnotify</p></td>
+<td class="parameter_description"><p>user data destroy notifier called when
+the parse context is freed</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-markup-parse-context-new.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-markup-parse-context-parse"></a><h3>g_markup_parse_context_parse ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_markup_parse_context_parse (<em class="parameter"><code><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a> *context</code></em>,
+                              <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *text</code></em>,
+                              <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gssize" title="gssize"><span class="type">gssize</span></a> text_len</code></em>,
+                              <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Feed some data to the <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a>.</p>
+<p>The data need not be valid UTF-8; an error will be signaled if
+it's invalid. The data need not be an entire document; you can
+feed a document into the parser incrementally, via multiple calls
+to this function. Typically, as you receive data from a network
+connection or file, you feed each received chunk of data into this
+function, aborting the process if an error occurs. Once an error
+is reported, no further data may be fed to the <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a>;
+all errors are fatal.</p>
+<div class="refsect3">
+<a name="g-markup-parse-context-parse.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>context</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>text</p></td>
+<td class="parameter_description"><p>chunk of text to parse</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>text_len</p></td>
+<td class="parameter_description"><p>length of <em class="parameter"><code>text</code></em>
+in bytes</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a <a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-markup-parse-context-parse.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> if an error occurred, <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> on success</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-markup-parse-context-end-parse"></a><h3>g_markup_parse_context_end_parse ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_markup_parse_context_end_parse (<em class="parameter"><code><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a> *context</code></em>,
+                                  <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Signals to the <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a> that all data has been
+fed into the parse context with <a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-parse" title="g_markup_parse_context_parse ()"><code class="function">g_markup_parse_context_parse()</code></a>.</p>
+<p>This function reports an error if the document isn't complete,
+for example if elements are still open.</p>
+<div class="refsect3">
+<a name="g-markup-parse-context-end-parse.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>context</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>return location for a <a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-markup-parse-context-end-parse.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> on success, <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> if an error was set</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-markup-parse-context-free"></a><h3>g_markup_parse_context_free ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_markup_parse_context_free (<em class="parameter"><code><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a> *context</code></em>);</pre>
+<p>Frees a <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a>.</p>
+<p>This function can't be called from inside one of the
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParser" title="struct GMarkupParser"><span class="type">GMarkupParser</span></a> functions or while a subparser is pushed.</p>
+<div class="refsect3">
+<a name="g-markup-parse-context-free.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>context</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-markup-parse-context-get-position"></a><h3>g_markup_parse_context_get_position ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_markup_parse_context_get_position (<em class="parameter"><code><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a> *context</code></em>,
+                                     <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> *line_number</code></em>,
+                                     <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="type">gint</span></a> *char_number</code></em>);</pre>
+<p>Retrieves the current line number and the number of the character on
+that line. Intended for use in error messages; there are no strict
+semantics for what constitutes the "current" line number other than
+"the best number we could come up with for error messages."</p>
+<div class="refsect3">
+<a name="g-markup-parse-context-get-position.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>context</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>line_number</p></td>
+<td class="parameter_description"><p>return location for a line number, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>char_number</p></td>
+<td class="parameter_description"><p>return location for a char-on-line number, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-markup-parse-context-get-element"></a><h3>g_markup_parse_context_get_element ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+g_markup_parse_context_get_element (<em class="parameter"><code><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a> *context</code></em>);</pre>
+<p>Retrieves the name of the currently open element.</p>
+<p>If called from the start_element or end_element handlers this will
+give the element_name as passed to those functions. For the parent
+elements, see <a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-get-element-stack" title="g_markup_parse_context_get_element_stack ()"><code class="function">g_markup_parse_context_get_element_stack()</code></a>.</p>
+<div class="refsect3">
+<a name="g-markup-parse-context-get-element.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>context</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-markup-parse-context-get-element.returns"></a><h4>Returns</h4>
+<p> the name of the currently open element, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-2.html#api-index-2.2">2.2</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-markup-parse-context-get-element-stack"></a><h3>g_markup_parse_context_get_element_stack ()</h3>
+<pre class="programlisting">const <a class="link" href="glib-Singly-Linked-Lists.html#GSList" title="struct GSList"><span class="returnvalue">GSList</span></a> *
+g_markup_parse_context_get_element_stack
+                               (<em class="parameter"><code><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a> *context</code></em>);</pre>
+<p>Retrieves the element stack from the internal state of the parser.</p>
+<p>The returned <a class="link" href="glib-Singly-Linked-Lists.html#GSList" title="struct GSList"><span class="type">GSList</span></a> is a list of strings where the first item is
+the currently open tag (as would be returned by
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-get-element" title="g_markup_parse_context_get_element ()"><code class="function">g_markup_parse_context_get_element()</code></a>) and the next item is its
+immediate parent.</p>
+<p>This function is intended to be used in the start_element and
+end_element handlers where <a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-get-element" title="g_markup_parse_context_get_element ()"><code class="function">g_markup_parse_context_get_element()</code></a>
+would merely return the name of the element that is being
+processed.</p>
+<div class="refsect3">
+<a name="g-markup-parse-context-get-element-stack.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>context</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-markup-parse-context-get-element-stack.returns"></a><h4>Returns</h4>
+<p> the element stack, which must not be modified</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-16.html#api-index-2.16">2.16</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-markup-parse-context-get-user-data"></a><h3>g_markup_parse_context_get_user_data ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+g_markup_parse_context_get_user_data (<em class="parameter"><code><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a> *context</code></em>);</pre>
+<p>Returns the user_data associated with <em class="parameter"><code>context</code></em>
+.</p>
+<p>This will either be the user_data that was provided to
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-new" title="g_markup_parse_context_new ()"><code class="function">g_markup_parse_context_new()</code></a> or to the most recent call
+of <a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-push" title="g_markup_parse_context_push ()"><code class="function">g_markup_parse_context_push()</code></a>.</p>
+<div class="refsect3">
+<a name="g-markup-parse-context-get-user-data.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>context</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-markup-parse-context-get-user-data.returns"></a><h4>Returns</h4>
+<p> the provided user_data. The returned data belongs to
+the markup context and will be freed when
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-free" title="g_markup_parse_context_free ()"><code class="function">g_markup_parse_context_free()</code></a> is called.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-18.html#api-index-2.18">2.18</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-markup-parse-context-push"></a><h3>g_markup_parse_context_push ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_markup_parse_context_push (<em class="parameter"><code><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a> *context</code></em>,
+                             <em class="parameter"><code>const <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParser" title="struct GMarkupParser"><span class="type">GMarkupParser</span></a> *parser</code></em>,
+                             <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Temporarily redirects markup data to a sub-parser.</p>
+<p>This function may only be called from the start_element handler of
+a <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParser" title="struct GMarkupParser"><span class="type">GMarkupParser</span></a>. It must be matched with a corresponding call to
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-pop" title="g_markup_parse_context_pop ()"><code class="function">g_markup_parse_context_pop()</code></a> in the matching end_element handler
+(except in the case that the parser aborts due to an error).</p>
+<p>All tags, text and other data between the matching tags is
+redirected to the subparser given by <em class="parameter"><code>parser</code></em>
+. <em class="parameter"><code>user_data</code></em>
+ is used
+as the user_data for that parser. <em class="parameter"><code>user_data</code></em>
+ is also passed to the
+error callback in the event that an error occurs. This includes
+errors that occur in subparsers of the subparser.</p>
+<p>The end tag matching the start tag for which this call was made is
+handled by the previous parser (which is given its own user_data)
+which is why <a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-pop" title="g_markup_parse_context_pop ()"><code class="function">g_markup_parse_context_pop()</code></a> is provided to allow "one
+last access" to the <em class="parameter"><code>user_data</code></em>
+ provided to this function. In the
+case of error, the <em class="parameter"><code>user_data</code></em>
+ provided here is passed directly to
+the error callback of the subparser and <a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-pop" title="g_markup_parse_context_pop ()"><code class="function">g_markup_parse_context_pop()</code></a>
+should not be called. In either case, if <em class="parameter"><code>user_data</code></em>
+ was allocated
+then it ought to be freed from both of these locations.</p>
+<p>This function is not intended to be directly called by users
+interested in invoking subparsers. Instead, it is intended to be
+used by the subparsers themselves to implement a higher-level
+interface.</p>
+<p>As an example, see the following implementation of a simple
+parser that counts the number of tags encountered.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">struct</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">gint</span><span class="normal"> tag_count</span><span class="symbol">;</span>
+<span class="cbracket">}</span><span class="normal"> CounterData</span><span class="symbol">;</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">counter_start_element</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GMarkupParseContext</span><span class="normal">  </span><span class="symbol">*</span><span class="normal">context</span><span class="symbol">,</span>
+<span class="normal">                       </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">          </span><span class="symbol">*</span><span class="normal">element_name</span><span class="symbol">,</span>
+<span class="normal">                       </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">         </span><span class="symbol">**</span><span class="normal">attribute_names</span><span class="symbol">,</span>
+<span class="normal">                       </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal">         </span><span class="symbol">**</span><span class="normal">attribute_values</span><span class="symbol">,</span>
+<span class="normal">                       </span><span class="usertype">gpointer</span><span class="normal">              user_data</span><span class="symbol">,</span>
+<span class="normal">                       </span><span class="usertype">GError</span><span class="normal">              </span><span class="symbol">**</span><span class="normal">error</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">CounterData</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">data </span><span class="symbol">=</span><span class="normal"> user_data</span><span class="symbol">;</span>
+
+<span class="normal">  data</span><span class="symbol">-&gt;</span><span class="normal">tag_count</span><span class="symbol">++;</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">counter_error</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GMarkupParseContext</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">context</span><span class="symbol">,</span>
+<span class="normal">               </span><span class="usertype">GError</span><span class="normal">              </span><span class="symbol">*</span><span class="normal">error</span><span class="symbol">,</span>
+<span class="normal">               </span><span class="usertype">gpointer</span><span class="normal">             user_data</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">CounterData</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">data </span><span class="symbol">=</span><span class="normal"> user_data</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="function"><a href="glib-Memory-Slices.html#g-slice-free">g_slice_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">CounterData</span><span class="symbol">,</span><span class="normal"> data</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="usertype">GMarkupParser</span><span class="normal"> counter_subparser </span><span class="symbol">=</span>
+<span class="cbracket">{</span>
+<span class="normal">  counter_start_element</span><span class="symbol">,</span>
+<span class="normal">  <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span>
+<span class="normal">  <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span>
+<span class="normal">  <a href="glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span>
+<span class="normal">  counter_error</span>
+<span class="cbracket">}</span><span class="symbol">;</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>In order to allow this parser to be easily used as a subparser, the
+following interface is provided:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="type">void</span>
+<span class="function">start_counting</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GMarkupParseContext</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">context</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">CounterData</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">data </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-Memory-Slices.html#g-slice-new">g_slice_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">CounterData</span><span class="symbol">);</span>
+
+<span class="normal">  data</span><span class="symbol">-&gt;</span><span class="normal">tag_count </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="function"><a href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-push">g_markup_parse_context_push</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">context</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">counter_subparser</span><span class="symbol">,</span><span class="normal"> data</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="normal"><a href="glib-Basic-Types.html#gint">gint</a></span>
+<span class="function">end_counting</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GMarkupParseContext</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">context</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">CounterData</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">data </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-pop">g_markup_parse_context_pop</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">context</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="type">int</span><span class="normal"> result</span><span class="symbol">;</span>
+
+<span class="normal">  result </span><span class="symbol">=</span><span class="normal"> data</span><span class="symbol">-&gt;</span><span class="normal">tag_count</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="function"><a href="glib-Memory-Slices.html#g-slice-free">g_slice_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">CounterData</span><span class="symbol">,</span><span class="normal"> data</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> result</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>The subparser would then be used as follows:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">start_element</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">context</span><span class="symbol">,</span><span class="normal"> element_name</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">...)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">strcmp</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">element_name</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"count-these"</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="function">start_counting</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">context</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">// else, handle other tags...</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">end_element</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">context</span><span class="symbol">,</span><span class="normal"> element_name</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">...)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">strcmp</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">element_name</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"count-these"</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="function"><a href="glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Counted %d tags</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function">end_counting</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">context</span><span class="symbol">));</span>
+
+<span class="normal">  </span><span class="comment">// else, handle other tags...</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="g-markup-parse-context-push.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>context</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>parser</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParser" title="struct GMarkupParser"><span class="type">GMarkupParser</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data to pass to <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParser" title="struct GMarkupParser"><span class="type">GMarkupParser</span></a> functions</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-18.html#api-index-2.18">2.18</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-markup-parse-context-pop"></a><h3>g_markup_parse_context_pop ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="returnvalue">gpointer</span></a>
+g_markup_parse_context_pop (<em class="parameter"><code><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a> *context</code></em>);</pre>
+<p>Completes the process of a temporary sub-parser redirection.</p>
+<p>This function exists to collect the user_data allocated by a
+matching call to <a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-push" title="g_markup_parse_context_push ()"><code class="function">g_markup_parse_context_push()</code></a>. It must be called
+in the end_element handler corresponding to the start_element
+handler during which <a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-push" title="g_markup_parse_context_push ()"><code class="function">g_markup_parse_context_push()</code></a> was called.
+You must not call this function from the error callback -- the
+<em class="parameter"><code>user_data</code></em>
+ is provided directly to the callback in that case.</p>
+<p>This function is not intended to be directly called by users
+interested in invoking subparsers. Instead, it is intended to
+be used by the subparsers themselves to implement a higher-level
+interface.</p>
+<div class="refsect3">
+<a name="g-markup-parse-context-pop.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>context</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-markup-parse-context-pop.returns"></a><h4>Returns</h4>
+<p> the user data passed to <a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-push" title="g_markup_parse_context_push ()"><code class="function">g_markup_parse_context_push()</code></a></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-18.html#api-index-2.18">2.18</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-markup-parse-context-ref"></a><h3>g_markup_parse_context_ref ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="returnvalue">GMarkupParseContext</span></a> *
+g_markup_parse_context_ref (<em class="parameter"><code><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a> *context</code></em>);</pre>
+<p>Increases the reference count of <em class="parameter"><code>context</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-markup-parse-context-ref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>context</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-markup-parse-context-ref.returns"></a><h4>Returns</h4>
+<p> the same <em class="parameter"><code>context</code></em>
+</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-36.html#api-index-2.36">2.36</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-markup-parse-context-unref"></a><h3>g_markup_parse_context_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_markup_parse_context_unref (<em class="parameter"><code><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a> *context</code></em>);</pre>
+<p>Decreases the reference count of <em class="parameter"><code>context</code></em>
+.  When its reference count
+drops to 0, it is freed.</p>
+<div class="refsect3">
+<a name="g-markup-parse-context-unref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>context</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParseContext" title="GMarkupParseContext"><span class="type">GMarkupParseContext</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-36.html#api-index-2.36">2.36</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-markup-collect-attributes"></a><h3>g_markup_collect_attributes ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gboolean" title="gboolean"><span class="returnvalue">gboolean</span></a>
+g_markup_collect_attributes (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *element_name</code></em>,
+                             <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> **attribute_names</code></em>,
+                             <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> **attribute_values</code></em>,
+                             <em class="parameter"><code><a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> **error</code></em>,
+                             <em class="parameter"><code><a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupCollectType" title="enum GMarkupCollectType"><span class="type">GMarkupCollectType</span></a> first_type</code></em>,
+                             <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *first_attr</code></em>,
+                             <em class="parameter"><code>...</code></em>);</pre>
+<p>Collects the attributes of the element from the data passed to the
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParser" title="struct GMarkupParser"><span class="type">GMarkupParser</span></a> start_element function, dealing with common error
+conditions and supporting boolean values.</p>
+<p>This utility function is not required to write a parser but can save
+a lot of typing.</p>
+<p>The <em class="parameter"><code>element_name</code></em>
+, <em class="parameter"><code>attribute_names</code></em>
+, <em class="parameter"><code>attribute_values</code></em>
+ and <em class="parameter"><code>error</code></em>
+
+parameters passed to the start_element callback should be passed
+unmodified to this function.</p>
+<p>Following these arguments is a list of "supported" attributes to collect.
+It is an error to specify multiple attributes with the same name. If any
+attribute not in the list appears in the <em class="parameter"><code>attribute_names</code></em>
+ array then an
+unknown attribute error will result.</p>
+<p>The <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupCollectType" title="enum GMarkupCollectType"><span class="type">GMarkupCollectType</span></a> field allows specifying the type of collection
+to perform and if a given attribute must appear or is optional.</p>
+<p>The attribute name is simply the name of the attribute to collect.</p>
+<p>The pointer should be of the appropriate type (see the descriptions
+under <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupCollectType" title="enum GMarkupCollectType"><span class="type">GMarkupCollectType</span></a>) and may be <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> in case a particular
+attribute is to be allowed but ignored.</p>
+<p>This function deals with issuing errors for missing attributes
+(of type <a class="link" href="glib-Simple-XML-Subset-Parser.html#G-MARKUP-ERROR-MISSING-ATTRIBUTE:CAPS"><code class="literal">G_MARKUP_ERROR_MISSING_ATTRIBUTE</code></a>), unknown attributes
+(of type <a class="link" href="glib-Simple-XML-Subset-Parser.html#G-MARKUP-ERROR-UNKNOWN-ATTRIBUTE:CAPS"><code class="literal">G_MARKUP_ERROR_UNKNOWN_ATTRIBUTE</code></a>) and duplicate
+attributes (of type <a class="link" href="glib-Simple-XML-Subset-Parser.html#G-MARKUP-ERROR-INVALID-CONTENT:CAPS"><code class="literal">G_MARKUP_ERROR_INVALID_CONTENT</code></a>) as well
+as parse errors for boolean-valued attributes (again of type
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#G-MARKUP-ERROR-INVALID-CONTENT:CAPS"><code class="literal">G_MARKUP_ERROR_INVALID_CONTENT</code></a>). In all of these cases <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a>
+will be returned and <em class="parameter"><code>error</code></em>
+ will be set as appropriate.</p>
+<div class="refsect3">
+<a name="g-markup-collect-attributes.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>element_name</p></td>
+<td class="parameter_description"><p>the current tag name</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>attribute_names</p></td>
+<td class="parameter_description"><p>the attribute names</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>attribute_values</p></td>
+<td class="parameter_description"><p>the attribute values</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>first_type</p></td>
+<td class="parameter_description"><p>the <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupCollectType" title="enum GMarkupCollectType"><span class="type">GMarkupCollectType</span></a> of the first attribute</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>first_attr</p></td>
+<td class="parameter_description"><p>the name of the first attribute</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>a pointer to the storage location of the first attribute
+(or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>), followed by more types names and pointers, ending
+with <a class="link" href="glib-Simple-XML-Subset-Parser.html#G-MARKUP-COLLECT-INVALID:CAPS"><code class="literal">G_MARKUP_COLLECT_INVALID</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-markup-collect-attributes.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> if successful</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-16.html#api-index-2.16">2.16</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Simple-XML-Subset-Parser.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GMarkupError"></a><h3>enum GMarkupError</h3>
+<p>Error codes returned by markup parsing.</p>
+<div class="refsect3">
+<a name="GMarkupError.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-MARKUP-ERROR-BAD-UTF8:CAPS"></a>G_MARKUP_ERROR_BAD_UTF8</p></td>
+<td class="enum_member_description">
+<p>text being parsed was not valid UTF-8</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-MARKUP-ERROR-EMPTY:CAPS"></a>G_MARKUP_ERROR_EMPTY</p></td>
+<td class="enum_member_description">
+<p>document contained nothing, or only whitespace</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-MARKUP-ERROR-PARSE:CAPS"></a>G_MARKUP_ERROR_PARSE</p></td>
+<td class="enum_member_description">
+<p>document was ill-formed</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-MARKUP-ERROR-UNKNOWN-ELEMENT:CAPS"></a>G_MARKUP_ERROR_UNKNOWN_ELEMENT</p></td>
+<td class="enum_member_description">
+<p>error should be set by <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParser" title="struct GMarkupParser"><span class="type">GMarkupParser</span></a>
+    functions; element wasn't known</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-MARKUP-ERROR-UNKNOWN-ATTRIBUTE:CAPS"></a>G_MARKUP_ERROR_UNKNOWN_ATTRIBUTE</p></td>
+<td class="enum_member_description">
+<p>error should be set by <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParser" title="struct GMarkupParser"><span class="type">GMarkupParser</span></a>
+    functions; attribute wasn't known</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-MARKUP-ERROR-INVALID-CONTENT:CAPS"></a>G_MARKUP_ERROR_INVALID_CONTENT</p></td>
+<td class="enum_member_description">
+<p>error should be set by <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParser" title="struct GMarkupParser"><span class="type">GMarkupParser</span></a>
+    functions; content was invalid</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-MARKUP-ERROR-MISSING-ATTRIBUTE:CAPS"></a>G_MARKUP_ERROR_MISSING_ATTRIBUTE</p></td>
+<td class="enum_member_description">
+<p>error should be set by <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParser" title="struct GMarkupParser"><span class="type">GMarkupParser</span></a>
+    functions; a required attribute was missing</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-MARKUP-ERROR:CAPS"></a><h3>G_MARKUP_ERROR</h3>
+<pre class="programlisting">#define G_MARKUP_ERROR g_markup_error_quark ()
+</pre>
+<p>Error domain for markup parsing.
+Errors in this domain will be from the <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupError" title="enum GMarkupError"><span class="type">GMarkupError</span></a> enumeration.
+See <a class="link" href="glib-Error-Reporting.html#GError" title="struct GError"><span class="type">GError</span></a> for information on error domains.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMarkupParseFlags"></a><h3>enum GMarkupParseFlags</h3>
+<p>Flags that affect the behaviour of the parser.</p>
+<div class="refsect3">
+<a name="GMarkupParseFlags.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-MARKUP-DO-NOT-USE-THIS-UNSUPPORTED-FLAG:CAPS"></a>G_MARKUP_DO_NOT_USE_THIS_UNSUPPORTED_FLAG</p></td>
+<td class="enum_member_description">
+<p>flag you should not use</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-MARKUP-TREAT-CDATA-AS-TEXT:CAPS"></a>G_MARKUP_TREAT_CDATA_AS_TEXT</p></td>
+<td class="enum_member_description">
+<p>When this flag is set, CDATA marked
+    sections are not passed literally to the <em class="parameter"><code>passthrough</code></em>
+ function of
+    the parser. Instead, the content of the section (without the
+    <code class="literal">&amp;lt;![CDATA[</code> and <code class="literal">]]&amp;gt;</code>) is
+    passed to the <em class="parameter"><code>text</code></em>
+ function. This flag was added in GLib 2.12</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-MARKUP-PREFIX-ERROR-POSITION:CAPS"></a>G_MARKUP_PREFIX_ERROR_POSITION</p></td>
+<td class="enum_member_description">
+<p>Normally errors caught by GMarkup
+    itself have line/column information prefixed to them to let the
+    caller know the location of the error. When this flag is set the
+    location information is also prefixed to errors generated by the
+    <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParser" title="struct GMarkupParser"><span class="type">GMarkupParser</span></a> implementation functions</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-MARKUP-IGNORE-QUALIFIED:CAPS"></a>G_MARKUP_IGNORE_QUALIFIED</p></td>
+<td class="enum_member_description">
+<p>Ignore (don't report) qualified
+    attributes and tags, along with their contents.  A qualified
+    attribute or tag is one that contains ':' in its name (ie: is in
+    another namespace).  Since: 2.40.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMarkupParseContext"></a><h3>GMarkupParseContext</h3>
+<pre class="programlisting">typedef struct _GMarkupParseContext GMarkupParseContext;</pre>
+<p>A parse context is used to parse a stream of bytes that
+you expect to contain marked-up text.</p>
+<p>See <a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-new" title="g_markup_parse_context_new ()"><code class="function">g_markup_parse_context_new()</code></a>, <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParser" title="struct GMarkupParser"><span class="type">GMarkupParser</span></a>, and so
+on for more details.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMarkupParser"></a><h3>struct GMarkupParser</h3>
+<pre class="programlisting">struct GMarkupParser {
+  /* Called for open tags &lt;foo bar="baz"&gt; */
+  void (*start_element)  (GMarkupParseContext *context,
+                          const gchar         *element_name,
+                          const gchar        **attribute_names,
+                          const gchar        **attribute_values,
+                          gpointer             user_data,
+                          GError             **error);
+
+  /* Called for close tags &lt;/foo&gt; */
+  void (*end_element)    (GMarkupParseContext *context,
+                          const gchar         *element_name,
+                          gpointer             user_data,
+                          GError             **error);
+
+  /* Called for character data */
+  /* text is not nul-terminated */
+  void (*text)           (GMarkupParseContext *context,
+                          const gchar         *text,
+                          gsize                text_len,
+                          gpointer             user_data,
+                          GError             **error);
+
+  /* Called for strings that should be re-saved verbatim in this same
+   * position, but are not otherwise interpretable.  At the moment
+   * this includes comments and processing instructions.
+   */
+  /* text is not nul-terminated. */
+  void (*passthrough)    (GMarkupParseContext *context,
+                          const gchar         *passthrough_text,
+                          gsize                text_len,
+                          gpointer             user_data,
+                          GError             **error);
+
+  /* Called on error, including one set by other
+   * methods in the vtable. The GError should not be freed.
+   */
+  void (*error)          (GMarkupParseContext *context,
+                          GError              *error,
+                          gpointer             user_data);
+};
+</pre>
+<p>Any of the fields in <a class="link" href="glib-Simple-XML-Subset-Parser.html#GMarkupParser" title="struct GMarkupParser"><span class="type">GMarkupParser</span></a> can be <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>, in which case they
+will be ignored. Except for the <em class="parameter"><code>error</code></em>
+ function, any of these callbacks
+can set an error; in particular the <a class="link" href="glib-Simple-XML-Subset-Parser.html#G-MARKUP-ERROR-UNKNOWN-ELEMENT:CAPS"><code class="literal">G_MARKUP_ERROR_UNKNOWN_ELEMENT</code></a>,
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#G-MARKUP-ERROR-UNKNOWN-ATTRIBUTE:CAPS"><code class="literal">G_MARKUP_ERROR_UNKNOWN_ATTRIBUTE</code></a>, and <a class="link" href="glib-Simple-XML-Subset-Parser.html#G-MARKUP-ERROR-INVALID-CONTENT:CAPS"><code class="literal">G_MARKUP_ERROR_INVALID_CONTENT</code></a>
+errors are intended to be set from these callbacks. If you set an error
+from a callback, <a class="link" href="glib-Simple-XML-Subset-Parser.html#g-markup-parse-context-parse" title="g_markup_parse_context_parse ()"><code class="function">g_markup_parse_context_parse()</code></a> will report that error
+back to its caller.</p>
+<div class="refsect3">
+<a name="GMarkupParser.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GMarkupParser.start-element"></a>start_element</code></em> ()</p></td>
+<td class="struct_member_description"><p>Callback to invoke when the opening tag of an element
+is seen. The callback's <em class="parameter"><code>attribute_names</code></em>
+and <em class="parameter"><code>attribute_values</code></em>
+parameters
+are <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>-terminated.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GMarkupParser.end-element"></a>end_element</code></em> ()</p></td>
+<td class="struct_member_description"><p>Callback to invoke when the closing tag of an element
+is seen. Note that this is also called for empty tags like
+<code class="literal">&amp;lt;empty/&gt;</code>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GMarkupParser.text"></a>text</code></em> ()</p></td>
+<td class="struct_member_description"><p>Callback to invoke when some text is seen (text is always
+inside an element). Note that the text of an element may be spread
+over multiple calls of this function. If the
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#G-MARKUP-TREAT-CDATA-AS-TEXT:CAPS"><code class="literal">G_MARKUP_TREAT_CDATA_AS_TEXT</code></a> flag is set, this function is also
+called for the content of CDATA marked sections.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GMarkupParser.passthrough"></a>passthrough</code></em> ()</p></td>
+<td class="struct_member_description"><p>Callback to invoke for comments, processing instructions
+and doctype declarations; if you're re-writing the parsed document,
+write the passthrough text back out in the same position. If the
+<a class="link" href="glib-Simple-XML-Subset-Parser.html#G-MARKUP-TREAT-CDATA-AS-TEXT:CAPS"><code class="literal">G_MARKUP_TREAT_CDATA_AS_TEXT</code></a> flag is not set, this function is also
+called for CDATA marked sections.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GMarkupParser.error"></a>error</code></em> ()</p></td>
+<td class="struct_member_description"><p>Callback to invoke when an error occurs.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GMarkupCollectType"></a><h3>enum GMarkupCollectType</h3>
+<p>A mixed enumerated type and flags field. You must specify one type
+(string, strdup, boolean, tristate).  Additionally, you may  optionally
+bitwise OR the type with the flag <a class="link" href="glib-Simple-XML-Subset-Parser.html#G-MARKUP-COLLECT-OPTIONAL:CAPS"><code class="literal">G_MARKUP_COLLECT_OPTIONAL</code></a>.</p>
+<p>It is likely that this enum will be extended in the future to
+support other types.</p>
+<div class="refsect3">
+<a name="GMarkupCollectType.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-MARKUP-COLLECT-INVALID:CAPS"></a>G_MARKUP_COLLECT_INVALID</p></td>
+<td class="enum_member_description">
+<p>used to terminate the list of attributes
+    to collect</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-MARKUP-COLLECT-STRING:CAPS"></a>G_MARKUP_COLLECT_STRING</p></td>
+<td class="enum_member_description">
+<p>collect the string pointer directly from
+    the attribute_values[] array. Expects a parameter of type (const
+    char **). If <a class="link" href="glib-Simple-XML-Subset-Parser.html#G-MARKUP-COLLECT-OPTIONAL:CAPS"><code class="literal">G_MARKUP_COLLECT_OPTIONAL</code></a> is specified and the
+    attribute isn't present then the pointer will be set to <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a></p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-MARKUP-COLLECT-STRDUP:CAPS"></a>G_MARKUP_COLLECT_STRDUP</p></td>
+<td class="enum_member_description">
+<p>as with <a class="link" href="glib-Simple-XML-Subset-Parser.html#G-MARKUP-COLLECT-STRING:CAPS"><code class="literal">G_MARKUP_COLLECT_STRING</code></a>, but
+    expects a parameter of type (char **) and <a class="link" href="glib-String-Utility-Functions.html#g-strdup" title="g_strdup ()"><code class="function">g_strdup()</code></a>s the
+    returned pointer. The pointer must be freed with <a class="link" href="glib-Memory-Allocation.html#g-free" title="g_free ()"><code class="function">g_free()</code></a></p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-MARKUP-COLLECT-BOOLEAN:CAPS"></a>G_MARKUP_COLLECT_BOOLEAN</p></td>
+<td class="enum_member_description">
+<p>expects a parameter of type (gboolean *)
+    and parses the attribute value as a boolean. Sets <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> if the
+    attribute isn't present. Valid boolean values consist of
+    (case-insensitive) "false", "f", "no", "n", "0" and "true", "t",
+    "yes", "y", "1"</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-MARKUP-COLLECT-TRISTATE:CAPS"></a>G_MARKUP_COLLECT_TRISTATE</p></td>
+<td class="enum_member_description">
+<p>as with <a class="link" href="glib-Simple-XML-Subset-Parser.html#G-MARKUP-COLLECT-BOOLEAN:CAPS"><code class="literal">G_MARKUP_COLLECT_BOOLEAN</code></a>, but
+    in the case of a missing attribute a value is set that compares
+    equal to neither <a class="link" href="glib-Standard-Macros.html#FALSE:CAPS" title="FALSE"><code class="literal">FALSE</code></a> nor <a class="link" href="glib-Standard-Macros.html#TRUE:CAPS" title="TRUE"><code class="literal">TRUE</code></a> G_MARKUP_COLLECT_OPTIONAL is
+    implied</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-MARKUP-COLLECT-OPTIONAL:CAPS"></a>G_MARKUP_COLLECT_OPTIONAL</p></td>
+<td class="enum_member_description">
+<p>can be bitwise ORed with the other fields.
+    If present, allows the attribute not to appear. A default value
+    is set depending on what value type is used</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Simple-XML-Subset-Parser.see-also"></a><h2>See Also</h2>
+<p><a class="ulink" href="http://www.w3.org/TR/REC-xml/" target="_top">XML Specification</a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

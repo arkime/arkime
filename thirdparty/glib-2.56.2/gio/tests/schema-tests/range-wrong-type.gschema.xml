@@ -1,0 +1,8 @@
+<schemalist>
+    <schema id="test">
+      <key name="test" type="s">
+        <range min="a" max="z" />
+        <default>"a"</default>
+      </key>
+    </schema>
+</schemalist>

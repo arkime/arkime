@@ -1,0 +1,18 @@
+/*** BEGIN comment ***/
+<!-- @comment@ -->
+/*** END comment ***/
+/*** BEGIN file-header ***/
+<schemalist>
+/*** END file-header ***/
+/*** BEGIN value-header ***/
+  <@type@ id='org.gtk.test.@EnumName@'>
+/*** END value-header ***/
+/*** BEGIN value-production ***/
+    <value nick='@valuenick@' value='@valuenum@'/>
+/*** END value-production ***/
+/*** BEGIN value-tail ***/
+  </@type@>
+/*** END value-tail ***/
+/*** BEGIN file-tail ***/
+</schemalist>
+/*** END file-tail ***/

@@ -1,0 +1,1521 @@
+<?xml version='1.0' encoding="UTF-8"?>
+<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+]>
+<part label="IV">
+  <title>Tutorial</title>
+  <partintro>
+    <para>
+      This chapter tries to answer the real-life questions of users and presents
+      the most common use cases in order from most likely to least
+      likely.
+    </para>
+  </partintro>
+
+<chapter id="howto-gobject">
+  <title>How to define and implement a new GObject</title>
+  
+  <para>
+    This chapter focuses on the implementation of a subtype of GObject, for
+    example to create a custom class hierarchy, or to subclass a GTK+ widget.
+  </para>
+
+  <para>
+    Throughout the chapter, a running example of a file viewer program is used,
+    which has a <type>ViewerFile</type> class to represent a single file being
+    viewed, and various derived classes for different types of files with
+    special functionality, such as audio files. The example application also
+    supports editing files (for example, to tweak a photo being viewed), using
+    a <type>ViewerEditable</type> interface.
+  </para>
+
+  <sect1 id="howto-gobject-header">
+    <title>Boilerplate header code</title>
+    
+    <para>
+      The first step before writing the code for your GObject is to write the
+      type's header which contains the needed type, function and macro
+      definitions. Each of these elements is nothing but a convention which
+      is followed by almost all users of GObject, and has been refined over
+      multiple years of experience developing GObject-based code. If you are
+      writing a library, it is particularly important for you to adhere closely
+      to these conventions; users of your library will assume that you have.
+      Even if not writing a library, it will help other people who want to work
+      on your project.
+    </para>
+
+    <para>
+      Pick a name convention for your headers and source code and stick to it:
+      <itemizedlist>
+        <listitem><para>use a dash to separate the prefix from the typename:
+        <filename>viewer-file.h</filename> and <filename>viewer-file.c</filename>
+        (this is the convention used by Nautilus and most GNOME libraries).</para></listitem>
+        <listitem><para>use an underscore to separate the prefix from the
+        typename: <filename>viewer_file.h</filename> and
+        <filename>viewer_file.c</filename>.</para></listitem>
+        <listitem><para>Do not separate the prefix from the typename:
+        <filename>viewerfile.h</filename> and <filename>viewerfile.c</filename>.
+        (this is the convention used by GTK+)</para></listitem>
+      </itemizedlist>
+      Some people like the first two solutions better: it makes reading file
+      names easier for those with poor eyesight.
+    </para>
+
+    <para>
+      The basic conventions for any header which exposes a GType are described
+      in <xref linkend="gtype-conventions"/>.
+    </para>
+
+    <para>
+      If you want to declare a type named ‘file’ in namespace ‘viewer’, name the
+      type instance <function>ViewerFile</function> and its class
+      <function>ViewerFileClass</function> (names are case sensitive). The
+      recommended method of declaring a type differs based on whether the type
+      is final or derivable.
+    </para>
+
+    <para>
+      Final types cannot be subclassed further, and should be the default choice
+      for new types — changing a final type to be derivable is always a change
+      that will be compatible with existing uses of the code, but the converse
+      will often cause problems. Final types are declared using
+      <link linkend="G-DECLARE-FINAL-TYPE:CAPS"><function>G_DECLARE_FINAL_TYPE</function></link>,
+      and require a structure to hold the instance data to be declared in the
+      source code (not the header file).
+
+<informalexample><programlisting>
+/*
+ * Copyright/Licensing information.
+ */
+
+/* inclusion guard */
+#ifndef __VIEWER_FILE_H__
+#define __VIEWER_FILE_H__
+
+#include &lt;glib-object.h&gt;
+/*
+ * Potentially, include other headers on which this header depends.
+ */
+
+G_BEGIN_DECLS
+
+/*
+ * Type declaration.
+ */
+#define VIEWER_TYPE_FILE viewer_file_get_type ()
+G_DECLARE_FINAL_TYPE (ViewerFile, viewer_file, VIEWER, FILE, GObject)
+
+/*
+ * Method definitions.
+ */
+ViewerFile *viewer_file_new (void);
+
+G_END_DECLS
+
+#endif /* __VIEWER_FILE_H__ */
+</programlisting></informalexample>
+    </para>
+
+    <para>
+      Derivable types <emphasis>can</emphasis> be subclassed further, and their class and
+      instance structures form part of the public API which must not be changed
+      if API stability is cared about. They are declared using
+      <link linkend="G-DECLARE-DERIVABLE-TYPE:CAPS"><function>G_DECLARE_DERIVABLE_TYPE</function></link>:
+<informalexample><programlisting>
+/*
+ * Copyright/Licensing information.
+ */
+
+/* inclusion guard */
+#ifndef __VIEWER_FILE_H__
+#define __VIEWER_FILE_H__
+
+#include &lt;glib-object.h&gt;
+/*
+ * Potentially, include other headers on which this header depends.
+ */
+
+G_BEGIN_DECLS
+
+/*
+ * Type declaration.
+ */
+#define VIEWER_TYPE_FILE viewer_file_get_type ()
+G_DECLARE_DERIVABLE_TYPE (ViewerFile, viewer_file, VIEWER, FILE, GObject)
+
+struct _ViewerFileClass
+{
+  GObjectClass parent_class;
+
+  /* Class virtual function fields. */
+  void (* open) (ViewerFile  *file,
+                 GError     **error);
+
+  /* Padding to allow adding up to 12 new virtual functions without
+   * breaking ABI. */
+  gpointer padding[12];
+};
+
+/*
+ * Method definitions.
+ */
+ViewerFile *viewer_file_new (void);
+
+G_END_DECLS
+
+#endif /* __VIEWER_FILE_H__ */
+</programlisting></informalexample>
+    </para>
+
+    <para>
+      The convention for header includes is to add the minimum number of
+      <function>#include</function> directives to the top of your headers needed
+      to compile that header. This
+      allows client code to simply <function>#include "viewer-file.h"</function>,
+      without needing to know the prerequisites for
+      <filename>viewer-file.h</filename>.
+    </para>
+  </sect1>
+
+  <sect1 id="howto-gobject-code">
+    <title>Boilerplate code</title>
+
+    <para>
+      In your code, the first step is to <function>#include</function> the
+      needed headers:
+<informalexample><programlisting>
+/*
+ * Copyright information
+ */
+
+#include "viewer-file.h"
+
+/* Private structure definition. */
+typedef struct {
+  gchar *filename;
+  /* stuff */
+} ViewerFilePrivate;
+
+/* 
+ * forward definitions
+ */
+</programlisting></informalexample>
+    </para>
+
+    <para>
+      If the class is being declared as final using
+      <function>G_DECLARE_FINAL_TYPE</function>, its instance structure should
+      be defined in the C file:
+<informalexample><programlisting>
+struct _ViewerFile
+{
+  GObject parent_instance;
+
+  /* Other members, including private data. */
+}
+</programlisting></informalexample>
+    </para>
+
+    <para>
+      Call the <function>G_DEFINE_TYPE</function> macro (or
+      <function>G_DEFINE_TYPE_WITH_PRIVATE</function> if your class needs
+      private data — final types do <emphasis>not</emphasis> need private data)
+      using the name
+      of the type, the prefix of the functions and the parent GType to
+      reduce the amount of boilerplate needed. This macro will:
+
+      <itemizedlist>
+        <listitem><simpara>implement the <function>viewer_file_get_type</function>
+        function</simpara></listitem>
+        <listitem><simpara>define a parent class pointer accessible from
+        the whole .c file</simpara></listitem>
+        <listitem><simpara>add private instance data to the type (if using
+        <function>G_DEFINE_TYPE_WITH_PRIVATE</function>)</simpara></listitem>
+      </itemizedlist>
+    </para>
+
+    <para>
+      If the class has been declared as final using
+      <function>G_DECLARE_FINAL_TYPE</function> (see
+      <xref linkend="howto-gobject-header"/>), private data should be placed in
+      the instance structure, <type>ViewerFile</type>, and
+      <function>G_DEFINE_TYPE</function> should be used instead of
+      <function>G_DEFINE_TYPE_WITH_PRIVATE</function>. The instance structure
+      for a final class is not exposed publicly, and is not embedded in the
+      instance structures of any derived classes (because the class is final);
+      so its size can vary without causing incompatibilities for code which uses
+      the class. Conversely, private data for derivable classes
+      <emphasis>must</emphasis> be included in a private structure, and
+      <function>G_DEFINE_TYPE_WITH_PRIVATE</function> must be used.
+
+<informalexample><programlisting>
+G_DEFINE_TYPE (ViewerFile, viewer_file, G_TYPE_OBJECT)
+</programlisting></informalexample>
+or
+<informalexample><programlisting>
+G_DEFINE_TYPE_WITH_PRIVATE (ViewerFile, viewer_file, G_TYPE_OBJECT)
+</programlisting></informalexample>
+    </para>
+
+    <para>
+      It is also possible to use the
+      <function>G_DEFINE_TYPE_WITH_CODE</function> macro to control the
+      <function>get_type</function> function implementation — for instance, to
+      add a call to the <function>G_IMPLEMENT_INTERFACE</function> macro to
+      implement an interface.
+    </para>
+  </sect1>
+
+  <sect1 id="howto-gobject-construction">
+    <title>Object construction</title>
+
+    <para>
+      People often get confused when trying to construct their GObjects because of the
+      sheer number of different ways to hook into the objects's construction process: it is
+      difficult to figure which is the <emphasis>correct</emphasis>, recommended way.
+    </para>
+
+    <para>
+      <xref linkend="gobject-construction-table"/> shows what user-provided functions
+      are invoked during object instantiation and in which order they are invoked.
+      A user looking for the equivalent of the simple C++ constructor function should use
+      the <function>instance_init</function> method. It will be invoked after
+      all the parents’ <function>instance_init</function>
+      functions have been invoked. It cannot take arbitrary construction parameters 
+      (as in C++) but if your object needs arbitrary parameters to complete initialization,
+      you can use construction properties.
+    </para>
+
+    <para>
+      Construction properties will be set only after all
+      <function>instance_init</function> functions have run.
+      No object reference will be returned to the client of <function><link linkend="g-object-new">g_object_new</link></function>
+      until all the construction properties have been set.
+    </para>
+
+    <para>
+      It is important to note that object construction cannot <emphasis>ever</emphasis>
+      fail. If you require a fallible GObject construction, you can use the
+      <link linkend="GInitable"><type>GInitable</type></link> and
+      <link linkend="GAsyncInitable"><type>GAsyncInitable</type></link>
+      interfaces provided by the GIO library.
+    </para>
+
+    <para>
+      You should write the following code first:
+<informalexample><programlisting>
+G_DEFINE_TYPE_WITH_PRIVATE (ViewerFile, viewer_file, G_TYPE_OBJECT)
+
+static void
+viewer_file_class_init (ViewerFileClass *klass)
+{
+}
+
+static void
+viewer_file_init (ViewerFile *self)
+{
+  ViewerFilePrivate *priv = viewer_file_get_instance_private (self);
+
+  /* initialize all public and private members to reasonable default values.
+   * They are all automatically initialized to 0 to begin with. */
+}
+</programlisting></informalexample>
+    </para>
+
+    <para>
+      If you need special construction properties (with
+      <link linkend="G-PARAM-CONSTRUCT-ONLY:CAPS"><function>G_PARAM_CONSTRUCT_ONLY</function></link>
+      set), install the properties in
+      the <function>class_init()</function> function, override the <function>set_property()</function>
+      and <function>get_property()</function> methods of the GObject class,
+      and implement them as described by <xref linkend="gobject-properties"/>.
+    </para>
+
+    <para>
+      Property IDs must start from 1, as 0 is reserved for internal use by
+      GObject.
+<informalexample><programlisting>
+enum
+{
+  PROP_FILENAME = 1,
+  PROP_ZOOM_LEVEL,
+  N_PROPERTIES
+};
+
+static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
+
+static void
+viewer_file_class_init (ViewerFileClass *klass)
+{
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+  object_class->set_property = viewer_file_set_property;
+  object_class->get_property = viewer_file_get_property;
+
+  obj_properties[PROP_FILENAME] =
+    g_param_spec_string ("filename",
+                         "Filename",
+                         "Name of the file to load and display from.",
+                         NULL  /* default value */,
+                         G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
+
+  obj_properties[PROP_ZOOM_LEVEL] =
+    g_param_spec_uint ("zoom-level",
+                       "Zoom level",
+                       "Zoom level to view the file at.",
+                       0  /* minimum value */,
+                       10 /* maximum value */,
+                       2  /* default value */,
+                       G_PARAM_READWRITE));
+
+  g_object_class_install_properties (object_class,
+                                     N_PROPERTIES,
+                                     obj_properties);
+}
+</programlisting></informalexample>
+      If you need this, make sure you can build and run code similar to the
+      code shown above. Also, make sure your construct properties can be set
+      without side effects during construction.
+    </para>
+
+    <para>
+      Some people sometimes need to complete the initialization of a instance
+      of a type only after the properties passed to the constructors have been
+      set. This is possible through the use of the <function>constructor()</function>
+      class method as described in <xref linkend="gobject-instantiation"/> or,
+      more simply, using the <function>constructed()</function> class method.
+      Note that the <function>constructed()</function>
+      virtual function will only be invoked after the properties marked as
+      <function>G_PARAM_CONSTRUCT_ONLY</function> or
+      <function>G_PARAM_CONSTRUCT</function> have been consumed, but
+      before the regular properties passed to <function>g_object_new()</function>
+      have been set.
+    </para>
+  </sect1>
+
+  <sect1 id="howto-gobject-destruction">
+    <title>Object destruction</title>
+
+    <para>
+      Again, it is often difficult to figure out which mechanism to use to
+      hook into the object's destruction process: when the last
+      <function><link linkend="g-object-unref">g_object_unref</link></function>
+      function call is made, a lot of things happen as described in
+      <xref linkend="gobject-destruction-table"/>.
+    </para>
+
+    <para>
+      The destruction process of your object is in two phases: dispose and
+      finalize. This split is necessary to handle
+      potential cycles due to the nature of the reference counting mechanism
+      used by GObject, as well as dealing with temporary revival of
+      instances in case of signal emission during the destruction sequence.
+      See <xref linkend="gobject-memory-cycles"/> for more information.
+<informalexample><programlisting>
+struct _ViewerFilePrivate
+{
+  gchar *filename;
+  guint zoom_level;
+
+  GInputStream *input_stream;
+};
+
+G_DEFINE_TYPE_WITH_PRIVATE (ViewerFile, viewer_file, G_TYPE_OBJECT)
+
+static void
+viewer_file_dispose (GObject *gobject)
+{
+  ViewerFilePrivate *priv = viewer_file_get_instance_private (VIEWER_FILE (gobject));
+
+  /* In dispose(), you are supposed to free all types referenced from this
+   * object which might themselves hold a reference to self. Generally,
+   * the most simple solution is to unref all members on which you own a 
+   * reference.
+   */
+
+  /* dispose() might be called multiple times, so we must guard against
+   * calling g_object_unref() on an invalid GObject by setting the member
+   * NULL; g_clear_object() does this for us.
+   */
+  g_clear_object (&amp;priv->input_stream);
+
+  /* Always chain up to the parent class; there is no need to check if
+   * the parent class implements the dispose() virtual function: it is
+   * always guaranteed to do so
+   */
+  G_OBJECT_CLASS (viewer_file_parent_class)->dispose (gobject);
+}
+
+static void
+viewer_file_finalize (GObject *gobject)
+{
+  ViewerFilePrivate *priv = viewer_file_get_instance_private (VIEWER_FILE (gobject));
+
+  g_free (priv->filename);
+
+  /* Always chain up to the parent class; as with dispose(), finalize()
+   * is guaranteed to exist on the parent's class virtual function table
+   */
+  G_OBJECT_CLASS (viewer_file_parent_class)->finalize (gobject);
+}
+
+static void
+viewer_file_class_init (ViewerFileClass *klass)
+{
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+  object_class->dispose = viewer_file_dispose;
+  object_class->finalize = viewer_file_finalize;
+}
+
+static void
+viewer_file_init (ViewerFile *self);
+{
+  ViewerFilePrivate *priv = viewer_file_get_instance_private (self);
+
+  priv->input_stream = g_object_new (VIEWER_TYPE_INPUT_STREAM, NULL);
+  priv->filename = /* would be set as a property */;
+}
+</programlisting></informalexample>
+    </para>
+
+    <para>
+      It is possible that object methods might be invoked after dispose is
+      run and before finalize runs. GObject does not consider this to be a
+      program error: you must gracefully detect this and neither crash nor
+      warn the user, by having a disposed instance revert to an inert state.
+    </para>
+  </sect1>
+
+  <sect1 id="howto-gobject-methods">
+    <title>Object methods</title>
+
+    <para>
+      Just as with C++, there are many different ways to define object
+      methods and extend them: the following list and sections draw on
+      C++ vocabulary. (Readers are expected to know basic C++ concepts.
+      Those who have not had to write C++ code recently can refer to e.g.
+      <ulink url="http://www.cplusplus.com/doc/tutorial/"/> to refresh
+      their memories.)
+      <itemizedlist>
+        <listitem><para>
+            non-virtual public methods,
+          </para></listitem>
+        <listitem><para>
+            virtual public methods and
+          </para></listitem>
+        <listitem><para>
+            virtual private methods
+          </para></listitem>
+      </itemizedlist>
+    </para>
+
+    <sect2 id="non-virtual-public-methods">
+      <title>Non-virtual public methods</title>
+
+      <para>
+        These are the simplest, providing a simple method which
+        acts on the object. Provide a function
+        prototype in the header and an implementation of that prototype
+        in the source file.
+<informalexample><programlisting>
+/* declaration in the header. */
+void viewer_file_open (ViewerFile  *self,
+                       GError     **error);
+
+/* implementation in the source file */
+void
+viewer_file_open (ViewerFile  *self,
+                  GError     **error)
+{
+  g_return_if_fail (VIEWER_IS_FILE (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+
+  /* do stuff here. */
+}
+</programlisting></informalexample>
+      </para>
+    </sect2>
+
+    <sect2 id="virtual-public-methods">
+      <title>Virtual public methods</title>
+
+      <para>
+        This is the preferred way to create GObjects with overridable methods:
+        <itemizedlist>
+          <listitem><para>
+            Define the common method and its virtual function in the
+            class structure in the public header
+          </para></listitem>
+          <listitem><para>
+            Define the common method in the header file and implement it in the
+            source file
+          </para></listitem>
+          <listitem><para>
+            Implement a base version of the virtual function in the source
+            file and initialize the virtual function pointer to this
+            implementation in the object’s <function>class_init</function>
+            function; or leave it as <constant>NULL</constant> for a ‘pure
+            virtual’ method which must be overridden by derived classes
+          </para></listitem>
+          <listitem><para>
+            Re-implement the virtual function in each derived class which needs
+            to override it
+          </para></listitem>
+        </itemizedlist>
+      </para>
+      <para>
+        Note that virtual functions can only be defined if the class is
+        derivable, declared using
+        <link linkend="G-DECLARE-DERIVABLE-TYPE:CAPS"><function>G_DECLARE_DERIVABLE_TYPE</function></link>
+        so the class structure can be defined.
+<informalexample><programlisting>
+/* declaration in viewer-file.h. */
+#define VIEWER_TYPE_FILE viewer_file_get_type ()
+G_DECLARE_DERIVABLE_TYPE (ViewerFile, viewer_file, VIEWER, FILE, GObject)
+
+struct _ViewerFileClass
+{
+  GObjectClass parent_class;
+
+  /* stuff */
+  void (*open) (ViewerFile  *self,
+                GError     **error);
+
+  /* Padding to allow adding up to 12 new virtual functions without
+   * breaking ABI. */
+  gpointer padding[12];
+};
+
+void viewer_file_open (ViewerFile  *self,
+                       GError     **error);
+
+/* implementation in viewer-file.c */
+void
+viewer_file_open (ViewerFile  *self,
+                  GError     **error)
+{
+  ViewerFileClass *klass;
+
+  g_return_if_fail (VIEWER_IS_FILE (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+
+  klass = VIEWER_FILE_GET_CLASS (self);
+  g_return_if_fail (klass->open != NULL);
+
+  klass->open (self, error);
+}
+</programlisting></informalexample>
+        The code above simply redirects the <function>open</function> call
+        to the relevant virtual function.
+      </para>
+
+      <para>
+        It is possible to provide a default
+        implementation for this class method in the object's
+        <function>class_init</function> function: initialize the
+        <function>klass-&gt;open</function> field to a pointer to the
+        actual implementation.
+        By default, class methods that are not inherited are initialized to
+        <function>NULL</function>, and thus are to be considered "pure virtual".
+<informalexample><programlisting>
+static void
+viewer_file_real_close (ViewerFile  *self,
+                        GError     **error)
+{
+  /* Default implementation for the virtual method. */
+}
+
+static void
+viewer_file_class_init (ViewerFileClass *klass)
+{
+  /* this is not necessary, except for demonstration purposes.
+   *
+   * pure virtual method: mandates implementation in children.
+   */
+  klass->open = NULL;
+
+  /* merely virtual method. */
+  klass->close = viewer_file_real_close;
+}
+
+void
+viewer_file_open (ViewerFile  *self,
+                  GError     **error)
+{
+  ViewerFileClass *klass;
+
+  g_return_if_fail (VIEWER_IS_FILE (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+
+  klass = VIEWER_FILE_GET_CLASS (self);
+
+  /* if the method is purely virtual, then it is a good idea to
+   * check that it has been overridden before calling it, and,
+   * depending on the intent of the class, either ignore it silently
+   * or warn the user.
+   */
+  g_return_if_fail (klass->open != NULL);
+  klass->open (self, error);
+}
+
+void
+viewer_file_close (ViewerFile  *self,
+                   GError     **error)
+{
+  ViewerFileClass *klass;
+
+  g_return_if_fail (VIEWER_IS_FILE (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+
+  klass = VIEWER_FILE_GET_CLASS (self);
+  if (klass->close != NULL)
+    klass->close (self, error);
+}
+</programlisting></informalexample>
+      </para>
+    </sect2>
+
+    <sect2 id="virtual-private-methods">
+      <title>Virtual private Methods</title>
+
+      <para>
+        These are very similar to <link linkend="virtual-public-methods">virtual
+        public methods</link>. They just don't
+        have a public function to call directly. The header
+        file contains only a declaration of the virtual function:
+<informalexample><programlisting>
+/* declaration in viewer-file.h. */
+struct _ViewerFileClass
+{
+  GObjectClass parent;
+
+  /* Public virtual method as before. */
+  void     (*open)           (ViewerFile  *self,
+                              GError     **error);
+
+  /* Private helper function to work out whether the file can be loaded via
+   * memory mapped I/O, or whether it has to be read as a stream. */
+  gboolean (*can_memory_map) (ViewerFile *self);
+
+  /* Padding to allow adding up to 12 new virtual functions without
+   * breaking ABI. */
+  gpointer padding[12];
+};
+
+void viewer_file_open (ViewerFile *self, GError **error);
+</programlisting></informalexample>
+        These virtual functions are often used to delegate part of the job
+        to child classes:
+<informalexample><programlisting>
+/* this accessor function is static: it is not exported outside of this file. */
+static gboolean 
+viewer_file_can_memory_map (ViewerFile *self)
+{
+  return VIEWER_FILE_GET_CLASS (self)->can_memory_map (self);
+}
+
+void
+viewer_file_open (ViewerFile  *self,
+                  GError     **error)
+{
+  g_return_if_fail (VIEWER_IS_FILE (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+
+  /*
+   * Try to load the file using memory mapped I/O, if the implementation of the
+   * class determines that is possible using its private virtual method.
+   */
+  if (viewer_file_can_memory_map (self))
+    {
+      /* Load the file using memory mapped I/O. */
+    }
+  else
+    {
+      /* Fall back to trying to load the file using streaming I/O… */
+    }
+}
+</programlisting></informalexample>
+      </para>
+
+      <para>
+        Again, it is possible to provide a default implementation for this
+        private virtual function:
+<informalexample><programlisting>
+static gboolean
+viewer_file_real_can_memory_map (ViewerFile *self)
+{
+  /* As an example, always return false. Or, potentially return true if the
+   * file is local. */
+  return FALSE;
+}
+
+static void
+viewer_file_class_init (ViewerFileClass *klass)
+{
+  /* non-pure virtual method; does not have to be implemented in children. */
+  klass->can_memory_map = viewer_file_real_can_memory_map;
+}
+</programlisting></informalexample>
+      </para>
+
+      <para>
+        Derived classes can then override the method with code such as:
+<informalexample><programlisting>
+static void
+viewer_audio_file_class_init (ViewerAudioFileClass *klass)
+{
+  ViewerFileClass *file_class = VIEWER_FILE_CLASS (klass);
+
+  /* implement pure virtual function. */
+  file_class->can_memory_map = viewer_audio_file_can_memory_map;
+}
+</programlisting></informalexample>
+      </para>
+    </sect2>
+  </sect1>
+
+  <sect1 id="howto-gobject-chainup">
+    <title>Chaining up</title>
+    
+    <para>Chaining up is often loosely defined by the following set of
+    conditions:
+      <itemizedlist>
+        <listitem><para>Parent class A defines a public virtual method named <function>foo</function> and 
+        provides a default implementation.</para></listitem>
+        <listitem><para>Child class B re-implements method <function>foo</function>.</para></listitem>
+        <listitem><para>B’s implementation of <function>foo</function> calls (‘chains up to’) its parent class A’s implementation of <function>foo</function>.</para></listitem>
+      </itemizedlist>
+      There are various uses of this idiom:
+      <itemizedlist>
+        <listitem><para>You need to extend the behaviour of a class without modifying its code. You create
+          a subclass to inherit its implementation, re-implement a public virtual method to modify the behaviour
+          and chain up to ensure that the previous behaviour is not really modified, just extended.
+          </para></listitem>
+        <listitem><para>You need to implement the
+          <ulink url="http://en.wikipedia.org/wiki/Chain-of-responsibility_pattern">Chain
+          Of Responsibility pattern</ulink>: each object of the inheritance
+          tree chains up to its parent (typically, at the beginning or the end of the method) to ensure that
+          each handler is run in turn.</para></listitem>
+      </itemizedlist>
+    </para>
+
+    <para>
+      To explicitly chain up to the implementation of the virtual method in the parent class, 
+      you first need a handle to the original parent class structure. This pointer can then be used to 
+      access the original virtual function pointer and invoke it directly.
+      <footnote>
+        <para>
+          The <emphasis>original</emphasis> adjective used in this sentence is not innocuous. To fully 
+          understand its meaning, recall how class structures are initialized: for each object type,
+          the class structure associated with this object is created by first copying the class structure of its
+          parent type (a simple <function>memcpy</function>) and then by invoking the <function>class_init</function> callback on
+          the resulting class structure. Since the <function>class_init</function> callback is responsible for overwriting the class structure
+          with the user re-implementations of the class methods, the modified copy of the parent class
+          structure stored in the derived instance cannot be used. A copy of the class structure of an instance of the parent
+          class is needed.
+        </para>
+      </footnote>
+    </para>
+    
+    <para>
+      Use the <function>parent_class</function> pointer created and initialized
+      by the
+      <link linkend="G-DEFINE-TYPE:CAPS"><function>G_DEFINE_TYPE</function></link>
+      family of macros, for instance:
+<informalexample><programlisting>
+static void
+b_method_to_call (B *obj, gint some_param)
+{
+  /* do stuff before chain up */
+
+  /* call the method_to_call() virtual function on the
+   * parent of BClass, AClass.
+   *
+   * remember the explicit cast to AClass*
+   */
+  A_CLASS (b_parent_class)->method_to_call (obj, some_param);
+
+  /* do stuff after chain up */
+}
+</programlisting></informalexample>
+  </para>
+
+  </sect1>
+
+</chapter>
+<!-- End Howto GObject -->
+
+<chapter id="howto-interface">
+  <title>How to define and implement interfaces</title>
+
+  <sect1 id="howto-interface-define">
+    <title>Defining interfaces</title>
+  
+  <para>
+    The theory behind how GObject interfaces work is given in
+    <xref linkend="gtype-non-instantiable-classed"/>; this section covers how to
+    define and implement an interface.
+  </para>
+
+  <para>
+    The first step is to get the header right. This interface
+    defines three methods:
+<informalexample><programlisting>
+/*
+ * Copyright/Licensing information.
+ */
+
+#ifndef __VIEWER_EDITABLE_H__
+#define __VIEWER_EDITABLE_H__
+
+#include &lt;glib-object.h&gt;
+
+G_BEGIN_DECLS
+
+#define VIEWER_TYPE_EDITABLE viewer_editable_get_type ()
+G_DECLARE_INTERFACE (ViewerEditable, viewer_editable, VIEWER, EDITABLE, GObject)
+
+struct _ViewerEditableInterface
+{
+  GTypeInterface parent_iface;
+
+  void (*save) (ViewerEditable  *self,
+                GError         **error);
+  void (*undo) (ViewerEditable  *self,
+                guint            n_steps);
+  void (*redo) (ViewerEditable  *self,
+                guint            n_steps);
+};
+
+void viewer_editable_save (ViewerEditable  *self,
+                           GError         **error);
+void viewer_editable_undo (ViewerEditable  *self,
+                           guint            n_steps);
+void viewer_editable_redo (ViewerEditable  *self,
+                           guint            n_steps);
+
+G_END_DECLS
+
+#endif /* __VIEWER_EDITABLE_H__ */
+</programlisting></informalexample>
+    This code is the same as the code for a normal <link linkend="GType"><type>GType</type></link>
+    which derives from a <link linkend="GObject"><type>GObject</type></link> except for a few details:
+    <itemizedlist>
+      <listitem><para>
+        The <function>_GET_CLASS</function> function is called
+        <function>_GET_IFACE</function> (and is defined by
+        <link linkend="G-DECLARE-INTERFACE:CAPS"><function>G_DECLARE_INTERFACE</function></link>).
+      </para></listitem>
+      <listitem><para>
+        The instance type, <type>ViewerEditable</type>, is not fully defined: it is
+        used merely as an abstract type which represents an instance of
+        whatever object which implements the interface.
+      </para></listitem>
+      <listitem><para>
+        The parent of the <type>ViewerEditableInterface</type> is
+        <type>GTypeInterface</type>, not <type>GObjectClass</type>.
+      </para></listitem>
+    </itemizedlist>
+  </para>
+
+  <para>
+    The implementation of the <type>ViewerEditable</type> type itself is trivial:
+    <itemizedlist>
+      <listitem><para><function><link linkend="G-DEFINE-INTERFACE:CAPS">G_DEFINE_INTERFACE</link></function>
+       creates a <function>viewer_editable_get_type</function> function which registers the
+       type in the type system. The third argument is used to define a
+       <link linkend="howto-interface-prerequisite">prerequisite interface</link>
+       (which we'll talk about more later). Just pass <code>0</code> for this
+       argument when an interface has no prerequisite.
+       </para></listitem>
+      <listitem><para><function>viewer_editable_default_init</function> is expected
+      to register the interface's signals if there are any (we will see a bit
+      later how to use them).</para></listitem>
+      <listitem><para>The interface methods <function>viewer_editable_save</function>,
+      <function>viewer_editable_undo</function> and <function>viewer_editable_redo</function> dereference the interface
+      structure to access its associated interface function and call it.
+      </para></listitem>
+    </itemizedlist>
+<informalexample><programlisting>
+G_DEFINE_INTERFACE (ViewerEditable, viewer_editable, G_TYPE_OBJECT)
+
+static void
+viewer_editable_default_init (ViewerEditableInterface *iface)
+{
+    /* add properties and signals to the interface here */
+}
+
+void
+viewer_editable_save (ViewerEditable  *self,
+                      GError         **error)
+{
+  ViewerEditableInterface *iface;
+
+  g_return_if_fail (VIEWER_IS_EDITABLE (self));
+  g_return_if_fail (error == NULL || *error == NULL);
+
+  iface = VIEWER_EDITABLE_GET_IFACE (self);
+  g_return_if_fail (iface->save != NULL);
+  iface->save (self, error);
+}
+
+void
+viewer_editable_undo (ViewerEditable *self,
+                      guint           n_steps)
+{
+  ViewerEditableInterface *iface;
+
+  g_return_if_fail (VIEWER_IS_EDITABLE (self));
+
+  iface = VIEWER_EDITABLE_GET_IFACE (self);
+  g_return_if_fail (iface->undo != NULL);
+  iface->undo (self, n_steps);
+}
+
+void
+viewer_editable_redo (ViewerEditable *self,
+                      guint           n_steps)
+{
+  ViewerEditableInterface *iface;
+
+  g_return_if_fail (VIEWER_IS_EDITABLE (self));
+
+  iface = VIEWER_EDITABLE_GET_IFACE (self);
+  g_return_if_fail (iface->redo != NULL);
+  iface->redo (self, n_steps);
+}
+</programlisting></informalexample>
+    </para>
+  </sect1>
+  
+  <sect1 id="howto-interface-implement">
+    <title>Implementing interfaces</title>
+  
+    <para>
+      Once the interface is defined, implementing it is rather trivial.
+    </para>
+  
+    <para>
+      The first step is to define a normal final GObject class exactly as in
+      <xref linkend="howto-gobject-header"/>.
+    </para>
+  
+    <para>
+      The second step is to implement <type>ViewerFile</type> by defining
+      it using
+      <function><link linkend="G-DEFINE-TYPE-WITH-CODE:CAPS">G_DEFINE_TYPE_WITH_CODE</link></function>
+      and
+      <function><link linkend="G-IMPLEMENT-INTERFACE:CAPS">G_IMPLEMENT_INTERFACE</link></function>
+      instead of
+      <function><link linkend="G-DEFINE-TYPE:CAPS">G_DEFINE_TYPE</link></function>:
+<informalexample><programlisting>
+static void viewer_file_editable_interface_init (ViewerEditableInterface *iface);
+
+G_DEFINE_TYPE_WITH_CODE (ViewerFile, viewer_file, G_TYPE_OBJECT,
+                         G_IMPLEMENT_INTERFACE (VIEWER_TYPE_EDITABLE,
+                                                viewer_file_editable_interface_init))
+</programlisting></informalexample>
+      This definition is very much like all the similar functions seen
+      previously. The only interface-specific code present here is the use of
+      <function><link linkend="G-IMPLEMENT-INTERFACE:CAPS">G_IMPLEMENT_INTERFACE</link></function>.
+    </para>
+
+    <note><para>Classes can implement multiple interfaces by using multiple calls to
+    <function><link linkend="G-IMPLEMENT-INTERFACE:CAPS">G_IMPLEMENT_INTERFACE</link></function>
+    inside the call to
+    <function><link linkend="G-DEFINE-TYPE-WITH-CODE:CAPS">G_DEFINE_TYPE_WITH_CODE</link></function>
+    </para></note>
+  
+    <para>
+      <function>viewer_file_editable_interface_init</function>, the interface
+      initialization function: inside it every virtual method of the interface
+      must be assigned to its implementation:
+<informalexample><programlisting>
+static void
+viewer_file_editable_save (ViewerFile  *self,
+                           GError     **error)
+{
+  g_print ("File implementation of editable interface save method: %s.\n",
+           self->filename);
+}
+
+static void
+viewer_file_editable_undo (ViewerFile *self,
+                           guint       n_steps)
+{
+  g_print ("File implementation of editable interface undo method: %s.\n",
+           self->filename);
+}
+
+static void
+viewer_file_editable_redo (ViewerFile *self,
+                           guint       n_steps)
+{
+  g_print ("File implementation of editable interface redo method: %s.\n",
+           self->filename);
+}
+
+static void
+viewer_file_editable_interface_init (ViewerEditableInterface *iface)
+{
+  iface->save = viewer_file_editable_save;
+  iface->undo = viewer_file_editable_undo;
+  iface->redo = viewer_file_editable_redo;
+}
+
+static void
+viewer_file_init (ViewerFile *self)
+{
+  /* Instance variable initialisation code. */
+}
+</programlisting></informalexample>
+    </para>
+  </sect1>
+  
+  <sect1 id="howto-interface-prerequisite">
+    <title>Interface definition prerequisites</title>
+  
+    <para>
+      To specify that an interface requires the presence of other interfaces
+      when implemented, GObject introduces the concept of
+      <emphasis>prerequisites</emphasis>: it is possible to associate
+      a list of prerequisite types to an interface. For example, if
+      object A wishes to implement interface I1, and if interface I1 has a
+      prerequisite on interface I2, A has to implement both I1 and I2.
+    </para>
+  
+    <para>
+      The mechanism described above is, in practice, very similar to
+      Java's interface I1 extends interface I2. The example below shows
+      the GObject equivalent:
+<informalexample><programlisting>
+/* Make the ViewerEditableLossy interface require ViewerEditable interface. */
+G_DEFINE_INTERFACE (ViewerEditableLossy, viewer_editable_lossy, VIEWER_TYPE_EDITABLE)
+</programlisting></informalexample>
+      In the <function><link linkend="G-DEFINE-INTERFACE:CAPS">G_DEFINE_INTERFACE</link></function>
+      call above, the third parameter defines the prerequisite type. This
+      is the GType of either an interface or a class. In this case
+      the <type>ViewerEditable</type> interface is a prerequisite of
+      <type>ViewerEditableLossy</type>. The code
+      below shows how an implementation can implement both interfaces and
+      register their implementations:
+<informalexample><programlisting>
+static void
+viewer_file_editable_lossy_compress (ViewerEditableLossy *editable)
+{
+  ViewerFile *self = VIEWER_FILE (editable);
+
+  g_print ("File implementation of lossy editable interface compress method: %s.\n",
+           self->filename);
+}
+
+static void
+viewer_file_editable_lossy_interface_init (ViewerEditableLossyInterface *iface)
+{
+  iface->compress = viewer_file_editable_lossy_compress;
+}
+
+static void
+viewer_file_editable_save (ViewerEditable  *editable,
+                           GError         **error)
+{
+  ViewerFile *self = VIEWER_FILE (editable);
+
+  g_print ("File implementation of editable interface save method: %s.\n",
+           self->filename);
+}
+
+static void
+viewer_file_editable_undo (ViewerEditable *editable,
+                           guint           n_steps)
+{
+  ViewerFile *self = VIEWER_FILE (editable);
+
+  g_print ("File implementation of editable interface undo method: %s.\n",
+           self->filename);
+}
+
+static void
+viewer_file_editable_redo (ViewerEditable *editable,
+                           guint           n_steps)
+{
+  ViewerFile *self = VIEWER_FILE (editable);
+
+  g_print ("File implementation of editable interface redo method: %s.\n",
+           self->filename);
+}
+
+static void
+viewer_file_editable_interface_init (ViewerEditableInterface *iface)
+{
+  iface->save = viewer_file_editable_save;
+  iface->undo = viewer_file_editable_undo;
+  iface->redo = viewer_file_editable_redo;
+}
+
+static void
+viewer_file_class_init (ViewerFileClass *klass)
+{
+  /* Nothing here. */
+}
+
+static void
+viewer_file_init (ViewerFile *self)
+{
+  /* Instance variable initialisation code. */
+}
+
+G_DEFINE_TYPE_WITH_CODE (ViewerFile, viewer_file, G_TYPE_OBJECT,
+                         G_IMPLEMENT_INTERFACE (VIEWER_TYPE_EDITABLE,
+                                                viewer_file_editable_interface_init)
+                         G_IMPLEMENT_INTERFACE (VIEWER_TYPE_EDITABLE_LOSSY,
+                                                viewer_file_editable_lossy_interface_init))
+</programlisting></informalexample>
+      It is very important to notice that the order in which interface
+      implementations are added to the main object is not random:
+      <function><link linkend="g-type-add-interface-static">g_type_add_interface_static</link></function>,
+      which is called by
+      <function><link linkend="G-DEFINE-INTERFACE:CAPS">G_IMPLEMENT_INTERFACE</link></function>,
+      must be invoked first on the interfaces which have no prerequisites and then on
+      the others.
+    </para>
+  </sect1>
+  
+  <sect1 id="howto-interface-properties">
+    <title>Interface properties</title>
+  
+    <para>
+      GObject interfaces can also have
+      properties. Declaration of the interface properties is similar to
+      declaring the properties of ordinary GObject types as explained in
+      <xref linkend="gobject-properties"/>, except that
+      <function><link linkend="g-object-interface-install-property">g_object_interface_install_property</link></function>
+      is used to declare the properties instead of
+      <function><link linkend="g-object-class-install-property">g_object_class_install_property</link></function>.
+    </para>
+  
+    <para>
+      To include a property named 'autosave-frequency' of type <type>gdouble</type> in the 
+      <type>ViewerEditable</type> interface example code above, we only need to
+      add one call in <function>viewer_editable_default_init</function> as shown
+      below:
+<informalexample><programlisting>
+static void
+viewer_editable_default_init (ViewerEditableInterface *iface)
+{
+  g_object_interface_install_property (iface,
+                                       g_param_spec_double ("autosave-frequency",
+                                                            "Autosave frequency",
+                                                            "Frequency (in per-seconds) to autosave backups of the editable content at. "
+                                                            "Or zero to disable autosaves.",
+                                                            0.0,  /* minimum */
+                                                            G_MAXDOUBLE,  /* maximum */
+                                                            0.0,  /* default */
+                                                            G_PARAM_READWRITE));
+}
+</programlisting></informalexample>
+    </para>
+  
+    <para>
+      One point worth noting is that the declared property wasn't assigned an 
+      integer ID. The reason being that integer IDs of properties are used
+      only inside the <function>get_property</function> and
+      <function>set_property</function> virtual methods. Since interfaces
+      declare but do not <emphasis>implement</emphasis> properties, there is no
+      need to assign integer IDs to them.
+    </para>
+    
+    <para>
+      An implementation declares and defines its properties in the usual
+      way as explained in <xref linkend="gobject-properties"/>, except for one
+      small change: it can declare the properties of the interface it
+      implements using <function><link linkend="g-object-class-override-property">g_object_class_override_property</link></function>
+      instead of <function><link linkend="g-object-class-install-property">g_object_class_install_property</link></function>.
+      The following code snippet shows the modifications needed in the
+      <type>ViewerFile</type> declaration and implementation above:
+<informalexample><programlisting>
+struct _ViewerFile
+{
+  GObject parent_instance;
+
+  gdouble autosave_frequency;
+};
+
+enum
+{
+  PROP_AUTOSAVE_FREQUENCY = 1,
+  N_PROPERTIES
+};
+
+static void
+viewer_file_set_property (GObject      *object,
+                          guint         prop_id,
+                          const GValue *value,
+                          GParamSpec   *pspec)
+{
+  ViewerFile *file = VIEWER_FILE (object);
+
+  switch (prop_id)
+    {
+    case PROP_AUTOSAVE_FREQUENCY:
+      file->autosave_frequency = g_value_get_double (value);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+    }
+}
+
+static void
+viewer_file_get_property (GObject    *object,
+                          guint       prop_id,
+                          GValue     *value,
+                          GParamSpec *pspec)
+{
+  ViewerFile *file = VIEWER_FILE (object);
+
+  switch (prop_id)
+    {
+    case PROP_AUTOSAVE_FREQUENCY:
+      g_value_set_double (value, file->autosave_frequency);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+    }
+}
+
+static void
+viewer_file_class_init (ViewerFileClass *klass)
+{
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+  object_class->set_property = viewer_file_set_property;
+  object_class->get_property = viewer_file_get_property;
+
+  g_object_class_override_property (object_class, PROP_AUTOSAVE_FREQUENCY, "autosave-frequency");
+}
+</programlisting></informalexample>
+    </para>
+  
+  </sect1>
+
+  <sect1 id="howto-interface-override">
+    <title>Overriding interface methods</title>
+
+    <para>
+      If a base class already implements an interface and a derived
+      class needs to implement the same interface but needs to override certain
+      methods, you must reimplement the interface and set only the interface
+      methods which need overriding.
+    </para>
+
+    <para>
+      In this example, <type>ViewerAudioFile</type> is derived from
+      <type>ViewerFile</type>. Both implement the <type>ViewerEditable</type>
+      interface. <type>ViewerAudioFile</type> only implements one method of the
+      <type>ViewerEditable</type> interface and uses the base class implementation of
+      the other.
+<informalexample><programlisting>
+static void
+viewer_audio_file_editable_save (ViewerEditable  *editable,
+                                 GError         **error)
+{
+  ViewerAudioFile *self = VIEWER_AUDIO_FILE (editable);
+
+  g_print ("Audio file implementation of editable interface save method.\n");
+}
+
+static void
+viewer_audio_file_editable_interface_init (ViewerEditableInterface *iface)
+{
+  /* Override the implementation of save(). */
+  iface->save = viewer_audio_file_editable_save;
+
+  /*
+   * Leave iface->undo and ->redo alone, they are already set to the
+   * base class implementation.
+   */
+}
+
+G_DEFINE_TYPE_WITH_CODE (ViewerAudioFile, viewer_audio_file, VIEWER_TYPE_FILE,
+                         G_IMPLEMENT_INTERFACE (VIEWER_TYPE_EDITABLE,
+                                                viewer_audio_file_editable_interface_init))
+
+static void
+viewer_audio_file_class_init (ViewerAudioFileClass *klass)
+{
+  /* Nothing here. */
+}
+
+static void
+viewer_audio_file_init (ViewerAudioFile *self)
+{
+  /* Nothing here. */
+}
+</programlisting></informalexample>
+    </para>
+
+    <para>
+      To access the base class interface implementation use
+      <function><link linkend="g-type-interface-peek-parent">g_type_interface_peek_parent</link></function>
+      from within an interface's <function>default_init</function> function.
+    </para>
+
+    <para>
+      To call the base class implementation of an interface
+      method from an derived class where than interface method has been
+      overridden, stash away the pointer returned from
+      <function><link linkend="g-type-interface-peek-parent">g_type_interface_peek_parent</link></function>
+      in a global variable.
+    </para>
+
+    <para>
+      In this example <type>ViewerAudioFile</type> overrides the
+      <function>save</function> interface method. In its overridden method
+      it calls the base class implementation of the same interface method.
+<informalexample><programlisting>
+static ViewerEditableInterface *viewer_editable_parent_interface = NULL;
+
+static void
+viewer_audio_file_editable_save (ViewerEditable  *editable,
+                                 GError         **error)
+{
+  ViewerAudioFile *self = VIEWER_AUDIO_FILE (editable);
+
+  g_print ("Audio file implementation of editable interface save method.\n");
+
+  /* Now call the base implementation */
+  viewer_editable_parent_interface->save (editable, error);
+}
+
+static void
+viewer_audio_file_editable_interface_init (ViewerEditableInterface *iface)
+{
+  viewer_editable_parent_interface = g_type_interface_peek_parent (iface);
+
+  iface->save = viewer_audio_file_editable_save;
+}
+
+G_DEFINE_TYPE_WITH_CODE (ViewerAudioFile, viewer_audio_file, VIEWER_TYPE_FILE,
+                         G_IMPLEMENT_INTERFACE (VIEWER_TYPE_EDITABLE,
+                                                viewer_audio_file_editable_interface_init))
+
+static void
+viewer_audio_file_class_init (ViewerAudioFileClass *klass)
+{
+  /* Nothing here. */
+}
+
+static void
+viewer_audio_file_init (ViewerAudioFile *self)
+{
+  /* Nothing here. */
+}
+</programlisting></informalexample>
+    </para>
+
+  </sect1>
+
+</chapter>
+<!-- End Howto Interfaces -->
+
+<chapter id="howto-signals">
+  <title>How to create and use signals</title>
+
+  <para>
+    The signal system in GType is pretty complex and
+    flexible: it is possible for its users to connect at runtime any
+    number of callbacks (implemented in any language for which a binding
+    exists)
+    <footnote>
+      <para>A Python callback can be connected to any signal on any
+      C-based GObject, and vice versa, assuming that the Python object
+      inherits from GObject.</para>
+    </footnote>
+    to any signal and to stop the emission of any signal at any 
+    state of the signal emission process. This flexibility makes it
+    possible to use GSignal for much more than just emitting signals to
+    multiple clients.
+  </para>
+
+  <sect1 id="howto-simple-signals">
+    <title>Simple use of signals</title>
+
+    <para>
+      The most basic use of signals is to implement event
+      notification. For example, given a <type>ViewerFile</type> object with
+      a <function>write</function> method, a signal could be emitted whenever
+      the file is changed using that method.
+      The code below shows how the user can connect a callback to the
+      "changed" signal.
+<informalexample><programlisting>
+file = g_object_new (VIEWER_FILE_TYPE, NULL);
+
+g_signal_connect (file, "changed", (GCallback) changed_event, NULL);
+
+viewer_file_write (file, buffer, strlen (buffer));
+</programlisting></informalexample>
+    </para>
+    
+    <para>
+      The <type>ViewerFile</type> signal is registered in the
+      <function>class_init</function> function:
+<informalexample><programlisting>
+file_signals[CHANGED] = 
+  g_signal_newv ("changed",
+                 G_TYPE_FROM_CLASS (object_class),
+                 G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                 NULL /* closure */,
+                 NULL /* accumulator */,
+                 NULL /* accumulator data */,
+                 NULL /* C marshaller */,
+                 G_TYPE_NONE /* return_type */,
+                 0     /* n_params */,
+                 NULL  /* param_types */);
+</programlisting></informalexample>
+      and the signal is emitted in <function>viewer_file_write</function>:
+<informalexample><programlisting>
+void
+viewer_file_write (ViewerFile   *self,
+                   const guint8 *buffer,
+                   gsize         size)
+{
+  g_return_if_fail (VIEWER_IS_FILE (self));
+  g_return_if_fail (buffer != NULL || size == 0);
+
+  /* First write data. */
+
+  /* Then, notify user of data written. */
+  g_signal_emit (self, file_signals[CHANGED], 0 /* details */);
+}
+</programlisting></informalexample>
+      As shown above, the details parameter can safely be set to zero if no
+      detail needs to be conveyed. For a discussion of what it can be used for,
+      see <xref linkend="signal-detail"/>
+    </para>
+
+    <para>
+      The C signal marshaller should always be <literal>NULL</literal>, in which
+      case the best marshaller for the given closure type will be chosen by
+      GLib. This may be an internal marshaller specific to the closure type, or
+      <function>g_cclosure_marshal_generic</function>, which implements generic
+      conversion of arrays of parameters to C callback invocations. GLib used to
+      require the user to write or generate a type-specific marshaller and pass
+      that, but that has been deprecated in favour of automatic selection of
+      marshallers.
+    </para>
+
+    <para>
+      Note that <function>g_cclosure_marshal_generic</function> is slower than
+      non-generic marshallers, so should be avoided for performance critical
+      code. However, performance critical code should rarely be using signals
+      anyway, as emitting a signal blocks on emitting it to all listeners, which
+      has potentially unbounded cost.
+    </para>
+  </sect1>
+</chapter>
+</part>

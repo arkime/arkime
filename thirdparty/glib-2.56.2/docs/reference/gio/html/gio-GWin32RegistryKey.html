@@ -1,0 +1,2066 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GWin32RegistryKey: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="registry.html" title="Win32 registry support">
+<link rel="prev" href="registry.html" title="Win32 registry support">
+<link rel="next" href="application.html" title="Application support">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gio-GWin32RegistryKey.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="registry.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="registry.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="application.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-GWin32RegistryKey"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-GWin32RegistryKey.top_of_page"></a>GWin32RegistryKey</span></h2>
+<p>GWin32RegistryKey — W32 registry access helper</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gio-GWin32RegistryKey.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="returnvalue">GWin32RegistrySubkeyIter</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-subkey-iter-copy" title="g_win32_registry_subkey_iter_copy ()">g_win32_registry_subkey_iter_copy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-subkey-iter-free" title="g_win32_registry_subkey_iter_free ()">g_win32_registry_subkey_iter_free</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-subkey-iter-assign" title="g_win32_registry_subkey_iter_assign ()">g_win32_registry_subkey_iter_assign</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="returnvalue">GWin32RegistryValueIter</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-copy" title="g_win32_registry_value_iter_copy ()">g_win32_registry_value_iter_copy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-free" title="g_win32_registry_value_iter_free ()">g_win32_registry_value_iter_free</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-assign" title="g_win32_registry_value_iter_assign ()">g_win32_registry_value_iter_assign</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="returnvalue">GWin32RegistryKey</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-new" title="g_win32_registry_key_new ()">g_win32_registry_key_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="returnvalue">GWin32RegistryKey</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-new-w" title="g_win32_registry_key_new_w ()">g_win32_registry_key_new_w</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="returnvalue">GWin32RegistryKey</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-get-child" title="g_win32_registry_key_get_child ()">g_win32_registry_key_get_child</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="returnvalue">GWin32RegistryKey</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-get-child-w" title="g_win32_registry_key_get_child_w ()">g_win32_registry_key_get_child_w</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-subkey-iter-init" title="g_win32_registry_subkey_iter_init ()">g_win32_registry_subkey_iter_init</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-subkey-iter-clear" title="g_win32_registry_subkey_iter_clear ()">g_win32_registry_subkey_iter_clear</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gsize"><span class="returnvalue">gsize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-subkey-iter-n-subkeys" title="g_win32_registry_subkey_iter_n_subkeys ()">g_win32_registry_subkey_iter_n_subkeys</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-subkey-iter-next" title="g_win32_registry_subkey_iter_next ()">g_win32_registry_subkey_iter_next</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-subkey-iter-get-name" title="g_win32_registry_subkey_iter_get_name ()">g_win32_registry_subkey_iter_get_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-subkey-iter-get-name-w" title="g_win32_registry_subkey_iter_get_name_w ()">g_win32_registry_subkey_iter_get_name_w</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-init" title="g_win32_registry_value_iter_init ()">g_win32_registry_value_iter_init</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-clear" title="g_win32_registry_value_iter_clear ()">g_win32_registry_value_iter_clear</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gsize"><span class="returnvalue">gsize</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-n-values" title="g_win32_registry_value_iter_n_values ()">g_win32_registry_value_iter_n_values</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-next" title="g_win32_registry_value_iter_next ()">g_win32_registry_value_iter_next</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-get-value-type" title="g_win32_registry_value_iter_get_value_type ()">g_win32_registry_value_iter_get_value_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-get-name" title="g_win32_registry_value_iter_get_name ()">g_win32_registry_value_iter_get_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-get-name-w" title="g_win32_registry_value_iter_get_name_w ()">g_win32_registry_value_iter_get_name_w</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-get-data" title="g_win32_registry_value_iter_get_data ()">g_win32_registry_value_iter_get_data</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-get-data-w" title="g_win32_registry_value_iter_get_data_w ()">g_win32_registry_value_iter_get_data_w</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-get-value" title="g_win32_registry_key_get_value ()">g_win32_registry_key_get_value</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-get-value-w" title="g_win32_registry_key_get_value_w ()">g_win32_registry_key_get_value_w</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-get-path" title="g_win32_registry_key_get_path ()">g_win32_registry_key_get_path</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Unicode-Manipulation.html#gunichar2"><span class="returnvalue">gunichar2</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-get-path-w" title="g_win32_registry_key_get_path_w ()">g_win32_registry_key_get_path_w</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKeyWatchCallbackFunc" title="GWin32RegistryKeyWatchCallbackFunc ()">*GWin32RegistryKeyWatchCallbackFunc</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-watch" title="g_win32_registry_key_watch ()">g_win32_registry_key_watch</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-has-changed" title="g_win32_registry_key_has_changed ()">g_win32_registry_key_has_changed</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-erase-change-indicator" title="g_win32_registry_key_erase_change_indicator ()">g_win32_registry_key_erase_change_indicator</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-GWin32RegistryKey.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter">GWin32RegistrySubkeyIter</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter">GWin32RegistryValueIter</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey">GWin32RegistryKey</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueType" title="enum GWin32RegistryValueType">GWin32RegistryValueType</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKeyWatcherFlags" title="enum GWin32RegistryKeyWatcherFlags">GWin32RegistryKeyWatcherFlags</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-GWin32RegistryKey.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/win32/gwin32registrykey.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-GWin32RegistryKey.description"></a><h2>Description</h2>
+<p><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> represents a single Windows Registry key.</p>
+<p><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> is used by a number of helper functions that read
+Windows Registry. All keys are opened with read-only access, and at
+the moment there is no API for writing into registry keys or creating
+new ones.</p>
+<p><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> implements the <a class="link" href="GInitable.html" title="GInitable"><span class="type">GInitable</span></a> interface, so if it is manually
+constructed by e.g. <a href="../gobject-The-Base-Object-Type.html#g-object-new"><code class="function">g_object_new()</code></a> you must call <a class="link" href="GInitable.html#g-initable-init" title="g_initable_init ()"><code class="function">g_initable_init()</code></a> and check
+the results before using the object. This is done automatically
+in <a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-new" title="g_win32_registry_key_new ()"><code class="function">g_win32_registry_key_new()</code></a> and <a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-get-child" title="g_win32_registry_key_get_child ()"><code class="function">g_win32_registry_key_get_child()</code></a>, so these
+functions can return <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p>
+<p>To increase efficiency, a UTF-16 variant is available for all functions
+that deal with key or value names in the registry. Use these to perform
+deep registry queries or other operations that require querying a name
+of a key or a value and then opening it (or querying its data). The use
+of UTF-16 functions avoids the overhead of converting names to UTF-8 and
+back.</p>
+<p>All functions operate in current user's context (it is not possible to
+access registry tree of a different user).</p>
+<p>Key paths must use '\' as a separator, '/' is not supported. Key names
+must not include '\', because it's used as a separator. Value names
+can include '\'.</p>
+<p>Key and value names are not case sensitive.</p>
+<p>Full key name (excluding the pre-defined ancestor's name) can't exceed
+255 UTF-16 characters, give or take. Value name can't exceed 16383 UTF-16
+characters. Tree depth is limited to 512 levels.</p>
+</div>
+<div class="refsect1">
+<a name="gio-GWin32RegistryKey.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-win32-registry-subkey-iter-copy"></a><h3>g_win32_registry_subkey_iter_copy ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="returnvalue">GWin32RegistrySubkeyIter</span></a> *
+g_win32_registry_subkey_iter_copy (<em class="parameter"><code>const <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a> *iter</code></em>);</pre>
+<p>Creates a dynamically-allocated copy of an iterator. Dynamically-allocated
+state of the iterator is duplicated too.</p>
+<div class="refsect3">
+<a name="g-win32-registry-subkey-iter-copy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>an iterator</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-subkey-iter-copy.returns"></a><h4>Returns</h4>
+<p>a copy of the <em class="parameter"><code>iter</code></em>
+,
+free with <a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-subkey-iter-free" title="g_win32_registry_subkey_iter_free ()"><code class="function">g_win32_registry_subkey_iter_free()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-subkey-iter-free"></a><h3>g_win32_registry_subkey_iter_free ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_win32_registry_subkey_iter_free (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a> *iter</code></em>);</pre>
+<p>Free an iterator allocated on the heap. For iterators that are allocated
+on the stack use <a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-subkey-iter-clear" title="g_win32_registry_subkey_iter_clear ()"><code class="function">g_win32_registry_subkey_iter_clear()</code></a> instead.</p>
+<div class="refsect3">
+<a name="g-win32-registry-subkey-iter-free.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>a dynamically-allocated iterator</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-subkey-iter-assign"></a><h3>g_win32_registry_subkey_iter_assign ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_win32_registry_subkey_iter_assign (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a> *iter</code></em>,
+                                     <em class="parameter"><code>const <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a> *other</code></em>);</pre>
+<p>Assigns the value of <em class="parameter"><code>other</code></em>
+ to <em class="parameter"><code>iter</code></em>
+.  This function
+is not useful in applications, because iterators can be assigned
+with <code class="literal">GWin32RegistrySubkeyIter i = j;</code>. The
+function is used by language bindings.</p>
+<div class="refsect3">
+<a name="g-win32-registry-subkey-iter-assign.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>other</p></td>
+<td class="parameter_description"><p>another <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-value-iter-copy"></a><h3>g_win32_registry_value_iter_copy ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="returnvalue">GWin32RegistryValueIter</span></a> *
+g_win32_registry_value_iter_copy (<em class="parameter"><code>const <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a> *iter</code></em>);</pre>
+<p>Creates a dynamically-allocated copy of an iterator. Dynamically-allocated
+state of the iterator is duplicated too.</p>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-copy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>an iterator</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-copy.returns"></a><h4>Returns</h4>
+<p>a copy of the <em class="parameter"><code>iter</code></em>
+,
+free with <a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-free" title="g_win32_registry_value_iter_free ()"><code class="function">g_win32_registry_value_iter_free()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-value-iter-free"></a><h3>g_win32_registry_value_iter_free ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_win32_registry_value_iter_free (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a> *iter</code></em>);</pre>
+<p>Free an iterator allocated on the heap. For iterators that are allocated
+on the stack use <a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-clear" title="g_win32_registry_value_iter_clear ()"><code class="function">g_win32_registry_value_iter_clear()</code></a> instead.</p>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-free.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>a dynamically-allocated iterator</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-value-iter-assign"></a><h3>g_win32_registry_value_iter_assign ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_win32_registry_value_iter_assign (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a> *iter</code></em>,
+                                    <em class="parameter"><code>const <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a> *other</code></em>);</pre>
+<p>Assigns the value of <em class="parameter"><code>other</code></em>
+ to <em class="parameter"><code>iter</code></em>
+.  This function
+is not useful in applications, because iterators can be assigned
+with <code class="literal">GWin32RegistryValueIter i = j;</code>. The
+function is used by language bindings.</p>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-assign.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>other</p></td>
+<td class="parameter_description"><p>another <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-key-new"></a><h3>g_win32_registry_key_new ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="returnvalue">GWin32RegistryKey</span></a> *
+g_win32_registry_key_new (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *path</code></em>,
+                          <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Creates an object that represents a registry key specified by <em class="parameter"><code>path</code></em>
+.
+<em class="parameter"><code>path</code></em>
+ must start with one of the following pre-defined names:</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>HKEY_CLASSES_ROOT</p></li>
+<li class="listitem"><p>HKEY_CURRENT_CONFIG</p></li>
+<li class="listitem"><p>HKEY_CURRENT_USER</p></li>
+<li class="listitem"><p>HKEY_CURRENT_USER_LOCAL_SETTINGS</p></li>
+<li class="listitem"><p>HKEY_LOCAL_MACHINE</p></li>
+<li class="listitem"><p>HKEY_PERFORMANCE_DATA</p></li>
+<li class="listitem"><p>HKEY_PERFORMANCE_NLSTEXT</p></li>
+<li class="listitem"><p>HKEY_PERFORMANCE_TEXT</p></li>
+<li class="listitem"><p>HKEY_USERS
+<em class="parameter"><code>path</code></em>
+ must not end with '\'.</p></li>
+</ul></div>
+<div class="refsect3">
+<a name="g-win32-registry-key-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>path</p></td>
+<td class="parameter_description"><p>absolute full name of a key to open (in UTF-8)</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-key-new.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if can't
+be opened. Free with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-key-new-w"></a><h3>g_win32_registry_key_new_w ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="returnvalue">GWin32RegistryKey</span></a> *
+g_win32_registry_key_new_w (<em class="parameter"><code>const <a href="../glib-Unicode-Manipulation.html#gunichar2"><span class="type">gunichar2</span></a> *path</code></em>,
+                            <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Creates an object that represents a registry key specified by <em class="parameter"><code>path</code></em>
+.
+<em class="parameter"><code>path</code></em>
+ must start with one of the following pre-defined names:</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>HKEY_CLASSES_ROOT</p></li>
+<li class="listitem"><p>HKEY_CURRENT_CONFIG</p></li>
+<li class="listitem"><p>HKEY_CURRENT_USER</p></li>
+<li class="listitem"><p>HKEY_CURRENT_USER_LOCAL_SETTINGS</p></li>
+<li class="listitem"><p>HKEY_LOCAL_MACHINE</p></li>
+<li class="listitem"><p>HKEY_PERFORMANCE_DATA</p></li>
+<li class="listitem"><p>HKEY_PERFORMANCE_NLSTEXT</p></li>
+<li class="listitem"><p>HKEY_PERFORMANCE_TEXT</p></li>
+<li class="listitem"><p>HKEY_USERS
+<em class="parameter"><code>path</code></em>
+ must not end with L'\'.</p></li>
+</ul></div>
+<div class="refsect3">
+<a name="g-win32-registry-key-new-w.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>path</p></td>
+<td class="parameter_description"><p>absolute full name of a key to open (in UTF-16). </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input and for returning results. Default is transfer full."><span class="acronym">inout</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-key-new-w.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if can't
+be opened. Free with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-key-get-child"></a><h3>g_win32_registry_key_get_child ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="returnvalue">GWin32RegistryKey</span></a> *
+g_win32_registry_key_get_child (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> *key</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *subkey</code></em>,
+                                <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Opens a <em class="parameter"><code>subkey</code></em>
+ of the <em class="parameter"><code>key</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-win32-registry-key-get-child.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a parent <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>subkey</p></td>
+<td class="parameter_description"><p>name of a child key to open (in UTF-8), relative to <em class="parameter"><code>key</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input and for returning results. Default is transfer full."><span class="acronym">inout</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-key-get-child.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if can't be opened. Free
+with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-key-get-child-w"></a><h3>g_win32_registry_key_get_child_w ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="returnvalue">GWin32RegistryKey</span></a> *
+g_win32_registry_key_get_child_w (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> *key</code></em>,
+                                  <em class="parameter"><code>const <a href="../glib-Unicode-Manipulation.html#gunichar2"><span class="type">gunichar2</span></a> *subkey</code></em>,
+                                  <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Opens a <em class="parameter"><code>subkey</code></em>
+ of the <em class="parameter"><code>key</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-win32-registry-key-get-child-w.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a parent <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>subkey</p></td>
+<td class="parameter_description"><p>name of a child key to open (in UTF-8), relative to <em class="parameter"><code>key</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input and for returning results. Default is transfer full."><span class="acronym">inout</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-key-get-child-w.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if can't be opened. Free
+with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-subkey-iter-init"></a><h3>g_win32_registry_subkey_iter_init ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_win32_registry_subkey_iter_init (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a> *iter</code></em>,
+                                   <em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> *key</code></em>,
+                                   <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Initialises (without allocating) a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a>.  <em class="parameter"><code>iter</code></em>
+ may be
+completely uninitialised prior to this call; its old value is
+ignored.</p>
+<p>The iterator remains valid for as long as <em class="parameter"><code>key</code></em>
+ exists.
+Clean up its internal buffers with a call to
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-subkey-iter-clear" title="g_win32_registry_subkey_iter_clear ()"><code class="function">g_win32_registry_subkey_iter_clear()</code></a> when done.</p>
+<div class="refsect3">
+<a name="g-win32-registry-subkey-iter-init.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> to iterate over. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input and for returning results. Default is transfer full."><span class="acronym">inout</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-subkey-iter-init.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if iterator was initialized successfully, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> on error.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-subkey-iter-clear"></a><h3>g_win32_registry_subkey_iter_clear ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_win32_registry_subkey_iter_clear (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a> *iter</code></em>);</pre>
+<p>Frees internal buffers of a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a>.</p>
+<div class="refsect3">
+<a name="g-win32-registry-subkey-iter-clear.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-subkey-iter-n-subkeys"></a><h3>g_win32_registry_subkey_iter_n_subkeys ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gsize"><span class="returnvalue">gsize</span></a>
+g_win32_registry_subkey_iter_n_subkeys
+                               (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a> *iter</code></em>);</pre>
+<p>Queries the number of subkeys items in the key that we are
+iterating over.  This is the total number of subkeys -- not the number
+of items remaining.</p>
+<p>This information is accurate at the point of iterator initialization,
+and may go out of sync with reality even while subkeys are enumerated.</p>
+<div class="refsect3">
+<a name="g-win32-registry-subkey-iter-n-subkeys.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-subkey-iter-n-subkeys.returns"></a><h4>Returns</h4>
+<p> the number of subkeys in the key</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-subkey-iter-next"></a><h3>g_win32_registry_subkey_iter_next ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_win32_registry_subkey_iter_next (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a> *iter</code></em>,
+                                   <em class="parameter"><code><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> skip_errors</code></em>,
+                                   <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Moves iterator to the next subkey.
+Enumeration errors can be ignored if <em class="parameter"><code>skip_errors</code></em>
+ is <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a></p>
+<p>Here is an example for iterating with <a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-subkey-iter-next" title="g_win32_registry_subkey_iter_next ()"><code class="function">g_win32_registry_subkey_iter_next()</code></a>:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="comment">// recursively iterate a key</span>
+<span class="type">void</span>
+<span class="function">iterate_key_recursive</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GWin32RegistryKey</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">key</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GWin32RegistrySubkeyIter</span><span class="normal"> iter</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">name</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GWin32RegistryKey</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">child</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function"><a href="gio-GWin32RegistryKey.html#g-win32-registry-subkey-iter-init">g_win32_registry_subkey_iter_init</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">iter</span><span class="symbol">,</span><span class="normal"> key</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">))</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="gio-GWin32RegistryKey.html#g-win32-registry-subkey-iter-next">g_win32_registry_subkey_iter_next</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">iter</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#TRUE:CAPS">TRUE</a></span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">))</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function"><a href="gio-GWin32RegistryKey.html#g-win32-registry-subkey-iter-get-name">g_win32_registry_subkey_iter_get_name</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">iter</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">name</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">))</span>
+<span class="normal">        </span><span class="keyword">continue</span><span class="symbol">;</span>
+
+<span class="normal">      </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"subkey '%s'</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> name</span><span class="symbol">);</span>
+<span class="normal">      child </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gio-GWin32RegistryKey.html#g-win32-registry-key-get-child">g_win32_registry_key_get_child</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">key</span><span class="symbol">,</span><span class="normal"> name</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="normal">      </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">child</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="function">iterate_key_recursive</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">child</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">  </span><span class="function"><a href="gio-GWin32RegistryKey.html#g-win32-registry-subkey-iter-clear">g_win32_registry_subkey_iter_clear</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">iter</span><span class="symbol">);</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="g-win32-registry-subkey-iter-next.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>skip_errors</p></td>
+<td class="parameter_description"><p><a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if iterator should silently ignore errors (such as
+the actual number of subkeys being less than expected) and
+proceed forward. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-subkey-iter-next.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if next subkey info was retrieved, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-subkey-iter-get-name"></a><h3>g_win32_registry_subkey_iter_get_name ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_win32_registry_subkey_iter_get_name (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a> *iter</code></em>,
+                                       <em class="parameter"><code><a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> **subkey_name</code></em>,
+                                       <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> *subkey_name_len</code></em>,
+                                       <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Gets the name of the subkey at the <em class="parameter"><code>iter</code></em>
+ potision.</p>
+<div class="refsect3">
+<a name="g-win32-registry-subkey-iter-get-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>subkey_name</p></td>
+<td class="parameter_description"><p>Pointer to a location
+to store the name of a subkey (in UTF-8). Free with <a href="../glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Out parameter, where caller must allocate storage."><span class="acronym">out callee-allocates</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>subkey_name_len</p></td>
+<td class="parameter_description"><p>Pointer to a location to store the
+length of <em class="parameter"><code>subkey_name</code></em>
+, in gchars, excluding NUL-terminator.
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if length is not needed. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-subkey-iter-get-name.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the name was retrieved, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-subkey-iter-get-name-w"></a><h3>g_win32_registry_subkey_iter_get_name_w ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_win32_registry_subkey_iter_get_name_w
+                               (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a> *iter</code></em>,
+                                <em class="parameter"><code><a href="../glib-Unicode-Manipulation.html#gunichar2"><span class="type">gunichar2</span></a> **subkey_name</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> *subkey_name_len</code></em>,
+                                <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Same as <code class="function">g_win32_registry_subkey_iter_get_next()</code>, but outputs UTF-16-encoded
+data, without converting it to UTF-8 first.</p>
+<div class="refsect3">
+<a name="g-win32-registry-subkey-iter-get-name-w.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistrySubkeyIter" title="struct GWin32RegistrySubkeyIter"><span class="type">GWin32RegistrySubkeyIter</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>subkey_name</p></td>
+<td class="parameter_description"><p>Pointer to a location
+to store the name of a subkey (in UTF-16). </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Out parameter, where caller must allocate storage."><span class="acronym">out callee-allocates</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>subkey_name_len</p></td>
+<td class="parameter_description"><p>Pointer to a location
+to store the length of <em class="parameter"><code>subkey_name</code></em>
+, in gunichar2s, excluding
+NUL-terminator.
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if length is not needed. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-subkey-iter-get-name-w.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the name was retrieved, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-value-iter-init"></a><h3>g_win32_registry_value_iter_init ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_win32_registry_value_iter_init (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a> *iter</code></em>,
+                                  <em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> *key</code></em>,
+                                  <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Initialises (without allocating) a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a>.  <em class="parameter"><code>iter</code></em>
+ may be
+completely uninitialised prior to this call; its old value is
+ignored.</p>
+<p>The iterator remains valid for as long as <em class="parameter"><code>key</code></em>
+ exists.
+Clean up its internal buffers with a call to
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-clear" title="g_win32_registry_value_iter_clear ()"><code class="function">g_win32_registry_value_iter_clear()</code></a> when done.</p>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-init.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>a pointer to a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> to iterate over. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-init.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if iterator was initialized successfully, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> on error.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-value-iter-clear"></a><h3>g_win32_registry_value_iter_clear ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_win32_registry_value_iter_clear (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a> *iter</code></em>);</pre>
+<p>Frees internal buffers of a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a>.</p>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-clear.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-value-iter-n-values"></a><h3>g_win32_registry_value_iter_n_values ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gsize"><span class="returnvalue">gsize</span></a>
+g_win32_registry_value_iter_n_values (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a> *iter</code></em>);</pre>
+<p>Queries the number of values items in the key that we are
+iterating over.  This is the total number of values -- not the number
+of items remaining.</p>
+<p>This information is accurate at the point of iterator initialization,
+and may go out of sync with reality even while values are enumerated.</p>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-n-values.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-n-values.returns"></a><h4>Returns</h4>
+<p> the number of values in the key</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-value-iter-next"></a><h3>g_win32_registry_value_iter_next ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_win32_registry_value_iter_next (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a> *iter</code></em>,
+                                  <em class="parameter"><code><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> skip_errors</code></em>,
+                                  <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Advances iterator to the next value in the key. If no more values remain then
+FALSE is returned.
+Enumeration errors can be ignored if <em class="parameter"><code>skip_errors</code></em>
+ is <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a></p>
+<p>Here is an example for iterating with <a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-next" title="g_win32_registry_value_iter_next ()"><code class="function">g_win32_registry_value_iter_next()</code></a>:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="comment">// iterate values of a key</span>
+<span class="type">void</span>
+<span class="function">iterate_values_recursive</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GWin32RegistryKey</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">key</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GWin32RegistryValueIter</span><span class="normal"> iter</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">name</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GWin32RegistryValueType</span><span class="normal"> val_type</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">val_data</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function"><a href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-init">g_win32_registry_value_iter_init</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">iter</span><span class="symbol">,</span><span class="normal"> key</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">))</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-next">g_win32_registry_value_iter_next</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">iter</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#TRUE:CAPS">TRUE</a></span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">))</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">((!</span><span class="function"><a href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-get-value-type">g_win32_registry_value_iter_get_value_type</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">iter</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">value</span><span class="symbol">))</span><span class="normal"> </span><span class="symbol">||</span>
+<span class="normal">          </span><span class="symbol">((</span><span class="normal">val_type </span><span class="symbol">!=</span><span class="normal"> <a href="gio-GWin32RegistryKey.html#G-WIN32-REGISTRY-VALUE-STR:CAPS">G_WIN32_REGISTRY_VALUE_STR</a></span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span>
+<span class="normal">           </span><span class="symbol">(</span><span class="normal">val_type </span><span class="symbol">!=</span><span class="normal"> <a href="gio-GWin32RegistryKey.html#G-WIN32-REGISTRY-VALUE-EXPAND-STR:CAPS">G_WIN32_REGISTRY_VALUE_EXPAND_STR</a></span><span class="symbol">)))</span>
+<span class="normal">        </span><span class="keyword">continue</span><span class="symbol">;</span>
+
+<span class="normal">      </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">g_win32_registry_value_iter_get_value</span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">iter</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#TRUE:CAPS">TRUE</a></span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">name</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span>
+<span class="normal">                                                 </span><span class="symbol">&amp;</span><span class="normal">val_data</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">))</span>
+<span class="normal">        </span><span class="function"><a href="../glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"value '%s' = '%s'</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> name</span><span class="symbol">,</span><span class="normal"> val_data</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">  </span><span class="function"><a href="gio-GWin32RegistryKey.html#g-win32-registry-value-iter-clear">g_win32_registry_value_iter_clear</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">iter</span><span class="symbol">);</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-next.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>skip_errors</p></td>
+<td class="parameter_description"><p><a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if iterator should silently ignore errors (such as
+the actual number of values being less than expected) and
+proceed forward. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-next.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if next value info was retrieved, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-value-iter-get-value-type"></a><h3>g_win32_registry_value_iter_get_value_type ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_win32_registry_value_iter_get_value_type
+                               (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a> *iter</code></em>,
+                                <em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueType" title="enum GWin32RegistryValueType"><span class="type">GWin32RegistryValueType</span></a> *value_type</code></em>,
+                                <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Stores the type of the value currently being iterated over in <em class="parameter"><code>value_type</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-get-value-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value_type</p></td>
+<td class="parameter_description"><p>Pointer to a location to store the type of
+the value. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-get-value-type.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if value type was retrieved, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-value-iter-get-name"></a><h3>g_win32_registry_value_iter_get_name ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_win32_registry_value_iter_get_name (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a> *iter</code></em>,
+                                      <em class="parameter"><code><a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> **value_name</code></em>,
+                                      <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> *value_name_len</code></em>,
+                                      <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Stores the name of the value currently being iterated over in <em class="parameter"><code>value_name</code></em>
+,
+and its length - in <em class="parameter"><code>value_name_len</code></em>
+ (if not <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>).</p>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-get-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value_name</p></td>
+<td class="parameter_description"><p>Pointer to a location
+to store the name of a value (in UTF-8). </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Out parameter, where caller must allocate storage."><span class="acronym">out callee-allocates</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value_name_len</p></td>
+<td class="parameter_description"><p>Pointer to a location to store the length
+of <em class="parameter"><code>value_name</code></em>
+, in gchars, excluding NUL-terminator.
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if length is not needed. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-get-name.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if value name was retrieved, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-value-iter-get-name-w"></a><h3>g_win32_registry_value_iter_get_name_w ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_win32_registry_value_iter_get_name_w
+                               (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a> *iter</code></em>,
+                                <em class="parameter"><code><a href="../glib-Unicode-Manipulation.html#gunichar2"><span class="type">gunichar2</span></a> **value_name</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> *value_name_len</code></em>,
+                                <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Stores the name of the value currently being iterated over in <em class="parameter"><code>value_name</code></em>
+,
+and its length - in <em class="parameter"><code>value_name</code></em>
+ (if not <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>).</p>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-get-name-w.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value_name</p></td>
+<td class="parameter_description"><p>Pointer to a location
+to store the name of a value (in UTF-16). </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Out parameter, where caller must allocate storage."><span class="acronym">out callee-allocates</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value_name_len</p></td>
+<td class="parameter_description"><p>Pointer to a location to store the length
+of <em class="parameter"><code>value_name</code></em>
+, in gunichar2s, excluding NUL-terminator.
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if length is not needed. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-get-name-w.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if value name was retrieved, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-value-iter-get-data"></a><h3>g_win32_registry_value_iter_get_data ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_win32_registry_value_iter_get_data (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a> *iter</code></em>,
+                                      <em class="parameter"><code><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> auto_expand</code></em>,
+                                      <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> *value_data</code></em>,
+                                      <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> *value_data_size</code></em>,
+                                      <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Stores the data of the value currently being iterated over in <em class="parameter"><code>value_data</code></em>
+,
+and its length - in <em class="parameter"><code>value_data_len</code></em>
+ (if not <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>).</p>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-get-data.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>auto_expand</p></td>
+<td class="parameter_description"><p><a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> to automatically expand G_WIN32_REGISTRY_VALUE_EXPAND_STR to
+G_WIN32_REGISTRY_VALUE_STR. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value_data</p></td>
+<td class="parameter_description"><p>Pointer to a
+location to store the data of the value (in UTF-8, if it's a string). </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Out parameter, where caller must allocate storage."><span class="acronym">out callee-allocates</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value_data_size</p></td>
+<td class="parameter_description"><p>Pointer to a location to store the length
+of <em class="parameter"><code>value_data</code></em>
+, in bytes (including any NUL-terminators, if it's a string).
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if length is not needed. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-get-data.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if value data was retrieved, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-value-iter-get-data-w"></a><h3>g_win32_registry_value_iter_get_data_w ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_win32_registry_value_iter_get_data_w
+                               (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a> *iter</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> auto_expand</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> *value_data</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> *value_data_size</code></em>,
+                                <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Stores the data of the value currently being iterated over in <em class="parameter"><code>value_data</code></em>
+,
+and its length - in <em class="parameter"><code>value_data_len</code></em>
+ (if not <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>).</p>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-get-data-w.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>iter</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueIter" title="struct GWin32RegistryValueIter"><span class="type">GWin32RegistryValueIter</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>auto_expand</p></td>
+<td class="parameter_description"><p><a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> to automatically expand G_WIN32_REGISTRY_VALUE_EXPAND_STR to
+G_WIN32_REGISTRY_VALUE_STR. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value_data</p></td>
+<td class="parameter_description"><p>Pointer to a
+location to store the data of the value (in UTF-16, if it's a string). </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Out parameter, where caller must allocate storage."><span class="acronym">out callee-allocates</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value_data_size</p></td>
+<td class="parameter_description"><p>Pointer to a location to store the size
+of <em class="parameter"><code>value_data</code></em>
+, in bytes (including any NUL-terminators, if it's a string).
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if length is not needed. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-value-iter-get-data-w.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if value data was retrieved, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-key-get-value"></a><h3>g_win32_registry_key_get_value ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_win32_registry_key_get_value (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> *key</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> auto_expand</code></em>,
+                                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *value_name</code></em>,
+                                <em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueType" title="enum GWin32RegistryValueType"><span class="type">GWin32RegistryValueType</span></a> *value_type</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> *value_data</code></em>,
+                                <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> *value_data_size</code></em>,
+                                <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Get data from a value of a key. String data is guaranteed to be
+appropriately terminated and will be in UTF-8.</p>
+<div class="refsect3">
+<a name="g-win32-registry-key-get-value.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>auto_expand</p></td>
+<td class="parameter_description"><p>(in) <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> to automatically expand G_WIN32_REGISTRY_VALUE_EXPAND_STR
+to G_WIN32_REGISTRY_VALUE_STR.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value_name</p></td>
+<td class="parameter_description"><p>name of the value to get (in UTF-8).
+Empty string means the '(Default)' value. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value_type</p></td>
+<td class="parameter_description"><p>type of the value retrieved. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value_data</p></td>
+<td class="parameter_description"><p>contents of the value. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Out parameter, where caller must allocate storage."><span class="acronym">out callee-allocates</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value_data_size</p></td>
+<td class="parameter_description"><p>size of the buffer pointed
+by <em class="parameter"><code>value_data</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-key-get-value.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> on failure.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-key-get-value-w"></a><h3>g_win32_registry_key_get_value_w ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_win32_registry_key_get_value_w (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> *key</code></em>,
+                                  <em class="parameter"><code><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> auto_expand</code></em>,
+                                  <em class="parameter"><code>const <a href="../glib-Unicode-Manipulation.html#gunichar2"><span class="type">gunichar2</span></a> *value_name</code></em>,
+                                  <em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryValueType" title="enum GWin32RegistryValueType"><span class="type">GWin32RegistryValueType</span></a> *value_type</code></em>,
+                                  <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> *value_data</code></em>,
+                                  <em class="parameter"><code><a href="../glib-Basic-Types.html#gsize"><span class="type">gsize</span></a> *value_data_size</code></em>,
+                                  <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Get data from a value of a key.</p>
+<p>Get data from a value of a key. String data is guaranteed to be
+appropriately terminated and will be in UTF-16.</p>
+<p>When calling with value_data == NULL (to get data size without getting
+the data itself) remember that returned size corresponds to possibly
+unterminated string data (if value is some kind of string), because
+termination cannot be checked and fixed unless the data is retreived
+too.</p>
+<div class="refsect3">
+<a name="g-win32-registry-key-get-value-w.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>auto_expand</p></td>
+<td class="parameter_description"><p>(in) <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> to automatically expand G_WIN32_REGISTRY_VALUE_EXPAND_STR
+to G_WIN32_REGISTRY_VALUE_STR.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value_name</p></td>
+<td class="parameter_description"><p>name of the value to get (in UTF-16).
+Empty string means the '(Default)' value. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value_type</p></td>
+<td class="parameter_description"><p>type of the value retrieved. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value_data</p></td>
+<td class="parameter_description"><p>contents of the value. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Out parameter, where caller must allocate storage."><span class="acronym">out callee-allocates</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value_data_size</p></td>
+<td class="parameter_description"><p>size of the buffer pointed
+by <em class="parameter"><code>value_data</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL may be passed instead of a pointer to a location."><span class="acronym">optional</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-key-get-value-w.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> on failure.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-key-get-path"></a><h3>g_win32_registry_key_get_path ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_win32_registry_key_get_path (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> *key</code></em>);</pre>
+<p>Get full path to the key</p>
+<div class="refsect3">
+<a name="g-win32-registry-key-get-path.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-key-get-path.returns"></a><h4>Returns</h4>
+<p>a full path to the key (in UTF-8),
+or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if it can't be converted to UTF-8. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-key-get-path-w"></a><h3>g_win32_registry_key_get_path_w ()</h3>
+<pre class="programlisting">const <a href="../glib-Unicode-Manipulation.html#gunichar2"><span class="returnvalue">gunichar2</span></a> *
+g_win32_registry_key_get_path_w (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> *key</code></em>);</pre>
+<p>Get full path to the key</p>
+<div class="refsect3">
+<a name="g-win32-registry-key-get-path-w.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-key-get-path-w.returns"></a><h4>Returns</h4>
+<p>a full path to the key (in UTF-16). </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GWin32RegistryKeyWatchCallbackFunc"></a><h3>GWin32RegistryKeyWatchCallbackFunc ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+<span class="c_punctuation">(</span>*GWin32RegistryKeyWatchCallbackFunc<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> *key</code></em>,
+                                       <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>The type of the callback passed to <a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-watch" title="g_win32_registry_key_watch ()"><code class="function">g_win32_registry_key_watch()</code></a>.</p>
+<p>The callback is invoked after a change matching the watch flags and arguments
+occurs. If the children of the key were watched also, there is no way to know
+which one of them triggered the callback.</p>
+<div class="refsect3">
+<a name="GWin32RegistryKeyWatchCallbackFunc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> that was watched.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>The <em class="parameter"><code>user_data</code></em>
+<a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> passed to <a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-watch" title="g_win32_registry_key_watch ()"><code class="function">g_win32_registry_key_watch()</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-42.html#api-index-2.42">2.42</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-key-watch"></a><h3>g_win32_registry_key_watch ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_win32_registry_key_watch (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> *key</code></em>,
+                            <em class="parameter"><code><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> watch_children</code></em>,
+                            <em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKeyWatcherFlags" title="enum GWin32RegistryKeyWatcherFlags"><span class="type">GWin32RegistryKeyWatcherFlags</span></a> watch_flags</code></em>,
+                            <em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKeyWatchCallbackFunc" title="GWin32RegistryKeyWatchCallbackFunc ()"><span class="type">GWin32RegistryKeyWatchCallbackFunc</span></a> callback</code></em>,
+                            <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
+                            <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Puts <em class="parameter"><code>key</code></em>
+ under a watch.</p>
+<p>When the key changes, an APC will be queued in the current thread. The APC
+will run when the current thread enters alertable state (GLib main loop
+should do that; if you are not using it, see MSDN documentation for W32API
+calls that put thread into alertable state). When it runs, it will
+atomically switch an indicator in the <em class="parameter"><code>key</code></em>
+. If a callback was specified,
+it is invoked at that point. Subsequent calls to
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-has-changed" title="g_win32_registry_key_has_changed ()"><code class="function">g_win32_registry_key_has_changed()</code></a> will return <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>, and the callback (if
+it was specified) will not be invoked anymore.
+Calling <a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-erase-change-indicator" title="g_win32_registry_key_erase_change_indicator ()"><code class="function">g_win32_registry_key_erase_change_indicator()</code></a> will reset the indicator,
+and <a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-has-changed" title="g_win32_registry_key_has_changed ()"><code class="function">g_win32_registry_key_has_changed()</code></a> will start returning <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a>.
+To resume the watch, call <code class="function">g_win32_registry_key_watch_for_changes()</code> again.</p>
+<p>Calling <code class="function">g_win32_registry_key_watch_for_changes()</code> for a key that is already
+being watched is allowed and affects nothing.</p>
+<p>The fact that the key is being watched will be used internally to update
+key path (if it changes).</p>
+<div class="refsect3">
+<a name="g-win32-registry-key-watch.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>watch_children</p></td>
+<td class="parameter_description"><p>(in) <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> also watch the children of the <em class="parameter"><code>key</code></em>
+, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a>
+to watch the key only.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>watch_flags</p></td>
+<td class="parameter_description"><p>specifies the types of changes to watch for. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>a function to invoke when a change occurs. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>a pointer to pass to <em class="parameter"><code>callback</code></em>
+on invocation. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a pointer to <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-key-watch.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> on failure.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-key-has-changed"></a><h3>g_win32_registry_key_has_changed ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_win32_registry_key_has_changed (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> *key</code></em>);</pre>
+<p>Check the <em class="parameter"><code>key</code></em>
+'s status indicator.</p>
+<div class="refsect3">
+<a name="g-win32-registry-key-has-changed.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-win32-registry-key-has-changed.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <em class="parameter"><code>key</code></em>
+was put under watch at some point and has changed
+since then, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if it either wasn't changed or wasn't watched at all.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-win32-registry-key-erase-change-indicator"></a><h3>g_win32_registry_key_erase_change_indicator ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_win32_registry_key_erase_change_indicator
+                               (<em class="parameter"><code><a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a> *key</code></em>);</pre>
+<p>Erases change indicator of the <em class="parameter"><code>key</code></em>
+.</p>
+<p>Subsequent calls to <a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-has-changed" title="g_win32_registry_key_has_changed ()"><code class="function">g_win32_registry_key_has_changed()</code></a> will return <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a>
+until the key is put on watch again by calling
+<a class="link" href="gio-GWin32RegistryKey.html#g-win32-registry-key-watch" title="g_win32_registry_key_watch ()"><code class="function">g_win32_registry_key_watch()</code></a> again.</p>
+<div class="refsect3">
+<a name="g-win32-registry-key-erase-change-indicator.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>key</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GWin32RegistryKey.html#GWin32RegistryKey" title="struct GWin32RegistryKey"><span class="type">GWin32RegistryKey</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for input. Default is transfer none."><span class="acronym">in</span></acronym>][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-GWin32RegistryKey.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GWin32RegistrySubkeyIter"></a><h3>struct GWin32RegistrySubkeyIter</h3>
+<pre class="programlisting">struct GWin32RegistrySubkeyIter {
+};
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GWin32RegistryValueIter"></a><h3>struct GWin32RegistryValueIter</h3>
+<pre class="programlisting">struct GWin32RegistryValueIter {
+};
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GWin32RegistryKey"></a><h3>struct GWin32RegistryKey</h3>
+<pre class="programlisting">struct GWin32RegistryKey {
+  GObject parent_instance;
+};
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GWin32RegistryValueType"></a><h3>enum GWin32RegistryValueType</h3>
+<div class="refsect3">
+<a name="GWin32RegistryValueType.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-WIN32-REGISTRY-VALUE-NONE:CAPS"></a>G_WIN32_REGISTRY_VALUE_NONE</p></td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-WIN32-REGISTRY-VALUE-BINARY:CAPS"></a>G_WIN32_REGISTRY_VALUE_BINARY</p></td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-WIN32-REGISTRY-VALUE-UINT32LE:CAPS"></a>G_WIN32_REGISTRY_VALUE_UINT32LE</p></td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-WIN32-REGISTRY-VALUE-UINT32BE:CAPS"></a>G_WIN32_REGISTRY_VALUE_UINT32BE</p></td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-WIN32-REGISTRY-VALUE-UINT32:CAPS"></a>G_WIN32_REGISTRY_VALUE_UINT32</p></td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-WIN32-REGISTRY-VALUE-UINT32:CAPS"></a>G_WIN32_REGISTRY_VALUE_UINT32</p></td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-WIN32-REGISTRY-VALUE-EXPAND-STR:CAPS"></a>G_WIN32_REGISTRY_VALUE_EXPAND_STR</p></td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-WIN32-REGISTRY-VALUE-LINK:CAPS"></a>G_WIN32_REGISTRY_VALUE_LINK</p></td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-WIN32-REGISTRY-VALUE-MULTI-STR:CAPS"></a>G_WIN32_REGISTRY_VALUE_MULTI_STR</p></td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-WIN32-REGISTRY-VALUE-UINT64LE:CAPS"></a>G_WIN32_REGISTRY_VALUE_UINT64LE</p></td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-WIN32-REGISTRY-VALUE-UINT64:CAPS"></a>G_WIN32_REGISTRY_VALUE_UINT64</p></td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-WIN32-REGISTRY-VALUE-STR:CAPS"></a>G_WIN32_REGISTRY_VALUE_STR</p></td>
+<td> </td>
+<td> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GWin32RegistryKeyWatcherFlags"></a><h3>enum GWin32RegistryKeyWatcherFlags</h3>
+<div class="refsect3">
+<a name="GWin32RegistryKeyWatcherFlags.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-WIN32-REGISTRY-WATCH-NAME:CAPS"></a>G_WIN32_REGISTRY_WATCH_NAME</p></td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-WIN32-REGISTRY-WATCH-ATTRIBUTES:CAPS"></a>G_WIN32_REGISTRY_WATCH_ATTRIBUTES</p></td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-WIN32-REGISTRY-WATCH-VALUES:CAPS"></a>G_WIN32_REGISTRY_WATCH_VALUES</p></td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-WIN32-REGISTRY-WATCH-SECURITY:CAPS"></a>G_WIN32_REGISTRY_WATCH_SECURITY</p></td>
+<td> </td>
+<td> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

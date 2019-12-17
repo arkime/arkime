@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+]>
+<refentry id="gdbus-FDPassing">
+  <refmeta>    <refentrytitle role="top_of_page" id="gdbus-interface-FDPassing.top_of_page">FDPassing</refentrytitle>
+  <indexterm zone="gdbus-interface-FDPassing.top_of_page"><primary sortas="FDPassing">FDPassing</primary></indexterm>
+  </refmeta>  <refnamediv>    <refname>FDPassing</refname>    <refpurpose></refpurpose>  </refnamediv>  <refsynopsisdiv role="synopsis">
+    <title role="synopsis.title">Methods</title>
+    <synopsis>
+<link linkend="gdbus-method-FDPassing.HelloFD">HelloFD</link> (IN  s greeting,
+         OUT s response);
+</synopsis>
+  </refsynopsisdiv>
+<refsect1 role="desc" id="gdbus-interface-FDPassing">
+  <title role="desc.title">Description</title>
+  <para></para>
+</refsect1>
+<refsect1 role="details" id="gdbus-methods-FDPassing">
+  <title role="details.title">Method Details</title>
+<refsect2 role="method" id="gdbus-method-FDPassing.HelloFD">
+  <title>The HelloFD() method</title>
+  <indexterm zone="gdbus-method-FDPassing.HelloFD"><primary sortas="FDPassing.HelloFD">FDPassing.HelloFD()</primary></indexterm>
+<programlisting>
+HelloFD (IN  s greeting,
+         OUT s response);
+</programlisting>
+<para></para>
+<variablelist role="params">
+<varlistentry>
+  <term><literal>IN s <parameter>greeting</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT s <parameter>response</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+</refsect1>
+</refentry>
+

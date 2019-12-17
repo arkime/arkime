@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=appinfo-test
+Exec=./appinfo-test --option
+OnlyShowIn=GNOME;KDE;
+NotShowIn=ROX;

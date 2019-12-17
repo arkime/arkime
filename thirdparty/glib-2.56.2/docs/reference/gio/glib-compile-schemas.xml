@@ -1,0 +1,118 @@
+<refentry id="glib-compile-schemas" lang="en">
+
+<refentryinfo>
+  <title>glib-compile-schemas</title>
+  <productname>GIO</productname>
+  <authorgroup>
+    <author>
+      <contrib>Developer</contrib>
+      <firstname>Ryan</firstname>
+      <surname>Lortie</surname>
+    </author>
+  </authorgroup>
+</refentryinfo>
+
+<refmeta>
+  <refentrytitle>glib-compile-schemas</refentrytitle>
+  <manvolnum>1</manvolnum>
+  <refmiscinfo class="manual">User Commands</refmiscinfo>
+</refmeta>
+
+<refnamediv>
+  <refname>glib-compile-schemas</refname>
+  <refpurpose>GSettings schema compiler</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+  <cmdsynopsis>
+    <command>glib-compile-schemas</command>
+    <arg choice="opt" rep="repeat">OPTION</arg>
+    <arg choice="req">DIRECTORY</arg>
+  </cmdsynopsis>
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+<para><command>glib-compile-schemas</command> compiles all the GSettings XML
+schema files in <replaceable>DIRECTORY</replaceable> into a binary file
+with the name <filename>gschemas.compiled</filename> that can be used
+by <link linkend="GSettings"><type>GSettings</type></link>. The XML schema
+files must have the filename extension <filename>.gschema.xml</filename>.
+For a detailed description of the XML file format, see the
+<link linkend="GSettings"><type>GSettings</type></link> documentation.
+</para>
+<para>
+At runtime, GSettings looks for schemas in the
+<filename>glib-2.0/schemas</filename> subdirectories of all directories
+specified in the <envar>XDG_DATA_DIRS</envar> environment variable. The
+usual location to install schema files is
+<filename>/usr/share/glib-2.0/schemas</filename>.
+</para>
+<para>
+In addition to schema files, glib-compile-schemas reads 'vendor override'
+files, which are key files that can override default values for keys in
+the schemas. The group names in the key files are the schema id, and the
+values are written in serialized GVariant form.
+Vendor override files must have the filename extension
+<filename>.gschema.override</filename>.
+</para>
+<para>
+By convention, vendor override files begin with <filename>nn_</filename>
+where <filename>nn</filename> is a number from 00 to 99.  Higher
+numbered files have higher priority (eg: if the same override is made in
+a file numbered 10 and then again in a file numbered 20, the override
+from 20 will take precedence).
+</para>
+</refsect1>
+
+<refsect1><title>Options</title>
+<variablelist>
+
+<varlistentry>
+<term><option>-h</option>, <option>--help</option></term>
+<listitem><para>
+Print help and exit
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--version</option></term>
+<listitem><para>
+Print program version and exit
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--targetdir=<replaceable>TARGET</replaceable></option></term>
+<listitem><para>
+Store <filename>gschemas.compiled</filename> in the <replaceable>TARGET</replaceable> directory instead of <replaceable>DIRECTORY</replaceable>.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--strict</option></term>
+<listitem><para>
+Abort on any errors in schemas. Without this option, faulty schema files are
+simply omitted from the resulting compiled schema.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--dry-run</option></term>
+<listitem><para>
+Don't write <filename>gschemas.compiled</filename>. This option can be used
+to check <filename>.gschema.xml</filename> sources for errors.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term><option>--allow-any-name</option></term>
+<listitem><para>
+Do not enforce restrictions on key names. Note that this option is purely
+to facility the transition from GConf, and will be removed at some time
+in the future.
+</para></listitem>
+</varlistentry>
+
+</variablelist>
+</refsect1>
+</refentry>

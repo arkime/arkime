@@ -1,0 +1,652 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GFileAttribute: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="file_ops.html" title="File Operations">
+<link rel="prev" href="GFile.html" title="GFile">
+<link rel="next" href="GFileInfo.html" title="GFileInfo">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gio-GFileAttribute.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#gio-GFileAttribute.object-hierarchy" class="shortcut">Object Hierarchy</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="file_ops.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GFile.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GFileInfo.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gio-GFileAttribute"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gio-GFileAttribute.top_of_page"></a>GFileAttribute</span></h2>
+<p>GFileAttribute — Key-Value Paired File Attributes</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gio-GFileAttribute.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="returnvalue">GFileAttributeInfoList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-GFileAttribute.html#g-file-attribute-info-list-new" title="g_file_attribute_info_list_new ()">g_file_attribute_info_list_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="returnvalue">GFileAttributeInfoList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-GFileAttribute.html#g-file-attribute-info-list-ref" title="g_file_attribute_info_list_ref ()">g_file_attribute_info_list_ref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GFileAttribute.html#g-file-attribute-info-list-unref" title="g_file_attribute_info_list_unref ()">g_file_attribute_info_list_unref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="returnvalue">GFileAttributeInfoList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-GFileAttribute.html#g-file-attribute-info-list-dup" title="g_file_attribute_info_list_dup ()">g_file_attribute_info_list_dup</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="gio-GFileAttribute.html#GFileAttributeInfo" title="GFileAttributeInfo"><span class="returnvalue">GFileAttributeInfo</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gio-GFileAttribute.html#g-file-attribute-info-list-lookup" title="g_file_attribute_info_list_lookup ()">g_file_attribute_info_list_lookup</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gio-GFileAttribute.html#g-file-attribute-info-list-add" title="g_file_attribute_info_list_add ()">g_file_attribute_info_list_add</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<a name="GFileAttributeInfoList"></a><div class="refsect1">
+<a name="gio-GFileAttribute.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="gio-GFileAttribute.html#GFileAttributeType" title="enum GFileAttributeType">GFileAttributeType</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoFlags" title="enum GFileAttributeInfoFlags">GFileAttributeInfoFlags</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="gio-GFileAttribute.html#GFileAttributeStatus" title="enum GFileAttributeStatus">GFileAttributeStatus</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gio-GFileAttribute.html#GFileAttributeInfo" title="GFileAttributeInfo">GFileAttributeInfo</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList-struct" title="GFileAttributeInfoList">GFileAttributeInfoList</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gio-GFileAttribute.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Boxed-Types.html">GBoxed</a>
+    <span class="lineart">╰──</span> GFileAttributeInfoList
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-GFileAttribute.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gio-GFileAttribute.description"></a><h2>Description</h2>
+<p>File attributes in GIO consist of a list of key-value pairs.</p>
+<p>Keys are strings that contain a key namespace and a key name, separated
+by a colon, e.g. "namespace::keyname". Namespaces are included to sort
+key-value pairs by namespaces for relevance. Keys can be retrived
+using wildcards, e.g. "standard::*" will return all of the keys in the
+"standard" namespace.</p>
+<p>The list of possible attributes for a filesystem (pointed to by a <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>) is
+available as a <a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="type">GFileAttributeInfoList</span></a>. This list is queryable by key names
+as indicated earlier.</p>
+<p>Information is stored within the list in <a class="link" href="gio-GFileAttribute.html#GFileAttributeInfo" title="GFileAttributeInfo"><span class="type">GFileAttributeInfo</span></a> structures.
+The info structure can store different types, listed in the enum
+<a class="link" href="gio-GFileAttribute.html#GFileAttributeType" title="enum GFileAttributeType"><span class="type">GFileAttributeType</span></a>. Upon creation of a <a class="link" href="gio-GFileAttribute.html#GFileAttributeInfo" title="GFileAttributeInfo"><span class="type">GFileAttributeInfo</span></a>, the type will
+be set to <a class="link" href="gio-GFileAttribute.html#G-FILE-ATTRIBUTE-TYPE-INVALID:CAPS"><code class="literal">G_FILE_ATTRIBUTE_TYPE_INVALID</code></a>.</p>
+<p>Classes that implement <a class="link" href="GFile.html#GFileIface" title="struct GFileIface"><span class="type">GFileIface</span></a> will create a <a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="type">GFileAttributeInfoList</span></a> and
+install default keys and values for their given file system, architecture,
+and other possible implementation details (e.g., on a UNIX system, a file
+attribute key will be registered for the user id for a given file).</p>
+<div class="refsect3">
+<a name="id-1.4.2.3.8.7"></a><h4>Default Namespaces</h4>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p><code class="literal">"standard"</code>: The "Standard" namespace. General file information that
+any application may need should be put in this namespace. Examples
+include the file's name, type, and size.</p></li>
+<li class="listitem"><p><code class="literal">"etag</code>: The <a class="link" href="GFile.html#gfile-etag" title="Entity Tags">Entity Tag</a> namespace. Currently, the only key
+in this namespace is "value", which contains the value of the current
+entity tag.</p></li>
+<li class="listitem"><p><code class="literal">"id"</code>: The "Identification" namespace. This namespace is used by file
+managers and applications that list directories to check for loops and
+to uniquely identify files.</p></li>
+<li class="listitem"><p><code class="literal">"access"</code>: The "Access" namespace. Used to check if a user has the
+proper privileges to access files and perform file operations. Keys in
+this namespace are made to be generic and easily understood, e.g. the
+"can_read" key is <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the current user has permission to read the
+file. UNIX permissions and NTFS ACLs in Windows should be mapped to
+these values.</p></li>
+<li class="listitem"><p><code class="literal">"mountable"</code>: The "Mountable" namespace. Includes simple boolean keys
+for checking if a file or path supports mount operations, e.g. mount,
+unmount, eject. These are used for files of type <a class="link" href="GFileInfo.html#G-FILE-TYPE-MOUNTABLE:CAPS"><code class="literal">G_FILE_TYPE_MOUNTABLE</code></a>.</p></li>
+<li class="listitem"><p><code class="literal">"time"</code>: The "Time" namespace. Includes file access, changed, created
+times.</p></li>
+<li class="listitem"><p><code class="literal">"unix"</code>: The "Unix" namespace. Includes UNIX-specific information and
+may not be available for all files. Examples include the UNIX "UID",
+"GID", etc.</p></li>
+<li class="listitem"><p><code class="literal">"dos"</code>: The "DOS" namespace. Includes DOS-specific information and may
+not be available for all files. Examples include "is_system" for checking
+if a file is marked as a system file, and "is_archive" for checking if a
+file is marked as an archive file.</p></li>
+<li class="listitem"><p><code class="literal">"owner"</code>: The "Owner" namespace. Includes information about who owns a
+file. May not be available for all file systems. Examples include "user"
+for getting the user name of the file owner. This information is often
+mapped from some backend specific data such as a UNIX UID.</p></li>
+<li class="listitem"><p><code class="literal">"thumbnail"</code>: The "Thumbnail" namespace. Includes information about file
+thumbnails and their location within the file system. Examples of keys in
+this namespace include "path" to get the location of a thumbnail, "failed"
+to check if thumbnailing of the file failed, and "is-valid" to check if
+the thumbnail is outdated.</p></li>
+<li class="listitem"><p><code class="literal">"filesystem"</code>: The "Filesystem" namespace. Gets information about the
+file system where a file is located, such as its type, how much space is
+left available, and the overall size of the file system.</p></li>
+<li class="listitem"><p><code class="literal">"gvfs"</code>: The "GVFS" namespace. Keys in this namespace contain information
+about the current GVFS backend in use.</p></li>
+<li class="listitem"><p><code class="literal">"xattr"</code>: The "xattr" namespace. Gets information about extended
+user attributes. See attr(5). The "user." prefix of the extended user
+attribute name is stripped away when constructing keys in this namespace,
+e.g. "xattr::mime_type" for the extended attribute with the name
+"user.mime_type". Note that this information is only available if
+GLib has been built with extended attribute support.</p></li>
+<li class="listitem"><p><code class="literal">"xattr-sys"</code>: The "xattr-sys" namespace. Gets information about
+extended attributes which are not user-specific. See attr(5). Note
+that this information is only available if GLib has been built with
+extended attribute support.</p></li>
+<li class="listitem"><p><code class="literal">"selinux"</code>: The "SELinux" namespace. Includes information about the
+SELinux context of files. Note that this information is only available
+if GLib has been built with SELinux support.</p></li>
+</ul></div>
+<p>Please note that these are not all of the possible namespaces.
+More namespaces can be added from GIO modules or by individual applications.
+For more information about writing GIO modules, see <a class="link" href="GIOModule.html" title="GIOModule"><span class="type">GIOModule</span></a>.</p>
+<p>&lt;!-- TODO: Implementation note about using extended attributes on supported
+file systems --&gt;</p>
+</div>
+<div class="refsect3">
+<a name="id-1.4.2.3.8.8"></a><h4>Default Keys</h4>
+<p>For a list of the built-in keys and their types, see the
+<a class="link" href="GFileInfo.html" title="GFileInfo">GFileInfo</a> documentation.</p>
+<p>Note that there are no predefined keys in the "xattr" and "xattr-sys"
+namespaces. Keys for the "xattr" namespace are constructed by stripping
+away the "user." prefix from the extended user attribute, and prepending
+"xattr::". Keys for the "xattr-sys" namespace are constructed by
+concatenating "xattr-sys::" with the extended attribute name. All extended
+attribute values are returned as hex-encoded strings in which bytes outside
+the ASCII range are encoded as escape sequences of the form \x<code class="literal">nn</code>
+where <code class="literal">nn</code> is a 2-digit hexadecimal number.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-GFileAttribute.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-file-attribute-info-list-new"></a><h3>g_file_attribute_info_list_new ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="returnvalue">GFileAttributeInfoList</span></a> *
+g_file_attribute_info_list_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Creates a new file attribute info list.</p>
+<div class="refsect3">
+<a name="g-file-attribute-info-list-new.returns"></a><h4>Returns</h4>
+<p> a <a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="type">GFileAttributeInfoList</span></a>.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-attribute-info-list-ref"></a><h3>g_file_attribute_info_list_ref ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="returnvalue">GFileAttributeInfoList</span></a> *
+g_file_attribute_info_list_ref (<em class="parameter"><code><a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="type">GFileAttributeInfoList</span></a> *list</code></em>);</pre>
+<p>References a file attribute info list.</p>
+<div class="refsect3">
+<a name="g-file-attribute-info-list-ref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>list</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="type">GFileAttributeInfoList</span></a> to reference.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-file-attribute-info-list-ref.returns"></a><h4>Returns</h4>
+<p> <a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="type">GFileAttributeInfoList</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-attribute-info-list-unref"></a><h3>g_file_attribute_info_list_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_file_attribute_info_list_unref (<em class="parameter"><code><a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="type">GFileAttributeInfoList</span></a> *list</code></em>);</pre>
+<p>Removes a reference from the given <em class="parameter"><code>list</code></em>
+. If the reference count
+falls to zero, the <em class="parameter"><code>list</code></em>
+ is deleted.</p>
+<div class="refsect3">
+<a name="g-file-attribute-info-list-unref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>list</p></td>
+<td class="parameter_description"><p>The <a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="type">GFileAttributeInfoList</span></a> to unreference.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-attribute-info-list-dup"></a><h3>g_file_attribute_info_list_dup ()</h3>
+<pre class="programlisting"><a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="returnvalue">GFileAttributeInfoList</span></a> *
+g_file_attribute_info_list_dup (<em class="parameter"><code><a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="type">GFileAttributeInfoList</span></a> *list</code></em>);</pre>
+<p>Makes a duplicate of a file attribute info list.</p>
+<div class="refsect3">
+<a name="g-file-attribute-info-list-dup.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>list</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="type">GFileAttributeInfoList</span></a> to duplicate.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-file-attribute-info-list-dup.returns"></a><h4>Returns</h4>
+<p> a copy of the given <em class="parameter"><code>list</code></em>
+.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-attribute-info-list-lookup"></a><h3>g_file_attribute_info_list_lookup ()</h3>
+<pre class="programlisting">const <a class="link" href="gio-GFileAttribute.html#GFileAttributeInfo" title="GFileAttributeInfo"><span class="returnvalue">GFileAttributeInfo</span></a> *
+g_file_attribute_info_list_lookup (<em class="parameter"><code><a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="type">GFileAttributeInfoList</span></a> *list</code></em>,
+                                   <em class="parameter"><code>const <span class="type">char</span> *name</code></em>);</pre>
+<p>Gets the file attribute with the name <em class="parameter"><code>name</code></em>
+ from <em class="parameter"><code>list</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-file-attribute-info-list-lookup.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>list</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="type">GFileAttributeInfoList</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>the name of the attribute to lookup.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-file-attribute-info-list-lookup.returns"></a><h4>Returns</h4>
+<p> a <a class="link" href="gio-GFileAttribute.html#GFileAttributeInfo" title="GFileAttributeInfo"><span class="type">GFileAttributeInfo</span></a> for the <em class="parameter"><code>name</code></em>
+, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if an
+attribute isn't found.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-file-attribute-info-list-add"></a><h3>g_file_attribute_info_list_add ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_file_attribute_info_list_add (<em class="parameter"><code><a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="type">GFileAttributeInfoList</span></a> *list</code></em>,
+                                <em class="parameter"><code>const <span class="type">char</span> *name</code></em>,
+                                <em class="parameter"><code><a class="link" href="gio-GFileAttribute.html#GFileAttributeType" title="enum GFileAttributeType"><span class="type">GFileAttributeType</span></a> type</code></em>,
+                                <em class="parameter"><code><a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoFlags" title="enum GFileAttributeInfoFlags"><span class="type">GFileAttributeInfoFlags</span></a> flags</code></em>);</pre>
+<p>Adds a new attribute with <em class="parameter"><code>name</code></em>
+ to the <em class="parameter"><code>list</code></em>
+, setting
+its <em class="parameter"><code>type</code></em>
+ and <em class="parameter"><code>flags</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-file-attribute-info-list-add.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>list</p></td>
+<td class="parameter_description"><p>a <a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoList"><span class="type">GFileAttributeInfoList</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>the name of the attribute to add.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>the <a class="link" href="gio-GFileAttribute.html#GFileAttributeType" title="enum GFileAttributeType"><span class="type">GFileAttributeType</span></a> for the attribute.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p><a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoFlags" title="enum GFileAttributeInfoFlags"><span class="type">GFileAttributeInfoFlags</span></a> for the attribute.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-GFileAttribute.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GFileAttributeType"></a><h3>enum GFileAttributeType</h3>
+<p>The data types for file attributes.</p>
+<div class="refsect3">
+<a name="GFileAttributeType.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-ATTRIBUTE-TYPE-INVALID:CAPS"></a>G_FILE_ATTRIBUTE_TYPE_INVALID</p></td>
+<td class="enum_member_description">
+<p>indicates an invalid or uninitalized type.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-ATTRIBUTE-TYPE-STRING:CAPS"></a>G_FILE_ATTRIBUTE_TYPE_STRING</p></td>
+<td class="enum_member_description">
+<p>a null terminated UTF8 string.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-ATTRIBUTE-TYPE-BYTE-STRING:CAPS"></a>G_FILE_ATTRIBUTE_TYPE_BYTE_STRING</p></td>
+<td class="enum_member_description">
+<p>a zero terminated string of non-zero bytes.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-ATTRIBUTE-TYPE-BOOLEAN:CAPS"></a>G_FILE_ATTRIBUTE_TYPE_BOOLEAN</p></td>
+<td class="enum_member_description">
+<p>a boolean value.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-ATTRIBUTE-TYPE-UINT32:CAPS"></a>G_FILE_ATTRIBUTE_TYPE_UINT32</p></td>
+<td class="enum_member_description">
+<p>an unsigned 4-byte/32-bit integer.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-ATTRIBUTE-TYPE-INT32:CAPS"></a>G_FILE_ATTRIBUTE_TYPE_INT32</p></td>
+<td class="enum_member_description">
+<p>a signed 4-byte/32-bit integer.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-ATTRIBUTE-TYPE-UINT64:CAPS"></a>G_FILE_ATTRIBUTE_TYPE_UINT64</p></td>
+<td class="enum_member_description">
+<p>an unsigned 8-byte/64-bit integer.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-ATTRIBUTE-TYPE-INT64:CAPS"></a>G_FILE_ATTRIBUTE_TYPE_INT64</p></td>
+<td class="enum_member_description">
+<p>a signed 8-byte/64-bit integer.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-ATTRIBUTE-TYPE-OBJECT:CAPS"></a>G_FILE_ATTRIBUTE_TYPE_OBJECT</p></td>
+<td class="enum_member_description">
+<p>a <a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a>.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-ATTRIBUTE-TYPE-STRINGV:CAPS"></a>G_FILE_ATTRIBUTE_TYPE_STRINGV</p></td>
+<td class="enum_member_description">
+<p>a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> terminated char **. Since 2.22</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GFileAttributeInfoFlags"></a><h3>enum GFileAttributeInfoFlags</h3>
+<p>Flags specifying the behaviour of an attribute.</p>
+<div class="refsect3">
+<a name="GFileAttributeInfoFlags.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-ATTRIBUTE-INFO-NONE:CAPS"></a>G_FILE_ATTRIBUTE_INFO_NONE</p></td>
+<td class="enum_member_description">
+<p>no flags set.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-ATTRIBUTE-INFO-COPY-WITH-FILE:CAPS"></a>G_FILE_ATTRIBUTE_INFO_COPY_WITH_FILE</p></td>
+<td class="enum_member_description">
+<p>copy the attribute values when the file is copied.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-ATTRIBUTE-INFO-COPY-WHEN-MOVED:CAPS"></a>G_FILE_ATTRIBUTE_INFO_COPY_WHEN_MOVED</p></td>
+<td class="enum_member_description">
+<p>copy the attribute values when the file is moved.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GFileAttributeStatus"></a><h3>enum GFileAttributeStatus</h3>
+<p>Used by <a class="link" href="GFile.html#g-file-set-attributes-from-info" title="g_file_set_attributes_from_info ()"><code class="function">g_file_set_attributes_from_info()</code></a> when setting file attributes.</p>
+<div class="refsect3">
+<a name="GFileAttributeStatus.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-ATTRIBUTE-STATUS-UNSET:CAPS"></a>G_FILE_ATTRIBUTE_STATUS_UNSET</p></td>
+<td class="enum_member_description">
+<p>Attribute value is unset (empty).</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-ATTRIBUTE-STATUS-SET:CAPS"></a>G_FILE_ATTRIBUTE_STATUS_SET</p></td>
+<td class="enum_member_description">
+<p>Attribute value is set.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-FILE-ATTRIBUTE-STATUS-ERROR-SETTING:CAPS"></a>G_FILE_ATTRIBUTE_STATUS_ERROR_SETTING</p></td>
+<td class="enum_member_description">
+<p>Indicates an error in setting the value.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GFileAttributeInfo"></a><h3>GFileAttributeInfo</h3>
+<pre class="programlisting">typedef struct {
+  char                    *name;
+  GFileAttributeType       type;
+  GFileAttributeInfoFlags  flags;
+} GFileAttributeInfo;
+</pre>
+<p>Information about a specific attribute.</p>
+<div class="refsect3">
+<a name="GFileAttributeInfo.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><span class="type">char</span> *<em class="structfield"><code><a name="GFileAttributeInfo.name"></a>name</code></em>;</p></td>
+<td class="struct_member_description"><p>the name of the attribute.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gio-GFileAttribute.html#GFileAttributeType" title="enum GFileAttributeType"><span class="type">GFileAttributeType</span></a> <em class="structfield"><code><a name="GFileAttributeInfo.type"></a>type</code></em>;</p></td>
+<td class="struct_member_description"><p>the <a class="link" href="gio-GFileAttribute.html#GFileAttributeType" title="enum GFileAttributeType"><span class="type">GFileAttributeType</span></a> type of the attribute.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoFlags" title="enum GFileAttributeInfoFlags"><span class="type">GFileAttributeInfoFlags</span></a> <em class="structfield"><code><a name="GFileAttributeInfo.flags"></a>flags</code></em>;</p></td>
+<td class="struct_member_description"><p>a set of <a class="link" href="gio-GFileAttribute.html#GFileAttributeInfoFlags" title="enum GFileAttributeInfoFlags"><span class="type">GFileAttributeInfoFlags</span></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GFileAttributeInfoList-struct"></a><h3>GFileAttributeInfoList</h3>
+<pre class="programlisting">typedef struct {
+  GFileAttributeInfo *infos;
+  int                 n_infos;
+} GFileAttributeInfoList;
+</pre>
+<p>Acts as a lightweight registry for possible valid file attributes.
+The registry stores Key-Value pair formats as <a href="gio-GFileAttribute.html#GFileAttributeInfo"><span class="type">GFileAttributeInfos</span></a>.</p>
+<div class="refsect3">
+<a name="GFileAttributeInfoList.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="gio-GFileAttribute.html#GFileAttributeInfo" title="GFileAttributeInfo"><span class="type">GFileAttributeInfo</span></a> *<em class="structfield"><code><a name="GFileAttributeInfoList-struct.infos"></a>infos</code></em>;</p></td>
+<td class="struct_member_description"><p>an array of <a href="gio-GFileAttribute.html#GFileAttributeInfo"><span class="type">GFileAttributeInfos</span></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><span class="type">int</span> <em class="structfield"><code><a name="GFileAttributeInfoList-struct.n-infos"></a>n_infos</code></em>;</p></td>
+<td class="struct_member_description"><p>the number of values in the array.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="gio-GFileAttribute.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a>, <a class="link" href="GFileInfo.html" title="GFileInfo"><span class="type">GFileInfo</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

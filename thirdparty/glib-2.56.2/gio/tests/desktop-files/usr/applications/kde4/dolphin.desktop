@@ -1,0 +1,27 @@
+[Desktop Entry]
+Name=Dolphin
+Name[bn]=ডলফিন
+Name[bn_IN]=Dolphin
+Name[ca]=Dolphin
+Name[ca@valencia]=Dolphin
+Name[en_GB]=Dolphin
+Name[eo]=Dolphin
+Name[pt]=Dolphin
+Name[pt_BR]=Dolphin
+Exec=true %i -caption %c %u
+Icon=system-file-manager
+Type=Application
+X-DocPath=dolphin/index.html
+Categories=Qt;KDE;System;FileTools;FileManager;
+GenericName=File Manager
+GenericName[bn]=ফাইল ম্যানেজার
+GenericName[bn_IN]=ফাইল পরিচালন ব্যবস্থা
+GenericName[ca]=Gestor de fitxers
+GenericName[ca@valencia]=Gestor de fitxers
+GenericName[en_GB]=File Manager
+GenericName[eo]=Dosieradministrilo
+GenericName[pt]=Gestor de Ficheiros
+GenericName[pt_BR]=Gerenciador de arquivos
+Terminal=false
+MimeType=inode/directory;
+InitialPreference=10

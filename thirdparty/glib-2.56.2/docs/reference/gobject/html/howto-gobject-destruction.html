@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Object destruction: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="howto-gobject.html" title="How to define and implement a new GObject">
+<link rel="prev" href="howto-gobject-construction.html" title="Object construction">
+<link rel="next" href="howto-gobject-methods.html" title="Object methods">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="howto-gobject.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="howto-gobject-construction.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="howto-gobject-methods.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="sect1">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="howto-gobject-destruction"></a>Object destruction</h2></div></div></div>
+<p>
+      Again, it is often difficult to figure out which mechanism to use to
+      hook into the object's destruction process: when the last
+      <code class="function"><a class="link" href="gobject-The-Base-Object-Type.html#g-object-unref" title="g_object_unref ()">g_object_unref</a></code>
+      function call is made, a lot of things happen as described in
+      <a class="xref" href="gobject-memory.html#gobject-destruction-table" title="Table 5. g_object_unref">Table 5, “g_object_unref”</a>.
+    </p>
+<p>
+      The destruction process of your object is in two phases: dispose and
+      finalize. This split is necessary to handle
+      potential cycles due to the nature of the reference counting mechanism
+      used by GObject, as well as dealing with temporary revival of
+      instances in case of signal emission during the destruction sequence.
+      See <a class="xref" href="gobject-memory.html#gobject-memory-cycles" title="Reference counts and cycles">the section called “Reference counts and cycles”</a> for more information.
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="keyword">struct</span><span class="normal"> </span><span class="classname">_ViewerFilePrivate</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">filename</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">guint</span><span class="normal"> zoom_level</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="usertype">GInputStream</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">input_stream</span><span class="symbol">;</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+
+<span class="function"><a href="gobject-Type-Information.html#G-DEFINE-TYPE-WITH-PRIVATE:CAPS">G_DEFINE_TYPE_WITH_PRIVATE</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ViewerFile</span><span class="symbol">,</span><span class="normal"> viewer_file</span><span class="symbol">,</span><span class="normal"> <a href="gobject-Type-Information.html#G-TYPE-OBJECT:CAPS">G_TYPE_OBJECT</a></span><span class="symbol">)</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_file_dispose</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GObject</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">gobject</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">ViewerFilePrivate</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">priv </span><span class="symbol">=</span><span class="normal"> </span><span class="function">viewer_file_get_instance_private</span><span class="normal"> </span><span class="symbol">(</span><span class="function">VIEWER_FILE</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">gobject</span><span class="symbol">));</span>
+
+<span class="normal">  </span><span class="comment">/* In dispose(), you are supposed to free all types referenced from this</span>
+<span class="comment">   * object which might themselves hold a reference to self. Generally,</span>
+<span class="comment">   * the most simple solution is to unref all members on which you own a </span>
+<span class="comment">   * reference.</span>
+<span class="comment">   */</span>
+
+<span class="normal">  </span><span class="comment">/* dispose() might be called multiple times, so we must guard against</span>
+<span class="comment">   * calling g_object_unref() on an invalid GObject by setting the member</span>
+<span class="comment">   * NULL; g_clear_object() does this for us.</span>
+<span class="comment">   */</span>
+<span class="normal">  </span><span class="function"><a href="gobject-The-Base-Object-Type.html#g-clear-object">g_clear_object</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">input_stream</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">/* Always chain up to the parent class; there is no need to check if</span>
+<span class="comment">   * the parent class implements the dispose() virtual function: it is</span>
+<span class="comment">   * always guaranteed to do so</span>
+<span class="comment">   */</span>
+<span class="normal">  </span><span class="function"><a href="gobject-The-Base-Object-Type.html#G-OBJECT-CLASS:CAPS">G_OBJECT_CLASS</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">viewer_file_parent_class</span><span class="symbol">)-&gt;</span><span class="function">dispose</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">gobject</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_file_finalize</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">GObject</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">gobject</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">ViewerFilePrivate</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">priv </span><span class="symbol">=</span><span class="normal"> </span><span class="function">viewer_file_get_instance_private</span><span class="normal"> </span><span class="symbol">(</span><span class="function">VIEWER_FILE</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">gobject</span><span class="symbol">));</span>
+
+<span class="normal">  </span><span class="function"><a href="../glib-Memory-Allocation.html#g-free">g_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">priv</span><span class="symbol">-&gt;</span><span class="normal">filename</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">/* Always chain up to the parent class; as with dispose(), finalize()</span>
+<span class="comment">   * is guaranteed to exist on the parent's class virtual function table</span>
+<span class="comment">   */</span>
+<span class="normal">  </span><span class="function"><a href="gobject-The-Base-Object-Type.html#G-OBJECT-CLASS:CAPS">G_OBJECT_CLASS</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">viewer_file_parent_class</span><span class="symbol">)-&gt;</span><span class="function">finalize</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">gobject</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_file_class_init</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerFileClass</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">klass</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">GObjectClass</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">object_class </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gobject-The-Base-Object-Type.html#G-OBJECT-CLASS:CAPS">G_OBJECT_CLASS</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">klass</span><span class="symbol">);</span>
+
+<span class="normal">  object_class</span><span class="symbol">-&gt;</span><span class="normal">dispose </span><span class="symbol">=</span><span class="normal"> viewer_file_dispose</span><span class="symbol">;</span>
+<span class="normal">  object_class</span><span class="symbol">-&gt;</span><span class="normal">finalize </span><span class="symbol">=</span><span class="normal"> viewer_file_finalize</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">viewer_file_init</span><span class="normal"> </span><span class="symbol">(</span><span class="usertype">ViewerFile</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">);</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="usertype">ViewerFilePrivate</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">priv </span><span class="symbol">=</span><span class="normal"> </span><span class="function">viewer_file_get_instance_private</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">);</span>
+
+<span class="normal">  priv</span><span class="symbol">-&gt;</span><span class="normal">input_stream </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="gobject-The-Base-Object-Type.html#g-object-new">g_object_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">VIEWER_TYPE_INPUT_STREAM</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="normal">  priv</span><span class="symbol">-&gt;</span><span class="normal">filename </span><span class="symbol">=</span><span class="normal"> </span><span class="comment">/* would be set as a property */</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+    </p>
+<p>
+      It is possible that object methods might be invoked after dispose is
+      run and before finalize runs. GObject does not consider this to be a
+      program error: you must gracefully detect this and neither crash nor
+      warn the user, by having a disposed instance revert to an inert state.
+    </p>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

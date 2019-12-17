@@ -1,0 +1,418 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GSrvTarget: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="resolver.html" title="DNS resolution">
+<link rel="prev" href="GNetworkService.html" title="GNetworkService">
+<link rel="next" href="gdbus-lowlevel.html" title="Low-level D-Bus Support">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GSrvTarget.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GSrvTarget.object-hierarchy" class="shortcut">Object Hierarchy</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="resolver.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GNetworkService.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gdbus-lowlevel.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GSrvTarget"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GSrvTarget.top_of_page"></a>GSrvTarget</span></h2>
+<p>GSrvTarget — DNS SRV record target</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GSrvTarget.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="returnvalue">GSrvTarget</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSrvTarget.html#g-srv-target-new" title="g_srv_target_new ()">g_srv_target_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="returnvalue">GSrvTarget</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSrvTarget.html#g-srv-target-copy" title="g_srv_target_copy ()">g_srv_target_copy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSrvTarget.html#g-srv-target-free" title="g_srv_target_free ()">g_srv_target_free</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSrvTarget.html#g-srv-target-get-hostname" title="g_srv_target_get_hostname ()">g_srv_target_get_hostname</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GSrvTarget.html#g-srv-target-get-port" title="g_srv_target_get_port ()">g_srv_target_get_port</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GSrvTarget.html#g-srv-target-get-priority" title="g_srv_target_get_priority ()">g_srv_target_get_priority</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GSrvTarget.html#g-srv-target-get-weight" title="g_srv_target_get_weight ()">g_srv_target_get_weight</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSrvTarget.html#g-srv-target-list-sort" title="g_srv_target_list_sort ()">g_srv_target_list_sort</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSrvTarget.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GSrvTarget.html#GSrvTarget-struct" title="GSrvTarget">GSrvTarget</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSrvTarget.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Boxed-Types.html">GBoxed</a>
+    <span class="lineart">╰──</span> GSrvTarget
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSrvTarget.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSrvTarget.description"></a><h2>Description</h2>
+<p>SRV (service) records are used by some network protocols to provide
+service-specific aliasing and load-balancing. For example, XMPP
+(Jabber) uses SRV records to locate the XMPP server for a domain;
+rather than connecting directly to "example.com" or assuming a
+specific server hostname like "xmpp.example.com", an XMPP client
+would look up the "xmpp-client" SRV record for "example.com", and
+then connect to whatever host was pointed to by that record.</p>
+<p>You can use <a class="link" href="GResolver.html#g-resolver-lookup-service" title="g_resolver_lookup_service ()"><code class="function">g_resolver_lookup_service()</code></a> or
+<a class="link" href="GResolver.html#g-resolver-lookup-service-async" title="g_resolver_lookup_service_async ()"><code class="function">g_resolver_lookup_service_async()</code></a> to find the <a href="GSrvTarget.html#GSrvTarget-struct"><span class="type">GSrvTargets</span></a>
+for a given service. However, if you are simply planning to connect
+to the remote service, you can use <a class="link" href="GNetworkService.html" title="GNetworkService"><span class="type">GNetworkService</span></a>'s
+<a class="link" href="GSocketConnectable.html" title="GSocketConnectable"><span class="type">GSocketConnectable</span></a> interface and not need to worry about
+<a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a> at all.</p>
+</div>
+<div class="refsect1">
+<a name="GSrvTarget.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-srv-target-new"></a><h3>g_srv_target_new ()</h3>
+<pre class="programlisting"><a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="returnvalue">GSrvTarget</span></a> *
+g_srv_target_new (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *hostname</code></em>,
+                  <em class="parameter"><code><a href="../glib-Basic-Types.html#guint16"><span class="type">guint16</span></a> port</code></em>,
+                  <em class="parameter"><code><a href="../glib-Basic-Types.html#guint16"><span class="type">guint16</span></a> priority</code></em>,
+                  <em class="parameter"><code><a href="../glib-Basic-Types.html#guint16"><span class="type">guint16</span></a> weight</code></em>);</pre>
+<p>Creates a new <a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a> with the given parameters.</p>
+<p>You should not need to use this; normally <a href="GSrvTarget.html#GSrvTarget-struct"><span class="type">GSrvTargets</span></a> are
+created by <a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a>.</p>
+<div class="refsect3">
+<a name="g-srv-target-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>hostname</p></td>
+<td class="parameter_description"><p>the host that the service is running on</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>port</p></td>
+<td class="parameter_description"><p>the port that the service is running on</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>priority</p></td>
+<td class="parameter_description"><p>the target's priority</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>weight</p></td>
+<td class="parameter_description"><p>the target's weight</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-srv-target-new.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a>.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-srv-target-copy"></a><h3>g_srv_target_copy ()</h3>
+<pre class="programlisting"><a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="returnvalue">GSrvTarget</span></a> *
+g_srv_target_copy (<em class="parameter"><code><a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a> *target</code></em>);</pre>
+<p>Copies <em class="parameter"><code>target</code></em>
+</p>
+<div class="refsect3">
+<a name="g-srv-target-copy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>target</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-srv-target-copy.returns"></a><h4>Returns</h4>
+<p> a copy of <em class="parameter"><code>target</code></em>
+</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-srv-target-free"></a><h3>g_srv_target_free ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_srv_target_free (<em class="parameter"><code><a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a> *target</code></em>);</pre>
+<p>Frees <em class="parameter"><code>target</code></em>
+</p>
+<div class="refsect3">
+<a name="g-srv-target-free.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>target</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-srv-target-get-hostname"></a><h3>g_srv_target_get_hostname ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_srv_target_get_hostname (<em class="parameter"><code><a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a> *target</code></em>);</pre>
+<p>Gets <em class="parameter"><code>target</code></em>
+'s hostname (in ASCII form; if you are going to present
+this to the user, you should use <a href="../glib-Hostname-Utilities.html#g-hostname-is-ascii-encoded"><code class="function">g_hostname_is_ascii_encoded()</code></a> to
+check if it contains encoded Unicode segments, and use
+<a href="../glib-Hostname-Utilities.html#g-hostname-to-unicode"><code class="function">g_hostname_to_unicode()</code></a> to convert it if it does.)</p>
+<div class="refsect3">
+<a name="g-srv-target-get-hostname.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>target</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-srv-target-get-hostname.returns"></a><h4>Returns</h4>
+<p> <em class="parameter"><code>target</code></em>
+'s hostname</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-srv-target-get-port"></a><h3>g_srv_target_get_port ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>
+g_srv_target_get_port (<em class="parameter"><code><a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a> *target</code></em>);</pre>
+<p>Gets <em class="parameter"><code>target</code></em>
+'s port</p>
+<div class="refsect3">
+<a name="g-srv-target-get-port.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>target</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-srv-target-get-port.returns"></a><h4>Returns</h4>
+<p> <em class="parameter"><code>target</code></em>
+'s port</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-srv-target-get-priority"></a><h3>g_srv_target_get_priority ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>
+g_srv_target_get_priority (<em class="parameter"><code><a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a> *target</code></em>);</pre>
+<p>Gets <em class="parameter"><code>target</code></em>
+'s priority. You should not need to look at this;
+<a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> already sorts the targets according to the algorithm in
+RFC 2782.</p>
+<div class="refsect3">
+<a name="g-srv-target-get-priority.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>target</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-srv-target-get-priority.returns"></a><h4>Returns</h4>
+<p> <em class="parameter"><code>target</code></em>
+'s priority</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-srv-target-get-weight"></a><h3>g_srv_target_get_weight ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>
+g_srv_target_get_weight (<em class="parameter"><code><a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a> *target</code></em>);</pre>
+<p>Gets <em class="parameter"><code>target</code></em>
+'s weight. You should not need to look at this;
+<a class="link" href="GResolver.html" title="GResolver"><span class="type">GResolver</span></a> already sorts the targets according to the algorithm in
+RFC 2782.</p>
+<div class="refsect3">
+<a name="g-srv-target-get-weight.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>target</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-srv-target-get-weight.returns"></a><h4>Returns</h4>
+<p> <em class="parameter"><code>target</code></em>
+'s weight</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-srv-target-list-sort"></a><h3>g_srv_target_list_sort ()</h3>
+<pre class="programlisting"><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+g_srv_target_list_sort (<em class="parameter"><code><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> *targets</code></em>);</pre>
+<p>Sorts <em class="parameter"><code>targets</code></em>
+ in place according to the algorithm in RFC 2782.</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-srv-target-list-sort.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>targets</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of <a class="link" href="GSrvTarget.html" title="GSrvTarget"><span class="type">GSrvTarget</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-srv-target-list-sort.returns"></a><h4>Returns</h4>
+<p>the head of the sorted list. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GSrvTarget.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GSrvTarget-struct"></a><h3>GSrvTarget</h3>
+<pre class="programlisting">typedef struct _GSrvTarget GSrvTarget;</pre>
+<p>A single target host/port that a network service is running on.</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+<schemalist>
+  <schema id='base'>
+    <key name='foo' type='s'>
+      <default>'bar'</default>
+    </key>
+  </schema>
+
+  <schema id='sub' extends='base'>
+    <override name='bar'>'baz'</override>
+  </schema>
+</schemalist>

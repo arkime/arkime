@@ -1,0 +1,464 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GInitable: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="failable_initialization.html" title="Failable Initialization">
+<link rel="prev" href="failable_initialization.html" title="Failable Initialization">
+<link rel="next" href="GAsyncInitable.html" title="GAsyncInitable">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GInitable.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GInitable.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_prerequisites">  <span class="dim">|</span> 
+                  <a href="#GInitable.prerequisites" class="shortcut">Prerequisites</a></span><span id="nav_derived_interfaces">  <span class="dim">|</span> 
+                  <a href="#GInitable.derived-interfaces" class="shortcut">Known Derived Interfaces</a></span><span id="nav_implementations">  <span class="dim">|</span> 
+                  <a href="#GInitable.implementations" class="shortcut">Known Implementations</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="failable_initialization.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="failable_initialization.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GAsyncInitable.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GInitable"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GInitable.top_of_page"></a>GInitable</span></h2>
+<p>GInitable — Failable object initialization interface</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GInitable.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInitable.html#g-initable-init" title="g_initable_init ()">g_initable_init</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInitable.html#g-initable-new" title="g_initable_new ()">g_initable_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="returnvalue">GObject</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GInitable.html#g-initable-new-valist" title="g_initable_new_valist ()">g_initable_new_valist</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GInitable.html#g-initable-newv" title="g_initable_newv ()">g_initable_newv</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GInitable.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GInitable.html#GInitable-struct" title="GInitable">GInitable</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GInitable.html#GInitableIface" title="struct GInitableIface">GInitableIface</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GInitable.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/GTypeModule.html">GInterface</a>
+    <span class="lineart">╰──</span> GInitable
+</pre>
+</div>
+<div class="refsect1">
+<a name="GInitable.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GInitable requires
+ <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GInitable.derived-interfaces"></a><h2>Known Derived Interfaces</h2>
+<p>
+GInitable is required by
+ <a class="link" href="GNetworkMonitor.html" title="GNetworkMonitor">GNetworkMonitor</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GInitable.implementations"></a><h2>Known Implementations</h2>
+<p>
+GInitable is implemented by
+ <a class="link" href="GCharsetConverter.html" title="GCharsetConverter">GCharsetConverter</a>,  <a class="link" href="GDBusConnection.html" title="GDBusConnection">GDBusConnection</a>,  <a class="link" href="GDBusObjectManagerClient.html" title="GDBusObjectManagerClient">GDBusObjectManagerClient</a>,  <a class="link" href="GDBusProxy.html" title="GDBusProxy">GDBusProxy</a>,  <a class="link" href="GDBusServer.html" title="GDBusServer">GDBusServer</a>,  <a class="link" href="GInetAddressMask.html" title="GInetAddressMask">GInetAddressMask</a>,  <a class="link" href="GSocket.html" title="GSocket">GSocket</a> and  <a class="link" href="GSubprocess.html" title="GSubprocess">GSubprocess</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GInitable.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GInitable.description"></a><h2>Description</h2>
+<p><a class="link" href="GInitable.html" title="GInitable"><span class="type">GInitable</span></a> is implemented by objects that can fail during
+initialization. If an object implements this interface then
+it must be initialized as the first thing after construction,
+either via <a class="link" href="GInitable.html#g-initable-init" title="g_initable_init ()"><code class="function">g_initable_init()</code></a> or <a class="link" href="GAsyncInitable.html#g-async-initable-init-async" title="g_async_initable_init_async ()"><code class="function">g_async_initable_init_async()</code></a>
+(the latter is only available if it also implements <a class="link" href="GAsyncInitable.html" title="GAsyncInitable"><span class="type">GAsyncInitable</span></a>).</p>
+<p>If the object is not initialized, or initialization returns with an
+error, then all operations on the object except <a href="../gobject-The-Base-Object-Type.html#g-object-ref"><code class="function">g_object_ref()</code></a> and
+<a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a> are considered to be invalid, and have undefined
+behaviour. They will often fail with <a href="../glib-Message-Logging.html#g-critical"><code class="function">g_critical()</code></a> or <a href="../glib-Message-Logging.html#g-warning"><code class="function">g_warning()</code></a>, but
+this must not be relied on.</p>
+<p>Users of objects implementing this are not intended to use
+the interface method directly, instead it will be used automatically
+in various ways. For C applications you generally just call
+<a class="link" href="GInitable.html#g-initable-new" title="g_initable_new ()"><code class="function">g_initable_new()</code></a> directly, or indirectly via a <code class="function">foo_thing_new()</code> wrapper.
+This will call <a class="link" href="GInitable.html#g-initable-init" title="g_initable_init ()"><code class="function">g_initable_init()</code></a> under the cover, returning <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> and
+setting a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> on failure (at which point the instance is
+unreferenced).</p>
+<p>For bindings in languages where the native constructor supports
+exceptions the binding could check for objects implemention <a class="link" href="GInitable.html" title="GInitable"><code class="literal">GInitable</code></a>
+during normal construction and automatically initialize them, throwing
+an exception on failure.</p>
+</div>
+<div class="refsect1">
+<a name="GInitable.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-initable-init"></a><h3>g_initable_init ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_initable_init (<em class="parameter"><code><a class="link" href="GInitable.html" title="GInitable"><span class="type">GInitable</span></a> *initable</code></em>,
+                 <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                 <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Initializes the object implementing the interface.</p>
+<p>This method is intended for language bindings. If writing in C,
+<a class="link" href="GInitable.html#g-initable-new" title="g_initable_new ()"><code class="function">g_initable_new()</code></a> should typically be used instead.</p>
+<p>The object must be initialized before any real use after initial
+construction, either with this function or <a class="link" href="GAsyncInitable.html#g-async-initable-init-async" title="g_async_initable_init_async ()"><code class="function">g_async_initable_init_async()</code></a>.</p>
+<p>Implementations may also support cancellation. If <em class="parameter"><code>cancellable</code></em>
+ is not <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>,
+then initialization can be cancelled by triggering the cancellable object
+from another thread. If the operation was cancelled, the error
+<a class="link" href="gio-GIOError.html#G-IO-ERROR-CANCELLED:CAPS"><code class="literal">G_IO_ERROR_CANCELLED</code></a> will be returned. If <em class="parameter"><code>cancellable</code></em>
+ is not <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> and
+the object doesn't support cancellable initialization the error
+<a class="link" href="gio-GIOError.html#G-IO-ERROR-NOT-SUPPORTED:CAPS"><code class="literal">G_IO_ERROR_NOT_SUPPORTED</code></a> will be returned.</p>
+<p>If the object is not initialized, or initialization returns with an
+error, then all operations on the object except <a href="../gobject-The-Base-Object-Type.html#g-object-ref"><code class="function">g_object_ref()</code></a> and
+<a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a> are considered to be invalid, and have undefined
+behaviour. See the introduction for more details.</p>
+<p>Callers should not assume that a class which implements <a class="link" href="GInitable.html" title="GInitable"><span class="type">GInitable</span></a> can be
+initialized multiple times, unless the class explicitly documents itself as
+supporting this. Generally, a class’ implementation of <code class="function">init()</code> can assume
+(and assert) that it will only be called once. Previously, this documentation
+recommended all <a class="link" href="GInitable.html" title="GInitable"><span class="type">GInitable</span></a> implementations should be idempotent; that
+recommendation was relaxed in GLib 2.54.</p>
+<p>If a class explicitly supports being initialized multiple times, it is
+recommended that the method is idempotent: multiple calls with the same
+arguments should return the same results. Only the first call initializes
+the object; further calls return the result of the first call.</p>
+<p>One reason why a class might need to support idempotent initialization is if
+it is designed to be used via the singleton pattern, with a
+<a href="../gobject-The-Base-Object-Type.html#GObjectClass.constructor"><span class="type">GObjectClass.constructor</span></a> that sometimes returns an existing instance.
+In this pattern, a caller would expect to be able to call <a class="link" href="GInitable.html#g-initable-init" title="g_initable_init ()"><code class="function">g_initable_init()</code></a>
+on the result of <a href="../gobject-The-Base-Object-Type.html#g-object-new"><code class="function">g_object_new()</code></a>, regardless of whether it is in fact a new
+instance.</p>
+<div class="refsect3">
+<a name="g-initable-init.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>initable</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GInitable.html" title="GInitable"><span class="type">GInitable</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> location to store the error occurring, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to
+ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-initable-init.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if successful. If an error has occurred, this function will
+return <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> and set <em class="parameter"><code>error</code></em>
+appropriately if present.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-initable-new"></a><h3>g_initable_new ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gpointer"><span class="returnvalue">gpointer</span></a>
+g_initable_new (<em class="parameter"><code><a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> object_type</code></em>,
+                <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>,
+                <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *first_property_name</code></em>,
+                <em class="parameter"><code>...</code></em>);</pre>
+<p>Helper function for constructing <a class="link" href="GInitable.html" title="GInitable"><span class="type">GInitable</span></a> object. This is
+similar to <a href="../gobject-The-Base-Object-Type.html#g-object-new"><code class="function">g_object_new()</code></a> but also initializes the object
+and returns <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, setting an error on failure.</p>
+<div class="refsect3">
+<a name="g-initable-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>object_type</p></td>
+<td class="parameter_description"><p>a <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> supporting <a class="link" href="GInitable.html" title="GInitable"><span class="type">GInitable</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> location to store the error occurring, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to
+ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>first_property_name</p></td>
+<td class="parameter_description"><p>the name of the first property, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if no
+properties. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>the value if the first property, followed by and other property
+value pairs, and ended by <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-initable-new.returns"></a><h4>Returns</h4>
+<p>a newly allocated
+<a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. </p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GObject.Object][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-initable-new-valist"></a><h3>g_initable_new_valist ()</h3>
+<pre class="programlisting"><a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="returnvalue">GObject</span></a> *
+g_initable_new_valist (<em class="parameter"><code><a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> object_type</code></em>,
+                       <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *first_property_name</code></em>,
+                       <em class="parameter"><code><span class="type">va_list</span> var_args</code></em>,
+                       <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                       <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Helper function for constructing <a class="link" href="GInitable.html" title="GInitable"><span class="type">GInitable</span></a> object. This is
+similar to <a href="../gobject-The-Base-Object-Type.html#g-object-new-valist"><code class="function">g_object_new_valist()</code></a> but also initializes the object
+and returns <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, setting an error on failure.</p>
+<div class="refsect3">
+<a name="g-initable-new-valist.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>object_type</p></td>
+<td class="parameter_description"><p>a <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> supporting <a class="link" href="GInitable.html" title="GInitable"><span class="type">GInitable</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>first_property_name</p></td>
+<td class="parameter_description"><p>the name of the first property, followed by
+the value, and other property value pairs, and ended by <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>var_args</p></td>
+<td class="parameter_description"><p>The var args list generated from <em class="parameter"><code>first_property_name</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> location to store the error occurring, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to
+ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-initable-new-valist.returns"></a><h4>Returns</h4>
+<p>a newly allocated
+<a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. </p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GObject.Object][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-initable-newv"></a><h3>g_initable_newv ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gpointer"><span class="returnvalue">gpointer</span></a>
+g_initable_newv (<em class="parameter"><code><a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> object_type</code></em>,
+                 <em class="parameter"><code><a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> n_parameters</code></em>,
+                 <em class="parameter"><code><a href="../gobject-The-Base-Object-Type.html#GParameter"><span class="type">GParameter</span></a> *parameters</code></em>,
+                 <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                 <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_initable_newv</code> has been deprecated since version 2.54 and should not be used in newly-written code.</p>
+<p>Use <a href="../gobject-The-Base-Object-Type.html#g-object-new-with-properties"><code class="function">g_object_new_with_properties()</code></a> and
+<a class="link" href="GInitable.html#g-initable-init" title="g_initable_init ()"><code class="function">g_initable_init()</code></a> instead. See <a href="../gobject-The-Base-Object-Type.html#GParameter"><span class="type">GParameter</span></a> for more information.</p>
+</div>
+<p>Helper function for constructing <a class="link" href="GInitable.html" title="GInitable"><span class="type">GInitable</span></a> object. This is
+similar to <a href="../gobject-The-Base-Object-Type.html#g-object-newv"><code class="function">g_object_newv()</code></a> but also initializes the object
+and returns <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, setting an error on failure.</p>
+<div class="refsect3">
+<a name="g-initable-newv.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>object_type</p></td>
+<td class="parameter_description"><p>a <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> supporting <a class="link" href="GInitable.html" title="GInitable"><span class="type">GInitable</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n_parameters</p></td>
+<td class="parameter_description"><p>the number of parameters in <em class="parameter"><code>parameters</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>parameters</p></td>
+<td class="parameter_description"><p>the parameters to use to construct the object. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=n_parameters]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> location to store the error occurring, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to
+ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-initable-newv.returns"></a><h4>Returns</h4>
+<p>a newly allocated
+<a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error. </p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GObject.Object][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GInitable.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GInitable-struct"></a><h3>GInitable</h3>
+<pre class="programlisting">typedef struct _GInitable GInitable;</pre>
+<p>Interface for initializable objects.</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GInitableIface"></a><h3>struct GInitableIface</h3>
+<pre class="programlisting">struct GInitableIface {
+  GTypeInterface g_iface;
+
+  /* Virtual Table */
+
+  gboolean    (* init) (GInitable    *initable,
+			GCancellable *cancellable,
+			GError      **error);
+};
+</pre>
+<p>Provides an interface for initializing object such that initialization
+may fail.</p>
+<div class="refsect3">
+<a name="GInitableIface.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody><tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GInitableIface.init"></a>init</code></em> ()</p></td>
+<td class="struct_member_description"><p>Initializes the object.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GInitable.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="GAsyncInitable.html" title="GAsyncInitable"><span class="type">GAsyncInitable</span></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

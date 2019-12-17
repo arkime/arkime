@@ -1,0 +1,1892 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GDrive: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="volume_mon.html" title="Volumes and Drives">
+<link rel="prev" href="GMount.html" title="GMount">
+<link rel="next" href="gio-Unix-Mounts.html" title="Unix Mounts">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GDrive.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GDrive.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_prerequisites">  <span class="dim">|</span> 
+                  <a href="#GDrive.prerequisites" class="shortcut">Prerequisites</a></span><span id="nav_signals">  <span class="dim">|</span> 
+                  <a href="#GDrive.signals" class="shortcut">Signals</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="volume_mon.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GMount.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gio-Unix-Mounts.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GDrive"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GDrive.top_of_page"></a>GDrive</span></h2>
+<p>GDrive — Drive management</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GDrive.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-get-name" title="g_drive_get_name ()">g_drive_get_name</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-get-icon" title="g_drive_get_icon ()">g_drive_get_icon</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-get-symbolic-icon" title="g_drive_get_symbolic_icon ()">g_drive_get_symbolic_icon</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-has-volumes" title="g_drive_has_volumes ()">g_drive_has_volumes</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-get-volumes" title="g_drive_get_volumes ()">g_drive_get_volumes</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-can-eject" title="g_drive_can_eject ()">g_drive_can_eject</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GDrive.html#GDriveStartStopType" title="enum GDriveStartStopType"><span class="returnvalue">GDriveStartStopType</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-get-start-stop-type" title="g_drive_get_start_stop_type ()">g_drive_get_start_stop_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-can-start" title="g_drive_can_start ()">g_drive_can_start</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-can-start-degraded" title="g_drive_can_start_degraded ()">g_drive_can_start_degraded</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-can-stop" title="g_drive_can_stop ()">g_drive_can_stop</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-can-poll-for-media" title="g_drive_can_poll_for_media ()">g_drive_can_poll_for_media</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-poll-for-media" title="g_drive_poll_for_media ()">g_drive_poll_for_media</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-poll-for-media-finish" title="g_drive_poll_for_media_finish ()">g_drive_poll_for_media_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-has-media" title="g_drive_has_media ()">g_drive_has_media</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-is-media-check-automatic" title="g_drive_is_media_check_automatic ()">g_drive_is_media_check_automatic</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-is-removable" title="g_drive_is_removable ()">g_drive_is_removable</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-is-media-removable" title="g_drive_is_media_removable ()">g_drive_is_media_removable</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-eject" title="g_drive_eject ()">g_drive_eject</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-eject-finish" title="g_drive_eject_finish ()">g_drive_eject_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-eject-with-operation" title="g_drive_eject_with_operation ()">g_drive_eject_with_operation</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-eject-with-operation-finish" title="g_drive_eject_with_operation_finish ()">g_drive_eject_with_operation_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-start" title="g_drive_start ()">g_drive_start</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-start-finish" title="g_drive_start_finish ()">g_drive_start_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-stop" title="g_drive_stop ()">g_drive_stop</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-stop-finish" title="g_drive_stop_finish ()">g_drive_stop_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">char</span> **
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-enumerate-identifiers" title="g_drive_enumerate_identifiers ()">g_drive_enumerate_identifiers</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-get-identifier" title="g_drive_get_identifier ()">g_drive_get_identifier</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GDrive.html#g-drive-get-sort-key" title="g_drive_get_sort_key ()">g_drive_get_sort_key</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDrive.signals"></a><h2>Signals</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="signals_return">
+<col width="300px" class="signals_name">
+<col width="200px" class="signals_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GDrive.html#GDrive-changed" title="The “changed” signal">changed</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GDrive.html#GDrive-disconnected" title="The “disconnected” signal">disconnected</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GDrive.html#GDrive-eject-button" title="The “eject-button” signal">eject-button</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GDrive.html#GDrive-stop-button" title="The “stop-button” signal">stop-button</a></td>
+<td class="signal_flags"><a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDrive.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GDrive.html#GDrive-struct" title="GDrive">GDrive</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GDrive.html#GDriveIface" title="struct GDriveIface">GDriveIface</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="GDrive.html#GDriveStartFlags" title="enum GDriveStartFlags">GDriveStartFlags</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="GDrive.html#GDriveStartStopType" title="enum GDriveStartStopType">GDriveStartStopType</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GDrive.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/GTypeModule.html">GInterface</a>
+    <span class="lineart">╰──</span> GDrive
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDrive.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GDrive requires
+ <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GDrive.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GDrive.description"></a><h2>Description</h2>
+<p><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> - this represent a piece of hardware connected to the machine.
+It's generally only created for removable hardware or hardware with
+removable media.</p>
+<p><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> is a container class for <a class="link" href="GVolume.html" title="GVolume"><span class="type">GVolume</span></a> objects that stem from
+the same piece of media. As such, <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> abstracts a drive with
+(or without) removable media and provides operations for querying
+whether media is available, determining whether media change is
+automatically detected and ejecting the media.</p>
+<p>If the <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> reports that media isn't automatically detected, one
+can poll for media; typically one should not do this periodically
+as a poll for media operation is potententially expensive and may
+spin up the drive creating noise.</p>
+<p><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> supports starting and stopping drives with authentication
+support for the former. This can be used to support a diverse set
+of use cases including connecting/disconnecting iSCSI devices,
+powering down external disk enclosures and starting/stopping
+multi-disk devices such as RAID devices. Note that the actual
+semantics and side-effects of starting/stopping a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> may vary
+according to implementation. To choose the correct verbs in e.g. a
+file manager, use <a class="link" href="GDrive.html#g-drive-get-start-stop-type" title="g_drive_get_start_stop_type ()"><code class="function">g_drive_get_start_stop_type()</code></a>.</p>
+<p>For porting from GnomeVFS note that there is no equivalent of
+<a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> in that API.</p>
+</div>
+<div class="refsect1">
+<a name="GDrive.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-drive-get-name"></a><h3>g_drive_get_name ()</h3>
+<pre class="programlisting"><span class="returnvalue">char</span> *
+g_drive_get_name (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>);</pre>
+<p>Gets the name of <em class="parameter"><code>drive</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-drive-get-name.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-get-name.returns"></a><h4>Returns</h4>
+<p> a string containing <em class="parameter"><code>drive</code></em>
+'s name. The returned
+string should be freed when no longer needed.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-get-icon"></a><h3>g_drive_get_icon ()</h3>
+<pre class="programlisting"><a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+g_drive_get_icon (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>);</pre>
+<p>Gets the icon for <em class="parameter"><code>drive</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-drive-get-icon.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-get-icon.returns"></a><h4>Returns</h4>
+<p><a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> for the <em class="parameter"><code>drive</code></em>
+.
+Free the returned object with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-get-symbolic-icon"></a><h3>g_drive_get_symbolic_icon ()</h3>
+<pre class="programlisting"><a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+g_drive_get_symbolic_icon (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>);</pre>
+<p>Gets the icon for <em class="parameter"><code>drive</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-drive-get-symbolic-icon.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-get-symbolic-icon.returns"></a><h4>Returns</h4>
+<p>symbolic <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> for the <em class="parameter"><code>drive</code></em>
+.
+Free the returned object with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-has-volumes"></a><h3>g_drive_has_volumes ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_drive_has_volumes (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>);</pre>
+<p>Check if <em class="parameter"><code>drive</code></em>
+ has any mountable volumes.</p>
+<div class="refsect3">
+<a name="g-drive-has-volumes.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-has-volumes.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <em class="parameter"><code>drive</code></em>
+contains volumes, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-get-volumes"></a><h3>g_drive_get_volumes ()</h3>
+<pre class="programlisting"><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="returnvalue">GList</span></a> *
+g_drive_get_volumes (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>);</pre>
+<p>Get a list of mountable volumes for <em class="parameter"><code>drive</code></em>
+.</p>
+<p>The returned list should be freed with <a href="../glib-Doubly-Linked-Lists.html#g-list-free"><code class="function">g_list_free()</code></a>, after
+its elements have been unreffed with <a href="../gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a>.</p>
+<div class="refsect3">
+<a name="g-drive-get-volumes.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-get-volumes.returns"></a><h4>Returns</h4>
+<p><a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> containing any <a class="link" href="GVolume.html" title="GVolume"><span class="type">GVolume</span></a> objects on the given <em class="parameter"><code>drive</code></em>
+. </p>
+<p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GVolume][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-can-eject"></a><h3>g_drive_can_eject ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_drive_can_eject (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>);</pre>
+<p>Checks if a drive can be ejected.</p>
+<div class="refsect3">
+<a name="g-drive-can-eject.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-can-eject.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <em class="parameter"><code>drive</code></em>
+can be ejected, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-get-start-stop-type"></a><h3>g_drive_get_start_stop_type ()</h3>
+<pre class="programlisting"><a class="link" href="GDrive.html#GDriveStartStopType" title="enum GDriveStartStopType"><span class="returnvalue">GDriveStartStopType</span></a>
+g_drive_get_start_stop_type (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>);</pre>
+<p>Gets a hint about how a drive can be started/stopped.</p>
+<div class="refsect3">
+<a name="g-drive-get-start-stop-type.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-get-start-stop-type.returns"></a><h4>Returns</h4>
+<p> A value from the <a class="link" href="GDrive.html#GDriveStartStopType" title="enum GDriveStartStopType"><span class="type">GDriveStartStopType</span></a> enumeration.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-can-start"></a><h3>g_drive_can_start ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_drive_can_start (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>);</pre>
+<p>Checks if a drive can be started.</p>
+<div class="refsect3">
+<a name="g-drive-can-start.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-can-start.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <em class="parameter"><code>drive</code></em>
+can be started, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-can-start-degraded"></a><h3>g_drive_can_start_degraded ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_drive_can_start_degraded (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>);</pre>
+<p>Checks if a drive can be started degraded.</p>
+<div class="refsect3">
+<a name="g-drive-can-start-degraded.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-can-start-degraded.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <em class="parameter"><code>drive</code></em>
+can be started degraded, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-can-stop"></a><h3>g_drive_can_stop ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_drive_can_stop (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>);</pre>
+<p>Checks if a drive can be stopped.</p>
+<div class="refsect3">
+<a name="g-drive-can-stop.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-can-stop.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <em class="parameter"><code>drive</code></em>
+can be stopped, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-can-poll-for-media"></a><h3>g_drive_can_poll_for_media ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_drive_can_poll_for_media (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>);</pre>
+<p>Checks if a drive can be polled for media changes.</p>
+<div class="refsect3">
+<a name="g-drive-can-poll-for-media.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-can-poll-for-media.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <em class="parameter"><code>drive</code></em>
+can be polled for media changes,
+<a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-poll-for-media"></a><h3>g_drive_poll_for_media ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_drive_poll_for_media (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>,
+                        <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                        <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                        <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Asynchronously polls <em class="parameter"><code>drive</code></em>
+ to see if media has been inserted or removed.</p>
+<p>When the operation is finished, <em class="parameter"><code>callback</code></em>
+ will be called.
+You can then call <a class="link" href="GDrive.html#g-drive-poll-for-media-finish" title="g_drive_poll_for_media_finish ()"><code class="function">g_drive_poll_for_media_finish()</code></a> to obtain the
+result of the operation.</p>
+<div class="refsect3">
+<a name="g-drive-poll-for-media.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data to pass to <em class="parameter"><code>callback</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-poll-for-media-finish"></a><h3>g_drive_poll_for_media_finish ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_drive_poll_for_media_finish (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>,
+                               <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                               <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Finishes an operation started with <a class="link" href="GDrive.html#g-drive-poll-for-media" title="g_drive_poll_for_media ()"><code class="function">g_drive_poll_for_media()</code></a> on a drive.</p>
+<div class="refsect3">
+<a name="g-drive-poll-for-media-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-poll-for-media-finish.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the drive has been poll_for_mediaed successfully,
+<a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-has-media"></a><h3>g_drive_has_media ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_drive_has_media (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>);</pre>
+<p>Checks if the <em class="parameter"><code>drive</code></em>
+ has media. Note that the OS may not be polling
+the drive for media changes; see <a class="link" href="GDrive.html#g-drive-is-media-check-automatic" title="g_drive_is_media_check_automatic ()"><code class="function">g_drive_is_media_check_automatic()</code></a>
+for more details.</p>
+<div class="refsect3">
+<a name="g-drive-has-media.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-has-media.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>drive</code></em>
+has media, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-is-media-check-automatic"></a><h3>g_drive_is_media_check_automatic ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_drive_is_media_check_automatic (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>);</pre>
+<p>Checks if <em class="parameter"><code>drive</code></em>
+ is capabable of automatically detecting media changes.</p>
+<div class="refsect3">
+<a name="g-drive-is-media-check-automatic.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-is-media-check-automatic.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <em class="parameter"><code>drive</code></em>
+is capabable of automatically detecting
+media changes, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-is-removable"></a><h3>g_drive_is_removable ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_drive_is_removable (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>);</pre>
+<p>Checks if the <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> and/or its media is considered removable by the user.
+See <a class="link" href="GDrive.html#g-drive-is-media-removable" title="g_drive_is_media_removable ()"><code class="function">g_drive_is_media_removable()</code></a>.</p>
+<div class="refsect3">
+<a name="g-drive-is-removable.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-is-removable.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>drive</code></em>
+and/or its media is considered removable, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-50.html#api-index-2.50">2.50</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-is-media-removable"></a><h3>g_drive_is_media_removable ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_drive_is_media_removable (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>);</pre>
+<p>Checks if the <em class="parameter"><code>drive</code></em>
+ supports removable media.</p>
+<div class="refsect3">
+<a name="g-drive-is-media-removable.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-is-media-removable.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>drive</code></em>
+supports removable media, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-eject"></a><h3>g_drive_eject ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_drive_eject (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>,
+               <em class="parameter"><code><a class="link" href="GMount.html#GMountUnmountFlags" title="enum GMountUnmountFlags"><span class="type">GMountUnmountFlags</span></a> flags</code></em>,
+               <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+               <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+               <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_drive_eject</code> has been deprecated since version 2.22 and should not be used in newly-written code.</p>
+<p>Use <a class="link" href="GDrive.html#g-drive-eject-with-operation" title="g_drive_eject_with_operation ()"><code class="function">g_drive_eject_with_operation()</code></a> instead.</p>
+</div>
+<p>Asynchronously ejects a drive.</p>
+<p>When the operation is finished, <em class="parameter"><code>callback</code></em>
+ will be called.
+You can then call <a class="link" href="GDrive.html#g-drive-eject-finish" title="g_drive_eject_finish ()"><code class="function">g_drive_eject_finish()</code></a> to obtain the
+result of the operation.</p>
+<div class="refsect3">
+<a name="g-drive-eject.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>flags affecting the unmount if required for eject</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data to pass to <em class="parameter"><code>callback</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-eject-finish"></a><h3>g_drive_eject_finish ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_drive_eject_finish (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>,
+                      <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                      <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_drive_eject_finish</code> has been deprecated since version 2.22 and should not be used in newly-written code.</p>
+<p>Use <a class="link" href="GDrive.html#g-drive-eject-with-operation-finish" title="g_drive_eject_with_operation_finish ()"><code class="function">g_drive_eject_with_operation_finish()</code></a> instead.</p>
+</div>
+<p>Finishes ejecting a drive.</p>
+<div class="refsect3">
+<a name="g-drive-eject-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-eject-finish.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the drive has been ejected successfully,
+<a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-eject-with-operation"></a><h3>g_drive_eject_with_operation ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_drive_eject_with_operation (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>,
+                              <em class="parameter"><code><a class="link" href="GMount.html#GMountUnmountFlags" title="enum GMountUnmountFlags"><span class="type">GMountUnmountFlags</span></a> flags</code></em>,
+                              <em class="parameter"><code><a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *mount_operation</code></em>,
+                              <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                              <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                              <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Ejects a drive. This is an asynchronous operation, and is
+finished by calling <a class="link" href="GDrive.html#g-drive-eject-with-operation-finish" title="g_drive_eject_with_operation_finish ()"><code class="function">g_drive_eject_with_operation_finish()</code></a> with the <em class="parameter"><code>drive</code></em>
+
+and <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> data returned in the <em class="parameter"><code>callback</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-drive-eject-with-operation.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>flags affecting the unmount if required for eject</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mount_operation</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to avoid
+user interaction. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data passed to <em class="parameter"><code>callback</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-eject-with-operation-finish"></a><h3>g_drive_eject_with_operation_finish ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_drive_eject_with_operation_finish (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>,
+                                     <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                     <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Finishes ejecting a drive. If any errors occurred during the operation,
+<em class="parameter"><code>error</code></em>
+ will be set to contain the errors and <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> will be returned.</p>
+<div class="refsect3">
+<a name="g-drive-eject-with-operation-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> location to store the error occurring, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to
+ignore.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-eject-with-operation-finish.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the drive was successfully ejected. <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-start"></a><h3>g_drive_start ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_drive_start (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>,
+               <em class="parameter"><code><a class="link" href="GDrive.html#GDriveStartFlags" title="enum GDriveStartFlags"><span class="type">GDriveStartFlags</span></a> flags</code></em>,
+               <em class="parameter"><code><a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *mount_operation</code></em>,
+               <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+               <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+               <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Asynchronously starts a drive.</p>
+<p>When the operation is finished, <em class="parameter"><code>callback</code></em>
+ will be called.
+You can then call <a class="link" href="GDrive.html#g-drive-start-finish" title="g_drive_start_finish ()"><code class="function">g_drive_start_finish()</code></a> to obtain the
+result of the operation.</p>
+<div class="refsect3">
+<a name="g-drive-start.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>flags affecting the start operation.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mount_operation</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to avoid
+user interaction. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data to pass to <em class="parameter"><code>callback</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-start-finish"></a><h3>g_drive_start_finish ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_drive_start_finish (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>,
+                      <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                      <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Finishes starting a drive.</p>
+<div class="refsect3">
+<a name="g-drive-start-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-start-finish.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the drive has been started successfully,
+<a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-stop"></a><h3>g_drive_stop ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_drive_stop (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>,
+              <em class="parameter"><code><a class="link" href="GMount.html#GMountUnmountFlags" title="enum GMountUnmountFlags"><span class="type">GMountUnmountFlags</span></a> flags</code></em>,
+              <em class="parameter"><code><a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> *mount_operation</code></em>,
+              <em class="parameter"><code><a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+              <em class="parameter"><code><a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+              <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Asynchronously stops a drive.</p>
+<p>When the operation is finished, <em class="parameter"><code>callback</code></em>
+ will be called.
+You can then call <a class="link" href="GDrive.html#g-drive-stop-finish" title="g_drive_stop_finish ()"><code class="function">g_drive_stop_finish()</code></a> to obtain the
+result of the operation.</p>
+<div class="refsect3">
+<a name="g-drive-stop.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>flags affecting the unmount if required for stopping.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mount_operation</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a> or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to avoid
+user interaction. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>optional <a class="link" href="GCancellable.html" title="GCancellable"><span class="type">GCancellable</span></a> object, <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> to ignore. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html#GAsyncReadyCallback" title="GAsyncReadyCallback ()"><span class="type">GAsyncReadyCallback</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data to pass to <em class="parameter"><code>callback</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-stop-finish"></a><h3>g_drive_stop_finish ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_drive_stop_finish (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>,
+                     <em class="parameter"><code><a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                     <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Finishes stopping a drive.</p>
+<div class="refsect3">
+<a name="g-drive-stop-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GAsyncResult.html" title="GAsyncResult"><span class="type">GAsyncResult</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-stop-finish.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the drive has been stopped successfully,
+<a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-enumerate-identifiers"></a><h3>g_drive_enumerate_identifiers ()</h3>
+<pre class="programlisting"><span class="returnvalue">char</span> **
+g_drive_enumerate_identifiers (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>);</pre>
+<p>Gets the kinds of identifiers that <em class="parameter"><code>drive</code></em>
+ has. 
+Use <a class="link" href="GDrive.html#g-drive-get-identifier" title="g_drive_get_identifier ()"><code class="function">g_drive_get_identifier()</code></a> to obtain the identifiers
+themselves.</p>
+<div class="refsect3">
+<a name="g-drive-enumerate-identifiers.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-enumerate-identifiers.returns"></a><h4>Returns</h4>
+<p>a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated
+array of strings containing kinds of identifiers. Use <a href="../glib-String-Utility-Functions.html#g-strfreev"><code class="function">g_strfreev()</code></a>
+to free. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-get-identifier"></a><h3>g_drive_get_identifier ()</h3>
+<pre class="programlisting"><span class="returnvalue">char</span> *
+g_drive_get_identifier (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>,
+                        <em class="parameter"><code>const <span class="type">char</span> *kind</code></em>);</pre>
+<p>Gets the identifier of the given kind for <em class="parameter"><code>drive</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-drive-get-identifier.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>kind</p></td>
+<td class="parameter_description"><p>the kind of identifier to return</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-get-identifier.returns"></a><h4>Returns</h4>
+<p> a newly allocated string containing the
+requested identfier, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>
+doesn't have this kind of identifier.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-drive-get-sort-key"></a><h3>g_drive_get_sort_key ()</h3>
+<pre class="programlisting">const <a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_drive_get_sort_key (<em class="parameter"><code><a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> *drive</code></em>);</pre>
+<p>Gets the sort key for <em class="parameter"><code>drive</code></em>
+, if any.</p>
+<div class="refsect3">
+<a name="g-drive-get-sort-key.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>A <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-drive-get-sort-key.returns"></a><h4>Returns</h4>
+<p> Sorting key for <em class="parameter"><code>drive</code></em>
+or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if no such key is available.</p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDrive.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GDrive-struct"></a><h3>GDrive</h3>
+<pre class="programlisting">typedef struct _GDrive GDrive;</pre>
+<p>Opaque drive object.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDriveIface"></a><h3>struct GDriveIface</h3>
+<pre class="programlisting">struct GDriveIface {
+  GTypeInterface g_iface;
+
+  /* signals */
+  void     (* changed)                  (GDrive              *drive);
+  void     (* disconnected)             (GDrive              *drive);
+  void     (* eject_button)             (GDrive              *drive);
+
+  /* Virtual Table */
+  char *   (* get_name)                 (GDrive              *drive);
+  GIcon *  (* get_icon)                 (GDrive              *drive);
+  gboolean (* has_volumes)              (GDrive              *drive);
+  GList *  (* get_volumes)              (GDrive              *drive);
+  gboolean (* is_media_removable)       (GDrive              *drive);
+  gboolean (* has_media)                (GDrive              *drive);
+  gboolean (* is_media_check_automatic) (GDrive              *drive);
+  gboolean (* can_eject)                (GDrive              *drive);
+  gboolean (* can_poll_for_media)       (GDrive              *drive);
+  void     (* eject)                    (GDrive              *drive,
+                                         GMountUnmountFlags   flags,
+                                         GCancellable        *cancellable,
+                                         GAsyncReadyCallback  callback,
+                                         gpointer             user_data);
+  gboolean (* eject_finish)             (GDrive              *drive,
+                                         GAsyncResult        *result,
+                                         GError             **error);
+  void     (* poll_for_media)           (GDrive              *drive,
+                                         GCancellable        *cancellable,
+                                         GAsyncReadyCallback  callback,
+                                         gpointer             user_data);
+  gboolean (* poll_for_media_finish)    (GDrive              *drive,
+                                         GAsyncResult        *result,
+                                         GError             **error);
+
+  char *   (* get_identifier)           (GDrive              *drive,
+                                         const char          *kind);
+  char **  (* enumerate_identifiers)    (GDrive              *drive);
+
+  GDriveStartStopType (* get_start_stop_type) (GDrive        *drive);
+
+  gboolean (* can_start)                (GDrive              *drive);
+  gboolean (* can_start_degraded)       (GDrive              *drive);
+  void     (* start)                    (GDrive              *drive,
+                                         GDriveStartFlags     flags,
+                                         GMountOperation     *mount_operation,
+                                         GCancellable        *cancellable,
+                                         GAsyncReadyCallback  callback,
+                                         gpointer             user_data);
+  gboolean (* start_finish)             (GDrive              *drive,
+                                         GAsyncResult        *result,
+                                         GError             **error);
+
+  gboolean (* can_stop)                 (GDrive              *drive);
+  void     (* stop)                     (GDrive              *drive,
+                                         GMountUnmountFlags   flags,
+                                         GMountOperation     *mount_operation,
+                                         GCancellable        *cancellable,
+                                         GAsyncReadyCallback  callback,
+                                         gpointer             user_data);
+  gboolean (* stop_finish)              (GDrive              *drive,
+                                         GAsyncResult        *result,
+                                         GError             **error);
+  /* signal, not VFunc */
+  void     (* stop_button)              (GDrive              *drive);
+
+  void        (* eject_with_operation)      (GDrive              *drive,
+                                             GMountUnmountFlags   flags,
+                                             GMountOperation     *mount_operation,
+                                             GCancellable        *cancellable,
+                                             GAsyncReadyCallback  callback,
+                                             gpointer             user_data);
+  gboolean    (* eject_with_operation_finish) (GDrive            *drive,
+                                             GAsyncResult        *result,
+                                             GError             **error);
+
+  const gchar * (* get_sort_key)        (GDrive              *drive);
+  GIcon *       (* get_symbolic_icon)   (GDrive              *drive);
+  gboolean      (* is_removable)        (GDrive              *drive);
+};
+</pre>
+<p>Interface for creating <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> implementations.</p>
+<div class="refsect3">
+<a name="GDriveIface.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.changed"></a>changed</code></em> ()</p></td>
+<td class="struct_member_description"><p>Signal emitted when the drive is changed.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.disconnected"></a>disconnected</code></em> ()</p></td>
+<td class="struct_member_description"><p>The removed signal that is emitted when the <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> have been disconnected. If the recipient is holding references to the object they should release them so the object can be finalized.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.eject-button"></a>eject_button</code></em> ()</p></td>
+<td class="struct_member_description"><p>Signal emitted when the physical eject button (if any) of a drive have been pressed.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.get-name"></a>get_name</code></em> ()</p></td>
+<td class="struct_member_description"><p>Returns the name for the given <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.get-icon"></a>get_icon</code></em> ()</p></td>
+<td class="struct_member_description"><p>Returns a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> for the given <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.has-volumes"></a>has_volumes</code></em> ()</p></td>
+<td class="struct_member_description"><p>Returns <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> has mountable volumes.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.get-volumes"></a>get_volumes</code></em> ()</p></td>
+<td class="struct_member_description"><p>Returns a list <a href="../glib-Doubly-Linked-Lists.html#GList"><span class="type">GList</span></a> of <a class="link" href="GVolume.html" title="GVolume"><span class="type">GVolume</span></a> for the <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.is-media-removable"></a>is_media_removable</code></em> ()</p></td>
+<td class="struct_member_description"><p>Returns <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> supports removal and insertion of media.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.has-media"></a>has_media</code></em> ()</p></td>
+<td class="struct_member_description"><p>Returns <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> has media inserted.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.is-media-check-automatic"></a>is_media_check_automatic</code></em> ()</p></td>
+<td class="struct_member_description"><p>Returns <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> is capabable of automatically detecting media changes.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.can-eject"></a>can_eject</code></em> ()</p></td>
+<td class="struct_member_description"><p>Returns <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> can eject media.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.can-poll-for-media"></a>can_poll_for_media</code></em> ()</p></td>
+<td class="struct_member_description"><p>Returns <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> is capable of manually polling for media change.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.eject"></a>eject</code></em> ()</p></td>
+<td class="struct_member_description"><p>Ejects a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.eject-finish"></a>eject_finish</code></em> ()</p></td>
+<td class="struct_member_description"><p>Finishes an eject operation.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.poll-for-media"></a>poll_for_media</code></em> ()</p></td>
+<td class="struct_member_description"><p>Poll for media insertion/removal on a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.poll-for-media-finish"></a>poll_for_media_finish</code></em> ()</p></td>
+<td class="struct_member_description"><p>Finishes a media poll operation.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.get-identifier"></a>get_identifier</code></em> ()</p></td>
+<td class="struct_member_description"><p>Returns the identifier of the given kind, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if
+the <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> doesn't have one.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.enumerate-identifiers"></a>enumerate_identifiers</code></em> ()</p></td>
+<td class="struct_member_description"><p>Returns an array strings listing the kinds
+of identifiers which the <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> has.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.get-start-stop-type"></a>get_start_stop_type</code></em> ()</p></td>
+<td class="struct_member_description"><p>Gets a <a class="link" href="GDrive.html#GDriveStartStopType" title="enum GDriveStartStopType"><span class="type">GDriveStartStopType</span></a> with details about starting/stopping the drive. Since 2.22.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.can-start"></a>can_start</code></em> ()</p></td>
+<td class="struct_member_description"><p>Returns <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> can be started. Since 2.22.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.can-start-degraded"></a>can_start_degraded</code></em> ()</p></td>
+<td class="struct_member_description"><p>Returns <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> can be started degraded. Since 2.22.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.start"></a>start</code></em> ()</p></td>
+<td class="struct_member_description"><p>Starts a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>. Since 2.22.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.start-finish"></a>start_finish</code></em> ()</p></td>
+<td class="struct_member_description"><p>Finishes a start operation. Since 2.22.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.can-stop"></a>can_stop</code></em> ()</p></td>
+<td class="struct_member_description"><p>Returns <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> can be stopped. Since 2.22.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.stop"></a>stop</code></em> ()</p></td>
+<td class="struct_member_description"><p>Stops a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>. Since 2.22.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.stop-finish"></a>stop_finish</code></em> ()</p></td>
+<td class="struct_member_description"><p>Finishes a stop operation. Since 2.22.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.stop-button"></a>stop_button</code></em> ()</p></td>
+<td class="struct_member_description"><p>Signal emitted when the physical stop button (if any) of a drive have been pressed. Since 2.22.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.eject-with-operation"></a>eject_with_operation</code></em> ()</p></td>
+<td class="struct_member_description"><p>Starts ejecting a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> using a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>. Since 2.22.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.eject-with-operation-finish"></a>eject_with_operation_finish</code></em> ()</p></td>
+<td class="struct_member_description"><p>Finishes an eject operation using a <a class="link" href="GMountOperation.html" title="GMountOperation"><span class="type">GMountOperation</span></a>. Since 2.22.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.get-sort-key"></a>get_sort_key</code></em> ()</p></td>
+<td class="struct_member_description"><p>Gets a key used for sorting <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> instances or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if no such key exists. Since 2.32.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.get-symbolic-icon"></a>get_symbolic_icon</code></em> ()</p></td>
+<td class="struct_member_description"><p>Returns a symbolic <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> for the given <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>. Since 2.34.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GDriveIface.is-removable"></a>is_removable</code></em> ()</p></td>
+<td class="struct_member_description"><p>Returns <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> and/or its media is considered removable by the user. Since 2.50.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDriveStartFlags"></a><h3>enum GDriveStartFlags</h3>
+<p>Flags used when starting a drive.</p>
+<div class="refsect3">
+<a name="GDriveStartFlags.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody><tr>
+<td class="enum_member_name"><p><a name="G-DRIVE-START-NONE:CAPS"></a>G_DRIVE_START_NONE</p></td>
+<td class="enum_member_description">
+<p>No flags set.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDriveStartStopType"></a><h3>enum GDriveStartStopType</h3>
+<p>Enumeration describing how a drive can be started/stopped.</p>
+<div class="refsect3">
+<a name="GDriveStartStopType.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="G-DRIVE-START-STOP-TYPE-UNKNOWN:CAPS"></a>G_DRIVE_START_STOP_TYPE_UNKNOWN</p></td>
+<td class="enum_member_description">
+<p>Unknown or drive doesn't support
+   start/stop.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DRIVE-START-STOP-TYPE-SHUTDOWN:CAPS"></a>G_DRIVE_START_STOP_TYPE_SHUTDOWN</p></td>
+<td class="enum_member_description">
+<p>The stop method will physically
+   shut down the drive and e.g. power down the port the drive is
+   attached to.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DRIVE-START-STOP-TYPE-NETWORK:CAPS"></a>G_DRIVE_START_STOP_TYPE_NETWORK</p></td>
+<td class="enum_member_description">
+<p>The start/stop methods are used
+   for connecting/disconnect to the drive over the network.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DRIVE-START-STOP-TYPE-MULTIDISK:CAPS"></a>G_DRIVE_START_STOP_TYPE_MULTIDISK</p></td>
+<td class="enum_member_description">
+<p>The start/stop methods will
+   assemble/disassemble a virtual drive from several physical
+   drives.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="G-DRIVE-START-STOP-TYPE-PASSWORD:CAPS"></a>G_DRIVE_START_STOP_TYPE_PASSWORD</p></td>
+<td class="enum_member_description">
+<p>The start/stop methods will
+   unlock/lock the disk (for example using the ATA &lt;quote&gt;SECURITY
+   UNLOCK DEVICE&lt;/quote&gt; command)</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GDrive.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="GDrive-changed"></a><h3>The <code class="literal">“changed”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>  *drive,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data)</pre>
+<p>Emitted when the drive's state has changed.</p>
+<div class="refsect3">
+<a name="GDrive-changed.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDrive-disconnected"></a><h3>The <code class="literal">“disconnected”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>  *drive,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data)</pre>
+<p>This signal is emitted when the <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a> have been
+disconnected. If the recipient is holding references to the
+object they should release them so the object can be
+finalized.</p>
+<div class="refsect3">
+<a name="GDrive-disconnected.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDrive-eject-button"></a><h3>The <code class="literal">“eject-button”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>  *drive,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data)</pre>
+<p>Emitted when the physical eject button (if any) of a drive has
+been pressed.</p>
+<div class="refsect3">
+<a name="GDrive-eject-button.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GDrive-stop-button"></a><h3>The <code class="literal">“stop-button”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>  *drive,
+               <a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data)</pre>
+<p>Emitted when the physical stop button (if any) of a drive has
+been pressed.</p>
+<div class="refsect3">
+<a name="GDrive-stop-button.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>drive</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GDrive.html" title="GDrive"><span class="type">GDrive</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="../gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS">Run Last</a></p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

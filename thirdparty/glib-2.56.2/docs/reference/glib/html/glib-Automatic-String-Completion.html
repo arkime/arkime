@@ -1,0 +1,610 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Automatic String Completion: GLib Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GLib Reference Manual">
+<link rel="up" href="deprecated.html" title="Deprecated APIs">
+<link rel="prev" href="glib-Relations-and-Tuples.html" title="Relations and Tuples">
+<link rel="next" href="tools.html" title="GLib Tools">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#glib-Automatic-String-Completion.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="deprecated.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="glib-Relations-and-Tuples.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="tools.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="glib-Automatic-String-Completion"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="glib-Automatic-String-Completion.top_of_page"></a>Automatic String Completion</span></h2>
+<p>Automatic String Completion — support for automatic completion using a group
+                    of target strings</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="glib-Automatic-String-Completion.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="returnvalue">GCompletion</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Automatic-String-Completion.html#g-completion-new" title="g_completion_new ()">g_completion_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="glib-Automatic-String-Completion.html#GCompletionFunc" title="GCompletionFunc ()">*GCompletionFunc</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Automatic-String-Completion.html#g-completion-add-items" title="g_completion_add_items ()">g_completion_add_items</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Automatic-String-Completion.html#g-completion-remove-items" title="g_completion_remove_items ()">g_completion_remove_items</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Automatic-String-Completion.html#g-completion-clear-items" title="g_completion_clear_items ()">g_completion_clear_items</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Doubly-Linked-Lists.html#GList" title="struct GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Automatic-String-Completion.html#g-completion-complete" title="g_completion_complete ()">g_completion_complete</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Doubly-Linked-Lists.html#GList" title="struct GList"><span class="returnvalue">GList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="glib-Automatic-String-Completion.html#g-completion-complete-utf8" title="g_completion_complete_utf8 ()">g_completion_complete_utf8</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Automatic-String-Completion.html#g-completion-set-compare" title="g_completion_set_compare ()">g_completion_set_compare</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="glib-Automatic-String-Completion.html#GCompletionStrncmpFunc" title="GCompletionStrncmpFunc ()">*GCompletionStrncmpFunc</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="glib-Automatic-String-Completion.html#g-completion-free" title="g_completion_free ()">g_completion_free</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Automatic-String-Completion.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion">GCompletion</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="glib-Automatic-String-Completion.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gmodule.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="glib-Automatic-String-Completion.description"></a><h2>Description</h2>
+<p><a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a> provides support for automatic completion of a string
+using any group of target strings. It is typically used for file
+name completion as is common in many UNIX shells.</p>
+<p>A <a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a> is created using <a class="link" href="glib-Automatic-String-Completion.html#g-completion-new" title="g_completion_new ()"><code class="function">g_completion_new()</code></a>. Target items are
+added and removed with <a class="link" href="glib-Automatic-String-Completion.html#g-completion-add-items" title="g_completion_add_items ()"><code class="function">g_completion_add_items()</code></a>,
+<a class="link" href="glib-Automatic-String-Completion.html#g-completion-remove-items" title="g_completion_remove_items ()"><code class="function">g_completion_remove_items()</code></a> and <a class="link" href="glib-Automatic-String-Completion.html#g-completion-clear-items" title="g_completion_clear_items ()"><code class="function">g_completion_clear_items()</code></a>. A
+completion attempt is requested with <a class="link" href="glib-Automatic-String-Completion.html#g-completion-complete" title="g_completion_complete ()"><code class="function">g_completion_complete()</code></a> or
+<a class="link" href="glib-Automatic-String-Completion.html#g-completion-complete-utf8" title="g_completion_complete_utf8 ()"><code class="function">g_completion_complete_utf8()</code></a>. When no longer needed, the
+<a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a> is freed with <a class="link" href="glib-Automatic-String-Completion.html#g-completion-free" title="g_completion_free ()"><code class="function">g_completion_free()</code></a>.</p>
+<p>Items in the completion can be simple strings (e.g. filenames), or
+pointers to arbitrary data structures. If data structures are used
+you must provide a <a class="link" href="glib-Automatic-String-Completion.html#GCompletionFunc" title="GCompletionFunc ()"><span class="type">GCompletionFunc</span></a> in <a class="link" href="glib-Automatic-String-Completion.html#g-completion-new" title="g_completion_new ()"><code class="function">g_completion_new()</code></a>, which
+retrieves the item's string from the data structure. You can change
+the way in which strings are compared by setting a different
+<a class="link" href="glib-Automatic-String-Completion.html#GCompletionStrncmpFunc" title="GCompletionStrncmpFunc ()"><span class="type">GCompletionStrncmpFunc</span></a> in <a class="link" href="glib-Automatic-String-Completion.html#g-completion-set-compare" title="g_completion_set_compare ()"><code class="function">g_completion_set_compare()</code></a>.</p>
+<p>GCompletion has been marked as deprecated, since this API is rarely
+used and not very actively maintained.</p>
+</div>
+<div class="refsect1">
+<a name="glib-Automatic-String-Completion.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-completion-new"></a><h3>g_completion_new ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="returnvalue">GCompletion</span></a> *
+g_completion_new (<em class="parameter"><code><a class="link" href="glib-Automatic-String-Completion.html#GCompletionFunc" title="GCompletionFunc ()"><span class="type">GCompletionFunc</span></a> func</code></em>);</pre>
+<div class="warning"><p><code class="literal">g_completion_new</code> is deprecated and should not be used in newly-written code.</p></div>
+<p>Creates a new <a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a>.</p>
+<div class="refsect3">
+<a name="g-completion-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>func</p></td>
+<td class="parameter_description"><p>the function to be called to return the string representing
+an item in the <a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a>, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if strings are going to
+be used as the <a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a> items.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-completion-new.returns"></a><h4>Returns</h4>
+<p> the new <a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a>.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GCompletionFunc"></a><h3>GCompletionFunc ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="returnvalue">gchar</span></a> *
+<span class="c_punctuation">(</span>*GCompletionFunc<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gpointer" title="gpointer"><span class="type">gpointer</span></a> Param1</code></em>);</pre>
+<p>Specifies the type of the function passed to <a class="link" href="glib-Automatic-String-Completion.html#g-completion-new" title="g_completion_new ()"><code class="function">g_completion_new()</code></a>. It
+should return the string corresponding to the given target item.
+This is used when you use data structures as <a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a> items.</p>
+<div class="refsect3">
+<a name="GCompletionFunc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>Param1</p></td>
+<td class="parameter_description"><p>the completion item.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="GCompletionFunc.returns"></a><h4>Returns</h4>
+<p> the string corresponding to the item.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-completion-add-items"></a><h3>g_completion_add_items ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_completion_add_items (<em class="parameter"><code><a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a> *cmp</code></em>,
+                        <em class="parameter"><code><a class="link" href="glib-Doubly-Linked-Lists.html#GList" title="struct GList"><span class="type">GList</span></a> *items</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_completion_add_items</code> has been deprecated since version 2.26 and should not be used in newly-written code.</p>
+<p>Rarely used API</p>
+</div>
+<p>Adds items to the <a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a>.</p>
+<div class="refsect3">
+<a name="g-completion-add-items.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>cmp</p></td>
+<td class="parameter_description"><p>the <a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>items</p></td>
+<td class="parameter_description"><p>the list of items to add. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-completion-remove-items"></a><h3>g_completion_remove_items ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_completion_remove_items (<em class="parameter"><code><a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a> *cmp</code></em>,
+                           <em class="parameter"><code><a class="link" href="glib-Doubly-Linked-Lists.html#GList" title="struct GList"><span class="type">GList</span></a> *items</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_completion_remove_items</code> has been deprecated since version 2.26 and should not be used in newly-written code.</p>
+<p>Rarely used API</p>
+</div>
+<p>Removes items from a <a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a>. The items are not freed, so if the memory
+was dynamically allocated, free <em class="parameter"><code>items</code></em>
+ with <a class="link" href="glib-Doubly-Linked-Lists.html#g-list-free-full" title="g_list_free_full ()"><code class="function">g_list_free_full()</code></a> after calling
+this function.</p>
+<div class="refsect3">
+<a name="g-completion-remove-items.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>cmp</p></td>
+<td class="parameter_description"><p>the <a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>items</p></td>
+<td class="parameter_description"><p>the items to remove. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-completion-clear-items"></a><h3>g_completion_clear_items ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_completion_clear_items (<em class="parameter"><code><a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a> *cmp</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_completion_clear_items</code> has been deprecated since version 2.26 and should not be used in newly-written code.</p>
+<p>Rarely used API</p>
+</div>
+<p>Removes all items from the <a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a>. The items are not freed, so if the
+memory was dynamically allocated, it should be freed after calling this
+function.</p>
+<div class="refsect3">
+<a name="g-completion-clear-items.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>cmp</p></td>
+<td class="parameter_description"><p>the <a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-completion-complete"></a><h3>g_completion_complete ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Doubly-Linked-Lists.html#GList" title="struct GList"><span class="returnvalue">GList</span></a> *
+g_completion_complete (<em class="parameter"><code><a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a> *cmp</code></em>,
+                       <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *prefix</code></em>,
+                       <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> **new_prefix</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_completion_complete</code> has been deprecated since version 2.26 and should not be used in newly-written code.</p>
+<p>Rarely used API</p>
+</div>
+<p>Attempts to complete the string <em class="parameter"><code>prefix</code></em>
+ using the <a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a>
+target items.</p>
+<div class="refsect3">
+<a name="g-completion-complete.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>cmp</p></td>
+<td class="parameter_description"><p>the <a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>prefix</p></td>
+<td class="parameter_description"><p>the prefix string, typically typed by the user, which is
+compared with each of the items.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>new_prefix</p></td>
+<td class="parameter_description"><p>if non-<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>, returns the longest prefix which is
+common to all items that matched <em class="parameter"><code>prefix</code></em>
+, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if
+no items matched <em class="parameter"><code>prefix</code></em>
+.  This string should be freed
+when no longer needed.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-completion-complete.returns"></a><h4>Returns</h4>
+<p>the list of items whose strings begin with
+<em class="parameter"><code>prefix</code></em>
+. This should not be changed. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-completion-complete-utf8"></a><h3>g_completion_complete_utf8 ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Doubly-Linked-Lists.html#GList" title="struct GList"><span class="returnvalue">GList</span></a> *
+g_completion_complete_utf8 (<em class="parameter"><code><a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a> *cmp</code></em>,
+                            <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *prefix</code></em>,
+                            <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> **new_prefix</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_completion_complete_utf8</code> has been deprecated since version 2.26 and should not be used in newly-written code.</p>
+<p>Rarely used API</p>
+</div>
+<p>Attempts to complete the string <em class="parameter"><code>prefix</code></em>
+ using the <a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a> target items.
+In contrast to <a class="link" href="glib-Automatic-String-Completion.html#g-completion-complete" title="g_completion_complete ()"><code class="function">g_completion_complete()</code></a>, this function returns the largest common
+prefix that is a valid UTF-8 string, omitting a possible common partial 
+character.</p>
+<p>You should use this function instead of <a class="link" href="glib-Automatic-String-Completion.html#g-completion-complete" title="g_completion_complete ()"><code class="function">g_completion_complete()</code></a> if your 
+items are UTF-8 strings.</p>
+<div class="refsect3">
+<a name="g-completion-complete-utf8.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>cmp</p></td>
+<td class="parameter_description"><p>the <a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>prefix</p></td>
+<td class="parameter_description"><p>the prefix string, typically used by the user, which is compared
+with each of the items</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>new_prefix</p></td>
+<td class="parameter_description"><p>if non-<a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a>, returns the longest prefix which is common to all
+items that matched <em class="parameter"><code>prefix</code></em>
+, or <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if no items matched <em class="parameter"><code>prefix</code></em>
+.
+This string should be freed when no longer needed.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-completion-complete-utf8.returns"></a><h4>Returns</h4>
+<p>the list of items whose strings begin with <em class="parameter"><code>prefix</code></em>
+. This should
+not be changed. </p>
+<p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-completion-set-compare"></a><h3>g_completion_set_compare ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_completion_set_compare (<em class="parameter"><code><a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a> *cmp</code></em>,
+                          <em class="parameter"><code><a class="link" href="glib-Automatic-String-Completion.html#GCompletionStrncmpFunc" title="GCompletionStrncmpFunc ()"><span class="type">GCompletionStrncmpFunc</span></a> strncmp_func</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_completion_set_compare</code> has been deprecated since version 2.26 and should not be used in newly-written code.</p>
+<p>Rarely used API</p>
+</div>
+<p>Sets the function to use for string comparisons. The default string
+comparison function is <code class="function">strncmp()</code>.</p>
+<div class="refsect3">
+<a name="g-completion-set-compare.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>cmp</p></td>
+<td class="parameter_description"><p>a <a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>strncmp_func</p></td>
+<td class="parameter_description"><p>the string comparison function.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GCompletionStrncmpFunc"></a><h3>GCompletionStrncmpFunc ()</h3>
+<pre class="programlisting"><a class="link" href="glib-Basic-Types.html#gint" title="gint ()"><span class="returnvalue">gint</span></a>
+<span class="c_punctuation">(</span>*GCompletionStrncmpFunc<span class="c_punctuation">)</span> (<em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *s1</code></em>,
+                           <em class="parameter"><code>const <a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *s2</code></em>,
+                           <em class="parameter"><code><a class="link" href="glib-Basic-Types.html#gsize" title="gsize"><span class="type">gsize</span></a> n</code></em>);</pre>
+<p>Specifies the type of the function passed to
+<a class="link" href="glib-Automatic-String-Completion.html#g-completion-set-compare" title="g_completion_set_compare ()"><code class="function">g_completion_set_compare()</code></a>. This is used when you use strings as
+<a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a> items.</p>
+<div class="refsect3">
+<a name="GCompletionStrncmpFunc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>s1</p></td>
+<td class="parameter_description"><p>string to compare with <em class="parameter"><code>s2</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>s2</p></td>
+<td class="parameter_description"><p>string to compare with <em class="parameter"><code>s1</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>n</p></td>
+<td class="parameter_description"><p>maximal number of bytes to compare.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="GCompletionStrncmpFunc.returns"></a><h4>Returns</h4>
+<p> an integer less than, equal to, or greater than zero if
+the first <em class="parameter"><code>n</code></em>
+bytes of <em class="parameter"><code>s1</code></em>
+is found, respectively, to be
+less than, to match, or to be greater than the first <em class="parameter"><code>n</code></em>
+bytes of <em class="parameter"><code>s2</code></em>
+.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-completion-free"></a><h3>g_completion_free ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_completion_free (<em class="parameter"><code><a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a> *cmp</code></em>);</pre>
+<div class="warning">
+<p><code class="literal">g_completion_free</code> has been deprecated since version 2.26 and should not be used in newly-written code.</p>
+<p>Rarely used API</p>
+</div>
+<p>Frees all memory used by the <a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a>. The items are not freed, so if
+the memory was dynamically allocated, it should be freed after calling this
+function.</p>
+<div class="refsect3">
+<a name="g-completion-free.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>cmp</p></td>
+<td class="parameter_description"><p>the <a class="link" href="glib-Automatic-String-Completion.html#GCompletion" title="struct GCompletion"><span class="type">GCompletion</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="glib-Automatic-String-Completion.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GCompletion"></a><h3>struct GCompletion</h3>
+<pre class="programlisting">struct GCompletion {
+  GList* items;
+  GCompletionFunc func;
+ 
+  gchar* prefix;
+  GList* cache;
+  GCompletionStrncmpFunc strncmp_func;
+};
+</pre>
+<p>The data structure used for automatic completion.</p>
+<div class="refsect3">
+<a name="GCompletion.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="glib-Doubly-Linked-Lists.html#GList" title="struct GList"><span class="type">GList</span></a> *<em class="structfield"><code><a name="GCompletion.items"></a>items</code></em>;</p></td>
+<td class="struct_member_description"><p>list of target items (strings or data structures).</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="glib-Automatic-String-Completion.html#GCompletionFunc" title="GCompletionFunc ()"><span class="type">GCompletionFunc</span></a> <em class="structfield"><code><a name="GCompletion.func"></a>func</code></em>;</p></td>
+<td class="struct_member_description"><p>function which is called to get the string associated with a
+target item. It is <a class="link" href="glib-Standard-Macros.html#NULL:CAPS" title="NULL"><code class="literal">NULL</code></a> if the target items are strings.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="glib-Basic-Types.html#gchar" title="gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GCompletion.prefix"></a>prefix</code></em>;</p></td>
+<td class="struct_member_description"><p>the last prefix passed to <a class="link" href="glib-Automatic-String-Completion.html#g-completion-complete" title="g_completion_complete ()"><code class="function">g_completion_complete()</code></a> or
+<a class="link" href="glib-Automatic-String-Completion.html#g-completion-complete-utf8" title="g_completion_complete_utf8 ()"><code class="function">g_completion_complete_utf8()</code></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="glib-Doubly-Linked-Lists.html#GList" title="struct GList"><span class="type">GList</span></a> *<em class="structfield"><code><a name="GCompletion.cache"></a>cache</code></em>;</p></td>
+<td class="struct_member_description"><p>the list of items which begin with <em class="parameter"><code>prefix</code></em>
+.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a class="link" href="glib-Automatic-String-Completion.html#GCompletionStrncmpFunc" title="GCompletionStrncmpFunc ()"><span class="type">GCompletionStrncmpFunc</span></a> <em class="structfield"><code><a name="GCompletion.strncmp-func"></a>strncmp_func</code></em>;</p></td>
+<td class="struct_member_description"><p>The function to use when comparing strings.  Use
+<a class="link" href="glib-Automatic-String-Completion.html#g-completion-set-compare" title="g_completion_set_compare ()"><code class="function">g_completion_set_compare()</code></a> to modify this function.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

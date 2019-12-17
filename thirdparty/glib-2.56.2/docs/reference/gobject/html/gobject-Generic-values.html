@@ -1,0 +1,1091 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Generic values: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="rn01.html" title="API Reference">
+<link rel="prev" href="gobject-Boxed-Types.html" title="Boxed Types">
+<link rel="next" href="gobject-Standard-Parameter-and-Value-Types.html" title="Parameters and Values">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gobject-Generic-values.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="rn01.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gobject-Boxed-Types.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gobject-Standard-Parameter-and-Value-Types.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gobject-Generic-values"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gobject-Generic-values.top_of_page"></a>Generic values</span></h2>
+<p>Generic values — A polymorphic type that can hold values of any
+    other type</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gobject-Generic-values.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="gobject-Generic-values.html#G-VALUE-HOLDS:CAPS" title="G_VALUE_HOLDS()">G_VALUE_HOLDS</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="gobject-Generic-values.html#G-VALUE-TYPE:CAPS" title="G_VALUE_TYPE()">G_VALUE_TYPE</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="gobject-Generic-values.html#G-VALUE-TYPE-NAME:CAPS" title="G_VALUE_TYPE_NAME()">G_VALUE_TYPE_NAME</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="gobject-Generic-values.html#G-TYPE-IS-VALUE:CAPS" title="G_TYPE_IS_VALUE()">G_TYPE_IS_VALUE</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="gobject-Generic-values.html#G-TYPE-IS-VALUE-ABSTRACT:CAPS" title="G_TYPE_IS_VALUE_ABSTRACT()">G_TYPE_IS_VALUE_ABSTRACT</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="gobject-Generic-values.html#G-IS-VALUE:CAPS" title="G_IS_VALUE()">G_IS_VALUE</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="returnvalue">GValue</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Generic-values.html#g-value-init" title="g_value_init ()">g_value_init</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Generic-values.html#g-value-copy" title="g_value_copy ()">g_value_copy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="returnvalue">GValue</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Generic-values.html#g-value-reset" title="g_value_reset ()">g_value_reset</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Generic-values.html#g-value-unset" title="g_value_unset ()">g_value_unset</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Generic-values.html#g-value-init-from-instance" title="g_value_init_from_instance ()">g_value_init_from_instance</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Generic-values.html#g-value-set-instance" title="g_value_set_instance ()">g_value_set_instance</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Generic-values.html#g-value-fits-pointer" title="g_value_fits_pointer ()">g_value_fits_pointer</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Generic-values.html#g-value-peek-pointer" title="g_value_peek_pointer ()">g_value_peek_pointer</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Generic-values.html#g-value-type-compatible" title="g_value_type_compatible ()">g_value_type_compatible</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Generic-values.html#g-value-type-transformable" title="g_value_type_transformable ()">g_value_type_transformable</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Generic-values.html#g-value-transform" title="g_value_transform ()">g_value_transform</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="gobject-Generic-values.html#GValueTransform" title="GValueTransform ()">*GValueTransform</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Generic-values.html#g-value-register-transform-func" title="g_value_register_transform_func ()">g_value_register_transform_func</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Generic-values.html#g-strdup-value-contents" title="g_strdup_value_contents ()">g_strdup_value_contents</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gobject-Generic-values.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Generic-values.html#G-VALUE-INIT:CAPS" title="G_VALUE_INIT">G_VALUE_INIT</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gobject-Generic-values.html#GValue" title="GValue">GValue</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Generic-values.html#G-TYPE-VALUE:CAPS" title="G_TYPE_VALUE">G_TYPE_VALUE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Generic-values.html#G-TYPE-VALUE-ARRAY:CAPS" title="G_TYPE_VALUE_ARRAY">G_TYPE_VALUE_ARRAY</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gobject-Generic-values.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib-object.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gobject-Generic-values.description"></a><h2>Description</h2>
+<p>The <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure is basically a variable container that consists
+of a type identifier and a specific value of that type.
+The type identifier within a <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure always determines the
+type of the associated value.
+To create a undefined <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure, simply create a zero-filled
+<a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure. To initialize the <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a>, use the <a class="link" href="gobject-Generic-values.html#g-value-init" title="g_value_init ()"><code class="function">g_value_init()</code></a>
+function. A <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> cannot be used until it is initialized.
+The basic type operations (such as freeing and copying) are determined
+by the <a class="link" href="gobject-Type-Information.html#GTypeValueTable" title="struct GTypeValueTable"><span class="type">GTypeValueTable</span></a> associated with the type ID stored in the <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a>.
+Other <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> operations (such as converting values between types) are
+provided by this interface.</p>
+<p>The code in the example program below demonstrates <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a>'s
+features.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;glib-object.h&gt;</span>
+
+<span class="keyword">static</span><span class="normal"> </span><span class="type">void</span>
+<span class="function">int2string</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">GValue</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">src_value</span><span class="symbol">,</span>
+<span class="normal">            </span><span class="usertype">GValue</span><span class="normal">       </span><span class="symbol">*</span><span class="normal">dest_value</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-value-get-int">g_value_get_int</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">src_value</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">42</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-value-set-static-string">g_value_set_static_string</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">dest_value</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"An important number"</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="keyword">else</span>
+<span class="normal">    </span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-value-set-static-string">g_value_set_static_string</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">dest_value</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"What's that?"</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="type">int</span>
+<span class="function">main</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal">   argc</span><span class="symbol">,</span>
+<span class="normal">      </span><span class="type">char</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">argv</span><span class="symbol">[])</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="comment">// GValues must be initialized</span>
+<span class="normal">  </span><span class="usertype">GValue</span><span class="normal"> a </span><span class="symbol">=</span><span class="normal"> <a href="gobject-Generic-values.html#G-VALUE-INIT:CAPS">G_VALUE_INIT</a></span><span class="symbol">;</span>
+<span class="normal">  </span><span class="usertype">GValue</span><span class="normal"> b </span><span class="symbol">=</span><span class="normal"> <a href="gobject-Generic-values.html#G-VALUE-INIT:CAPS">G_VALUE_INIT</a></span><span class="symbol">;</span>
+<span class="normal">  </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">message</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="comment">// The GValue starts empty</span>
+<span class="normal">  </span><span class="function"><a href="../glib-Testing.html#g-assert">g_assert</a></span><span class="normal"> </span><span class="symbol">(!</span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#G-VALUE-HOLDS-STRING:CAPS">G_VALUE_HOLDS_STRING</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">a</span><span class="symbol">));</span>
+
+<span class="normal">  </span><span class="comment">// Put a string in it</span>
+<span class="normal">  </span><span class="function"><a href="gobject-Generic-values.html#g-value-init">g_value_init</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> <a href="gobject-Type-Information.html#G-TYPE-STRING:CAPS">G_TYPE_STRING</a></span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="../glib-Testing.html#g-assert">g_assert</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#G-VALUE-HOLDS-STRING:CAPS">G_VALUE_HOLDS_STRING</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">a</span><span class="symbol">));</span>
+<span class="normal">  </span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-value-set-static-string">g_value_set_static_string</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"Hello, world!"</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="../glib-String-Utility-Functions.html#g-printf">g_printf</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"%s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-value-get-string">g_value_get_string</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">a</span><span class="symbol">));</span>
+
+<span class="normal">  </span><span class="comment">// Reset it to its pristine state</span>
+<span class="normal">  </span><span class="function"><a href="gobject-Generic-values.html#g-value-unset">g_value_unset</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">a</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">// It can then be reused for another type</span>
+<span class="normal">  </span><span class="function"><a href="gobject-Generic-values.html#g-value-init">g_value_init</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> <a href="gobject-Type-Information.html#G-TYPE-INT:CAPS">G_TYPE_INT</a></span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-value-set-int">g_value_set_int</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> </span><span class="number">42</span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">// Attempt to transform it into a GValue of type STRING</span>
+<span class="normal">  </span><span class="function"><a href="gobject-Generic-values.html#g-value-init">g_value_init</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">b</span><span class="symbol">,</span><span class="normal"> <a href="gobject-Type-Information.html#G-TYPE-STRING:CAPS">G_TYPE_STRING</a></span><span class="symbol">);</span>
+
+<span class="normal">  </span><span class="comment">// An INT is transformable to a STRING</span>
+<span class="normal">  </span><span class="function"><a href="../glib-Testing.html#g-assert">g_assert</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="gobject-Generic-values.html#g-value-type-transformable">g_value_type_transformable</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="gobject-Type-Information.html#G-TYPE-INT:CAPS">G_TYPE_INT</a></span><span class="symbol">,</span><span class="normal"> <a href="gobject-Type-Information.html#G-TYPE-STRING:CAPS">G_TYPE_STRING</a></span><span class="symbol">));</span>
+
+<span class="normal">  </span><span class="function"><a href="gobject-Generic-values.html#g-value-transform">g_value_transform</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">b</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="../glib-String-Utility-Functions.html#g-printf">g_printf</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"%s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-value-get-string">g_value_get_string</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">b</span><span class="symbol">));</span>
+
+<span class="normal">  </span><span class="comment">// Attempt to transform it again using a custom transform function</span>
+<span class="normal">  </span><span class="function"><a href="gobject-Generic-values.html#g-value-register-transform-func">g_value_register_transform_func</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="gobject-Type-Information.html#G-TYPE-INT:CAPS">G_TYPE_INT</a></span><span class="symbol">,</span><span class="normal"> <a href="gobject-Type-Information.html#G-TYPE-STRING:CAPS">G_TYPE_STRING</a></span><span class="symbol">,</span><span class="normal"> int2string</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="gobject-Generic-values.html#g-value-transform">g_value_transform</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">b</span><span class="symbol">);</span>
+<span class="normal">  </span><span class="function"><a href="../glib-String-Utility-Functions.html#g-printf">g_printf</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"%s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-value-get-string">g_value_get_string</a></span><span class="normal"> </span><span class="symbol">(&amp;</span><span class="normal">b</span><span class="symbol">));</span>
+<span class="normal">  </span><span class="keyword">return</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="cbracket">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+</div>
+<div class="refsect1">
+<a name="gobject-Generic-values.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="G-VALUE-HOLDS:CAPS"></a><h3>G_VALUE_HOLDS()</h3>
+<pre class="programlisting">#define G_VALUE_HOLDS(value,type) (G_TYPE_CHECK_VALUE_TYPE ((value), (type)))
+</pre>
+<p>Checks if <em class="parameter"><code>value</code></em>
+ holds (or contains) a value of <em class="parameter"><code>type</code></em>
+.
+This macro will also check for <em class="parameter"><code>value</code></em>
+ != <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> and issue a
+warning if the check fails.</p>
+<div class="refsect3">
+<a name="G-VALUE-HOLDS.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> value.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="G-VALUE-HOLDS.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>value</code></em>
+holds the <em class="parameter"><code>type</code></em>
+.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VALUE-TYPE:CAPS"></a><h3>G_VALUE_TYPE()</h3>
+<pre class="programlisting">#define G_VALUE_TYPE(value)		(((GValue*) (value))-&gt;g_type)
+</pre>
+<p>Get the type identifier of <em class="parameter"><code>value</code></em>
+.</p>
+<div class="refsect3">
+<a name="G-VALUE-TYPE.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="G-VALUE-TYPE.returns"></a><h4>Returns</h4>
+<p> the <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a>.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-VALUE-TYPE-NAME:CAPS"></a><h3>G_VALUE_TYPE_NAME()</h3>
+<pre class="programlisting">#define G_VALUE_TYPE_NAME(value) (g_type_name (G_VALUE_TYPE (value)))
+</pre>
+<p>Gets the type name of <em class="parameter"><code>value</code></em>
+.</p>
+<div class="refsect3">
+<a name="G-VALUE-TYPE-NAME.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="G-VALUE-TYPE-NAME.returns"></a><h4>Returns</h4>
+<p> the type name.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-IS-VALUE:CAPS"></a><h3>G_TYPE_IS_VALUE()</h3>
+<pre class="programlisting">#define G_TYPE_IS_VALUE(type)		(g_type_check_is_value_type (type))
+</pre>
+<p>Checks whether the passed in type ID can be used for <a class="link" href="gobject-Generic-values.html#g-value-init" title="g_value_init ()"><code class="function">g_value_init()</code></a>.
+That is, this macro checks whether this type provides an implementation
+of the <a class="link" href="gobject-Type-Information.html#GTypeValueTable" title="struct GTypeValueTable"><span class="type">GTypeValueTable</span></a> functions required for a type to create a <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> of.</p>
+<div class="refsect3">
+<a name="G-TYPE-IS-VALUE.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> value.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="G-TYPE-IS-VALUE.returns"></a><h4>Returns</h4>
+<p> Whether <em class="parameter"><code>type</code></em>
+is suitable as a <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> type.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-IS-VALUE-ABSTRACT:CAPS"></a><h3>G_TYPE_IS_VALUE_ABSTRACT()</h3>
+<pre class="programlisting">#define G_TYPE_IS_VALUE_ABSTRACT(type)          (g_type_test_flags ((type), G_TYPE_FLAG_VALUE_ABSTRACT))
+</pre>
+<p>Checks if <em class="parameter"><code>type</code></em>
+ is an abstract value type.  An abstract value type introduces
+a value table, but can't be used for <a class="link" href="gobject-Generic-values.html#g-value-init" title="g_value_init ()"><code class="function">g_value_init()</code></a> and is normally used as
+an abstract base type for derived value types.</p>
+<div class="refsect3">
+<a name="G-TYPE-IS-VALUE-ABSTRACT.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> value</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="G-TYPE-IS-VALUE-ABSTRACT.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-IS-VALUE:CAPS"></a><h3>G_IS_VALUE()</h3>
+<pre class="programlisting">#define G_IS_VALUE(value)		(G_TYPE_CHECK_VALUE (value))
+</pre>
+<p>Checks if <em class="parameter"><code>value</code></em>
+ is a valid and initialized <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure.</p>
+<div class="refsect3">
+<a name="G-IS-VALUE.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="G-IS-VALUE.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-init"></a><h3>g_value_init ()</h3>
+<pre class="programlisting"><a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="returnvalue">GValue</span></a> *
+g_value_init (<em class="parameter"><code><a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> *value</code></em>,
+              <em class="parameter"><code><a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> g_type</code></em>);</pre>
+<p>Initializes <em class="parameter"><code>value</code></em>
+ with the default value of <em class="parameter"><code>type</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-value-init.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>A zero-filled (uninitialized) <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>g_type</p></td>
+<td class="parameter_description"><p>Type the <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> should hold values of.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-value-init.returns"></a><h4>Returns</h4>
+<p>the <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure that has been passed in. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-copy"></a><h3>g_value_copy ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_value_copy (<em class="parameter"><code>const <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> *src_value</code></em>,
+              <em class="parameter"><code><a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> *dest_value</code></em>);</pre>
+<p>Copies the value of <em class="parameter"><code>src_value</code></em>
+ into <em class="parameter"><code>dest_value</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-value-copy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>src_value</p></td>
+<td class="parameter_description"><p>An initialized <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>dest_value</p></td>
+<td class="parameter_description"><p>An initialized <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure of the same type as <em class="parameter"><code>src_value</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-reset"></a><h3>g_value_reset ()</h3>
+<pre class="programlisting"><a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="returnvalue">GValue</span></a> *
+g_value_reset (<em class="parameter"><code><a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> *value</code></em>);</pre>
+<p>Clears the current value in <em class="parameter"><code>value</code></em>
+ and resets it to the default value
+(as if the value had just been initialized).</p>
+<div class="refsect3">
+<a name="g-value-reset.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>An initialized <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-value-reset.returns"></a><h4>Returns</h4>
+<p> the <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure that has been passed in</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-unset"></a><h3>g_value_unset ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_value_unset (<em class="parameter"><code><a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> *value</code></em>);</pre>
+<p>Clears the current value in <em class="parameter"><code>value</code></em>
+ (if any) and "unsets" the type,
+this releases all resources associated with this GValue. An unset
+value is the same as an uninitialized (zero-filled) <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a>
+structure.</p>
+<div class="refsect3">
+<a name="g-value-unset.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>An initialized <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-init-from-instance"></a><h3>g_value_init_from_instance ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_value_init_from_instance (<em class="parameter"><code><a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> *value</code></em>,
+                            <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> instance</code></em>);</pre>
+<p>Initializes and sets <em class="parameter"><code>value</code></em>
+ from an instantiatable type via the
+value_table's <code class="function">collect_value()</code> function.</p>
+<p>Note: The <em class="parameter"><code>value</code></em>
+ will be initialised with the exact type of
+<em class="parameter"><code>instance</code></em>
+.  If you wish to set the <em class="parameter"><code>value</code></em>
+'s type to a different GType
+(such as a parent class GType), you need to manually call
+<a class="link" href="gobject-Generic-values.html#g-value-init" title="g_value_init ()"><code class="function">g_value_init()</code></a> and <a class="link" href="gobject-Generic-values.html#g-value-set-instance" title="g_value_set_instance ()"><code class="function">g_value_set_instance()</code></a>.</p>
+<div class="refsect3">
+<a name="g-value-init-from-instance.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>An uninitialized <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>instance</p></td>
+<td class="parameter_description"><p>the instance. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GObject.TypeInstance]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-42.html#api-index-2.42">2.42</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-set-instance"></a><h3>g_value_set_instance ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_value_set_instance (<em class="parameter"><code><a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> *value</code></em>,
+                      <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> instance</code></em>);</pre>
+<p>Sets <em class="parameter"><code>value</code></em>
+ from an instantiatable type via the
+value_table's <code class="function">collect_value()</code> function.</p>
+<div class="refsect3">
+<a name="g-value-set-instance.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>An initialized <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>instance</p></td>
+<td class="parameter_description"><p>the instance. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-fits-pointer"></a><h3>g_value_fits_pointer ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_value_fits_pointer (<em class="parameter"><code>const <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> *value</code></em>);</pre>
+<p>Determines if <em class="parameter"><code>value</code></em>
+ will fit inside the size of a pointer value.
+This is an internal function introduced mainly for C marshallers.</p>
+<div class="refsect3">
+<a name="g-value-fits-pointer.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>An initialized <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-value-fits-pointer.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>value</code></em>
+will fit inside a pointer value.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-peek-pointer"></a><h3>g_value_peek_pointer ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gpointer"><span class="returnvalue">gpointer</span></a>
+g_value_peek_pointer (<em class="parameter"><code>const <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> *value</code></em>);</pre>
+<p>Returns the value contents as pointer. This function asserts that
+<a class="link" href="gobject-Generic-values.html#g-value-fits-pointer" title="g_value_fits_pointer ()"><code class="function">g_value_fits_pointer()</code></a> returned <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> for the passed in value.
+This is an internal function introduced mainly for C marshallers.</p>
+<div class="refsect3">
+<a name="g-value-peek-pointer.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>An initialized <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-value-peek-pointer.returns"></a><h4>Returns</h4>
+<p>the value contents as pointer. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-type-compatible"></a><h3>g_value_type_compatible ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_value_type_compatible (<em class="parameter"><code><a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> src_type</code></em>,
+                         <em class="parameter"><code><a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> dest_type</code></em>);</pre>
+<p>Returns whether a <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> of type <em class="parameter"><code>src_type</code></em>
+ can be copied into
+a <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> of type <em class="parameter"><code>dest_type</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-value-type-compatible.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>src_type</p></td>
+<td class="parameter_description"><p>source type to be copied.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>dest_type</p></td>
+<td class="parameter_description"><p>destination type for copying.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-value-type-compatible.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <a class="link" href="gobject-Generic-values.html#g-value-copy" title="g_value_copy ()"><code class="function">g_value_copy()</code></a> is possible with <em class="parameter"><code>src_type</code></em>
+and <em class="parameter"><code>dest_type</code></em>
+.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-type-transformable"></a><h3>g_value_type_transformable ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_value_type_transformable (<em class="parameter"><code><a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> src_type</code></em>,
+                            <em class="parameter"><code><a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> dest_type</code></em>);</pre>
+<p>Check whether <a class="link" href="gobject-Generic-values.html#g-value-transform" title="g_value_transform ()"><code class="function">g_value_transform()</code></a> is able to transform values
+of type <em class="parameter"><code>src_type</code></em>
+ into values of type <em class="parameter"><code>dest_type</code></em>
+. Note that for
+the types to be transformable, they must be compatible or a
+transformation function must be registered.</p>
+<div class="refsect3">
+<a name="g-value-type-transformable.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>src_type</p></td>
+<td class="parameter_description"><p>Source type.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>dest_type</p></td>
+<td class="parameter_description"><p>Target type.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-value-type-transformable.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the transformation is possible, <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-transform"></a><h3>g_value_transform ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_value_transform (<em class="parameter"><code>const <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> *src_value</code></em>,
+                   <em class="parameter"><code><a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> *dest_value</code></em>);</pre>
+<p>Tries to cast the contents of <em class="parameter"><code>src_value</code></em>
+ into a type appropriate
+to store in <em class="parameter"><code>dest_value</code></em>
+, e.g. to transform a <a class="link" href="gobject-Type-Information.html#G-TYPE-INT:CAPS" title="G_TYPE_INT"><code class="literal">G_TYPE_INT</code></a> value
+into a <a class="link" href="gobject-Type-Information.html#G-TYPE-FLOAT:CAPS" title="G_TYPE_FLOAT"><code class="literal">G_TYPE_FLOAT</code></a> value. Performing transformations between
+value types might incur precision lossage. Especially
+transformations into strings might reveal seemingly arbitrary
+results and shouldn't be relied upon for production code (such
+as rcfile value or object property serialization).</p>
+<div class="refsect3">
+<a name="g-value-transform.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>src_value</p></td>
+<td class="parameter_description"><p>Source value.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>dest_value</p></td>
+<td class="parameter_description"><p>Target value.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-value-transform.returns"></a><h4>Returns</h4>
+<p> Whether a transformation rule was found and could be applied.
+Upon failing transformations, <em class="parameter"><code>dest_value</code></em>
+is left untouched.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GValueTransform"></a><h3>GValueTransform ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+<span class="c_punctuation">(</span>*GValueTransform<span class="c_punctuation">)</span> (<em class="parameter"><code>const <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> *src_value</code></em>,
+                    <em class="parameter"><code><a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> *dest_value</code></em>);</pre>
+<p>The type of value transformation functions which can be registered with
+<a class="link" href="gobject-Generic-values.html#g-value-register-transform-func" title="g_value_register_transform_func ()"><code class="function">g_value_register_transform_func()</code></a>.</p>
+<p><em class="parameter"><code>dest_value</code></em>
+ will be initialized to the correct destination type.</p>
+<div class="refsect3">
+<a name="GValueTransform.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>src_value</p></td>
+<td class="parameter_description"><p>Source value.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>dest_value</p></td>
+<td class="parameter_description"><p>Target value.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-value-register-transform-func"></a><h3>g_value_register_transform_func ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_value_register_transform_func (<em class="parameter"><code><a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> src_type</code></em>,
+                                 <em class="parameter"><code><a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> dest_type</code></em>,
+                                 <em class="parameter"><code><a class="link" href="gobject-Generic-values.html#GValueTransform" title="GValueTransform ()"><span class="type">GValueTransform</span></a> transform_func</code></em>);</pre>
+<p>Registers a value transformation function for use in <a class="link" href="gobject-Generic-values.html#g-value-transform" title="g_value_transform ()"><code class="function">g_value_transform()</code></a>.
+A previously registered transformation function for <em class="parameter"><code>src_type</code></em>
+ and <em class="parameter"><code>dest_type</code></em>
+
+will be replaced.</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
+<div class="refsect3">
+<a name="g-value-register-transform-func.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>src_type</p></td>
+<td class="parameter_description"><p>Source type.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>dest_type</p></td>
+<td class="parameter_description"><p>Target type.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>transform_func</p></td>
+<td class="parameter_description"><p>a function which transforms values of type <em class="parameter"><code>src_type</code></em>
+into value of type <em class="parameter"><code>dest_type</code></em>
+</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-strdup-value-contents"></a><h3>g_strdup_value_contents ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_strdup_value_contents (<em class="parameter"><code>const <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> *value</code></em>);</pre>
+<p>Return a newly allocated string, which describes the contents of a
+<a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a>.  The main purpose of this function is to describe <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a>
+contents for debugging output, the way in which the contents are
+described may change between different GLib versions.</p>
+<div class="refsect3">
+<a name="g-strdup-value-contents.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p><a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> which contents are to be described.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-strdup-value-contents.returns"></a><h4>Returns</h4>
+<p> Newly allocated string.</p>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="gobject-Generic-values.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="G-VALUE-INIT:CAPS"></a><h3>G_VALUE_INIT</h3>
+<pre class="programlisting">#define G_VALUE_INIT  { 0, { { 0 } } }
+</pre>
+<p>A <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> must be initialized before it can be used. This macro can
+be used as initializer instead of an explicit <code class="literal">{ 0 }</code> when declaring
+a variable, but it cannot be assigned to a variable.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="usertype">GValue</span><span class="normal"> value </span><span class="symbol">=</span><span class="normal"> <a href="gobject-Generic-values.html#G-VALUE-INIT:CAPS">G_VALUE_INIT</a></span><span class="symbol">;</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GValue"></a><h3>GValue</h3>
+<pre class="programlisting">typedef struct {
+} GValue;
+</pre>
+<p>An opaque structure used to hold different types of values.
+The data within the structure has protected scope: it is accessible only
+to functions within a <a class="link" href="gobject-Type-Information.html#GTypeValueTable" title="struct GTypeValueTable"><span class="type">GTypeValueTable</span></a> structure, or implementations of
+the g_value_*() API. That is, code portions which implement new fundamental
+types.
+<a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a> users cannot make any assumptions about how data is stored
+within the 2 element <em class="parameter"><code>data</code></em>
+ union, and the <em class="parameter"><code>g_type</code></em>
+ member should
+only be accessed through the <a class="link" href="gobject-Generic-values.html#G-VALUE-TYPE:CAPS" title="G_VALUE_TYPE()"><code class="function">G_VALUE_TYPE()</code></a> macro.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-VALUE:CAPS"></a><h3>G_TYPE_VALUE</h3>
+<pre class="programlisting">#define G_TYPE_VALUE (g_value_get_type ())
+</pre>
+<p>The type ID of the "GValue" type which is a boxed type,
+used to pass around pointers to GValues.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-VALUE-ARRAY:CAPS"></a><h3>G_TYPE_VALUE_ARRAY</h3>
+<pre class="programlisting">#define G_TYPE_VALUE_ARRAY (g_value_array_get_type ())
+</pre>
+<div class="warning">
+<p><code class="literal">G_TYPE_VALUE_ARRAY</code> has been deprecated since version 2.32 and should not be used in newly-written code.</p>
+<p>Use <a href="../glib-Arrays.html#GArray"><span class="type">GArray</span></a> instead of <a class="link" href="gobject-Value-arrays.html#GValueArray" title="struct GValueArray"><span class="type">GValueArray</span></a></p>
+</div>
+<p>The type ID of the "GValueArray" type which is a boxed type,
+used to pass around pointers to GValueArrays.</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gobject-Generic-values.see-also"></a><h2>See Also</h2>
+<p>The fundamental types which all support <a class="link" href="gobject-Generic-values.html#GValue" title="GValue"><span class="type">GValue</span></a>
+    operations and thus can be used as a type initializer for
+    <a class="link" href="gobject-Generic-values.html#g-value-init" title="g_value_init ()"><code class="function">g_value_init()</code></a> are defined by a separate interface.  See the
+    <a class="link" href="gobject-Standard-Parameter-and-Value-Types.html" title="Parameters and Values">standard values API</a>
+    for details</p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

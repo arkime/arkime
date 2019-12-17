@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="9.00"
+	Name="glib-install"
+	ProjectGUID="{2093D218-190E-4194-9421-3BA7CBF33B10}"
+	RootNamespace="glibinstall"
+	Keyword="Win32Proj"
+	TargetFrameworkVersion="131072"
+	>
+	<Platforms>
+		<Platform
+			Name="Win32"
+		/>
+		<Platform
+			Name="x64"
+		/>
+	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			InheritedPropertySheets=".\glib-install.vsprops"
+			OutputDirectory="$(GlibEtcInstallRoot)"
+			ConfigurationType="10"
+			CharacterSet="2"
+			DeleteExtensionsOnClean=""
+			>
+			<Tool
+				Name="VCPostBuildEventTool"
+				CommandLine="$(GlibDoInstall)"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug|x64"
+			InheritedPropertySheets=".\glib-install.vsprops"
+			OutputDirectory="$(GlibEtcInstallRoot)"
+			ConfigurationType="10"
+			CharacterSet="2"
+			DeleteExtensionsOnClean=""
+			>
+			<Tool
+				Name="VCPostBuildEventTool"
+				CommandLine="$(GlibDoInstall)"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			InheritedPropertySheets=".\glib-install.vsprops"
+			OutputDirectory="$(GlibEtcInstallRoot)"
+			ConfigurationType="10"
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			DeleteExtensionsOnClean=""
+			>
+			<Tool
+				Name="VCPostBuildEventTool"
+				CommandLine="$(GlibDoInstall)"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|x64"
+			InheritedPropertySheets=".\glib-install.vsprops"
+			OutputDirectory="$(GlibEtcInstallRoot)"
+			ConfigurationType="10"
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			DeleteExtensionsOnClean=""
+			>
+			<Tool
+				Name="VCPostBuildEventTool"
+				CommandLine="$(GlibDoInstall)"
+			/>
+		</Configuration>
+	</Configurations>
+	<Files>
+		<Filter
+			Name="Resource Files"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+			>
+			<File RelativePath="..\glibpc.py">
+				<FileConfiguration Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generating .pc files..."
+						CommandLine="$(GlibGenPC)"
+						Outputs="..\gio-windows-2.0.pc;..\gio-2.0.pc;..\gobject-2.0.pc;..\gmodule-no-export-2.0.pc;..\gmodule-export-2.0.pc;..\gmodule-2.0.pc;..\gthread-2.0.pc;..\glib-2.0.pc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generating .pc files..."
+						CommandLine="$(GlibGenPC)"
+						Outputs="..\gio-windows-2.0.pc;..\gio-2.0.pc;..\gobject-2.0.pc;..\gmodule-no-export-2.0.pc;..\gmodule-export-2.0.pc;..\gmodule-2.0.pc;..\gthread-2.0.pc;..\glib-2.0.pc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration Name="Debug|x64">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generating .pc files..."
+						CommandLine="$(GlibGenPC)"
+						Outputs="..\gio-windows-2.0.pc;..\gio-2.0.pc;..\gobject-2.0.pc;..\gmodule-no-export-2.0.pc;..\gmodule-export-2.0.pc;..\gmodule-2.0.pc;..\gthread-2.0.pc;..\glib-2.0.pc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration Name="Release|x64">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generating .pc files..."
+						CommandLine="$(GlibGenPC)"
+						Outputs="..\gio-windows-2.0.pc;..\gio-2.0.pc;..\gobject-2.0.pc;..\gmodule-no-export-2.0.pc;..\gmodule-export-2.0.pc;..\gmodule-2.0.pc;..\gthread-2.0.pc;..\glib-2.0.pc"
+					/>
+				</FileConfiguration>
+			</File>
+			<File RelativePath="..\..\gobject\glib-mkenums.in">
+				<FileConfiguration Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generating glib-mkenums..."
+						CommandLine="$(GenGLibMKEnums)"
+						Outputs="..\..\gobject\glib-mkenums"
+					/>
+				</FileConfiguration>
+				<FileConfiguration Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generating glib-mkenums..."
+						CommandLine="$(GenGLibMKEnums)"
+						Outputs="..\..\gobject\glib-mkenums"
+					/>
+				</FileConfiguration>
+				<FileConfiguration Name="Debug|x64">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generating glib-mkenums..."
+						CommandLine="$(GenGLibMKEnums)"
+						Outputs="..\..\gobject\glib-mkenums"
+					/>
+				</FileConfiguration>
+				<FileConfiguration Name="Release|x64">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generating glib-mkenums..."
+						CommandLine="$(GenGLibMKEnums)"
+						Outputs="..\..\gobject\glib-mkenums"
+					/>
+				</FileConfiguration>
+			</File>
+			<File RelativePath="..\..\gobject\glib-genmarshal.in">
+				<FileConfiguration Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generating glib-genmarshal..."
+						CommandLine="$(GenGLibGenmarshal)"
+						Outputs="..\..\gobject\glib-genmarshal"
+					/>
+				</FileConfiguration>
+				<FileConfiguration Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generating glib-genmarshal..."
+						CommandLine="$(GenGLibGenmarshal)"
+						Outputs="..\..\gobject\glib-genmarshal"
+					/>
+				</FileConfiguration>
+				<FileConfiguration Name="Debug|x64">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generating glib-genmarshal..."
+						CommandLine="$(GenGLibGenmarshal)"
+						Outputs="..\..\gobject\glib-genmarshal"
+					/>
+				</FileConfiguration>
+				<FileConfiguration Name="Release|x64">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generating glib-genmarshal..."
+						CommandLine="$(GenGLibGenmarshal)"
+						Outputs="..\..\gobject\glib-genmarshal"
+					/>
+				</FileConfiguration>
+			</File>
+			<File RelativePath="..\..\gio\gdbus-2.0\codegen\gdbus-codegen.in">
+				<FileConfiguration Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generating gdbus-codegen..."
+						CommandLine="$(GenGDBusCodegen)"
+						Outputs="..\..\gio\gdbus-2.0\codegen\gdbus-codegen"
+					/>
+				</FileConfiguration>
+				<FileConfiguration Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generating gdbus-codegen..."
+						CommandLine="$(GenGDBusCodegen)"
+						Outputs="..\..\gio\gdbus-2.0\codegen\gdbus-codegen"
+					/>
+				</FileConfiguration>
+				<FileConfiguration Name="Debug|x64">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generating gdbus-codegen..."
+						CommandLine="$(GenGDBusCodegen)"
+						Outputs="..\..\gio\gdbus-2.0\codegen\gdbus-codegen"
+					/>
+				</FileConfiguration>
+				<FileConfiguration Name="Release|x64">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generating gdbus-codegen..."
+						CommandLine="$(GenGDBusCodegen)"
+						Outputs="..\..\gio\gdbus-2.0\codegen\gdbus-codegen"
+					/>
+				</FileConfiguration>
+			</File>
+		</Filter>
+	</Files>
+</VisualStudioProject>

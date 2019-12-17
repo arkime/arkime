@@ -1,0 +1,76 @@
+<node>
+  <interface name="org.freedesktop.DBus">
+    <method name="Hello">
+      <arg direction="out" type="s" name="assigned_name"/>
+    </method>
+    <method name="RequestName">
+      <arg direction="in" type="s" name="name"/>
+      <arg direction="in" type="u" name="flags"/>
+      <arg direction="out" type="u" name="value"/>
+    </method>
+    <method name="ReleaseName">
+      <arg direction="in" type="s" name="name"/>
+      <arg direction="out" type="u" name="value"/>
+    </method>
+    <method name="StartServiceByName">
+      <arg direction="in" type="s" name="name"/>
+      <arg direction="in" type="u" name="flags"/>
+      <arg direction="out" type="u" name="value"/>
+    </method>
+    <method name="NameHasOwner">
+      <arg direction="in" type="s" name="name"/>
+      <arg direction="out" type="b" name="has_owner"/>
+    </method>
+    <method name="ListNames">
+      <arg direction="out" type="as" name="names"/>
+    </method>
+    <method name="ListActivatableNames">
+      <arg direction="out" type="as" name="activatable_names"/>
+    </method>
+    <method name="AddMatch">
+      <arg direction="in" type="s" name="rule"/>
+    </method>
+    <method name="RemoveMatch">
+      <arg direction="in" type="s" name="rule"/>
+    </method>
+    <method name="GetNameOwner">
+      <arg direction="in" type="s" name="name"/>
+      <arg direction="out" type="s" name="unique_name"/>
+    </method>
+    <method name="ListQueuedOwners">
+      <arg direction="in" type="s" name="name"/>
+      <arg direction="out" type="as" name="queued_owners"/>
+    </method>
+    <method name="GetConnectionUnixUser">
+      <arg direction="in" type="s" name="name"/>
+      <arg direction="out" type="u" name="uid"/>
+    </method>
+    <method name="GetConnectionUnixProcessID">
+      <arg direction="in" type="s" name="name"/>
+      <arg direction="out" type="u" name="pid"/>
+    </method>
+    <method name="GetConnectionSELinuxSecurityContext">
+      <arg direction="in" type="s" name="name"/>
+      <arg direction="out" type="ay" name="security_context"/>
+    </method>
+    <method name="UpdateActivationEnvironment">
+      <arg direction="in" type="a{ss}" name="environment"/>
+    </method>
+    <method name="ReloadConfig">
+    </method>
+    <method name="GetId">
+      <arg direction="out" type="s" name="unique_id"/>
+    </method>
+    <signal name="NameOwnerChanged">
+      <arg type="s" name="name"/>
+      <arg type="s" name="old_owner"/>
+      <arg type="s" name="new_owner"/>
+    </signal>
+    <signal name="NameLost">
+      <arg type="s" name="name"/>
+    </signal>
+    <signal name="NameAcquired">
+      <arg type="s" name="name"/>
+    </signal>
+  </interface>
+</node>

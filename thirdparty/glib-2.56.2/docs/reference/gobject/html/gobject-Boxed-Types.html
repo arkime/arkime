@@ -1,0 +1,690 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Boxed Types: GObject Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GObject Reference Manual">
+<link rel="up" href="rn01.html" title="API Reference">
+<link rel="prev" href="gobject-Enumeration-and-Flag-Types.html" title="Enumeration and Flag Types">
+<link rel="next" href="gobject-Generic-values.html" title="Generic values">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#gobject-Boxed-Types.description" class="shortcut">Description</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="rn01.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gobject-Enumeration-and-Flag-Types.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gobject-Generic-values.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gobject-Boxed-Types"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gobject-Boxed-Types.top_of_page"></a>Boxed Types</span></h2>
+<p>Boxed Types — A mechanism to wrap opaque C structures registered
+    by the type system</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gobject-Boxed-Types.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="gobject-Boxed-Types.html#GBoxedCopyFunc" title="GBoxedCopyFunc ()">*GBoxedCopyFunc</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<span class="c_punctuation">(</span><a class="link" href="gobject-Boxed-Types.html#GBoxedFreeFunc" title="GBoxedFreeFunc ()">*GBoxedFreeFunc</a><span class="c_punctuation">)</span> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gpointer"><span class="returnvalue">gpointer</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Boxed-Types.html#g-boxed-copy" title="g_boxed_copy ()">g_boxed_copy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Boxed-Types.html#g-boxed-free" title="g_boxed_free ()">g_boxed_free</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="returnvalue">GType</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Boxed-Types.html#g-boxed-type-register-static" title="g_boxed_type_register_static ()">g_boxed_type_register_static</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="returnvalue">GType</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gobject-Boxed-Types.html#g-pointer-type-register-static" title="g_pointer_type_register_static ()">g_pointer_type_register_static</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gobject-Boxed-Types.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-HASH-TABLE:CAPS" title="G_TYPE_HASH_TABLE">G_TYPE_HASH_TABLE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-DATE:CAPS" title="G_TYPE_DATE">G_TYPE_DATE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-GSTRING:CAPS" title="G_TYPE_GSTRING">G_TYPE_GSTRING</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-STRV:CAPS" title="G_TYPE_STRV">G_TYPE_STRV</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-REGEX:CAPS" title="G_TYPE_REGEX">G_TYPE_REGEX</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-MATCH-INFO:CAPS" title="G_TYPE_MATCH_INFO">G_TYPE_MATCH_INFO</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-ARRAY:CAPS" title="G_TYPE_ARRAY">G_TYPE_ARRAY</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-BYTE-ARRAY:CAPS" title="G_TYPE_BYTE_ARRAY">G_TYPE_BYTE_ARRAY</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-PTR-ARRAY:CAPS" title="G_TYPE_PTR_ARRAY">G_TYPE_PTR_ARRAY</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-BYTES:CAPS" title="G_TYPE_BYTES">G_TYPE_BYTES</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-VARIANT-TYPE:CAPS" title="G_TYPE_VARIANT_TYPE">G_TYPE_VARIANT_TYPE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-ERROR:CAPS" title="G_TYPE_ERROR">G_TYPE_ERROR</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-DATE-TIME:CAPS" title="G_TYPE_DATE_TIME">G_TYPE_DATE_TIME</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-TIME-ZONE:CAPS" title="G_TYPE_TIME_ZONE">G_TYPE_TIME_ZONE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-IO-CHANNEL:CAPS" title="G_TYPE_IO_CHANNEL">G_TYPE_IO_CHANNEL</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-IO-CONDITION:CAPS" title="G_TYPE_IO_CONDITION">G_TYPE_IO_CONDITION</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-VARIANT-BUILDER:CAPS" title="G_TYPE_VARIANT_BUILDER">G_TYPE_VARIANT_BUILDER</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-VARIANT-DICT:CAPS" title="G_TYPE_VARIANT_DICT">G_TYPE_VARIANT_DICT</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-KEY-FILE:CAPS" title="G_TYPE_KEY_FILE">G_TYPE_KEY_FILE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-MAIN-CONTEXT:CAPS" title="G_TYPE_MAIN_CONTEXT">G_TYPE_MAIN_CONTEXT</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-MAIN-LOOP:CAPS" title="G_TYPE_MAIN_LOOP">G_TYPE_MAIN_LOOP</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-MAPPED-FILE:CAPS" title="G_TYPE_MAPPED_FILE">G_TYPE_MAPPED_FILE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-MARKUP-PARSE-CONTEXT:CAPS" title="G_TYPE_MARKUP_PARSE_CONTEXT">G_TYPE_MARKUP_PARSE_CONTEXT</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-SOURCE:CAPS" title="G_TYPE_SOURCE">G_TYPE_SOURCE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-POLLFD:CAPS" title="G_TYPE_POLLFD">G_TYPE_POLLFD</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-THREAD:CAPS" title="G_TYPE_THREAD">G_TYPE_THREAD</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gobject-Boxed-Types.html#G-TYPE-OPTION-GROUP:CAPS" title="G_TYPE_OPTION_GROUP">G_TYPE_OPTION_GROUP</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gobject-Boxed-Types.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;glib-object.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gobject-Boxed-Types.description"></a><h2>Description</h2>
+<p>GBoxed is a generic wrapper mechanism for arbitrary C structures. The only
+thing the type system needs to know about the structures is how to copy and
+free them, beyond that they are treated as opaque chunks of memory.</p>
+<p>Boxed types are useful for simple value-holder structures like rectangles or
+points. They can also be used for wrapping structures defined in non-GObject
+based libraries.</p>
+</div>
+<div class="refsect1">
+<a name="gobject-Boxed-Types.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="GBoxedCopyFunc"></a><h3>GBoxedCopyFunc ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gpointer"><span class="returnvalue">gpointer</span></a>
+<span class="c_punctuation">(</span>*GBoxedCopyFunc<span class="c_punctuation">)</span> (<em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> boxed</code></em>);</pre>
+<p>This function is provided by the user and should produce a copy
+of the passed in boxed structure.</p>
+<div class="refsect3">
+<a name="GBoxedCopyFunc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>boxed</p></td>
+<td class="parameter_description"><p>The boxed structure to be copied. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="GBoxedCopyFunc.returns"></a><h4>Returns</h4>
+<p>The newly created copy of the boxed structure. </p>
+<p><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GBoxedFreeFunc"></a><h3>GBoxedFreeFunc ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+<span class="c_punctuation">(</span>*GBoxedFreeFunc<span class="c_punctuation">)</span> (<em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> boxed</code></em>);</pre>
+<p>This function is provided by the user and should free the boxed
+structure passed.</p>
+<div class="refsect3">
+<a name="GBoxedFreeFunc.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>boxed</p></td>
+<td class="parameter_description"><p>The boxed structure to be freed. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-boxed-copy"></a><h3>g_boxed_copy ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gpointer"><span class="returnvalue">gpointer</span></a>
+g_boxed_copy (<em class="parameter"><code><a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> boxed_type</code></em>,
+              <em class="parameter"><code><a href="../glib-Basic-Types.html#gconstpointer"><span class="type">gconstpointer</span></a> src_boxed</code></em>);</pre>
+<p>Provide a copy of a boxed structure <em class="parameter"><code>src_boxed</code></em>
+ which is of type <em class="parameter"><code>boxed_type</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-boxed-copy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>boxed_type</p></td>
+<td class="parameter_description"><p>The type of <em class="parameter"><code>src_boxed</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>src_boxed</p></td>
+<td class="parameter_description"><p>The boxed structure to be copied. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-boxed-copy.returns"></a><h4>Returns</h4>
+<p>The newly created copy of the boxed
+structure. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-boxed-free"></a><h3>g_boxed_free ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+g_boxed_free (<em class="parameter"><code><a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> boxed_type</code></em>,
+              <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> boxed</code></em>);</pre>
+<p>Free the boxed structure <em class="parameter"><code>boxed</code></em>
+ which is of type <em class="parameter"><code>boxed_type</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-boxed-free.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>boxed_type</p></td>
+<td class="parameter_description"><p>The type of <em class="parameter"><code>boxed</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>boxed</p></td>
+<td class="parameter_description"><p>The boxed structure to be freed. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-boxed-type-register-static"></a><h3>g_boxed_type_register_static ()</h3>
+<pre class="programlisting"><a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="returnvalue">GType</span></a>
+g_boxed_type_register_static (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                              <em class="parameter"><code><a class="link" href="gobject-Boxed-Types.html#GBoxedCopyFunc" title="GBoxedCopyFunc ()"><span class="type">GBoxedCopyFunc</span></a> boxed_copy</code></em>,
+                              <em class="parameter"><code><a class="link" href="gobject-Boxed-Types.html#GBoxedFreeFunc" title="GBoxedFreeFunc ()"><span class="type">GBoxedFreeFunc</span></a> boxed_free</code></em>);</pre>
+<p>This function creates a new <a class="link" href="gobject-Type-Information.html#G-TYPE-BOXED:CAPS" title="G_TYPE_BOXED"><code class="literal">G_TYPE_BOXED</code></a> derived type id for a new
+boxed type with name <em class="parameter"><code>name</code></em>
+. Boxed type handling functions have to be
+provided to copy and free opaque boxed structures of this type.</p>
+<div class="refsect3">
+<a name="g-boxed-type-register-static.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>Name of the new boxed type.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>boxed_copy</p></td>
+<td class="parameter_description"><p>Boxed structure copy function.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>boxed_free</p></td>
+<td class="parameter_description"><p>Boxed structure free function.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-boxed-type-register-static.returns"></a><h4>Returns</h4>
+<p> New <a class="link" href="gobject-Type-Information.html#G-TYPE-BOXED:CAPS" title="G_TYPE_BOXED"><code class="literal">G_TYPE_BOXED</code></a> derived type id for <em class="parameter"><code>name</code></em>
+.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-pointer-type-register-static"></a><h3>g_pointer_type_register_static ()</h3>
+<pre class="programlisting"><a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="returnvalue">GType</span></a>
+g_pointer_type_register_static (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>);</pre>
+<p>Creates a new <a class="link" href="gobject-Type-Information.html#G-TYPE-POINTER:CAPS" title="G_TYPE_POINTER"><code class="literal">G_TYPE_POINTER</code></a> derived type id for a new
+pointer type with name <em class="parameter"><code>name</code></em>
+.</p>
+<div class="refsect3">
+<a name="g-pointer-type-register-static.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>the name of the new pointer type.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-pointer-type-register-static.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="gobject-Type-Information.html#G-TYPE-POINTER:CAPS" title="G_TYPE_POINTER"><code class="literal">G_TYPE_POINTER</code></a> derived type id for <em class="parameter"><code>name</code></em>
+.</p>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="gobject-Boxed-Types.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="G-TYPE-HASH-TABLE:CAPS"></a><h3>G_TYPE_HASH_TABLE</h3>
+<pre class="programlisting">#define G_TYPE_HASH_TABLE (g_hash_table_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> reference.</p>
+<p class="since">Since: <a class="link" href="api-index-2-10.html#api-index-2.10">2.10</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-DATE:CAPS"></a><h3>G_TYPE_DATE</h3>
+<pre class="programlisting">#define G_TYPE_DATE (g_date_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for <a href="../glib-Date-and-Time-Functions.html#GDate"><span class="type">GDate</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-GSTRING:CAPS"></a><h3>G_TYPE_GSTRING</h3>
+<pre class="programlisting">#define G_TYPE_GSTRING (g_gstring_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for <a href="../glib-Strings.html#GString"><span class="type">GString</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-STRV:CAPS"></a><h3>G_TYPE_STRV</h3>
+<pre class="programlisting">#define G_TYPE_STRV (g_strv_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array of strings.</p>
+<p>The code fragments in the following example show the use of a property of
+type <a class="link" href="gobject-Boxed-Types.html#G-TYPE-STRV:CAPS" title="G_TYPE_STRV"><span class="type">G_TYPE_STRV</span></a> with <a class="link" href="gobject-The-Base-Object-Type.html#g-object-class-install-property" title="g_object_class_install_property ()"><code class="function">g_object_class_install_property()</code></a>, <a class="link" href="gobject-The-Base-Object-Type.html#g-object-set" title="g_object_set ()"><code class="function">g_object_set()</code></a>
+and <a class="link" href="gobject-The-Base-Object-Type.html#g-object-get" title="g_object_get ()"><code class="function">g_object_get()</code></a>.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="function"><a href="gobject-The-Base-Object-Type.html#g-object-class-install-property">g_object_class_install_property</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">object_class</span><span class="symbol">,</span>
+<span class="normal">                                 PROP_AUTHORS</span><span class="symbol">,</span>
+<span class="normal">                                 </span><span class="function"><a href="gobject-Standard-Parameter-and-Value-Types.html#g-param-spec-boxed">g_param_spec_boxed</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"authors"</span><span class="symbol">,</span>
+<span class="normal">                                                     </span><span class="function">_</span><span class="symbol">(</span><span class="string">"Authors"</span><span class="symbol">),</span>
+<span class="normal">                                                     </span><span class="function">_</span><span class="symbol">(</span><span class="string">"List of authors"</span><span class="symbol">),</span>
+<span class="normal">                                                     <a href="gobject-Boxed-Types.html#G-TYPE-STRV:CAPS">G_TYPE_STRV</a></span><span class="symbol">,</span>
+<span class="normal">                                                     <a href="gobject-GParamSpec.html#G-PARAM-READWRITE:CAPS">G_PARAM_READWRITE</a></span><span class="symbol">));</span>
+
+<span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">authors</span><span class="symbol">[]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span><span class="string">"Owen"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"Tim"</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a> </span><span class="cbracket">}</span><span class="symbol">;</span>
+<span class="function"><a href="gobject-The-Base-Object-Type.html#g-object-set">g_object_set</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">obj</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"authors"</span><span class="symbol">,</span><span class="normal"> authors</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+
+<span class="usertype">gchar</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">writers</span><span class="symbol">[];</span>
+<span class="function"><a href="gobject-The-Base-Object-Type.html#g-object-get">g_object_get</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">obj</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"authors"</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">writers</span><span class="symbol">,</span><span class="normal"> <a href="../glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
+<span class="comment">/* do something with writers */</span>
+<span class="function"><a href="../glib-String-Utility-Functions.html#g-strfreev">g_strfreev</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">writers</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p class="since">Since: <a class="link" href="api-index-2-4.html#api-index-2.4">2.4</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-REGEX:CAPS"></a><h3>G_TYPE_REGEX</h3>
+<pre class="programlisting">#define G_TYPE_REGEX (g_regex_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-Perl-compatible-regular-expressions.html#GRegex"><span class="type">GRegex</span></a> reference.</p>
+<p class="since">Since: <a class="link" href="api-index-2-14.html#api-index-2.14">2.14</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-MATCH-INFO:CAPS"></a><h3>G_TYPE_MATCH_INFO</h3>
+<pre class="programlisting">#define G_TYPE_MATCH_INFO (g_match_info_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-Perl-compatible-regular-expressions.html#GMatchInfo"><span class="type">GMatchInfo</span></a> reference.</p>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-ARRAY:CAPS"></a><h3>G_TYPE_ARRAY</h3>
+<pre class="programlisting">#define G_TYPE_ARRAY (g_array_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-Arrays.html#GArray"><span class="type">GArray</span></a> reference.</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-BYTE-ARRAY:CAPS"></a><h3>G_TYPE_BYTE_ARRAY</h3>
+<pre class="programlisting">#define G_TYPE_BYTE_ARRAY (g_byte_array_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-Byte-Arrays.html#GByteArray"><span class="type">GByteArray</span></a> reference.</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-PTR-ARRAY:CAPS"></a><h3>G_TYPE_PTR_ARRAY</h3>
+<pre class="programlisting">#define G_TYPE_PTR_ARRAY (g_ptr_array_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> reference.</p>
+<p class="since">Since: <a class="link" href="api-index-2-22.html#api-index-2.22">2.22</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-BYTES:CAPS"></a><h3>G_TYPE_BYTES</h3>
+<pre class="programlisting">#define G_TYPE_BYTES (g_bytes_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for <a href="../glib-Byte-Arrays.html#GBytes"><span class="type">GBytes</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-VARIANT-TYPE:CAPS"></a><h3>G_TYPE_VARIANT_TYPE</h3>
+<pre class="programlisting">#define G_TYPE_VARIANT_TYPE (g_variant_type_get_gtype ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-24.html#api-index-2.24">2.24</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-ERROR:CAPS"></a><h3>G_TYPE_ERROR</h3>
+<pre class="programlisting">#define G_TYPE_ERROR (g_error_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-DATE-TIME:CAPS"></a><h3>G_TYPE_DATE_TIME</h3>
+<pre class="programlisting">#define G_TYPE_DATE_TIME (g_date_time_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-GDateTime.html#GDateTime"><span class="type">GDateTime</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-26.html#api-index-2.26">2.26</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-TIME-ZONE:CAPS"></a><h3>G_TYPE_TIME_ZONE</h3>
+<pre class="programlisting">#define G_TYPE_TIME_ZONE (g_time_zone_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-GTimeZone.html#GTimeZone"><span class="type">GTimeZone</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-34.html#api-index-2.34">2.34</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-IO-CHANNEL:CAPS"></a><h3>G_TYPE_IO_CHANNEL</h3>
+<pre class="programlisting">#define G_TYPE_IO_CHANNEL (g_io_channel_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for <a href="../glib-IO-Channels.html#GIOChannel"><span class="type">GIOChannel</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-IO-CONDITION:CAPS"></a><h3>G_TYPE_IO_CONDITION</h3>
+<pre class="programlisting">#define G_TYPE_IO_CONDITION (g_io_condition_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for <a href="../glib-IO-Channels.html#GIOCondition"><span class="type">GIOCondition</span></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-VARIANT-BUILDER:CAPS"></a><h3>G_TYPE_VARIANT_BUILDER</h3>
+<pre class="programlisting">#define G_TYPE_VARIANT_BUILDER (g_variant_builder_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-GVariant.html#GVariantBuilder"><span class="type">GVariantBuilder</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-VARIANT-DICT:CAPS"></a><h3>G_TYPE_VARIANT_DICT</h3>
+<pre class="programlisting">#define G_TYPE_VARIANT_DICT (g_variant_dict_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-GVariant.html#GVariantDict"><span class="type">GVariantDict</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-KEY-FILE:CAPS"></a><h3>G_TYPE_KEY_FILE</h3>
+<pre class="programlisting">#define G_TYPE_KEY_FILE (g_key_file_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-Key-value-file-parser.html#GKeyFile"><span class="type">GKeyFile</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-32.html#api-index-2.32">2.32</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-MAIN-CONTEXT:CAPS"></a><h3>G_TYPE_MAIN_CONTEXT</h3>
+<pre class="programlisting">#define G_TYPE_MAIN_CONTEXT (g_main_context_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-The-Main-Event-Loop.html#GMainContext"><span class="type">GMainContext</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-MAIN-LOOP:CAPS"></a><h3>G_TYPE_MAIN_LOOP</h3>
+<pre class="programlisting">#define G_TYPE_MAIN_LOOP (g_main_loop_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-The-Main-Event-Loop.html#GMainLoop"><span class="type">GMainLoop</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-MAPPED-FILE:CAPS"></a><h3>G_TYPE_MAPPED_FILE</h3>
+<pre class="programlisting">#define G_TYPE_MAPPED_FILE (g_mapped_file_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-File-Utilities.html#GMappedFile"><span class="type">GMappedFile</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-40.html#api-index-2.40">2.40</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-MARKUP-PARSE-CONTEXT:CAPS"></a><h3>G_TYPE_MARKUP_PARSE_CONTEXT</h3>
+<pre class="programlisting">#define G_TYPE_MARKUP_PARSE_CONTEXT (g_markup_parse_context_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-Simple-XML-Subset-Parser.html#GMarkupParseContext"><span class="type">GMarkupParseContext</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-36.html#api-index-2.36">2.36</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-SOURCE:CAPS"></a><h3>G_TYPE_SOURCE</h3>
+<pre class="programlisting">#define G_TYPE_SOURCE (g_source_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-The-Main-Event-Loop.html#GSource"><span class="type">GSource</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-30.html#api-index-2.30">2.30</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-POLLFD:CAPS"></a><h3>G_TYPE_POLLFD</h3>
+<pre class="programlisting">#define G_TYPE_POLLFD (g_pollfd_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-The-Main-Event-Loop.html#GPollFD"><span class="type">GPollFD</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-36.html#api-index-2.36">2.36</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-THREAD:CAPS"></a><h3>G_TYPE_THREAD</h3>
+<pre class="programlisting">#define G_TYPE_THREAD (g_thread_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-Threads.html#GThread"><span class="type">GThread</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-36.html#api-index-2.36">2.36</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="G-TYPE-OPTION-GROUP:CAPS"></a><h3>G_TYPE_OPTION_GROUP</h3>
+<pre class="programlisting">#define G_TYPE_OPTION_GROUP (g_option_group_get_type ())
+</pre>
+<p>The <a class="link" href="gobject-Type-Information.html#GType" title="GType"><span class="type">GType</span></a> for a boxed type holding a <a href="../glib-Commandline-option-parser.html#GOptionGroup"><span class="type">GOptionGroup</span></a>.</p>
+<p class="since">Since: <a class="link" href="api-index-2-44.html#api-index-2.44">2.44</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="gobject-Boxed-Types.see-also"></a><h2>See Also</h2>
+<p><a class="link" href="gobject-Standard-Parameter-and-Value-Types.html#GParamSpecBoxed" title="struct GParamSpecBoxed"><span class="type">GParamSpecBoxed</span></a>, <a class="link" href="gobject-Standard-Parameter-and-Value-Types.html#g-param-spec-boxed" title="g_param_spec_boxed ()"><code class="function">g_param_spec_boxed()</code></a></p>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

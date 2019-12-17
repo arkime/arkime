@@ -1,0 +1,19 @@
+[Desktop Entry]
+Name=Run Software
+Name[ca]=Executa programari
+Name[ca@valencia]=Executa programari
+Name[en_GB]=Run Software
+Name[eo]=Lanĉi programaron
+Name[pt]=Executar Aplicação
+Name[pt_BR]=Executar software
+Exec=true %u
+Icon=application-x-executable
+NoDisplay=true
+Terminal=false
+StartupNotify=true
+Type=Application
+MimeType=x-content/unix-software;
+X-GNOME-Bugzilla-Bugzilla=GNOME
+X-GNOME-Bugzilla-Product=nautilus
+X-GNOME-Bugzilla-Component=general
+X-GNOME-Bugzilla-Version=3.10.0

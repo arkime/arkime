@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+]>
+<refentry id="gdbus-org.project.Authorize">
+  <refmeta>    <refentrytitle role="top_of_page" id="gdbus-interface-org-project-Authorize.top_of_page">org.project.Authorize</refentrytitle>
+  <indexterm zone="gdbus-interface-org-project-Authorize.top_of_page"><primary sortas="Authorize">org.project.Authorize</primary></indexterm>
+  </refmeta>  <refnamediv>    <refname>org.project.Authorize</refname>    <refpurpose></refpurpose>  </refnamediv>  <refsynopsisdiv role="synopsis">
+    <title role="synopsis.title">Methods</title>
+    <synopsis>
+<link linkend="gdbus-method-org-project-Authorize.CheckNotAuthorized">CheckNotAuthorized</link>           ();
+<link linkend="gdbus-method-org-project-Authorize.CheckAuthorized">CheckAuthorized</link>              ();
+<link linkend="gdbus-method-org-project-Authorize.CheckNotAuthorizedFromObject">CheckNotAuthorizedFromObject</link> ();
+</synopsis>
+  </refsynopsisdiv>
+<refsect1 role="desc" id="gdbus-interface-org-project-Authorize">
+  <title role="desc.title">Description</title>
+  <para></para>
+</refsect1>
+<refsect1 role="details" id="gdbus-methods-org.project.Authorize">
+  <title role="details.title">Method Details</title>
+<refsect2 role="method" id="gdbus-method-org-project-Authorize.CheckNotAuthorized">
+  <title>The CheckNotAuthorized() method</title>
+  <indexterm zone="gdbus-method-org-project-Authorize.CheckNotAuthorized"><primary sortas="Authorize.CheckNotAuthorized">org.project.Authorize.CheckNotAuthorized()</primary></indexterm>
+<programlisting>
+CheckNotAuthorized ();
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-org-project-Authorize.CheckAuthorized">
+  <title>The CheckAuthorized() method</title>
+  <indexterm zone="gdbus-method-org-project-Authorize.CheckAuthorized"><primary sortas="Authorize.CheckAuthorized">org.project.Authorize.CheckAuthorized()</primary></indexterm>
+<programlisting>
+CheckAuthorized ();
+</programlisting>
+<para></para>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-org-project-Authorize.CheckNotAuthorizedFromObject">
+  <title>The CheckNotAuthorizedFromObject() method</title>
+  <indexterm zone="gdbus-method-org-project-Authorize.CheckNotAuthorizedFromObject"><primary sortas="Authorize.CheckNotAuthorizedFromObject">org.project.Authorize.CheckNotAuthorizedFromObject()</primary></indexterm>
+<programlisting>
+CheckNotAuthorizedFromObject ();
+</programlisting>
+<para></para>
+</refsect2>
+</refsect1>
+</refentry>
+

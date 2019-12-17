@@ -1,0 +1,41 @@
+
+Traps (G_BREAKPOINT) and traces for the debuging
+================================================
+
+Some code portions contain trap variables that can be set during
+debugging time if G_ENABLE_DEBUG has been defined upon compilation
+(use the --enable-debug=yes option to configure for this, macros.txt
+covers more details).
+Such traps lead to immediate code halts to examine the current
+program state and backtrace.
+Currently, the following trap variables exist:
+
+static volatile gulong g_trap_free_size;
+static volatile gulong g_trap_realloc_size;
+static volatile gulong g_trap_malloc_size;
+	If set to a size > 0, g_free(), g_realloc() and g_malloc()
+	respectively, will be intercepted if the size matches the
+	size of the corresponding memory block to free/reallocate/allocate.
+	This will only work with g_mem_set_vtable (glib_mem_profiler_table)
+	upon startup though, because memory profiling is required to match
+	on the memory block sizes.
+static volatile GObject *g_trap_object_ref;
+	If set to a valid object pointer, ref/unref will be intercepted
+	with G_BREAKPOINT ();
+static volatile gpointer *g_trap_instance_signals;
+static volatile gpointer *g_trace_instance_signals;
+       If set to a valid instance pointer, debugging messages
+       will be spewed about emissions of signals on this instance.
+       For g_trap_instance_signals matches, the emissions will
+       also be intercepted with G_BREAKPOINT ();
+
+Environment variables for debugging
+===================================
+When G_ENABLE_DEBUG was defined upon compilation, the GObject library 
+supports an environment variable GOBJECT_DEBUG that can be set to a
+combination of the flags passed in to g_type_init() (currently
+"objects" and "signals") to trigger debugging messages about
+object bookkeeping and signal emissions during runtime.
+
+
+2000/02/04	Tim Janik

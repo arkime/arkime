@@ -1,0 +1,471 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GIcon: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="icons.html" title="Icons">
+<link rel="prev" href="icons.html" title="Icons">
+<link rel="next" href="GFileIcon.html" title="GFileIcon">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GIcon.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GIcon.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_prerequisites">  <span class="dim">|</span> 
+                  <a href="#GIcon.prerequisites" class="shortcut">Prerequisites</a></span><span id="nav_derived_interfaces">  <span class="dim">|</span> 
+                  <a href="#GIcon.derived-interfaces" class="shortcut">Known Derived Interfaces</a></span><span id="nav_implementations">  <span class="dim">|</span> 
+                  <a href="#GIcon.implementations" class="shortcut">Known Implementations</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="icons.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="icons.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GFileIcon.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GIcon"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GIcon.top_of_page"></a>GIcon</span></h2>
+<p>GIcon — Interface for icons</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GIcon.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GIcon.html#g-icon-hash" title="g_icon_hash ()">g_icon_hash</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GIcon.html#g-icon-equal" title="g_icon_equal ()">g_icon_equal</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GIcon.html#g-icon-to-string" title="g_icon_to_string ()">g_icon_to_string</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GIcon.html#g-icon-new-for-string" title="g_icon_new_for_string ()">g_icon_new_for_string</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GIcon.html#g-icon-serialize" title="g_icon_serialize ()">g_icon_serialize</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GIcon.html#g-icon-deserialize" title="g_icon_deserialize ()">g_icon_deserialize</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GIcon.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GIcon.html#GIcon-struct" title="GIcon">GIcon</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GIcon.html#GIconIface" title="struct GIconIface">GIconIface</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GIcon.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/GTypeModule.html">GInterface</a>
+    <span class="lineart">╰──</span> GIcon
+</pre>
+</div>
+<div class="refsect1">
+<a name="GIcon.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+GIcon requires
+ <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GIcon.derived-interfaces"></a><h2>Known Derived Interfaces</h2>
+<p>
+GIcon is required by
+ <a class="link" href="GLoadableIcon.html" title="GLoadableIcon">GLoadableIcon</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GIcon.implementations"></a><h2>Known Implementations</h2>
+<p>
+GIcon is implemented by
+ <a class="link" href="GBytesIcon.html" title="GBytesIcon">GBytesIcon</a>,  <a class="link" href="GEmblem.html" title="GEmblem">GEmblem</a>,  <a class="link" href="GEmblemedIcon.html" title="GEmblemedIcon">GEmblemedIcon</a>,  <a class="link" href="GFileIcon.html" title="GFileIcon">GFileIcon</a> and  <a class="link" href="GThemedIcon.html" title="GThemedIcon">GThemedIcon</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GIcon.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GIcon.description"></a><h2>Description</h2>
+<p><a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> is a very minimal interface for icons. It provides functions
+for checking the equality of two icons, hashing of icons and
+serializing an icon to and from strings.</p>
+<p><a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> does not provide the actual pixmap for the icon as this is out 
+of GIO's scope, however implementations of <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> may contain the name 
+of an icon (see <a class="link" href="GThemedIcon.html" title="GThemedIcon"><span class="type">GThemedIcon</span></a>), or the path to an icon (see <a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a>). </p>
+<p>To obtain a hash of a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>, see <a class="link" href="GIcon.html#g-icon-hash" title="g_icon_hash ()"><code class="function">g_icon_hash()</code></a>.</p>
+<p>To check if two <a href="GIcon.html#GIcon-struct"><span class="type">GIcons</span></a> are equal, see <a class="link" href="GIcon.html#g-icon-equal" title="g_icon_equal ()"><code class="function">g_icon_equal()</code></a>.</p>
+<p>For serializing a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>, use <a class="link" href="GIcon.html#g-icon-serialize" title="g_icon_serialize ()"><code class="function">g_icon_serialize()</code></a> and
+<a class="link" href="GIcon.html#g-icon-deserialize" title="g_icon_deserialize ()"><code class="function">g_icon_deserialize()</code></a>.</p>
+<p>If you want to consume <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> (for example, in a toolkit) you must
+be prepared to handle at least the three following cases:
+<a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a>, <a class="link" href="GThemedIcon.html" title="GThemedIcon"><span class="type">GThemedIcon</span></a> and <a class="link" href="GEmblemedIcon.html" title="GEmblemedIcon"><span class="type">GEmblemedIcon</span></a>.  It may also make
+sense to have fast-paths for other cases (like handling <span class="type">GdkPixbuf</span>
+directly, for example) but all compliant <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> implementations
+outside of GIO must implement <a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a>.</p>
+<p>If your application or library provides one or more <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>
+implementations you need to ensure that your new implementation also
+implements <a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a>.  Additionally, you must provide an
+implementation of <a class="link" href="GIcon.html#g-icon-serialize" title="g_icon_serialize ()"><code class="function">g_icon_serialize()</code></a> that gives a result that is
+understood by <a class="link" href="GIcon.html#g-icon-deserialize" title="g_icon_deserialize ()"><code class="function">g_icon_deserialize()</code></a>, yielding one of the built-in icon
+types.</p>
+</div>
+<div class="refsect1">
+<a name="GIcon.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-icon-hash"></a><h3>g_icon_hash ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>
+g_icon_hash (<em class="parameter"><code><a href="../glib-Basic-Types.html#gconstpointer"><span class="type">gconstpointer</span></a> icon</code></em>);</pre>
+<p>Gets a hash for an icon.</p>
+<p>Virtual: hash</p>
+<div class="refsect3">
+<a name="g-icon-hash.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>icon</p></td>
+<td class="parameter_description"><p><a href="../glib-Basic-Types.html#gconstpointer"><span class="type">gconstpointer</span></a> to an icon object. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL must not be passed as the value in, out, in-out; or as a return value."><span class="acronym">not nullable</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-icon-hash.returns"></a><h4>Returns</h4>
+<p> a <a href="../glib-Basic-Types.html#guint"><span class="type">guint</span></a> containing a hash for the <em class="parameter"><code>icon</code></em>
+, suitable for
+use in a <a href="../glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> or similar data structure.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-icon-equal"></a><h3>g_icon_equal ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+g_icon_equal (<em class="parameter"><code><a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> *icon1</code></em>,
+              <em class="parameter"><code><a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> *icon2</code></em>);</pre>
+<p>Checks if two icons are equal.</p>
+<div class="refsect3">
+<a name="g-icon-equal.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>icon1</p></td>
+<td class="parameter_description"><p>pointer to the first <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>icon2</p></td>
+<td class="parameter_description"><p>pointer to the second <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-icon-equal.returns"></a><h4>Returns</h4>
+<p> <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>icon1</code></em>
+is equal to <em class="parameter"><code>icon2</code></em>
+. <a href="../glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-icon-to-string"></a><h3>g_icon_to_string ()</h3>
+<pre class="programlisting"><a href="../glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+g_icon_to_string (<em class="parameter"><code><a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> *icon</code></em>);</pre>
+<p>Generates a textual representation of <em class="parameter"><code>icon</code></em>
+ that can be used for
+serialization such as when passing <em class="parameter"><code>icon</code></em>
+ to a different process or
+saving it to persistent storage. Use <a class="link" href="GIcon.html#g-icon-new-for-string" title="g_icon_new_for_string ()"><code class="function">g_icon_new_for_string()</code></a> to
+get <em class="parameter"><code>icon</code></em>
+ back from the returned string.</p>
+<p>The encoding of the returned string is proprietary to <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> except
+in the following two cases</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>If <em class="parameter"><code>icon</code></em>
+ is a <a class="link" href="GFileIcon.html" title="GFileIcon"><span class="type">GFileIcon</span></a>, the returned string is a native path
+(such as <code class="literal">/path/to/my icon.png</code>) without escaping
+if the <a class="link" href="GFile.html" title="GFile"><span class="type">GFile</span></a> for <em class="parameter"><code>icon</code></em>
+ is a native file.  If the file is not
+native, the returned string is the result of <a class="link" href="GFile.html#g-file-get-uri" title="g_file_get_uri ()"><code class="function">g_file_get_uri()</code></a>
+(such as <code class="literal">sftp://path/to/my%20icon.png</code>).</p></li>
+<li class="listitem"><p>If <em class="parameter"><code>icon</code></em>
+ is a <a class="link" href="GThemedIcon.html" title="GThemedIcon"><span class="type">GThemedIcon</span></a> with exactly one name, the encoding is
+simply the name (such as <code class="literal">network-server</code>).</p></li>
+</ul></div>
+<p>Virtual: to_tokens</p>
+<div class="refsect3">
+<a name="g-icon-to-string.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>icon</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-icon-to-string.returns"></a><h4>Returns</h4>
+<p>An allocated NUL-terminated UTF8 string or
+<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>icon</code></em>
+can't be serialized. Use <a href="../glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a> to free. </p>
+<p><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-20.html#api-index-2.20">2.20</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-icon-new-for-string"></a><h3>g_icon_new_for_string ()</h3>
+<pre class="programlisting"><a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+g_icon_new_for_string (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *str</code></em>,
+                       <em class="parameter"><code><a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Generate a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> instance from <em class="parameter"><code>str</code></em>
+. This function can fail if
+<em class="parameter"><code>str</code></em>
+ is not valid - see <a class="link" href="GIcon.html#g-icon-to-string" title="g_icon_to_string ()"><code class="function">g_icon_to_string()</code></a> for discussion.</p>
+<p>If your application or library provides one or more <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>
+implementations you need to ensure that each <a href="../gobject-Type-Information.html#GType"><span class="type">GType</span></a> is registered
+with the type system prior to calling <a class="link" href="GIcon.html#g-icon-new-for-string" title="g_icon_new_for_string ()"><code class="function">g_icon_new_for_string()</code></a>.</p>
+<div class="refsect3">
+<a name="g-icon-new-for-string.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>str</p></td>
+<td class="parameter_description"><p>A string obtained via <a class="link" href="GIcon.html#g-icon-to-string" title="g_icon_to_string ()"><code class="function">g_icon_to_string()</code></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>Return location for error.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-icon-new-for-string.returns"></a><h4>Returns</h4>
+<p>An object implementing the <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>
+interface or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>error</code></em>
+is set. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-20.html#api-index-2.20">2.20</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-icon-serialize"></a><h3>g_icon_serialize ()</h3>
+<pre class="programlisting"><a href="../glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+g_icon_serialize (<em class="parameter"><code><a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> *icon</code></em>);</pre>
+<p>Serializes a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> into a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a>. An equivalent <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> can be retrieved
+back by calling <a class="link" href="GIcon.html#g-icon-deserialize" title="g_icon_deserialize ()"><code class="function">g_icon_deserialize()</code></a> on the returned value.
+As serialization will avoid using raw icon data when possible, it only
+makes sense to transfer the <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> between processes on the same machine,
+(as opposed to over the network), and within the same file system namespace.</p>
+<div class="refsect3">
+<a name="g-icon-serialize.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>icon</p></td>
+<td class="parameter_description"><p>a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-icon-serialize.returns"></a><h4>Returns</h4>
+<p>a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> when serialization fails. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="g-icon-deserialize"></a><h3>g_icon_deserialize ()</h3>
+<pre class="programlisting"><a class="link" href="GIcon.html" title="GIcon"><span class="returnvalue">GIcon</span></a> *
+g_icon_deserialize (<em class="parameter"><code><a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *value</code></em>);</pre>
+<p>Deserializes a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> previously serialized using <a class="link" href="GIcon.html#g-icon-serialize" title="g_icon_serialize ()"><code class="function">g_icon_serialize()</code></a>.</p>
+<div class="refsect3">
+<a name="g-icon-deserialize.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> created with <a class="link" href="GIcon.html#g-icon-serialize" title="g_icon_serialize ()"><code class="function">g_icon_serialize()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-icon-deserialize.returns"></a><h4>Returns</h4>
+<p>a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> when deserialization fails. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GIcon.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GIcon-struct"></a><h3>GIcon</h3>
+<pre class="programlisting">typedef struct _GIcon GIcon;</pre>
+<p>An abstract type that specifies an icon.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GIconIface"></a><h3>struct GIconIface</h3>
+<pre class="programlisting">struct GIconIface {
+  GTypeInterface g_iface;
+
+  /* Virtual Table */
+
+  guint       (* hash)        (GIcon   *icon);
+  gboolean    (* equal)       (GIcon   *icon1,
+                               GIcon   *icon2);
+  gboolean    (* to_tokens)   (GIcon   *icon,
+			       GPtrArray *tokens,
+                               gint    *out_version);
+  GIcon *     (* from_tokens) (gchar  **tokens,
+                               gint     num_tokens,
+                               gint     version,
+                               GError **error);
+
+  GVariant *  (* serialize)   (GIcon   *icon);
+};
+</pre>
+<p>GIconIface is used to implement GIcon types for various
+different systems. See <a class="link" href="GThemedIcon.html" title="GThemedIcon"><span class="type">GThemedIcon</span></a> and <a class="link" href="GLoadableIcon.html" title="GLoadableIcon"><span class="type">GLoadableIcon</span></a> for
+examples of how to implement this interface.</p>
+<div class="refsect3">
+<a name="GIconIface.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GIconIface.hash"></a>hash</code></em> ()</p></td>
+<td class="struct_member_description"><p>A hash for a given <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a>.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GIconIface.equal"></a>equal</code></em> ()</p></td>
+<td class="struct_member_description"><p>Checks if two <a href="GIcon.html#GIcon-struct"><span class="type">GIcons</span></a> are equal.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GIconIface.to-tokens"></a>to_tokens</code></em> ()</p></td>
+<td class="struct_member_description"><p>Serializes a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> into tokens. The tokens must not
+contain any whitespace. Don't implement if the <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> can't be
+serialized (Since 2.20).</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GIconIface.from-tokens"></a>from_tokens</code></em> ()</p></td>
+<td class="struct_member_description"><p>Constructs a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> from tokens. Set the <a href="../glib-Error-Reporting.html#GError"><span class="type">GError</span></a> if
+the tokens are malformed. Don't implement if the <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> can't be
+serialized (Since 2.20).</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GIconIface.serialize"></a>serialize</code></em> ()</p></td>
+<td class="struct_member_description"><p>Serializes a <a class="link" href="GIcon.html" title="GIcon"><span class="type">GIcon</span></a> into a <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a>. Since: 2.38</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>

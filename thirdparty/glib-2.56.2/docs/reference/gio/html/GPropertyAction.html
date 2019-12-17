@@ -1,0 +1,331 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GPropertyAction: GIO Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
+<link rel="home" href="index.html" title="GIO Reference Manual">
+<link rel="up" href="application.html" title="Application support">
+<link rel="prev" href="GSimpleAction.html" title="GSimpleAction">
+<link rel="next" href="GRemoteActionGroup.html" title="GRemoteActionGroup">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#GPropertyAction.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#GPropertyAction.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_interfaces">  <span class="dim">|</span> 
+                  <a href="#GPropertyAction.implemented-interfaces" class="shortcut">Implemented Interfaces</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#GPropertyAction.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="application.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GSimpleAction.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GRemoteActionGroup.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GPropertyAction"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GPropertyAction.top_of_page"></a>GPropertyAction</span></h2>
+<p>GPropertyAction — A GAction reflecting a GObject property</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GPropertyAction.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody><tr>
+<td class="function_type">
+<a class="link" href="GPropertyAction.html" title="GPropertyAction"><span class="returnvalue">GPropertyAction</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GPropertyAction.html#g-property-action-new" title="g_property_action_new ()">g_property_action_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GPropertyAction.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GPropertyAction.html#GPropertyAction--enabled" title="The “enabled” property">enabled</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="GPropertyAction.html#GPropertyAction--invert-boolean" title="The “invert-boolean” property">invert-boolean</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<td class="property_name"><a class="link" href="GPropertyAction.html#GPropertyAction--name" title="The “name” property">name</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> *</td>
+<td class="property_name"><a class="link" href="GPropertyAction.html#GPropertyAction--object" title="The “object” property">object</a></td>
+<td class="property_flags">Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a> *</td>
+<td class="property_name"><a class="link" href="GPropertyAction.html#GPropertyAction--parameter-type" title="The “parameter-type” property">parameter-type</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<td class="property_name"><a class="link" href="GPropertyAction.html#GPropertyAction--property-name" title="The “property-name” property">property-name</a></td>
+<td class="property_flags">Write / Construct Only</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *</td>
+<td class="property_name"><a class="link" href="GPropertyAction.html#GPropertyAction--state" title="The “state” property">state</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a> *</td>
+<td class="property_name"><a class="link" href="GPropertyAction.html#GPropertyAction--state-type" title="The “state-type” property">state-type</a></td>
+<td class="property_flags">Read</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GPropertyAction.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="GPropertyAction.html#GPropertyAction-struct" title="GPropertyAction">GPropertyAction</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GPropertyAction.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="../gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> GPropertyAction
+</pre>
+</div>
+<div class="refsect1">
+<a name="GPropertyAction.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+GPropertyAction implements
+ <a class="link" href="GAction.html" title="GAction">GAction</a>.</p>
+</div>
+<div class="refsect1">
+<a name="GPropertyAction.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gio/gio.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GPropertyAction.description"></a><h2>Description</h2>
+<p>A <a class="link" href="GPropertyAction.html" title="GPropertyAction"><span class="type">GPropertyAction</span></a> is a way to get a <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> with a state value
+reflecting and controlling the value of a <a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> property.</p>
+<p>The state of the action will correspond to the value of the property.
+Changing it will change the property (assuming the requested value
+matches the requirements as specified in the <a href="../gobject-GParamSpec.html#GParamSpec"><span class="type">GParamSpec</span></a>).</p>
+<p>Only the most common types are presently supported.  Booleans are
+mapped to booleans, strings to strings, signed/unsigned integers to
+int32/uint32 and floats and doubles to doubles.</p>
+<p>If the property is an enum then the state will be string-typed and
+conversion will automatically be performed between the enum value and
+"nick" string as per the <a href="../gobject-Enumeration-and-Flag-Types.html#GEnumValue"><span class="type">GEnumValue</span></a> table.</p>
+<p>Flags types are not currently supported.</p>
+<p>Properties of object types, boxed types and pointer types are not
+supported and probably never will be.</p>
+<p>Properties of <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> types are not currently supported.</p>
+<p>If the property is boolean-valued then the action will have a NULL
+parameter type, and activating the action (with no parameter) will
+toggle the value of the property.</p>
+<p>In all other cases, the parameter type will correspond to the type of
+the property.</p>
+<p>The general idea here is to reduce the number of locations where a
+particular piece of state is kept (and therefore has to be synchronised
+between). <a class="link" href="GPropertyAction.html" title="GPropertyAction"><span class="type">GPropertyAction</span></a> does not have a separate state that is kept
+in sync with the property value -- its state is the property value.</p>
+<p>For example, it might be useful to create a <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> corresponding to
+the "visible-child-name" property of a <span class="type">GtkStack</span> so that the current
+page can be switched from a menu.  The active radio indication in the
+menu is then directly determined from the active page of the
+<span class="type">GtkStack</span>.</p>
+<p>An anti-example would be binding the "active-id" property on a
+<span class="type">GtkComboBox</span>.  This is because the state of the combobox itself is
+probably uninteresting and is actually being used to control
+something else.</p>
+<p>Another anti-example would be to bind to the "visible-child-name"
+property of a <span class="type">GtkStack</span> if this value is actually stored in
+<a class="link" href="GSettings.html" title="GSettings"><span class="type">GSettings</span></a>.  In that case, the real source of the value is
+<a class="link" href="GSettings.html" title="GSettings"><span class="type">GSettings</span></a>.  If you want a <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> to control a setting stored in
+<a class="link" href="GSettings.html" title="GSettings"><span class="type">GSettings</span></a>, see <a class="link" href="GSettings.html#g-settings-create-action" title="g_settings_create_action ()"><code class="function">g_settings_create_action()</code></a> instead, and possibly
+combine its use with <a class="link" href="GSettings.html#g-settings-bind" title="g_settings_bind ()"><code class="function">g_settings_bind()</code></a>.</p>
+</div>
+<div class="refsect1">
+<a name="GPropertyAction.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="g-property-action-new"></a><h3>g_property_action_new ()</h3>
+<pre class="programlisting"><a class="link" href="GPropertyAction.html" title="GPropertyAction"><span class="returnvalue">GPropertyAction</span></a> *
+g_property_action_new (<em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *name</code></em>,
+                       <em class="parameter"><code><a href="../glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> object</code></em>,
+                       <em class="parameter"><code>const <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *property_name</code></em>);</pre>
+<p>Creates a <a class="link" href="GAction.html" title="GAction"><span class="type">GAction</span></a> corresponding to the value of property
+<em class="parameter"><code>property_name</code></em>
+ on <em class="parameter"><code>object</code></em>
+.</p>
+<p>The property must be existent and readable and writable (and not
+construct-only).</p>
+<p>This function takes a reference on <em class="parameter"><code>object</code></em>
+ and doesn't release it
+until the action is destroyed.</p>
+<div class="refsect3">
+<a name="g-property-action-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>name</p></td>
+<td class="parameter_description"><p>the name of the action to create</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>object</p></td>
+<td class="parameter_description"><p>the object that has the property
+to wrap. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GObject.Object]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>property_name</p></td>
+<td class="parameter_description"><p>the name of the property</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="g-property-action-new.returns"></a><h4>Returns</h4>
+<p> a new <a class="link" href="GPropertyAction.html" title="GPropertyAction"><span class="type">GPropertyAction</span></a></p>
+</div>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GPropertyAction.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GPropertyAction-struct"></a><h3>GPropertyAction</h3>
+<pre class="programlisting">typedef struct _GPropertyAction GPropertyAction;</pre>
+<p>This type is opaque.</p>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GPropertyAction.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GPropertyAction--enabled"></a><h3>The <code class="literal">“enabled”</code> property</h3>
+<pre class="programlisting">  “enabled”                  <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>If <em class="parameter"><code>action</code></em>
+ is currently enabled.</p>
+<p>If the action is disabled then calls to <a class="link" href="GAction.html#g-action-activate" title="g_action_activate ()"><code class="function">g_action_activate()</code></a> and
+<a class="link" href="GAction.html#g-action-change-state" title="g_action_change_state ()"><code class="function">g_action_change_state()</code></a> have no effect.</p>
+<p>Flags: Read</p>
+<p>Default value: TRUE</p>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GPropertyAction--invert-boolean"></a><h3>The <code class="literal">“invert-boolean”</code> property</h3>
+<pre class="programlisting">  “invert-boolean”           <a href="../glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>If <a href="../glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>, the state of the action will be the negation of the
+property value, provided the property is boolean.</p>
+<p>Flags: Read / Write / Construct Only</p>
+<p>Default value: FALSE</p>
+<p class="since">Since: <a class="link" href="api-index-2-46.html#api-index-2.46">2.46</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GPropertyAction--name"></a><h3>The <code class="literal">“name”</code> property</h3>
+<pre class="programlisting">  “name”                     <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>The name of the action.  This is mostly meaningful for identifying
+the action once it has been added to a <a class="link" href="GActionMap.html" title="GActionMap"><span class="type">GActionMap</span></a>.</p>
+<p>Flags: Read / Write / Construct Only</p>
+<p>Default value: NULL</p>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GPropertyAction--object"></a><h3>The <code class="literal">“object”</code> property</h3>
+<pre class="programlisting">  “object”                   <a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> *</pre>
+<p>The object to wrap a property on.</p>
+<p>The object must be a non-<a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> <a href="../gobject-The-Base-Object-Type.html#GObject-struct"><span class="type">GObject</span></a> with properties.</p>
+<p>Flags: Write / Construct Only</p>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GPropertyAction--parameter-type"></a><h3>The <code class="literal">“parameter-type”</code> property</h3>
+<pre class="programlisting">  “parameter-type”           <a href="../glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a> *</pre>
+<p>The type of the parameter that must be given when activating the
+action.</p>
+<p>Flags: Read</p>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GPropertyAction--property-name"></a><h3>The <code class="literal">“property-name”</code> property</h3>
+<pre class="programlisting">  “property-name”            <a href="../glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>The name of the property to wrap on the object.</p>
+<p>The property must exist on the passed-in object and it must be
+readable and writable (and not construct-only).</p>
+<p>Flags: Write / Construct Only</p>
+<p>Default value: NULL</p>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GPropertyAction--state"></a><h3>The <code class="literal">“state”</code> property</h3>
+<pre class="programlisting">  “state”                    <a href="../glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *</pre>
+<p>The state of the action, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the action is stateless.</p>
+<p>Flags: Read</p>
+<p>Allowed values: GVariant&lt;*&gt;</p>
+<p>Default value: NULL</p>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GPropertyAction--state-type"></a><h3>The <code class="literal">“state-type”</code> property</h3>
+<pre class="programlisting">  “state-type”               <a href="../glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a> *</pre>
+<p>The <a href="../glib-GVariantType.html#GVariantType"><span class="type">GVariantType</span></a> of the state that the action has, or <a href="../glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if the
+action is stateless.</p>
+<p>Flags: Read</p>
+<p class="since">Since: <a class="link" href="api-index-2-38.html#api-index-2.38">2.38</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>Generated by GTK-Doc V1.28</div>
+</body>
+</html>
