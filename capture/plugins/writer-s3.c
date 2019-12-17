@@ -40,6 +40,7 @@ typedef struct writer_s3_file {
     uint16_t                   fs3_count;
 
     char                      *outputFileName;
+    struct timespec            outputFileTime;
     char                      *outputPath;
     SavepcapS3Output_t         outputQ;
     char                      *uploadId;
@@ -561,6 +562,7 @@ void writer_s3_create(const MolochPacket_t *packet)
 
     currentFile->outputFileName = moloch_db_create_file(packet->ts.tv_sec, filename, 0, 0, &outputId);
     currentFile->outputPath = currentFile->outputFileName + offset;
+    clock_gettime(CLOCK_REALTIME_COARSE, &currentFile->outputFileTime);
     outputFilePos = 0;
     outputActualFilePos = 0;
     outputLastBlockStart = 0;
@@ -717,7 +719,24 @@ void writer_s3_init(char *UNUSED(name))
     DLL_INIT(fs3_, &fileQ);
 }
 /******************************************************************************/
+LOCAL gboolean writer_s3_file_time_gfunc (gpointer UNUSED(user_data))
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME_COARSE, &ts);
+
+    if (currentFile && outputFilePos > 24 && (ts.tv_sec - currentFile->outputFileTime.tv_sec) >= config.maxFileTimeM*60) {
+        writer_s3_flush(TRUE);
+    }
+
+    return TRUE;
+}
+
+/******************************************************************************/
 void moloch_plugin_init()
 {
     moloch_writers_add("s3", writer_s3_init);
+
+    if (config.maxFileTimeM > 0) {
+        g_timeout_add_seconds( 30, writer_s3_file_time_gfunc, 0);
+    }
 }
