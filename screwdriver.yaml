@@ -122,7 +122,7 @@ jobs:
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - linting: (cd viewer ; npm run lint)
             - install-for-tests: (cd wiseService; npm ci --production)
-            - run-es: (chown -R elasticsearch /elasticsearch-6.7.0; cd /elasticsearch-6.7.0 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
+            - run-es: (chown -R elasticsearch /elasticsearch-7.5.1; cd /elasticsearch-7.5.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - test-capture: (cd tests ; ./tests.pl)
             - sleep 30
             - cat /tmp/es
@@ -177,7 +177,7 @@ jobs:
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - linting: (cd viewer ; npm run lint)
-            - run-es: (chown -R elasticsearch /elasticsearch-6.7.0; cd /elasticsearch-6.7.0 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
+            - run-es: (chown -R elasticsearch /elasticsearch-7.5.1; cd /elasticsearch-7.5.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - install-for-tests: (cd wiseService; npm ci --production)
             - sleep 30
             - cat /tmp/es
@@ -207,7 +207,7 @@ jobs:
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - linting: (cd viewer ; npm run lint)
             - install-for-tests: (cd wiseService; npm ci --production)
-            - run-es: (chown -R elasticsearch /elasticsearch-6.7.0; cd /elasticsearch-6.7.0 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
+            - run-es: (chown -R elasticsearch /elasticsearch-7.5.1; cd /elasticsearch-7.5.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - test-capture: (cd tests ; ./tests.pl)
             - sleep 30
             - cat /tmp/es
