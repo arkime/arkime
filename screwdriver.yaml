@@ -231,7 +231,7 @@ jobs:
             beta.screwdriver.cd/ram: LOW
         steps:
             - slack-success: |
-                export MOLOCH_VERSION=`grep PACKAGE_VERSION= configure | sed "s/.*'\(.*\)'.*$/\1/"`
+                export MOLOCH_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/"`
                 echo MOLOCH_VERSION: $MOLOCH_VERSION
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
                   MSG=`git log -1 --format=%s`
