@@ -5,7 +5,7 @@ RUN \
 yum -y update; \
 yum -y install scl-utils wget; \
 yum -y update; \
-yum -y install git sudo perl-Test perl-Test-Simple bzip2 wget ruby-devel rubygems rpm-build pango libXcomposite gtk3 atk libXtst GConf2 libXScrnSaver alsa-lib which make; \
+yum -y install git sudo perl-Test perl-Test-Simple bzip2 wget ruby-devel rubygems rpm-build pango which make; \
 (cd /etc/yum.repos.d/; wget https://packages.ntop.org/centos/ntop.repo); \
 rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm; \
 rpm -ivh http://rpms.remirepo.net/enterprise/remi-release-8.rpm; \

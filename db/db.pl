@@ -2801,8 +2801,8 @@ sub dbCheck {
         exit (1)
     }
 
-    if ($main::esVersion < 60802) {
-        logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " 6.8.5 is recommended\n");
+    if ($main::esVersion < 60805) {
+        logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " 6.8.5 or newer is recommended\n");
     }
 
     my $error = 0;

@@ -1,6 +1,7 @@
 NOTICE: Please see https://molo.ch/faq#upgrading-moloch for upgrading info
 
 ES Versions:
+  * Moloch >= 2.2.0  supports ES >= 6.8.0 or >= 7.1.0
   * Moloch >= 2.0.0  supports ES >= 6.7.0 or >= 7.1.0
   * Moloch >= 1.5.0  supports ES >= 5.5.0, 6.x, not 7.x or later
   * Moloch >= 1.0.0  supports ES >= 5.5.0, 6.x (not prod tested, only for new installs), not 7.x or later
@@ -17,6 +18,8 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 2.2.0 2020/01/xx
+  - NOTE - Elasticsearch 6.7.x is no longer supported
+  - release - Configure now installs elasticsearch 7.5.1
 
 2.1.2 2019/12/16
   - capture - no longer check in configure scripts, use autoreconf (thanks martinpaljak)
