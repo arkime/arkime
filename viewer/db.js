@@ -321,6 +321,7 @@ exports.msearch = function (index, type, queries, options, cb) {
 };
 
 exports.scroll = function (params, callback) {
+  params.rest_total_hits_as_int = true;
   return internals.elasticSearchClient.scroll(params, callback);
 };
 
