@@ -27,7 +27,7 @@
       </div>
     </div> <!-- /segments select input -->
 
-    <div class="col-md-7">
+    <div class="col-md-5">
 
       <!-- filename input -->
       <div class="input-group input-group-sm">
@@ -42,15 +42,6 @@
           class="form-control"
           placeholder="Enter a filename"
         />
-        <div class="input-group-append">
-          <button class="btn btn-theme-tertiary"
-            @click="exportPcap"
-            type="button">
-            <span class="fa fa-paper-plane-o">
-            </span>&nbsp;
-            Export PCAP
-          </button>
-        </div>
       </div> <!-- /filename input -->
 
       <!-- error -->
@@ -64,15 +55,24 @@
     </div>
 
     <!-- cancel button -->
-    <div class="col-md-1">
-      <button class="btn btn-sm btn-warning pull-right"
-        v-b-tooltip.hover
-        title="cancel"
-        @click="done(null)"
-        type="button">
-        <span class="fa fa-ban">
-        </span>
-      </button>
+    <div class="col-md-3">
+      <div class="pull-right">
+        <button class="btn btn-sm btn-theme-tertiary"
+          @click="exportPcap"
+          type="button">
+          <span class="fa fa-paper-plane-o">
+          </span>&nbsp;
+          Export PCAP
+        </button>
+        <button class="btn btn-sm btn-warning"
+          v-b-tooltip.hover
+          title="cancel"
+          @click="done(null)"
+          type="button">
+          <span class="fa fa-ban">
+          </span>
+        </button>
+      </div>
     </div> <!-- /cancel button -->
 
   </div> <!-- /export pcap form -->
