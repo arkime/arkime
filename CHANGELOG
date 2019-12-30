@@ -20,6 +20,8 @@ NOTICE: Restart wiseService before capture when upgrading
 2.2.0 2020/01/xx
   - NOTE - Elasticsearch 6.7.x is no longer supported
   - release - Configure now installs elasticsearch 7.5.1
+  - viewer - New aes256Encryption option to upgrade encryption, all
+             viewers must be on 2.2.0 or later before upgrading
 
 2.1.2 2019/12/16
   - capture - no longer check in configure scripts, use autoreconf (thanks martinpaljak)

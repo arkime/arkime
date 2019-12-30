@@ -94,80 +94,145 @@ exports.md5 = function (str, encoding){
     .digest(encoding || 'hex');
 };
 
-// Hash and Encrypt the password before storing
+// Hash (MD5) and encrypt the password before storing.
+// Encryption is used because ES is insecure by default and we don't want others adding accounts.
 exports.pass2store = function(userid, password) {
   // md5 is required because of http digest
   var m = exports.md5(userid + ":" + exports.getFull("default", "httpRealm", "Moloch") + ":" + password);
 
-  // Now encrypt the md5 before putting in ES since ES by default is wide open. This is NOT encrypting the password, it was hashed above
-  var c = crypto.createCipher('aes192', exports.getFull("default", "passwordSecret", "password"));
-  var e = c.update(m, "binary", "hex");
-  e += c.final("hex");
-  return e;
+  if (internals.aes256Encryption) {
+    // New style with IV: IV.E
+    let iv = crypto.randomBytes(16);
+    let c = crypto.createCipheriv('aes-256-cbc', internals.passwordSecret256, iv);
+    let e = c.update(m, 'binary', 'hex');
+    e += c.final('hex');
+    return iv.toString('hex') + '.' + e;
+  } else {
+    // Old style without IV: E
+    var c = crypto.createCipher('aes192', internals.passwordSecret);
+    var e = c.update(m, "binary", "hex");
+    e += c.final("hex");
+    return e;
+  }
 };
 
 // Decrypt the encrypted hashed password, it is still hashed
 exports.store2ha1 = function(passstore) {
   try {
-    var c = crypto.createDecipher('aes192', exports.getFull("default", "passwordSecret", "password"));
-    var d = c.update(passstore, "hex", "binary");
-    d += c.final("binary");
-    return d;
+    var parts = passstore.split('.');
+    if (parts.length === 2) {
+      // New style with IV: IV.E
+      let c = crypto.createDecipheriv('aes-256-cbc', internals.passwordSecret256, Buffer.from(parts[0], 'hex'));
+      let d = c.update(parts[1], 'hex', 'binary');
+      d += c.final('binary');
+      return d;
+    } else {
+      // Old style without IV: E
+      var c = crypto.createDecipher('aes192', internals.passwordSecret);
+      var d = c.update(passstore, "hex", "binary");
+      d += c.final("binary");
+      return d;
+    }
   } catch (e) {
     console.log("passwordSecret set in the [default] section can not decrypt information.  You may need to re-add users if you've changed the secret.", e);
     process.exit(1);
   }
 };
 
+// Encrypt an object into an auth string
 exports.obj2auth = function(obj, c2s, secret) {
-  secret = secret || exports.getFull("default", "serverSecret") || exports.getFull("default", "passwordSecret", "password");
+  if (internals.aes256Encryption) {
+    // New style with IV: IV.E.H
+    if (secret) {
+      secret = crypto.createHash('sha256').update(secret).digest();
+    } else {
+      secret = internals.serverSecret256;
+    }
 
-  var c = crypto.createCipher('aes192', secret);
-  var e = c.update(JSON.stringify(obj), "binary", "hex");
-  e += c.final("hex");
+    let iv = crypto.randomBytes(16);
+    let c = crypto.createCipheriv('aes-256-cbc', secret, iv);
+    let e = c.update(JSON.stringify(obj), "binary", "hex");
+    e += c.final('hex');
+    e = iv.toString('hex') + '.' + e;
+    let h = crypto.createHmac('sha256', secret).update(e).digest('hex');
+    return e + '.' + h;
+  } else {
+    // Old style without IV: E or E.H
+    secret = secret || internals.serverSecret;
 
-  var h = crypto.createHmac('sha256', secret);
-  h.update(e, 'hex');
-  var countedSignature = h.digest('hex');
+    let c = crypto.createCipher('aes192', secret);
+    let e = c.update(JSON.stringify(obj), "binary", "hex");
+    e += c.final("hex");
 
-  // include sig if c2s or s2sSignedAuth
-  if (c2s || exports.getFull("default", "s2sSignedAuth", true)) {
-    return e + '.' + countedSignature;
+    let h = crypto.createHmac('sha256', secret).update(e, 'hex').digest('hex');
+
+    // include sig if c2s or s2sSignedAuth
+    if (c2s || internals.s2sSignedAuth) {
+      return e + '.' + h;
+    }
+
+    return e;
   }
-
-  return e;
 };
 
+// Decrypt the auth string into an object
 exports.auth2obj = function(auth, c2s, secret) {
-  secret = secret || exports.getFull("default", "serverSecret") || exports.getFull("default", "passwordSecret", "password");
-  let splitted = auth.split('.');
-  let payload = splitted[0];
+  let parts = auth.split('.');
 
-  // if sig missing error if c2s or s2sSignedAuth
-  if (splitted.length === 1 && (c2s || exports.getFull("default", "s2sSignedAuth", true))) {
-    throw 'Missing signature';
-  }
+  if (parts.length === 3) {
+    // New style with IV: IV.E.H
+    if (secret) {
+      secret = crypto.createHash('sha256').update(secret).digest();
+    } else {
+      secret = internals.serverSecret256;
+    }
 
-  if (splitted.length > 1) {
-    let signature = Buffer.from(splitted[1], 'hex');
-    let h = crypto.createHmac('sha256', secret);
-    h.update(payload, 'hex');
-    let countedSignature = h.digest();
+    let signature = Buffer.from(parts[2], 'hex');
+    let h = crypto.createHmac('sha256', secret).update(parts[0] + '.' + parts[1]).digest();
 
-    if (!crypto.timingSafeEqual(signature, countedSignature)) {
+    if (!crypto.timingSafeEqual(signature, h)) {
       throw 'Incorrect signature';
     }
-  }
 
-  try {
-    let c = crypto.createDecipher('aes192', secret);
-    let d = c.update(payload, "hex", "binary");
-    d += c.final("binary");
-    return JSON.parse(d);
-  }
-  catch(error) {
-    console.log(error);
-    throw 'Incorrect auth supplied';
+    try {
+      let c = crypto.createDecipheriv('aes-256-cbc', secret, Buffer.from(parts[0], 'hex'));
+      let d = c.update(parts[1], "hex", "binary");
+      d += c.final("binary");
+      return JSON.parse(d);
+    }
+    catch(error) {
+      console.log(error);
+      throw 'Incorrect auth supplied';
+    }
+  } else {
+    // Old style without IV: E or E.H
+
+    secret = secret || internals.serverSecret;
+
+    // if sig missing error if c2s or s2sSignedAuth
+    if (parts.length === 1 && (c2s || internals.s2sSignedAuth)) {
+      throw 'Missing signature';
+    }
+
+    if (parts.length > 1) {
+      let signature = Buffer.from(parts[1], 'hex');
+      let h = crypto.createHmac('sha256', secret).update(parts[0], 'hex').digest();
+
+      if (!crypto.timingSafeEqual(signature, h)) {
+        throw 'Incorrect signature';
+      }
+    }
+
+    try {
+      let c = crypto.createDecipher('aes192', secret);
+      let d = c.update(parts[0], "hex", "binary");
+      d += c.final("binary");
+      return JSON.parse(d);
+    }
+    catch(error) {
+      console.log(error);
+      throw 'Incorrect auth supplied';
+    }
   }
 };
 
@@ -439,3 +504,21 @@ exports.loadFields = function(data) {
     internals.categories[cat] = internals.categories[cat].sort(sortFunc);
   }
 };
+
+//////////////////////////////////////////////////////////////////////////////////
+// Globals
+//////////////////////////////////////////////////////////////////////////////////
+internals.s2sSignedAuth = exports.getFull("default", "s2sSignedAuth", true);
+internals.aes256Encryption = exports.getFull("default", "aes256Encryption", false);
+
+// If passwordSecret isn't set, viewer will treat accounts as anonymous
+internals.passwordSecret = exports.getFull("default", "passwordSecret", "password");
+internals.passwordSecret256 = crypto.createHash('sha256').update(internals.passwordSecret).digest();
+
+if (exports.getFull("default", "serverSecret")) {
+  internals.serverSecret = exports.getFull("default", "serverSecret");
+  internals.serverSecret256 = crypto.createHash('sha256').update(internals.serverSecret).digest();
+} else {
+  internals.serverSecret = internals.passwordSecret;
+  internals.serverSecret256 = internals.passwordSecret256;
+}
