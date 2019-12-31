@@ -2315,9 +2315,7 @@ void moloch_db_init()
     }
     if (!config.dryRun) {
         esServer = moloch_http_create_server(config.elasticsearch, config.maxESConns, config.maxESRequests, config.compressES);
-        static char *headers[2];
-        headers[0] = "Content-Type: application/json";
-        headers[1] = NULL;
+        static char *headers[] = {"Content-Type: application/json", "Expect:", NULL};
         moloch_http_set_headers(esServer, headers);
         moloch_http_set_print_errors(esServer);
 

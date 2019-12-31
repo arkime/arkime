@@ -909,6 +909,9 @@ void moloch_plugin_init()
         snprintf(hoststr, sizeof(hoststr), "http://%s:%d", wiseHost, wisePort);
         wiseService = moloch_http_create_server(hoststr, maxConns, maxRequests, 0);
     }
+
+    static char *headers[] = {"Expect:", NULL};
+    moloch_http_set_headers(wiseService, headers);
     moloch_http_set_retries(wiseService, 1);
 
     moloch_plugins_register("wise", FALSE);
