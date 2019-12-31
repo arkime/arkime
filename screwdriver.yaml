@@ -24,7 +24,7 @@ jobs:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: scl enable devtoolset-7 python27 "./easybutton-build.sh --daq --pfring --rminstall"
-            - test-capture: (cd tests ; ./tests.pl)
+            - test-capture: (cd tests ; wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-ASN.mmdb; wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-Country.mmdb; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: scl enable devtoolset-7 python27 "make install"
@@ -47,7 +47,7 @@ jobs:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --rminstall
-            - test-capture: (cd tests ; ./tests.pl)
+            - test-capture: (cd tests ; wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-ASN.mmdb; wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-Country.mmdb; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
@@ -70,7 +70,7 @@ jobs:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --rminstall
-            - test-capture: (cd tests ; ./tests.pl)
+            - test-capture: (cd tests ; wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-ASN.mmdb; wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-Country.mmdb; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
@@ -123,7 +123,7 @@ jobs:
             - linting: (cd viewer ; npm run lint)
             - install-for-tests: (cd wiseService; npm ci --production)
             - run-es: (chown -R elasticsearch /elasticsearch-7.5.1; cd /elasticsearch-7.5.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
-            - test-capture: (cd tests ; ./tests.pl)
+            - test-capture: (cd tests ; wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-ASN.mmdb; wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-Country.mmdb; ./tests.pl)
             - sleep 30
             - cat /tmp/es
             - test-viewer: (cd tests ; ./tests.pl --viewer)
@@ -146,7 +146,7 @@ jobs:
             - apt-get update
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --rminstall
-            - test-capture: (cd tests ; ./tests.pl)
+            - test-capture: (cd tests ; wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-ASN.mmdb; wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-Country.mmdb; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root
             - installing: make install
@@ -171,7 +171,7 @@ jobs:
             - build: scl enable devtoolset-7 "./easybutton-build.sh --rminstall"
             - yum -y install libasan-static devtoolset-7-libasan-devel libasan4 devtoolset-7-libubsan-devel libubsan which java-1.8.0-openjdk-headless
             - build-sanitize: (cd capture; scl enable devtoolset-7 "make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize")
-            - test-capture: (cd tests ; ./tests.pl)
+            - test-capture: (cd tests ; wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-ASN.mmdb; wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-Country.mmdb; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
@@ -208,7 +208,7 @@ jobs:
             - linting: (cd viewer ; npm run lint)
             - install-for-tests: (cd wiseService; npm ci --production)
             - run-es: (chown -R elasticsearch /elasticsearch-7.5.1; cd /elasticsearch-7.5.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
-            - test-capture: (cd tests ; ./tests.pl)
+            - test-capture: (cd tests ; wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-ASN.mmdb; wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-Country.mmdb; ./tests.pl)
             - sleep 30
             - cat /tmp/es
             - test-viewer: (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
