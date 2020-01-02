@@ -8023,7 +8023,7 @@ function sendSessionWorker(options, cb) {
     }
     session.id = options.id;
     session.packetPos = ps;
-    delete session.fs;
+    delete session.fileId;
 
     if (options.tags) {
       tags = options.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
@@ -8339,7 +8339,7 @@ app.post('/receiveSession', [noCacheJson], function receiveSession(req, res) {
         makeFilename(function (filename) {
           req.resume();
           session.packetPos[0] = - saveId.seq;
-          session.fs = [saveId.seq];
+          session.fileId       = [saveId.seq];
 
           if (saveId.start === 0) {
             file = fs.createWriteStream(filename, {flags: "w"});
