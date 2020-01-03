@@ -3170,7 +3170,6 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     close($fh);
     exit 0;
 } elsif ($ARGV[1] =~ /^(rotate|expire)$/) {
-} elsif ($ARGV[1] =~ /^(rotate|expire)$/) {
     showHelp("Invalid expire <type>") if ($ARGV[2] !~ /^(hourly|hourly[23468]|hourly12|daily|weekly|monthly)$/);
 
     $SEGMENTSMIN = $SEGMENTS if ($SEGMENTSMIN == -1);
@@ -3701,6 +3700,8 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     die "delete time must be num followed by h or d" if ($deleteTime !~ /^\d+[hd]/);
     $REPLICAS = 0 if ($REPLICAS == -1);
 
+    print "Creating ilm policy '${PREFIX}molochsessions' with: forceTime: $forceTime deleteTime: $deleteTime segments: $SEGMENTS replicas: $REPLICAS\n";
+    print "You will need to run update with --ilm to update the sessions template\n";
     my $policy;
     if ($DOHOTWARM) {
         $policy =
@@ -3772,7 +3773,7 @@ qq/ {
     }
     esPut("/_ilm/policy/${PREFIX}molochsessions?master_timeout=${ESTIMEOUT}s", $policy);
     esPut("/${PREFIX}sessions2-*/_settings?master_timeout=${ESTIMEOUT}s", qq/{"settings": {"index.lifecycle.name": "${PREFIX}molochsessions"}}/, 1);
-    print $policy, "\n";
+    print "Policy:\n$policy\n" if ($verbose > 1);
     exit 0;
 }
 
