@@ -181,6 +181,30 @@ LOCAL char * smtp_quoteable_decode_inplace(char *str, gsize *olen)
 }
 
 /******************************************************************************/
+LOCAL char *smtp_gformat(char *format)
+{
+    switch (format[0]) {
+    case 'k':
+    case 'K':
+        if (strcasecmp(format, "ks_c_5601-1987") == 0)
+            return "CP949";
+        break;
+    case 'g':
+    case 'G':
+        if (strcasecmp(format, "gb2312") == 0)
+            return "CP936";
+        break;
+    case 'w':
+    case 'W':
+        if (strcasecmp(format, "windows-1251") == 0)
+            return "CP1251";
+        if (strcasecmp(format, "windows-1252") == 0)
+            return "CP1252";
+        break;
+    }
+    return format;
+}
+/******************************************************************************/
 LOCAL void smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
 {
     /* Decode this nightmare - http://www.rfc-editor.org/rfc/rfc2047.txt */
@@ -208,9 +232,9 @@ LOCAL void smtp_email_add_encoded(MolochSession_t *session, int pos, char *strin
                 extra = 1;
             }
 
-            char *out = g_convert((char *)str+extra, startquestion - str-extra, "utf-8", "WINDOWS-1252", &bread, &bwritten, &error);
+            char *out = g_convert((char *)str+extra, startquestion - str-extra, "utf-8", "CP1252", &bread, &bwritten, &error);
             if (error) {
-                LOG("ERROR convering %s to utf-8 %s ", "windows-1252", error->message);
+                LOG("ERROR convering %s to utf-8 %s ", "CP1252", error->message);
                 moloch_field_string_add(pos, session, string, len, TRUE);
                 g_error_free(error);
                 return;
@@ -251,7 +275,8 @@ LOCAL void smtp_email_add_encoded(MolochSession_t *session, int pos, char *strin
             else
                 olen = 0;
 
-            char *out = g_convert((char *)question+3, olen, "utf-8", str+2, &bread, &bwritten, &error);
+            char *fmt = smtp_gformat(str+2);
+            char *out = g_convert((char *)question+3, olen, "utf-8", fmt, &bread, &bwritten, &error);
             if (error) {
                 LOG("ERROR convering %s to utf-8 %s ", str+2, error->message);
                 moloch_field_string_add(pos, session, string, len, TRUE);
@@ -266,7 +291,8 @@ LOCAL void smtp_email_add_encoded(MolochSession_t *session, int pos, char *strin
 
             smtp_quoteable_decode_inplace(question+3, &olen);
 
-            char *out = g_convert((char *)question+3, strlen(question+3), "utf-8", str+2, &bread, &bwritten, &error);
+            char *fmt = smtp_gformat(str+2);
+            char *out = g_convert((char *)question+3, strlen(question+3), "utf-8", fmt, &bread, &bwritten, &error);
             if (error) {
                 LOG("ERROR convering %s to utf-8 %s ", str+2, error->message);
                 moloch_field_string_add(pos, session, string, len, TRUE);
