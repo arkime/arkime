@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Variables
-DEST_DIR="${MOLOCH_DIR:-BUILD_MOLOCH_INSTALL_DIR}/etc"
+DEST_DIR="${MOLOCH_DIR:-/data/moloch}/etc"
 TIMEOUT=${WGET_TIMEOUT:-30}
 
 # Work on temp dir to not affect current working files
@@ -17,7 +17,9 @@ wget -N -nv --timeout=${TIMEOUT} -O GeoLite2-Country.mmdb.gz "https://download.m
 if (( $? == 0 ))
 then
   /bin/rm -f "${DEST_DIR}/GeoLite2-Country.mmdb"
-  zcat GeoLite2-Country.mmdb.gz > "${DEST_DIR}/GeoLite2-Country.mmdb"
+  tar xvzf GeoLite2-Country.mmdb.gz
+  mv GeoLite2-Country*/GeoLite2-Country.mmdb ${DEST_DIR}/
+  rm -rf GeoLite2-Country*
 fi
 
 
@@ -25,7 +27,9 @@ wget -N -nv --timeout=${TIMEOUT} -O GeoLite2-ASN.mmdb.gz "https://download.maxmi
 if (( $? == 0 ))
 then
   /bin/rm -f "${DEST_DIR}/GeoLite2-ASN.mmdb"
-  zcat GeoLite2-ASN.mmdb.gz > "${DEST_DIR}/GeoLite2-ASN.mmdb"
+  tar xvzf GeoLite2-ASN.mmdb.gz
+  mv GeoLite2-ASN*/GeoLite2-ASN.mmdb ${DEST_DIR}/
+  rm -rf GeoLite2-ASN*
 fi
 
 
@@ -34,5 +38,3 @@ if (( $? == 0 ))
 then
   cp oui.txt "${DEST_DIR}/oui.txt"
 fi
-
-
