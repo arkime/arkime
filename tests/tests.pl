@@ -33,11 +33,11 @@ sub doGeo {
     }
 
     if (! -f "GeoLite2-Country.mmdb") {
-        system("wget -O GeoLite2-Country.mmdb.gz 'https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-Country'; gunzip GeoLite2-Country.mmdb.gz");
+        system("https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-Country.mmdb");
     }
 
     if (! -f "GeoLite2-ASN.mmdb") {
-        system("wget -O GeoLite2-ASN.mmdb.gz 'https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-ASN'; gunzip GeoLite2-ASN.mmdb.gz");
+        system("wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-ASN.mmdb");
     }
 
     if (! -f "plugins/test.so" || (stat('../capture/moloch.h'))[9] > (stat('plugins/test.so'))[9]) {

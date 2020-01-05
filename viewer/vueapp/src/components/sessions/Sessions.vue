@@ -51,8 +51,7 @@
       </transition> <!-- /sticky (opened) sessions -->
 
       <!-- sessions results -->
-      <table v-if="headers && headers.length"
-        class="table-striped sessions-table"
+      <table class="table-striped sessions-table"
         :style="tableStyle"
         id="sessionsTable">
         <thead>
@@ -192,200 +191,202 @@
               </b-dropdown> <!-- /column save button -->
             </th> <!-- /table options -->
             <!-- table headers -->
-            <th v-for="header of headers"
-              :key="header.dbField"
-              class="moloch-col-header"
-              :style="{'width': header.width + 'px'}"
-              :class="{'active':isSorted(header.sortBy || header.dbField) >= 0, 'info-col-header': header.dbField === 'info'}">
-              <!-- non-sortable column -->
-              <span v-if="header.dbField === 'info'"
-                class="cursor-pointer">
-                {{ header.friendlyName }}
-                <!-- info field visibility button -->
-                <b-dropdown
-                  size="sm"
-                  no-flip
-                  no-caret
-                  right
-                  class="col-vis-menu info-vis-menu pull-right"
-                  variant="theme-primary"
-                  @show="infoFieldVisMenuOpen = true"
-                  @hide="infoFieldVisMenuOpen = false">
-                  <template slot="button-content">
-                    <span class="fa fa-th-list"
-                      v-b-tooltip.hover
-                      title="Toggle visible fields">
-                    </span>
-                  </template>
-                  <b-dropdown-header>
-                    <input type="text"
-                      v-model="colQuery"
-                      class="form-control form-control-sm dropdown-typeahead"
-                      placeholder="Search for fields..."
-                    />
-                  </b-dropdown-header>
-                  <b-dropdown-divider>
-                  </b-dropdown-divider>
-                  <template>
-                    <b-dropdown-item
-                      id="infodefault"
-                      @click.stop.prevent="resetInfoVisibility">
-                      Moloch Default
-                    </b-dropdown-item>
-                    <b-tooltip target="infodefault"
-                      placement="left"
-                      boundary="window">
-                      Reset info column to default fields
-                    </b-tooltip>
-                  </template>
-                  <b-dropdown-divider>
-                  </b-dropdown-divider>
-                  <template v-if="infoFieldVisMenuOpen">
-                    <template v-for="(group, key) in filteredInfoFields">
-                      <b-dropdown-header
-                        :key="key"
-                        v-if="group.length"
-                        class="group-header">
-                        {{ key }}
-                      </b-dropdown-header>
-                      <template v-for="(field, k) in group">
-                        <b-dropdown-item
-                          :id="key + k + 'infoitem'"
-                          :key="key + k + 'infoitem'"
-                          :class="{'active':isInfoVisible(field.dbField) >= 0}"
-                          @click.stop.prevent="toggleInfoVis(field.dbField)">
-                          {{ field.friendlyName }}
-                          <small>({{ field.exp }})</small>
-                        </b-dropdown-item>
-                        <b-tooltip v-if="field.help"
-                          :key="key + k + 'infotooltip'"
-                          :target="key + k + 'infoitem'"
-                          placement="left"
-                          boundary="window">
-                          {{ field.help }}
-                        </b-tooltip>
-                      </template>
-                    </template>
-                  </template>
-                </b-dropdown> <!-- /info field visibility button -->
-              </span> <!-- /non-sortable column -->
-              <!-- column dropdown menu -->
-              <b-dropdown
-                right
-                no-flip
-                size="sm"
-                class="pull-right">
-                <b-dropdown-item
-                  @click="toggleColVis(header.dbField, header.sortBy)">
-                  Hide Column
-                </b-dropdown-item>
-                <!-- single field column -->
-                <template v-if="!header.children && header.type !== 'seconds'">
-                  <b-dropdown-divider>
-                  </b-dropdown-divider>
-                  <b-dropdown-item
-                    @click="exportUnique(header.rawField || header.exp, 0)">
-                    Export Unique {{ header.friendlyName }}
-                  </b-dropdown-item>
-                  <b-dropdown-item
-                    @click="exportUnique(header.rawField || header.exp, 1)">
-                    Export Unique {{ header.friendlyName }} with counts
-                  </b-dropdown-item>
-                  <template v-if="header.portField">
-                    <b-dropdown-item
-                      @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 0)">
-                      Export Unique {{ header.friendlyName }}:Ports
-                    </b-dropdown-item>
-                    <b-dropdown-item
-                      @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 1)">
-                      Export Unique {{ header.friendlyName }}:Ports with counts
-                    </b-dropdown-item>
-                  </template>
-                  <b-dropdown-item
-                    @click="openSpiGraph(header.dbField)">
-                    Open {{ header.friendlyName }} in SPI Graph
-                  </b-dropdown-item>
-                  <b-dropdown-item
-                    @click="fieldExists(header.exp, '==')">
-                    Add {{ header.friendlyName }} EXISTS! to query
-                  </b-dropdown-item>
-                  <b-dropdown-item
-                    @click="pivot(header.dbField, header.exp)">
-                    Pivot on {{ header.friendlyName }}
-                  </b-dropdown-item>
-                </template> <!-- /single field column -->
-                <!-- multiple field column -->
-                <template v-else-if="header.children && header.type !== 'seconds'">
-                  <span v-for="(child, key) in header.children"
-                    :key="`child${key}`">
-                    <template v-if="child">
-                      <b-dropdown-divider>
-                      </b-dropdown-divider>
-                      <b-dropdown-item
-                        @click="exportUnique(child.rawField || child.exp, 0)">
-                        Export Unique {{ child.friendlyName }}
-                      </b-dropdown-item>
-                      <b-dropdown-item
-                        @click="exportUnique(child.rawField || child.exp, 1)">
-                        Export Unique {{ child.friendlyName }} with counts
-                      </b-dropdown-item>
-                      <template v-if="child.portField">
-                        <b-dropdown-item
-                          @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 0)">
-                          Export Unique {{ child.friendlyName }}:Ports
-                        </b-dropdown-item>
-                        <b-dropdown-item
-                          @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 1)">
-                          Export Unique {{ child.friendlyName }}:Ports with counts
-                        </b-dropdown-item>
-                      </template>
-                      <b-dropdown-item
-                        @click="openSpiGraph(child.dbField)">
-                        Open {{ child.friendlyName }} in SPI Graph
-                      </b-dropdown-item>
-                      <b-dropdown-item
-                        @click="fieldExists(child.exp, '==')">
-                        Add {{ child.friendlyName }} EXISTS! to query
-                      </b-dropdown-item>
-                      <b-dropdown-item
-                        @click="pivot(child.dbField, child.exp)">
-                        Pivot on {{ child.friendlyName }}
-                      </b-dropdown-item>
-                    </template>
-                  </span>
-                </template> <!-- /multiple field column -->
-              </b-dropdown> <!-- /column dropdown menu -->
-              <!-- sortable column -->
-              <span v-if="(header.exp || header.sortBy) && !header.unsortable"
-                @mousedown="mouseDown"
-                @mouseup="mouseUp"
-                @click="sortBy($event, header.sortBy || header.dbField)"
-                class="cursor-pointer">
-                <div class="header-sort">
-                  <span v-if="isSorted(header.sortBy || header.dbField) < 0"
-                    class="fa fa-sort text-muted-more">
-                  </span>
-                  <span v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'asc'"
-                    class="fa fa-sort-asc">
-                  </span>
-                  <span v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'desc'"
-                    class="fa fa-sort-desc">
-                  </span>
-                </div>
-                <div class="header-text">
+            <template v-if="headers && headers.length">
+              <th v-for="header of headers"
+                :key="header.dbField"
+                class="moloch-col-header"
+                :style="{'width': header.width + 'px'}"
+                :class="{'active':isSorted(header.sortBy || header.dbField) >= 0, 'info-col-header': header.dbField === 'info'}">
+                <!-- non-sortable column -->
+                <span v-if="header.dbField === 'info'"
+                  class="cursor-pointer">
                   {{ header.friendlyName }}
-                </div>
-              </span> <!-- /sortable column -->
-            </th> <!-- /table headers -->
-            <button type="button"
-              v-if="showFitButton && !loading"
-              class="btn btn-xs btn-theme-quaternary fit-btn"
-              @click="fitTable"
-              v-b-tooltip.hover
-              title="Fit the table to the current window size">
-              <span class="fa fa-arrows-h">
-              </span>
-            </button>
+                  <!-- info field visibility button -->
+                  <b-dropdown
+                    size="sm"
+                    no-flip
+                    no-caret
+                    right
+                    class="col-vis-menu info-vis-menu pull-right"
+                    variant="theme-primary"
+                    @show="infoFieldVisMenuOpen = true"
+                    @hide="infoFieldVisMenuOpen = false">
+                    <template slot="button-content">
+                      <span class="fa fa-th-list"
+                        v-b-tooltip.hover
+                        title="Toggle visible fields">
+                      </span>
+                    </template>
+                    <b-dropdown-header>
+                      <input type="text"
+                        v-model="colQuery"
+                        class="form-control form-control-sm dropdown-typeahead"
+                        placeholder="Search for fields..."
+                      />
+                    </b-dropdown-header>
+                    <b-dropdown-divider>
+                    </b-dropdown-divider>
+                    <template>
+                      <b-dropdown-item
+                        id="infodefault"
+                        @click.stop.prevent="resetInfoVisibility">
+                        Moloch Default
+                      </b-dropdown-item>
+                      <b-tooltip target="infodefault"
+                        placement="left"
+                        boundary="window">
+                        Reset info column to default fields
+                      </b-tooltip>
+                    </template>
+                    <b-dropdown-divider>
+                    </b-dropdown-divider>
+                    <template v-if="infoFieldVisMenuOpen">
+                      <template v-for="(group, key) in filteredInfoFields">
+                        <b-dropdown-header
+                          :key="key"
+                          v-if="group.length"
+                          class="group-header">
+                          {{ key }}
+                        </b-dropdown-header>
+                        <template v-for="(field, k) in group">
+                          <b-dropdown-item
+                            :id="key + k + 'infoitem'"
+                            :key="key + k + 'infoitem'"
+                            :class="{'active':isInfoVisible(field.dbField) >= 0}"
+                            @click.stop.prevent="toggleInfoVis(field.dbField)">
+                            {{ field.friendlyName }}
+                            <small>({{ field.exp }})</small>
+                          </b-dropdown-item>
+                          <b-tooltip v-if="field.help"
+                            :key="key + k + 'infotooltip'"
+                            :target="key + k + 'infoitem'"
+                            placement="left"
+                            boundary="window">
+                            {{ field.help }}
+                          </b-tooltip>
+                        </template>
+                      </template>
+                    </template>
+                  </b-dropdown> <!-- /info field visibility button -->
+                </span> <!-- /non-sortable column -->
+                <!-- column dropdown menu -->
+                <b-dropdown
+                  right
+                  no-flip
+                  size="sm"
+                  class="pull-right">
+                  <b-dropdown-item
+                    @click="toggleColVis(header.dbField, header.sortBy)">
+                    Hide Column
+                  </b-dropdown-item>
+                  <!-- single field column -->
+                  <template v-if="!header.children && header.type !== 'seconds'">
+                    <b-dropdown-divider>
+                    </b-dropdown-divider>
+                    <b-dropdown-item
+                      @click="exportUnique(header.rawField || header.exp, 0)">
+                      Export Unique {{ header.friendlyName }}
+                    </b-dropdown-item>
+                    <b-dropdown-item
+                      @click="exportUnique(header.rawField || header.exp, 1)">
+                      Export Unique {{ header.friendlyName }} with counts
+                    </b-dropdown-item>
+                    <template v-if="header.portField">
+                      <b-dropdown-item
+                        @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 0)">
+                        Export Unique {{ header.friendlyName }}:Ports
+                      </b-dropdown-item>
+                      <b-dropdown-item
+                        @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 1)">
+                        Export Unique {{ header.friendlyName }}:Ports with counts
+                      </b-dropdown-item>
+                    </template>
+                    <b-dropdown-item
+                      @click="openSpiGraph(header.dbField)">
+                      Open {{ header.friendlyName }} in SPI Graph
+                    </b-dropdown-item>
+                    <b-dropdown-item
+                      @click="fieldExists(header.exp, '==')">
+                      Add {{ header.friendlyName }} EXISTS! to query
+                    </b-dropdown-item>
+                    <b-dropdown-item
+                      @click="pivot(header.dbField, header.exp)">
+                      Pivot on {{ header.friendlyName }}
+                    </b-dropdown-item>
+                  </template> <!-- /single field column -->
+                  <!-- multiple field column -->
+                  <template v-else-if="header.children && header.type !== 'seconds'">
+                    <span v-for="(child, key) in header.children"
+                      :key="`child${key}`">
+                      <template v-if="child">
+                        <b-dropdown-divider>
+                        </b-dropdown-divider>
+                        <b-dropdown-item
+                          @click="exportUnique(child.rawField || child.exp, 0)">
+                          Export Unique {{ child.friendlyName }}
+                        </b-dropdown-item>
+                        <b-dropdown-item
+                          @click="exportUnique(child.rawField || child.exp, 1)">
+                          Export Unique {{ child.friendlyName }} with counts
+                        </b-dropdown-item>
+                        <template v-if="child.portField">
+                          <b-dropdown-item
+                            @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 0)">
+                            Export Unique {{ child.friendlyName }}:Ports
+                          </b-dropdown-item>
+                          <b-dropdown-item
+                            @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 1)">
+                            Export Unique {{ child.friendlyName }}:Ports with counts
+                          </b-dropdown-item>
+                        </template>
+                        <b-dropdown-item
+                          @click="openSpiGraph(child.dbField)">
+                          Open {{ child.friendlyName }} in SPI Graph
+                        </b-dropdown-item>
+                        <b-dropdown-item
+                          @click="fieldExists(child.exp, '==')">
+                          Add {{ child.friendlyName }} EXISTS! to query
+                        </b-dropdown-item>
+                        <b-dropdown-item
+                          @click="pivot(child.dbField, child.exp)">
+                          Pivot on {{ child.friendlyName }}
+                        </b-dropdown-item>
+                      </template>
+                    </span>
+                  </template> <!-- /multiple field column -->
+                </b-dropdown> <!-- /column dropdown menu -->
+                <!-- sortable column -->
+                <span v-if="(header.exp || header.sortBy) && !header.unsortable"
+                  @mousedown="mouseDown"
+                  @mouseup="mouseUp"
+                  @click="sortBy($event, header.sortBy || header.dbField)"
+                  class="cursor-pointer">
+                  <div class="header-sort">
+                    <span v-if="isSorted(header.sortBy || header.dbField) < 0"
+                      class="fa fa-sort text-muted-more">
+                    </span>
+                    <span v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'asc'"
+                      class="fa fa-sort-asc">
+                    </span>
+                    <span v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'desc'"
+                      class="fa fa-sort-desc">
+                    </span>
+                  </div>
+                  <div class="header-text">
+                    {{ header.friendlyName }}
+                  </div>
+                </span> <!-- /sortable column -->
+              </th> <!-- /table headers -->
+              <button type="button"
+                v-if="showFitButton && !loading"
+                class="btn btn-xs btn-theme-quaternary fit-btn"
+                @click="fitTable"
+                v-b-tooltip.hover
+                title="Fit the table to the current window size">
+                <span class="fa fa-arrows-h">
+                </span>
+              </button>
+            </template>
           </tr>
         </thead>
         <tbody class="small">

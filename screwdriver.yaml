@@ -19,7 +19,7 @@ shared:
 jobs:
     centos-6:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-6:2.1.0
+        image: andywick/moloch-build-6:2.2.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -42,7 +42,7 @@ jobs:
 
     centos-7:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-7:2.1.0
+        image: andywick/moloch-build-7:2.2.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -65,7 +65,7 @@ jobs:
 
     centos-8:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-8:2.1.0-1
+        image: andywick/moloch-build-8:2.2.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -111,7 +111,7 @@ jobs:
 
     ubuntu-16:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-16:2.1.0
+        image: andywick/moloch-build-16:2.2.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -122,7 +122,7 @@ jobs:
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - linting: (cd viewer ; npm run lint)
             - install-for-tests: (cd wiseService; npm ci --production)
-            - run-es: (chown -R elasticsearch /elasticsearch-6.7.0; cd /elasticsearch-6.7.0 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
+            - run-es: (chown -R elasticsearch /elasticsearch-7.5.1; cd /elasticsearch-7.5.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - test-capture: (cd tests ; ./tests.pl)
             - sleep 30
             - cat /tmp/es
@@ -140,7 +140,7 @@ jobs:
 
     ubuntu-18:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-18:2.1.0
+        image: andywick/moloch-build-18:2.2.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
@@ -164,7 +164,7 @@ jobs:
 
     centos-7-sanitize:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-7:2.1.0
+        image: andywick/moloch-build-7:2.2.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -177,7 +177,7 @@ jobs:
             - installing: make install
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - linting: (cd viewer ; npm run lint)
-            - run-es: (chown -R elasticsearch /elasticsearch-6.7.0; cd /elasticsearch-6.7.0 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
+            - run-es: (chown -R elasticsearch /elasticsearch-7.5.1; cd /elasticsearch-7.5.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - install-for-tests: (cd wiseService; npm ci --production)
             - sleep 30
             - cat /tmp/es
@@ -195,7 +195,7 @@ jobs:
 
     ubuntu-16-sanitize:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-16:2.1.0
+        image: andywick/moloch-build-16:2.2.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -207,7 +207,7 @@ jobs:
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - linting: (cd viewer ; npm run lint)
             - install-for-tests: (cd wiseService; npm ci --production)
-            - run-es: (chown -R elasticsearch /elasticsearch-6.7.0; cd /elasticsearch-6.7.0 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
+            - run-es: (chown -R elasticsearch /elasticsearch-7.5.1; cd /elasticsearch-7.5.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - test-capture: (cd tests ; ./tests.pl)
             - sleep 30
             - cat /tmp/es
@@ -231,7 +231,7 @@ jobs:
             beta.screwdriver.cd/ram: LOW
         steps:
             - slack-success: |
-                export MOLOCH_VERSION=`grep PACKAGE_VERSION= configure | sed "s/.*'\(.*\)'.*$/\1/"`
+                export MOLOCH_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/"`
                 echo MOLOCH_VERSION: $MOLOCH_VERSION
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
                   MSG=`git log -1 --format=%s`
@@ -242,7 +242,7 @@ jobs:
             - SLACK
 
     release-build:
-        image: andywick/moloch-build-6:2.1.0
+        image: andywick/moloch-build-6:2.2.0-1
         requires: []
         annotations:
             beta.screwdriver.cd/cpu: LOW
@@ -252,7 +252,7 @@ jobs:
 
     release-centos-6:
         requires: [release-build]
-        image: andywick/moloch-build-6:2.1.0
+        image: andywick/moloch-build-6:2.2.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -273,7 +273,7 @@ jobs:
 
     release-centos-7:
         requires: [release-build]
-        image: andywick/moloch-build-7:2.1.0
+        image: andywick/moloch-build-7:2.2.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -294,7 +294,7 @@ jobs:
 
     release-centos-8:
         requires: [release-build]
-        image: andywick/moloch-build-8:2.1.0-1
+        image: andywick/moloch-build-8:2.2.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -337,7 +337,7 @@ jobs:
 
     release-ubuntu-16:
         requires: [release-build]
-        image: andywick/moloch-build-16:2.1.0
+        image: andywick/moloch-build-16:2.2.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -358,7 +358,7 @@ jobs:
 
     release-ubuntu-18:
         requires: [release-build]
-        image: andywick/moloch-build-18:2.1.0
+        image: andywick/moloch-build-18:2.2.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .

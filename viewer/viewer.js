@@ -8023,7 +8023,7 @@ function sendSessionWorker(options, cb) {
     }
     session.id = options.id;
     session.packetPos = ps;
-    delete session.fs;
+    delete session.fileId;
 
     if (options.tags) {
       tags = options.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
@@ -8339,7 +8339,7 @@ app.post('/receiveSession', [noCacheJson], function receiveSession(req, res) {
         makeFilename(function (filename) {
           req.resume();
           session.packetPos[0] = - saveId.seq;
-          session.fs = [saveId.seq];
+          session.fileId       = [saveId.seq];
 
           if (saveId.start === 0) {
             file = fs.createWriteStream(filename, {flags: "w"});
@@ -8488,9 +8488,13 @@ app.get('/cyberchef/:nodeName/session/:id', checkPermissions(['webEnabled']), ch
   });
 });
 
-app.use('/cyberchef/', unsafeInlineCspHeader, (req, res) => {
+app.use(['/cyberchef/', '/modules/'], unsafeInlineCspHeader, (req, res) => {
   let found = false;
   let path = req.path.substring(1);
+  if (req.baseUrl === '/modules') {
+    res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
+    path = 'modules/' + path;
+  }
   if (path === '') {
     path = `CyberChef_v${internals.CYBERCHEFVERSION}.html`;
   }

@@ -27,7 +27,7 @@
       </div>
     </div> <!-- /segments select input -->
 
-    <div class="col-md-7">
+    <div class="col-md-5">
 
       <!-- tags input -->
       <div class="input-group input-group-sm">
@@ -42,23 +42,6 @@
           class="form-control"
           placeholder="Enter a comma separated list of tags"
         />
-        <div class="input-group-append">
-          <button class="btn btn-theme-tertiary"
-            @click="send"
-            :class="{'disabled':loading}"
-            type="button">
-            <span v-if="!loading">
-              <span class="fa fa-paper-plane-o">
-              </span>&nbsp;
-              Send Session(s)
-            </span>
-            <span v-else>
-              <span class="fa fa-spinner fa-spin">
-              </span>&nbsp;
-              Sending Session(s)
-            </span>
-          </button>
-        </div>
       </div> <!-- /tags input -->
 
       <!-- error -->
@@ -71,17 +54,34 @@
 
     </div>
 
-    <!-- cancel button -->
-    <div class="col-md-1">
-      <button class="btn btn-sm btn-warning pull-right"
-        v-b-tooltip.hover
-        title="cancel"
-        @click="done(null)"
-        type="button">
-        <span class="fa fa-ban">
-        </span>
-      </button>
-    </div> <!-- /cancel button -->
+    <!-- buttons -->
+    <div class="col-md-3">
+      <div class="pull-right">
+        <button class="btn btn-sm btn-theme-tertiary"
+          @click="send"
+          :class="{'disabled':loading}"
+          type="button">
+          <span v-if="!loading">
+            <span class="fa fa-paper-plane-o">
+            </span>&nbsp;
+            Send Session(s)
+          </span>
+          <span v-else>
+            <span class="fa fa-spinner fa-spin">
+            </span>&nbsp;
+            Sending Session(s)
+          </span>
+        </button>
+        <button class="btn btn-sm btn-warning"
+          v-b-tooltip.hover
+          title="cancel"
+          @click="done(null)"
+          type="button">
+          <span class="fa fa-ban">
+          </span>
+        </button>
+      </div>
+    </div> <!-- /buttons -->
 
     <!-- info -->
     <div class="col-md-12">
