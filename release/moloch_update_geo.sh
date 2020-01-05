@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Variables
-DEST_DIR="${MOLOCH_DIR:-/data/moloch}/etc"
+DEST_DIR="${MOLOCH_DIR:-BUILD_MOLOCH_INSTALL_DIR}/etc"
 TIMEOUT=${WGET_TIMEOUT:-30}
 
 # Work on temp dir to not affect current working files
