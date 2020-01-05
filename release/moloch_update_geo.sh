@@ -13,7 +13,7 @@ then
   cp ipv4-address-space.csv "${DEST_DIR}"
 fi
 
-wget -N -nv --timeout=${TIMEOUT} -O GeoLite2-Country.mmdb.gz 'https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-Country'
+wget -N -nv --timeout=${TIMEOUT} -O GeoLite2-Country.mmdb.gz "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key=$1&suffix=tar.gz"
 if (( $? == 0 ))
 then
   /bin/rm -f "${DEST_DIR}/GeoLite2-Country.mmdb"
@@ -21,7 +21,7 @@ then
 fi
 
 
-wget -N -nv --timeout=${TIMEOUT} -O GeoLite2-ASN.mmdb.gz 'https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-ASN'
+wget -N -nv --timeout=${TIMEOUT} -O GeoLite2-ASN.mmdb.gz "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN&license_key=$1&suffix=tar.gz"
 if (( $? == 0 ))
 then
   /bin/rm -f "${DEST_DIR}/GeoLite2-ASN.mmdb"
