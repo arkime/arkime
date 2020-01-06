@@ -29,8 +29,8 @@
 #include "patricia.h"
 
 #include "maxminddb.h"
-MMDB_s                  *geoCountry;
-MMDB_s                  *geoASN;
+LOCAL MMDB_s           *geoCountry;
+LOCAL MMDB_s           *geoASN;
 
 #define MOLOCH_MIN_DB_VERSION 50
 
@@ -222,7 +222,7 @@ void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char 
 
 
     int error = 0;
-    if (!*g) {
+    if (!*g && geoCountry) {
         MMDB_lookup_result_s result = MMDB_lookup_sockaddr(geoCountry, sa, &error);
         if (error == MMDB_SUCCESS && result.found_entry) {
             MMDB_entry_data_s entry_data;
@@ -235,7 +235,7 @@ void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char 
         }
     }
 
-    if (!*as) {
+    if (!*as && geoASN) {
         MMDB_lookup_result_s result = MMDB_lookup_sockaddr(geoASN, sa, &error);
         if (error == MMDB_SUCCESS && result.found_entry) {
             MMDB_entry_data_s org;
@@ -2337,8 +2337,10 @@ void moloch_db_init()
 
     moloch_add_can_quit(moloch_db_can_quit, "DB");
 
-    moloch_config_monitor_file("country file", config.geoLite2Country, moloch_db_load_geo_country);
-    moloch_config_monitor_file("asn file", config.geoLite2ASN, moloch_db_load_geo_asn);
+    if (config.geoLite2Country && config.geoLite2Country[0])
+        moloch_config_monitor_file("country file", config.geoLite2Country, moloch_db_load_geo_country);
+    if (config.geoLite2ASN && config.geoLite2ASN[0])
+        moloch_config_monitor_file("asn file", config.geoLite2ASN, moloch_db_load_geo_asn);
     if (config.ouiFile)
         moloch_config_monitor_file("oui file", config.ouiFile, moloch_db_load_oui);
     if (config.rirFile)
