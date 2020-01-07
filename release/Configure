@@ -107,12 +107,6 @@ while [ -z "$MOLOCH_PASSWORD" ]; do
 done
 if [ -z "$MOLOCH_PASSWORD" ]; then echo "Must provide a password"; exit; fi
 
-while [ -z "$MOLOCH_MAXMIND_LICENSE_KEY" ]; do
-    echo -n "MaxMind GeoIP license key [no-default] "
-    read -r MOLOCH_MAXMIND_LICENSE_KEY
-done
-if [ -z "$MOLOCH_MAXMIND_LICENSE_KEY" ]; then echo "Must provide a license key"; exit; fi
-
 
 ################################################################################
 echo "Moloch - Creating configuration files"
@@ -207,6 +201,12 @@ until [ "$MOLOCH_INET" == "yes" ] || [ "$MOLOCH_INET" == "no" ] || [ "$MOLOCH_IN
 done
 
 if [ "$MOLOCH_INET" != "no" ]; then
+    while [ -z "$MOLOCH_MAXMIND_LICENSE_KEY" ]; do
+        echo -n "MaxMind GeoIP license key [no-default] "
+        read -r MOLOCH_MAXMIND_LICENSE_KEY
+    done
+    if [ -z "$MOLOCH_MAXMIND_LICENSE_KEY" ]; then echo "Must provide a license key"; exit; fi
+
     echo "Moloch - Downloading GEO files"
     $MOLOCH_INSTALL_DIR/bin/moloch_update_geo.sh $MOLOCH_MAXMIND_LICENSE_KEY > /dev/null
 else
