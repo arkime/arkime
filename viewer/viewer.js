@@ -3584,6 +3584,18 @@ app.post('/esindices/:index/shrink', [noCacheJson, logAction(), checkCookieToken
               if (err) {
                 console.log(`ERROR - ${req.params.index} shrink failed`, err);
               }
+              Db.indices((err, indexResult) => {
+                if (err) {
+                  console.log(`Error fetching ${req.params.index} and ${req.params.index}-shrink indices after shrinking`);
+                } else if (indexResult[0] && indexResult[1] &&
+                  indexResult[0]['docs.count'] === indexResult[1]['docs.count']) {
+                  Db.deleteIndex([req.params.index], {}, (err, result) => {
+                    if (err) {
+                      console.log(`Error deleting ${req.params.index} index after shrinking`);
+                    }
+                  });
+                }
+              }, `${req.params.index}-shrink,${req.params.index}`);
             });
           }
         });
