@@ -365,6 +365,16 @@ void moloch_config_load_includes(char **includes)
     }
 }
 /******************************************************************************/
+void moloch_config_load_geoip(GKeyFile *keyfile)
+{
+    char        *geoLite2ASN = "/data/moloch/etc/GeoLite2-ASN.mmdb";
+    char        *geoLite2Country =  "/data/moloch/etc/GeoLite2-Country.mmdb";
+    struct stat sb; 
+
+    config.geoLite2ASN      = moloch_config_str(keyfile, "geoLite2ASN", stat(geoLite2ASN, &sb)?"": geoLite2ASN);
+    config.geoLite2Country  = moloch_config_str(keyfile, "geoLite2Country", stat(geoLite2Country, &sb)?"": geoLite2Country);
+}
+/******************************************************************************//******************************************************************************/
 void moloch_config_load()
 {
 
@@ -472,14 +482,14 @@ void moloch_config_load()
     config.emailYara        = moloch_config_str(keyfile, "emailYara", NULL);
     config.rirFile          = moloch_config_str(keyfile, "rirFile", NULL);
     config.ouiFile          = moloch_config_str(keyfile, "ouiFile", NULL);
-    config.geoLite2ASN      = moloch_config_str(keyfile, "geoLite2ASN", "/data/moloch/etc/GeoLite2-ASN.mmdb");
-    config.geoLite2Country  = moloch_config_str(keyfile, "geoLite2Country", "/data/moloch/etc/GeoLite2-Country.mmdb");
     config.dropUser         = moloch_config_str(keyfile, "dropUser", NULL);
     config.dropGroup        = moloch_config_str(keyfile, "dropGroup", NULL);
     config.pluginsDir       = moloch_config_str_list(keyfile, "pluginsDir", NULL);
     config.parsersDir       = moloch_config_str_list(keyfile, "parsersDir", " /data/moloch/parsers ; ./parsers ");
     config.caTrustFile      = moloch_config_str(keyfile, "caTrustFile", NULL);
     char *offlineRegex      = moloch_config_str(keyfile, "offlineFilenameRegex", "(?i)\\.(pcap|cap)$");
+
+    moloch_config_load_geoip(keyfile);
 
     config.offlineRegex     = g_regex_new(offlineRegex, 0, 0, &error);
     if (!config.offlineRegex || error) {
