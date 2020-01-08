@@ -3555,19 +3555,11 @@ app.post('/esindices/:index/shrink', [noCacheJson, logAction(), checkCookieToken
     }
   };
 
-  Promise.all([
-    Db.indices(null, req.params.index),
-    Db.setIndexSettings(req.params.index, settingsParams)
-  ]).then(([indexInfo, indexSettingsResult]) => {
-    let docsCount;
-    if (indexInfo && indexInfo[0] && indexInfo[0]['docs.count']) {
-      docsCount = indexInfo[0]['docs.count'];
-    }
-
-    if (indexSettingsResult.err) {
+  Db.setIndexSettings(req.params.index, settingsParams, (err, results) => {
+    if (err) {
       return res.send(JSON.stringify({
         success: false,
-        text: indexSettingsResult.err.message || 'Error shrinking index'
+        text: err.message || 'Error shrinking index'
       }));
     }
 
@@ -3593,14 +3585,17 @@ app.post('/esindices/:index/shrink', [noCacheJson, logAction(), checkCookieToken
                 console.log(`ERROR - ${req.params.index} shrink failed`, err);
               }
               Db.indices((err, indexResult) => {
-                if (indexResult[0]['docs.count'] === docsCount) {
+                if (err) {
+                  console.log(`Error fetching ${req.params.index} and ${req.params.index}-shrink indices after shrinking`);
+                } else if (indexResult[0] && indexResult[1] &&
+                  indexResult[0]['docs.count'] === indexResult[1]['docs.count']) {
                   Db.deleteIndex([req.params.index], {}, (err, result) => {
                     if (err) {
                       console.log(`Error deleting ${req.params.index} index after shrinking`);
                     }
                   });
                 }
-              }, req.params.index);
+              }, `${req.params.index}-shrink,${req.params.index}`);
             });
           }
         });
