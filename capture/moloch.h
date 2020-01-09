@@ -390,8 +390,8 @@ typedef struct moloch_config {
     char     *yara;
     char     *emailYara;
     char     *caTrustFile;
-    char     *geoLite2ASN;
-    char     *geoLite2Country;
+    char    **geoLite2ASN;
+    char    **geoLite2Country;
     char     *rirFile;
     char     *ouiFile;
     char     *dropUser;

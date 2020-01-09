@@ -2337,10 +2337,30 @@ void moloch_db_init()
 
     moloch_add_can_quit(moloch_db_can_quit, "DB");
 
-    if (config.geoLite2Country && config.geoLite2Country[0])
-        moloch_config_monitor_file("country file", config.geoLite2Country, moloch_db_load_geo_country);
-    if (config.geoLite2ASN && config.geoLite2ASN[0])
-        moloch_config_monitor_file("asn file", config.geoLite2ASN, moloch_db_load_geo_asn);
+    // Find the first geo file that exists in our list and use that one.
+    // If none could be loaded, and setting not blank, print out warning
+    struct stat     sb;
+    int             i;
+    if (config.geoLite2Country && config.geoLite2Country[0]) {
+        for (i = 0; config.geoLite2Country[i]; i++) {
+            if (stat(config.geoLite2Country[i], &sb) == 0) {
+                moloch_config_monitor_file("country file", config.geoLite2Country[i], moloch_db_load_geo_country);
+            }
+        }
+        if (!config.geoLite2Country[i]) {
+            LOG("WARNING - No Geo Country file could be loaded, see https://molo.ch/settings#geolite2country");
+        }
+    }
+    if (config.geoLite2ASN && config.geoLite2ASN[0]) {
+        for (i = 0; config.geoLite2ASN[i]; i++) {
+            if (stat(config.geoLite2ASN[i], &sb) == 0) {
+                moloch_config_monitor_file("asn file", config.geoLite2ASN[i], moloch_db_load_geo_asn);
+            }
+        }
+        if (!config.geoLite2ASN[i]) {
+            LOG("WARNING - No Geo ASN file could be loaded, see https://molo.ch/settings#geolite2asn");
+        }
+    }
     if (config.ouiFile)
         moloch_config_monitor_file("oui file", config.ouiFile, moloch_db_load_oui);
     if (config.rirFile)

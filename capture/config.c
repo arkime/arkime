@@ -472,8 +472,8 @@ void moloch_config_load()
     config.emailYara        = moloch_config_str(keyfile, "emailYara", NULL);
     config.rirFile          = moloch_config_str(keyfile, "rirFile", NULL);
     config.ouiFile          = moloch_config_str(keyfile, "ouiFile", NULL);
-    config.geoLite2ASN      = moloch_config_str(keyfile, "geoLite2ASN", "/data/moloch/etc/GeoLite2-ASN.mmdb");
-    config.geoLite2Country  = moloch_config_str(keyfile, "geoLite2Country", "/data/moloch/etc/GeoLite2-Country.mmdb");
+    config.geoLite2ASN      = moloch_config_str_list(keyfile, "geoLite2ASN", "/usr/share/GeoIP/GeoLite2-ASN.mmdb;/data/moloch/etc/GeoLite2-ASN.mmdb");
+    config.geoLite2Country  = moloch_config_str_list(keyfile, "geoLite2Country", "/usr/share/GeoIP/GeoLite2-Country.mmdb;/data/moloch/etc/GeoLite2-Country.mmdb");
     config.dropUser         = moloch_config_str(keyfile, "dropUser", NULL);
     config.dropGroup        = moloch_config_str(keyfile, "dropGroup", NULL);
     config.pluginsDir       = moloch_config_str_list(keyfile, "pluginsDir", NULL);
