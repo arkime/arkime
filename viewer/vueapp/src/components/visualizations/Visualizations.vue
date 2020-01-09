@@ -125,6 +125,29 @@
             <span class="fa fa-chevron-left">
             </span>
           </label>
+          <b-dropdown size="sm"
+            boundary="body"
+            variant="default"
+            class="pan-dropdown">
+            <template slot="button-content">
+              {{ plotPan * 100 + '%' }}
+            </template>
+            <b-dropdown-item @click="plotPanChange(0.05)">
+              5%
+            </b-dropdown-item>
+            <b-dropdown-item @click="plotPanChange(0.1)">
+              10%
+            </b-dropdown-item>
+            <b-dropdown-item @click="plotPanChange(0.2)">
+              20%
+            </b-dropdown-item>
+            <b-dropdown-item @click="plotPanChange(0.5)">
+              50%
+            </b-dropdown-item>
+            <b-dropdown-item @click="plotPanChange(1)">
+              100%
+            </b-dropdown-item>
+          </b-dropdown>
           <label class="btn btn-default"
             @click="panRight"
             v-b-tooltip.hover
@@ -241,6 +264,8 @@ export default {
       // graph vars
       plot: undefined,
       plotArea: undefined,
+      plotWidth: undefined,
+      plotPan: 0.1,
       graph: undefined,
       graphOptions: {},
       showMap: undefined
@@ -459,12 +484,17 @@ export default {
       this.debounce(this.updateResults, this.plot, 400);
     },
     panLeft: function () {
-      this.plot.pan({left: -100});
+      const panValue = Math.floor(this.plotWidth * this.plotPan) * -1;
+      this.plot.pan({ left: panValue });
       this.debounce(this.updateResults, this.plot, 400);
     },
     panRight: function () {
-      this.plot.pan({left: 100});
+      const panValue = Math.floor(this.plotWidth * this.plotPan);
+      this.plot.pan({ left: panValue });
       this.debounce(this.updateResults, this.plot, 400);
+    },
+    plotPanChange: function (value) {
+      this.plotPan = value;
     },
     /* helper functions ---------------------------------------------------- */
     debounce: function (func, funcParam, ms) {
@@ -502,6 +532,12 @@ export default {
     setupGraphElement: function () {
       this.plotArea = $('#plotArea' + this.id);
       this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
+
+      setTimeout(() => { // wait for plot to render
+        // account for size of the y axis labels
+        const yAxisLabelSize = $(this.plotArea.find('.yAxis > .tickLabel')).width() * 2;
+        this.plotWidth = this.plotArea.find('canvas')[0].width - yAxisLabelSize;
+      }, 1000);
 
       // triggered when an area of the graph is selected
       $(this.plotArea).on('plotselected', (event, ranges) => {
@@ -894,6 +930,13 @@ export default {
 /* make graph labels smaller */
 .tickLabels .tickLabel {
   font-size: smaller;
+}
+
+/* position the pan dropdown between the pan buttons */
+.pan-dropdown > button {
+  height: 22px;
+  line-height: 1;
+  font-size: small;
 }
 </style>
 
