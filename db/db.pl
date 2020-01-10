@@ -3055,7 +3055,7 @@ showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] 
 parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean)$/);
 parseArgs(3) if ($ARGV[1] =~ /^(restore)$/);
 
-$ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean|shrink)$/);
+$ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean|shrink|ilm)$/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => $ESTIMEOUT + 5, keep_alive => 5);
 if ($CLIENTCERT ne "") {
@@ -3333,6 +3333,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     $main::userAgent->timeout(7200);
     esPost("/_flush/synced", "", 1);
     optimizeOther();
+    esForceMerge("${PREFIX}history_*", 1);
     exit 0;
 } elsif ($ARGV[1] =~ /^(disable-?users)$/) {
     showHelp("Invalid number of <days>") if (!defined $ARGV[2] || $ARGV[2] !~ /^[+-]?\d+$/);
@@ -3711,8 +3712,10 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     $REPLICAS = 0 if ($REPLICAS == -1);
     $HISTORY = $HISTORY * 7;
 
-    print "Creating ilm policy '${PREFIX}molochsessions' with: forceTime: $forceTime deleteTime: $deleteTime segments: $SEGMENTS replicas: $REPLICAS history: ${HISTORY}d\n";
-    print "You will need to run update with --ilm to update the sessions template\n";
+    print "Creating sessions ilm policy '${PREFIX}molochsessions' with: forceTime: $forceTime deleteTime: $deleteTime segments: $SEGMENTS replicas: $REPLICAS\n";
+    print "Creating history ilm policy '${PREFIX}molochhistory' with: deleteTime ${HISTORY}d\n";
+    print "You will need to run update with --ilm to update the templates the first time you turn ilm on.\n";
+    sleep 2;
     my $policy;
     if ($DOHOTWARM) {
         $policy =
