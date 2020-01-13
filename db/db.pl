@@ -183,6 +183,7 @@ sub showHelp($)
     print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
+    print "    --history <num>            - Number of weeks of history to keep, default 13\n";
     print "\n";
     print "Backup and Restore Commands:\n";
     print "  backup <basename> <opts>     - Backup everything but sessions; filenames created start with <basename>\n";
@@ -2310,26 +2311,35 @@ sub historyUpdate
   }
 }';
 
- my $template = '
+my $settings = '';
+if ($DOILM) {
+  $settings .= qq/"lifecycle.name": "${PREFIX}molochhistory",
+/;
+}
+
+ my $template = qq/
 {
-  "index_patterns": "' . $PREFIX . 'history_v1-*",
+  "index_patterns": "${PREFIX}history_v1-*",
   "settings": {
+      ${settings}
       "number_of_shards": 1,
       "number_of_replicas": 0,
       "auto_expand_replicas": "0-1"
     },
-  "mappings":' . $mapping . '
-}';
+  "mappings": ${mapping}
+}/;
 
 logmsg "Creating history template\n" if ($verbose > 0);
 esPut("/_template/${PREFIX}history_v1_template?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $template);
 
 my $indices = esGet("/${PREFIX}history_v1-*/_alias", 1);
 
-logmsg "Updating history mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
-foreach my $i (keys %{$indices}) {
-    progress("$i ");
-    esPut("/$i/history/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping, 1);
+if ($UPGRADEALLSESSIONS) {
+    logmsg "Updating history mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
+    foreach my $i (keys %{$indices}) {
+        progress("$i ");
+        esPut("/$i/history/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping, 1);
+    }
 }
 
 logmsg "\n";
@@ -3045,7 +3055,7 @@ showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] 
 parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean)$/);
 parseArgs(3) if ($ARGV[1] =~ /^(restore)$/);
 
-$ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean|shrink)$/);
+$ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean|shrink|ilm)$/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => $ESTIMEOUT + 5, keep_alive => 5);
 if ($CLIENTCERT ne "") {
@@ -3323,6 +3333,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     $main::userAgent->timeout(7200);
     esPost("/_flush/synced", "", 1);
     optimizeOther();
+    esForceMerge("${PREFIX}history_*", 1);
     exit 0;
 } elsif ($ARGV[1] =~ /^(disable-?users)$/) {
     showHelp("Invalid number of <days>") if (!defined $ARGV[2] || $ARGV[2] !~ /^[+-]?\d+$/);
@@ -3699,9 +3710,30 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $deleteTime = $ARGV[3];
     die "delete time must be num followed by h or d" if ($deleteTime !~ /^\d+[hd]/);
     $REPLICAS = 0 if ($REPLICAS == -1);
+    $HISTORY = $HISTORY * 7;
 
-    print "Creating ilm policy '${PREFIX}molochsessions' with: forceTime: $forceTime deleteTime: $deleteTime segments: $SEGMENTS replicas: $REPLICAS\n";
-    print "You will need to run update with --ilm to update the sessions template\n";
+    print "Creating history ilm policy '${PREFIX}molochhistory' with: deleteTime ${HISTORY}d\n";
+    print "Creating sessions ilm policy '${PREFIX}molochsessions' with: forceTime: $forceTime deleteTime: $deleteTime segments: $SEGMENTS replicas: $REPLICAS\n";
+    print "You will need to run db.pl upgrade with --ilm to update the templates the first time you turn ilm on.\n";
+    sleep 5;
+    my $hpolicy =
+qq/ {
+  "policy": {
+    "phases": {
+      "delete": {
+        "min_age": "${HISTORY}d",
+        "actions": {
+          "delete": {}
+        }
+      }
+    }
+  }
+}/;
+    esPut("/_ilm/policy/${PREFIX}molochhistory?master_timeout=${ESTIMEOUT}s", $hpolicy);
+    esPut("/${PREFIX}history_v*/_settings?master_timeout=${ESTIMEOUT}s", qq/{"settings": {"index.lifecycle.name": "${PREFIX}molochhistory"}}/, 1);
+    print "History Policy:\n$hpolicy\n" if ($verbose > 1);
+    sleep 5;
+
     my $policy;
     if ($DOHOTWARM) {
         $policy =

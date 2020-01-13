@@ -382,10 +382,10 @@ export default {
       if (refreshInterval) { clearInterval(refreshInterval); }
 
       if (this.refresh && this.refresh > 0) {
-        this.cancelAndLoad(true);
+        this.$store.commit('setIssueSearch', true);
         refreshInterval = setInterval(() => {
           if (respondedAt && Date.now() - respondedAt >= parseInt(this.refresh * 1000)) {
-            this.cancelAndLoad(true);
+            this.$store.commit('setIssueSearch', true);
           }
         }, 500);
       }

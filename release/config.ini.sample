@@ -116,13 +116,10 @@ viewPort = 8005
 # By default the viewer process is https://hostname:<viewPort> for each node.
 #viewUrl = https://HOSTNAME:8005
 
-# Path of the maxmind geoip country file.  Download free version from:
-#  https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-Country
-geoLite2Country = MOLOCH_INSTALL_DIR/etc/GeoLite2-Country.mmdb
-
-# Path of the maxmind geoip ASN file.  Download free version from:
-#  https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-ASN
-geoLite2ASN = MOLOCH_INSTALL_DIR/etc/GeoLite2-ASN.mmdb
+# NOTE: A MaxMind account is now required, we will try and use the old files or new files on the system. See
+# https://molo.ch/faq#maxmind
+geoLite2Country = /usr/share/GeoIP/GeoLite2-Country.mmdb;MOLOCH_INSTALL_DIR/etc/GeoLite2-Country.mmdb
+geoLite2ASN = /usr/share/GeoIP/GeoLite2-ASN.mmdb;MOLOCH_INSTALL_DIR/etc/GeoLite2-ASN.mmdb
 
 # Path of the rir assignments file
 #  https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv

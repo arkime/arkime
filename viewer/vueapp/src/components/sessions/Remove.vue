@@ -14,7 +14,7 @@
         />
         <label class="form-check-label"
           for="pcap">
-          Delete PCAP
+          Scrub PCAP
         </label>
       </div>
       <div class="form-check form-check-inline"

@@ -33,7 +33,7 @@ sub doGeo {
     }
 
     if (! -f "GeoLite2-Country.mmdb") {
-        system("https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-Country.mmdb");
+        system("wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-Country.mmdb");
     }
 
     if (! -f "GeoLite2-ASN.mmdb") {

@@ -29,8 +29,8 @@
 #include "patricia.h"
 
 #include "maxminddb.h"
-MMDB_s                  *geoCountry;
-MMDB_s                  *geoASN;
+LOCAL MMDB_s           *geoCountry;
+LOCAL MMDB_s           *geoASN;
 
 #define MOLOCH_MIN_DB_VERSION 50
 
@@ -222,7 +222,7 @@ void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char 
 
 
     int error = 0;
-    if (!*g) {
+    if (!*g && geoCountry) {
         MMDB_lookup_result_s result = MMDB_lookup_sockaddr(geoCountry, sa, &error);
         if (error == MMDB_SUCCESS && result.found_entry) {
             MMDB_entry_data_s entry_data;
@@ -235,7 +235,7 @@ void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char 
         }
     }
 
-    if (!*as) {
+    if (!*as && geoASN) {
         MMDB_lookup_result_s result = MMDB_lookup_sockaddr(geoASN, sa, &error);
         if (error == MMDB_SUCCESS && result.found_entry) {
             MMDB_entry_data_s org;
@@ -2341,8 +2341,30 @@ void moloch_db_init()
 
     moloch_add_can_quit(moloch_db_can_quit, "DB");
 
-    moloch_config_monitor_file("country file", config.geoLite2Country, moloch_db_load_geo_country);
-    moloch_config_monitor_file("asn file", config.geoLite2ASN, moloch_db_load_geo_asn);
+    // Find the first geo file that exists in our list and use that one.
+    // If none could be loaded, and setting not blank, print out warning
+    struct stat     sb;
+    int             i;
+    if (config.geoLite2Country && config.geoLite2Country[0]) {
+        for (i = 0; config.geoLite2Country[i]; i++) {
+            if (stat(config.geoLite2Country[i], &sb) == 0) {
+                moloch_config_monitor_file("country file", config.geoLite2Country[i], moloch_db_load_geo_country);
+            }
+        }
+        if (!config.geoLite2Country[i]) {
+            LOG("WARNING - No Geo Country file could be loaded, see https://molo.ch/settings#geolite2country");
+        }
+    }
+    if (config.geoLite2ASN && config.geoLite2ASN[0]) {
+        for (i = 0; config.geoLite2ASN[i]; i++) {
+            if (stat(config.geoLite2ASN[i], &sb) == 0) {
+                moloch_config_monitor_file("asn file", config.geoLite2ASN[i], moloch_db_load_geo_asn);
+            }
+        }
+        if (!config.geoLite2ASN[i]) {
+            LOG("WARNING - No Geo ASN file could be loaded, see https://molo.ch/settings#geolite2asn");
+        }
+    }
     if (config.ouiFile)
         moloch_config_monitor_file("oui file", config.ouiFile, moloch_db_load_oui);
     if (config.rirFile)
