@@ -17,18 +17,33 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.2.0 2020/01/xx
+2.2.0 2020/01/13
   - NOTE - Elasticsearch 6.7.x is no longer supported
-  - NOTE - Maxmind now requires an account, setup your geoipupdate script
-           https://dev.maxmind.com/geoip/geoipupdate/#For_Free_GeoLite2_Databases
+  - NOTE - MaxMind now requires an account, set up your geoipupdate script
+           https://molo.ch/faq#maxmind
 
   - release - node 10.18.1, yara 3.11.0, curl 7.68.0
   - release - Configure now installs elasticsearch 7.5.1
   - viewer - New aes256Encryption option to upgrade encryption, all
              viewers must be on 2.2.0 or later before upgrading
-  - capture - geoLite2ASN and geoLite2Country are now semicolon seperated
+  - viewer - shrink operation deletes old index now
+  - viewer - Querying was sometimes limited to 20000 items (or less)
+  - viewer - Sending sessions between clusters didn't allow pcap to be viewed
+             on receiving side
+  - viewer - Intersection export allows editing of fields
+  - viewer - Panning graph left/right allows selection of how much
+  - viewer - Refresh interval on spigraph page increments time (if it's a date range)
+  - capture - geoLite2ASN and geoLite2Country are now semicolon separated
               lists.  The first one that exists will be used or warning
-	      printed.  To disable warning set to blank.
+              printed.  To disable warning set to blank.
+  - capture - disable the 100-Continue feature of curl to reduce bulk errors
+  - capture - smtp parse now maps a few encodings to standards glib understands
+  - s3 - support maxFileTimeM
+  - db - support creating ILM policys and assigning them for sessions2 and history
+  - db - new optimize-admin that only optimizes admin indices
+  - parliament - Click on ES health goes to ES Nodes tab
+
+
 
 2.1.2 2019/12/16
   - capture - no longer check in configure scripts, use autoreconf (thanks martinpaljak)
@@ -1085,7 +1100,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - Mouse over view names shows expression (issue #220)
   - Display SPI Data even if node is unavailabe (issue #219)
   - Netflow plugin timestamp fixes (issue #241)
-  - Comma seperate list of elasticsearch hosts (issue #176)
+  - Comma separate list of elasticsearch hosts (issue #176)
   - New includes directive (issue #144)
   - Initial bigendian support in viewer (issue #259)
   - List queries can now have wildcard and regex items.
@@ -1137,7 +1152,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - New email.hasheader
   - New packets.(src|dst), bytes.(src|dst), databytes.(src|dst) (issue #206)
   - New payload8.(src|dst), payload.(hex|utf8), payload.(src|dst).(hex|utf8) (issue #209)
-  - pcapDir can now be a semicolon seperated list of directories, currently just
+  - pcapDir can now be a semicolon separated list of directories, currently just
     round robin is supported
   - UI: Fix Search/Actions showing up on second line on page load
   - capture now does memlock and max schedule priority on startup (issue #199)

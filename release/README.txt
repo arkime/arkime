@@ -31,7 +31,7 @@ Basic Moloch Installation steps:
       password: THEPASSWORD from step #6
 
 If you want IP -> Geo/ASN to work, you need to setup a maxmind account and the geoipupdate program.
-See https://dev.maxmind.com/geoip/geoipupdate/#For_Free_GeoLite2_Databases
+See https://molo.ch/faq#maxmind
 
 Any configuration changes can be made to /data/moloch/etc/config.ini
 See https://molo.ch/faq#moloch-is-not-working for issues
