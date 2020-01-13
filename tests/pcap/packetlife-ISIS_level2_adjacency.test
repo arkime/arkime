@@ -12,6 +12,13 @@
             "fileId" : [],
             "firstPacket" : 1213758559132,
             "ipProtocol" : 0,
+            "isis" : {
+               "msgType" : [
+                  "l2-csnp",
+                  "l2-lsp",
+                  "lan-l2-hello"
+               ]
+            },
             "lastPacket" : 1213758644147,
             "length" : 85014,
             "node" : "test",

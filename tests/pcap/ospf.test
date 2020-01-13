@@ -3,7 +3,7 @@
       {
          "body" : {
             "communityId" : "1:+xR7TJBjmXTZjrc2xnXTenLtr7U=",
-            "dstASN" : "AS8075 Microsoft Corporation",
+            "dstASN" : "AS8075",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstGEO" : "US",
@@ -32,12 +32,12 @@
                24
             ],
             "protocol" : [
-               "udp",
-               "syslog"
+               "syslog",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0000",
             "srcBytes" : 166,
             "srcDataBytes" : 124,
             "srcGEO" : "RU",
@@ -59,7 +59,7 @@
             "tagsCnt" : 1,
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0000"
                ],
                "GEO" : [
                   "RU"
@@ -91,7 +91,6 @@
       },
       {
          "body" : {
-            "communityId" : "1:vPWPtE61sLg5otEo6N4wbc4tdos=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "224.0.0.13",
@@ -522,7 +521,7 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcASN" : "AS0001 Cool Beans!",
+            "srcASN" : "AS0001",
             "srcBytes" : 13804,
             "srcDataBytes" : 0,
             "srcGEO" : "CA",
@@ -557,7 +556,6 @@
       },
       {
          "body" : {
-            "communityId" : "1:siSTK2VaURUvYgZ0loDiq2tRs+g=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "224.0.0.5",
@@ -690,7 +688,7 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcASN" : "AS0001 Cool Beans!",
+            "srcASN" : "AS0001",
             "srcBytes" : 4876,
             "srcDataBytes" : 0,
             "srcGEO" : "CA",
@@ -725,19 +723,23 @@
       },
       {
          "body" : {
-            "communityId" : "1:4SnyfFEDvFzES83woV4WDURQZv8=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
-            "dstIp" : "0000:0000:0000:0000:0000:0000:0000:0000",
             "dstMac" : [
                "01:80:c2:00:00:15"
             ],
             "dstMacCnt" : 1,
             "dstPackets" : 0,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 1571662509461,
             "ipProtocol" : 0,
+            "isis" : {
+               "msgType" : [
+                  "l2-csnp",
+                  "l2-lsp",
+                  "lan-l2-hello"
+               ]
+            },
             "lastPacket" : 1571662612261,
             "length" : 102800,
             "node" : "test",
@@ -886,7 +888,6 @@
             "segmentCnt" : 1,
             "srcBytes" : 81451,
             "srcDataBytes" : 0,
-            "srcIp" : "0000:0000:0000:0000:0000:0000:0000:0000",
             "srcMac" : [
                "08:00:27:1f:08:22",
                "08:00:27:76:e3:69"
@@ -897,8 +898,6 @@
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 67,
-            "srcPort" : 0,
-            "timestamp" : "SET",
             "totBytes" : 81451,
             "totDataBytes" : 0,
             "totPackets" : 67
@@ -912,16 +911,13 @@
       },
       {
          "body" : {
-            "communityId" : "1:esRZrqaXsWTFsyKdg+oVGPGgYBw=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
-            "dstIp" : "0000:0000:0000:0000:0000:0000:0000:0000",
             "dstMac" : [
                "01:80:c2:00:00:0e"
             ],
             "dstMacCnt" : 1,
             "dstPackets" : 0,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 1571662511903,
             "ipProtocol" : 0,
@@ -953,7 +949,6 @@
             "segmentCnt" : 1,
             "srcBytes" : 993,
             "srcDataBytes" : 0,
-            "srcIp" : "0000:0000:0000:0000:0000:0000:0000:0000",
             "srcMac" : [
                "08:00:27:12:62:b0",
                "08:00:27:d8:5d:87"
@@ -964,8 +959,6 @@
             ],
             "srcOuiCnt" : 1,
             "srcPackets" : 7,
-            "srcPort" : 0,
-            "timestamp" : "SET",
             "totBytes" : 993,
             "totDataBytes" : 0,
             "totPackets" : 7
@@ -980,7 +973,7 @@
       {
          "body" : {
             "communityId" : "1:6LM13JzmBiKxzgoT5iVJSORTXx4=",
-            "dstASN" : "AS15169 Google LLC",
+            "dstASN" : "AS15169",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstGEO" : "US",
@@ -1390,7 +1383,7 @@
       {
          "body" : {
             "communityId" : "1:zS/jLwl2n/kHIiVi3kXC214Ycik=",
-            "dstASN" : "AS54113 Fastly",
+            "dstASN" : "AS54113",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "2a04:4e42:0400:0000:0000:0000:0000:0323",
@@ -1461,7 +1454,7 @@
       {
          "body" : {
             "communityId" : "1:ZAOeNMLUwJNJXfCXghxBO0/oq7k=",
-            "dstASN" : "AS54113 Fastly",
+            "dstASN" : "AS54113",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "2a04:4e42:0600:0000:0000:0000:0000:0323",
@@ -1532,7 +1525,7 @@
       {
          "body" : {
             "communityId" : "1:HqHv6VsSqKUcfCCgRzntY1oMT4M=",
-            "dstASN" : "AS54113 Fastly",
+            "dstASN" : "AS54113",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "2a04:4e42:0000:0000:0000:0000:0000:0323",
@@ -1603,7 +1596,7 @@
       {
          "body" : {
             "communityId" : "1:PlvU1YCSX4Pugs0RnJMcqfUxm3c=",
-            "dstASN" : "AS54113 Fastly",
+            "dstASN" : "AS54113",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "2a04:4e42:0200:0000:0000:0000:0000:0323",
@@ -1674,7 +1667,7 @@
       {
          "body" : {
             "communityId" : "1:bLKnRk376Bs3Ke5URY5Zz9GlhHY=",
-            "dstASN" : "AS26101 Oath Holdings Inc.",
+            "dstASN" : "AS26101",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstGEO" : "US",
@@ -1746,7 +1739,7 @@
       {
          "body" : {
             "communityId" : "1:c0vM0WrbY8zp6ddCOj5oLuxUL+Q=",
-            "dstASN" : "AS36646 Oath Holdings Inc.",
+            "dstASN" : "AS36646",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstGEO" : "US",
@@ -1818,7 +1811,7 @@
       {
          "body" : {
             "communityId" : "1:us3PFR4rOxhEfjBei+RbJEzWC6Y=",
-            "dstASN" : "AS36646 Oath Holdings Inc.",
+            "dstASN" : "AS36646",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstGEO" : "US",
@@ -1890,7 +1883,7 @@
       {
          "body" : {
             "communityId" : "1:l7RM5nY0gEwr+HSf4iyA9Q+D7zI=",
-            "dstASN" : "AS36647 Oath Holdings Inc.",
+            "dstASN" : "AS36647",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstGEO" : "US",
@@ -1962,7 +1955,7 @@
       {
          "body" : {
             "communityId" : "1:31nXcG+ZBCFxYAqEOPuAzkRSXX4=",
-            "dstASN" : "AS36647 Oath Holdings Inc.",
+            "dstASN" : "AS36647",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstGEO" : "US",
@@ -2034,7 +2027,7 @@
       {
          "body" : {
             "communityId" : "1:05Mic6R09gwS/lrcHgiR//+gvlk=",
-            "dstASN" : "AS26101 Oath Holdings Inc.",
+            "dstASN" : "AS26101",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstGEO" : "US",
@@ -2174,7 +2167,7 @@
       {
          "body" : {
             "communityId" : "1:DZD6E9KdK+44O1XIWrJTIdbYdyQ=",
-            "dstASN" : "AS2914 NTT America, Inc.",
+            "dstASN" : "AS2914",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstGEO" : "US",
@@ -2202,8 +2195,8 @@
                65744
             ],
             "protocol" : [
-               "udp",
-               "ntp"
+               "ntp",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
@@ -2237,7 +2230,7 @@
       {
          "body" : {
             "communityId" : "1:EGKOofHS2mtrMUR7IOTcJWZ3j6c=",
-            "dstASN" : "AS15169 Google LLC",
+            "dstASN" : "AS15169",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstGEO" : "US",
@@ -2309,7 +2302,7 @@
       {
          "body" : {
             "communityId" : "1:YBoCole5RzOqgxi8Mc/b53cN8Gk=",
-            "dstASN" : "AS41231 Canonical Group Limited",
+            "dstASN" : "AS41231",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstGEO" : "GB",
@@ -2337,8 +2330,8 @@
                68178
             ],
             "protocol" : [
-               "udp",
-               "ntp"
+               "ntp",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
@@ -2372,7 +2365,7 @@
       {
          "body" : {
             "communityId" : "1:DgLdDq3rJ18VK25ZnwWu8rJ93Rw=",
-            "dstASN" : "AS15169 Google LLC",
+            "dstASN" : "AS15169",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstGEO" : "US",
@@ -2444,7 +2437,7 @@
       {
          "body" : {
             "communityId" : "1:HbDlBFMCOih0nNd6FFxk9pY5jFY=",
-            "dstASN" : "AS54113 Fastly",
+            "dstASN" : "AS54113",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "2a04:4e42:0400:0000:0000:0000:0000:0323",
@@ -2515,7 +2508,7 @@
       {
          "body" : {
             "communityId" : "1:MJCCMCXgjaemk5kxIQErRTlfXyg=",
-            "dstASN" : "AS54113 Fastly",
+            "dstASN" : "AS54113",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "2a04:4e42:0600:0000:0000:0000:0000:0323",
@@ -2586,7 +2579,7 @@
       {
          "body" : {
             "communityId" : "1:2XcH7dd4VLbZtA7Mh2fuPXV5bCM=",
-            "dstASN" : "AS54113 Fastly",
+            "dstASN" : "AS54113",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "2a04:4e42:0200:0000:0000:0000:0000:0323",
@@ -2657,7 +2650,7 @@
       {
          "body" : {
             "communityId" : "1:ouqnukYPdci4WdDBalLeYiFn0tc=",
-            "dstASN" : "AS54113 Fastly",
+            "dstASN" : "AS54113",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "2a04:4e42:0000:0000:0000:0000:0000:0323",
@@ -2728,7 +2721,7 @@
       {
          "body" : {
             "communityId" : "1:Km2EZr/8JdHGPCTll+t+I3veupM=",
-            "dstASN" : "AS8075 Microsoft Corporation",
+            "dstASN" : "AS8075",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstGEO" : "US",
@@ -2763,12 +2756,12 @@
                88776
             ],
             "protocol" : [
-               "udp",
-               "syslog"
+               "syslog",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0000",
             "srcBytes" : 744,
             "srcDataBytes" : 576,
             "srcGEO" : "RU",
@@ -2790,7 +2783,7 @@
             "tagsCnt" : 1,
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0000"
                ],
                "GEO" : [
                   "RU"
@@ -2883,7 +2876,6 @@
       },
       {
          "body" : {
-            "communityId" : "1:SOHn7e+fmmNt1Me8aZJ9FB1RZvs=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "224.0.0.1",
@@ -2915,7 +2907,7 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0000",
             "srcBytes" : 188,
             "srcDataBytes" : 0,
             "srcGEO" : "RU",
@@ -2938,7 +2930,7 @@
             "tagsCnt" : 1,
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0000"
                ],
                "GEO" : [
                   "RU"

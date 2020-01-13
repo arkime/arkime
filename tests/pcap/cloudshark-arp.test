@@ -2,74 +2,6 @@
    "sessions2" : [
       {
          "body" : {
-            "dstBytes" : 98,
-            "dstDataBytes" : 64,
-            "dstIp" : "10.10.10.1",
-            "dstMac" : [
-               "00:1d:09:f0:92:ab"
-            ],
-            "dstMacCnt" : 1,
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstPackets" : 1,
-            "dstPort" : 0,
-            "fileId" : [],
-            "firstPacket" : 1352595620652,
-            "icmp" : {
-               "code" : [
-                  0
-               ],
-               "type" : [
-                  8,
-                  0
-               ]
-            },
-            "ipProtocol" : 1,
-            "lastPacket" : 1352595620652,
-            "length" : 0,
-            "node" : "test",
-            "packetLen" : [
-               114,
-               114
-            ],
-            "packetPos" : [
-               158,
-               272
-            ],
-            "protocol" : [
-               "icmp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "srcBytes" : 98,
-            "srcDataBytes" : 64,
-            "srcIp" : "10.10.10.2",
-            "srcMac" : [
-               "00:1a:6b:6c:0c:cc"
-            ],
-            "srcMacCnt" : 1,
-            "srcOui" : [
-               "Universal Global Scientific Industrial Co., Ltd."
-            ],
-            "srcOuiCnt" : 1,
-            "srcPackets" : 1,
-            "srcPort" : 0,
-            "timestamp" : "SET",
-            "totBytes" : 196,
-            "totDataBytes" : 128,
-            "totPackets" : 2
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions2-121111",
-               "_type" : "session"
-            }
-         }
-      },
-      {
-         "body" : {
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstMac" : [
@@ -116,6 +48,74 @@
             "srcPackets" : 2,
             "totBytes" : 102,
             "totDataBytes" : 0,
+            "totPackets" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-121111",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 98,
+            "dstDataBytes" : 64,
+            "dstIp" : "10.10.10.1",
+            "dstMac" : [
+               "00:1d:09:f0:92:ab"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Dell Inc."
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 1,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1352595620652,
+            "icmp" : {
+               "code" : [
+                  0
+               ],
+               "type" : [
+                  0,
+                  8
+               ]
+            },
+            "ipProtocol" : 1,
+            "lastPacket" : 1352595620652,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               114,
+               114
+            ],
+            "packetPos" : [
+               158,
+               272
+            ],
+            "protocol" : [
+               "icmp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 98,
+            "srcDataBytes" : 64,
+            "srcIp" : "10.10.10.2",
+            "srcMac" : [
+               "00:1a:6b:6c:0c:cc"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Universal Global Scientific Industrial Co., Ltd."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 196,
+            "totDataBytes" : 128,
             "totPackets" : 2
          },
          "header" : {

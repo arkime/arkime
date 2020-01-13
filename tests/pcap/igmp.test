@@ -2,7 +2,6 @@
    "sessions2" : [
       {
          "body" : {
-            "communityId" : "1:SOHn7e+fmmNt1Me8aZJ9FB1RZvs=",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "224.0.0.22",
@@ -88,7 +87,7 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcASN" : "AS8075 Microsoft Corporation",
+            "srcASN" : "AS8075",
             "srcBytes" : 1590,
             "srcDataBytes" : 0,
             "srcGEO" : "US",
