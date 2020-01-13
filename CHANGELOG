@@ -22,7 +22,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - NOTE - Maxmind now requires an account, setup your geoipupdate script
            https://dev.maxmind.com/geoip/geoipupdate/#For_Free_GeoLite2_Databases
 
-  - release - node 10.18.0
+  - release - node 10.18.1, yara 3.11.0, curl 7.68.0
   - release - Configure now installs elasticsearch 7.5.1
   - viewer - New aes256Encryption option to upgrade encryption, all
              viewers must be on 2.2.0 or later before upgrading

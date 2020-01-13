@@ -3712,10 +3712,28 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     $REPLICAS = 0 if ($REPLICAS == -1);
     $HISTORY = $HISTORY * 7;
 
-    print "Creating sessions ilm policy '${PREFIX}molochsessions' with: forceTime: $forceTime deleteTime: $deleteTime segments: $SEGMENTS replicas: $REPLICAS\n";
     print "Creating history ilm policy '${PREFIX}molochhistory' with: deleteTime ${HISTORY}d\n";
-    print "You will need to run update with --ilm to update the templates the first time you turn ilm on.\n";
-    sleep 2;
+    print "Creating sessions ilm policy '${PREFIX}molochsessions' with: forceTime: $forceTime deleteTime: $deleteTime segments: $SEGMENTS replicas: $REPLICAS\n";
+    print "You will need to run db.pl upgrade with --ilm to update the templates the first time you turn ilm on.\n";
+    sleep 5;
+    my $hpolicy =
+qq/ {
+  "policy": {
+    "phases": {
+      "delete": {
+        "min_age": "${HISTORY}d",
+        "actions": {
+          "delete": {}
+        }
+      }
+    }
+  }
+}/;
+    esPut("/_ilm/policy/${PREFIX}molochhistory?master_timeout=${ESTIMEOUT}s", $hpolicy);
+    esPut("/${PREFIX}history_v*/_settings?master_timeout=${ESTIMEOUT}s", qq/{"settings": {"index.lifecycle.name": "${PREFIX}molochhistory"}}/, 1);
+    print "History Policy:\n$hpolicy\n" if ($verbose > 1);
+    sleep 5;
+
     my $policy;
     if ($DOHOTWARM) {
         $policy =
@@ -3788,23 +3806,6 @@ qq/ {
     esPut("/_ilm/policy/${PREFIX}molochsessions?master_timeout=${ESTIMEOUT}s", $policy);
     esPut("/${PREFIX}sessions2-*/_settings?master_timeout=${ESTIMEOUT}s", qq/{"settings": {"index.lifecycle.name": "${PREFIX}molochsessions"}}/, 1);
     print "Policy:\n$policy\n" if ($verbose > 1);
-
-    my $hpolicy =
-qq/ {
-  "policy": {
-    "phases": {
-      "delete": {
-        "min_age": "${HISTORY}d",
-        "actions": {
-          "delete": {}
-        }
-      }
-    }
-  }
-}/;
-    esPut("/_ilm/policy/${PREFIX}molochhistory?master_timeout=${ESTIMEOUT}s", $hpolicy);
-    esPut("/${PREFIX}history_v*/_settings?master_timeout=${ESTIMEOUT}s", qq/{"settings": {"index.lifecycle.name": "${PREFIX}molochhistory"}}/, 1);
-    print "History Policy:\n$hpolicy\n" if ($verbose > 1);
     exit 0;
 }
 

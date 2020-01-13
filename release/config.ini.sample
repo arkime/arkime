@@ -116,9 +116,8 @@ viewPort = 8005
 # By default the viewer process is https://hostname:<viewPort> for each node.
 #viewUrl = https://HOSTNAME:8005
 
-# NOTE: A maxmind account is now required, we will try and use the old files or new files on the system. See
-# https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases/
-# https://dev.maxmind.com/geoip/geoipupdate/#For_Free_GeoLite2_Databases
+# NOTE: A MaxMind account is now required, we will try and use the old files or new files on the system. See
+# https://molo.ch/faq#maxmind
 geoLite2Country = /usr/share/GeoIP/GeoLite2-Country.mmdb;MOLOCH_INSTALL_DIR/etc/GeoLite2-Country.mmdb
 geoLite2ASN = /usr/share/GeoIP/GeoLite2-ASN.mmdb;MOLOCH_INSTALL_DIR/etc/GeoLite2-ASN.mmdb
 
