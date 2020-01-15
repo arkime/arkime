@@ -2201,7 +2201,7 @@ gboolean moloch_db_file_exists(const char *filename, uint32_t *outputId)
     char                   key[2000];
     int                    key_len;
 
-    key_len = snprintf(key, sizeof(key), "/%sfiles/file/_search?size=1&sort=num:desc&q=node:%s+AND+name:\"%s\"", config.prefix, config.nodeName, filename);
+    key_len = snprintf(key, sizeof(key), "/%sfiles/file/_search?rest_total_hits_as_int&size=1&sort=num:desc&q=node:%s+AND+name:\"%s\"", config.prefix, config.nodeName, filename);
 
     unsigned char *data = moloch_http_get(esServer, key, key_len, &data_len);
 

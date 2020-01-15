@@ -17,6 +17,9 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
+2.3.0 2020/02/xx
+  - capture - fix --skip no longer working
+
 2.2.0 2020/01/13
   - NOTE - Elasticsearch 6.7.x is no longer supported
   - NOTE - MaxMind now requires an account, set up your geoipupdate script
