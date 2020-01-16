@@ -2345,6 +2345,7 @@ void moloch_db_init()
         for (i = 0; config.geoLite2Country[i]; i++) {
             if (stat(config.geoLite2Country[i], &sb) == 0) {
                 moloch_config_monitor_file("country file", config.geoLite2Country[i], moloch_db_load_geo_country);
+                break;
             }
         }
         if (!config.geoLite2Country[i]) {
@@ -2355,6 +2356,7 @@ void moloch_db_init()
         for (i = 0; config.geoLite2ASN[i]; i++) {
             if (stat(config.geoLite2ASN[i], &sb) == 0) {
                 moloch_config_monitor_file("asn file", config.geoLite2ASN[i], moloch_db_load_geo_asn);
+                break;
             }
         }
         if (!config.geoLite2ASN[i]) {
