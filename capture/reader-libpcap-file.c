@@ -686,7 +686,7 @@ LOCAL void reader_libpcapfile_start() {
 /******************************************************************************/
 void reader_libpcapfile_init(char *UNUSED(name))
 {
-    offlineDispatchAfter        = moloch_config_int(NULL, "offlineDispatchAfter", 1000, 1, 0x7fff);
+    offlineDispatchAfter        = moloch_config_int(NULL, "offlineDispatchAfter", 2500, 1, 0x7fff);
 
     moloch_reader_start         = reader_libpcapfile_start;
     moloch_reader_stats         = reader_libpcapfile_stats;
