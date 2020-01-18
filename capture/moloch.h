@@ -137,6 +137,8 @@ typedef struct moloch_certsinfo {
     short                    t_bucket;
     unsigned char            hash[60];
     char                     isCA;
+    const char              *publicAlgorithm;
+    const char              *curve;
 } MolochCertsInfo_t;
 
 typedef struct {

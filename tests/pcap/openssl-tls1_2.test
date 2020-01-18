@@ -10,6 +10,7 @@
                   ],
                   "notAfter" : 1534824000000,
                   "notBefore" : 1021953600000,
+                  "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : -1,
                   "serial" : "12bbe6",
                   "subjectCN" : [
@@ -82,6 +83,7 @@
                   ],
                   "notAfter" : 1419292800000,
                   "notBefore" : 1411553285000,
+                  "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : -1,
                   "serial" : "7a5b0bd895632f87",
                   "subjectCN" : [
@@ -102,6 +104,7 @@
                   ],
                   "notAfter" : 1483228799000,
                   "notBefore" : 1365174955000,
+                  "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : -1,
                   "serial" : "023a76",
                   "subjectCN" : [
@@ -115,7 +118,7 @@
             ],
             "certCnt" : 3,
             "communityId" : "1:Hfs5tYbyoB20l9oRNYWqL/gm/+M=",
-            "dstASN" : "AS15169 Google LLC",
+            "dstASN" : "AS15169",
             "dstBytes" : 5014,
             "dstDataBytes" : 4478,
             "dstGEO" : "US",
@@ -186,12 +189,12 @@
                6496
             ],
             "protocol" : [
-               "tls",
-               "tcp"
+               "tcp",
+               "tls"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0000",
             "srcBytes" : 1220,
             "srcDataBytes" : 420,
             "srcGEO" : "RU",
@@ -224,7 +227,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0000"
                ],
                "GEO" : [
                   "RU"

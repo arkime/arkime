@@ -18,7 +18,12 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 2.3.0 2020/02/xx
-  - capture - fix --skip no longer working
+  - capture - fix --skip not working with ES 7.x
+  - capture - update TLS ciphers
+  - capture - increaase offlineDispatchAfter default to 2500
+  - capture - cert decode publicAlgorithm and curve
+  - db - optimize-admin doesn't wait for other optimizations to finish
+
 
 2.2.0 2020/01/13
   - NOTE - Elasticsearch 6.7.x is no longer supported

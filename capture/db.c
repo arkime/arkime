@@ -942,8 +942,12 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             HASH_FORALL_POP_HEAD(t_, *cihash, certs,
                 BSB_EXPORT_u08(jbsb, '{');
 
-
                 BSB_EXPORT_sprintf(jbsb, "\"hash\":\"%s\",", certs->hash);
+
+                if (certs->publicAlgorithm)
+                    BSB_EXPORT_sprintf(jbsb, "\"publicAlgorithm\":\"%s\",", certs->publicAlgorithm);
+                if (certs->curve)
+                    BSB_EXPORT_sprintf(jbsb, "\"curve\":\"%s\",", certs->curve);
 
                 SAVE_STRING_HEAD(certs->issuer.commonName, "issuerCN");
                 SAVE_STRING_HEAD(certs->issuer.orgName, "issuerON");
