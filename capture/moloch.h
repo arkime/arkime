@@ -799,6 +799,7 @@ char moloch_config_boolean(GKeyFile *keyfile, char *key, char d);
 
 typedef void (*MolochFileChange_cb)(char *name);
 typedef void (*MolochFilesChange_cb)(char **names);
+void moloch_config_monitor_file_msg(char *desc, char *name, MolochFileChange_cb cb, const char *msg);
 void moloch_config_monitor_file(char *desc, char *name, MolochFileChange_cb cb);
 void moloch_config_monitor_files(char *desc, char **names, MolochFilesChange_cb cb);
 

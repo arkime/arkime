@@ -2368,9 +2368,9 @@ void moloch_db_init()
         }
     }
     if (config.ouiFile)
-        moloch_config_monitor_file("oui file", config.ouiFile, moloch_db_load_oui);
+        moloch_config_monitor_file_msg("oui file", config.ouiFile, moloch_db_load_oui, "Maybe try running /data/moloch/bin/moloch_update_geo.sh");
     if (config.rirFile)
-        moloch_config_monitor_file("rir file", config.rirFile, moloch_db_load_rir);
+        moloch_config_monitor_file_msg("rir file", config.rirFile, moloch_db_load_rir, "Maybe try running /data/moloch/bin/moloch_update_geo.sh");
 
     if (!config.dryRun) {
         int t = 0;
