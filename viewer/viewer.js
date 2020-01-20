@@ -1460,16 +1460,18 @@ function issueAlert (notifierName, alertMessage, continueProcess) {
     }
 
     let config = {};
-    // check that required notifier fields exist
     for (let field of notifierDefinition.fields) {
-      if (field.required) {
-        for (let configuredField of notifier.fields) {
-          if (configuredField.name === field.name && !configuredField.value) {
-            console.log(`Cannot find notifier field value: ${field.name}, no alert can be issued`);
-            continueProcess();
-          }
+      for (let configuredField of notifier.fields) {
+        if (configuredField.name === field.name && configuredField.value !== undefined) {
+          console.log('setting', field.name, 'to', configuredField.value);
           config[field.name] = configuredField.value;
         }
+      }
+
+      // If a field is required and nothing was set, then we have an error
+      if (field.required && config[field.name] === undefined) {
+        console.log(`Cannot find notifier field value: ${field.name}, no alert can be issued`);
+        continueProcess();
       }
     }
 
