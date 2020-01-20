@@ -34,7 +34,9 @@ typedef struct {
 #define MOLUA_REF_HTTP_MESSAGE_COMPLETE 8
 #define MOLUA_REF_HTTP_HEADER_FIELD_RAW 9
 #define MOLUA_REF_HTTP_CB_LAST 9
-#define MOLUA_REF_SIZE 10
+#define MOLUA_REF_PRE_SAVE 10
+#define MOLUA_REF_SAVE 11
+#define MOLUA_REF_SIZE 12
 
 typedef struct {
     uint32_t callbackOff[MOLUA_REF_SIZE];

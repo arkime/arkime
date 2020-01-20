@@ -990,7 +990,7 @@ void moloch_parsers_classifier_register_tcp_internal(const char *name, void *uw,
         LOGEXIT("Parser '%s' built with different version of moloch.h\n %d %d", name, MOLOCH_API_VERSION, apiversion);
     }
 
-    if (!match)
+    if (!match && matchlen != 0)
         LOGEXIT("Can't have a null match for %s", name);
 
     MolochClassify_t *c = MOLOCH_TYPE_ALLOC0(MolochClassify_t);
