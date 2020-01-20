@@ -593,6 +593,56 @@ LOCAL int MS_add_int(lua_State *L)
     return 1;
 }
 /******************************************************************************/
+LOCAL int MSP_get_addr1(lua_State *L)
+{
+    MolochSession_t *session = checkMolochSession(L, 1);
+
+    char addrbuf[INET6_ADDRSTRLEN];
+    const char *result;
+    if (MOLOCH_SESSION_v6(session)) {
+        result = inet_ntop(AF_INET6, &session->addr1, addrbuf, INET6_ADDRSTRLEN);
+    } else {
+        result = inet_ntop(AF_INET, &MOLOCH_V6_TO_V4(session->addr1), addrbuf, INET6_ADDRSTRLEN);
+    }
+    if (!result) {
+        return luaL_error(L, "Failed to convert IP address to text");
+    }
+    lua_pushstring(L, result);
+    return 1;
+}
+/******************************************************************************/
+LOCAL int MSP_get_port1(lua_State *L)
+{
+    MolochSession_t *session = checkMolochSession(L, 1);
+    lua_pushnumber(L, session->port1);
+    return 1;
+}
+/******************************************************************************/
+LOCAL int MSP_get_addr2(lua_State *L)
+{
+    MolochSession_t *session = checkMolochSession(L, 1);
+
+    char addrbuf[INET6_ADDRSTRLEN];
+    const char *result;
+    if (MOLOCH_SESSION_v6(session)) {
+        result = inet_ntop(AF_INET6, &session->addr2, addrbuf, INET6_ADDRSTRLEN);
+    } else {
+        result = inet_ntop(AF_INET, &MOLOCH_V6_TO_V4(session->addr2), addrbuf, INET6_ADDRSTRLEN);
+    }
+    if (!result) {
+        return luaL_error(L, "Failed to convert IP address to text");
+    }
+    lua_pushstring(L, result);
+    return 1;
+}
+/******************************************************************************/
+LOCAL int MSP_get_port2(lua_State *L)
+{
+    MolochSession_t *session = checkMolochSession(L, 1);
+    lua_pushnumber(L, session->port2);
+    return 1;
+}
+/******************************************************************************/
 LOCAL int MS_get(lua_State *L)
 {
     if (config.debug > 2)
@@ -607,6 +657,65 @@ LOCAL int MS_get(lua_State *L)
     if (lua_isinteger(L, 2)) {
         pos = lua_tointeger(L, 2);
     } else {
+        const char *exp = lua_tostring(L, 2);
+        switch(exp[0]) {
+        case 'd':
+            if (strcmp(exp, "databytes.src") == 0) {
+                lua_pushinteger(L, session->databytes[0]);
+                return 1;
+            }
+            if (strcmp(exp, "databytes.dst") == 0) {
+                lua_pushinteger(L, session->databytes[1]);
+                return 1;
+            }
+            break;
+        case 'i':
+            if (strcmp(exp, "ip.src") == 0)
+                return MSP_get_addr1(L);
+            if (strcmp(exp, "ip.dst") == 0)
+                return MSP_get_addr2(L);
+            break;
+        case 'p':
+            if (strcmp(exp, "port.src") == 0) {
+                lua_pushinteger(L, session->port1);
+                return 1;
+            }
+            if (strcmp(exp, "port.dst") == 0) {
+                lua_pushinteger(L, session->port2);
+                return 1;
+            }
+            if (strcmp(exp, "packets.src") == 0) {
+                lua_pushinteger(L, session->packets[0]);
+                return 1;
+            }
+            if (strcmp(exp, "packets.dst") == 0) {
+                lua_pushinteger(L, session->packets[1]);
+                return 1;
+            }
+            break;
+        case 't':
+            if (strncmp(exp, "tcpflags.", 9) != 0)
+                break;
+            if (strcmp(exp+9, "syn") == 0)
+                lua_pushinteger(L, session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN]);
+            else if (strcmp(exp+9, "syn-ack") == 0)
+                lua_pushinteger(L, session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN_ACK]);
+            else if (strcmp(exp+9, "ack") == 0)
+                lua_pushinteger(L, session->tcpFlagCnt[MOLOCH_TCPFLAG_ACK]);
+            else if (strcmp(exp+9, "psh") == 0)
+                lua_pushinteger(L, session->tcpFlagCnt[MOLOCH_TCPFLAG_PSH]);
+            else if (strcmp(exp+9, "rst") == 0)
+                lua_pushinteger(L, session->tcpFlagCnt[MOLOCH_TCPFLAG_RST]);
+            else if (strcmp(exp+9, "FIN") == 0)
+                lua_pushinteger(L, session->tcpFlagCnt[MOLOCH_TCPFLAG_FIN]);
+            else if (strcmp(exp+9, "URG") == 0)
+                lua_pushinteger(L, session->tcpFlagCnt[MOLOCH_TCPFLAG_URG]);
+            else
+                break;
+            return 1;
+        }
+
+
         pos = moloch_field_by_exp(lua_tostring(L, 2));
     }
 
@@ -740,56 +849,6 @@ LOCAL int MS_table(lua_State *L)
         mp->table = luaL_ref(L, LUA_REGISTRYINDEX);
     }
     lua_rawgeti(L, LUA_REGISTRYINDEX, mp->table);
-    return 1;
-}
-/******************************************************************************/
-LOCAL int MSP_get_addr1(lua_State *L)
-{
-    MolochSession_t *session = checkMolochSession(L, 1);
-
-    char addrbuf[INET6_ADDRSTRLEN];
-    const char *result;
-    if (MOLOCH_SESSION_v6(session)) {
-        result = inet_ntop(AF_INET6, &session->addr1, addrbuf, INET6_ADDRSTRLEN);
-    } else {
-        result = inet_ntop(AF_INET, &MOLOCH_V6_TO_V4(session->addr1), addrbuf, INET6_ADDRSTRLEN);
-    }
-    if (!result) {
-        return luaL_error(L, "Failed to convert IP address to text");
-    }
-    lua_pushstring(L, result);
-    return 1;
-}
-/******************************************************************************/
-LOCAL int MSP_get_port1(lua_State *L)
-{
-    MolochSession_t *session = checkMolochSession(L, 1);
-    lua_pushnumber(L, session->port1);
-    return 1;
-}
-/******************************************************************************/
-LOCAL int MSP_get_addr2(lua_State *L)
-{
-    MolochSession_t *session = checkMolochSession(L, 1);
-
-    char addrbuf[INET6_ADDRSTRLEN];
-    const char *result;
-    if (MOLOCH_SESSION_v6(session)) {
-        result = inet_ntop(AF_INET6, &session->addr2, addrbuf, INET6_ADDRSTRLEN);
-    } else {
-        result = inet_ntop(AF_INET, &MOLOCH_V6_TO_V4(session->addr2), addrbuf, INET6_ADDRSTRLEN);
-    }
-    if (!result) {
-        return luaL_error(L, "Failed to convert IP address to text");
-    }
-    lua_pushstring(L, result);
-    return 1;
-}
-/******************************************************************************/
-LOCAL int MSP_get_port2(lua_State *L)
-{
-    MolochSession_t *session = checkMolochSession(L, 1);
-    lua_pushnumber(L, session->port2);
     return 1;
 }
 /******************************************************************************/

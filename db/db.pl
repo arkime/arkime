@@ -1239,6 +1239,9 @@ sub sessions2Update
           "altCnt" : {
             "type" : "long"
           },
+          "curve" : {
+            "type" : "keyword"
+          },
           "hash" : {
             "type" : "keyword"
           },
@@ -1253,6 +1256,9 @@ sub sessions2Update
           },
           "notBefore" : {
             "type" : "date"
+          },
+          "publicAlgorithm" : {
+            "type" : "keyword"
           },
           "remainingDays" : {
             "type" : "long"
