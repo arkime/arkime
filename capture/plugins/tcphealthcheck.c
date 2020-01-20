@@ -56,7 +56,6 @@ void server(void) {
         client_fd = accept(server_fd, (struct sockaddr *) &client, &client_len);
             if (client_fd < 0) {
                 LOG("Error establishing new connection: %d", client_fd);
-                return;
             }
             else {
                 close(client_fd);
