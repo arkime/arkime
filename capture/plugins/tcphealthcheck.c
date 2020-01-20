@@ -21,7 +21,7 @@ extern MolochConfig_t        config;
 LOCAL  int                   tcp_port;
 
 /******************************************************************************/
-void server(void) {
+void tcp_server(void) {
     int server_fd, client_fd, err;
     struct sockaddr_in server, client;
    
@@ -68,7 +68,7 @@ void *tcp_listener(void *vargp)
 {
     (void) vargp;
     LOG("Starting TCP server");
-    server();
+    tcp_server();
     return NULL;
 }
 
