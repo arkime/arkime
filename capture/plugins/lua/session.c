@@ -907,7 +907,7 @@ LOCAL int MSP_get_protocol(lua_State *L)
     MolochSession_t *session = checkMolochSession(L, 1);
     char pnum[16];
     const char *protocol = pnum;
-    switch (session->protocol) {
+    switch (session->ipProtocol) {
         case 1:
             protocol = "icmp";
             break;
@@ -924,7 +924,7 @@ LOCAL int MSP_get_protocol(lua_State *L)
             protocol = "sctp";
             break;
         default:
-            sprintf(pnum, "%d", session->protocol);
+            sprintf(pnum, "%d", session->ipProtocol);
             break;
     }
     lua_pushstring(L, protocol);
