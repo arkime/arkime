@@ -28,6 +28,7 @@
                   ],
                   "notAfter" : 1451573263000,
                   "notBefore" : 1415717263000,
+                  "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : -1,
                   "serial" : "2e8f3b9cbc17eacb6459a3b8c0b598fb",
                   "subjectCN" : [
@@ -48,6 +49,7 @@
                   ],
                   "notAfter" : 1709470465000,
                   "notBefore" : 1236084865000,
+                  "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : 1,
                   "serial" : "4ca5fec6617c48b056382a8280e0508c",
                   "subjectCN" : [
@@ -61,7 +63,7 @@
             ],
             "certCnt" : 2,
             "communityId" : "1:1Vhwrjwo6Dp0JRtAPwmn/2IaaTw=",
-            "dstASN" : "AS0001 Cool Beans!",
+            "dstASN" : "AS0001",
             "dstBytes" : 5216,
             "dstDataBytes" : 5036,
             "dstGEO" : "CA",
@@ -110,13 +112,13 @@
                927
             ],
             "protocol" : [
-               "tlsrulestest",
+               "tcp",
                "tls",
-               "tcp"
+               "tlsrulestest"
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0000",
             "srcBytes" : 697,
             "srcDataBytes" : 517,
             "srcGEO" : "RU",
@@ -150,7 +152,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0000"
                ],
                "GEO" : [
                   "RU"

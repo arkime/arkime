@@ -26,6 +26,7 @@
                   ],
                   "notAfter" : 1448927999000,
                   "notBefore" : 1413504000000,
+                  "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : -1,
                   "serial" : "0dc04875701d090d9f3645da26f51fe7",
                   "subjectCN" : [
@@ -43,6 +44,7 @@
                   ],
                   "notAfter" : 1636329599000,
                   "notBefore" : 1162944000000,
+                  "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : 1,
                   "serial" : "35973187f3873a07327ece580c9b7eda",
                   "subjectCN" : [
@@ -63,6 +65,7 @@
                   ],
                   "notAfter" : 1478563199000,
                   "notBefore" : 1162944000000,
+                  "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : -1,
                   "serial" : "112a006d37e5106fd6ca7cc3efbacc18",
                   "subjectCN" : [
@@ -76,7 +79,7 @@
             ],
             "certCnt" : 3,
             "communityId" : "1:6/u1qoj9fpHAapKWZJHA2kiVUeE=",
-            "dstASN" : "AS0001 Cool Beans!",
+            "dstASN" : "AS0001",
             "dstBytes" : 7348,
             "dstDataBytes" : 6784,
             "dstGEO" : "CA",
@@ -139,9 +142,9 @@
                6666
             ],
             "protocol" : [
-               "tls",
                "socks",
-               "tcp"
+               "tcp",
+               "tls"
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
@@ -150,7 +153,7 @@
                "port" : 443,
                "user" : "fd7bcf7b5c9e1d"
             },
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0000",
             "srcBytes" : 404,
             "srcDataBytes" : 38,
             "srcGEO" : "RU",
@@ -186,7 +189,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0000"
                ],
                "GEO" : [
                   "RU"

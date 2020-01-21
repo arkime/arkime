@@ -78,6 +78,7 @@
                   ],
                   "notAfter" : 1497242632000,
                   "notBefore" : 1402510723000,
+                  "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : -1,
                   "serial" : "4c235548",
                   "subjectCN" : [
@@ -98,6 +99,7 @@
                   ],
                   "notAfter" : 1636685477000,
                   "notBefore" : 1321026040000,
+                  "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : 1,
                   "serial" : "4c0e8c39",
                   "subjectCN" : [
@@ -178,12 +180,12 @@
                5935
             ],
             "protocol" : [
-               "tls",
-               "tcp"
+               "tcp",
+               "tls"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0000",
             "srcBytes" : 1210,
             "srcDataBytes" : 596,
             "srcGEO" : "RU",
@@ -216,7 +218,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0000"
                ],
                "GEO" : [
                   "RU"

@@ -14,6 +14,7 @@
  */
 #include "moloch.h"
 #include "tls-cipher.h"
+#include "openssl/objects.h"
 
 extern MolochConfig_t        config;
 LOCAL  int                   certsField;
@@ -74,6 +75,46 @@ LOCAL void tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
                 element->str = g_strndup((char*)value, alen);
                 DLL_PUSH_TAIL(s_, &ci->orgName, element);
             }
+        }
+    }
+}
+/******************************************************************************/
+LOCAL void tls_certinfo_process_publickey(MolochCertsInfo_t *certs, unsigned char *data, uint32_t len)
+{
+    BSB bsb, tbsb;
+    BSB_INIT(bsb, data, len);
+    char oid[1000];
+
+    uint32_t apc, atag, alen;
+    unsigned char *value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+
+    BSB_INIT(tbsb, value, alen);
+    value = moloch_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen);
+    if (BSB_IS_ERROR(bsb) || BSB_IS_ERROR(tbsb) || !value) {
+        certs->publicAlgorithm = "corrupt";
+        return;
+    }
+    oid[0] = 0;
+    moloch_parsers_asn_decode_oid(oid, sizeof(oid), value, alen);
+
+    int nid = OBJ_txt2nid(oid);
+    if (nid == 0)
+        certs->publicAlgorithm = "unknown";
+    else
+        certs->publicAlgorithm = OBJ_nid2sn(nid);
+
+    if (nid == NID_X9_62_id_ecPublicKey) {
+        value = moloch_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen);
+        if (BSB_IS_ERROR(tbsb) || !value || alen > 12)
+            certs->curve = "corrupt";
+        else {
+            oid[0] = 0;
+            moloch_parsers_asn_decode_oid(oid, sizeof(oid), value, alen);
+            int nid = OBJ_txt2nid(oid);
+            if (nid == 0)
+                certs->curve = "unknown";
+            else
+                certs->curve = OBJ_nid2sn(nid);
         }
     }
 }
@@ -390,6 +431,7 @@ LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsign
         /* subjectPublicKeyInfo */
         if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
             {badreason = 9; goto bad_cert;}
+        tls_certinfo_process_publickey(certs, value, alen);
 
         /* extensions */
         if (BSB_REMAINING(bsb)) {
@@ -801,6 +843,18 @@ void moloch_parser_init()
     moloch_field_define("cert", "integer",
         "cert.remainingDays", "Days remaining", "cert.remainingDays",
         "Certificate is still valid for this many days",
+        0, MOLOCH_FIELD_FLAG_FAKE,
+        (char *)NULL);
+
+    moloch_field_define("cert", "termfield",
+        "cert.curve", "Curve", "cert.curve",
+        "Curve Algorithm",
+        0, MOLOCH_FIELD_FLAG_FAKE,
+        (char *)NULL);
+
+    moloch_field_define("cert", "termfield",
+        "cert.publicAlgorithm", "Public Algorithm", "cert.publicAlgorithm",
+        "Public Key Algorithm",
         0, MOLOCH_FIELD_FLAG_FAKE,
         (char *)NULL);
 

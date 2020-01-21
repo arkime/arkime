@@ -55,8 +55,8 @@
                "user" : "user"
             },
             "protocol" : [
-               "tcp",
-               "postgresql"
+               "postgresql",
+               "tcp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,

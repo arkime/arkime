@@ -433,10 +433,10 @@ sub esWaitForNoTask
 ################################################################################
 sub esForceMerge
 {
-    my ($index, $segments) = @_;
-    esWaitForNoTask("forcemerge");
+    my ($index, $segments, $dowait) = @_;
+    esWaitForNoTask("forcemerge") if ($dowait);
     esPost("/$index/_forcemerge?max_num_segments=$segments", "", 2);
-    esWaitForNoTask("forcemerge");
+    esWaitForNoTask("forcemerge") if ($dowait);
 }
 
 ################################################################################
@@ -1239,6 +1239,9 @@ sub sessions2Update
           "altCnt" : {
             "type" : "long"
           },
+          "curve" : {
+            "type" : "keyword"
+          },
           "hash" : {
             "type" : "keyword"
           },
@@ -1253,6 +1256,9 @@ sub sessions2Update
           },
           "notBefore" : {
             "type" : "date"
+          },
+          "publicAlgorithm" : {
+            "type" : "keyword"
           },
           "remainingDays" : {
             "type" : "long"
@@ -2946,7 +2952,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     logmsg "Optimizing Admin Indices\n";
-    esForceMerge("${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v7,${PREFIX}queries_v3,${PREFIX}hunts_v2,${PREFIX}lookups_v1", 1);
+    esForceMerge("${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v7,${PREFIX}queries_v3,${PREFIX}hunts_v2,${PREFIX}lookups_v1", 1, 0);
     logmsg "\n" if ($verbose > 0);
 }
 ################################################################################
@@ -3254,7 +3260,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
             # 1 is set if it shouldn't be expired, > 1 means it needs to be optimized
             if ($indices{$i}->{OPTIMIZEIT} > 1) {
-                esForceMerge($i, $SEGMENTS) unless $NOOPTIMIZE;
+                esForceMerge($i, $SEGMENTS, 1) unless $NOOPTIMIZE;
             }
 
             if ($REPLICAS != -1) {
@@ -3306,7 +3312,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
             esDelete("/$i", 1);
         }
     }
-    esForceMerge("${PREFIX}history_*", 1) unless $NOOPTIMIZE;
+    esForceMerge("${PREFIX}history_*", 1, 1) unless $NOOPTIMIZE;
     esPost("/_flush/synced", "", 1);
 
     # Give the cluster a kick to rebalance
@@ -3322,18 +3328,18 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     logmsg sprintf "Optimizing %s Session Indices\n", commify(scalar(keys %{$indices}));
     foreach my $i (sort (keys %{$indices})) {
         progress("$i ");
-        esForceMerge($i, $SEGMENTS);
+        esForceMerge($i, $SEGMENTS, 1);
     }
     esPost("/_flush/synced", "", 1);
     logmsg "Optimizing History\n";
-    esForceMerge("${PREFIX}history_v1-*", 1);
+    esForceMerge("${PREFIX}history_v1-*", 1, 1);
     logmsg "\n";
     exit 0;
 } elsif ($ARGV[1] eq "optimize-admin") {
     $main::userAgent->timeout(7200);
     esPost("/_flush/synced", "", 1);
     optimizeOther();
-    esForceMerge("${PREFIX}history_*", 1);
+    esForceMerge("${PREFIX}history_*", 1, 0);
     exit 0;
 } elsif ($ARGV[1] =~ /^(disable-?users)$/) {
     showHelp("Invalid number of <days>") if (!defined $ARGV[2] || $ARGV[2] !~ /^[+-]?\d+$/);

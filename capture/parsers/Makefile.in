@@ -23,3 +23,5 @@ install:
 distclean realclean clean:
 	rm -f *.o *.so
 
+tlscipher:
+	curl http://www.iana.org/assignments/tls-parameters/tls-parameters-4.csv | ./tls-cipher.h.pl > tls-cipher.h
