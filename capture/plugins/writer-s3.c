@@ -72,6 +72,7 @@ LOCAL  char                  s3PathAccessStyle;
 LOCAL  char                  *s3AccessKeyId;
 LOCAL  char                  *s3SecretAccessKey;
 LOCAL  char                  *s3Token;
+LOCAL  char                  *s3Role;
 LOCAL  char                   s3Compress;
 LOCAL  char                   s3WriteGzip;
 LOCAL  char                  *s3StorageClass;
@@ -168,6 +169,38 @@ void writer_s3_part_cb (int code, unsigned char *UNUSED(data), int UNUSED(len), 
 
 }
 /******************************************************************************/
+void writer_s3_refresh_s3credentials(void)
+{
+    void *metadataServer = moloch_http_create_server("http://169.254.169.254", 10, 10, 0);
+    char role_url[1000];
+    size_t rlen;
+
+    snprintf(role_url, sizeof(role_url), "/latest/meta-data/iam/security-credentials/%s", s3Role);
+
+    unsigned char *credentials = moloch_http_get(metadataServer, role_url, -1, &rlen);
+
+    if (credentials && rlen) {
+        // Now need to extract access key, secret key and token
+        free(s3AccessKeyId);
+        free(s3SecretAccessKey);
+        free(s3Token);
+        s3AccessKeyId = moloch_js0n_get_str(credentials, rlen, "AccessKeyId");
+        s3SecretAccessKey = moloch_js0n_get_str(credentials, rlen, "SecretAccessKey");
+        s3Token = moloch_js0n_get_str(credentials, rlen, "Token");
+    } else {
+        printf("Cannot retrieve credentials from metadata service at %s -- no returned data\n", role_url);
+        exit(1);
+    }
+
+    if (!s3AccessKeyId || !s3SecretAccessKey || !s3Token) {
+        printf("Cannot retrieve credentials from metadata service at %s\n", role_url);
+        exit(1);
+    }
+
+    free(credentials);
+    moloch_http_free_server(metadataServer);
+}
+/******************************************************************************/
 void writer_s3_init_cb (int UNUSED(code), unsigned char *data, int len, gpointer uw)
 {
     SavepcapS3File_t   *file = uw;
@@ -258,6 +291,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
 
     snprintf(storageClassHeader, sizeof(storageClassHeader), "x-amz-storage-class:%s\n", s3StorageClass);
     if (s3Token) {
+      writer_s3_refresh_s3credentials();
       snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token:%s\n", s3Token);
     }
 
@@ -635,6 +669,7 @@ void writer_s3_init(char *UNUSED(name))
     s3MaxConns            = moloch_config_int(NULL, "s3MaxConns", 20, 5, 1000);
     s3MaxRequests         = moloch_config_int(NULL, "s3MaxRequests", 500, 10, 5000);
     s3Token               = NULL;
+    s3Role                = NULL;
 
     if (!s3Bucket) {
         printf("Must set s3Bucket to save to s3\n");
@@ -650,33 +685,17 @@ void writer_s3_init(char *UNUSED(name))
 
         unsigned char *rolename = moloch_http_get(metadataServer, "/latest/meta-data/iam/security-credentials/", -1, &rlen);
 
+        moloch_http_free_server(metadataServer);
+
         if (!rolename || !rlen || rolename[0] == '<') {
             printf("Cannot retrieve role name from metadata service\n");
             exit(1);
         }
 
-        char role_url[1000];
-        snprintf(role_url, sizeof(role_url), "/latest/meta-data/iam/security-credentials/%.*s", (int) rlen, rolename);
-
+        s3Role = g_strndup((const char *) rolename, rlen);
         free(rolename);
 
-        unsigned char *credentials = moloch_http_get(metadataServer, role_url, -1, &rlen);
-
-        if (credentials && rlen) {
-            // Now need to extract access key, secret key and token
-            s3AccessKeyId = moloch_js0n_get_str(credentials, rlen, "AccessKeyId");
-            s3SecretAccessKey = moloch_js0n_get_str(credentials, rlen, "SecretAccessKey");
-            s3Token = moloch_js0n_get_str(credentials, rlen, "Token");
-        }
-
-        if (!s3AccessKeyId || !s3SecretAccessKey || !s3Token) {
-            printf("Cannot retrieve credentials from metadata service at %s\n", role_url);
-            exit(1);
-        }
-
-        free(credentials);
-
-        moloch_http_free_server(metadataServer);
+        writer_s3_refresh_s3credentials();
     }
 
     if (!s3SecretAccessKey) {
