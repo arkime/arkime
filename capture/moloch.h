@@ -658,6 +658,7 @@ typedef struct moloch_session {
     uint16_t               stopYara:1;
     uint16_t               diskOverload:1;
     uint16_t               pq:1;
+    uint16_t               synSet:2;
 } MolochSession_t;
 
 typedef struct moloch_session_head {

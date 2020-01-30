@@ -118,7 +118,7 @@ void writer_s3_complete_cb (int code, unsigned char *data, int len, gpointer uw)
     inprogress--;
 
     if (code != 200) {
-        LOG("Bad Response: %d %s", code, file->outputFileName);
+        LOG("Bad Response: %d %s %.*s", code, file->outputFileName, len, data);
     }
 
     if (config.debug)
@@ -131,18 +131,18 @@ void writer_s3_complete_cb (int code, unsigned char *data, int len, gpointer uw)
     MOLOCH_TYPE_FREE(SavepcapS3File_t, file);
 }
 /******************************************************************************/
-void writer_s3_part_cb (int code, unsigned char *UNUSED(data), int UNUSED(len), gpointer uw)
+void writer_s3_part_cb (int code, unsigned char *data, int len, gpointer uw)
 {
     SavepcapS3File_t  *file = uw;
 
     inprogress--;
 
     if (code != 200) {
-        LOG("Bad Response: %d %s", code, file->outputFileName);
+        LOG("Bad Response: %d %s %.*s", code, file->outputFileName, len, data);
     }
 
     if (config.debug)
-        LOG("Part-Response: %s %d", file->outputFileName, len);
+        LOG("Part-Response: %d %s %d", code, file->outputFileName, len);
 
     file->partNumberResponses++;
 
@@ -168,11 +168,15 @@ void writer_s3_part_cb (int code, unsigned char *UNUSED(data), int UNUSED(len), 
 
 }
 /******************************************************************************/
-void writer_s3_init_cb (int UNUSED(code), unsigned char *data, int len, gpointer uw)
+void writer_s3_init_cb (int code, unsigned char *data, int len, gpointer uw)
 {
     SavepcapS3File_t   *file = uw;
 
     inprogress--;
+
+    if (code != 200) {
+        LOG("Bad Response: %d %s %.*s", code, file->outputFileName, len, data);
+    }
 
     if (config.debug)
         LOG("Init-Response: %s %d", file->outputFileName, len);

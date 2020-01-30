@@ -174,7 +174,12 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
         }
 
         session->haveTcpSession = 1;
-        session->tcpSeq[packet->direction] = seq + 1;
+
+        // Only reset the initial SYN if we haven't set it before in each direction
+        if ((session->synSet & (1 << packet->direction)) == 0) {
+            session->tcpSeq[packet->direction] = seq + 1;
+            session->synSet |= (1 << packet->direction);
+        }
         if (!session->tcp_next) {
             DLL_PUSH_TAIL(tcp_, &tcpWriteQ[session->thread], session);
         }

@@ -18,6 +18,7 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 2.3.0 2020/02/xx
+  - capture - fix SYN retrans handling
 
 2.2.1 2020/01/21
   - capture - fix --skip not working with ES 7.x
