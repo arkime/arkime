@@ -175,21 +175,33 @@ void writer_s3_refresh_s3credentials(void)
     char role_url[1000];
     size_t rlen;
 
+    moloch_http_set_print_errors(metadataServer);
     snprintf(role_url, sizeof(role_url), "/latest/meta-data/iam/security-credentials/%s", s3Role);
 
     unsigned char *credentials = moloch_http_get(metadataServer, role_url, -1, &rlen);
 
+    char *newS3AccessKeyId = NULL;
+    char *newS3SecretAccessKey = NULL;
+    char *newS3Token = NULL;
+
     if (credentials && rlen) {
         // Now need to extract access key, secret key and token
-        free(s3AccessKeyId);
-        free(s3SecretAccessKey);
-        free(s3Token);
-        s3AccessKeyId = moloch_js0n_get_str(credentials, rlen, "AccessKeyId");
-        s3SecretAccessKey = moloch_js0n_get_str(credentials, rlen, "SecretAccessKey");
-        s3Token = moloch_js0n_get_str(credentials, rlen, "Token");
+        newS3AccessKeyId = moloch_js0n_get_str(credentials, rlen, "AccessKeyId");
+        newS3SecretAccessKey = moloch_js0n_get_str(credentials, rlen, "SecretAccessKey");
+        newS3Token = moloch_js0n_get_str(credentials, rlen, "Token");
     } else {
         printf("Cannot retrieve credentials from metadata service at %s -- no returned data\n", role_url);
         exit(1);
+    }
+
+    if (newS3AccessKeyId && newS3SecretAccessKey && newS3Token) {
+        free(s3AccessKeyId);
+        free(s3SecretAccessKey);
+        free(s3Token);
+
+        s3AccessKeyId = newS3AccessKeyId;
+        s3SecretAccessKey = newS3SecretAccessKey;
+        s3Token = newS3Token;
     }
 
     if (!s3AccessKeyId || !s3SecretAccessKey || !s3Token) {
