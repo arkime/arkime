@@ -65,6 +65,7 @@ LOCAL  SavepcapS3File_t      fileQ;
 
 
 LOCAL  void *                s3Server = 0;
+LOCAL  void *                metadataServer = 0;
 LOCAL  char                  *s3Region;
 LOCAL  char                   s3Host[100];
 LOCAL  char                  *s3Bucket;
@@ -72,6 +73,7 @@ LOCAL  char                  s3PathAccessStyle;
 LOCAL  char                  *s3AccessKeyId;
 LOCAL  char                  *s3SecretAccessKey;
 LOCAL  char                  *s3Token;
+LOCAL  time_t                 s3TokenTime;
 LOCAL  char                  *s3Role;
 LOCAL  char                   s3Compress;
 LOCAL  char                   s3WriteGzip;
@@ -171,11 +173,17 @@ void writer_s3_part_cb (int code, unsigned char *data, int len, gpointer uw)
 /******************************************************************************/
 void writer_s3_refresh_s3credentials(void)
 {
-    void *metadataServer = moloch_http_create_server("http://169.254.169.254", 10, 10, 0);
     char role_url[1000];
     size_t rlen;
+    struct timeval now;
 
-    moloch_http_set_print_errors(metadataServer);
+    gettimeofday(&now, 0);
+
+    if (now.tv_sec < s3TokenTime + 290) {
+        // Nothing to be done -- token is still valid
+        return;
+    }
+
     snprintf(role_url, sizeof(role_url), "/latest/meta-data/iam/security-credentials/%s", s3Role);
 
     unsigned char *credentials = moloch_http_get(metadataServer, role_url, -1, &rlen);
@@ -199,6 +207,8 @@ void writer_s3_refresh_s3credentials(void)
         s3AccessKeyId = newS3AccessKeyId;
         s3SecretAccessKey = newS3SecretAccessKey;
         s3Token = newS3Token;
+
+        s3TokenTime = now.tv_sec;
     }
 
     if (!s3AccessKeyId || !s3SecretAccessKey || !s3Token) {
@@ -207,7 +217,6 @@ void writer_s3_refresh_s3credentials(void)
     }
 
     free(credentials);
-    moloch_http_free_server(metadataServer);
 }
 /******************************************************************************/
 void writer_s3_init_cb (int code, unsigned char *data, int len, gpointer uw)
@@ -682,6 +691,7 @@ void writer_s3_init(char *UNUSED(name))
     s3MaxConns            = moloch_config_int(NULL, "s3MaxConns", 20, 5, 1000);
     s3MaxRequests         = moloch_config_int(NULL, "s3MaxRequests", 500, 10, 5000);
     s3Token               = NULL;
+    s3TokenTime           = 0;
     s3Role                = NULL;
 
     if (!s3Bucket) {
@@ -692,13 +702,13 @@ void writer_s3_init(char *UNUSED(name))
     if (!s3AccessKeyId || !s3AccessKeyId[0]) {
         // Fetch the data from the EC2 metadata service
         size_t rlen;
-        void *metadataServer = moloch_http_create_server("http://169.254.169.254", 10, 10, 0);
+
+        metadataServer = moloch_http_create_server("http://169.254.169.254", 10, 10, 0);
+        moloch_http_set_print_errors(metadataServer);
 
         s3AccessKeyId = 0;
 
         unsigned char *rolename = moloch_http_get(metadataServer, "/latest/meta-data/iam/security-credentials/", -1, &rlen);
-
-        moloch_http_free_server(metadataServer);
 
         if (!rolename || !rlen || rolename[0] == '<') {
             printf("Cannot retrieve role name from metadata service\n");
