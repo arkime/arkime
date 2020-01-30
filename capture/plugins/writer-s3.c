@@ -189,9 +189,6 @@ void writer_s3_refresh_s3credentials(void)
         newS3AccessKeyId = moloch_js0n_get_str(credentials, rlen, "AccessKeyId");
         newS3SecretAccessKey = moloch_js0n_get_str(credentials, rlen, "SecretAccessKey");
         newS3Token = moloch_js0n_get_str(credentials, rlen, "Token");
-    } else {
-        printf("Cannot retrieve credentials from metadata service at %s -- no returned data\n", role_url);
-        exit(1);
     }
 
     if (newS3AccessKeyId && newS3SecretAccessKey && newS3Token) {
