@@ -8868,17 +8868,17 @@ function main () {
     internals.previousNodesStats.push(info.nodes);
   });
 
+  loadFields();
+  setInterval(loadFields, 2*60*1000);
+
+  loadPlugins();
+
   var pcapWriteMethod = Config.get("pcapWriteMethod");
   var writer = internals.writers[pcapWriteMethod];
   if (writer && writer.localNode === true) {
     expireCheckAll();
     setInterval(expireCheckAll, 60*1000);
   }
-
-  loadFields();
-  setInterval(loadFields, 2*60*1000);
-
-  loadPlugins();
 
   createRightClicks();
   setInterval(createRightClicks, 5*60*1000);
