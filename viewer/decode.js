@@ -92,7 +92,11 @@ ItemTransform.prototype._transform = function (item, encoding, callback) {
     }
     return callback();
   case 1:
-    return self._process(item, callback);
+    try {
+      return self._process(item, callback);
+    } catch (err) {
+      return callback(err);
+    }
   case 2:
     return callback(null, item);
   }
