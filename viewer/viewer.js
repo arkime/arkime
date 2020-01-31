@@ -8868,8 +8868,12 @@ function main () {
     internals.previousNodesStats.push(info.nodes);
   });
 
-  expireCheckAll();
-  setInterval(expireCheckAll, 60*1000);
+  var pcapWriteMethod = Config.get("pcapWriteMethod");
+  var writer = internals.writers[pcapWriteMethod];
+  if (writer && writer.localNode === true) {
+    expireCheckAll();
+    setInterval(expireCheckAll, 60*1000);
+  }
 
   loadFields();
   setInterval(loadFields, 2*60*1000);

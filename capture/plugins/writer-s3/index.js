@@ -59,6 +59,14 @@ function makeS3 (node, region) {
     s3Params.secretAccessKey = secret;
   }
 
+  if (Config.getFull(node, 's3Host') !== undefined) {
+    s3Params.endpoint = Config.getFull(node, 's3Host')
+  }
+
+  if (Config.getFull(node, 's3PathAccessStyle') === 'true') {
+    s3Params.s3ForcePathStyle = true;
+  }
+
   // Lets hope that we can find a credential provider elsewhere
   var rv = S3s[region + key] = new AWS.S3(s3Params);
   return rv;

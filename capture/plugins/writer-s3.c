@@ -67,7 +67,7 @@ LOCAL  SavepcapS3File_t      fileQ;
 LOCAL  void *                s3Server = 0;
 LOCAL  void *                metadataServer = 0;
 LOCAL  char                  *s3Region;
-LOCAL  char                   s3Host[100];
+LOCAL  char                  *s3Host;
 LOCAL  char                  *s3Bucket;
 LOCAL  char                  s3PathAccessStyle;
 LOCAL  char                  *s3AccessKeyId;
@@ -681,6 +681,7 @@ void writer_s3_init(char *UNUSED(name))
     moloch_writer_write        = writer_s3_write;
 
     s3Region              = moloch_config_str(NULL, "s3Region", "us-east-1");
+    s3Host                = moloch_config_str(NULL, "s3Host", NULL);
     s3Bucket              = moloch_config_str(NULL, "s3Bucket", NULL);
     s3PathAccessStyle     = moloch_config_boolean(NULL, "s3PathAccessStyle", strchr(s3Bucket, '.') != NULL);
     s3AccessKeyId         = moloch_config_str(NULL, "s3AccessKeyId", NULL);
@@ -730,17 +731,19 @@ void writer_s3_init(char *UNUSED(name))
         config.pcapWriteSize = 5242880;
     }
 
-    if (s3PathAccessStyle) {
-        if (strcmp(s3Region, "us-east-1") == 0) {
-            strcpy(s3Host, "s3.amazonaws.com");
+    if (!s3Host) {
+        if (s3PathAccessStyle) {
+            if (strcmp(s3Region, "us-east-1") == 0) {
+                s3Host = g_strdup("s3.amazonaws.com");
+            } else {
+                s3Host = g_strjoin("", "s3-", s3Region, ".amazonaws.com", NULL);
+            }
         } else {
-            snprintf(s3Host, sizeof(s3Host), "s3-%s.amazonaws.com", s3Region);
-        }
-    } else {
-        if (strcmp(s3Region, "us-east-1") == 0) {
-            snprintf(s3Host, sizeof(s3Host), "%s.s3.amazonaws.com", s3Bucket);
-        } else {
-            snprintf(s3Host, sizeof(s3Host), "%s.s3-%s.amazonaws.com", s3Bucket, s3Region);
+            if (strcmp(s3Region, "us-east-1") == 0) {
+                s3Host = g_strjoin("", s3Bucket, ".s3.amazonaws.com", NULL);
+            } else {
+                s3Host = g_strjoin("", s3Bucket, ".s3-", s3Region, ".amazonaws.com", NULL);
+            }
         }
     }
 
