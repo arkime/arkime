@@ -294,6 +294,24 @@ exports.get = function(key, defaultValue) {
   return exports.getFull(internals.nodeName, key, defaultValue);
 };
 
+exports.getBoolFull = function(node, key, defaultValue) {
+  var value = exports.getFull(node, key);
+  if (value !== undefined) {
+    if (value === "true" || value === "1") {
+      return true;
+    } else if (value === "false" || value === "0") {
+      return false;
+    } else {
+      console.log("ERROR - invalid value for ", key);
+    }
+  }
+  return defaultValue;
+};
+
+exports.getBool = function(key, defaultValue) {
+  return exports.getBoolFull(internals.nodeName, key, defaultValue);
+};
+
 // Return an array split on separator, remove leading/trailing spaces, remove empty elements
 exports.getArray = function(key, separator, defaultValue) {
   return exports.get(key, defaultValue).split(separator).map(s=>s.trim()).filter(s=>s.match(/^\S+$/));
