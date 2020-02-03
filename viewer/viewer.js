@@ -5394,6 +5394,82 @@ app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
   }
 });
 
+app.get('/spigraphpie', logAction(), (req, res) => {
+  noCache(req, res, 'text/plain; charset=utf-8');
+
+  let fields = [];
+  let parts = req.query.exp.split(',');
+  for (let i = 0; i < parts.length; i++) {
+    let field = Config.getFieldsMap()[parts[i]];
+    if (!field) {
+      return res.send(`Unknown expression ${parts[i]}\n`);
+    }
+    fields.push(field);
+  }
+
+  buildSessionQuery(req, function(err, query, indices) {
+    delete query.sort;
+    delete query.aggregations;
+    const size = +req.query.size || 20;
+
+    if (!query.query.bool.must) {
+      query.query.bool.must = [];
+    }
+
+    let lastQ = query;
+    for (let i = 0; i < fields.length; i++) {
+      query.query.bool.must.push({ exists: { field: fields[i].dbField } });
+      lastQ.aggregations = {field: { terms : {field : fields[i].dbField, size: size}}};
+      lastQ = lastQ.aggregations.field;
+    }
+
+    if (Config.debug > 2) {
+      console.log('spigraph pie aggregations', indices, JSON.stringify(query, false, 2));
+    }
+
+    Db.searchPrimary(indices, 'session', query, null, function (err, result) {
+      if (err) {
+        console.log('spigraphpie ERROR', err);
+        res.status(400);
+        return res.end(err);
+      }
+
+      if (Config.debug > 2) {
+        console.log('result', JSON.stringify(result, false, 2));
+      }
+
+      let results = {}; // format the data for the pie graph
+      for (let level1Field of result.aggregations.field.buckets) {
+        let result = results[level1Field.key] = {
+          value: level1Field.doc_count
+        };
+        if (level1Field.field) {
+          let otherValue;
+          let previousValue;
+          if (level1Field.field.sum_other_doc_count > 0) {
+            otherValue = level1Field.field.sum_other_doc_count;
+          }
+          result.subData = {};
+          // only include the other category if there is data in it
+          for (let level2Field of level1Field.field.buckets) {
+            let currentValue = level2Field.doc_count;
+            // put the "other" category in the right position of the map
+            if (otherValue > 0 && ((!previousValue && otherValue > currentValue) ||
+              (previousValue > otherValue && otherValue > currentValue))) {
+              result.subData.other = level1Field.field.sum_other_doc_count;
+            }
+            result.subData[level2Field.key] = currentValue;
+            previousValue = level2Field.doc_count;
+          }
+
+        }
+      }
+
+      return res.send(results);
+    });
+  });
+});
+
 app.get('/multiunique.txt', logAction(), function(req, res) {
   noCache(req, res, 'text/plain; charset=utf-8');
 
