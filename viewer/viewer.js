@@ -5408,6 +5408,7 @@ app.get('/spigraphpie', logAction(), (req, res) => {
   }
 
   buildSessionQuery(req, function(err, query, indices) {
+    query.size = 0; // Don't need any real results, just aggregations
     delete query.sort;
     delete query.aggregations;
     const size = +req.query.size || 20;
@@ -7209,6 +7210,11 @@ function runHuntJob (huntId, hunt, query, user) {
       let sessionId = Db.session2Sid(hit);
       let node = session.node;
 
+      // There is no files, this is a fake session, don't hunt it
+      if (session.fileId === undefined || session.fileId.length === 0) {
+        return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
+      }
+
       isLocalView(node, function () {
         sessionHunt(sessionId, options, function (err, matched) {
           if (err) {
@@ -7346,7 +7352,7 @@ function processHuntJob (huntId, hunt) {
             }
           };
 
-          query._source = ['lastPacket', 'node', 'huntId', 'huntName'];
+          query._source = ['lastPacket', 'node', 'huntId', 'huntName', 'fileId'];
 
           if (Config.debug > 2) {
             console.log('HUNT', hunt.name, hunt.userId, '- start:', new Date(hunt.lastPacketTime || hunt.query.startTime * 1000), 'stop:', new Date(hunt.query.stopTime * 1000));
