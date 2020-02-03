@@ -671,7 +671,7 @@ export default {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-if="outerFieldObj">
+                  <tr v-if="outerFieldObj && sliceData.innerData">
                     <td>
                       {{ outerFieldObj.friendlyName }}
                     </td>
