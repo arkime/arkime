@@ -36,7 +36,7 @@
       </template>
     </div> <!-- /field select -->
 
-    <div v-show="spiGraphType === 'pie'">
+    <div v-show="spiGraphType === 'pie' && tableData.length">
       <!-- info area -->
       <div ref="infoPopup">
         <div class="pie-popup">
@@ -49,7 +49,7 @@
     </div>
 
     <!-- table area -->
-    <div v-show="spiGraphType === 'table'"
+    <div v-show="spiGraphType === 'table' && tableData.length"
       class="container mt-4">
       <table class="table table-bordered table-condensed table-sm">
         <thead>
@@ -64,35 +64,55 @@
           </tr>
           <tr>
             <th class="cursor-pointer"
-              @click="sortTable(0)">
+              @click="columnClick(0, 'value')">
               Count
-              <span v-show="tableSort === 0 && !tableDesc"
+              <span v-show="tableSortField === 0 && tableSortType === 'value' && !tableDesc"
                 class="fa fa-sort-asc ml-2">
               </span>
-              <span v-show="tableSort === 0 && tableDesc"
+              <span v-show="tableSortField === 0 && tableSortType === 'value' && tableDesc"
                 class="fa fa-sort-desc ml-2">
               </span>
-              <span v-show="tableSort !== 0"
+              <span v-show="tableSortField !== 0 || tableSortType !== 'value'"
                 class="fa fa-sort ml-2">
               </span>
             </th>
-            <th>
+            <th class="cursor-pointer"
+              @click="columnClick(0, 'name')">
               Value
+              <span v-show="tableSortField === 0 && tableSortType === 'name' && !tableDesc"
+                class="fa fa-sort-asc ml-2">
+              </span>
+              <span v-show="tableSortField === 0 && tableSortType === 'name' && tableDesc"
+                class="fa fa-sort-desc ml-2">
+              </span>
+              <span v-show="tableSortField !== 0 || tableSortType !== 'name'"
+                class="fa fa-sort ml-2">
+              </span>
             </th>
             <template v-if="outerData">
-              <th>
-                Value
-              </th>
               <th class="cursor-pointer"
-                @click="sortTable(1)">
-                Count
-                <span v-show="tableSort === 1 && !tableDesc"
+                @click="columnClick(1, 'name')">
+                Value
+                <span v-show="tableSortField === 1 && tableSortType === 'name' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSort === 1 && tableDesc"
+                <span v-show="tableSortField === 1 && tableSortType === 'name' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSort !== 1"
+                <span v-show="tableSortField !== 1 || tableSortType !== 'name'"
+                  class="fa fa-sort ml-2">
+                </span>
+              </th>
+              <th class="cursor-pointer"
+                @click="columnClick(1, 'value')">
+                Count
+                <span v-show="tableSortField === 1 && tableSortType === 'value' && !tableDesc"
+                  class="fa fa-sort-asc ml-2">
+                </span>
+                <span v-show="tableSortField === 1 && tableSortType === 'value' && tableDesc"
+                  class="fa fa-sort-desc ml-2">
+                </span>
+                <span v-show="tableSortField !== 1 || tableSortType !== 'value'"
                   class="fa fa-sort ml-2">
                 </span>
               </th>
@@ -107,13 +127,25 @@
                   {{ item.innerData.value }}
                 </td>
                 <td>
-                  {{ item.innerData.name }}
+                  <moloch-session-field
+                    :field="baseFieldObj"
+                    :value="item.innerData.name"
+                    :expr="baseFieldObj.exp"
+                    :parse="true"
+                    :session-btn="true">
+                  </moloch-session-field>
                   <span class="color-swatch"
                     :style="{ backgroundColor: item.color }">
                   </span>
                 </td>
                 <td>
-                  {{ item.name }}
+                  <moloch-session-field
+                    :field="fieldTypeaheadList[0]"
+                    :value="item.name"
+                    :expr="fieldTypeaheadList[0].exp"
+                    :parse="true"
+                    :session-btn="true">
+                  </moloch-session-field>
                 </td>
                 <td>
                   {{ item.value }}
@@ -131,7 +163,13 @@
                 <span class="color-swatch"
                   :style="{ backgroundColor: item.color }">
                 </span>
-                {{ item.name }}
+                <moloch-session-field
+                  :field="baseFieldObj"
+                  :value="item.name"
+                  :expr="baseFieldObj.exp"
+                  :parse="true"
+                  :session-btn="true">
+                </moloch-session-field>
               </td>
             </tr>
           </template>
@@ -139,6 +177,13 @@
       </table>
     </div>
     <!-- /table area -->
+
+    <!-- no results -->
+    <moloch-no-results
+      v-if="!tableData.length"
+      class="mt-5 mb-5"
+      :view="query.view">
+    </moloch-no-results> <!-- /no results -->
 
   </div>
 </template>
@@ -151,6 +196,7 @@ import 'd3-interpolate';
 // import services
 import SpigraphService from '../spigraph/SpigraphService';
 // import internal
+import MolochNoResults from '../utils/NoResults';
 import MolochFieldTypeahead from '../utils/FieldTypeahead';
 // import utils
 import Utils from '../utils/utils';
@@ -292,7 +338,7 @@ function closeInfoOnEsc (keyCode) {
 // Vue component ----------------------------------------------------------- //
 export default {
   name: 'MolochPie',
-  components: { MolochFieldTypeahead },
+  components: { MolochNoResults, MolochFieldTypeahead },
   props: {
     spiGraphType: String,
     baseField: String,
@@ -304,14 +350,18 @@ export default {
     return {
       tableData: [],
       outerData: false,
-      tableSort: 0,
+      tableSortType: 'value',
+      tableSortField: 0,
       tableDesc: true,
       closeInfo: closeInfo,
-      fieldTypeaheadList: []
+      fieldTypeaheadList: [],
+      baseFieldObj: undefined
     };
   },
   mounted: function () {
     this.initializeGraph(this.formatDataFromSpigraph(this.graphData));
+
+    this.baseFieldObj = this.getFieldObj(this.baseField);
 
     // resize the pie with the window
     window.addEventListener('resize', this.resize);
@@ -385,24 +435,19 @@ export default {
       this.loadData();
     },
     /**
-     * Sorts the table data
+     * Fired when a column header is clicked
+     * Sets the sort field and type vars and initiates sorting the table data
      * @param {Number} sort The index of the data to sort by (0 = biggest bucket)
+     * @param {String} type The type to sort by (value or name)
      */
-    sortTable: function (sort) {
-      // if the sort field is the same, toggle it, otherwise set it to default (true)
-      this.tableDesc = this.tableSort === sort ? !this.tableDesc : true;
-      this.tableSort = sort;
-      this.tableData.sort((a, b) => {
-        if (!this.tableDesc && this.tableSort === 0 && a.innerData) {
-          return a.innerData.value - b.innerData.value;
-        } else if (this.tableDesc && this.tableSort === 0 && a.innerData) {
-          return b.innerData.value - a.innerData.value;
-        } else if (!this.tableDesc) {
-          return a.value - b.value;
-        } else {
-          return b.value - a.value;
-        }
-      });
+    columnClick: function (sort, type) {
+      // if the sort field and type is the same, toggle it,
+      // otherwise set it to default (true)
+      this.tableDesc = (this.tableSortField === sort && this.tableSortType === type)
+        ? !this.tableDesc : true;
+      this.tableSortType = type;
+      this.tableSortField = sort;
+      this.sortTable();
     },
     /* event functions ----------------------------------------------------- */
     /**
@@ -438,9 +483,28 @@ export default {
     },
     /* helper functions ---------------------------------------------------- */
     /**
+     * Sorts the table data based on the existing sort field and type vars
+     */
+    sortTable: function () {
+      this.tableData.sort((a, b) => {
+        let result = false;
+        if (!this.tableDesc && this.tableSortField === 0 && a.innerData) {
+          result = a.innerData[this.tableSortType] > b.innerData[this.tableSortType];
+        } else if (this.tableDesc && this.tableSortField === 0 && a.innerData) {
+          result = b.innerData[this.tableSortType] > a.innerData[this.tableSortType];
+        } else if (!this.tableDesc) {
+          result = a[this.tableSortType] > b[this.tableSortType];
+        } else {
+          result = b[this.tableSortType] > a[this.tableSortType];
+        }
+        return result ? 1 : -1;
+      });
+    },
+    /**
      * Turn the data array into an object and only preserve neceessary info
      * This is only needed when data is coming from the spigraph loadData func
      * (key = data name, count = data value, idx = index to be added to the pie)
+     * Also adds data to the tableData array
      * @param {Array} data The data array the format
      * @returns {Object} formattedData The formatted data object
      */
@@ -455,9 +519,10 @@ export default {
           field: this.baseField
         };
         formattedData[item.name] = dataObj;
-        this.tableData.push(dataObj); // TODO document this
+        this.tableData.push(dataObj);
       }
 
+      this.sortTable();
       this.applyColorsToTableData(data);
 
       return formattedData;
@@ -765,6 +830,7 @@ export default {
           parentIndex++;
         }
 
+        this.sortTable();
         this.applyColorsToTableData(innerData);
 
         // add the data to the inner circle (it might have changed)
