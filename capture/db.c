@@ -1529,6 +1529,9 @@ uint32_t moloch_db_get_sequence_number_sync(char *name)
 
         if (!version_len || !version) {
             LOG("ERROR - Couldn't fetch sequence: %d %.*s", (int)data_len, (int)data_len, data);
+            if (!data) // No data_len, can't search it or free it
+                continue;
+
             if (strstr((char *)data, "FORBIDDEN") != 0) {
                 LOG("You have most likely run out of space on an elasticsearch node, see https://molo.ch/faq#recommended-elasticsearch-settings on setting disk watermarks and how to clear the elasticsearch error");
             }
