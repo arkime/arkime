@@ -24,6 +24,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - New tcphealthcheck plugin (thanks fj604)
   - viewer - initial pie chart
   - viewer - fix viewer crash when hunting fake sessions (issue #1374)
+  - viewer - fix capture stats sort
 
 2.2.1 2020/01/21
   - capture - fix --skip not working with ES 7.x

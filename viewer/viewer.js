@@ -4325,7 +4325,7 @@ app.get('/stats.json', [noCacheJson, recordResponseTime, checkPermissions(['hide
 
     // sort after all the results are aggregated
     req.query.sortField = req.query.sortField || 'nodeName';
-    if (results.results[0] && results.results[0][req.query.sortField]) { // make sure the field exists to sort on
+    if (results.results[0] && results.results[0][req.query.sortField] !== undefined) { // make sure the field exists to sort on
       results.results = results.results.sort((a, b) => {
         if (req.query.desc === 'true') {
           if (!isNaN(a[req.query.sortField])) {
