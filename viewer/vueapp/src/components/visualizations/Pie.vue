@@ -36,16 +36,109 @@
       </template>
     </div> <!-- /field select -->
 
-    <!-- info area -->
-    <div ref="infoPopup">
-      <div class="pie-popup">
+    <div v-show="spiGraphType === 'pie'">
+      <!-- info area -->
+      <div ref="infoPopup">
+        <div class="pie-popup">
+        </div>
+      </div> <!-- /info area -->
+      <!-- pie chart area -->
+      <div id="pie-area">
       </div>
-    </div> <!-- /info area -->
-
-    <!-- pie chart area -->
-    <div id="pie-area">
+      <!-- /pie chart area -->
     </div>
-    <!-- /pie chart area -->
+
+    <!-- table area -->
+    <div v-show="spiGraphType === 'table'"
+      class="container mt-4">
+      <table class="table table-bordered table-condensed table-sm">
+        <thead>
+          <tr>
+            <th colspan="2">
+              {{ getFieldObj(baseField).friendlyName }}
+            </th>
+            <th v-if="outerData && fieldTypeaheadList.length"
+              colspan="2">
+              {{ fieldTypeaheadList[0].friendlyName }}
+            </th>
+          </tr>
+          <tr>
+            <th class="cursor-pointer"
+              @click="sortTable(0)">
+              Count
+              <span v-show="tableSort === 0 && !tableDesc"
+                class="fa fa-sort-asc ml-2">
+              </span>
+              <span v-show="tableSort === 0 && tableDesc"
+                class="fa fa-sort-desc ml-2">
+              </span>
+              <span v-show="tableSort !== 0"
+                class="fa fa-sort ml-2">
+              </span>
+            </th>
+            <th>
+              Value
+            </th>
+            <template v-if="outerData">
+              <th>
+                Value
+              </th>
+              <th class="cursor-pointer"
+                @click="sortTable(1)">
+                Count
+                <span v-show="tableSort === 1 && !tableDesc"
+                  class="fa fa-sort-asc ml-2">
+                </span>
+                <span v-show="tableSort === 1 && tableDesc"
+                  class="fa fa-sort-desc ml-2">
+                </span>
+                <span v-show="tableSort !== 1"
+                  class="fa fa-sort ml-2">
+                </span>
+              </th>
+            </template>
+          </tr>
+        </thead>
+        <tbody>
+          <template v-if="outerData">
+            <template v-for="(item, key) in tableData">
+              <tr :key="key">
+                <td>
+                  {{ item.innerData.value }}
+                </td>
+                <td>
+                  {{ item.innerData.name }}
+                  <span class="color-swatch"
+                    :style="{ backgroundColor: item.color }">
+                  </span>
+                </td>
+                <td>
+                  {{ item.name }}
+                </td>
+                <td>
+                  {{ item.value }}
+                </td>
+              </tr>
+            </template>
+          </template>
+          <template v-else
+            v-for="item in tableData">
+            <tr :key="item.name">
+              <td>
+                {{ item.value }}
+              </td>
+              <td>
+                <span class="color-swatch"
+                  :style="{ backgroundColor: item.color }">
+                </span>
+                {{ item.name }}
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+    <!-- /table area -->
 
   </div>
 </template>
@@ -201,6 +294,7 @@ export default {
   name: 'MolochPie',
   components: { MolochFieldTypeahead },
   props: {
+    spiGraphType: String,
     baseField: String,
     graphData: Array,
     fields: Array,
@@ -208,8 +302,12 @@ export default {
   },
   data: function () {
     return {
-      fieldTypeaheadList: [],
-      closeInfo: closeInfo
+      tableData: [],
+      outerData: false,
+      tableSort: 0,
+      tableDesc: true,
+      closeInfo: closeInfo,
+      fieldTypeaheadList: []
     };
   },
   mounted: function () {
@@ -273,8 +371,8 @@ export default {
       });
     },
     /**
-     * Fired when a second level field typeahead field is selected or removed
-     * @param {Object} field The field the add or remove to the pie graph
+     * Fired when a second level field typeahead field is selected
+     * @param {Object} field The field the add to the pie graph
      */
     changeField: function (field) {
       // TODO allow 2 items in this array?
@@ -285,6 +383,26 @@ export default {
       }
 
       this.loadData();
+    },
+    /**
+     * Sorts the table data
+     * @param {Number} sort The index of the data to sort by (0 = biggest bucket)
+     */
+    sortTable: function (sort) {
+      // if the sort field is the same, toggle it, otherwise set it to default (true)
+      this.tableDesc = this.tableSort === sort ? !this.tableDesc : true;
+      this.tableSort = sort;
+      this.tableData.sort((a, b) => {
+        if (!this.tableDesc && this.tableSort === 0 && a.innerData) {
+          return a.innerData.value - b.innerData.value;
+        } else if (this.tableDesc && this.tableSort === 0 && a.innerData) {
+          return b.innerData.value - a.innerData.value;
+        } else if (!this.tableDesc) {
+          return a.value - b.value;
+        } else {
+          return b.value - a.value;
+        }
+      });
     },
     /* event functions ----------------------------------------------------- */
     /**
@@ -327,14 +445,21 @@ export default {
      * @returns {Object} formattedData The formatted data object
      */
     formatDataFromSpigraph: function (data) {
+      this.tableData = [];
+
       let formattedData = {};
       for (let item of data) {
-        formattedData[item.name] = {
+        let dataObj = {
           name: item.name,
           value: item.count,
           field: this.baseField
         };
+        formattedData[item.name] = dataObj;
+        this.tableData.push(dataObj); // TODO document this
       }
+
+      this.applyColorsToTableData(data);
+
       return formattedData;
     },
     /**
@@ -357,6 +482,18 @@ export default {
       return d3.scaleOrdinal()
         .domain(data)
         .range(colorArray);
+    },
+    /**
+     * Adds a color variable to every table data item using the outer bucket
+     * @param {Object} data The data to generate the colors from
+     */
+    applyColorsToTableData: function (data) {
+      let colors = this.generateColors(data);
+      for (let item of this.tableData) {
+        let key = item.name;
+        if (item.innerData) { key = item.innerData.name; }
+        item.color = colors(key);
+      }
     },
     /**
      * Initializes the graph by adding the svg to the page once the component
@@ -574,6 +711,9 @@ export default {
         pendingPromise = null;
         this.$emit('toggleLoad', false);
 
+        this.outerData = false;
+        this.tableData = []; // clear the table data
+
         // format the data for the pie graph
         let innerData = {};
         let outerData = {};
@@ -583,18 +723,20 @@ export default {
         // create a data object and identify the parent index (which bucket a
         // value belongs to) and the index of the value itself (for coloring)
         for (let item in response.data) {
-          innerData[item] = {
+          let itemObj = {
             name: item,
             value: response.data[item].value,
             // save the field to add to the search expression
             field: this.baseField
           };
+          innerData[item] = itemObj;
 
           let subIndex = 0;
           let subBucketsSum = 0;
           for (let subItem in response.data[item].subData) {
+            this.outerData = true;
             let value = response.data[item].subData[subItem];
-            outerData[`${subItem}-${parentIndex}`] = {
+            let subItemObj = {
               value: value,
               parentIndex: parentIndex,
               index: index,
@@ -605,15 +747,25 @@ export default {
               // save the field to add to the search expression
               field: this.fieldTypeaheadList[0].exp
             };
+            outerData[`${subItem}-${parentIndex}`] = subItemObj;
             index++;
             subIndex++;
             subBucketsSum += value;
+            // add the flat info to the table data
+            this.tableData.push(subItemObj);
+          }
+
+          if (!this.outerData) {
+            // add the info to the table data
+            this.tableData.push(itemObj);
           }
 
           // scale the inner data so that outer data fits the bucket
           innerData[item].scaledValue = innerData[item].value * (subBucketsSum / innerData[item].value);
           parentIndex++;
         }
+
+        this.applyColorsToTableData(innerData);
 
         // add the data to the inner circle (it might have changed)
         this.applyGraphData(innerData, g, arc, outerArc, polylineTransform, getLabelText);
@@ -820,5 +972,14 @@ export default {
   background: var(--color-primary-lightest);
   overflow: visible;
   text-overflow: ellipsis;
+}
+
+/* add a color swatch to the big bucket table cells */
+.spigraph-pie .color-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  float: right;
+  margin-top: 4px;
 }
 </style>

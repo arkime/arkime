@@ -93,8 +93,9 @@
             <select class="form-control"
               v-model="spiGraphType"
               @change="changeSpiGraphType">
-              <option value="default">default</option>
-              <option value="pie">pie (top talkers)</option>
+              <option value="default">timeline/map</option>
+              <option value="pie">pie</option>
+              <option value="table">table</option>
             </select>
           </div>
         </div> <!-- /main graph type select -->
@@ -143,13 +144,14 @@
     <div class="spigraph-content">
 
       <!-- pie graph type -->
-      <div v-if="spiGraphType === 'pie'">
+      <div v-if="spiGraphType === 'pie' || spiGraphType === 'table'">
 
         <moloch-pie v-if="items && items.length"
           :base-field="baseField"
           :graph-data="items"
           :fields="fields"
           :query="query"
+          :spiGraphType="spiGraphType"
           @toggleLoad="toggleLoad"
           @toggleError="toggleError">
         </moloch-pie>
