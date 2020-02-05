@@ -129,7 +129,7 @@ exports.initialize = function (info, cb) {
 //
 //
 function fixIndex(index) {
-  if (index === undefined) {return undefined;}
+  if (index === undefined || index === '_all') {return index;}
 
   if (Array.isArray(index)) {
     return index.map((val) => {
@@ -969,7 +969,7 @@ exports.indicesSettingsCache = function (cb) {
     internals.indicesSettingsCache = indicesSettings;
     internals.indicesSettingsCache._timeStamp = Date.now();
     cb(null, indicesSettings);
-  });
+  }, '_all');
 };
 
 exports.hostnameToNodeids = function (hostname, cb) {
