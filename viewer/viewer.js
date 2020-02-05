@@ -4325,7 +4325,7 @@ app.get('/stats.json', [noCacheJson, recordResponseTime, checkPermissions(['hide
 
     // sort after all the results are aggregated
     req.query.sortField = req.query.sortField || 'nodeName';
-    if (results.results[0] && results.results[0][req.query.sortField]) { // make sure the field exists to sort on
+    if (results.results[0] && results.results[0][req.query.sortField] !== undefined) { // make sure the field exists to sort on
       results.results = results.results.sort((a, b) => {
         if (req.query.desc === 'true') {
           if (!isNaN(a[req.query.sortField])) {
@@ -5392,6 +5392,83 @@ app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
       csvListWriter(req, res, list, reqFields);
     });
   }
+});
+
+app.get('/spigraphpie', logAction(), (req, res) => {
+  noCache(req, res, 'text/plain; charset=utf-8');
+
+  let fields = [];
+  let parts = req.query.exp.split(',');
+  for (let i = 0; i < parts.length; i++) {
+    let field = Config.getFieldsMap()[parts[i]];
+    if (!field) {
+      return res.send(`Unknown expression ${parts[i]}\n`);
+    }
+    fields.push(field);
+  }
+
+  buildSessionQuery(req, function(err, query, indices) {
+    query.size = 0; // Don't need any real results, just aggregations
+    delete query.sort;
+    delete query.aggregations;
+    const size = +req.query.size || 20;
+
+    if (!query.query.bool.must) {
+      query.query.bool.must = [];
+    }
+
+    let lastQ = query;
+    for (let i = 0; i < fields.length; i++) {
+      query.query.bool.must.push({ exists: { field: fields[i].dbField } });
+      lastQ.aggregations = {field: { terms : {field : fields[i].dbField, size: size}}};
+      lastQ = lastQ.aggregations.field;
+    }
+
+    if (Config.debug > 2) {
+      console.log('spigraph pie aggregations', indices, JSON.stringify(query, false, 2));
+    }
+
+    Db.searchPrimary(indices, 'session', query, null, function (err, result) {
+      if (err) {
+        console.log('spigraphpie ERROR', err);
+        res.status(400);
+        return res.end(err);
+      }
+
+      if (Config.debug > 2) {
+        console.log('result', JSON.stringify(result, false, 2));
+      }
+
+      let results = {}; // format the data for the pie graph
+      for (let level1Field of result.aggregations.field.buckets) {
+        let result = results[level1Field.key] = {
+          value: level1Field.doc_count
+        };
+        if (level1Field.field) {
+          let otherValue;
+          let previousValue;
+          if (level1Field.field.sum_other_doc_count > 0) {
+            otherValue = level1Field.field.sum_other_doc_count;
+          }
+          result.subData = {};
+          // only include the other category if there is data in it
+          for (let level2Field of level1Field.field.buckets) {
+            let currentValue = level2Field.doc_count;
+            // put the "other" category in the right position of the map
+            if (otherValue > 0 && ((!previousValue && otherValue > currentValue) ||
+              (previousValue > otherValue && otherValue > currentValue))) {
+              result.subData.other = level1Field.field.sum_other_doc_count;
+            }
+            result.subData[level2Field.key] = currentValue;
+            previousValue = level2Field.doc_count;
+          }
+
+        }
+      }
+
+      return res.send(results);
+    });
+  });
 });
 
 app.get('/multiunique.txt', logAction(), function(req, res) {
@@ -7133,6 +7210,11 @@ function runHuntJob (huntId, hunt, query, user) {
       let sessionId = Db.session2Sid(hit);
       let node = session.node;
 
+      // There is no files, this is a fake session, don't hunt it
+      if (session.fileId === undefined || session.fileId.length === 0) {
+        return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
+      }
+
       isLocalView(node, function () {
         sessionHunt(sessionId, options, function (err, matched) {
           if (err) {
@@ -7270,7 +7352,7 @@ function processHuntJob (huntId, hunt) {
             }
           };
 
-          query._source = ['lastPacket', 'node', 'huntId', 'huntName'];
+          query._source = ['lastPacket', 'node', 'huntId', 'huntName', 'fileId'];
 
           if (Config.debug > 2) {
             console.log('HUNT', hunt.name, hunt.userId, '- start:', new Date(hunt.lastPacketTime || hunt.query.startTime * 1000), 'stop:', new Date(hunt.query.stopTime * 1000));
@@ -8868,13 +8950,17 @@ function main () {
     internals.previousNodesStats.push(info.nodes);
   });
 
-  expireCheckAll();
-  setInterval(expireCheckAll, 60*1000);
-
   loadFields();
   setInterval(loadFields, 2*60*1000);
 
   loadPlugins();
+
+  var pcapWriteMethod = Config.get("pcapWriteMethod");
+  var writer = internals.writers[pcapWriteMethod];
+  if (!writer || writer.localNode === true) {
+    expireCheckAll();
+    setInterval(expireCheckAll, 60*1000);
+  }
 
   createRightClicks();
   setInterval(createRightClicks, 5*60*1000);

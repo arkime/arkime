@@ -65,13 +65,16 @@ LOCAL  SavepcapS3File_t      fileQ;
 
 
 LOCAL  void *                s3Server = 0;
+LOCAL  void *                metadataServer = 0;
 LOCAL  char                  *s3Region;
-LOCAL  char                   s3Host[100];
+LOCAL  char                  *s3Host;
 LOCAL  char                  *s3Bucket;
 LOCAL  char                  s3PathAccessStyle;
 LOCAL  char                  *s3AccessKeyId;
 LOCAL  char                  *s3SecretAccessKey;
 LOCAL  char                  *s3Token;
+LOCAL  time_t                 s3TokenTime;
+LOCAL  char                  *s3Role;
 LOCAL  char                   s3Compress;
 LOCAL  char                   s3WriteGzip;
 LOCAL  char                  *s3StorageClass;
@@ -168,6 +171,54 @@ void writer_s3_part_cb (int code, unsigned char *data, int len, gpointer uw)
 
 }
 /******************************************************************************/
+void writer_s3_refresh_s3credentials(void)
+{
+    char role_url[1000];
+    size_t rlen;
+    struct timeval now;
+
+    gettimeofday(&now, 0);
+
+    if (now.tv_sec < s3TokenTime + 290) {
+        // Nothing to be done -- token is still valid
+        return;
+    }
+
+    snprintf(role_url, sizeof(role_url), "/latest/meta-data/iam/security-credentials/%s", s3Role);
+
+    unsigned char *credentials = moloch_http_get(metadataServer, role_url, -1, &rlen);
+
+    char *newS3AccessKeyId = NULL;
+    char *newS3SecretAccessKey = NULL;
+    char *newS3Token = NULL;
+
+    if (credentials && rlen) {
+        // Now need to extract access key, secret key and token
+        newS3AccessKeyId = moloch_js0n_get_str(credentials, rlen, "AccessKeyId");
+        newS3SecretAccessKey = moloch_js0n_get_str(credentials, rlen, "SecretAccessKey");
+        newS3Token = moloch_js0n_get_str(credentials, rlen, "Token");
+    }
+
+    if (newS3AccessKeyId && newS3SecretAccessKey && newS3Token) {
+        free(s3AccessKeyId);
+        free(s3SecretAccessKey);
+        free(s3Token);
+
+        s3AccessKeyId = newS3AccessKeyId;
+        s3SecretAccessKey = newS3SecretAccessKey;
+        s3Token = newS3Token;
+
+        s3TokenTime = now.tv_sec;
+    }
+
+    if (!s3AccessKeyId || !s3SecretAccessKey || !s3Token) {
+        printf("Cannot retrieve credentials from metadata service at %s\n", role_url);
+        exit(1);
+    }
+
+    free(credentials);
+}
+/******************************************************************************/
 void writer_s3_init_cb (int code, unsigned char *data, int len, gpointer uw)
 {
     SavepcapS3File_t   *file = uw;
@@ -262,6 +313,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
 
     snprintf(storageClassHeader, sizeof(storageClassHeader), "x-amz-storage-class:%s\n", s3StorageClass);
     if (s3Token) {
+      writer_s3_refresh_s3credentials();
       snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token:%s\n", s3Token);
     }
 
@@ -629,6 +681,7 @@ void writer_s3_init(char *UNUSED(name))
     moloch_writer_write        = writer_s3_write;
 
     s3Region              = moloch_config_str(NULL, "s3Region", "us-east-1");
+    s3Host                = moloch_config_str(NULL, "s3Host", NULL);
     s3Bucket              = moloch_config_str(NULL, "s3Bucket", NULL);
     s3PathAccessStyle     = moloch_config_boolean(NULL, "s3PathAccessStyle", strchr(s3Bucket, '.') != NULL);
     s3AccessKeyId         = moloch_config_str(NULL, "s3AccessKeyId", NULL);
@@ -639,6 +692,8 @@ void writer_s3_init(char *UNUSED(name))
     s3MaxConns            = moloch_config_int(NULL, "s3MaxConns", 20, 5, 1000);
     s3MaxRequests         = moloch_config_int(NULL, "s3MaxRequests", 500, 10, 5000);
     s3Token               = NULL;
+    s3TokenTime           = 0;
+    s3Role                = NULL;
 
     if (!s3Bucket) {
         printf("Must set s3Bucket to save to s3\n");
@@ -648,7 +703,9 @@ void writer_s3_init(char *UNUSED(name))
     if (!s3AccessKeyId || !s3AccessKeyId[0]) {
         // Fetch the data from the EC2 metadata service
         size_t rlen;
-        void *metadataServer = moloch_http_create_server("http://169.254.169.254", 10, 10, 0);
+
+        metadataServer = moloch_http_create_server("http://169.254.169.254", 10, 10, 0);
+        moloch_http_set_print_errors(metadataServer);
 
         s3AccessKeyId = 0;
 
@@ -659,28 +716,10 @@ void writer_s3_init(char *UNUSED(name))
             exit(1);
         }
 
-        char role_url[1000];
-        snprintf(role_url, sizeof(role_url), "/latest/meta-data/iam/security-credentials/%.*s", (int) rlen, rolename);
-
+        s3Role = g_strndup((const char *) rolename, rlen);
         free(rolename);
 
-        unsigned char *credentials = moloch_http_get(metadataServer, role_url, -1, &rlen);
-
-        if (credentials && rlen) {
-            // Now need to extract access key, secret key and token
-            s3AccessKeyId = moloch_js0n_get_str(credentials, rlen, "AccessKeyId");
-            s3SecretAccessKey = moloch_js0n_get_str(credentials, rlen, "SecretAccessKey");
-            s3Token = moloch_js0n_get_str(credentials, rlen, "Token");
-        }
-
-        if (!s3AccessKeyId || !s3SecretAccessKey || !s3Token) {
-            printf("Cannot retrieve credentials from metadata service at %s\n", role_url);
-            exit(1);
-        }
-
-        free(credentials);
-
-        moloch_http_free_server(metadataServer);
+        writer_s3_refresh_s3credentials();
     }
 
     if (!s3SecretAccessKey) {
@@ -692,17 +731,19 @@ void writer_s3_init(char *UNUSED(name))
         config.pcapWriteSize = 5242880;
     }
 
-    if (s3PathAccessStyle) {
-        if (strcmp(s3Region, "us-east-1") == 0) {
-            strcpy(s3Host, "s3.amazonaws.com");
+    if (!s3Host) {
+        if (s3PathAccessStyle) {
+            if (strcmp(s3Region, "us-east-1") == 0) {
+                s3Host = g_strdup("s3.amazonaws.com");
+            } else {
+                s3Host = g_strjoin("", "s3-", s3Region, ".amazonaws.com", NULL);
+            }
         } else {
-            snprintf(s3Host, sizeof(s3Host), "s3-%s.amazonaws.com", s3Region);
-        }
-    } else {
-        if (strcmp(s3Region, "us-east-1") == 0) {
-            snprintf(s3Host, sizeof(s3Host), "%s.s3.amazonaws.com", s3Bucket);
-        } else {
-            snprintf(s3Host, sizeof(s3Host), "%s.s3-%s.amazonaws.com", s3Bucket, s3Region);
+            if (strcmp(s3Region, "us-east-1") == 0) {
+                s3Host = g_strjoin("", s3Bucket, ".s3.amazonaws.com", NULL);
+            } else {
+                s3Host = g_strjoin("", s3Bucket, ".s3-", s3Region, ".amazonaws.com", NULL);
+            }
         }
     }
 
@@ -717,6 +758,7 @@ void writer_s3_init(char *UNUSED(name))
     char host[200];
     snprintf(host, sizeof(host), "https://%s", s3Host);
     s3Server = moloch_http_create_server(host, s3MaxConns, s3MaxRequests, s3Compress);
+    moloch_http_set_print_errors(s3Server);
     moloch_http_set_header_cb(s3Server, writer_s3_header_cb);
 
     checksum = g_checksum_new(G_CHECKSUM_SHA256);

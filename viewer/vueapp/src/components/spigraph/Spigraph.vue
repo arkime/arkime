@@ -47,8 +47,11 @@
             <select class="form-control"
               v-model="query.size"
               @change="changeMaxElements">
+              <option value="5">5</option>
               <option value="10">10</option>
+              <option value="15">15</option>
               <option value="20">20</option>
+              <option value="30">30</option>
               <option value="50">50</option>
               <option value="100">100</option>
               <option value="200">200</option>
@@ -57,8 +60,9 @@
           </div>
         </div> <!-- /maxElements select -->
 
-        <!-- sort select -->
-        <div class="form-group ml-1">
+        <!-- sort select (not shown for the pie graph) -->
+        <div class="form-group ml-1"
+          v-if="spiGraphType === 'default'">
           <div class="input-group input-group-sm">
             <span class="input-group-prepend cursor-help"
               v-b-tooltip.hover
@@ -70,14 +74,35 @@
             <select class="form-control"
               v-model="sortBy"
               @change="changeSortBy">
-              <option value="name">name</option>
-              <option value="graph">graph</option>
+              <option value="name">alphabecially</option>
+              <option value="graph">count</option>
             </select>
           </div>
         </div> <!-- /sort select -->
 
-        <!-- refresh input -->
+        <!-- main graph type select -->
         <div class="form-group ml-1">
+          <div class="input-group input-group-sm">
+            <span class="input-group-prepend cursor-help"
+              v-b-tooltip.hover
+              title="Sort results by">
+              <span class="input-group-text">
+                Graph Type:
+              </span>
+            </span>
+            <select class="form-control"
+              v-model="spiGraphType"
+              @change="changeSpiGraphType">
+              <option value="default">timeline/map</option>
+              <option value="pie">pie</option>
+              <option value="table">table</option>
+            </select>
+          </div>
+        </div> <!-- /main graph type select -->
+
+        <!-- refresh input (not shown for pie) -->
+        <div class="form-group ml-1"
+          v-if="spiGraphType === 'default'">
           <div class="input-group input-group-sm">
             <span class="input-group-prepend cursor-help"
               v-b-tooltip.hover
@@ -105,7 +130,8 @@
           </div>
         </div> <!-- /refresh input-->
 
-        <div class="ml-1 records-display">
+        <div v-if="spiGraphType === 'default'"
+          class="ml-1 records-display">
           <strong class="text-theme-accent"
             v-if="!error && recordsFiltered !== undefined">
             Showing {{ recordsFiltered | commaString }} entries filtered from
@@ -117,56 +143,75 @@
 
     <div class="spigraph-content">
 
-      <!-- main visualization -->
-      <div v-if="mapData && graphData"
-        class="well well-sm mb-3 ml-2 mr-2">
-        <moloch-visualizations
-          id="primary"
-          :graph-data="graphData"
-          :map-data="mapData"
-          :primary="true"
-          :timezone="user.settings.timezone"
-          @fetchMapData="cancelAndLoad(true)">
-        </moloch-visualizations>
-      </div> <!-- /main visualization -->
+      <!-- pie graph type -->
+      <div v-if="spiGraphType === 'pie' || spiGraphType === 'table'">
 
-      <!-- values -->
-      <template v-if="fieldObj">
-        <div v-for="(item, index) in items"
-          :key="item.name"
-          class="spi-graph-item pl-3 pr-3 pt-1">
-          <!-- field value -->
-          <div class="row">
-            <div class="col-md-12">
-              <div class="spi-bucket">
-                <strong>
-                  <moloch-session-field
-                    :field="fieldObj"
-                    :value="item.name"
-                    :expr="fieldObj.exp"
-                    :parse="true"
-                    :pull-left="true"
-                    :session-btn="true">
-                  </moloch-session-field>
-                </strong>
-                <sup>({{ item.count | commaString }})</sup>
+        <moloch-pie v-if="items && items.length"
+          :base-field="baseField"
+          :graph-data="items"
+          :fields="fields"
+          :query="query"
+          :spiGraphType="spiGraphType"
+          @toggleLoad="toggleLoad"
+          @toggleError="toggleError">
+        </moloch-pie>
+
+      </div> <!-- /pie graph type -->
+
+      <!-- default graph type -->
+      <div v-else>
+        <!-- main visualization -->
+        <div v-if="mapData && graphData"
+          class="well well-sm mb-3 ml-2 mr-2">
+          <moloch-visualizations
+            id="primary"
+            :graph-data="graphData"
+            :map-data="mapData"
+            :primary="true"
+            :timezone="user.settings.timezone"
+            @fetchMapData="cancelAndLoad(true)">
+          </moloch-visualizations>
+        </div> <!-- /main visualization -->
+
+        <!-- values -->
+        <template v-if="fieldObj">
+          <div v-for="(item, index) in items"
+            :key="item.name"
+            class="spi-graph-item pl-3 pr-3 pt-1">
+            <!-- field value -->
+            <div class="row">
+              <div class="col-md-12">
+                <div class="spi-bucket">
+                  <strong>
+                    <moloch-session-field
+                      :field="fieldObj"
+                      :value="item.name"
+                      :expr="fieldObj.exp"
+                      :parse="true"
+                      :pull-left="true"
+                      :session-btn="true">
+                    </moloch-session-field>
+                  </strong>
+                  <sup>({{ item.count | commaString }})</sup>
+                </div>
               </div>
-            </div>
-          </div> <!-- /field value -->
-          <!-- field visualization -->
-          <div class="row">
-            <div class="col-md-12">
-              <moloch-visualizations
-                :id="index.toString()"
-                :graph-data="item.graph"
-                :map-data="item.map"
-                :primary="false"
-                :timezone="user.settings.timezone">
-              </moloch-visualizations>
-            </div>
-          </div> <!-- /field visualization -->
-        </div>
-      </template> <!-- /values -->
+            </div> <!-- /field value -->
+            <!-- field visualization -->
+            <div class="row">
+              <div class="col-md-12">
+                <moloch-visualizations
+                  :id="index.toString()"
+                  :graph-data="item.graph"
+                  :map-data="item.map"
+                  :primary="false"
+                  :timezone="user.settings.timezone">
+                </moloch-visualizations>
+              </div>
+            </div> <!-- /field visualization -->
+          </div>
+        </template> <!-- /values -->
+
+      </div> <!-- /default graph type -->
 
       <!-- loading overlay -->
       <moloch-loading
@@ -203,13 +248,14 @@ import Vue from 'vue';
 import SpigraphService from './SpigraphService';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
-// import external
+// import internal
 import MolochError from '../utils/Error';
 import MolochSearch from '../search/Search';
 import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
 import MolochFieldTypeahead from '../utils/FieldTypeahead';
 import MolochVisualizations from '../visualizations/Visualizations';
+import MolochPie from '../visualizations/Pie';
 // import utils
 import Utils from '../utils/utils';
 
@@ -226,7 +272,8 @@ export default {
     MolochLoading,
     MolochNoResults,
     MolochFieldTypeahead,
-    MolochVisualizations
+    MolochVisualizations,
+    MolochPie
   },
   data: function () {
     return {
@@ -242,7 +289,9 @@ export default {
       items: [],
       showDropdown: false,
       fieldTypeahead: 'node',
-      sortBy: this.$route.query.sort || 'graph'
+      baseField: 'node',
+      sortBy: this.$route.query.sort || 'graph',
+      spiGraphType: this.$route.query.spiGraphType || 'default'
     };
   },
   computed: {
@@ -291,6 +340,9 @@ export default {
     '$route.query.field': function (newVal, oldVal) {
       this.cancelAndLoad(true);
     },
+    '$route.query.spiGraphType': function (newVal, oldVal) {
+      this.spiGraphType = newVal;
+    },
     // watch graph type and update sort
     'graphType': function (newVal, oldVal) {
       if (newVal && this.sortBy === 'graph') {
@@ -320,6 +372,7 @@ export default {
           if (field.dbField === this.query.exp ||
             field.exp === this.query.exp) {
             this.fieldTypeahead = field.friendlyName;
+            this.baseField = field.exp;
           }
         }
       }).catch((error) => {
@@ -390,16 +443,40 @@ export default {
         }, 500);
       }
     },
+    changeSpiGraphType: function () {
+      if (this.spiGraphType === 'pie') {
+        this.query.size = 5; // set default size to 5
+        this.sortBy = 'graph'; // set default sort to count (graph)
+        this.query.sort = this.graphType;
+        this.refresh = 0;
+        this.changeRefreshInterval();
+      }
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          size: this.query.size,
+          sort: this.sortBy,
+          spiGraphType: this.spiGraphType
+        }
+      });
+    },
     /* event functions ----------------------------------------------------- */
     changeField: function (field) {
       this.fieldTypeahead = field.friendlyName;
       this.query.exp = field.dbField;
+      this.baseField = field.exp;
       this.$router.push({
         query: {
           ...this.$route.query,
           field: this.query.exp
         }
       });
+    },
+    toggleLoad: function (loading) {
+      this.loading = loading;
+    },
+    toggleError: function (message) {
+      this.error = message;
     },
     /* helper functions ---------------------------------------------------- */
     loadData: function () {

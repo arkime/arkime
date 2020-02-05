@@ -231,8 +231,14 @@
                     />
                     <label class="form-check-label"
                       for="regex">
-                      regex
+                      safe regex
                     </label>
+                    <a href="https://github.com/google/re2/wiki/Syntax"
+                      target="_blank"
+                      class="regex-help">
+                      <span class="fa fa-question-circle">
+                      </span>
+                    </a>
                   </div>
                   <div class="form-check form-check-inline">
                     <input class="form-check-input"
@@ -245,8 +251,14 @@
                     />
                     <label class="form-check-label"
                       for="hexregex">
-                      hex regex
+                      safe hex regex
                     </label>
+                    <a href="https://github.com/google/re2/wiki/Syntax"
+                      target="_blank"
+                      class="regex-help">
+                      <span class="fa fa-question-circle">
+                      </span>
+                    </a>
                   </div>
                 </div> <!-- /packet search text & text type -->
                 <!-- packet search direction -->
@@ -1660,5 +1672,11 @@ form.hunt-create-navbar {
 }
 .list-move {
   transition: transform .8s;
+}
+
+/* regex help icon positioning */
+.regex-help {
+  margin-top: 3px;
+  margin-left: 6px;
 }
 </style>
