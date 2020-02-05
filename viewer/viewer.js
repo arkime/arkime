@@ -8957,7 +8957,7 @@ function main () {
 
   var pcapWriteMethod = Config.get("pcapWriteMethod");
   var writer = internals.writers[pcapWriteMethod];
-  if (writer && writer.localNode === true) {
+  if (!writer || writer.localNode === true) {
     expireCheckAll();
     setInterval(expireCheckAll, 60*1000);
   }
