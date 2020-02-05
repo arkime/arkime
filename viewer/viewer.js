@@ -276,7 +276,7 @@ var _logger_options = {stream: _stream};
 
 if (Config.get("accessLogSuppressHealth")) {
   _logger_options.skip = function(req, res) {
-    return req.path == "/eshealth.json";
+    return req.path === "/eshealth.json";
   };
 }
 
