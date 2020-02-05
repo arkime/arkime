@@ -272,15 +272,10 @@ if (_accesslogfile) {
 
 var _logger_format = decodeURIComponent(Config.get("accessLogFormat",
        ':date :username %1b[1m:method%1b[0m %1b[33m:url%1b[0m :status :res[content-length] bytes :response-time ms'));
-var _logger_options = {stream: _stream};
+var _suppressPaths = Config.getArray("accessLogSuppressPaths", ";", "");
 
-if (Config.get("accessLogSuppressHealth")) {
-  _logger_options.skip = function(req, res) {
-    return req.path === "/eshealth.json";
-  };
-}
-
-app.use(logger(_logger_format, _logger_options));
+app.use(logger(_logger_format, {stream: _stream,
+  skip: (req, res) => { return _suppressPaths.includes(req.path); }}));
 app.use(compression());
 app.use(methodOverride());
 
