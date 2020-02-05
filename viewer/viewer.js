@@ -270,8 +270,17 @@ if (_accesslogfile) {
   _stream = fs.createWriteStream(_accesslogfile, {flags: 'a'});
 }
 
+var _logger_format = decodeURIComponent(Config.get("accessLogFormat",
+       ':date :username %1b[1m:method%1b[0m %1b[33m:url%1b[0m :status :res[content-length] bytes :response-time ms'));
+var _logger_options = {stream: _stream};
 
-app.use(logger(':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :status :res[content-length] bytes :response-time ms',{stream: _stream}));
+if (Config.get("accessLogSuppressHealth")) {
+  _logger_options.skip = function(req, res) {
+    return req.path == "/eshealth.json";
+  };
+}
+
+app.use(logger(_logger_format, _logger_options));
 app.use(compression());
 app.use(methodOverride());
 
