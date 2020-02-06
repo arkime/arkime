@@ -530,7 +530,6 @@ void moloch_config_load()
 
     config.packetThreads         = moloch_config_int(keyfile, "packetThreads", 1, 1, MOLOCH_MAX_PACKET_THREADS);
 
-
     config.logUnknownProtocols   = moloch_config_boolean(keyfile, "logUnknownProtocols", config.debug);
     config.logESRequests         = moloch_config_boolean(keyfile, "logESRequests", config.debug);
     config.logFileCreation       = moloch_config_boolean(keyfile, "logFileCreation", config.debug);
@@ -542,8 +541,8 @@ void moloch_config_load()
     config.parseDNSRecordAll     = moloch_config_boolean(keyfile, "parseDNSRecordAll", FALSE);
     config.parseQSValue          = moloch_config_boolean(keyfile, "parseQSValue", FALSE);
     config.parseCookieValue      = moloch_config_boolean(keyfile, "parseCookieValue", FALSE);
-    config.parseHTTPHeaderRequestAll      = moloch_config_boolean(keyfile, "parseHTTPHeaderRequestAll", FALSE);
-    config.parseHTTPHeaderResponseAll      = moloch_config_boolean(keyfile, "parseHTTPHeaderResponseAll", FALSE);
+    config.parseHTTPHeaderRequestAll  = moloch_config_boolean(keyfile, "parseHTTPHeaderRequestAll", FALSE);
+    config.parseHTTPHeaderResponseAll = moloch_config_boolean(keyfile, "parseHTTPHeaderResponseAll", FALSE);
     config.supportSha256         = moloch_config_boolean(keyfile, "supportSha256", FALSE);
     config.reqBodyOnlyUtf8       = moloch_config_boolean(keyfile, "reqBodyOnlyUtf8", TRUE);
     config.compressES            = moloch_config_boolean(keyfile, "compressES", FALSE);
