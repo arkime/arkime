@@ -31,7 +31,7 @@ MolochPcapFileHdr_t          pcapFileHeader;
 uint64_t                     totalPackets;
 LOCAL uint64_t               totalBytes[MOLOCH_MAX_PACKET_THREADS];
 
-LOCAL uint32_t               initialDropped = 0;
+LOCAL uint64_t               initialDropped = 0;
 struct timeval               initialPacket; // Don't make LOCAL for now because of netflow plugin
 
 extern void                 *esServer;
@@ -1203,7 +1203,7 @@ LOCAL int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const pa
         }
         initialPacket = packet->ts;
         if (!config.pcapReadOffline)
-            LOG("Initial Packet = %ld Initial Dropped = %u", initialPacket.tv_sec, initialDropped);
+            LOG("Initial Packet = %ld Initial Dropped = %" PRIu64, initialPacket.tv_sec, initialDropped);
     }
 
     MOLOCH_THREAD_INCR(totalPackets);
