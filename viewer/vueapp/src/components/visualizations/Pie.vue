@@ -359,7 +359,9 @@ export default {
     };
   },
   mounted: function () {
-    this.initializeGraph(this.formatDataFromSpigraph(this.graphData));
+    this.initializeSunburstGraph(this.formatDataFromSpigraph(this.graphData));
+    // TODO REMOVE
+    // this.initializeGraph(this.formatDataFromSpigraph(this.graphData));
 
     this.baseFieldObj = this.getFieldObj(this.baseField);
 
@@ -511,14 +513,17 @@ export default {
     formatDataFromSpigraph: function (data) {
       this.tableData = [];
 
-      let formattedData = {};
+      let formattedData = {
+        name: 'Top Talkers',
+        children: []
+      };
       for (let item of data) {
         let dataObj = {
           name: item.name,
-          value: item.count,
+          size: item.count, // TODO reference size not value in the table
           field: this.baseField
         };
-        formattedData[item.name] = dataObj;
+        formattedData.children.push(dataObj);
         this.tableData.push(dataObj);
       }
 
@@ -560,13 +565,81 @@ export default {
         item.color = colors(key);
       }
     },
+    // TODO
+    initializeSunburstGraph: function (data) {
+      // SUNBURST SETUP ---------------------- //
+      g = d3.select('#pie-area')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .append('g')
+        .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+
+      this.applySunburstGraphData(data);
+    },
+    // TODO
+    applySunburstGraphData: function (data) {
+      const color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, data.children.length + 1));
+
+      let partition = d3.partition() // organize data into sunburst pattern
+        .size([2 * Math.PI, radius]); // show sunburst in full circle
+
+      let root = d3.hierarchy(data) // our data is hierarchical
+        .sum((d) => { return d.size; }); // sub each node's children
+
+      // combine partition var (data structure) with root node (the actual data)
+      partition(root);
+
+      let sunburstArc = d3.arc() // calculate size of each arc from data
+        .startAngle((d) => { return d.x0; }) // radian location for start of arc
+        .endAngle((d) => { return d.x1; }) // radian location for end of arc
+        .innerRadius((d) => { return d.y0; }) // radian location for inside arc
+        .outerRadius((d) => { return d.y1; }) // radian location for outside arc
+        .cornerRadius(6); // rounded corners cause they're pretty
+
+      g.selectAll('path') // select all path elements
+        .data(root.descendants()) // pass in root variable with descendants
+        .enter() // connect the path element with our data
+        .append('path') // add the new paths for each node
+        .attr('display', (d) => { // don't display the root node
+          return d.depth ? null : 'none';
+        })
+        .attr('d', sunburstArc) // set the d attribute on the paths for drawing each slice
+        .style('stroke', '#fff') // white lines between the slices
+        .style('fill', (d) => {
+          while (d.depth > 1) {
+            d = d.parent;
+          }
+          return color(d.data.name);
+        });
+
+      g.selectAll('path') // select all path elements
+        .data(root.descendants())
+        .transition()
+        .duration(1000);
+
+      g.selectAll('text') // select all text elements
+        .data(root.descendants().filter((d) => {
+          // don't show text for tiny slices or the root node text
+          return d.depth && (d.y0 + d.y1) / 2 * (d.x1 - d.x0) > 10;
+        }))
+        .enter() // connect the text element with our data
+        .append('text') // add the new text elements for each node
+        .attr('transform', (d) => { // rotate them within the slice
+          const x = (d.x0 + d.x1) / 2 * 180 / Math.PI;
+          const y = (d.y0 + d.y1) / 2;
+          return `rotate(${x - 90}) translate(${y},0) rotate(${x < 180 ? 0 : 180})`;
+        })
+        .attr('dy', '0.35em') // set the size of the text
+        .text((d) => { return d.data.name; }); // TODO maybe truncate the name?
+    },
     /**
      * Initializes the graph by adding the svg to the page once the component
      * has mounted and the pie area container is present.
      * Sets the value of the pie slices and sorts the pie slices by index
      * Applies the initial data to the pie graph
      * @param {Object} data The data to construct the pie
-     */
+     */ // TODO REMOVE
     initializeGraph: function (data) {
       // PIE SETUP --------------------------- //
       svg = d3.select('#pie-area')
@@ -776,83 +849,85 @@ export default {
         pendingPromise = null;
         this.$emit('toggleLoad', false);
 
-        this.outerData = false;
-        this.tableData = []; // clear the table data
+        this.applySunburstGraphData(response.data);
 
-        // format the data for the pie graph
-        let innerData = {};
-        let outerData = {};
-        let index = 0;
-        let parentIndex = 0;
+        // this.outerData = false;
+        // this.tableData = []; // clear the table data
+        //
+        // // format the data for the pie graph
+        // let innerData = {};
+        // let outerData = {};
+        // let index = 0;
+        // let parentIndex = 0;
 
         // create a data object and identify the parent index (which bucket a
         // value belongs to) and the index of the value itself (for coloring)
-        for (let item in response.data) {
-          let itemObj = {
-            name: item,
-            value: response.data[item].value,
-            // save the field to add to the search expression
-            field: this.baseField
-          };
-          innerData[item] = itemObj;
+        // for (let item in response.data) {
+        //   let itemObj = {
+        //     name: item,
+        //     value: response.data[item].value,
+        //     // save the field to add to the search expression
+        //     field: this.baseField
+        //   };
+        //   innerData[item] = itemObj;
+        //
+        //   let subIndex = 0;
+        //   let subBucketsSum = 0;
+        //   for (let subItem in response.data[item].subData) {
+        //     this.outerData = true;
+        //     let value = response.data[item].subData[subItem];
+        //     let subItemObj = {
+        //       value: value,
+        //       parentIndex: parentIndex,
+        //       index: index,
+        //       name: subItem,
+        //       subIndex: subIndex,
+        //       // save the inner data to show on hover
+        //       innerData: innerData[item],
+        //       // save the field to add to the search expression
+        //       field: this.fieldTypeaheadList[0].exp
+        //     };
+        //     outerData[`${subItem}-${parentIndex}`] = subItemObj;
+        //     index++;
+        //     subIndex++;
+        //     subBucketsSum += value;
+        //     // add the flat info to the table data
+        //     this.tableData.push(subItemObj);
+        //   }
+        //
+        //   if (!this.outerData) {
+        //     // add the info to the table data
+        //     this.tableData.push(itemObj);
+        //   }
+        //
+        //   // scale the inner data so that outer data fits the bucket
+        //   innerData[item].scaledValue = innerData[item].value * (subBucketsSum / innerData[item].value);
+        //   parentIndex++;
+        // }
 
-          let subIndex = 0;
-          let subBucketsSum = 0;
-          for (let subItem in response.data[item].subData) {
-            this.outerData = true;
-            let value = response.data[item].subData[subItem];
-            let subItemObj = {
-              value: value,
-              parentIndex: parentIndex,
-              index: index,
-              name: subItem,
-              subIndex: subIndex,
-              // save the inner data to show on hover
-              innerData: innerData[item],
-              // save the field to add to the search expression
-              field: this.fieldTypeaheadList[0].exp
-            };
-            outerData[`${subItem}-${parentIndex}`] = subItemObj;
-            index++;
-            subIndex++;
-            subBucketsSum += value;
-            // add the flat info to the table data
-            this.tableData.push(subItemObj);
-          }
-
-          if (!this.outerData) {
-            // add the info to the table data
-            this.tableData.push(itemObj);
-          }
-
-          // scale the inner data so that outer data fits the bucket
-          innerData[item].scaledValue = innerData[item].value * (subBucketsSum / innerData[item].value);
-          parentIndex++;
-        }
-
-        this.sortTable();
-        this.applyColorsToTableData(innerData);
+        // this.sortTable();
+        // this.applyColorsToTableData(innerData);
 
         // add the data to the inner circle (it might have changed)
-        this.applyGraphData(innerData, g, arc, outerArc, polylineTransform, getLabelText);
-        if (index > 0) { // if there's outer data
-          // remove the inner labels
-          g.datum(d3.entries({}))
-            .selectAll('text')
-            .data(pie(d3.entries({})))
-            .exit().remove();
-
-          // remove lines from slices to labels from inner pie
-          g.datum(d3.entries({}))
-            .selectAll('polyline')
-            .data(pie(d3.entries({})))
-            .exit().remove();
-
-          // add another g to add the new pie data
-          if (!g2) { g2 = svg.append('g'); }
-          // add data to the outer circle
-          this.applyGraphData(outerData, g2, arc2, outerArc2, polylineTransform2, getTopLabelText);
-        }
+        // this.applyGraphData(innerData, g, arc, outerArc, polylineTransform, getLabelText);
+        // if (index > 0) { // if there's outer data
+        //   // remove the inner labels
+        //   g.datum(d3.entries({}))
+        //     .selectAll('text')
+        //     .data(pie(d3.entries({})))
+        //     .exit().remove();
+        //
+        //   // remove lines from slices to labels from inner pie
+        //   g.datum(d3.entries({}))
+        //     .selectAll('polyline')
+        //     .data(pie(d3.entries({})))
+        //     .exit().remove();
+        //
+        //   // add another g to add the new pie data
+        //   if (!g2) { g2 = svg.append('g'); }
+        //   // add data to the outer circle
+        //   this.applyGraphData(outerData, g2, arc2, outerArc2, polylineTransform2, getTopLabelText);
+        // }
       }).catch((error) => {
         pendingPromise = null;
         this.$emit('toggleLoad', false);

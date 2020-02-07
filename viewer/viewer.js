@@ -5443,31 +5443,55 @@ app.get('/spigraphpie', logAction(), (req, res) => {
         console.log('result', JSON.stringify(result, false, 2));
       }
 
-      let results = {}; // format the data for the pie graph
+      // format the data for the pie graph
+      let results = { name: 'Top Talkers', children: [] };
       for (let level1Field of result.aggregations.field.buckets) {
-        let result = results[level1Field.key] = {
-          value: level1Field.doc_count
-        };
+        // let result = results[level1Field.key] = {
+        //   value: level1Field.doc_count
+        // };
+        let result = {
+          name: level1Field.key,
+          sizeValue: level1Field.doc_count // TODO ECR don't need size here?
+        }
         if (level1Field.field) {
           let otherValue;
           let previousValue;
           if (level1Field.field.sum_other_doc_count > 0) {
             otherValue = level1Field.field.sum_other_doc_count;
           }
-          result.subData = {};
+          // TODO ECR REMOVE
+          // result.subData = {};
+          // // only include the other category if there is data in it
+          // for (let level2Field of level1Field.field.buckets) {
+          //   let currentValue = level2Field.doc_count;
+          //   // put the "other" category in the right position of the map
+          //   if (otherValue > 0 && ((!previousValue && otherValue > currentValue) ||
+          //     (previousValue > otherValue && otherValue > currentValue))) {
+          //     result.subData.other = level1Field.field.sum_other_doc_count;
+          //   }
+          //   result.subData[level2Field.key] = currentValue;
+          //   previousValue = level2Field.doc_count;
+          // }
+          result.children = [];
           // only include the other category if there is data in it
           for (let level2Field of level1Field.field.buckets) {
             let currentValue = level2Field.doc_count;
             // put the "other" category in the right position of the map
             if (otherValue > 0 && ((!previousValue && otherValue > currentValue) ||
               (previousValue > otherValue && otherValue > currentValue))) {
-              result.subData.other = level1Field.field.sum_other_doc_count;
+              result.children.push({
+                name: 'other',
+                size: level1Field.field.sum_other_doc_count
+              })
             }
-            result.subData[level2Field.key] = currentValue;
+            result.children.push({
+              name: level2Field.key,
+              size: currentValue
+            });
             previousValue = level2Field.doc_count;
           }
-
         }
+        results.children.push(result);
       }
 
       return res.send(results);
