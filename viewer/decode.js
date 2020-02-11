@@ -542,6 +542,10 @@ ItemHTTPStream.onHeadersComplete = function(major, minor, headers, method, url) 
   this.headerInfo = info;
   if (url)
     this.httpstream.bodyName = url.split(/[\/?=]/).pop();
+
+  if (info.headersMap['expect'] === '100-continue') {
+    this.curitem.expect100 = true;
+  }
 };
 
 ItemHTTPStream.prototype._shouldProcess = function (item) {
@@ -549,7 +553,7 @@ ItemHTTPStream.prototype._shouldProcess = function (item) {
 };
 
 ItemHTTPStream.prototype._process = function (item, callback) {
-  //console.trace("_process", item);
+  //console.trace("_process", item.data.toString());
   if (this.parsers === undefined) {
     if (item.data.slice(0,4).toString() === "HTTP") {
       this.parsers = [new HTTPParser(HTTPParser.RESPONSE), new HTTPParser(HTTPParser.REQUEST)];
@@ -569,6 +573,8 @@ ItemHTTPStream.prototype._process = function (item, callback) {
     var out = this.parsers[item.client].execute(item.data, 0, item.data.length);
     if (typeof out === "object") {
       this.push(item);
+    } else if (item.expect100) {
+      this.push({client: item.client, ts: item.ts, data: item.data.slice(0, out)});
     }
   }
   setImmediate(callback);

@@ -1,0 +1,200 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "communityId" : "1:sUieXKbsJ2FhfxmjSMYdjlRe8x0=",
+            "dstBytes" : 1311,
+            "dstDataBytes" : 689,
+            "dstIp" : "0102:0305:0220:0001:0248:1893:25c8:1946",
+            "dstMac" : [
+               "00:10:db:ff:10:01"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 7,
+            "dstPayload8" : "485454502f312e31",
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1580405643172,
+            "http" : {
+               "bodyMagic" : [
+                  "text/xml"
+               ],
+               "bodyMagicCnt" : 1,
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "clientVersionCnt" : 1,
+               "host" : [
+                  "example.com"
+               ],
+               "hostCnt" : 1,
+               "md5" : [
+                  "4a8b5abca9e7e6bbc4b2e881a86821db",
+                  "8533d322aa09355339125acaf8bd42ac"
+               ],
+               "md5Cnt" : 2,
+               "method" : [
+                  "POST"
+               ],
+               "methodCnt" : 1,
+               "path" : [
+                  "/re/abcdefghijklmnopqrstuvwxyz123456"
+               ],
+               "pathCnt" : 1,
+               "requestBody" : [
+                  "aGVsbG8NCg=="
+               ],
+               "requestHeader" : [
+                  "connection",
+                  "content-length",
+                  "expect",
+                  "host"
+               ],
+               "requestHeaderCnt" : 4,
+               "requestHeaderField" : [
+                  "connection",
+                  "content-length",
+                  "expect"
+               ],
+               "requestHeaderValue" : [
+                  "100-continue",
+                  "12",
+                  "keep-alive"
+               ],
+               "requestHeaderValueCnt" : 3,
+               "responseHeader" : [
+                  "cache-control",
+                  "content-length",
+                  "content-type",
+                  "date",
+                  "expires",
+                  "server"
+               ],
+               "responseHeaderCnt" : 6,
+               "responseHeaderField" : [
+                  "cache-control",
+                  "content-length",
+                  "content-type",
+                  "date",
+                  "expires",
+                  "server"
+               ],
+               "responseHeaderValue" : [
+                  "445",
+                  "eos (vny/044e)",
+                  "max-age=604800",
+                  "text/html; charset=utf-8",
+                  "thu, 06 feb 2020 17:34:03 gmt",
+                  "thu, 30 jan 2020 17:34:03 gmt"
+               ],
+               "responseHeaderValueCnt" : 6,
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "serverVersionCnt" : 1,
+               "sha256" : [
+                  "ac4211a923392ccc497e1c7fda9db382f1093147f6994eeda5ed547aa0c16b77",
+                  "f3d1071c18e51d0f9e3012d35225b808e322da45ecdf48e94d058a4caf301cc4"
+               ],
+               "sha256Cnt" : 2,
+               "statuscode" : [
+                  100,
+                  404
+               ],
+               "statuscodeCnt" : 2,
+               "uri" : [
+                  "example.com/re/abcdefghijklmnopqrstuvwxyz123456"
+               ],
+               "uriCnt" : 1
+            },
+            "initRTT" : 5,
+            "ipProtocol" : 6,
+            "lastPacket" : 1580405643303,
+            "length" : 131,
+            "node" : "test",
+            "packetLen" : [
+               114,
+               110,
+               102,
+               241,
+               102,
+               127,
+               102,
+               114,
+               102,
+               114,
+               114,
+               766,
+               102,
+               102,
+               102,
+               102
+            ],
+            "packetPos" : [
+               24,
+               138,
+               248,
+               350,
+               591,
+               693,
+               820,
+               922,
+               1036,
+               1138,
+               1252,
+               1366,
+               2132,
+               2234,
+               2336,
+               2438
+            ],
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 949,
+            "srcDataBytes" : 151,
+            "srcIp" : "0102:0304:ef6e:0000:586c:40b9:519f:7bae",
+            "srcMac" : [
+               "8c:85:90:4d:f2:12"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Apple, Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 9,
+            "srcPayload8" : "504f5354202f7265",
+            "srcPort" : 61273,
+            "tcpflags" : {
+               "ack" : 7,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 5,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 2260,
+            "totDataBytes" : 840,
+            "totPackets" : 16
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-200130",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+
