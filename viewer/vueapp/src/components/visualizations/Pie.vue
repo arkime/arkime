@@ -57,22 +57,22 @@
             <th colspan="2">
               {{ getFieldObj(baseField).friendlyName }}
             </th>
-            <th v-if="outerData && fieldTypeaheadList.length"
+            <th v-if="fieldTypeaheadList.length"
               colspan="2">
               {{ fieldTypeaheadList[0].friendlyName }}
             </th>
           </tr>
           <tr>
             <th class="cursor-pointer"
-              @click="columnClick(0, 'value')">
+              @click="columnClick(0, 'size')">
               Count
-              <span v-show="tableSortField === 0 && tableSortType === 'value' && !tableDesc"
+              <span v-show="tableSortField === 0 && tableSortType === 'size' && !tableDesc"
                 class="fa fa-sort-asc ml-2">
               </span>
-              <span v-show="tableSortField === 0 && tableSortType === 'value' && tableDesc"
+              <span v-show="tableSortField === 0 && tableSortType === 'size' && tableDesc"
                 class="fa fa-sort-desc ml-2">
               </span>
-              <span v-show="tableSortField !== 0 || tableSortType !== 'value'"
+              <span v-show="tableSortField !== 0 || tableSortType !== 'size'"
                 class="fa fa-sort ml-2">
               </span>
             </th>
@@ -89,7 +89,7 @@
                 class="fa fa-sort ml-2">
               </span>
             </th>
-            <template v-if="outerData">
+            <template v-if="fieldTypeaheadList.length > 0">
               <th class="cursor-pointer"
                 @click="columnClick(1, 'name')">
                 Value
@@ -104,15 +104,15 @@
                 </span>
               </th>
               <th class="cursor-pointer"
-                @click="columnClick(1, 'value')">
+                @click="columnClick(1, 'size')">
                 Count
-                <span v-show="tableSortField === 1 && tableSortType === 'value' && !tableDesc"
+                <span v-show="tableSortField === 1 && tableSortType === 'size' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSortField === 1 && tableSortType === 'value' && tableDesc"
+                <span v-show="tableSortField === 1 && tableSortType === 'size' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSortField !== 1 || tableSortType !== 'value'"
+                <span v-show="tableSortField !== 1 || tableSortType !== 'size'"
                   class="fa fa-sort ml-2">
                 </span>
               </th>
@@ -120,16 +120,16 @@
           </tr>
         </thead>
         <tbody>
-          <template v-if="outerData">
+          <template v-if="fieldTypeaheadList.length">
             <template v-for="(item, key) in tableData">
-              <tr :key="key">
+              <tr :key="key" v-if="item.parent">
                 <td>
-                  {{ item.innerData.value }}
+                  {{ item.parent.size }}
                 </td>
                 <td>
                   <moloch-session-field
                     :field="baseFieldObj"
-                    :value="item.innerData.name"
+                    :value="item.parent.name"
                     :expr="baseFieldObj.exp"
                     :parse="true"
                     :session-btn="true">
@@ -148,7 +148,7 @@
                   </moloch-session-field>
                 </td>
                 <td>
-                  {{ item.value }}
+                  {{ item.size }}
                 </td>
               </tr>
             </template>
@@ -157,7 +157,7 @@
             v-for="item in tableData">
             <tr :key="item.name">
               <td>
-                {{ item.value }}
+                {{ item.size }}
               </td>
               <td>
                 <span class="color-swatch"
@@ -192,7 +192,6 @@
 // import external
 import Vue from 'vue';
 import * as d3 from 'd3';
-import 'd3-interpolate';
 // import services
 import SpigraphService from '../spigraph/SpigraphService';
 // import internal
@@ -207,7 +206,7 @@ let popupTimer; // timer to debounce pie slice info popup events
 let resizeTimer; // timer to debounce resizing the pie graph on window resize
 
 // page pie variables ------------------------------------------------------ //
-let g, g2, svg, newSlice;
+let g, newSlice, styles, background, foreground;
 let width = getWidth();
 let height = getHeight();
 let radius = getRadius();
@@ -242,11 +241,13 @@ function textTransform (d) {
 }
 
 function mouseover (d, self) {
-  d3.select(self).style('opacity', 0.7);
+  self.parentNode.appendChild(self);
+  self.parentNode.parentNode.appendChild(self.parentNode);
+  d3.select(self).select('path').style('stroke', foreground);
 }
 
 function mouseleave (d, self) {
-  d3.select(self).style('opacity', 1);
+  d3.select(self).select('path').style('stroke', background);
 };
 
 // close popups helper
@@ -278,17 +279,21 @@ export default {
     return {
       tableData: [],
       outerData: false,
-      tableSortType: 'value',
+      tableSortType: 'size',
       tableSortField: 0,
       tableDesc: true,
       closeInfo: closeInfo,
       fieldTypeaheadList: [],
       baseFieldObj: undefined,
-      // TODO
       pieData: undefined
     };
   },
   mounted: function () {
+    // set colors to match the background
+    styles = window.getComputedStyle(document.body);
+    background = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
+    foreground = styles.getPropertyValue('--color-foreground').trim() || '#333333';
+
     this.initializeGraph(this.formatDataFromSpigraph(this.graphData));
 
     this.baseFieldObj = this.getFieldObj(this.baseField);
@@ -380,7 +385,7 @@ export default {
           .select('g')
           .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
 
-        // just rerender the pie graph
+        // just rerender the pie graph (seems like the only way)
         this.applyGraphData(this.pieData);
       }, 500);
     },
@@ -391,10 +396,10 @@ export default {
     sortTable: function () {
       this.tableData.sort((a, b) => {
         let result = false;
-        if (!this.tableDesc && this.tableSortField === 0 && a.innerData) {
-          result = a.innerData[this.tableSortType] > b.innerData[this.tableSortType];
-        } else if (this.tableDesc && this.tableSortField === 0 && a.innerData) {
-          result = b.innerData[this.tableSortType] > a.innerData[this.tableSortType];
+        if (!this.tableDesc && this.tableSortField === 0 && a.parent) {
+          result = a.parent[this.tableSortType] > b.parent[this.tableSortType];
+        } else if (this.tableDesc && this.tableSortField === 0 && a.parent) {
+          result = b.parent[this.tableSortType] > a.parent[this.tableSortType];
         } else if (!this.tableDesc) {
           result = a[this.tableSortType] > b[this.tableSortType];
         } else {
@@ -412,8 +417,6 @@ export default {
      * @returns {Object} formattedData The formatted data object
      */
     formatDataFromSpigraph: function (data) {
-      this.tableData = [];
-
       let formattedData = {
         name: 'Top Talkers',
         children: []
@@ -422,52 +425,49 @@ export default {
       for (let item of data) {
         let dataObj = {
           name: item.name,
-          size: item.count, // TODO reference size not value in the table
+          size: item.count,
           field: this.baseField
         };
         formattedData.children.push(dataObj);
-        this.tableData.push(dataObj);
       }
 
+      this.tableData = formattedData.children;
+      this.applyColorsToTableData(this.tableData);
       this.sortTable();
-      // TODO remove?
-      // this.applyColorsToTableData(data);
 
       return formattedData;
     },
     /**
      * Generates a list of colors (RAINBOW) based on the length of the data
-     * @param {Object} data The data object to calculate colors for
+     * @param {Number} dataLength The length of the data to calculate colors for
      * @returns {Function} colors Function to retrieve a color per data point
      */
-    // generateColors: function (data) {
-    //   const colorScale = d3.interpolateHslLong('red', 'purple');
-    //   const dataLength = Object.keys(data).length;
-    //   const intervalSize = 1 / dataLength;
-    //
-    //   let colorArray = [];
-    //   for (let i = 0; i < dataLength; i++) {
-    //     let color = colorScale(i * intervalSize);
-    //     colorArray.push(color);
-    //   }
-    //
-    //   // set the color scale
-    //   return d3.scaleOrdinal()
-    //     .domain(data)
-    //     .range(colorArray);
-    // },
+    generateColors: function (dataLength) {
+      return d3.scaleOrdinal(
+        d3.quantize(d3.interpolateRainbow, dataLength + 1)
+      );
+    },
     /**
      * Adds a color variable to every table data item using the outer bucket
      * @param {Object} data The data to generate the colors from
-     */ // TODO NEED THIS?
-    // applyColorsToTableData: function (data) {
-    //   let colors = this.generateColors(data);
-    //   for (let item of this.tableData) {
-    //     let key = item.name;
-    //     if (item.innerData) { key = item.innerData.name; }
-    //     item.color = colors(key);
-    //   }
-    // },
+     */
+    applyColorsToTableData: function (data) {
+      let parentMap = {};
+      for (let item of data) {
+        if (item.parent && !parentMap[item.parent.name]) { // count parents
+          parentMap[item.parent.name] = true;
+        } else if (!item.parent && !parentMap[item.name]) {
+          parentMap[item.name] = true;
+        }
+      }
+      let parentCount = Object.keys(parentMap).length;
+      let colors = this.generateColors(parentCount);
+      for (let item of data) {
+        let key = item.name;
+        if (item.parent) { key = item.parent.name; }
+        item.color = colors(key);
+      }
+    },
     /**
      * Initializes the graph by adding the svg to the page once the component
      * has mounted and the pie area container is present.
@@ -492,10 +492,7 @@ export default {
     applyGraphData: function (data) {
       let vueSelf = this;
       this.pieData = data; // save pie data for resize
-
-      const color = d3.scaleOrdinal(
-        d3.quantize(d3.interpolateRainbow, data.children.length + 1)
-      );
+      let colors = this.generateColors(data.children.length);
 
       let partition = d3.partition() // organize data into sunburst pattern
         .size([2 * Math.PI, radius]); // show sunburst in full circle
@@ -527,11 +524,11 @@ export default {
           return d.depth ? null : 'none';
         })
         .attr('d', arc) // set the d attribute on the paths for drawing each slice
-        // TODO test this with non-white background
-        .style('stroke', '#fff') // white lines between the slices
+        .style('stroke-width', '3px')
+        .style('stroke', background) // lines between the slices
         .style('fill', (d) => { // apply the colors to the slices
           while (d.depth > 1) { d = d.parent; }
-          return color(d.data.name);
+          return colors(d.data.name);
         });
 
       newSlice // hover functionality
@@ -605,87 +602,10 @@ export default {
         pendingPromise = null;
         this.$emit('toggleLoad', false);
 
-        this.applyGraphData(response.data);
-
-        // TODO show table data properly
-
-        // this.outerData = false;
-        // this.tableData = []; // clear the table data
-        //
-        // // format the data for the pie graph
-        // let innerData = {};
-        // let outerData = {};
-        // let index = 0;
-        // let parentIndex = 0;
-
-        // create a data object and identify the parent index (which bucket a
-        // value belongs to) and the index of the value itself (for coloring)
-        // for (let item in response.data) {
-        //   let itemObj = {
-        //     name: item,
-        //     value: response.data[item].value,
-        //     // save the field to add to the search expression
-        //     field: this.baseField
-        //   };
-        //   innerData[item] = itemObj;
-        //
-        //   let subIndex = 0;
-        //   let subBucketsSum = 0;
-        //   for (let subItem in response.data[item].subData) {
-        //     this.outerData = true;
-        //     let value = response.data[item].subData[subItem];
-        //     let subItemObj = {
-        //       value: value,
-        //       parentIndex: parentIndex,
-        //       index: index,
-        //       name: subItem,
-        //       subIndex: subIndex,
-        //       // save the inner data to show on hover
-        //       innerData: innerData[item],
-        //       // save the field to add to the search expression
-        //       field: this.fieldTypeaheadList[0].exp
-        //     };
-        //     outerData[`${subItem}-${parentIndex}`] = subItemObj;
-        //     index++;
-        //     subIndex++;
-        //     subBucketsSum += value;
-        //     // add the flat info to the table data
-        //     this.tableData.push(subItemObj);
-        //   }
-        //
-        //   if (!this.outerData) {
-        //     // add the info to the table data
-        //     this.tableData.push(itemObj);
-        //   }
-        //
-        //   // scale the inner data so that outer data fits the bucket
-        //   innerData[item].scaledValue = innerData[item].value * (subBucketsSum / innerData[item].value);
-        //   parentIndex++;
-        // }
-
-        // this.sortTable();
-        // this.applyColorsToTableData(innerData);
-
-        // add the data to the inner circle (it might have changed)
-        // this.applyGraphData(innerData, g, arc, outerArc, polylineTransform, getLabelText);
-        // if (index > 0) { // if there's outer data
-        //   // remove the inner labels
-        //   g.datum(d3.entries({}))
-        //     .selectAll('text')
-        //     .data(pie(d3.entries({})))
-        //     .exit().remove();
-        //
-        //   // remove lines from slices to labels from inner pie
-        //   g.datum(d3.entries({}))
-        //     .selectAll('polyline')
-        //     .data(pie(d3.entries({})))
-        //     .exit().remove();
-        //
-        //   // add another g to add the new pie data
-        //   if (!g2) { g2 = svg.append('g'); }
-        //   // add data to the outer circle
-        //   this.applyGraphData(outerData, g2, arc2, outerArc2, polylineTransform2, getTopLabelText);
-        // }
+        this.applyGraphData(response.data.pieResults);
+        this.tableData = response.data.tableResults;
+        this.sortTable();
+        this.applyColorsToTableData(this.tableData);
       }).catch((error) => {
         pendingPromise = null;
         this.$emit('toggleLoad', false);
@@ -698,7 +618,6 @@ export default {
      * @param {Object} d The pie slice data
      */
     showInfo: function (d) {
-      console.log('show info', d);
       closeInfo(); // close open info section
       // create the vue template
       if (!popupVue) {
@@ -818,19 +737,14 @@ export default {
     window.removeEventListener('keyup', closeInfoOnEsc);
     // d3 doesn't have .off function to remove listeners,
     // so use .on('listener', null)
-    g.selectAll('path')
-      .on('click', null)
-      .on('mouseover', null)
-      .on('mouseleave', null);
-    g2.selectAll('path')
-      .on('click', null)
+    newSlice
       .on('mouseover', null)
       .on('mouseleave', null);
 
-    // remove svg elements
-    svg.selectAll('path').exit().remove();
-    svg.selectAll('text').exit().remove();
-    svg.selectAll('polylines').exit().remove();
+    // remove elements
+    newSlice.exit().remove();
+    newSlice.selectAll('path').remove();
+    newSlice.selectAll('text').remove();
 
     // destroy child component
     $('.info-popup').remove();
@@ -839,9 +753,13 @@ export default {
     // cleanup global vars
     setTimeout(() => {
       g = undefined;
-      svg = undefined;
+      styles = undefined;
+      newSlice = undefined;
       popupVue = undefined;
+      background = undefined;
+      foreground = undefined;
       popupTimer = undefined;
+      resizeTimer = undefined;
     });
   }
 };

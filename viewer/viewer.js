@@ -5445,21 +5445,22 @@ app.get('/spigraphpie', logAction(), (req, res) => {
 
       // format the data for the pie graph
       let level2 = false;
+      let tableResults = [];
       let results = { name: 'Top Talkers', children: [] };
       for (let level1Field of result.aggregations.field.buckets) {
         let result = { name: level1Field.key };
         if (level1Field.field) {
           let otherValue;
           let previousValue;
+          // only include the other category if there is data in it
           if (level1Field.field.sum_other_doc_count > 0) {
             otherValue = level1Field.field.sum_other_doc_count;
           }
           result.children = [];
-          // only include the other category if there is data in it
           for (let level2Field of level1Field.field.buckets) {
             level2 = true;
             let currentValue = level2Field.doc_count;
-            // put the "other" category in the right position of the map
+            // put the "other" category in the right position of the array
             if (otherValue > 0 && ((!previousValue && otherValue > currentValue) ||
               (previousValue > otherValue && otherValue > currentValue))) {
               result.children.push({
@@ -5467,22 +5468,25 @@ app.get('/spigraphpie', logAction(), (req, res) => {
                 size: level1Field.field.sum_other_doc_count
               });
             }
-            result.children.push({
+            let child = {
               name: level2Field.key,
               size: currentValue
-            });
+            };
+            result.children.push(child);
+            result.sizeValue = level1Field.doc_count;
+            child.parent = { name: result.name, size: result.sizeValue };
+            tableResults.push(child);
             previousValue = level2Field.doc_count;
           }
         }
         if (!level2) {
-          result.size = level1Field.doc_count; // TODO ECR don't need size here?
-        } else {
-          result.sizeValue = level1Field.doc_count;
+          result.size = level1Field.doc_count;
+          tableResults.push(result);
         }
         results.children.push(result);
       }
 
-      return res.send(results);
+      return res.send({pieResults: results, tableResults: tableResults});
     });
   });
 });
