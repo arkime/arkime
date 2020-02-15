@@ -68,6 +68,7 @@ var internals = {
   CYBERCHEFVERSION: '9.11.7',
   elasticBase: Config.getArray('elasticsearch', ',', 'http://localhost:9200'),
   esQueryTimeout: Config.get("elasticsearchTimeout", 300) + 's',
+  esScrollTimeout: Config.get("elasticsearchScrollTimeout", 600) + 's',
   userNameHeader: Config.get("userNameHeader"),
   requiredAuthHeader: Config.get("requiredAuthHeader"),
   requiredAuthHeaderVal: Config.get("requiredAuthHeaderVal"),
@@ -7242,7 +7243,7 @@ function runHuntJob (huntId, hunt, query, user) {
   let options = buildHuntOptions(huntId, hunt);
   let searchedSessions;
 
-  Db.search('sessions2-*', 'session', query, {scroll: '600s'}, function getMoreUntilDone (err, result) {
+  Db.search('sessions2-*', 'session', query, {scroll: internals.esScrollTimeout}, function getMoreUntilDone (err, result) {
     if (err || result.error) {
       pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching sessions: ${err}` });
       return;
@@ -7310,7 +7311,7 @@ function runHuntJob (huntId, hunt, query, user) {
 
       // There might be more, issue another scroll
       if (result.hits.hits.length !== 0) {
-        return Db.scroll({ body: { scroll_id: result._scroll_id }, scroll: '600s' }, getMoreUntilDone);
+        return Db.scroll({ body: { scroll_id: result._scroll_id }, scroll: internals.esScrollTimeout }, getMoreUntilDone);
       }
 
       Db.clearScroll({ body: { scroll_id: result._scroll_id } });
@@ -8770,7 +8771,7 @@ function processCronQuery(cq, options, query, endTime, cb) {
       console.log("CRON", cq.name, cq.creator, "- start:", new Date(cq.lpValue*1000), "stop:", new Date(singleEndTime*1000), "end:", new Date(endTime*1000), "remaining runs:", ((endTime-singleEndTime)/(24*60*60.0)));
     }
 
-    Db.search('sessions2-*', 'session', query, {scroll: '600s'}, function getMoreUntilDone(err, result) {
+    Db.search('sessions2-*', 'session', query, {scroll: internals.esScrollTimeout}, function getMoreUntilDone(err, result) {
       function doNext() {
         count += result.hits.hits.length;
 
@@ -8787,7 +8788,7 @@ function processCronQuery(cq, options, query, endTime, cb) {
           body: {
             scroll_id: result._scroll_id,
           },
-          scroll: '600s'
+          scroll: internals.esScrollTimeout
         };
 
         Db.scroll(query, getMoreUntilDone);
