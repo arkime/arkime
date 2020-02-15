@@ -7393,11 +7393,6 @@ function processHuntJob (huntId, hunt) {
           return;
         }
 
-        // get the size of the query if it is being restarted
-        if (hunt.lastPacketTime) {
-          query.size = hunt.totalSessions - hunt.searchedSessions;
-        }
-
         lookupQueryItems(query.query.bool.filter, (lerr) => {
           query.query.bool.filter[0] = {
             range: {
