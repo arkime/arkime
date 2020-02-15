@@ -899,6 +899,8 @@ function proxyRequest (req, res, errCb) {
     var info = url.parse(viewUrl);
     info.path = req.url;
     info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
+    // use internals.esQueryTimeout, but convert it to milliseconds
+    info.timeout = parseInt(Config.get("elasticsearchTimeout", 300), 10) * 1000;
     addAuth(info, req.user, req.params.nodeName);
     addCaTrust(info, req.params.nodeName);
 
@@ -933,7 +935,8 @@ function makeRequest (node, path, user, cb) {
     let info = url.parse(viewUrl);
     info.path = encodeURI(`${Config.basePath(node)}${path}`);
     info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
-    info.timeout = 20*60*1000;
+    // use internals.esQueryTimeout, but convert it to milliseconds
+    info.timeout = parseInt(Config.get("elasticsearchTimeout", 300), 10) * 1000;
     addAuth(info, user, node);
     addCaTrust(info, node);
 
