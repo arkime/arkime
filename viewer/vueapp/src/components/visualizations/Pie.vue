@@ -463,7 +463,7 @@ export default {
       this.initializeGraph(this.formatDataFromSpigraph(this.graphData));
     } else { // otherwise load the data for the additional fields
       this.initializeGraph();
-      this.loadData(); // TODO need to initialize graph here
+      this.loadData();
     }
 
     // resize the pie with the window
@@ -551,10 +551,10 @@ export default {
 
         // set the new width and height of the pie
         d3.select('#pie-area svg')
+          .attr('viewBox', `${-width / 2} ${-height / 2} ${width} ${height}`)
           .attr('width', width)
           .attr('height', height)
-          .select('g')
-          .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+          .select('g');
 
         // just rerender the pie graph (seems like the only way)
         this.applyGraphData(this.pieData);
@@ -676,13 +676,13 @@ export default {
     initializeGraph: function (data) {
       g = d3.select('#pie-area')
         .append('svg')
+        .attr('viewBox', `${-width / 2} ${-height / 2} ${width} ${height}`)
         .attr('width', width)
         .attr('height', height)
         .call(d3.zoom().on('zoom', () => { // allow zooming of the pie graph
           g.attr('transform', d3.event.transform);
         }))
-        .append('g')
-        .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+        .append('g');
 
       if (data) { this.applyGraphData(data); }
     },
