@@ -654,7 +654,23 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
     for (type = 0; type < numTypes; type++) {
         for (i = 0; i < types[type].fieldsLen; i++) {
             int pos = types[type].fields[i];
-            if (!session->fields[pos])
+
+            if (pos >= MOLOCH_FIELD_EXSPECIAL_START) {
+                switch (pos) {
+                case MOLOCH_FIELD_EXSPECIAL_COMMUNITYID:
+                    // Currently don't do communityId for ICMP because it requires magic
+                    if (session->ses != SESSION_ICMP) {
+                        char *communityId = moloch_db_community_id(session);
+                        wise_lookup(session, iRequest, communityId, type);
+                        g_free(communityId);
+                    }
+                    break;
+                }
+                continue;
+            }
+
+            // This session doesn't have this many fields or field isnt set
+            if (pos < 0 || pos > session->maxFields || !session->fields[pos])
                 continue;
 
             MolochStringHashStd_t *shash;

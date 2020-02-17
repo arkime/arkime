@@ -341,7 +341,8 @@ enum MolochRotate {
 #define MOLOCH_FIELD_EXSPECIAL_PACKETS_DST      (MOLOCH_FIELDS_CNT_MAX+12)
 #define MOLOCH_FIELD_EXSPECIAL_DATABYTES_SRC    (MOLOCH_FIELDS_CNT_MAX+13)
 #define MOLOCH_FIELD_EXSPECIAL_DATABYTES_DST    (MOLOCH_FIELDS_CNT_MAX+14)
-#define MOLOCH_FIELDS_MAX                       (MOLOCH_FIELDS_CNT_MAX+15)
+#define MOLOCH_FIELD_EXSPECIAL_COMMUNITYID      (MOLOCH_FIELDS_CNT_MAX+15)
+#define MOLOCH_FIELDS_MAX                       (MOLOCH_FIELDS_CNT_MAX+16)
 
 typedef struct moloch_config {
     gboolean  quitting;
@@ -831,6 +832,7 @@ void     moloch_db_update_filesize(uint32_t fileid, uint64_t filesize);
 gboolean moloch_db_file_exists(const char *filename, uint32_t *outputId);
 void     moloch_db_exit();
 void     moloch_db_oui_lookup(int field, MolochSession_t *session, const uint8_t *mac);
+gchar   *moloch_db_community_id(MolochSession_t *session);
 
 
 // Replace how SPI data is sent to ES.

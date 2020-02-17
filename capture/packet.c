@@ -32,7 +32,7 @@ MolochPcapFileHdr_t          pcapFileHeader;
 uint64_t                     totalPackets;
 LOCAL uint64_t               totalBytes[MOLOCH_MAX_PACKET_THREADS];
 
-LOCAL uint32_t               initialDropped = 0;
+LOCAL uint64_t               initialDropped = 0;
 struct timeval               initialPacket; // Don't make LOCAL for now because of netflow plugin
 
 extern void                 *esServer;

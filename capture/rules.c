@@ -777,6 +777,7 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
     GHashTable            *ghash;
     GHashTableIter         iter;
     gpointer               ikey;
+    char                  *communityId = NULL;
     int                    i;
     int                    f;
     int                    good = 1;
@@ -833,6 +834,17 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
                 break;
             case MOLOCH_FIELD_EXSPECIAL_DATABYTES_DST:
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->databytes[1]);
+                break;
+            case MOLOCH_FIELD_EXSPECIAL_COMMUNITYID:
+                if (session->ses == SESSION_ICMP) {
+                    good = 0;
+                    break;
+                }
+                // Only caculate once since several rules for session could use it
+                if (!communityId)
+                    communityId = moloch_db_community_id(session);
+
+                good = g_hash_table_contains(rule->hash[p], communityId);
                 break;
             default:
                 good = 0;
@@ -990,6 +1002,8 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
         LOG("%s %s didn't matched", rule->filename, rule->name);
 #endif
     }
+
+    g_free(communityId);
 }
 /******************************************************************************/
 void moloch_rules_run_field_set_rules(MolochSession_t *session, int pos, GPtrArray *rules)

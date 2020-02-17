@@ -17,14 +17,25 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.3.0 2020/02/xx
+2.2.2 2020/02/xx
+  - release - node 10.19.0
   - capture - fix SYN retrans handling
-  - s3 - Fixes the problem where the s3 token expires during a capture (issue #1370)
-  - viewer - Fix decode crash (thanks mammo0)
   - capture - New tcphealthcheck plugin (thanks fj604)
-  - viewer - initial pie chart
+  - capture - support communityId field in rules/wise
+  - capture - fixed drop stats for long running systems
+  - capture - new tcphealthcheck plugin (thanks fj604)
+  - viewer - Fix decode crash (thanks mammo0)
+  - viewer - experimental pie chart in spigraph
+  - viewer - experimental table view in spigraph
   - viewer - fix viewer crash when hunting fake sessions (issue #1374)
   - viewer - fix capture stats sort
+  - viewer - new accessLogFormat, accessLogSuppressPaths settings to
+             better control logging (issue #1375)
+  - viewer - do a better job decoding http 100 continue msgs
+  - decryptPcap.js - can now decrypt Moloch encrypted pcap files to stdout
+  - s3 - Fixes the problem where the s3 token expires during a capture (issue #1370)
+  - s3 - more logging on errors
+  - s3 - new s3Host setting (thank jc2k)
 
 2.2.1 2020/01/21
   - capture - fix --skip not working with ES 7.x

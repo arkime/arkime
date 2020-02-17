@@ -495,21 +495,21 @@ LOCAL gboolean reader_libpcapfile_read()
     // pause reading if too many waiting disk operations
     if (moloch_writer_queue_length() > 10) {
         if (config.debug)
-            LOG("Waiting to start next file, write q: %u", moloch_writer_queue_length());
+            LOG("Waiting to process more packets, write q: %u", moloch_writer_queue_length());
         return G_SOURCE_CONTINUE;
     }
 
     // pause reading if too many waiting ES operations
     if (moloch_http_queue_length(esServer) > 40) {
         if (config.debug)
-            LOG("Waiting to start next file, es q: %d", moloch_http_queue_length(esServer));
+            LOG("Waiting to process more packets, es q: %d", moloch_http_queue_length(esServer));
         return G_SOURCE_CONTINUE;
     }
 
     // pause reading if too many packets are waiting to be processed
     if (moloch_packet_outstanding() > 2048) {
         if (config.debug)
-            LOG("Waiting to start next file, packet q: %d", moloch_packet_outstanding());
+            LOG("Waiting to process more packets, packet q: %d", moloch_packet_outstanding());
         return G_SOURCE_CONTINUE;
     }
 

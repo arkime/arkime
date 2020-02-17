@@ -169,7 +169,7 @@ jobs:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: scl enable devtoolset-7 "./easybutton-build.sh --rminstall"
-            - yum -y install libasan-static devtoolset-7-libasan-devel libasan4 devtoolset-7-libubsan-devel libubsan which java-1.8.0-openjdk-headless
+            - yum -y install libasan-static devtoolset-7-libasan-devel libasan4 devtoolset-7-libubsan-devel libubsan which
             - build-sanitize: (cd capture; scl enable devtoolset-7 "make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize")
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH

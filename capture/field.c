@@ -1312,6 +1312,7 @@ void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
             case MOLOCH_FIELD_EXSPECIAL_PACKETS_DST:
             case MOLOCH_FIELD_EXSPECIAL_DATABYTES_SRC:
             case MOLOCH_FIELD_EXSPECIAL_DATABYTES_DST:
+            case MOLOCH_FIELD_EXSPECIAL_COMMUNITYID:
                 break;
             }
             continue;
@@ -1418,6 +1419,9 @@ void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int 
         case MOLOCH_FIELD_EXSPECIAL_DATABYTES_DST:
             LOG("Warning - not allow to set databytes: %s", op->str);
             break;
+        case MOLOCH_FIELD_EXSPECIAL_COMMUNITYID:
+            LOG("Warning - not allow to set communityId: %s", op->str);
+            break;
         }
     } else {
         switch (config.fields[fieldPos]->type) {
@@ -1479,6 +1483,7 @@ void moloch_field_init()
     moloch_field_by_exp_add_special_type("packets.dst", MOLOCH_FIELD_EXSPECIAL_PACKETS_DST, MOLOCH_FIELD_TYPE_INT);
     moloch_field_by_exp_add_special_type("databytes.src", MOLOCH_FIELD_EXSPECIAL_DATABYTES_SRC, MOLOCH_FIELD_TYPE_INT);
     moloch_field_by_exp_add_special_type("databytes.dst", MOLOCH_FIELD_EXSPECIAL_DATABYTES_DST, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_special_type("communityId", MOLOCH_FIELD_EXSPECIAL_COMMUNITYID, MOLOCH_FIELD_TYPE_STR);
 }
 /******************************************************************************/
 void moloch_field_exit()
