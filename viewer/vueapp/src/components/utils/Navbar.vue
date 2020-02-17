@@ -13,7 +13,7 @@
       <router-link
         :to="{ path: helpLink.href, query: helpLink.query, params: { nav: true } }">
         <div id="helpTooltipContainer">
-          <img src="@/assets/logo.png"
+          <img src="header_logo.png"
             class="moloch-logo"
             alt="hoot"
             v-b-tooltip.hover

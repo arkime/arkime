@@ -1179,7 +1179,7 @@ exports.loadFields = function(cb) {
   return exports.search("fields", "field", {size:1000}, cb);
 };
 
-exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
+exports.getIndices = function(startTime, stopTime, bounding, rotateIndex, cb) {
   exports.getAliasesCache("sessions2-*", (err, aliases) => {
 
     if (err || aliases.error) {
@@ -1236,8 +1236,21 @@ exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
       let start = Date.UTC(year, month-1, day, hour)/1000;
       let stop = Date.UTC(year, month-1, day, hour)/1000+length;
 
-      if (stop >= startTime && start <= stopTime) {
-        indices.push(iname);
+      switch (bounding) {
+      default:
+      case "last":
+        if (stop >= startTime && start <= stopTime) {
+          indices.push(iname);
+        }
+        break;
+      case "first":
+      case "both":
+      case "either":
+      case "database":
+        if (stop >= (startTime - length) && start <= (stopTime + length)) {
+          indices.push(iname);
+        }
+        break;
       }
     }
 

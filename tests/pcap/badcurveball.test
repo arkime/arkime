@@ -15,7 +15,7 @@
                   "notAfter" : 1581775250000,
                   "notBefore" : 1579183250000,
                   "publicAlgorithm" : "id-ecPublicKey",
-                  "remainingDays" : 1,
+                  "remainingDays" : -1,
                   "serial" : "62344031f7ab03e6f9327cde33419cf7fb09df94",
                   "subjectCN" : [
                      "infigo"

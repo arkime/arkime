@@ -3075,12 +3075,11 @@ function continueBuildQuery(req, query, err, finalCb) {
 
   lookupQueryItems(query.query.bool.filter, function (lerr) {
     if (req.query.date === '-1' ||                                      // An all query
-        (req.query.bounding || "last") !== "last" ||                    // Not a last bounded query
         Config.get("queryAllIndices", Config.get("multiES", false))) {  // queryAllIndices (default: multiES)
       return finalCb(err || lerr, query, "sessions2-*"); // Then we just go against all indices for a slight overhead
     }
 
-    Db.getIndices(req.query.startTime, req.query.stopTime, Config.get("rotateIndex", "daily"), function(indices) {
+    Db.getIndices(req.query.startTime, req.query.stopTime, req.query.bounding, Config.get("rotateIndex", "daily"), function(indices) {
       if (indices.length > 3000) { // Will url be too long
         return finalCb(err || lerr, query, "sessions2-*");
       } else {
@@ -5443,34 +5442,51 @@ app.get('/spigraphpie', logAction(), (req, res) => {
         console.log('result', JSON.stringify(result, false, 2));
       }
 
-      let results = {}; // format the data for the pie graph
-      for (let level1Field of result.aggregations.field.buckets) {
-        let result = results[level1Field.key] = {
-          value: level1Field.doc_count
-        };
-        if (level1Field.field) {
-          let otherValue;
-          let previousValue;
-          if (level1Field.field.sum_other_doc_count > 0) {
-            otherValue = level1Field.field.sum_other_doc_count;
+      // format the data for the pie graph
+      let pieResults = { name: 'Top Talkers', children: [] };
+      function addDataToPie (buckets, addTo) {
+        for (let i = 0; i < buckets.length; i++) {
+          let bucket = buckets[i];
+          addTo.push({
+            name: bucket.key,
+            size: bucket.doc_count
+          });
+          if (bucket.field) {
+            addTo[i].children = [];
+            addTo[i].size = undefined; // size is interpreted from children
+            addTo[i].sizeValue = bucket.doc_count; // keep sizeValue for display
+            addDataToPie(bucket.field.buckets, addTo[i].children);
           }
-          result.subData = {};
-          // only include the other category if there is data in it
-          for (let level2Field of level1Field.field.buckets) {
-            let currentValue = level2Field.doc_count;
-            // put the "other" category in the right position of the map
-            if (otherValue > 0 && ((!previousValue && otherValue > currentValue) ||
-              (previousValue > otherValue && otherValue > currentValue))) {
-              result.subData.other = level1Field.field.sum_other_doc_count;
-            }
-            result.subData[level2Field.key] = currentValue;
-            previousValue = level2Field.doc_count;
-          }
-
         }
       }
 
-      return res.send(results);
+      let grandparent;
+      let tableResults = [];
+      // assumes only 3 levels deep
+      function addDataToTable (buckets, parent) {
+        for (let i = 0; i < buckets.length; i++) {
+          let bucket = buckets[i];
+          if (bucket.field) {
+            if (parent) { grandparent = parent; }
+            addDataToTable(bucket.field.buckets, {
+              name: bucket.key,
+              size: bucket.doc_count
+            });
+          } else {
+            tableResults.push({
+              parent: parent,
+              grandparent: grandparent,
+              name: bucket.key,
+              size: bucket.doc_count
+            });
+          }
+        }
+      }
+
+      addDataToPie(result.aggregations.field.buckets, pieResults.children);
+      addDataToTable(result.aggregations.field.buckets);
+
+      return res.send({pieResults: pieResults, tableResults: tableResults});
     });
   });
 });
