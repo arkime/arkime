@@ -36,7 +36,7 @@
       </template>
     </div> <!-- /field select -->
 
-    <div v-show="spiGraphType === 'pie' && tableData.length">
+    <div v-show="spiGraphType === 'pie' && pieData && pieData.children.length">
       <!-- info area -->
       <div ref="infoPopup">
         <div class="pie-popup">
@@ -57,62 +57,174 @@
             <th colspan="2">
               {{ getFieldObj(baseField).friendlyName }}
             </th>
-            <th v-if="outerData && fieldTypeaheadList.length"
+            <th v-if="fieldTypeaheadList.length > 0"
               colspan="2">
               {{ fieldTypeaheadList[0].friendlyName }}
             </th>
+            <th v-if="fieldTypeaheadList.length === 2"
+              colspan="2">
+              {{ fieldTypeaheadList[1].friendlyName }}
+            </th>
           </tr>
           <tr>
-            <th class="cursor-pointer"
-              @click="columnClick(0, 'value')">
-              Count
-              <span v-show="tableSortField === 0 && tableSortType === 'value' && !tableDesc"
-                class="fa fa-sort-asc ml-2">
-              </span>
-              <span v-show="tableSortField === 0 && tableSortType === 'value' && tableDesc"
-                class="fa fa-sort-desc ml-2">
-              </span>
-              <span v-show="tableSortField !== 0 || tableSortType !== 'value'"
-                class="fa fa-sort ml-2">
-              </span>
-            </th>
-            <th class="cursor-pointer"
-              @click="columnClick(0, 'name')">
-              Value
-              <span v-show="tableSortField === 0 && tableSortType === 'name' && !tableDesc"
-                class="fa fa-sort-asc ml-2">
-              </span>
-              <span v-show="tableSortField === 0 && tableSortType === 'name' && tableDesc"
-                class="fa fa-sort-desc ml-2">
-              </span>
-              <span v-show="tableSortField !== 0 || tableSortType !== 'name'"
-                class="fa fa-sort ml-2">
-              </span>
-            </th>
-            <template v-if="outerData">
+            <template v-if="!fieldTypeaheadList.length">
               <th class="cursor-pointer"
-                @click="columnClick(1, 'name')">
+                @click="columnClick('child', 'name')">
                 Value
-                <span v-show="tableSortField === 1 && tableSortType === 'name' && !tableDesc"
+                <span v-show="tableSortField === 'child' && tableSortType === 'name' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSortField === 1 && tableSortType === 'name' && tableDesc"
+                <span v-show="tableSortField === 'child' && tableSortType === 'name' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSortField !== 1 || tableSortType !== 'name'"
+                <span v-show="tableSortField !== 'child' || tableSortType !== 'name'"
                   class="fa fa-sort ml-2">
                 </span>
               </th>
               <th class="cursor-pointer"
-                @click="columnClick(1, 'value')">
+                @click="columnClick('child', 'size')">
                 Count
-                <span v-show="tableSortField === 1 && tableSortType === 'value' && !tableDesc"
+                <span v-show="tableSortField === 'child' && tableSortType === 'size' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSortField === 1 && tableSortType === 'value' && tableDesc"
+                <span v-show="tableSortField === 'child' && tableSortType === 'size' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSortField !== 1 || tableSortType !== 'value'"
+                <span v-show="tableSortField !== 'child' || tableSortType !== 'size'"
+                  class="fa fa-sort ml-2">
+                </span>
+              </th>
+            </template>
+            <template v-if="fieldTypeaheadList.length === 1">
+              <th class="cursor-pointer"
+                @click="columnClick('parent', 'name')">
+                Value
+                <span v-show="tableSortField === 'parent' && tableSortType === 'name' && !tableDesc"
+                  class="fa fa-sort-asc ml-2">
+                </span>
+                <span v-show="tableSortField === 'parent' && tableSortType === 'name' && tableDesc"
+                  class="fa fa-sort-desc ml-2">
+                </span>
+                <span v-show="tableSortField !== 'parent' || tableSortType !== 'name'"
+                  class="fa fa-sort ml-2">
+                </span>
+              </th>
+              <th class="cursor-pointer"
+                @click="columnClick('parent', 'size')">
+                Count
+                <span v-show="tableSortField === 'parent' && tableSortType === 'size' && !tableDesc"
+                  class="fa fa-sort-asc ml-2">
+                </span>
+                <span v-show="tableSortField === 'parent' && tableSortType === 'size' && tableDesc"
+                  class="fa fa-sort-desc ml-2">
+                </span>
+                <span v-show="tableSortField !== 'parent' || tableSortType !== 'size'"
+                  class="fa fa-sort ml-2">
+                </span>
+              </th>
+              <th class="cursor-pointer"
+                @click="columnClick('child', 'name')">
+                Value
+                <span v-show="tableSortField === 'child' && tableSortType === 'name' && !tableDesc"
+                  class="fa fa-sort-asc ml-2">
+                </span>
+                <span v-show="tableSortField === 'child' && tableSortType === 'name' && tableDesc"
+                  class="fa fa-sort-desc ml-2">
+                </span>
+                <span v-show="tableSortField !== 'child' || tableSortType !== 'name'"
+                  class="fa fa-sort ml-2">
+                </span>
+              </th>
+              <th class="cursor-pointer"
+                @click="columnClick('child', 'size')">
+                Count
+                <span v-show="tableSortField === 'child' && tableSortType === 'size' && !tableDesc"
+                  class="fa fa-sort-asc ml-2">
+                </span>
+                <span v-show="tableSortField === 'child' && tableSortType === 'size' && tableDesc"
+                  class="fa fa-sort-desc ml-2">
+                </span>
+                <span v-show="tableSortField !== 'child' || tableSortType !== 'size'"
+                  class="fa fa-sort ml-2">
+                </span>
+              </th>
+            </template>
+            <template v-if="fieldTypeaheadList.length === 2">
+              <th class="cursor-pointer"
+                @click="columnClick('grandparent', 'name')">
+                Value
+                <span v-show="tableSortField === 'grandparent' && tableSortType === 'name' && !tableDesc"
+                  class="fa fa-sort-asc ml-2">
+                </span>
+                <span v-show="tableSortField === 'grandparent' && tableSortType === 'name' && tableDesc"
+                  class="fa fa-sort-desc ml-2">
+                </span>
+                <span v-show="tableSortField !== 'grandparent' || tableSortType !== 'name'"
+                  class="fa fa-sort ml-2">
+                </span>
+              </th>
+              <th class="cursor-pointer"
+                @click="columnClick('grandparent', 'size')">
+                Count
+                <span v-show="tableSortField === 'grandparent' && tableSortType === 'size' && !tableDesc"
+                  class="fa fa-sort-asc ml-2">
+                </span>
+                <span v-show="tableSortField === 'grandparent' && tableSortType === 'size' && tableDesc"
+                  class="fa fa-sort-desc ml-2">
+                </span>
+                <span v-show="tableSortField !== 'grandparent' || tableSortType !== 'size'"
+                  class="fa fa-sort ml-2">
+                </span>
+              </th>
+              <th class="cursor-pointer"
+                @click="columnClick('parent', 'name')">
+                Value
+                <span v-show="tableSortField === 'parent' && tableSortType === 'name' && !tableDesc"
+                  class="fa fa-sort-asc ml-2">
+                </span>
+                <span v-show="tableSortField === 'parent' && tableSortType === 'name' && tableDesc"
+                  class="fa fa-sort-desc ml-2">
+                </span>
+                <span v-show="tableSortField !== 'parent' || tableSortType !== 'name'"
+                  class="fa fa-sort ml-2">
+                </span>
+              </th>
+              <th class="cursor-pointer"
+                @click="columnClick('parent', 'size')">
+                Count
+                <span v-show="tableSortField === 'parent' && tableSortType === 'size' && !tableDesc"
+                  class="fa fa-sort-asc ml-2">
+                </span>
+                <span v-show="tableSortField === 'parent' && tableSortType === 'size' && tableDesc"
+                  class="fa fa-sort-desc ml-2">
+                </span>
+                <span v-show="tableSortField !== 'parent' || tableSortType !== 'size'"
+                  class="fa fa-sort ml-2">
+                </span>
+              </th>
+              <th class="cursor-pointer"
+                @click="columnClick('child', 'name')">
+                Value
+                <span v-show="tableSortField === 'child' && tableSortType === 'name' && !tableDesc"
+                  class="fa fa-sort-asc ml-2">
+                </span>
+                <span v-show="tableSortField === 'child' && tableSortType === 'name' && tableDesc"
+                  class="fa fa-sort-desc ml-2">
+                </span>
+                <span v-show="tableSortField !== 'child' || tableSortType !== 'name'"
+                  class="fa fa-sort ml-2">
+                </span>
+              </th>
+              <th class="cursor-pointer"
+                @click="columnClick('child', 'size')">
+                Count
+                <span v-show="tableSortField === 'child' && tableSortType === 'size' && !tableDesc"
+                  class="fa fa-sort-asc ml-2">
+                </span>
+                <span v-show="tableSortField === 'child' && tableSortType === 'size' && tableDesc"
+                  class="fa fa-sort-desc ml-2">
+                </span>
+                <span v-show="tableSortField !== 'child' || tableSortType !== 'size'"
                   class="fa fa-sort ml-2">
                 </span>
               </th>
@@ -120,16 +232,13 @@
           </tr>
         </thead>
         <tbody>
-          <template v-if="outerData">
+          <template v-if="fieldTypeaheadList.length">
             <template v-for="(item, key) in tableData">
-              <tr :key="key">
-                <td>
-                  {{ item.innerData.value }}
-                </td>
+              <tr :key="key" v-if="item.grandparent">
                 <td>
                   <moloch-session-field
                     :field="baseFieldObj"
-                    :value="item.innerData.name"
+                    :value="item.grandparent.name"
                     :expr="baseFieldObj.exp"
                     :parse="true"
                     :session-btn="true">
@@ -139,7 +248,53 @@
                   </span>
                 </td>
                 <td>
+                  {{ item.grandparent.size }}
+                </td>
+                <td>
                   <moloch-session-field
+                    :field="fieldTypeaheadList[0]"
+                    :value="item.parent.name"
+                    :expr="fieldTypeaheadList[0].exp"
+                    :parse="true"
+                    :session-btn="true">
+                  </moloch-session-field>
+                </td>
+                <td>
+                  {{ item.parent.size }}
+                </td>
+                <td>
+                  <moloch-session-field
+                    v-if="fieldTypeaheadList[1]"
+                    :field="fieldTypeaheadList[1]"
+                    :value="item.name"
+                    :expr="fieldTypeaheadList[1].exp"
+                    :parse="true"
+                    :session-btn="true">
+                  </moloch-session-field>
+                </td>
+                <td>
+                  {{ item.size }}
+                </td>
+              </tr>
+              <tr :key="key" v-else-if="item.parent">
+                <td>
+                  <moloch-session-field
+                    :field="baseFieldObj"
+                    :value="item.parent.name"
+                    :expr="baseFieldObj.exp"
+                    :parse="true"
+                    :session-btn="true">
+                  </moloch-session-field>
+                  <span class="color-swatch"
+                    :style="{ backgroundColor: item.color }">
+                  </span>
+                </td>
+                <td>
+                  {{ item.parent.size }}
+                </td>
+                <td>
+                  <moloch-session-field
+                    v-if="fieldTypeaheadList[0]"
                     :field="fieldTypeaheadList[0]"
                     :value="item.name"
                     :expr="fieldTypeaheadList[0].exp"
@@ -148,7 +303,7 @@
                   </moloch-session-field>
                 </td>
                 <td>
-                  {{ item.value }}
+                  {{ item.size }}
                 </td>
               </tr>
             </template>
@@ -156,9 +311,6 @@
           <template v-else
             v-for="item in tableData">
             <tr :key="item.name">
-              <td>
-                {{ item.value }}
-              </td>
               <td>
                 <span class="color-swatch"
                   :style="{ backgroundColor: item.color }">
@@ -170,6 +322,9 @@
                   :parse="true"
                   :session-btn="true">
                 </moloch-session-field>
+              </td>
+              <td>
+                {{ item.size }}
               </td>
             </tr>
           </template>
@@ -192,7 +347,6 @@
 // import external
 import Vue from 'vue';
 import * as d3 from 'd3';
-import 'd3-interpolate';
 // import services
 import SpigraphService from '../spigraph/SpigraphService';
 // import internal
@@ -207,14 +361,11 @@ let popupTimer; // timer to debounce pie slice info popup events
 let resizeTimer; // timer to debounce resizing the pie graph on window resize
 
 // page pie variables ------------------------------------------------------ //
-let g, g2, svg, pie;
+let g, newSlice, styles, background, foreground;
 let width = getWidth();
 let height = getHeight();
 let radius = getRadius();
-let arc = getArc(0.7, 0.4);
-let arc2 = getArc(0.9, 0.7);
-let outerArc = getArc(0.9, 0.9);
-let outerArc2 = getArc(0.95, 0.95);
+let arc = getArc();
 
 // pie functions ----------------------------------------------------------- //
 function getWidth () {
@@ -229,96 +380,29 @@ function getRadius () {
   return Math.min(width, height) / 2;
 }
 
-function getArc (innerRadiusScale, outerRadiusScale) {
-  return d3.arc()
-    .innerRadius(radius * innerRadiusScale)
-    .outerRadius(radius * outerRadiusScale)
-    .cornerRadius(6);
+function getArc () {
+  return d3.arc() // calculate size of each arc from data
+    .startAngle((d) => { d.x0s = d.x0; return d.x0; }) // radian location for start of arc
+    .endAngle((d) => { d.x1s = d.x1; return d.x1; }) // radian location for end of arc
+    .innerRadius((d) => { return d.y0; }) // radian location for inside arc
+    .outerRadius((d) => { return d.y1; }) // radian location for outside arc
+    .cornerRadius(6); // rounded corners cause they're pretty
 }
 
-function midAngle (d) {
-  return d.startAngle + (d.endAngle - d.startAngle) / 2;
-}
-
-function sliceTransition (d, arcFunc, _current) {
-  let interpolate = d3.interpolate(_current, d);
-  _current = interpolate(0);
-  return function (t) {
-    return arcFunc(interpolate(t));
-  };
-};
-
-// put the text outside of the pie slices
-function textTransform (d, arcFunc, _current) {
-  const interpolate = d3.interpolate(_current, d);
-  _current = interpolate(0);
-  return function (t) {
-    const d2 = interpolate(t);
-    let pos = arcFunc.centroid(d2);
-    pos[0] = radius * (midAngle(d2) < Math.PI ? 1 : -1);
-    return `translate(${pos})`;
-  };
-};
-
-function textTransition (d) {
-  this._current = this._current || d;
-  const interpolate = d3.interpolate(this._current, d);
-  this._current = interpolate(0);
-  return function (t) {
-    var d2 = interpolate(t);
-    return midAngle(d2) < Math.PI ? 'start' : 'end';
-  };
-}
-
-function getLabelText (d) {
-  return `${d.data.value.name} (${d.data.value.value})`;
-}
-
-function getTopLabelText (d) {
-  if (d.data.value.subIndex < 2) {
-    return `${d.data.value.name} (${d.data.value.value})`;
-  }
-}
-
-function polylineTransform (d) {
-  this._current = this._current || d;
-  const interpolate = d3.interpolate(this._current, d);
-  this._current = interpolate(0);
-  return function (t) {
-    const d2 = interpolate(t);
-    let pos = outerArc.centroid(d2);
-    pos[0] = radius * 0.95 * (midAngle(d2) < Math.PI ? 1 : -1);
-    let arcCentroid = arc.centroid(d2);
-    arcCentroid[0] = arcCentroid[0] - (arcCentroid[0] * -0.2);
-    arcCentroid[1] = arcCentroid[1] - (arcCentroid[1] * -0.2);
-    return [arcCentroid, outerArc.centroid(d2), pos];
-  };
-}
-
-function polylineTransform2 (d) {
-  if (d.data.value.subIndex > 1) {
-    return; // only display the first 2
-  }
-  this._current = this._current || d;
-  const interpolate = d3.interpolate(this._current, d);
-  this._current = interpolate(0);
-  return function (t) {
-    const d2 = interpolate(t);
-    let pos = outerArc2.centroid(d2);
-    pos[0] = radius * 0.95 * (midAngle(d2) < Math.PI ? 1 : -1);
-    let arcCentroid = arc2.centroid(d2);
-    arcCentroid[0] = arcCentroid[0] - (arcCentroid[0] * -0.1);
-    arcCentroid[1] = arcCentroid[1] - (arcCentroid[1] * -0.1);
-    return [arcCentroid, outerArc2.centroid(d2), pos];
-  };
+function textTransform (d) {
+  const x = (d.x0 + d.x1) / 2 * 180 / Math.PI;
+  const y = (d.y0 + d.y1) / 2;
+  return `rotate(${x - 90}) translate(${y},0) rotate(${x < 180 ? 0 : 180})`;
 }
 
 function mouseover (d, self) {
-  d3.select(self).style('opacity', 1);
+  self.parentNode.appendChild(self);
+  self.parentNode.parentNode.appendChild(self.parentNode);
+  d3.select(self).select('path').style('stroke', foreground);
 }
 
 function mouseleave (d, self) {
-  d3.select(self).style('opacity', 0.8);
+  d3.select(self).select('path').style('stroke', background);
 };
 
 // close popups helper
@@ -350,18 +434,37 @@ export default {
     return {
       tableData: [],
       outerData: false,
-      tableSortType: 'value',
-      tableSortField: 0,
+      tableSortType: 'size',
+      tableSortField: 'child',
       tableDesc: true,
       closeInfo: closeInfo,
       fieldTypeaheadList: [],
-      baseFieldObj: undefined
+      baseFieldObj: undefined,
+      pieData: undefined
     };
   },
   mounted: function () {
-    this.initializeGraph(this.formatDataFromSpigraph(this.graphData));
+    // set colors to match the background
+    styles = window.getComputedStyle(document.body);
+    background = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
+    foreground = styles.getPropertyValue('--color-foreground').trim() || '#333333';
 
     this.baseFieldObj = this.getFieldObj(this.baseField);
+
+    if (this.$route.query.subFields) {
+      let subFieldExps = this.$route.query.subFields.split(',');
+      for (let exp of subFieldExps) {
+        this.fieldTypeaheadList.push(this.getFieldObj(exp));
+      }
+    }
+
+    if (!this.fieldTypeaheadList.length) {
+      // just use spigraph data if there are no additional levels of fields to display
+      this.initializeGraph(this.formatDataFromSpigraph(this.graphData));
+    } else { // otherwise load the data for the additional fields
+      this.initializeGraph();
+      this.loadData();
+    }
 
     // resize the pie with the window
     window.addEventListener('resize', this.resize);
@@ -376,39 +479,15 @@ export default {
         this.loadData();
       } else {
         let data = this.formatDataFromSpigraph(newVal);
-        this.applyGraphData(data, g, arc, outerArc, polylineTransform, getLabelText);
+        this.applyGraphData(data);
       }
+    },
+    '$route.query.subFields': function (newVal, oldVal) {
+      this.loadData();
     }
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
-    /**
-     * Removes a field from the field typeahead list and loads the data
-     * @param {Number} index The index of the field typeahead list to remove
-     */
-    removeField: function (index) {
-      this.fieldTypeaheadList.splice(index, 1);
-
-      if (g2) {
-        // remove slices
-        g2.datum(d3.entries({}))
-          .selectAll('path')
-          .data(pie(d3.entries({})))
-          .exit().remove();
-        // remove labels
-        g2.datum(d3.entries({}))
-          .selectAll('text')
-          .data(pie(d3.entries({})))
-          .exit().remove();
-        // remove polylines
-        g2.datum(d3.entries({}))
-          .selectAll('polyline')
-          .data(pie(d3.entries({})))
-          .exit().remove();
-      }
-
-      this.loadData();
-    },
     /**
      * Adds an expression to the search expression input box
      * @param {Object} slice  The pie slice data
@@ -421,18 +500,26 @@ export default {
       });
     },
     /**
+     * Removes a field from the field typeahead list and loads the data
+     * @param {Number} index The index of the field typeahead list to remove
+     */
+    removeField: function (index) {
+      this.fieldTypeaheadList.splice(index, 1);
+      this.applyFieldListToUrl();
+    },
+    /**
      * Fired when a second level field typeahead field is selected
      * @param {Object} field The field the add to the pie graph
      */
     changeField: function (field) {
-      // TODO allow 2 items in this array?
-      if (this.fieldTypeaheadList.length > 0) {
-        this.$set(this.fieldTypeaheadList, 0, field);
+      // only allow max 2 items in this array
+      if (this.fieldTypeaheadList.length > 1) {
+        this.$set(this.fieldTypeaheadList, 1, field);
       } else {
         this.fieldTypeaheadList.push(field);
       }
 
-      this.loadData();
+      this.applyFieldListToUrl();
     },
     /**
      * Fired when a column header is clicked
@@ -457,45 +544,60 @@ export default {
     resize: function () {
       if (resizeTimer) { clearTimeout(resizeTimer); }
       resizeTimer = setTimeout(() => {
-        // recalculate width, height, radius, and arcs
+        // recalculate width, height, and radius
         width = getWidth();
         height = getHeight();
         radius = getRadius();
-        arc = getArc(0.7, 0.4);
-        arc2 = getArc(0.9, 0.7);
-        outerArc = getArc(0.9, 0.9);
-        outerArc2 = getArc(0.95, 0.95);
 
         // set the new width and height of the pie
         d3.select('#pie-area svg')
+          .attr('viewBox', `${-width / 2} ${-height / 2} ${width} ${height}`)
           .attr('width', width)
           .attr('height', height)
-          .select('g')
-          .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+          .select('g');
 
-        // redraw the inner pie data
-        this.redraw(g, arc, outerArc, polylineTransform);
-
-        if (g2) { // redraw the outer pie data if it exists
-          this.redraw(g2, arc2, outerArc2, polylineTransform2);
-        }
+        // just rerender the pie graph (seems like the only way)
+        this.applyGraphData(this.pieData);
       }, 500);
     },
     /* helper functions ---------------------------------------------------- */
+    /**
+     * Adds the field exps of the subfields to the url
+     */
+    applyFieldListToUrl: function () {
+      let subFieldExps = [];
+      for (let field of this.fieldTypeaheadList) {
+        subFieldExps.push(field.exp);
+      }
+
+      let subFieldExpsString = subFieldExps.join(',');
+      if (!subFieldExpsString) { subFieldExpsString = undefined; }
+
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          subFields: subFieldExpsString
+        }
+      });
+    },
     /**
      * Sorts the table data based on the existing sort field and type vars
      */
     sortTable: function () {
       this.tableData.sort((a, b) => {
         let result = false;
-        if (!this.tableDesc && this.tableSortField === 0 && a.innerData) {
-          result = a.innerData[this.tableSortType] > b.innerData[this.tableSortType];
-        } else if (this.tableDesc && this.tableSortField === 0 && a.innerData) {
-          result = b.innerData[this.tableSortType] > a.innerData[this.tableSortType];
-        } else if (!this.tableDesc) {
-          result = a[this.tableSortType] > b[this.tableSortType];
+        if (this.tableSortField === 'child') {
+          if (!this.tableDesc) {
+            result = a[this.tableSortType] > b[this.tableSortType];
+          } else {
+            result = b[this.tableSortType] > a[this.tableSortType];
+          }
         } else {
-          result = b[this.tableSortType] > a[this.tableSortType];
+          if (!this.tableDesc) {
+            result = a[this.tableSortField][this.tableSortType] > b[this.tableSortField][this.tableSortType];
+          } else {
+            result = b[this.tableSortField][this.tableSortType] > a[this.tableSortField][this.tableSortType];
+          }
         }
         return result ? 1 : -1;
       });
@@ -509,93 +611,158 @@ export default {
      * @returns {Object} formattedData The formatted data object
      */
     formatDataFromSpigraph: function (data) {
-      this.tableData = [];
+      let formattedData = {
+        name: 'Top Talkers',
+        children: []
+      };
 
-      let formattedData = {};
       for (let item of data) {
         let dataObj = {
           name: item.name,
-          value: item.count,
+          size: item.count,
           field: this.baseField
         };
-        formattedData[item.name] = dataObj;
-        this.tableData.push(dataObj);
+        formattedData.children.push(dataObj);
       }
 
+      this.tableData = formattedData.children;
+      this.applyColorsToTableData(this.tableData);
       this.sortTable();
-      this.applyColorsToTableData(data);
 
       return formattedData;
     },
     /**
      * Generates a list of colors (RAINBOW) based on the length of the data
-     * @param {Object} data The data object to calculate colors for
+     * @param {Number} dataLength The length of the data to calculate colors for
      * @returns {Function} colors Function to retrieve a color per data point
      */
-    generateColors: function (data) {
-      const colorScale = d3.interpolateHslLong('red', 'purple');
-      const dataLength = Object.keys(data).length;
-      const intervalSize = 1 / dataLength;
-
-      let colorArray = [];
-      for (let i = 0; i < dataLength; i++) {
-        let color = colorScale(i * intervalSize);
-        colorArray.push(color);
-      }
-
-      // set the color scale
-      return d3.scaleOrdinal()
-        .domain(data)
-        .range(colorArray);
+    generateColors: function (dataLength) {
+      return d3.scaleOrdinal(
+        d3.quantize(d3.interpolateRainbow, dataLength + 1)
+      );
     },
     /**
      * Adds a color variable to every table data item using the outer bucket
      * @param {Object} data The data to generate the colors from
      */
     applyColorsToTableData: function (data) {
-      let colors = this.generateColors(data);
-      for (let item of this.tableData) {
+      let parentMap = {};
+      for (let item of data) {
+        if (item.grandparent && !parentMap[item.grandparent.name]) { // count grandparents
+          parentMap[item.grandparent.name] = true;
+        } else if (!item.grandparent && item.parent && !parentMap[item.parent.name]) { // count parents
+          parentMap[item.parent.name] = true;
+        } else if (!item.grandparent && !item.parent && !parentMap[item.name]) {
+          parentMap[item.name] = true;
+        }
+      }
+      let parentCount = Object.keys(parentMap).length;
+      let colors = this.generateColors(parentCount);
+      for (let item of data) {
         let key = item.name;
-        if (item.innerData) { key = item.innerData.name; }
+        if (item.grandparent) {
+          key = item.grandparent.name;
+        } else if (item.parent) {
+          key = item.parent.name;
+        }
         item.color = colors(key);
       }
     },
     /**
      * Initializes the graph by adding the svg to the page once the component
      * has mounted and the pie area container is present.
-     * Sets the value of the pie slices and sorts the pie slices by index
-     * Applies the initial data to the pie graph
      * @param {Object} data The data to construct the pie
      */
     initializeGraph: function (data) {
-      // PIE SETUP --------------------------- //
-      svg = d3.select('#pie-area')
+      g = d3.select('#pie-area')
         .append('svg')
+        .attr('viewBox', `${-width / 2} ${-height / 2} ${width} ${height}`)
         .attr('width', width)
         .attr('height', height)
-        .append('g')
-        .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+        .call(d3.zoom().on('zoom', () => { // allow zooming of the pie graph
+          g.attr('transform', d3.event.transform);
+        }))
+        .append('g');
 
-      g = svg.append('g');
+      if (data) { this.applyGraphData(data); }
+    },
+    /**
+     * Applies the graph data to the pie chart by adding slices and text labels
+     * It also adds the colors and transitions to the pie graph
+     * (works for new a new pie as well as updating the pie)
+     * @param {Object} data The data to add to the graph
+     */
+    applyGraphData: function (data) {
+      let vueSelf = this;
+      this.pieData = data; // save pie data for resize
+      let colors = this.generateColors(data.children.length);
 
-      pie = d3.pie().value((d) => {
-        // show the scaled value if it exists (so buckets fit data)
-        if (d && d.value && d.value.scaledValue) {
-          return d.value.scaledValue;
-        }
-        // otherwise show the exact value
-        if (d && d.value && d.value.value) {
-          return d.value.value;
-        }
-        return d.value;
-      }).sort((a, b) => {
-        if (a && a.value && a.value.index) {
-          return a.value.index - b.value.index;
-        }
-        return true;
-      });
+      let partition = d3.partition() // organize data into sunburst pattern
+        .size([2 * Math.PI, radius]); // show sunburst in full circle
 
-      this.applyGraphData(data, g, arc, outerArc, polylineTransform, getLabelText);
+      let root = d3.hierarchy(data) // our data is hierarchical
+        .sum((d) => { return d.size; }); // sub each node's children
+
+      // combine partition var (data structure) with root node (the actual data)
+      partition(root);
+
+      // SLICES ------------------------------ //
+      let slice = g.selectAll('g.node') // select all g elements with the node class
+        .data(root.descendants(), (d) => { // pass in root variable with descendants
+          return d.data.name;
+        });
+
+      newSlice = slice.enter() // connect the path element with our data
+        .append('g') // add the g element to be fetched later when the data changes
+        .attr('class', 'node') // apply the node class (again to fetch later)
+        // merge the DOM elements of the new slices with the old slices
+        // (because the data could have changed)
+        .merge(slice);
+
+      slice.exit().remove(); // remove any slices that are no longer needed
+      slice.selectAll('path').remove(); // remove all old slice path elements
+
+      newSlice.append('path') // add new slice path elements
+        .attr('display', (d) => { // don't display the root node
+          return d.depth ? null : 'none';
+        })
+        .attr('d', arc) // set the d attribute on the paths for drawing each slice
+        .style('stroke-width', '3px')
+        .style('stroke', background) // lines between the slices
+        .style('fill', (d) => { // apply the colors to the slices
+          while (d.depth > 1) { d = d.parent; }
+          return colors(d.data.name);
+        });
+
+      newSlice // hover functionality
+        .on('mouseover', function (d) {
+          mouseover(d, this);
+          if (popupTimer) { clearTimeout(popupTimer); }
+          popupTimer = setTimeout(() => {
+            vueSelf.showInfo(d);
+          }, 400);
+        })
+        .on('mouseleave', function (d) {
+          mouseleave(d, this);
+          if (popupTimer) { clearTimeout(popupTimer); }
+        });
+
+      // TEXT -------------------------------- //
+      slice.selectAll('text').remove();
+      newSlice.append('text')
+        .attr('transform', textTransform)
+        .attr('dx', '-35')
+        .attr('dy', '.35em')
+        .text((d) => {
+          // don't show text for tiny slices or the root node text
+          if (d.depth && (d.y0 + d.y1) / 2 * (d.x1 - d.x0) < 15) { return ''; }
+          // truncate long values
+          let name = d.parent ? d.data.name : '';
+          if (name.length > 8) {
+            name = name.substr(0, 8) + '...';
+          }
+          return name;
+        });
     },
     /**
      * Gets a field object based on an exp
@@ -609,144 +776,6 @@ export default {
         }
       }
       return undefined;
-    },
-    /**
-     * Applies the graph data to the pie chart by adding the slices, text labels,
-     * and lines from the slices to the text labels
-     * It also adds the colors and transitions to the pie graph
-     * (works for new a new pie as well as updating the pie)
-     * @param {Object} data             The data to add to the graph
-     * @param {Object} gArea            The d3 g element for the data
-     * @param {Function} arcFunc        The arc function to apply to the slices
-     * @param {Function} outerArcFunc   The outer arc function to apply to the slices
-     * @param {Function} lineTransFunc  The function to apply to draw the lines
-     * @param {Function} labelTextFunc  The function to show the text labels
-     */
-    applyGraphData: function (data, gArea, arcFunc, outerArcFunc, lineTransFunc, labelTextFunc) {
-      let colors = this.generateColors(data);
-      let vueSelf = this;
-
-      // PIE SLICES -------------------------- //
-      // add any new slices
-      gArea.datum(d3.entries(data))
-        .selectAll('path')
-        .data(pie(d3.entries(data)))
-        .enter()
-        .append('path')
-        .attr('d', arc2)
-        .attr('stroke', 'white')
-        .style('stroke-width', '2px')
-        .style('opacity', 0.8)
-        .on('mouseover', function (d) {
-          mouseover(d, this);
-          if (popupTimer) { clearTimeout(popupTimer); }
-          popupTimer = setTimeout(() => {
-            vueSelf.showInfo(d);
-          }, 400);
-        })
-        .on('mouseleave', function (d) {
-          mouseleave(d, this);
-          if (popupTimer) { clearTimeout(popupTimer); }
-        })
-        .on('click', (d) => {
-          this.addExpression(d.data.value, '||');
-        });
-
-      // apply color to ALL of the slices (not just the new ones)
-      gArea.selectAll('path')
-        .attr('fill', (d) => {
-          return colors(d.data.key);
-        });
-
-      // add transition to new slices
-      gArea.datum(d3.entries(data))
-        .selectAll('path')
-        .data(pie(d3.entries(data)))
-        .transition().duration(1000)
-        .attrTween('d', (d) => {
-          return sliceTransition(d, arcFunc, this._current || d);
-        });
-
-      // remove any slices not being used
-      gArea.datum(d3.entries(data))
-        .selectAll('path')
-        .data(pie(d3.entries(data)))
-        .exit().remove();
-
-      // TEXT LABELS ------------------------- //
-      // add any new text
-      gArea.datum(d3.entries(data))
-        .selectAll('text')
-        .data(pie(d3.entries(data)))
-        .enter()
-        .append('text')
-        .attr('dy', '.15rem');
-
-      // apply text location and transition to new labels
-      gArea.datum(d3.entries(data))
-        .selectAll('text')
-        .data(pie(d3.entries(data)))
-        .transition().duration(1000)
-        .attrTween('transform', (d) => {
-          return textTransform(d, outerArcFunc, this._current || d);
-        })
-        .styleTween('text-anchor', textTransition);
-
-      // remove any text not being used and apply text label data
-      gArea.datum(d3.entries(data))
-        .selectAll('text')
-        .data(pie(d3.entries(data)))
-        .text(labelTextFunc)
-        .exit().remove();
-
-      // LINE TO LABEL ----------------------- //
-      // remove all lines (because removing them with provided data doesn't
-      // work for some insane and unknown reason)
-      gArea.datum(d3.entries({}))
-        .selectAll('polyline')
-        .data(pie(d3.entries({})))
-        .exit().remove();
-
-      // add any new lines from slices to labels
-      gArea.datum(d3.entries(data))
-        .selectAll('polyline')
-        .data(pie(d3.entries(data)))
-        .enter()
-        .append('polyline');
-
-      // apply transitions to new lines
-      gArea.datum(d3.entries(data))
-        .selectAll('polyline')
-        .data(pie(d3.entries(data)))
-        .transition().duration(1000)
-        .attrTween('points', lineTransFunc);
-    },
-    /**
-     * Redraws the pie slices, lines, and label positions
-     * @param {Object} gArea            The d3 g element for the data
-     * @param {Function} arcFunc        The arc function to apply to the slices
-     * @param {Function} outerArcFunc   The outer arc function to apply to the slices
-     * @param {Function} lineTransFunc  The function to apply to draw the lines
-     */
-    redraw: function (gArea, arcFunc, outerArcFunc, lineTransFunc) {
-      gArea.selectAll('path')
-        .transition().duration(1000)
-        .attrTween('d', (d) => {
-          return sliceTransition(d, arcFunc, this._current || d);
-        });
-
-      // set the new position of the text
-      gArea.selectAll('text')
-        .transition().duration(1000)
-        .attrTween('transform', (d) => {
-          return textTransform(d, outerArcFunc, this._current || d);
-        })
-        .styleTween('text-anchor', textTransition);
-
-      // apply transitions to new lines
-      gArea.selectAll('polyline')
-        .transition().duration(1000)
-        .attrTween('points', lineTransFunc);
     },
     loadData: function () {
       this.$emit('toggleLoad', true);
@@ -775,84 +804,10 @@ export default {
       cancellablePromise.then((response) => {
         pendingPromise = null;
         this.$emit('toggleLoad', false);
-
-        this.outerData = false;
-        this.tableData = []; // clear the table data
-
-        // format the data for the pie graph
-        let innerData = {};
-        let outerData = {};
-        let index = 0;
-        let parentIndex = 0;
-
-        // create a data object and identify the parent index (which bucket a
-        // value belongs to) and the index of the value itself (for coloring)
-        for (let item in response.data) {
-          let itemObj = {
-            name: item,
-            value: response.data[item].value,
-            // save the field to add to the search expression
-            field: this.baseField
-          };
-          innerData[item] = itemObj;
-
-          let subIndex = 0;
-          let subBucketsSum = 0;
-          for (let subItem in response.data[item].subData) {
-            this.outerData = true;
-            let value = response.data[item].subData[subItem];
-            let subItemObj = {
-              value: value,
-              parentIndex: parentIndex,
-              index: index,
-              name: subItem,
-              subIndex: subIndex,
-              // save the inner data to show on hover
-              innerData: innerData[item],
-              // save the field to add to the search expression
-              field: this.fieldTypeaheadList[0].exp
-            };
-            outerData[`${subItem}-${parentIndex}`] = subItemObj;
-            index++;
-            subIndex++;
-            subBucketsSum += value;
-            // add the flat info to the table data
-            this.tableData.push(subItemObj);
-          }
-
-          if (!this.outerData) {
-            // add the info to the table data
-            this.tableData.push(itemObj);
-          }
-
-          // scale the inner data so that outer data fits the bucket
-          innerData[item].scaledValue = innerData[item].value * (subBucketsSum / innerData[item].value);
-          parentIndex++;
-        }
-
+        this.applyGraphData(response.data.pieResults);
+        this.tableData = response.data.tableResults;
         this.sortTable();
-        this.applyColorsToTableData(innerData);
-
-        // add the data to the inner circle (it might have changed)
-        this.applyGraphData(innerData, g, arc, outerArc, polylineTransform, getLabelText);
-        if (index > 0) { // if there's outer data
-          // remove the inner labels
-          g.datum(d3.entries({}))
-            .selectAll('text')
-            .data(pie(d3.entries({})))
-            .exit().remove();
-
-          // remove lines from slices to labels from inner pie
-          g.datum(d3.entries({}))
-            .selectAll('polyline')
-            .data(pie(d3.entries({})))
-            .exit().remove();
-
-          // add another g to add the new pie data
-          if (!g2) { g2 = svg.append('g'); }
-          // add data to the outer circle
-          this.applyGraphData(outerData, g2, arc2, outerArc2, polylineTransform2, getTopLabelText);
-        }
+        this.applyColorsToTableData(this.tableData);
       }).catch((error) => {
         pendingPromise = null;
         this.$emit('toggleLoad', false);
@@ -889,25 +844,105 @@ export default {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-if="outerFieldObj && sliceData.innerData">
-                    <td>
-                      {{ outerFieldObj.friendlyName }}
-                    </td>
-                    <td>
-                      <moloch-session-field
-                        :field="outerFieldObj"
-                        :value="sliceData.name"
-                        :expr="outerFieldObj.exp"
-                        :parse="true"
-                        :session-btn="true">
-                      </moloch-session-field>
-                    </td>
-                    <td>
-                      <strong>
-                        {{ sliceData.value }}
-                      </strong>
-                    </td>
-                  </tr>
+                  <template v-if="level2FieldObj && sliceData.parent.parent && sliceData.parent.parent.data && sliceData.parent.parent.data.sizeValue">
+                    <tr>
+                      <td>
+                        {{ level2FieldObj.friendlyName }}
+                      </td>
+                      <td>
+                        <moloch-session-field
+                          :field="level2FieldObj"
+                          :value="sliceData.data.name"
+                          :expr="level2FieldObj.exp"
+                          :parse="true"
+                          :session-btn="true">
+                        </moloch-session-field>
+                      </td>
+                      <td>
+                        <strong>
+                          {{ sliceData.data.size || sliceData.data.sizeValue }}
+                        </strong>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        {{ level1FieldObj.friendlyName }}
+                      </td>
+                      <td>
+                        <moloch-session-field
+                          :field="level1FieldObj"
+                          :value="sliceData.parent.data.name"
+                          :expr="level1FieldObj.exp"
+                          :parse="true"
+                          :session-btn="true">
+                        </moloch-session-field>
+                      </td>
+                      <td>
+                        <strong>
+                          {{ sliceData.parent.data.size || sliceData.parent.data.sizeValue }}
+                        </strong>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        {{ baseFieldObj.friendlyName }}
+                      </td>
+                      <td>
+                        <moloch-session-field
+                          :field="baseFieldObj"
+                          :value="sliceData.parent.parent.data.name"
+                          :expr="baseFieldObj.exp"
+                          :parse="true"
+                          :session-btn="true">
+                        </moloch-session-field>
+                      </td>
+                      <td>
+                        <strong>
+                          {{ sliceData.parent.parent.data.sizeValue }}
+                        </strong>
+                      </td>
+                    </tr>
+                  </template>
+                  <template v-else-if="level1FieldObj && sliceData.parent.data && sliceData.parent.data.sizeValue">
+                    <tr>
+                      <td>
+                        {{ level1FieldObj.friendlyName }}
+                      </td>
+                      <td>
+                        <moloch-session-field
+                          :field="level1FieldObj"
+                          :value="sliceData.data.name"
+                          :expr="level1FieldObj.exp"
+                          :parse="true"
+                          :session-btn="true">
+                        </moloch-session-field>
+                      </td>
+                      <td>
+                        <strong>
+                          {{ sliceData.data.size || sliceData.data.sizeValue }}
+                        </strong>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        {{ baseFieldObj.friendlyName }}
+                      </td>
+                      <td>
+                        <moloch-session-field
+                          :field="baseFieldObj"
+                          :value="sliceData.parent.data.name"
+                          :expr="baseFieldObj.exp"
+                          :parse="true"
+                          :session-btn="true">
+                        </moloch-session-field>
+                      </td>
+                      <td>
+                        <strong>
+                          {{ sliceData.parent.data.sizeValue }}
+                        </strong>
+                      </td>
+                    </tr>
+                  </template>
                   <tr v-else-if="baseFieldObj">
                     <td>
                       {{ baseFieldObj.friendlyName }}
@@ -915,7 +950,7 @@ export default {
                     <td>
                       <moloch-session-field
                         :field="baseFieldObj"
-                        :value="sliceData.name"
+                        :value="sliceData.data.name"
                         :expr="baseFieldObj.exp"
                         :parse="true"
                         :session-btn="true">
@@ -923,26 +958,7 @@ export default {
                     </td>
                     <td>
                       <strong>
-                        {{ sliceData.value }}
-                      </strong>
-                    </td>
-                  </tr>
-                  <tr v-if="sliceData.innerData">
-                    <td>
-                      {{ baseFieldObj.friendlyName }}
-                    </td>
-                    <td>
-                      <moloch-session-field
-                        :field="baseFieldObj"
-                        :value="sliceData.innerData.name"
-                        :expr="baseFieldObj.exp"
-                        :parse="true"
-                        :session-btn="true">
-                      </moloch-session-field>
-                    </td>
-                    <td>
-                      <strong>
-                        {{ sliceData.innerData.value }}
+                        {{ sliceData.data.size || sliceData.data.sizeValue }}
                       </strong>
                     </td>
                   </tr>
@@ -952,9 +968,10 @@ export default {
           `,
           parent: this,
           data: {
-            sliceData: d.data.value,
+            sliceData: d,
             baseFieldObj: this.getFieldObj(this.baseField),
-            outerFieldObj: this.fieldTypeaheadList[0] || undefined
+            level1FieldObj: this.fieldTypeaheadList.length ? this.fieldTypeaheadList[0] : undefined,
+            level2FieldObj: this.fieldTypeaheadList.length > 1 ? this.fieldTypeaheadList[1] : undefined
           },
           methods: {
             addExpression: function (slice, op) {
@@ -981,19 +998,14 @@ export default {
     window.removeEventListener('keyup', closeInfoOnEsc);
     // d3 doesn't have .off function to remove listeners,
     // so use .on('listener', null)
-    g.selectAll('path')
-      .on('click', null)
-      .on('mouseover', null)
-      .on('mouseleave', null);
-    g2.selectAll('path')
-      .on('click', null)
+    newSlice
       .on('mouseover', null)
       .on('mouseleave', null);
 
-    // remove svg elements
-    svg.selectAll('path').exit().remove();
-    svg.selectAll('text').exit().remove();
-    svg.selectAll('polylines').exit().remove();
+    // remove elements
+    newSlice.exit().remove();
+    newSlice.selectAll('path').remove();
+    newSlice.selectAll('text').remove();
 
     // destroy child component
     $('.info-popup').remove();
@@ -1002,11 +1014,13 @@ export default {
     // cleanup global vars
     setTimeout(() => {
       g = undefined;
-      g2 = undefined;
-      svg = undefined;
-      pie = undefined;
+      styles = undefined;
+      newSlice = undefined;
       popupVue = undefined;
+      background = undefined;
+      foreground = undefined;
       popupTimer = undefined;
+      resizeTimer = undefined;
     });
   }
 };
