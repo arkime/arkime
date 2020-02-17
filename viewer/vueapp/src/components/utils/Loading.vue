@@ -1,7 +1,7 @@
 <template>
 
   <div class="loading">
-    <img src="@/assets/watching.gif" />
+    <img src="watching.gif" />
     <div class="loader circles"></div>
     <div class="loader-section rectangle"
       :class="{'tall-rectangle':canCancel}">

@@ -1094,7 +1094,7 @@
               <div class="theme-display">
                 <nav class="navbar navbar-dark">
                   <a class="navbar-brand cursor-pointer">
-                    <img src="../../assets/logo.png"
+                    <img src="header_logo.png"
                       class="moloch-logo"
                       alt="hoot"
                     />
@@ -1264,7 +1264,7 @@
                   <div class="theme-display">
                     <div class="navbar navbar-dark">
                       <a class="navbar-brand cursor-pointer">
-                        <img src="../../assets/logo.png"
+                        <img src="header_logo.png"
                           class="moloch-logo"
                           alt="hoot"
                         />
