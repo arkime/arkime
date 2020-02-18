@@ -60,26 +60,6 @@
           </div>
         </div> <!-- /maxElements select -->
 
-        <!-- sort select (not shown for the pie graph) -->
-        <div class="form-group ml-1"
-          v-if="spiGraphType === 'default'">
-          <div class="input-group input-group-sm">
-            <span class="input-group-prepend cursor-help"
-              v-b-tooltip.hover
-              title="Sort results by">
-              <span class="input-group-text">
-                Sort by:
-              </span>
-            </span>
-            <select class="form-control"
-              v-model="sortBy"
-              @change="changeSortBy">
-              <option value="name">alphabecially</option>
-              <option value="graph">count</option>
-            </select>
-          </div>
-        </div> <!-- /sort select -->
-
         <!-- main graph type select -->
         <div class="form-group ml-1">
           <div class="input-group input-group-sm">
@@ -99,6 +79,26 @@
             </select>
           </div>
         </div> <!-- /main graph type select -->
+
+        <!-- sort select (not shown for the pie graph) -->
+        <div class="form-group ml-1"
+          v-if="spiGraphType === 'default'">
+          <div class="input-group input-group-sm">
+            <span class="input-group-prepend cursor-help"
+              v-b-tooltip.hover
+              title="Sort results by">
+              <span class="input-group-text">
+                Sort by:
+              </span>
+            </span>
+            <select class="form-control"
+              v-model="sortBy"
+              @change="changeSortBy">
+              <option value="name">alphabecially</option>
+              <option value="graph">count</option>
+            </select>
+          </div>
+        </div> <!-- /sort select -->
 
         <!-- refresh input (not shown for pie) -->
         <div class="form-group ml-1"
@@ -444,8 +444,10 @@ export default {
       }
     },
     changeSpiGraphType: function () {
-      if (this.spiGraphType === 'pie') {
-        this.query.size = 5; // set default size to 5
+      if (this.spiGraphType === 'pie' || this.spiGraphType === 'table') {
+        if (!this.$route.query.size) {
+          this.query.size = 5; // set default size to 5
+        }
         this.sortBy = 'graph'; // set default sort to count (graph)
         this.query.sort = this.graphType;
         this.refresh = 0;
