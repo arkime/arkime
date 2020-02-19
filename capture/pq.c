@@ -48,11 +48,11 @@ typedef struct {
 typedef HASH_VAR(s_, MolochPQHash_t, MolochPQHead_t, 51);
 
 struct MolochPQ_t {
-    int                 maxSeconds;
-    time_t              bucket0[MOLOCH_MAX_PACKET_THREADS];
-    MolochPQ_cb         cb;
-    MolochPQHash_t      keys[MOLOCH_MAX_PACKET_THREADS];
     MolochPQHead_t     *buckets[MOLOCH_MAX_PACKET_THREADS];
+    MolochPQHash_t      keys[MOLOCH_MAX_PACKET_THREADS];
+    MolochPQ_cb         cb;
+    time_t              bucket0[MOLOCH_MAX_PACKET_THREADS];
+    int                 maxSeconds;
 };
 
 /******************************************************************************/

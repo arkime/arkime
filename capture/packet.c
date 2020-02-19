@@ -1266,7 +1266,7 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
         }
         initialPacket = packet->ts;
         if (!config.pcapReadOffline)
-            LOG("Initial Packet = %ld Initial Dropped = %u", initialPacket.tv_sec, initialDropped);
+            LOG("Initial Packet = %ld Initial Dropped = %" PRIu64, initialPacket.tv_sec, initialDropped);
     }
 
     MOLOCH_THREAD_INCR(totalPackets);
