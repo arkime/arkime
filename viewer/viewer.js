@@ -116,7 +116,13 @@ var internals = {
     settings: {},
     welcomeMsgNum: 1,
     found: true
-  }
+  },
+  scriptAggs: {}
+};
+
+internals.scriptAggs['ip.dst:port'] = {
+  script: 'if (doc.dstIp.value.indexOf(".") > 0) {return doc.dstIp.value + ":" + doc.dstPort.value} else {return doc.dstIp.value + "." + doc.dstPort.value}',
+  dbField: 'dstIp'
 };
 
 // make sure there's an _ after the prefix
@@ -5397,15 +5403,22 @@ app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
   }
 });
 
-app.get('/spigraphpie', logAction(), (req, res) => {
-  noCache(req, res, 'text/plain; charset=utf-8');
+app.get('/spigraphpie', noCacheJson, logAction(), (req, res) => {
+
+  if (req.query.exp === undefined) {
+    return res.molochError(403, 'Missing exp parameter');
+  }
 
   let fields = [];
   let parts = req.query.exp.split(',');
   for (let i = 0; i < parts.length; i++) {
+    if (internals.scriptAggs[parts[i]] !== undefined) {
+      fields.push(internals.scriptAggs[parts[i]]);
+      continue;
+    }
     let field = Config.getFieldsMap()[parts[i]];
     if (!field) {
-      return res.send(`Unknown expression ${parts[i]}\n`);
+      return res.molochError(403, `Unknown expression ${parts[i]}\n`);
     }
     fields.push(field);
   }
@@ -5422,8 +5435,14 @@ app.get('/spigraphpie', logAction(), (req, res) => {
 
     let lastQ = query;
     for (let i = 0; i < fields.length; i++) {
+      // Require that each field exists
       query.query.bool.must.push({ exists: { field: fields[i].dbField } });
-      lastQ.aggregations = {field: { terms : {field : fields[i].dbField, size: size}}};
+
+      if (fields[i].script) {
+        lastQ.aggregations = {field: {terms: {script: {lang: "painless", source: fields[i].script}, size: size}}};
+      } else {
+        lastQ.aggregations = {field: {terms: {field: fields[i].dbField, size: size}}};
+      }
       lastQ = lastQ.aggregations.field;
     }
 
@@ -5486,7 +5505,7 @@ app.get('/spigraphpie', logAction(), (req, res) => {
       addDataToPie(result.aggregations.field.buckets, pieResults.children);
       addDataToTable(result.aggregations.field.buckets);
 
-      return res.send({pieResults: pieResults, tableResults: tableResults});
+      return res.send({success:true, pieResults: pieResults, tableResults: tableResults});
     });
   });
 });

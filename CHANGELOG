@@ -17,13 +17,12 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.2.2 2020/02/xx
+2.2.2 2020/02/18
   - release - node 10.19.0
   - capture - fix SYN retrans handling
   - capture - New tcphealthcheck plugin (thanks fj604)
   - capture - support communityId field in rules/wise
   - capture - fixed drop stats for long running systems
-  - capture - new tcphealthcheck plugin (thanks fj604)
   - viewer - Fix decode crash (thanks mammo0)
   - viewer - experimental pie chart in spigraph
   - viewer - experimental table view in spigraph
@@ -36,6 +35,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - s3 - Fixes the problem where the s3 token expires during a capture (issue #1370)
   - s3 - more logging on errors
   - s3 - new s3Host setting (thank jc2k)
+  - all - debug can be set in config file, used if no command line debug args
 
 2.2.1 2020/01/21
   - capture - fix --skip not working with ES 7.x

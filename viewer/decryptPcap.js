@@ -1,7 +1,8 @@
 /******************************************************************************/
-/* decryptPcap.js -- decrypt an entire pcap file
+/* decryptPcap.js -- decrypt an entire pcap file to stdout
  *
- * decryptPcap.js <filename>
+ * decryptPcap.js [options like -c/-n] <full path filename>
+ *
  *
  * Copyright 2020 AOL Inc. All rights reserved.
  *
@@ -75,7 +76,7 @@ function main() {
 }
 
 if (process.argv.length < 3) {
-  console.log("Missing filename");
+  console.log("Missing full path filename");
   process.exit();
 }
 

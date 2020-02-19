@@ -70,10 +70,6 @@ interface=MOLOCH_INTERFACE
 # Control the log format for access requests. This uses URI % encoding.
 #accessLogFormat = :date :username %1b[1m:method%1b[0m %1b[33m:url%1b[0m :status :res[content-length] bytes :response-time ms
 
-# Control whether requests to certain paths are suppressed from logging. 
-# This is a semicolon seperated list.
-#accessLogSuppressPaths = /eshealth.json
-
 # The directory to save raw pcap files to
 pcapDir = MOLOCH_INSTALL_DIR/raw
 
