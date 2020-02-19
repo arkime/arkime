@@ -663,6 +663,28 @@ void moloch_parsers_init()
     MolochString_t *hstring;
     int d;
 
+    char **disableParsers = moloch_config_str_list(NULL, "disableParsers", "arp.so");
+    for (d = 0; disableParsers[d]; d++) {
+        hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
+        hstring->str = disableParsers[d];
+        hstring->len = strlen(disableParsers[d]);
+        HASH_ADD(s_, loaded, hstring->str, hstring);
+    }
+
+    if (!config.parseSMTP) {
+        hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
+        hstring->str = g_strdup("smtp.so");
+        hstring->len = strlen(hstring->str);
+        HASH_ADD(s_, loaded, hstring->str, hstring);
+    }
+
+    if (!config.parseSMB) {
+        hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
+        hstring->str = g_strdup("smb.so");
+        hstring->len = strlen(hstring->str);
+        HASH_ADD(s_, loaded, hstring->str, hstring);
+    }
+
     for (d = 0; config.parsersDir[d]; d++) {
         GError      *error = 0;
         GDir *dir = g_dir_open(config.parsersDir[d], 0, &error);
@@ -752,6 +774,7 @@ void moloch_parsers_init()
         g_free(hstring->str);
         MOLOCH_TYPE_FREE(MolochString_t, hstring);
     );
+    g_free(disableParsers); // NOT, g_strfreev because using the pointers
 
     // Set tags field up AFTER loading plugins
     config.tagsStringField = moloch_field_define("general", "termfield",
