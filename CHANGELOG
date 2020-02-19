@@ -23,7 +23,6 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - New tcphealthcheck plugin (thanks fj604)
   - capture - support communityId field in rules/wise
   - capture - fixed drop stats for long running systems
-  - capture - new tcphealthcheck plugin (thanks fj604)
   - viewer - Fix decode crash (thanks mammo0)
   - viewer - experimental pie chart in spigraph
   - viewer - experimental table view in spigraph
