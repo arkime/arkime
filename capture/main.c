@@ -242,6 +242,15 @@ void parse_args(int argc, char **argv)
         printf("Must specify directories to monitor with -R\n");
         exit(1);
     }
+
+    if (config.pcapReadFiles) {
+        for (int i = 0; config.pcapReadFiles[i]; i++) {
+            if (strcmp("-", config.pcapReadFiles[i]) == 0 && !config.copyPcap) {
+                printf("-r - requires --copy be used\n");
+                exit(1);
+            }
+        }
+    }
 }
 /******************************************************************************/
 void moloch_free_later(void *ptr, GDestroyNotify cb)

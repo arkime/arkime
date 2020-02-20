@@ -192,6 +192,9 @@ LOCAL int reader_libpcapfile_process(char *filename)
     struct group *gr;
     struct passwd *pw;
 
+    if (strcmp(filename, "-") == 0) {
+        goto process;
+    }
 
     if (!realpath(filename, offlinePcapFilename)) {
         LOG("ERROR - pcap open failed - Couldn't realpath file: '%s' with %d", filename, errno);
@@ -253,7 +256,7 @@ LOCAL int reader_libpcapfile_process(char *filename)
       }
     }
 
-
+process:
     errbuf[0] = 0;
     LOG ("Processing %s", filename);
     pktsToRead = config.pktsToRead;
