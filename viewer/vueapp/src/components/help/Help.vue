@@ -108,11 +108,11 @@
             </span>&nbsp;
             Users
           </a>
-          <a href="help#shortcuts"
+          <a href="help#hotkeys"
             class="nav-link">
             <span class="fa fa-fw fa-keyboard-o">
             </span>&nbsp;
-            Shortcuts
+            Hot Keys
           </a>
           <a href="help#fields"
             class="nav-link">
@@ -968,6 +968,21 @@
               Notifiers can be used to alert users that cron queries have found matching sessions.
               Notifiers alert every <strong>10</strong> minutes if there are <strong>new</strong> matches.
             </p>
+            <h6>
+              <span class="fa fa-fw fa-cog"></span>&nbsp;
+              Shortcuts
+            </h6>
+            <p>
+              Here, a user can create, update, and delete shortcuts.
+              Shortcuts are lists of values that can be used in search queries.
+              For example, create a list of IPs and use them in a query
+              expression <code>ip.src == $MY_IPS</code>. Users can share
+              shortcuts with users of the same cluster by toggling the "shared"
+              checkbox.
+              <br>
+              <strong>Tip:</strong> Use <code>$</code> to autocomplete shortcuts
+              in search expressions.
+            </p>
           </div>
 
           <hr>
@@ -985,9 +1000,9 @@
 
           <hr>
 
-          <h3 id="shortcuts">
+          <h3 id="hotkeys">
             <span class="fa fa-fw fa-keyboard-o"></span>&nbsp;
-            Keyboard Shortcuts
+            Keyboard Hot Keys
           </h3>
           <p class="ml-4">
             <code>'Q'</code> - set focus to query bar

@@ -30,6 +30,17 @@
         @keyup.esc.tab.enter.down.up.stop="keyup($event)"
         class="form-control search-control"
       />
+      <span class="input-group-append"
+        v-b-tooltip.hover
+        title="This is a pretty long search expression, maybe you want to create a shortcut? Click here to go to the shortcut creation page."
+        v-if="expression && expression.length > 200">
+        <a type="button"
+          href="settings#shortcuts"
+          class="btn btn-outline-secondary btn-clear-input">
+          <span class="fa fa-question-circle">
+          </span>
+        </a>
+      </span>
       <span class="input-group-append">
         <button type="button"
           @click="clear"
