@@ -1438,6 +1438,8 @@ function buildNotifiers () {
 }
 
 function issueAlert (notifierName, alertMessage, continueProcess) {
+  if (!notifierName) { return continueProcess(); }
+
   if (!internals.notifiers) { buildNotifiers(); }
 
   // find notifier
@@ -7200,7 +7202,7 @@ function updateSessionWithHunt (session, sessionId, hunt, huntId) {
   });
 }
 
-function buildHuntOptions (hunt) {
+function buildHuntOptions (huntId, hunt) {
   let options = {
     src: hunt.src,
     dst: hunt.dst,
@@ -7214,7 +7216,7 @@ function buildHuntOptions (hunt) {
     try {
       options.regex = new RE2(hunt.search);
     } catch (e) {
-      pauseHuntJobWithError(hunt.huntId, hunt, { value: `Hunt error with regex: ${e}` });
+      pauseHuntJobWithError(huntId, hunt, { value: `Hunt error with regex: ${e}` });
     }
   }
 
@@ -7223,7 +7225,7 @@ function buildHuntOptions (hunt) {
 
 // Actually do the search against ES and process the results.
 function runHuntJob (huntId, hunt, query, user) {
-  let options = buildHuntOptions(hunt);
+  let options = buildHuntOptions(huntId, hunt);
   let searchedSessions;
 
   Db.search('sessions2-*', 'session', query, {scroll: '600s'}, function getMoreUntilDone (err, result) {
@@ -7661,7 +7663,7 @@ app.get('/:nodeName/hunt/:huntId/remote/:sessionId', [noCacheJson], function (re
       hunt = hunt._source;
       session = session._source;
 
-      let options = buildHuntOptions(hunt);
+      let options = buildHuntOptions(huntId, hunt);
 
       sessionHunt(sessionId, options, function (err, matched) {
         if (err) {
