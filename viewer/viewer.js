@@ -1475,7 +1475,6 @@ function issueAlert (notifierName, alertMessage, continueProcess) {
     for (let field of notifierDefinition.fields) {
       for (let configuredField of notifier.fields) {
         if (configuredField.name === field.name && configuredField.value !== undefined) {
-          console.log('setting', field.name, 'to', configuredField.value);
           config[field.name] = configuredField.value;
         }
       }
@@ -1671,12 +1670,6 @@ app.put('/notifiers/:name', [noCacheJson, getSettingUserDb, checkCookieToken], f
     }
 
     req.body.notifier.name = req.body.notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
-
-    if (req.body.notifier.name !== req.body.key &&
-      sharedUser.notifiers[req.body.notifier.name]) {
-      return res.molochError(403, `${req.body.notifier.name} already exists`);
-    }
-
 
     if (!internals.notifiers) { buildNotifiers(); }
 
