@@ -34,11 +34,14 @@ var Pcap = module.exports = exports = function Pcap (key) {
 var internals = {
   pr2name: {
     1:  "icmp",
+    2:  "igmp",
     6:  "tcp",
     17: "udp",
     47: "gre",
     50: "esp",
     58: "icmpv6",
+    89: "ospf",
+    103: "pim",
     132: "sctp"
   },
   pcaps: {}

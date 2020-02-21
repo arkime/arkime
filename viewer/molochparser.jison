@@ -693,11 +693,15 @@ global.moloch.dash2Colon = function (str) {
 
 var protocols = {
     icmp:   1,
+    igmp:   2,
     tcp:    6,
     udp:    17,
+    gre:    47,
     esp:    50,
     icmp6:  58,
     icmpv6: 58,
+    ospf:   89,
+    pim:    103,
     sctp:   132,
 };
 
