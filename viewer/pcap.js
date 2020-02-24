@@ -482,7 +482,7 @@ Pcap.prototype.ip4 = function (buffer, obj, pos) {
     break;
   default:
     obj.ip.data = buffer.slice(obj.ip.hl*4, obj.ip.len);
-    console.log("v4 Unknown ip.p", obj);
+    //console.log("v4 Unknown ip.p", obj);
   }
 };
 
@@ -532,7 +532,7 @@ Pcap.prototype.ip6 = function (buffer, obj, pos) {
       return;
     default:
       obj.ip.data = buffer.slice(offset, offset+obj.ip.len);
-      console.log("v6 Unknown ip.p", obj);
+      //console.log("v6 Unknown ip.p", obj);
       return;
     }
   }
@@ -617,7 +617,7 @@ Pcap.prototype.ethertype = function(buffer, obj, pos) {
     break;
   default:
     obj.ether.data = buffer.slice(2);
-    console.trace("Unknown ether.type", obj);
+    //console.trace("Unknown ether.type", obj);
     break;
   }
 };
@@ -852,6 +852,50 @@ exports.reassemble_esp = function (packets, numPackets, cb) {
       var newBuf = Buffer.alloc(results[results.length-1].data.length + item.esp.data.length);
       results[results.length-1].data.copy(newBuf);
       item.esp.data.copy(newBuf, results[results.length-1].data.length);
+      results[results.length-1].data = newBuf;
+    }
+  });
+  cb(null, results);
+};
+
+exports.reassemble_generic_ip = function (packets, numPackets, cb) {
+  var results = [];
+  packets.length = Math.min(packets.length, numPackets);
+  packets.forEach((item) => {
+    var key = item.ip.addr1;
+    if (results.length === 0 || key !== results[results.length-1].key) {
+      var result = {
+        key: key,
+        data: item.ip.data,
+        ts: item.pcap.ts_sec*1000 + Math.round(item.pcap.ts_usec/1000)
+      };
+      results.push(result);
+    } else {
+      var newBuf = Buffer.alloc(results[results.length-1].data.length + item.ip.data.length);
+      results[results.length-1].data.copy(newBuf);
+      item.ip.data.copy(newBuf, results[results.length-1].data.length);
+      results[results.length-1].data = newBuf;
+    }
+  });
+  cb(null, results);
+};
+
+exports.reassemble_generic_ether = function (packets, numPackets, cb) {
+  var results = [];
+  packets.length = Math.min(packets.length, numPackets);
+  packets.forEach((item) => {
+    var key = item.ether.addr1;
+    if (results.length === 0 || key !== results[results.length-1].key) {
+      var result = {
+        key: key,
+        data: item.ether.data,
+        ts: item.pcap.ts_sec*1000 + Math.round(item.pcap.ts_usec/1000)
+      };
+      results.push(result);
+    } else {
+      var newBuf = Buffer.alloc(results[results.length-1].data.length + item.ether.data.length);
+      results[results.length-1].data.copy(newBuf);
+      item.ether.data.copy(newBuf, results[results.length-1].data.length);
       results[results.length-1].data = newBuf;
     }
   });

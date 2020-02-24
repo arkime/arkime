@@ -6063,6 +6063,11 @@ function localSessionDetail(req, res) {
     } else if (packets.length === 0) {
       session._err = "No pcap data found";
       localSessionDetailReturn(req, res, session, []);
+    } else if (packets[0].ether.data !== undefined) {
+      Pcap.reassemble_generic_ether(packets, +req.query.packets || 200, function(err, results) {
+        session._err = err;
+        localSessionDetailReturn(req, res, session, results || []);
+      });
     } else if (packets[0].ip === undefined) {
       session._err = "Couldn't decode pcap file, check viewer log";
       localSessionDetailReturn(req, res, session, []);
@@ -6094,6 +6099,11 @@ function localSessionDetail(req, res) {
       });
     } else if (packets[0].ip.p === 58) {
       Pcap.reassemble_icmp(packets, +req.query.packets || 200, function(err, results) {
+        session._err = err;
+        localSessionDetailReturn(req, res, session, results || []);
+      });
+    } else if (packets[0].ip.data !== undefined) {
+      Pcap.reassemble_generic_ip(packets, +req.query.packets || 200, function(err, results) {
         session._err = err;
         localSessionDetailReturn(req, res, session, results || []);
       });
