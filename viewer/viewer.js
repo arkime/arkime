@@ -1438,6 +1438,8 @@ function buildNotifiers () {
 }
 
 function issueAlert (notifierName, alertMessage, continueProcess) {
+  if (!notifierName) { return continueProcess(); }
+
   if (!internals.notifiers) { buildNotifiers(); }
 
   // find notifier
@@ -1473,7 +1475,6 @@ function issueAlert (notifierName, alertMessage, continueProcess) {
     for (let field of notifierDefinition.fields) {
       for (let configuredField of notifier.fields) {
         if (configuredField.name === field.name && configuredField.value !== undefined) {
-          console.log('setting', field.name, 'to', configuredField.value);
           config[field.name] = configuredField.value;
         }
       }
@@ -1669,12 +1670,6 @@ app.put('/notifiers/:name', [noCacheJson, getSettingUserDb, checkCookieToken], f
     }
 
     req.body.notifier.name = req.body.notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
-
-    if (req.body.notifier.name !== req.body.key &&
-      sharedUser.notifiers[req.body.notifier.name]) {
-      return res.molochError(403, `${req.body.notifier.name} already exists`);
-    }
-
 
     if (!internals.notifiers) { buildNotifiers(); }
 
@@ -7200,7 +7195,7 @@ function updateSessionWithHunt (session, sessionId, hunt, huntId) {
   });
 }
 
-function buildHuntOptions (hunt) {
+function buildHuntOptions (huntId, hunt) {
   let options = {
     src: hunt.src,
     dst: hunt.dst,
@@ -7214,7 +7209,7 @@ function buildHuntOptions (hunt) {
     try {
       options.regex = new RE2(hunt.search);
     } catch (e) {
-      pauseHuntJobWithError(hunt.huntId, hunt, { value: `Hunt error with regex: ${e}` });
+      pauseHuntJobWithError(huntId, hunt, { value: `Hunt error with regex: ${e}` });
     }
   }
 
@@ -7223,7 +7218,7 @@ function buildHuntOptions (hunt) {
 
 // Actually do the search against ES and process the results.
 function runHuntJob (huntId, hunt, query, user) {
-  let options = buildHuntOptions(hunt);
+  let options = buildHuntOptions(huntId, hunt);
   let searchedSessions;
 
   Db.search('sessions2-*', 'session', query, {scroll: '600s'}, function getMoreUntilDone (err, result) {
@@ -7661,7 +7656,7 @@ app.get('/:nodeName/hunt/:huntId/remote/:sessionId', [noCacheJson], function (re
       hunt = hunt._source;
       session = session._source;
 
-      let options = buildHuntOptions(hunt);
+      let options = buildHuntOptions(huntId, hunt);
 
       sessionHunt(sessionId, options, function (err, matched) {
         if (err) {

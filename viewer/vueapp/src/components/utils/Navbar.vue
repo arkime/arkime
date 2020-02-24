@@ -39,10 +39,10 @@
           <template v-if="user && menu[item] && menu[item].hasPermission">
             <b-nav-item
               :key="menu[item].link"
-              class="cursor-pointer">
+              class="cursor-pointer"
+              :class="{'router-link-active': $route.path === `/${menu[item].link}`}">
               <router-link
-                :to="{ path: menu[item].link, query: menu[item].query, params: { nav: true } }"
-                :class="{'router-link-active': $route.path === `/${menu[item].link}`}">
+                :to="{ path: menu[item].link, query: menu[item].query, params: { nav: true } }">
                 <span v-if="menu[item].hotkey">
                   <p v-for="(text, index) in menu[item].hotkey"
                     :key="text"
@@ -202,6 +202,10 @@ nav.navbar {
   max-height: 36px;
   min-height: 36px;
 }
+a.nav-link {
+  max-height: 38px;
+  margin-bottom: 2px;
+}
 .moloch-logo {
   position: absolute;
   height: 41px;
@@ -213,13 +217,16 @@ ul.navbar-nav {
 
 a.nav-link > a {
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.5);
-}
-a.nav-link:hover > a {
   color: rgba(255, 255, 255, 0.75);
 }
-a.nav-link > a.router-link-active {
-  color: #fff;
+a.nav-link:hover {
+  background-color: var(--color-primary);
+}
+li.nav-item.router-link-active > a.nav-link {
+  background-color: var(--color-primary);
+}
+li.nav-item.router-link-active > a.nav-link > a {
+  color: #FFFFFF;
 }
 
 /* apply theme colors to navbar */
@@ -235,9 +242,9 @@ p { /* ::first-letter only works on blocks */
 }
 /* need this so that styled first letters don't expand the text */
 p.shortcut-letter::first-letter {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.75);
 }
-a.nav-link > a.router-link-active p.shortcut-letter::first-letter {
+li.nav-item.router-link-active > a.nav-link p.shortcut-letter::first-letter {
   color: #FFFFFF !important;
 }
 /* make sure hover still works */

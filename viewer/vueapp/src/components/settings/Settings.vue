@@ -1770,7 +1770,7 @@
             v-if="notifiers">
             <div class="col-12 col-xl-6"
               v-for="(notifier, key) of notifiers"
-              :key="notifier.name">
+              :key="key">
               <div class="card mb-3">
                 <div class="card-body">
                   <!-- notifier title -->
