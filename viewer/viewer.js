@@ -1438,7 +1438,7 @@ function buildNotifiers () {
 }
 
 function issueAlert (notifierName, alertMessage, continueProcess) {
-  if (!notifierName) { return continueProcess(); }
+  if (!notifierName) { return continueProcess('No name supplied for notifier'); }
 
   if (!internals.notifiers) { buildNotifiers(); }
 
@@ -1446,7 +1446,7 @@ function issueAlert (notifierName, alertMessage, continueProcess) {
   Db.getUser('_moloch_shared', (err, sharedUser) => {
     if (!sharedUser || !sharedUser.found) {
       console.log('Cannot find notifier, no alert can be issued');
-      return continueProcess();
+      return continueProcess('Cannot find notifier, no alert can be issued');
     }
 
     sharedUser = sharedUser._source;
@@ -1457,7 +1457,7 @@ function issueAlert (notifierName, alertMessage, continueProcess) {
 
     if (!notifier) {
       console.log('Cannot find notifier, no alert can be issued');
-      return continueProcess();
+      return continueProcess('Cannot find notifier, no alert can be issued');
     }
 
     let notifierDefinition;
@@ -1468,7 +1468,7 @@ function issueAlert (notifierName, alertMessage, continueProcess) {
     }
     if (!notifierDefinition) {
       console.log('Cannot find notifier definition, no alert can be issued');
-      return continueProcess();
+      return continueProcess('Cannot find notifier, no alert can be issued');
     }
 
     let config = {};
@@ -1482,13 +1482,21 @@ function issueAlert (notifierName, alertMessage, continueProcess) {
       // If a field is required and nothing was set, then we have an error
       if (field.required && config[field.name] === undefined) {
         console.log(`Cannot find notifier field value: ${field.name}, no alert can be issued`);
-        continueProcess();
+        continueProcess(`Cannot find notifier field value: ${field.name}, no alert can be issued`);
       }
     }
 
-    notifierDefinition.sendAlert(config, alertMessage);
-
-    return continueProcess();
+    notifierDefinition.sendAlert(config, alertMessage, null, (response) => {
+      let err;
+      // there should only be one error here because only one
+      // notifier alert is sent at a time
+      if (response.errors) {
+        for (let e in response.errors) {
+          err = response.errors[e];
+        }
+      }
+      return continueProcess(err);
+    });
   });
 }
 
@@ -1758,7 +1766,11 @@ app.post('/notifiers/:name/test', [noCacheJson, getSettingUserCache, checkCookie
     return res.molochError(401, 'Need admin privelages to test a notifier');
   }
 
-  function continueProcess () {
+  function continueProcess (err) {
+    if (err) {
+      return res.molochError(500, `Error testing alert: ${err}`);
+    }
+
     return res.send(JSON.stringify({
       success : true,
       text    : `Successfully issued alert using the ${req.params.name} notifier.`
