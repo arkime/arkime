@@ -507,6 +507,32 @@ exports.update = function (index, type, id, document, options, cb) {
   return internals.elasticSearchClient.update(params, cb);
 };
 
+exports.updateSession = function (index, id, document, cb) {
+  let params = {
+    retry_on_conflict: 3,
+    index: fixIndex(index),
+    type: 'session',
+    body: document,
+    id: id,
+    timeout: '10m'
+  };
+
+  internals.elasticSearchClient.update(params, (err, data) => {
+    // Did it fail with FORBIDDEN msg?
+    if (err && err.message && err.message.match('FORBIDDEN')) {
+      // Try clearing the index.blocks.write
+      exports.setIndexSettings(fixIndex(index), {body: {'index.blocks.write': null}}, (err, data) => {
+        // Try doing the update again
+        internals.elasticSearchClient.update(params, (err, data) => {
+          return cb(err, data);
+        });
+      });
+      return;
+    }
+    return cb(err, data);
+  });
+};
+
 exports.close = function () {
   return internals.elasticSearchClient.close();
 };
@@ -536,14 +562,6 @@ exports.refresh = function (index, cb) {
 };
 
 exports.addTagsToSession = function (index, id, tags, node, cb) {
-  let params = {
-    retry_on_conflict: 3,
-    index: fixIndex(index),
-    type: 'session',
-    id: id,
-    timeout: '10m'
-  };
-
   let script = `
     if (ctx._source.tags != null) {
       for (int i = 0; i < params.tags.length; i++) {
@@ -558,7 +576,7 @@ exports.addTagsToSession = function (index, id, tags, node, cb) {
     }
   `;
 
-  params.body = {
+  let body = {
     script: {
       inline: script,
       lang: 'painless',
@@ -568,20 +586,12 @@ exports.addTagsToSession = function (index, id, tags, node, cb) {
     }
   };
 
-  if (node) { params.body._node = node; }
+  if (node) { body._node = node; }
 
-  return internals.elasticSearchClient.update(params, cb);
+  exports.updateSession(index, id, body, cb);
 };
 
 exports.removeTagsFromSession = function (index, id, tags, node, cb) {
-  let params = {
-    retry_on_conflict: 3,
-    index: fixIndex(index),
-    type: 'session',
-    id: id,
-    timeout: '10m'
-  };
-
   let script = `
     if (ctx._source.tags != null) {
       for (int i = 0; i < params.tags.length; i++) {
@@ -596,7 +606,7 @@ exports.removeTagsFromSession = function (index, id, tags, node, cb) {
     }
   `;
 
-  params.body = {
+  let body = {
     script: {
       inline: script,
       lang: 'painless',
@@ -606,20 +616,12 @@ exports.removeTagsFromSession = function (index, id, tags, node, cb) {
     }
   };
 
-  if (node) { params.body._node = node; }
+  if (node) { body._node = node; }
 
-  return internals.elasticSearchClient.update(params, cb);
+  exports.updateSession(index, id, body, cb);
 };
 
 exports.addHuntToSession = function (index, id, huntId, huntName, cb) {
-  let params = {
-    retry_on_conflict: 3,
-    index: fixIndex(index),
-    type: 'session',
-    id: id,
-    timeout: '10m'
-  };
-
   let script = `
     if (ctx._source.huntId != null) {
       ctx._source.huntId.add(params.huntId);
@@ -633,7 +635,7 @@ exports.addHuntToSession = function (index, id, huntId, huntName, cb) {
     }
   `;
 
-  params.body = {
+  let body = {
     script: {
       inline: script,
       lang: 'painless',
@@ -644,7 +646,7 @@ exports.addHuntToSession = function (index, id, huntId, huntName, cb) {
     }
   };
 
-  return internals.elasticSearchClient.update(params, cb);
+  exports.updateSession(index, id, body, cb);
 };
 
 //////////////////////////////////////////////////////////////////////////////////
