@@ -79,7 +79,7 @@ exports.init = function (api) {
 };
 
 // Slack
-exports.sendSlackAlert = function (config, message, links) {
+exports.sendSlackAlert = function (config, message, links, cb) {
   if (!config.slackWebhookUrl) {
     console.error('Please add a Slack webhook URL on the Settings page to enable Slack notifications');
     return;
@@ -112,11 +112,12 @@ exports.sendSlackAlert = function (config, message, links) {
     }
   }
 
-  slackNotifier.send(slackMsgObj);
+  slackNotifier.send(slackMsgObj)
+    .then((response) => { if (cb) { cb(response); } });
 };
 
 // Twilio
-exports.sendTwilioAlert = function (config, message, links) {
+exports.sendTwilioAlert = function (config, message, links, cb) {
   if (!config.accountSid || !config.authToken || !config.toNumber || !config.fromNumber) {
     console.error('Please fill out the required fields for Twilio notifications on the Settings page.');
     return;
@@ -146,11 +147,11 @@ exports.sendTwilioAlert = function (config, message, links) {
       to: config.toNumber,
       text: message
     }
-  });
+  }).then((response) => { if (cb) { cb(response); } });
 };
 
 // Email
-exports.sendEmailAlert = function (config, message, links) {
+exports.sendEmailAlert = function (config, message, links, cb) {
   if (!config.host || !config.port || !config.to || !config.from) {
     console.error('Please fill out the required fields for Email notifications on the Settings page.');
     return;
@@ -190,5 +191,5 @@ exports.sendEmailAlert = function (config, message, links) {
       from: config.from,
       subject: config.subject || 'Parliament Alert'
     }
-  });
+  }).then((response) => { if (cb) { cb(response); } });
 };

@@ -649,9 +649,13 @@
                       <div class="row mt-3">
                         <div class="col-12">
                           <button type="button"
+                            :disabled="notifier.loading"
                             class="btn btn-sm btn-outline-warning cursor-pointer"
                             @click="testNotifier(nKey)">
-                            <span class="fa fa-bell">
+                            <span v-if="notifier.loading"
+                              class="fa fa-spinner fa-spin">
+                            </span>
+                            <span v-else class="fa fa-bell">
                             </span>&nbsp;
                             Test
                           </button>
@@ -820,14 +824,21 @@ export default {
     },
     /* tests an existing notifier */
     testNotifier: function (notifierKey) {
+      if (this.settings.notifiers[notifierKey].loading) {
+        return;
+      }
+
+      this.$set(this.settings.notifiers[notifierKey], 'loading', true);
       SettingsService.testNotifier(notifierKey)
         .then((data) => {
           this.settingsError = '';
           this.success = data.text || 'Successfully issued alert.';
+          this.$set(this.settings.notifiers[notifierKey], 'loading', false);
           this.closeSuccess();
         })
         .catch((error) => {
           this.settingsError = error.text || 'Error issuing alert.';
+          this.$set(this.settings.notifiers[notifierKey], 'loading', false);
         });
     },
     /* opens the form to create a new notifier */

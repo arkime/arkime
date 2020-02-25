@@ -1828,9 +1828,13 @@
                   <div class="row mt-3">
                     <div class="col-12">
                       <button type="button"
+                        :disabled="notifier.loading"
                         class="btn btn-sm btn-outline-warning cursor-pointer"
                         @click="testNotifier(notifier.name)">
-                        <span class="fa fa-bell">
+                        <span v-if="notifier.loading"
+                          class="fa fa-spinner fa-spin">
+                        </span>
+                        <span v-else class="fa fa-bell">
                         </span>&nbsp;
                         Test
                       </button>
@@ -2986,15 +2990,22 @@ export default {
     },
     /* tests a notifier */
     testNotifier: function (name) {
+      if (this.notifiers[name].loading) {
+        return;
+      }
+
+      this.$set(this.notifiers[name], 'loading', true);
       this.$http.post(`notifiers/${name}/test`, {})
         .then((response) => {
           // display success message to user
           this.msg = response.data.text || 'Successfully issued alert.';
           this.msgType = 'success';
+          this.$set(this.notifiers[name], 'loading', false);
         })
         .catch((error) => {
           this.msg = error.text || 'Error issuing alert.';
           this.msgType = 'danger';
+          this.$set(this.notifiers[name], 'loading', false);
         });
     },
     /* SHORTCUTS --------------------------------------- */

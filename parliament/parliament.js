@@ -1988,15 +1988,25 @@ router.post('/testAlert', verifyToken, (req, res, next) => {
 
   internals.notifierTypes[notifier.type].sendAlert(
     config,
-    `Test alert from the ${notifier.name} notifier!`
-  );
+    `Test alert from the ${notifier.name} notifier!`,
+    null,
+    (response) => {
+      // there should only be one error here because only one
+      // notifier alert is sent at a time
+      if (response.errors) {
+        for (let e in response.errors) {
+          const error = new Error(response.errors[e]);
+          error.httpStatusCode = 500;
+          return next(error);
+        }
+      }
 
-  let successObj = {
-    success: true,
-    text: `Successfully issued alert using the ${notifier.name} notifier.`
-  };
-  let errorText = `Unable to issue alert using the ${notifier.name} notifier.`;
-  writeParliament(req, res, next, successObj, errorText);
+      return res.json({
+        success: true,
+        text: `Successfully issued alert using the ${notifier.name} notifier.`
+      });
+    }
+  );
 });
 
 /* SIGNALS! ----------------------------------------------------------------- */
