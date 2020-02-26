@@ -35,6 +35,25 @@
           </select>
         </div> <!-- /query size select -->
 
+        <!-- network baseline diff checkbox -->
+        <div class="input-group input-group-sm">
+          <div class="input-group-prepend help-cursor"
+            v-b-tooltip.hover
+            title="Query specified and previous timeline for connection graph comparison against a baseline">
+            <span class="input-group-text">
+              Compare against baseline
+            </span>
+          </div>
+          <div class="form-check ml-1">
+            <input class="form-check-input"
+              v-model="query.baseline"
+              @change="changeBaseline"
+              type="checkbox"
+              id="baseline"
+            />
+          </div>
+        </div> <!-- /network baseline diff checkbox -->
+
         <!-- src select -->
         <div class="form-group ml-1"
           v-if="fields && fields.length && srcFieldTypeahead">
@@ -571,6 +590,9 @@ export default {
     '$route.query.length': function (newVal, oldVal) {
       this.cancelAndLoad(true);
     },
+    '$route.query.baseline': function (newVal, oldVal) {
+      this.cancelAndLoad(true);
+    },
     '$route.query.minConn': function (newVal, oldVal) {
       this.cancelAndLoad(true);
     },
@@ -644,6 +666,14 @@ export default {
         query: {
           ...this.$route.query,
           length: this.query.length
+        }
+      });
+    },
+    changeBaseline: function () {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          baseline: this.query.baseline
         }
       });
     },
