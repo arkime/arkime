@@ -9039,7 +9039,8 @@ function main () {
     .on('listening', function (e) {
       console.log("Express server listening on port %d in %s mode", server.address().port, app.settings.env);
     })
-    .listen(Config.get("viewPort", "8005"), viewHost);
+    .listen(Config.get("viewPort", "8005"), viewHost)
+    .setTimeout(20*60*1000);
 }
 //////////////////////////////////////////////////////////////////////////////////
 //// Command Line Parsing
