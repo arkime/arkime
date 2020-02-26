@@ -559,6 +559,7 @@ export default {
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         minConn: this.$route.query.minConn || 1,
+        baseline: this.$route.query.baseline || false,
         nodeDist: this.$route.query.nodeDist || 40,
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined
