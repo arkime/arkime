@@ -3897,7 +3897,7 @@ app.post('/esadmin/flush', [noCacheJson, recordResponseTime, checkEsAdminUser, c
 });
 
 app.post('/esadmin/unflood', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], (req, res) => {
-  Db.setIndexSettings('*', {'index.blocks.read_only_allow_delete': null});
+  Db.setIndexSettings('*', {body: {'index.blocks.read_only_allow_delete': null}});
   return res.send(JSON.stringify({ success: true, text: 'Unflood'}));
 });
 
@@ -8133,7 +8133,7 @@ function pcapScrub(req, res, sid, whatToRemove, endCb) {
               scrubat: new Date().getTime()
             }
           };
-          Db.update(session._index, 'session', session._id, document, function (err, data) {
+          Db.updateSession(session._index, session._id, document, function (err, data) {
             return endCb(pcapErr, fields);
           });
         }
@@ -9131,7 +9131,8 @@ function main () {
     .on('listening', function (e) {
       console.log("Express server listening on port %d in %s mode", server.address().port, app.settings.env);
     })
-    .listen(Config.get("viewPort", "8005"), viewHost);
+    .listen(Config.get("viewPort", "8005"), viewHost)
+    .setTimeout(20*60*1000);
 }
 //////////////////////////////////////////////////////////////////////////////////
 //// Command Line Parsing
