@@ -880,24 +880,26 @@ function cleanUpIssues () {
     const removeIssuesAfter = getGeneralSetting('removeIssuesAfter') * 1000 * 60;
     const removeAcknowledgedAfter = getGeneralSetting('removeAcknowledgedAfter') * 1000 * 60;
 
-    // remove issues that are provisional that haven't been seen since the last cycle
-    if (issue.provisional && timeSinceLastNoticed >= 10000) {
-      issuesRemoved = true;
-      issues.splice(len, 1);
-    }
+    if (!issue.ignoreUntil) { // don't clean up any ignored issues, wait for the ignore to expire
+      // remove issues that are provisional that haven't been seen since the last cycle
+      if (issue.provisional && timeSinceLastNoticed >= 10000) {
+        issuesRemoved = true;
+        issues.splice(len, 1);
+      }
 
-    // remove all issues that have not been seen again for the removeIssuesAfter time, and
-    // remove all acknowledged issues that have not been seen again for the removeAcknowledgedAfter time
-    if ((!issue.acknowledged && timeSinceLastNoticed > removeIssuesAfter) ||
-        (issue.acknowledged && timeSinceLastNoticed > removeAcknowledgedAfter)) {
-      issuesRemoved = true;
-      issues.splice(len, 1);
-    }
+      // remove all issues that have not been seen again for the removeIssuesAfter time, and
+      // remove all acknowledged issues that have not been seen again for the removeAcknowledgedAfter time
+      if ((!issue.acknowledged && timeSinceLastNoticed > removeIssuesAfter) ||
+          (issue.acknowledged && timeSinceLastNoticed > removeAcknowledgedAfter)) {
+        issuesRemoved = true;
+        issues.splice(len, 1);
+      }
 
-    // if the issue was acknowledged but still persists, unacknowledge and alert again
-    if (issue.acknowledged && (Date.now() - issue.acknowledged) > removeAcknowledgedAfter) {
-      issue.alerted = undefined;
-      issue.acknowledged = undefined;
+      // if the issue was acknowledged but still persists, unacknowledge and alert again
+      if (issue.acknowledged && (Date.now() - issue.acknowledged) > removeAcknowledgedAfter) {
+        issue.alerted = undefined;
+        issue.acknowledged = undefined;
+      }
     }
   }
 
