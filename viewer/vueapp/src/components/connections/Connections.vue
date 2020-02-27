@@ -39,7 +39,7 @@
         <div class="input-group input-group-sm">
           <div class="input-group-prepend help-cursor"
             v-b-tooltip.hover
-            title="Query specified and previous timeline for connection graph comparison against a baseline">
+            title="Query specified and immediately preceding time frames for graph comparison against a baseline">
             <span class="input-group-text">
               Compare against baseline
             </span>
@@ -417,7 +417,7 @@ import { mixin as clickaway } from 'vue-clickaway';
 import Utils from '../utils/utils';
 
 // d3 force directed graph vars/functions ---------------------------------- */
-let colors, foregroundColor;
+let fillColors, foregroundColor, strokeColors;
 let simulation, svg, container, zoom;
 let node, nodes, link, links, nodeLabel;
 let popupTimer, popupVue;
@@ -540,6 +540,9 @@ export default {
       primaryColor: undefined,
       secondaryColor: undefined,
       tertiaryColor: undefined,
+      highlightPrimaryColor: undefined,
+      highlightSecondaryColor: undefined,
+      highlightTertiaryColor: undefined,
       closePopups: closePopups,
       fontSize: 0.4,
       zoomLevel: 1,
@@ -622,8 +625,12 @@ export default {
     this.primaryColor = styles.getPropertyValue('--color-primary').trim();
     this.secondaryColor = styles.getPropertyValue('--color-tertiary').trim();
     this.tertiaryColor = styles.getPropertyValue('--color-quaternary').trim();
+    this.highlightPrimaryColor = styles.getPropertyValue('--color-primary-lighter').trim();
+    this.highlightSecondaryColor = styles.getPropertyValue('--color-secondary-lighter').trim();
+    this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
     foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
-    colors = ['', this.primaryColor, this.tertiaryColor, this.secondaryColor];
+    fillColors = ['', this.primaryColor, this.tertiaryColor, this.secondaryColor];
+    strokeColors = ['', this.highlightTertiaryColor, this.highlightPrimaryColor, foregroundColor];
 
     this.cancelAndLoad(true);
 
@@ -994,7 +1001,6 @@ export default {
 
       // add nodes
       node = container.append('g')
-        .attr('stroke', foregroundColor)
         .attr('stroke-width', 0.5)
         .selectAll('circle')
         .data(nodes)
@@ -1005,7 +1011,10 @@ export default {
           return 'id' + d.id.replace(idRegex, '_');
         })
         .attr('fill', (d) => {
-          return colors[d.type];
+          return fillColors[d.type];
+        })
+        .attr('stroke', (d) => {
+          return strokeColors[d.inresult];
         })
         .attr('r', this.calculateNodeWeight)
         .call(d3.drag()
@@ -1195,6 +1204,9 @@ export default {
                     </span>&nbsp;
                   </dd>
                 </span>
+
+                <dt>Result Set</dt>
+                <dd>{{['','Actual','Baseline','Both'][dataNode.inresult]}}</dd>
 
                 <dt>Expressions</dt>
                 <dd>
@@ -1398,7 +1410,8 @@ export default {
     zoom = undefined;
     node = undefined;
     link = undefined;
-    colors = undefined;
+    fillColors = undefined;
+    strokeColors = undefined;
     popupVue = undefined;
     container = undefined;
     nodeLabel = undefined;
