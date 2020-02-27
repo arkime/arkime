@@ -47,6 +47,8 @@
           <div class="form-check ml-1">
             <input class="form-check-input"
               v-model="query.baseline"
+              true-value="true"
+              false-value="false"
               @change="changeBaseline"
               type="checkbox"
               id="baseline"
@@ -417,7 +419,7 @@ import { mixin as clickaway } from 'vue-clickaway';
 import Utils from '../utils/utils';
 
 // d3 force directed graph vars/functions ---------------------------------- */
-let foregroundColor, nodeFillColors, nodeStrokeColors, nodeStrokeWidths;
+let nodeFillColors;
 let simulation, svg, container, zoom;
 let node, nodes, link, links, nodeLabel;
 let popupTimer, popupVue;
@@ -537,6 +539,7 @@ export default {
       srcFieldTypeahead: undefined,
       dstFieldTypeahead: undefined,
       groupedFields: undefined,
+      foregroundColor: undefined,
       primaryColor: undefined,
       secondaryColor: undefined,
       tertiaryColor: undefined,
@@ -562,7 +565,7 @@ export default {
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         minConn: this.$route.query.minConn || 1,
-        baseline: this.$route.query.baseline || false,
+        baseline: String(this.$route.query.baseline) || 'false',
         nodeDist: this.$route.query.nodeDist || 40,
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined
@@ -622,16 +625,14 @@ export default {
   },
   mounted: function () {
     let styles = window.getComputedStyle(document.body);
+    this.foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
     this.primaryColor = styles.getPropertyValue('--color-primary').trim();
     this.secondaryColor = styles.getPropertyValue('--color-tertiary').trim();
     this.tertiaryColor = styles.getPropertyValue('--color-quaternary').trim();
     this.highlightPrimaryColor = styles.getPropertyValue('--color-primary-lighter').trim();
     this.highlightSecondaryColor = styles.getPropertyValue('--color-secondary-lighter').trim();
     this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
-    foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
     nodeFillColors = ['', this.primaryColor, this.tertiaryColor, this.secondaryColor];
-    nodeStrokeColors = ['', this.highlightTertiaryColor, this.highlightPrimaryColor, foregroundColor];
-    nodeStrokeWidths = [0.5, 1.0, 0.75, 0.5];
 
     this.cancelAndLoad(true);
 
@@ -981,7 +982,7 @@ export default {
 
       // add links
       link = container.append('g')
-        .attr('stroke', foregroundColor)
+        .attr('stroke', this.foregroundColor)
         .attr('stroke-opacity', 0.4)
         .selectAll('line')
         .data(links)
@@ -1013,21 +1014,9 @@ export default {
         .attr('fill', (d) => {
           return nodeFillColors[d.type];
         })
-        .attr('stroke', (d) => {
-          if (this.query.baseline === 'true') {
-            return nodeStrokeColors[d.inresult];
-          } else {
-            return foregroundColor;
-          }
-        })
-        .attr('stroke-width', (d) => {
-          if (this.query.baseline === 'true') {
-            return nodeStrokeWidths[d.inresult];
-          } else {
-            return 0.5;
-          }
-        })
         .attr('r', this.calculateNodeWeight)
+        .attr('stroke', this.calculateNodeStrokeColor)
+        .attr('stroke-width', this.calculateNodeStrokeWidth)
         .call(d3.drag()
           .on('start', dragstarted)
           .on('drag', dragged)
@@ -1135,6 +1124,37 @@ export default {
     calculateNodeLabelOffset: function (nl) {
       let val = this.calculateNodeWeight(nl);
       return 2 + val;
+    },
+    calculateNodeStrokeColor: function (n) {
+      let val = this.foregroundColor;
+      if (String(this.query.baseline) === 'true') {
+        switch (n.inresult) {
+          case 3:
+            val = this.foregroundColor;
+            break;
+          case 2:
+            val = this.highlightTertiaryColor;
+            break;
+          case 1:
+            val = this.highlightPrimaryColor;
+            break;
+        }
+      }
+      return val;
+    },
+    calculateNodeStrokeWidth: function (n) {
+      let val = 0.5;
+      if (String(this.query.baseline) === 'true') {
+        switch (n.inresult) {
+          case 2:
+            val = 0.75;
+            break;
+          case 1:
+            val = 1.0;
+            break;
+        }
+      }
+      return val;
     },
     calculateCollisionRadius: function (n) {
       let val = this.calculateNodeWeight(n);
@@ -1421,10 +1441,7 @@ export default {
     zoom = undefined;
     node = undefined;
     link = undefined;
-    foregroundColor = undefined;
     nodeFillColors = undefined;
-    nodeStrokeColors = undefined;
-    nodeStrokeWidths = undefined;
     popupVue = undefined;
     container = undefined;
     nodeLabel = undefined;

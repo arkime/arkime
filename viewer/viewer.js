@@ -5152,7 +5152,7 @@ function buildConnections(req, res, cb) {
   let doBaseline = false;
   if ((req.query.baseline !== undefined) && (req.query.date !== '-1') &&
       (req.query.startTime !== undefined) && (req.query.stopTime !== undefined)) {
-    doBaseline = req.query.baseline === 'true' ? true : false;
+    doBaseline = (String(req.query.baseline) === 'true') ? true : false;
   }
 
   let dstIsIp = fdst.match(/(\.ip|Ip)$/);
