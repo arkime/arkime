@@ -1132,12 +1132,15 @@ export default {
       if (String(this.query.baseline) === 'true') {
         switch (n.inresult) {
           case 3:
+            // "both" (in actual and baseline result set)
             val = this.foregroundColor;
             break;
           case 2:
+            // "old" (in baseline, not in actual result set)
             val = this.highlightTertiaryColor;
             break;
           case 1:
+            // "new" (in actual, not in baseline result set)
             val = this.highlightPrimaryColor;
             break;
         }
@@ -1149,9 +1152,11 @@ export default {
       if (String(this.query.baseline) === 'true') {
         switch (n.inresult) {
           case 2:
+            // "old" (in baseline, not in actual result set)
             val = 0.75;
             break;
           case 1:
+            // "new" (in actual, not in baseline result set)
             val = 1.0;
             break;
         }
@@ -1163,9 +1168,11 @@ export default {
       if (String(this.query.baseline) === 'true') {
         switch (n.inresult) {
           case 2:
+            // "old" (in baseline, not in actual result set)
             val = 'lighter';
             break;
           case 1:
+            // "new" (in actual, not in baseline result set)
             val = 'bold';
             break;
         }
@@ -1173,6 +1180,7 @@ export default {
       return val;
     },
     calculateNodeLabelStyle: function (n) {
+      // italicize "old" nodes (in baseline, not in actual result set)
       return ((String(this.query.baseline) === 'true') && (n.inresult === 2)) ? 'italic' : 'normal';
     },
     calculateCollisionRadius: function (n) {
