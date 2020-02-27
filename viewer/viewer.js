@@ -5147,7 +5147,7 @@ function buildConnections(req, res, cb) {
   let fdst                 = req.query.dstField;
   let minConn              = req.query.minConn || 1;
 
-  // If network graph baseline is enabled (enabled: req.query.baseline=1, disabled:req.query.baseline=0 or undefined)
+  // If network graph baseline is enabled (enabled: req.query.baseline=true, disabled:req.query.baseline=false or undefined)
   //   then two queries will be run (ie., run buildSessionQuery->searchPrimary->process twice): first for the
   //   original specified time frame and second for the same time frame immediately preceding it.
   // Nodes have an .inresult attribute where:
@@ -5156,9 +5156,10 @@ function buildConnections(req, res, cb) {
   //   2 = 10 = seen during the "baseline" time frame but not in the "current" time frame (ie., "old")
   //   3 = 11 = seen during both the "current" time frame and the "baseline" time frame
   // This is only performed where startTime/startTime are defined, and never for "all" time range (date=-1).
-  let doBaseline = 0;
-  if ((req.query.date !== '-1') && (req.query.startTime !== undefined) && (req.query.stopTime !== undefined)) {
-    doBaseline = req.query.baseline || 0;
+  let doBaseline = false;
+  if ((req.query.baseline !== undefined) && (req.query.date !== '-1') &&
+      (req.query.startTime !== undefined) && (req.query.stopTime !== undefined)) {
+    doBaseline = (String(req.query.baseline) === 'true') ? true : false;
   }
 
   let dstIsIp = fdst.match(/(\.ip|Ip)$/);
@@ -5242,7 +5243,7 @@ function buildConnections(req, res, cb) {
   //      (only if baseline is enabled)
   // The call to process() will ensure the resultId value is OR'ed into the .inresult
   //   attribute of each node.
-  let maxResultId = 1 + ((doBaseline == 0) ? 0 : 1);
+  let maxResultId = 1 + ((doBaseline === false) ? 0 : 1);
 
   for (let resultId = 1; resultId <= maxResultId; resultId++) {
 
@@ -7350,7 +7351,7 @@ function runHuntJob (huntId, hunt, query, user) {
 
       // There is no files, this is a fake session, don't hunt it
       if (session.fileId === undefined || session.fileId.length === 0) {
-        return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
+          return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
       }
 
       isLocalView(node, function () {
