@@ -1049,6 +1049,8 @@ export default {
         .attr('dy', '2px')
         .attr('class', 'node-label')
         .style('font-size', this.fontSize + 'em')
+        .style('font-weight', this.calculateNodeLabelWeight)
+        .style('font-style', this.calculateNodeLabelStyle)
         .style('pointer-events', 'none') // to prevent mouseover/drag capture
         .text((d) => { return d.id; });
 
@@ -1155,6 +1157,23 @@ export default {
         }
       }
       return val;
+    },
+    calculateNodeLabelWeight: function (n) {
+      let val = 'normal';
+      if (String(this.query.baseline) === 'true') {
+        switch (n.inresult) {
+          case 2:
+            val = 'lighter';
+            break;
+          case 1:
+            val = 'bold';
+            break;
+        }
+      }
+      return val;
+    },
+    calculateNodeLabelStyle: function (n) {
+      return ((String(this.query.baseline) === 'true') && (n.inresult === 2)) ? 'italic' : 'normal';
     },
     calculateCollisionRadius: function (n) {
       let val = this.calculateNodeWeight(n);
