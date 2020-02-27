@@ -417,7 +417,7 @@ import { mixin as clickaway } from 'vue-clickaway';
 import Utils from '../utils/utils';
 
 // d3 force directed graph vars/functions ---------------------------------- */
-let fillColors, foregroundColor, strokeColors;
+let foregroundColor, nodeFillColors, nodeStrokeColors, nodeStrokeWidths;
 let simulation, svg, container, zoom;
 let node, nodes, link, links, nodeLabel;
 let popupTimer, popupVue;
@@ -629,8 +629,9 @@ export default {
     this.highlightSecondaryColor = styles.getPropertyValue('--color-secondary-lighter').trim();
     this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
     foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
-    fillColors = ['', this.primaryColor, this.tertiaryColor, this.secondaryColor];
-    strokeColors = ['', this.highlightTertiaryColor, this.highlightPrimaryColor, foregroundColor];
+    nodeFillColors = ['', this.primaryColor, this.tertiaryColor, this.secondaryColor];
+    nodeStrokeColors = ['', this.highlightTertiaryColor, this.highlightPrimaryColor, foregroundColor];
+    nodeStrokeWidths = [0.5, 1.0, 0.75, 0.5];
 
     this.cancelAndLoad(true);
 
@@ -1001,7 +1002,6 @@ export default {
 
       // add nodes
       node = container.append('g')
-        .attr('stroke-width', 0.5)
         .selectAll('circle')
         .data(nodes)
         .enter()
@@ -1011,10 +1011,21 @@ export default {
           return 'id' + d.id.replace(idRegex, '_');
         })
         .attr('fill', (d) => {
-          return fillColors[d.type];
+          return nodeFillColors[d.type];
         })
         .attr('stroke', (d) => {
-          return strokeColors[d.inresult];
+          if (this.query.baseline === 'true') {
+            return nodeStrokeColors[d.inresult];
+          } else {
+            return foregroundColor;
+          }
+        })
+        .attr('stroke-width', (d) => {
+          if (this.query.baseline === 'true') {
+            return nodeStrokeWidths[d.inresult];
+          } else {
+            return 0.5;
+          }
         })
         .attr('r', this.calculateNodeWeight)
         .call(d3.drag()
@@ -1410,15 +1421,16 @@ export default {
     zoom = undefined;
     node = undefined;
     link = undefined;
-    fillColors = undefined;
-    strokeColors = undefined;
+    foregroundColor = undefined;
+    nodeFillColors = undefined;
+    nodeStrokeColors = undefined;
+    nodeStrokeWidths = undefined;
     popupVue = undefined;
     container = undefined;
     nodeLabel = undefined;
     popupTimer = undefined;
     simulation = undefined;
     draggingNode = undefined;
-    foregroundColor = undefined;
   }
 };
 </script>
