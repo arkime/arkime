@@ -945,7 +945,7 @@
             <th>
               ID
             </th>
-            <th width="140px">&nbsp;</th>
+            <th width="180px">&nbsp;</th>
           </tr>
         </thead>
         <transition-group name="list"
@@ -1062,6 +1062,14 @@
                     title="Rerun this hunt job using the current time frame and search criteria."
                     class="ml-1 pull-right btn btn-sm btn-theme-secondary">
                     <span class="fa fa-refresh fa-fw">
+                    </span>
+                  </button>
+                  <button type="button"
+                    @click="repeatJob(job)"
+                    v-b-tooltip.hover
+                    title="Repreat this hunt job using its time frame and search criteria."
+                    class="ml-1 pull-right btn btn-sm btn-theme-tertiary">
+                    <span class="fa fa-repeat fa-fw">
                     </span>
                   </button>
                 </span>
@@ -1485,6 +1493,14 @@ export default {
       this.jobNotifier = job.notifier;
       this.jobSearchType = job.searchType;
       this.createFormOpened = true;
+    },
+    repeatJob: function (job) {
+      this.$store.commit('setExpression', job.query.expression);
+      this.$store.commit('setTime', {
+        stopTime: job.query.stopTime,
+        startTime: job.query.startTime
+      });
+      this.rerunJob(job);
     },
     /* helper functions ---------------------------------------------------- */
     setErrorForList: function (arrayName, errorText) {
