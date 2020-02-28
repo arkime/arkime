@@ -1067,7 +1067,7 @@
                   <button type="button"
                     @click="repeatJob(job)"
                     v-b-tooltip.hover
-                    title="Repreat this hunt job using its time frame and search criteria."
+                    title="Repeat this hunt job using its time frame and search criteria."
                     class="ml-1 pull-right btn btn-sm btn-theme-tertiary">
                     <span class="fa fa-repeat fa-fw">
                     </span>
