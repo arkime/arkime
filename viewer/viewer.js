@@ -932,6 +932,7 @@ function makeRequest (node, path, user, cb) {
     let info = url.parse(viewUrl);
     info.path = encodeURI(`${Config.basePath(node)}${path}`);
     info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
+    info.timeout = 20*60*1000;
     addAuth(info, user, node);
     addCaTrust(info, node);
     let preq = client.request(info, function (pres) {
