@@ -935,7 +935,8 @@ function makeRequest (node, path, user, cb) {
     info.timeout = 20*60*1000;
     addAuth(info, user, node);
     addCaTrust(info, node);
-    let preq = client.request(info, function response (pres) {
+
+    function responseFunc (pres) {
       let response = '';
       pres.on('data', function (chunk) {
         response += chunk;
@@ -943,11 +944,12 @@ function makeRequest (node, path, user, cb) {
       pres.on('end', function () {
         cb(null, response);
       });
-    });
+    }
+    let preq = client.request(info, responseFunc);
     preq.on('error', () => {
       // Try a second time on errors
       console.log(`Retry ${info.path} on remote viewer: ${err}`);
-      let preq2 = client.request(info, response);
+      let preq2 = client.request(info, responseFunc);
       preq2.on('error', function (err) {
         console.log(`Error with ${info.path} on remote viewer: ${err}`);
         cb(err);
