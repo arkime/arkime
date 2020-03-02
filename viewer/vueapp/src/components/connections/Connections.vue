@@ -1189,11 +1189,11 @@ export default {
         switch (n.inresult) {
           case 2:
             // "old" (in baseline, not in actual result set)
-            val = '⁻';
+            val = ' 🚫';
             break;
           case 1:
             // "new" (in actual, not in baseline result set)
-            val = '⁺';
+            val = ' ✨';
             break;
         }
       }
