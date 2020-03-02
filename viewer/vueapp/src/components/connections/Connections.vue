@@ -1167,39 +1167,45 @@ export default {
     },
     calculateNodeStrokeColor: function (n) {
       let val = this.foregroundColor;
-      if (String(this.query.baseline) === 'true') {
-        switch (n.inresult) {
-          case 3:
-            // "both" (in actual and baseline result set)
-            val = this.foregroundColor;
-            break;
-          case 2:
-            // "old" (in baseline, not in actual result set)
-            val = this.highlightTertiaryColor;
-            break;
-          case 1:
-            // "new" (in actual, not in baseline result set)
-            val = this.highlightPrimaryColor;
-            break;
-        }
-      }
       return val;
+      // TODO: for now I've disabled stroke colors as I think it was,
+      // visually confusing I may turn it back on for baseline
+      // if (String(this.query.baseline) === 'true') {
+      //   switch (n.inresult) {
+      //     case 3:
+      //       // "both" (in actual and baseline result set)
+      //       val = this.foregroundColor;
+      //       break;
+      //     case 2:
+      //       // "old" (in baseline, not in actual result set)
+      //       val = this.highlightTertiaryColor;
+      //       break;
+      //     case 1:
+      //       // "new" (in actual, not in baseline result set)
+      //       val = this.highlightPrimaryColor;
+      //       break;
+      //   }
+      // }
+      // return val;
     },
     calculateNodeStrokeWidth: function (n) {
       let val = 0.5;
-      if (String(this.query.baseline) === 'true') {
-        switch (n.inresult) {
-          case 2:
-            // "old" (in baseline, not in actual result set)
-            val = 1.00;
-            break;
-          case 1:
-            // "new" (in actual, not in baseline result set)
-            val = 1.25;
-            break;
-        }
-      }
       return val;
+      // TODO: for now I've disabled stroke width as I think it was,
+      // visually confusing I may turn it back on for baseline
+      // if (String(this.query.baseline) === 'true') {
+      //   switch (n.inresult) {
+      //     case 2:
+      //       // "old" (in baseline, not in actual result set)
+      //       val = 1.00;
+      //       break;
+      //     case 1:
+      //       // "new" (in actual, not in baseline result set)
+      //       val = 1.25;
+      //       break;
+      //   }
+      // }
+      // return val;
     },
     calculateNodeLabelWeight: function (n) {
       let val = 'normal';
