@@ -880,24 +880,26 @@ function cleanUpIssues () {
     const removeIssuesAfter = getGeneralSetting('removeIssuesAfter') * 1000 * 60;
     const removeAcknowledgedAfter = getGeneralSetting('removeAcknowledgedAfter') * 1000 * 60;
 
-    // remove issues that are provisional that haven't been seen since the last cycle
-    if (issue.provisional && timeSinceLastNoticed >= 10000) {
-      issuesRemoved = true;
-      issues.splice(len, 1);
-    }
+    if (!issue.ignoreUntil) { // don't clean up any ignored issues, wait for the ignore to expire
+      // remove issues that are provisional that haven't been seen since the last cycle
+      if (issue.provisional && timeSinceLastNoticed >= 10000) {
+        issuesRemoved = true;
+        issues.splice(len, 1);
+      }
 
-    // remove all issues that have not been seen again for the removeIssuesAfter time, and
-    // remove all acknowledged issues that have not been seen again for the removeAcknowledgedAfter time
-    if ((!issue.acknowledged && timeSinceLastNoticed > removeIssuesAfter) ||
-        (issue.acknowledged && timeSinceLastNoticed > removeAcknowledgedAfter)) {
-      issuesRemoved = true;
-      issues.splice(len, 1);
-    }
+      // remove all issues that have not been seen again for the removeIssuesAfter time, and
+      // remove all acknowledged issues that have not been seen again for the removeAcknowledgedAfter time
+      if ((!issue.acknowledged && timeSinceLastNoticed > removeIssuesAfter) ||
+          (issue.acknowledged && timeSinceLastNoticed > removeAcknowledgedAfter)) {
+        issuesRemoved = true;
+        issues.splice(len, 1);
+      }
 
-    // if the issue was acknowledged but still persists, unacknowledge and alert again
-    if (issue.acknowledged && (Date.now() - issue.acknowledged) > removeAcknowledgedAfter) {
-      issue.alerted = undefined;
-      issue.acknowledged = undefined;
+      // if the issue was acknowledged but still persists, unacknowledge and alert again
+      if (issue.acknowledged && (Date.now() - issue.acknowledged) > removeAcknowledgedAfter) {
+        issue.alerted = undefined;
+        issue.acknowledged = undefined;
+      }
     }
   }
 
@@ -1988,15 +1990,25 @@ router.post('/testAlert', verifyToken, (req, res, next) => {
 
   internals.notifierTypes[notifier.type].sendAlert(
     config,
-    `Test alert from the ${notifier.name} notifier!`
-  );
+    `Test alert from the ${notifier.name} notifier!`,
+    null,
+    (response) => {
+      // there should only be one error here because only one
+      // notifier alert is sent at a time
+      if (response.errors) {
+        for (let e in response.errors) {
+          const error = new Error(response.errors[e]);
+          error.httpStatusCode = 500;
+          return next(error);
+        }
+      }
 
-  let successObj = {
-    success: true,
-    text: `Successfully issued alert using the ${notifier.name} notifier.`
-  };
-  let errorText = `Unable to issue alert using the ${notifier.name} notifier.`;
-  writeParliament(req, res, next, successObj, errorText);
+      return res.json({
+        success: true,
+        text: `Successfully issued alert using the ${notifier.name} notifier.`
+      });
+    }
+  );
 });
 
 /* SIGNALS! ----------------------------------------------------------------- */

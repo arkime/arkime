@@ -1,12 +1,11 @@
 <template>
 
-  <!-- export csv form -->
-  <div class="row"
-    @keyup.stop.prevent.enter="openIntersection">
+  <!-- export intersection form -->
+  <div>
 
-    <div class="col">
-
-      <form>
+    <div class="row"
+      @keyup.stop.prevent.enter="openIntersection">
+      <div class="col">
 
         <div class="pull-left mr-2">
           <div class="form-check form-check-inline">
@@ -72,6 +71,12 @@
           </button>
         </div> <!-- /buttons -->
 
+      </div>
+    </div>
+
+    <div class="row mt-1">
+      <div class="col">
+
         <!-- fields -->
         <div class="input-group input-group-sm fields-input">
           <div class="input-group-prepend cursor-help"
@@ -95,19 +100,18 @@
           </div>
         </div> <!-- /fields -->
 
-      </form>
+        <!-- error -->
+        <p v-if="error"
+          class="small text-danger mb-0">
+          <span class="fa fa-exclamation-triangle">
+          </span>&nbsp;
+          {{ error }}
+        </p> <!-- /error -->
 
-      <!-- error -->
-      <p v-if="error"
-        class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;
-        {{ error }}
-      </p> <!-- /error -->
-
+      </div>
     </div>
 
-  </div> <!-- /export csv form -->
+  </div> <!-- /export intersection form -->
 
 </template>
 

@@ -932,9 +932,11 @@ function makeRequest (node, path, user, cb) {
     let info = url.parse(viewUrl);
     info.path = encodeURI(`${Config.basePath(node)}${path}`);
     info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
+    info.timeout = 20*60*1000;
     addAuth(info, user, node);
     addCaTrust(info, node);
-    let preq = client.request(info, function (pres) {
+
+    function responseFunc (pres) {
       let response = '';
       pres.on('data', function (chunk) {
         response += chunk;
@@ -942,10 +944,17 @@ function makeRequest (node, path, user, cb) {
       pres.on('end', function () {
         cb(null, response);
       });
-    });
-    preq.on('error', function (err) {
-      console.log(`Error with ${info.path} on remote viewer: ${err}`);
-      cb(err);
+    }
+    let preq = client.request(info, responseFunc);
+    preq.on('error', () => {
+      // Try a second time on errors
+      console.log(`Retry ${info.path} on remote viewer: ${err}`);
+      let preq2 = client.request(info, responseFunc);
+      preq2.on('error', function (err) {
+        console.log(`Error with ${info.path} on remote viewer: ${err}`);
+        cb(err);
+      });
+      preq2.end();
     });
     preq.end();
   });
@@ -1438,7 +1447,7 @@ function buildNotifiers () {
 }
 
 function issueAlert (notifierName, alertMessage, continueProcess) {
-  if (!notifierName) { return continueProcess(); }
+  if (!notifierName) { return continueProcess('No name supplied for notifier'); }
 
   if (!internals.notifiers) { buildNotifiers(); }
 
@@ -1446,7 +1455,7 @@ function issueAlert (notifierName, alertMessage, continueProcess) {
   Db.getUser('_moloch_shared', (err, sharedUser) => {
     if (!sharedUser || !sharedUser.found) {
       console.log('Cannot find notifier, no alert can be issued');
-      return continueProcess();
+      return continueProcess('Cannot find notifier, no alert can be issued');
     }
 
     sharedUser = sharedUser._source;
@@ -1457,7 +1466,7 @@ function issueAlert (notifierName, alertMessage, continueProcess) {
 
     if (!notifier) {
       console.log('Cannot find notifier, no alert can be issued');
-      return continueProcess();
+      return continueProcess('Cannot find notifier, no alert can be issued');
     }
 
     let notifierDefinition;
@@ -1468,7 +1477,7 @@ function issueAlert (notifierName, alertMessage, continueProcess) {
     }
     if (!notifierDefinition) {
       console.log('Cannot find notifier definition, no alert can be issued');
-      return continueProcess();
+      return continueProcess('Cannot find notifier, no alert can be issued');
     }
 
     let config = {};
@@ -1482,13 +1491,21 @@ function issueAlert (notifierName, alertMessage, continueProcess) {
       // If a field is required and nothing was set, then we have an error
       if (field.required && config[field.name] === undefined) {
         console.log(`Cannot find notifier field value: ${field.name}, no alert can be issued`);
-        continueProcess();
+        continueProcess(`Cannot find notifier field value: ${field.name}, no alert can be issued`);
       }
     }
 
-    notifierDefinition.sendAlert(config, alertMessage);
-
-    return continueProcess();
+    notifierDefinition.sendAlert(config, alertMessage, null, (response) => {
+      let err;
+      // there should only be one error here because only one
+      // notifier alert is sent at a time
+      if (response.errors) {
+        for (let e in response.errors) {
+          err = response.errors[e];
+        }
+      }
+      return continueProcess(err);
+    });
   });
 }
 
@@ -1758,7 +1775,11 @@ app.post('/notifiers/:name/test', [noCacheJson, getSettingUserCache, checkCookie
     return res.molochError(401, 'Need admin privelages to test a notifier');
   }
 
-  function continueProcess () {
+  function continueProcess (err) {
+    if (err) {
+      return res.molochError(500, `Error testing alert: ${err}`);
+    }
+
     return res.send(JSON.stringify({
       success : true,
       text    : `Successfully issued alert using the ${req.params.name} notifier.`
@@ -3844,7 +3865,7 @@ app.post('/esadmin/flush', [noCacheJson, recordResponseTime, checkEsAdminUser, c
 });
 
 app.post('/esadmin/unflood', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], (req, res) => {
-  Db.setIndexSettings('*', {'index.blocks.read_only_allow_delete': null});
+  Db.setIndexSettings('*', {body: {'index.blocks.read_only_allow_delete': null}});
   return res.send(JSON.stringify({ success: true, text: 'Unflood'}));
 });
 
@@ -8039,7 +8060,7 @@ function pcapScrub(req, res, sid, whatToRemove, endCb) {
               scrubat: new Date().getTime()
             }
           };
-          Db.update(session._index, 'session', session._id, document, function (err, data) {
+          Db.updateSession(session._index, session._id, document, function (err, data) {
             return endCb(pcapErr, fields);
           });
         }
@@ -9037,7 +9058,8 @@ function main () {
     .on('listening', function (e) {
       console.log("Express server listening on port %d in %s mode", server.address().port, app.settings.env);
     })
-    .listen(Config.get("viewPort", "8005"), viewHost);
+    .listen(Config.get("viewPort", "8005"), viewHost)
+    .setTimeout(20*60*1000);
 }
 //////////////////////////////////////////////////////////////////////////////////
 //// Command Line Parsing

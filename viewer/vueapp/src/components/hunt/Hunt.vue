@@ -367,11 +367,16 @@
                 v-if="user.userId === runningJob.userId || user.createEnabled">
                 <button
                   @click="removeJob(runningJob, 'results')"
+                  :disabled="runningJob.disabled"
                   type="button"
                   v-b-tooltip.hover
                   title="Cancel and remove this job"
                   class="ml-1 pull-right btn btn-sm btn-danger">
-                  <span class="fa fa-trash-o fa-fw">
+                  <span v-if="!runningJob.loading"
+                    class="fa fa-trash-o fa-fw">
+                  </span>
+                  <span v-else
+                    class="fa fa-spinner fa-spin fa-fw">
                   </span>
                 </button>
                 <button type="button"
@@ -390,11 +395,16 @@
                   might take a minute to show up.
                 </b-tooltip>
                 <button @click="pauseJob(runningJob)"
+                  :disabled="runningJob.loading"
                   type="button"
                   v-b-tooltip.hover
                   title="Pause this job"
                   class="pull-right btn btn-sm btn-warning">
-                  <span class="fa fa-pause fa-fw">
+                  <span v-if="!runningJob.loading"
+                    class="fa fa-pause fa-fw">
+                  </span>
+                  <span v-else
+                    class="fa fa-spinner fa-spin fa-fw">
                   </span>
                 </button>
               </span>
@@ -689,11 +699,16 @@
                 <span v-if="user.userId === job.userId || user.createEnabled">
                   <button
                     @click="removeJob(job, 'results')"
+                    :disabled="job.loading"
                     type="button"
                     v-b-tooltip.hover
                     title="Remove this job from history"
                     class="ml-1 pull-right btn btn-sm btn-danger">
-                    <span class="fa fa-trash-o fa-fw">
+                    <span v-if="!job.loading"
+                      class="fa fa-trash-o fa-fw">
+                    </span>
+                    <span v-else
+                      class="fa fa-spinner fa-spin fa-fw">
                     </span>
                   </button>
                   <button type="button"
@@ -712,21 +727,31 @@
                     might take a minute to show up.
                   </b-tooltip>
                   <button v-if="job.status === 'running' || job.status === 'queued'"
+                    :disabled="job.loading"
                     @click="pauseJob(job)"
                     type="button"
                     v-b-tooltip.hover
                     title="Pause this job"
                     class="pull-right btn btn-sm btn-warning">
-                    <span class="fa fa-pause fa-fw">
+                    <span v-if="!job.loading"
+                      class="fa fa-pause fa-fw">
+                    </span>
+                    <span v-else
+                      class="fa fa-spinner fa-spin fa-fw">
                     </span>
                   </button>
-                  <button v-if="job.status === 'paused'"
+                  <button v-else-if="job.status === 'paused'"
+                    :disabled="job.loading"
                     @click="playJob(job)"
                     type="button"
                     v-b-tooltip.hover
                     title="Play this job"
                     class="pull-right btn btn-sm btn-theme-secondary">
-                    <span class="fa fa-play fa-fw">
+                    <span v-if="!job.loading"
+                      class="fa fa-play fa-fw">
+                    </span>
+                    <span v-else
+                      class="fa fa-spinner fa-spin fa-fw">
                     </span>
                   </button>
                 </span>
@@ -920,7 +945,7 @@
             <th>
               ID
             </th>
-            <th width="140px">&nbsp;</th>
+            <th width="180px">&nbsp;</th>
           </tr>
         </thead>
         <transition-group name="list"
@@ -1004,11 +1029,16 @@
                 <span v-if="user.userId === job.userId || user.createEnabled">
                   <button
                     @click="removeJob(job, 'historyResults')"
+                    :disabled="job.loading"
                     type="button"
                     v-b-tooltip.hover
                     title="Remove this job from history"
                     class="ml-1 pull-right btn btn-sm btn-danger">
-                    <span class="fa fa-trash-o fa-fw">
+                    <span v-if="!job.loading"
+                      class="fa fa-trash-o fa-fw">
+                    </span>
+                    <span v-else
+                      class="fa fa-spinner fa-spin fa-fw">
                     </span>
                   </button>
                   <button type="button"
@@ -1032,6 +1062,14 @@
                     title="Rerun this hunt job using the current time frame and search criteria."
                     class="ml-1 pull-right btn btn-sm btn-theme-secondary">
                     <span class="fa fa-refresh fa-fw">
+                    </span>
+                  </button>
+                  <button type="button"
+                    @click="repeatJob(job)"
+                    v-b-tooltip.hover
+                    title="Repeat this hunt job using its time frame and search criteria."
+                    class="ml-1 pull-right btn btn-sm btn-theme-tertiary">
+                    <span class="fa fa-repeat fa-fw">
                     </span>
                   </button>
                 </span>
@@ -1347,7 +1385,11 @@ export default {
         });
     },
     removeJob: function (job, arrayName) {
+      if (job.loading) { return; } // it's already trying to do something
+
       this.setErrorForList(arrayName, '');
+      this.$set(job, 'loading', true);
+
       this.axios.delete(`hunt/${job.id}`)
         .then((response) => {
           let array = this.results;
@@ -1362,30 +1404,43 @@ export default {
           }
           if (job.status === 'queued') { this.calculateQueue(); }
         }, (error) => {
+          this.$set(job, 'loading', false);
           this.setErrorForList(arrayName, error.text || error);
         });
     },
     pauseJob: function (job) {
+      if (job.loading) { return; } // it's already trying to do something
+
       this.setErrorForList('results', '');
+      this.$set(job, 'loading', true);
+
       this.axios.put(`hunt/${job.id}/pause`)
         .then((response) => {
           if (job.status === 'running') {
             this.loadData();
             return;
           }
-          // this.$set(job, 'status', 'paused');
+          this.$set(job, 'status', 'paused');
+          this.$set(job, 'loading', false);
           this.calculateQueue();
         }, (error) => {
+          this.$set(job, 'loading', false);
           this.setErrorForList('results', error.text || error);
         });
     },
     playJob: function (job) {
+      if (job.loading) { return; } // it's already trying to do something
+
       this.setErrorForList('results', '');
+      this.$set(job, 'loading', true);
+
       this.axios.put(`hunt/${job.id}/play`)
         .then((response) => {
           this.$set(job, 'status', 'queued');
+          this.$set(job, 'loading', false);
           this.calculateQueue();
         }, (error) => {
+          this.$set(job, 'loading', false);
           this.setErrorForList('results', error.text || error);
         });
     },
@@ -1439,6 +1494,14 @@ export default {
       this.jobSearchType = job.searchType;
       this.createFormOpened = true;
     },
+    repeatJob: function (job) {
+      this.$store.commit('setExpression', job.query.expression);
+      this.$store.commit('setTime', {
+        stopTime: job.query.stopTime,
+        startTime: job.query.startTime
+      });
+      this.rerunJob(job);
+    },
     /* helper functions ---------------------------------------------------- */
     setErrorForList: function (arrayName, errorText) {
       let errorArea = 'queuedListError';
@@ -1459,21 +1522,29 @@ export default {
     loadData: function () {
       respondedAt = undefined;
 
-      let expanded = [];
+      let loading = {};
+      let expanded = {};
+      let runningJobLoading = this.runningJob && this.runningJob.loading;
       let runningJobExpanded = this.runningJob && this.runningJob.expanded;
       if (this.results && this.results.length) {
-        // save the expanded ones
+        // save the expanded and loading ones
         for (let result of this.results) {
           if (result.expanded) {
-            expanded.push(result.id);
+            expanded[result.id] = true;
+          }
+          if (result.loading) {
+            loading[result.id] = true;
           }
         }
       }
       if (this.historyResults.data && this.historyResults.data.length) {
-        // save the expanded ones
+        // save the expanded and loading ones
         for (let result of this.historyResults.data) {
           if (result.expanded) {
-            expanded.push(result.id);
+            expanded[result.id] = true;
+          }
+          if (result.loading) {
+            loading[result.id] = true;
           }
         }
       }
@@ -1483,11 +1554,19 @@ export default {
       historyReq.then((response) => {
         this.historyListLoadingError = '';
 
-        if (expanded.length) {
-          // make sure expanded ones are still expanded
+        if (Object.keys(expanded).length || Object.keys(loading).length) {
           for (let result of response.data.data) {
-            if (expanded.indexOf(result.id) > -1) {
-              result.expanded = true;
+            // make sure expanded ones are still expanded
+            if (Object.keys(expanded).length) {
+              if (expanded[result.id]) {
+                result.expanded = true;
+              }
+            }
+            // make sure the loading ones are still loading
+            if (Object.keys(loading).length) {
+              if (loading[result.id]) {
+                result.loading = true;
+              }
             }
           }
         }
@@ -1506,11 +1585,19 @@ export default {
       queueReq.then((response) => {
         this.queuedListLoadingError = '';
 
-        if (expanded.length) {
-          // make sure expanded ones are still expanded
+        if (Object.keys(expanded).length || Object.keys(loading).length) {
           for (let result of response.data.data) {
-            if (expanded.indexOf(result.id) > -1) {
-              result.expanded = true;
+            // make sure expanded ones are still expanded
+            if (Object.keys(expanded).length) {
+              if (expanded[result.id]) {
+                result.expanded = true;
+              }
+            }
+            // make sure the loading ones are still loading
+            if (Object.keys(loading).length) {
+              if (loading[result.id]) {
+                result.loading = true;
+              }
             }
           }
         }
@@ -1518,6 +1605,7 @@ export default {
         this.results = response.data.data;
         this.runningJob = response.data.runningJob;
         if (this.runningJob) {
+          this.$set(this.runningJob, 'loading', runningJobLoading);
           this.$set(this.runningJob, 'expanded', runningJobExpanded);
           this.$set(
             this.runningJob,
