@@ -1496,10 +1496,12 @@ export default {
     },
     repeatJob: function (job) {
       this.$store.commit('setExpression', job.query.expression);
+      this.$store.commit('setTimeRange', '0');
       this.$store.commit('setTime', {
         stopTime: job.query.stopTime,
         startTime: job.query.startTime
       });
+      this.$store.commit('setIssueSearch', true);
       this.rerunJob(job);
     },
     /* helper functions ---------------------------------------------------- */
