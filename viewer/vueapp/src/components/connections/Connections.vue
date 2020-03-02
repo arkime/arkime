@@ -36,6 +36,7 @@
         </div> <!-- /query size select -->
 
         <!-- network baseline diff checkbox -->
+        <!-- TODO: allow specifying arbitrary baseline start/stop times rather than fixed previous time? -->
         <div class="input-group input-group-sm">
           <div class="input-group-prepend help-cursor"
             v-b-tooltip.hover
@@ -57,6 +58,7 @@
         </div> <!-- /network baseline diff checkbox -->
 
         <!-- network baseline node visibility -->
+        <!-- TODO: enable/disable (or show/hide) based on baseline checkbox -->
         <div class="input-group input-group-sm ml-1">
           <div class="input-group-prepend help-cursor"
             v-b-tooltip.hover
@@ -711,10 +713,13 @@ export default {
     changeBaselineVis: function () {
       svg.selectAll('.node')
         .attr('visibility', this.calculateNodeBaselineVisibility);
+
       // TODO: is there a way to get each label's parent and just get its visibility rather than
       // re-runing calculateNodeBaselineVisibility for all of them?
       svg.selectAll('.node-label')
         .attr('visibility', this.calculateNodeBaselineVisibility);
+
+      // TODO: link visibility based on nodes?
 
       this.$router.push({
         query: {
