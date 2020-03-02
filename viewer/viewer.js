@@ -946,11 +946,11 @@ function makeRequest (node, path, user, cb) {
       });
     }
     let preq = client.request(info, responseFunc);
-    preq.on('error', () => {
+    preq.on('error', (err) => {
       // Try a second time on errors
       console.log(`Retry ${info.path} on remote viewer: ${err}`);
       let preq2 = client.request(info, responseFunc);
-      preq2.on('error', function (err) {
+      preq2.on('error', (err) => {
         console.log(`Error with ${info.path} on remote viewer: ${err}`);
         cb(err);
       });
