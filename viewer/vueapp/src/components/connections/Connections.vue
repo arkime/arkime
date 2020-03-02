@@ -1052,7 +1052,7 @@ export default {
         .style('font-weight', this.calculateNodeLabelWeight)
         .style('font-style', this.calculateNodeLabelStyle)
         .style('pointer-events', 'none') // to prevent mouseover/drag capture
-        .text((d) => { return d.id; });
+        .text((d) => { return d.id + this.calculateNodeLabelSuffix(d); });
 
       // listen on each tick of the simulation's internal timer
       simulation.on('tick', () => {
@@ -1153,11 +1153,11 @@ export default {
         switch (n.inresult) {
           case 2:
             // "old" (in baseline, not in actual result set)
-            val = 0.75;
+            val = 1.00;
             break;
           case 1:
             // "new" (in actual, not in baseline result set)
-            val = 1.0;
+            val = 1.25;
             break;
         }
       }
@@ -1182,6 +1182,22 @@ export default {
     calculateNodeLabelStyle: function (n) {
       // italicize "old" nodes (in baseline, not in actual result set)
       return ((String(this.query.baseline) === 'true') && (n.inresult === 2)) ? 'italic' : 'normal';
+    },
+    calculateNodeLabelSuffix: function (n) {
+      let val = '';
+      if (String(this.query.baseline) === 'true') {
+        switch (n.inresult) {
+          case 2:
+            // "old" (in baseline, not in actual result set)
+            val = '⁻';
+            break;
+          case 1:
+            // "new" (in actual, not in baseline result set)
+            val = '⁺';
+            break;
+        }
+      }
+      return val;
     },
     calculateCollisionRadius: function (n) {
       let val = this.calculateNodeWeight(n);
