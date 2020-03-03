@@ -68,7 +68,7 @@ var internals = {
   CYBERCHEFVERSION: '9.11.7',
   elasticBase: Config.getArray('elasticsearch', ',', 'http://localhost:9200'),
   esQueryTimeout: Config.get("elasticsearchTimeout", 300) + 's',
-  esScrollTimeout: Config.get("elasticsearchScrollTimeout", 600) + 's',
+  esScrollTimeout: Config.get("elasticsearchScrollTimeout", 900) + 's',
   userNameHeader: Config.get("userNameHeader"),
   requiredAuthHeader: Config.get("requiredAuthHeader"),
   requiredAuthHeaderVal: Config.get("requiredAuthHeaderVal"),
@@ -258,10 +258,6 @@ function molochError (status, text) {
 
 app.use(function(req, res, next) {
   res.molochError = molochError;
-
-  if (res.setTimeout) {
-    res.setTimeout(10 * 60 * 1000); // Increase default from 2 min to 10 min
-  }
 
   req.url = req.url.replace(Config.basePath(), "/");
   return next();
@@ -899,6 +895,7 @@ function proxyRequest (req, res, errCb) {
     var info = url.parse(viewUrl);
     info.path = req.url;
     info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
+    info.timeout = 20*60*1000;
     addAuth(info, req.user, req.params.nodeName);
     addCaTrust(info, req.params.nodeName);
 
@@ -7305,6 +7302,9 @@ function runHuntJob (huntId, hunt, query, user) {
 
       // Some kind of error, stop now
       if (err === 'paused' || err === 'undefined') {
+        if (result && result._scroll_id) {
+          Db.clearScroll({ body: { scroll_id: result._scroll_id } });
+        }
         internals.runningHuntJob = undefined;
         return;
       }
