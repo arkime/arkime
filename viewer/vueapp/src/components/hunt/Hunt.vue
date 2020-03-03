@@ -1271,7 +1271,7 @@ export default {
       return { // sessions query defaults
         length: this.$route.query.length || 50, // page length
         start: 0, // first item index
-        facets: 1,
+        facets: 0,
         date: this.$store.state.timeRange,
         startTime: this.$store.state.time.startTime,
         stopTime: this.$store.state.time.stopTime,
