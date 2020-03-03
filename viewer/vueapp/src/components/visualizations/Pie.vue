@@ -48,6 +48,19 @@
       <!-- /pie chart area -->
     </div>
 
+    <div v-show="spiGraphType === 'treemap' && pieData && pieData.children.length">
+      <!-- info area -->
+      <div ref="infoPopup">
+        <div class="pie-popup">
+        </div>
+      </div> <!-- /info area -->
+      <!-- pie chart area -->
+      <!-- TODO class="container-fluid mt-3 mb-3" -->
+      <div id="treemap-area">
+      </div>
+      <!-- /pie chart area -->
+    </div>
+
     <!-- table area -->
     <div v-show="spiGraphType === 'table' && tableData.length"
       class="container mt-4">
@@ -361,7 +374,7 @@ let popupTimer; // timer to debounce pie slice info popup events
 let resizeTimer; // timer to debounce resizing the pie graph on window resize
 
 // page pie variables ------------------------------------------------------ //
-let g, newSlice, styles, background, foreground;
+let g, gtree, newSlice, styles, background, foreground;
 let width = getWidth();
 let height = getHeight();
 let radius = getRadius();
@@ -684,6 +697,17 @@ export default {
         }))
         .append('g');
 
+      // TODO ECR
+      // gtree = d3.select('#treemap-area') // .append('g')
+      //   // .style('position', 'relative')
+      //   .style('width', width)
+      //   .style('height', height);
+      gtree = d3.select('#treemap-area')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .append('g');
+
       if (data) { this.applyGraphData(data); }
     },
     /**
@@ -701,7 +725,7 @@ export default {
         .size([2 * Math.PI, radius]); // show sunburst in full circle
 
       let root = d3.hierarchy(data) // our data is hierarchical
-        .sum((d) => { return d.size; }); // sub each node's children
+        .sum((d) => { return d.size; }); // sum each node's children
 
       // combine partition var (data structure) with root node (the actual data)
       partition(root);
@@ -762,6 +786,61 @@ export default {
             name = name.substr(0, 8) + '...';
           }
           return name;
+        });
+
+      // TODO ECR ---------------------------- */
+      const treeRoot = d3.hierarchy(data)
+        .sum((d) => { return d.size; }); // sum each node's children
+
+      const treemap = d3.treemap() // organize data into treemap
+        .size([width, height])
+        .padding(4);
+
+      treemap(treeRoot);
+
+      const box = gtree.selectAll('g.box')
+        .data(treeRoot.leaves()); // TODO use leaves or descendants?
+        // (leaves only show the most nested children, descendants show all children nested)
+        // if we use descendants, we need to calculate colors differently
+        // if we use descendants, we need to remove the root
+
+      let newBox = box.enter()
+        .append('g')
+        .attr('class', 'box')
+        .merge(box);
+
+      box.exit().remove();
+      box.selectAll('rect').remove();
+
+      newBox.append('rect')
+        // TODO don't need this with leaves
+        .attr('display', (d) => { // don't display the root node
+          return d.depth ? null : 'none';
+        })
+        .attr('x', (d) => { return d.x0; })
+        .attr('y', (d) => { return d.y0; })
+        .attr('width', (d) => { return d.x1 - d.x0; })
+        .attr('height', (d) => { return d.y1 - d.y0; })
+        .style('overflow', 'hidden')
+        .style('fill', (d) => {
+          // TODO make this reusable function
+          while (d.depth > 1) { d = d.parent; }
+          return colors(d.data.name);
+        });
+
+      // TODO hover functionality
+
+      // TEXT -------------------------------- //
+      box.selectAll('text').remove();
+      newBox.append('text')
+        .attr('dx', (d) => { return d.x0 + 2; })
+        .attr('dy', (d) => { return d.y0 + 16; })
+        // .attr('dx', 4)
+        // .attr('dy', '.35em')
+        // .attr('fill', 'red')
+        .text((d) => {
+          // if (!d.depth) { return ''; }
+          return d.data.name;
         });
     },
     /**
