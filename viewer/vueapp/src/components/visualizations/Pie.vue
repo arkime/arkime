@@ -432,6 +432,16 @@ function closeInfoOnEsc (keyCode) {
   }
 }
 
+// get a uid based on the name of the node and the parent nodes
+function getUid (d) {
+  let id = '';
+  while (d.parent) {
+    id += `-${d.data.name.replace(/\s/g, '')}`;
+    d = d.parent;
+  }
+  return id;
+}
+
 // Vue component ----------------------------------------------------------- //
 export default {
   name: 'MolochPie',
@@ -813,6 +823,7 @@ export default {
       box.selectAll('rect').remove();
 
       newBox.append('rect')
+        .attr('id', (d) => 'rect' + getUid(d))
         // TODO don't need this with leaves
         .attr('display', (d) => { // don't display the root node
           return d.depth ? null : 'none';
@@ -821,23 +832,25 @@ export default {
         .attr('y', (d) => { return d.y0; })
         .attr('width', (d) => { return d.x1 - d.x0; })
         .attr('height', (d) => { return d.y1 - d.y0; })
-        .style('overflow', 'hidden')
         .style('fill', (d) => {
           // TODO make this reusable function
           while (d.depth > 1) { d = d.parent; }
           return colors(d.data.name);
         });
 
+      newBox.append('clipPath')
+        .attr('id', (d) => 'clip' + getUid(d))
+        .append('use')
+        .attr('xlink:href', (d) => '#rect' + getUid(d));
+
       // TODO hover functionality
 
       // TEXT -------------------------------- //
       box.selectAll('text').remove();
       newBox.append('text')
+        .attr('clip-path', (d) => 'url(#clip' + getUid(d) + ')')
         .attr('dx', (d) => { return d.x0 + 2; })
         .attr('dy', (d) => { return d.y0 + 16; })
-        // .attr('dx', 4)
-        // .attr('dy', '.35em')
-        // .attr('fill', 'red')
         .text((d) => {
           // if (!d.depth) { return ''; }
           return d.data.name;
