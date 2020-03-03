@@ -2979,7 +2979,7 @@ function buildSessionQuery (req, buildCb) {
       break;
   }
 
-  if (req.query.facets) {
+  if (req.query.facets === '1') {
     query.aggregations = {};
     // only add map aggregations if requested
     if (req.query.map === 'true') {
@@ -4781,7 +4781,7 @@ app.get('/sessions.json', [noCacheJson, recordResponseTime, logAction('sessions'
 });
 
 app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'), fieldToExp, setCookie], (req, res) => {
-  req.query.facets = 1;
+  req.query.facets = '1';
 
   buildSessionQuery(req, function(bsqErr, query, indices) {
     var results = {items: [], graph: {}, map: {}};
@@ -4960,7 +4960,7 @@ app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'),
       query.aggregations = {};
     }
 
-    if (req.query.facets) {
+    if (req.query.facets === '1') {
       query.aggregations.protocols = {terms: {field: "protocol", size:1000}};
     }
 
@@ -5023,7 +5023,7 @@ app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'),
         });
       }
 
-      if (req.query.facets) {
+      if (req.query.facets === '1') {
         graph = graphMerge(req, query, sessions.aggregations);
         map = mapMerge(sessions.aggregations);
         protocols = {};
