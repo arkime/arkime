@@ -58,7 +58,6 @@
         </div> <!-- /network baseline diff checkbox -->
 
         <!-- network baseline node visibility -->
-        <!-- TODO: enable/disable (or show/hide) based on baseline checkbox -->
         <div class="input-group input-group-sm ml-1">
           <div class="input-group-prepend help-cursor"
             v-b-tooltip.hover
@@ -68,6 +67,7 @@
             </span>
           </div>
           <select class="form-control input-sm"
+            v-bind:disabled="String(query.baseline) !== 'true'"
             v-model="query.baselineVis"
             @change="changeBaselineVis">
             <option value="all">All nodes</option>
