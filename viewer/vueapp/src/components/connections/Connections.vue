@@ -35,49 +35,6 @@
           </select>
         </div> <!-- /query size select -->
 
-        <!-- network baseline diff checkbox -->
-        <!-- TODO: allow specifying arbitrary baseline start/stop times rather than fixed previous time? -->
-        <div class="input-group input-group-sm">
-          <div class="input-group-prepend help-cursor"
-            v-b-tooltip.hover
-            title="Query specified and immediately preceding time frames for graph comparison against a baseline">
-            <span class="input-group-text">
-              Compare Against Baseline
-            </span>
-          </div>
-          <div class="form-check ml-1">
-            <input class="form-check-input"
-              v-model="query.baseline"
-              true-value="true"
-              false-value="false"
-              @change="changeBaseline"
-              type="checkbox"
-              id="baseline"
-            />
-          </div>
-        </div> <!-- /network baseline diff checkbox -->
-
-        <!-- network baseline node visibility -->
-        <!-- TODO: enable/disable (or show/hide) based on baseline checkbox -->
-        <div class="input-group input-group-sm ml-1">
-          <div class="input-group-prepend help-cursor"
-            v-b-tooltip.hover
-            title="Toggle node visibility based on baseline result set membership">
-            <span class="input-group-text">
-              Baseline Node Visibility
-            </span>
-          </div>
-          <select class="form-control input-sm"
-            v-model="query.baselineVis"
-            @change="changeBaselineVis">
-            <option value="all">All nodes</option>
-            <option value="actual">Actual nodes</option>
-            <option value="actualold">Baseline nodes</option>
-            <option value="new">New nodes only</option>
-            <option value="old">Baseline nodes only</option>
-          </select>
-        </div> <!-- /network baseline node visibility -->
-
         <!-- src select -->
         <div class="form-group ml-1"
           v-if="fields && fields.length && srcFieldTypeahead">
@@ -296,6 +253,49 @@
             </template>
           </template>
         </b-dropdown> <!-- /link fields button -->
+
+        <!-- network baseline diff checkbox -->
+        <!-- TODO: allow specifying arbitrary baseline start/stop times rather than fixed previous time? -->
+        <div class="input-group input-group-sm ml-1">
+          <div class="input-group-prepend help-cursor"
+            v-b-tooltip.hover
+            title="Query specified and immediately preceding time frames for graph comparison against a baseline">
+            <span class="input-group-text">
+              Compare Against Baseline
+            </span>
+          </div>
+          <div class="form-check ml-1">
+            <input class="form-check-input"
+              v-model="query.baseline"
+              true-value="true"
+              false-value="false"
+              @change="changeBaseline"
+              type="checkbox"
+              id="baseline"
+            />
+          </div>
+        </div> <!-- /network baseline diff checkbox -->
+
+        <!-- network baseline node visibility -->
+        <div class="input-group input-group-sm ml-1">
+          <div class="input-group-prepend help-cursor"
+            v-b-tooltip.hover
+            title="Toggle node visibility based on baseline result set membership">
+            <span class="input-group-text">
+              Baseline Node Visibility
+            </span>
+          </div>
+          <select class="form-control input-sm"
+            v-bind:disabled="String(query.baseline) !== 'true'"
+            v-model="query.baselineVis"
+            @change="changeBaselineVis">
+            <option value="all">All nodes</option>
+            <option value="actual">Actual nodes</option>
+            <option value="actualold">Baseline nodes</option>
+            <option value="new">New nodes only</option>
+            <option value="old">Baseline nodes only</option>
+          </select>
+        </div> <!-- /network baseline node visibility -->
 
       </div>
     </form> <!-- /connections sub navbar -->
@@ -1691,7 +1691,7 @@ export default {
 
 .field-vis-menu > button.btn {
   border-top-right-radius: 4px !important;
-  border-bottom-right-radius: 4px !important;;
+  border-bottom-right-radius: 4px !important;
 }
 .field-vis-menu .dropdown-menu input {
   width: 100%;
