@@ -32,16 +32,16 @@ export default {
   },
 
   /**
-   * Gets spigraph pie data from the server
+   * Gets spigraph hierarchy data from the server
    * @param {object} query        Parameters to query the server
    * @param {object} cancelToken  Token to cancel the request
    * @returns {Promise} Promise   A promise object that signals the completion
    *                              or rejection of the request.
    */
-  getPie: function (query, cancelToken) {
+  getHierarchy: function (query, cancelToken) {
     return new Promise((resolve, reject) => {
       let options = {
-        url: 'spigraphpie',
+        url: 'spigraphhierarchy',
         method: 'GET',
         params: query,
         cancelToken: cancelToken

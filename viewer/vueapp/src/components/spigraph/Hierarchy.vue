@@ -36,30 +36,23 @@
       </template>
     </div> <!-- /field select -->
 
-    <div v-show="spiGraphType === 'pie' && pieData && pieData.children.length">
-      <!-- info area -->
-      <div ref="infoPopup">
-        <div class="pie-popup">
-        </div>
-      </div> <!-- /info area -->
-      <!-- pie chart area -->
-      <div id="pie-area">
+    <!-- info area -->
+    <div ref="infoPopup">
+      <div class="pie-popup">
       </div>
-      <!-- /pie chart area -->
-    </div>
+    </div> <!-- /info area -->
 
-    <div v-show="spiGraphType === 'treemap' && pieData && pieData.children.length">
-      <!-- info area -->
-      <div ref="infoPopup">
-        <div class="pie-popup">
-        </div>
-      </div> <!-- /info area -->
-      <!-- pie chart area -->
-      <!-- TODO class="container-fluid mt-3 mb-3" -->
-      <div id="treemap-area">
-      </div>
-      <!-- /pie chart area -->
+    <!-- pie chart area -->
+    <div id="pie-area"
+      v-show="spiGraphType === 'pie' && vizData && vizData.children.length">
     </div>
+    <!-- /pie chart area -->
+
+    <!-- treemap area -->
+    <div id="treemap-area"
+      v-show="spiGraphType === 'treemap' && vizData && vizData.children.length">
+    </div>
+    <!-- /treemap area -->
 
     <!-- table area -->
     <div v-show="spiGraphType === 'table' && tableData.length"
@@ -322,8 +315,8 @@
             </template>
           </template>
           <template v-else
-            v-for="item in tableData">
-            <tr :key="item.name">
+            v-for="(item, key) in tableData">
+            <tr :key="key">
               <td>
                 <span class="color-swatch"
                   :style="{ backgroundColor: item.color }">
@@ -361,31 +354,41 @@
 import Vue from 'vue';
 import * as d3 from 'd3';
 // import services
-import SpigraphService from '../spigraph/SpigraphService';
+import SpigraphService from './SpigraphService';
 // import internal
 import MolochNoResults from '../utils/NoResults';
 import MolochFieldTypeahead from '../utils/FieldTypeahead';
 // import utils
 import Utils from '../utils/utils';
 
+// common page variables --------------------------------------------------- //
 let pendingPromise; // save a pending promise to be able to cancel it
 let popupVue; // vue component to mount when showing pie slice information
 let popupTimer; // timer to debounce pie slice info popup events
 let resizeTimer; // timer to debounce resizing the pie graph on window resize
+let colors; // colors function to apply colors to treemap boxes and pie slices
+let background; // color of app background
+let foreground; // color of app foreground
 
 // page pie variables ------------------------------------------------------ //
-let g, gtree, newSlice, styles, background, foreground;
-let width = getWidth();
-let height = getHeight();
+let g, newSlice;
+let width = getWindowWidth();
+let height = getWindowHeight();
 let radius = getRadius();
 let arc = getArc();
 
+// page treemap variables -------------------------------------------------- //
+let gtree, newBox;
+const treemapMargin = 10;
+let treemapWidth = getTreemapWidth();
+let treemapHeight = getTreemapHeight();
+
 // pie functions ----------------------------------------------------------- //
-function getWidth () {
+function getWindowWidth () {
   return window.innerWidth;
 }
 
-function getHeight () {
+function getWindowHeight () {
   return window.innerHeight - 225; // height - (footer + headers + padding)
 }
 
@@ -418,6 +421,40 @@ function mouseleave (d, self) {
   d3.select(self).select('path').style('stroke', background);
 };
 
+// treemap functions ------------------------------------------------------- //
+// get a uid based on the name of the node and the parent nodes
+function getUid (d) {
+  let id = '';
+  while (d.parent) {
+    id += `-${d.data.name.replace(/\s/g, '')}`;
+    d = d.parent;
+  }
+  return id;
+}
+
+function getTreemapWidth () {
+  return getWindowWidth() - (treemapMargin * 2);
+}
+
+function getTreemapHeight () {
+  return getWindowHeight() - (treemapMargin * 2);
+}
+
+function mouseoverBox (d, self) {
+  d3.select(self).select('rect').style('stroke', foreground);
+}
+
+function mouseleaveBox (d, self) {
+  d3.select(self).select('rect').style('stroke', background);
+}
+
+// apply foreground color for outer most level and black for the rest
+// to compensate for opacity changes
+function fillBoxText (d) {
+  return d.depth === 1 ? foreground : 'black';
+}
+
+// common functions -------------------------------------------------------- //
 // close popups helper
 function closeInfo () {
   if (popupVue) { popupVue.$destroy(); }
@@ -432,14 +469,10 @@ function closeInfoOnEsc (keyCode) {
   }
 }
 
-// get a uid based on the name of the node and the parent nodes
-function getUid (d) {
-  let id = '';
-  while (d.parent) {
-    id += `-${d.data.name.replace(/\s/g, '')}`;
-    d = d.parent;
-  }
-  return id;
+// color based on largest parent
+function fillColor (d) {
+  while (d.depth > 1) { d = d.parent; }
+  return colors(d.data.name);
 }
 
 // Vue component ----------------------------------------------------------- //
@@ -463,12 +496,12 @@ export default {
       closeInfo: closeInfo,
       fieldTypeaheadList: [],
       baseFieldObj: undefined,
-      pieData: undefined
+      vizData: undefined
     };
   },
   mounted: function () {
     // set colors to match the background
-    styles = window.getComputedStyle(document.body);
+    const styles = window.getComputedStyle(document.body);
     background = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
     foreground = styles.getPropertyValue('--color-foreground').trim() || '#333333';
 
@@ -483,9 +516,9 @@ export default {
 
     if (!this.fieldTypeaheadList.length) {
       // just use spigraph data if there are no additional levels of fields to display
-      this.initializeGraph(this.formatDataFromSpigraph(this.graphData));
+      this.initializeGraphs(this.formatDataFromSpigraph(this.graphData));
     } else { // otherwise load the data for the additional fields
-      this.initializeGraph();
+      this.initializeGraphs();
       this.loadData();
     }
 
@@ -504,6 +537,9 @@ export default {
         let data = this.formatDataFromSpigraph(newVal);
         this.applyGraphData(data);
       }
+    },
+    'spiGraphType': function (newVal, oldVal) {
+      this.applyGraphData(this.vizData);
     },
     '$route.query.subFields': function (newVal, oldVal) {
       this.loadData();
@@ -568,8 +604,8 @@ export default {
       if (resizeTimer) { clearTimeout(resizeTimer); }
       resizeTimer = setTimeout(() => {
         // recalculate width, height, and radius
-        width = getWidth();
-        height = getHeight();
+        width = getWindowWidth();
+        height = getWindowHeight();
         radius = getRadius();
 
         // set the new width and height of the pie
@@ -579,8 +615,19 @@ export default {
           .attr('height', height)
           .select('g');
 
+        // recalculate width and height
+        treemapWidth = getTreemapWidth();
+        treemapHeight = getTreemapHeight();
+
+        // set the new width and height of the treemap
+        d3.select('#treemap-area svg')
+          .attr('width', treemapWidth)
+          .attr('height', treemapHeight)
+          .attr('transform', `translate(${treemapMargin},${treemapMargin})`)
+          .select('g');
+
         // just rerender the pie graph (seems like the only way)
-        this.applyGraphData(this.pieData);
+        this.applyGraphData(this.vizData);
       }, 500);
     },
     /* helper functions ---------------------------------------------------- */
@@ -665,6 +712,23 @@ export default {
       );
     },
     /**
+     * Generates a list of opacity levels based on the levels of data
+     * @param {Object} data The data to display in the treemap
+     * @returns {Function} opacity Function to retrieve opacity based on data level
+     */
+    generateOpacity: function (data) {
+      let levelCount = 0;
+
+      while (data.children || data[0].children) {
+        levelCount++;
+        data = data.children || data[0].children;
+      }
+
+      let lowRange = levelCount > 1 ? 0.3 : 1;
+
+      return d3.scaleLinear().domain([1, levelCount]).range([lowRange, 1]);
+    },
+    /**
      * Adds a color variable to every table data item using the outer bucket
      * @param {Object} data The data to generate the colors from
      */
@@ -680,7 +744,7 @@ export default {
         }
       }
       let parentCount = Object.keys(parentMap).length;
-      let colors = this.generateColors(parentCount);
+      let tableColors = this.generateColors(parentCount);
       for (let item of data) {
         let key = item.name;
         if (item.grandparent) {
@@ -688,7 +752,7 @@ export default {
         } else if (item.parent) {
           key = item.parent.name;
         }
-        item.color = colors(key);
+        item.color = tableColors(key);
       }
     },
     /**
@@ -696,7 +760,7 @@ export default {
      * has mounted and the pie area container is present.
      * @param {Object} data The data to construct the pie
      */
-    initializeGraph: function (data) {
+    initializeGraphs: function (data) {
       g = d3.select('#pie-area')
         .append('svg')
         .attr('viewBox', `${-width / 2} ${-height / 2} ${width} ${height}`)
@@ -707,18 +771,27 @@ export default {
         }))
         .append('g');
 
-      // TODO ECR
-      // gtree = d3.select('#treemap-area') // .append('g')
-      //   // .style('position', 'relative')
-      //   .style('width', width)
-      //   .style('height', height);
       gtree = d3.select('#treemap-area')
         .append('svg')
-        .attr('width', width)
-        .attr('height', height)
-        .append('g');
+        .attr('width', treemapWidth)
+        .attr('height', treemapHeight)
+        .append('g')
+        .attr('transform', `translate(${treemapMargin},${treemapMargin})`);
 
       if (data) { this.applyGraphData(data); }
+    },
+    /**
+     * Applies the graph data to the pie chart or tree map
+     * @param {Object} data The data to add to the graph
+     */
+    applyGraphData: function (data) {
+      // save viz data for resize and switching between viz types
+      this.vizData = data;
+      if (this.spiGraphType === 'pie') {
+        this.applyPieGraphData(data);
+      } else if (this.spiGraphType === 'treemap') {
+        this.applyTreemapGraphData(data);
+      }
     },
     /**
      * Applies the graph data to the pie chart by adding slices and text labels
@@ -726,22 +799,21 @@ export default {
      * (works for new a new pie as well as updating the pie)
      * @param {Object} data The data to add to the graph
      */
-    applyGraphData: function (data) {
+    applyPieGraphData: function (data) {
       let vueSelf = this;
-      this.pieData = data; // save pie data for resize
-      let colors = this.generateColors(data.children.length);
+      colors = this.generateColors(data.children.length);
 
-      let partition = d3.partition() // organize data into sunburst pattern
+      const partition = d3.partition() // organize data into sunburst pattern
         .size([2 * Math.PI, radius]); // show sunburst in full circle
 
-      let root = d3.hierarchy(data) // our data is hierarchical
+      const root = d3.hierarchy(data) // our data is hierarchical
         .sum((d) => { return d.size; }); // sum each node's children
 
       // combine partition var (data structure) with root node (the actual data)
       partition(root);
 
       // SLICES ------------------------------ //
-      let slice = g.selectAll('g.node') // select all g elements with the node class
+      const slice = g.selectAll('g.node') // select all g elements with the node class
         .data(root.descendants(), (d) => { // pass in root variable with descendants
           return d.data.name;
         });
@@ -763,10 +835,7 @@ export default {
         .attr('d', arc) // set the d attribute on the paths for drawing each slice
         .style('stroke-width', '3px')
         .style('stroke', background) // lines between the slices
-        .style('fill', (d) => { // apply the colors to the slices
-          while (d.depth > 1) { d = d.parent; }
-          return colors(d.data.name);
-        });
+        .style('fill', fillColor); // apply the colors to the slices
 
       newSlice // hover functionality
         .on('mouseover', function (d) {
@@ -782,7 +851,8 @@ export default {
         });
 
       // TEXT -------------------------------- //
-      slice.selectAll('text').remove();
+      slice.selectAll('text').remove(); // remove any text that is no longer needed
+
       newSlice.append('text')
         .attr('transform', textTransform)
         .attr('dx', '-35')
@@ -797,64 +867,109 @@ export default {
           }
           return name;
         });
+    },
+    /**
+     * Applies the graph data to the treemap by adding boxes and text labels
+     * It also adds the colors to the treemap
+     * (works for new a new treemap as well as updating the treemap)
+     * @param {Object} data The data to add to the graph
+     */
+    applyTreemapGraphData: function (data) {
+      let vueSelf = this;
+      colors = this.generateColors(data.children.length);
 
-      // TODO ECR ---------------------------- */
-      const treeRoot = d3.hierarchy(data)
+      const opacity = this.generateOpacity(data);
+
+      const treeRoot = d3.hierarchy(data) // our data is hierarchical
         .sum((d) => { return d.size; }); // sum each node's children
 
       const treemap = d3.treemap() // organize data into treemap
-        .size([width, height])
-        .padding(4);
+        .size([treemapWidth - 12, treemapHeight - 12])
+        .paddingTop(18) // padding between children and parent
+        .paddingLeft(8)
+        .paddingRight(8)
+        .paddingBottom(8)
+        .paddingInner(4) // padding between children
+        .round(true); // round the width/height numbers
 
+      // combine treemap var (data structure) with the root node (the actual data)
       treemap(treeRoot);
 
-      const box = gtree.selectAll('g.box')
-        .data(treeRoot.leaves()); // TODO use leaves or descendants?
-        // (leaves only show the most nested children, descendants show all children nested)
-        // if we use descendants, we need to calculate colors differently
-        // if we use descendants, we need to remove the root
+      // BOXES ------------------------------- //
+      const box = gtree.selectAll('g.box') // select all g elements with the box class
+        .data(treeRoot.descendants()); // pass the root variable with descendants
 
-      let newBox = box.enter()
-        .append('g')
-        .attr('class', 'box')
+      newBox = box.enter() // connect the path element with our data
+        .append('g') // add the g element to be fetched later when the data changes
+        .attr('class', 'box') // apply the box class (again to fetch later)
+        // merge the DOM elements of the new boxes with the old boxes
+        // (because the data could have changed)
         .merge(box);
 
-      box.exit().remove();
-      box.selectAll('rect').remove();
+      box.exit().remove(); // remove any boxes that are no longer needed
+      box.selectAll('rect').remove(); // remove all old box path elements
 
-      newBox.append('rect')
+      newBox.append('rect') // add new box path elements
+        // apply an id to the box so we can reference it with our clip path element
         .attr('id', (d) => 'rect' + getUid(d))
-        // TODO don't need this with leaves
         .attr('display', (d) => { // don't display the root node
           return d.depth ? null : 'none';
         })
-        .attr('x', (d) => { return d.x0; })
-        .attr('y', (d) => { return d.y0; })
-        .attr('width', (d) => { return d.x1 - d.x0; })
-        .attr('height', (d) => { return d.y1 - d.y0; })
-        .style('fill', (d) => {
-          // TODO make this reusable function
-          while (d.depth > 1) { d = d.parent; }
-          return colors(d.data.name);
+        .attr('x', (d) => { return d.x0; }) // x position of the box calculated by treemap
+        .attr('y', (d) => { return d.y0; }) // y position of the box calculated by treemap
+        .attr('width', (d) => { return d.x1 - d.x0; }) // width of the box calculated by treemap
+        .attr('height', (d) => { return d.y1 - d.y0; }) // height of the box calculated by treemap
+        .attr('stroke', background) // outline each box
+        .attr('stroke-width', '2px')
+        .style('fill', fillColor) // apply the colors to the boxes
+        .style('opacity', (d) => {
+          // change the opacity of the box colors based on depth
+          return opacity(d.depth);
         });
 
-      newBox.append('clipPath')
-        .attr('id', (d) => 'clip' + getUid(d))
-        .append('use')
+      newBox.append('clipPath') // add a clipPath element to clip the inner text
+        .attr('id', (d) => 'clip' + getUid(d)) // id to reference by the text element
+        .append('use') // add use element to reference the box size
         .attr('xlink:href', (d) => '#rect' + getUid(d));
 
-      // TODO hover functionality
+      newBox // hover functionality
+        .on('mouseover', function (d) {
+          mouseoverBox(d, this);
+          if (popupTimer) { clearTimeout(popupTimer); }
+          popupTimer = setTimeout(() => {
+            vueSelf.showInfo(d);
+          }, 400);
+        })
+        .on('mouseleave', function (d) {
+          mouseleaveBox(d, this);
+          if (popupTimer) { clearTimeout(popupTimer); }
+        });
 
       // TEXT -------------------------------- //
-      box.selectAll('text').remove();
-      newBox.append('text')
+      box.selectAll('text').remove(); // remove any text that is no longer needed
+
+      // show title (name)
+      newBox.append('text') // add text element for box name
+        // reference the clipPath element that references the box dimensions
+        // so that the text doesn't overflow the box
         .attr('clip-path', (d) => 'url(#clip' + getUid(d) + ')')
-        .attr('dx', (d) => { return d.x0 + 2; })
-        .attr('dy', (d) => { return d.y0 + 16; })
-        .text((d) => {
-          // if (!d.depth) { return ''; }
-          return d.data.name;
-        });
+        .attr('dx', (d) => { return d.x0 + 2; }) // adjust left position
+        .attr('dy', (d) => { return d.y0 + 12; }) // adjust top position
+        .attr('fill', fillBoxText) // color the test
+        .style('font-size', '.85rem')
+        .style('font-weight', 'bold')
+        .text((d) => { return d.data.name; }); // show the box name
+
+      // show value (size)
+      newBox.append('text') // add text element for box size
+        // reference the clipPath element that references the box dimensions
+        // so that the text doesn't overflow the box
+        .attr('clip-path', (d) => 'url(#clip' + getUid(d) + ')')
+        .attr('dx', (d) => { return d.x0 + 2; }) // adjust left position
+        .attr('dy', (d) => { return d.y0 + 24; }) // adjust top position
+        .attr('fill', fillBoxText) // color the font
+        .style('font-size', '.85rem') // make it a little smaller than the name
+        .text((d) => { return d.data.size; }); // show the box size
     },
     /**
      * Gets a field object based on an exp
@@ -878,7 +993,7 @@ export default {
       this.query.cancelId = cancelId;
 
       const source = Vue.axios.CancelToken.source();
-      const cancellablePromise = SpigraphService.getPie(this.query, source.token);
+      const cancellablePromise = SpigraphService.getHierarchy(this.query, source.token);
 
       // setup the query params
       let params = this.query;
@@ -896,7 +1011,7 @@ export default {
       cancellablePromise.then((response) => {
         pendingPromise = null;
         this.$emit('toggleLoad', false);
-        this.applyGraphData(response.data.pieResults);
+        this.applyGraphData(response.data.hierarchicalResults);
         this.tableData = response.data.tableResults;
         this.sortTable();
         this.applyColorsToTableData(this.tableData);
@@ -1093,11 +1208,22 @@ export default {
     newSlice
       .on('mouseover', null)
       .on('mouseleave', null);
+    newBox
+      .on('mouseover', null)
+      .on('mouseleave', null);
 
     // remove elements
-    newSlice.exit().remove();
-    newSlice.selectAll('path').remove();
-    newSlice.selectAll('text').remove();
+    if (newSlice) {
+      newSlice.exit().remove();
+      newSlice.selectAll('path').remove();
+      newSlice.selectAll('text').remove();
+    }
+    if (newBox) {
+      newBox.exit().remove();
+      newBox.selectAll('rect').remove();
+      newBox.selectAll('text').remove();
+      newBox.selectAll('clipPath').remove();
+    }
 
     // destroy child component
     $('.info-popup').remove();
@@ -1106,7 +1232,9 @@ export default {
     // cleanup global vars
     setTimeout(() => {
       g = undefined;
-      styles = undefined;
+      gtree = undefined;
+      colors = undefined;
+      newBox = undefined;
       newSlice = undefined;
       popupVue = undefined;
       background = undefined;
@@ -1131,6 +1259,7 @@ export default {
 /* this needs to not be scoped because it's a child component */
 /* pie slice data popup */
 .spigraph-pie div.pie-popup {
+  z-index: 9;
   position: absolute;
   right: 5px;
   top: 160px;

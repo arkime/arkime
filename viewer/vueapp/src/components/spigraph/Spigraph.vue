@@ -256,7 +256,7 @@ import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
 import MolochFieldTypeahead from '../utils/FieldTypeahead';
 import MolochVisualizations from '../visualizations/Visualizations';
-import MolochPie from '../visualizations/Pie';
+import MolochPie from './Hierarchy';
 // import utils
 import Utils from '../utils/utils';
 
