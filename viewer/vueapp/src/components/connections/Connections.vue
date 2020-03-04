@@ -714,12 +714,16 @@ export default {
       svg.selectAll('.node')
         .attr('visibility', this.calculateNodeBaselineVisibility);
 
-      // TODO: is there a way to get each label's parent and just get its visibility rather than
-      // re-runing calculateNodeBaselineVisibility for all of them?
+      // TODO: is there a way to get each label's/link's associated node(s)
+      // and just get its visibility rather than re-runing
+      // calculateNodeBaselineVisibility/calculateLinkBaselineVisibility
+      // for all of them?
+
       svg.selectAll('.node-label')
         .attr('visibility', this.calculateNodeBaselineVisibility);
 
-      // TODO: link visibility based on nodes?
+      svg.selectAll('.link')
+        .attr('visibility', this.calculateLinkBaselineVisibility);
 
       this.$router.push({
         query: {
@@ -1029,7 +1033,8 @@ export default {
         .data(links)
         .enter().append('line')
         .attr('class', 'link')
-        .attr('stroke-width', this.calculateLinkWeight);
+        .attr('stroke-width', this.calculateLinkWeight)
+        .attr('visibility', this.calculateLinkBaselineVisibility);
 
       // add link mouse listeners for showing popups
       link.on('mouseover', (l) => {
@@ -1268,6 +1273,16 @@ export default {
             val = (!inActualSet && inBaselineSet) ? 'visible' : 'hidden';
             break;
         }
+      }
+
+      return val;
+    },
+    calculateLinkBaselineVisibility: function (l) {
+      let val = 'visible';
+
+      if (String(this.query.baseline) === 'true') {
+        let nodesVisibilities = [this.calculateNodeBaselineVisibility(l.source), this.calculateNodeBaselineVisibility(l.target)];
+        val = (nodesVisibilities.includes('hidden')) ? 'hidden' : 'visible';
       }
 
       return val;
