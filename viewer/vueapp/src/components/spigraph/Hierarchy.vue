@@ -954,7 +954,7 @@ export default {
         // so that the text doesn't overflow the box
         .attr('clip-path', (d) => 'url(#clip' + getUid(d) + ')')
         .attr('dx', (d) => { return d.x0 + 2; }) // adjust left position
-        .attr('dy', (d) => { return d.y0 + 12; }) // adjust top position
+        .attr('dy', (d) => { return d.y0 + 13; }) // adjust top position
         .attr('fill', fillBoxText) // color the test
         .style('font-size', '.85rem')
         .style('font-weight', 'bold')
@@ -966,7 +966,7 @@ export default {
         // so that the text doesn't overflow the box
         .attr('clip-path', (d) => 'url(#clip' + getUid(d) + ')')
         .attr('dx', (d) => { return d.x0 + 2; }) // adjust left position
-        .attr('dy', (d) => { return d.y0 + 24; }) // adjust top position
+        .attr('dy', (d) => { return d.y0 + 25; }) // adjust top position
         .attr('fill', fillBoxText) // color the font
         .style('font-size', '.85rem') // make it a little smaller than the name
         .text((d) => { return d.data.size; }); // show the box size
