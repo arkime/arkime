@@ -445,7 +445,8 @@ export default {
       }
     },
     changeSpiGraphType: function () {
-      if (this.spiGraphType === 'pie' || this.spiGraphType === 'table') {
+      if (this.spiGraphType === 'pie' ||
+        this.spiGraphType === 'table' || this.spiGraphType === 'treemap') {
         if (!this.$route.query.size) {
           this.query.size = 5; // set default size to 5
         }
