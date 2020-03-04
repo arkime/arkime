@@ -36,12 +36,13 @@
         </div> <!-- /query size select -->
 
         <!-- network baseline diff checkbox -->
+        <!-- TODO: allow specifying arbitrary baseline start/stop times rather than fixed previous time? -->
         <div class="input-group input-group-sm">
           <div class="input-group-prepend help-cursor"
             v-b-tooltip.hover
             title="Query specified and immediately preceding time frames for graph comparison against a baseline">
             <span class="input-group-text">
-              Compare against baseline
+              Compare Against Baseline
             </span>
           </div>
           <div class="form-check ml-1">
@@ -55,6 +56,27 @@
             />
           </div>
         </div> <!-- /network baseline diff checkbox -->
+
+        <!-- network baseline node visibility -->
+        <!-- TODO: enable/disable (or show/hide) based on baseline checkbox -->
+        <div class="input-group input-group-sm ml-1">
+          <div class="input-group-prepend help-cursor"
+            v-b-tooltip.hover
+            title="Toggle node visibility based on baseline result set membership">
+            <span class="input-group-text">
+              Baseline Node Visibility
+            </span>
+          </div>
+          <select class="form-control input-sm"
+            v-model="query.baselineVis"
+            @change="changeBaselineVis">
+            <option value="all">All nodes</option>
+            <option value="actual">Actual nodes</option>
+            <option value="actualold">Baseline nodes</option>
+            <option value="new">New nodes only</option>
+            <option value="old">Baseline nodes only</option>
+          </select>
+        </div> <!-- /network baseline node visibility -->
 
         <!-- src select -->
         <div class="form-group ml-1"
@@ -566,6 +588,7 @@ export default {
         interval: this.$route.query.interval || 'auto',
         minConn: this.$route.query.minConn || 1,
         baseline: String(this.$route.query.baseline) || 'false',
+        baselineVis: this.$route.query.baselineVis || 'all',
         nodeDist: this.$route.query.nodeDist || 40,
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined
@@ -684,6 +707,28 @@ export default {
         query: {
           ...this.$route.query,
           baseline: this.query.baseline
+        }
+      });
+    },
+    changeBaselineVis: function () {
+      svg.selectAll('.node')
+        .attr('visibility', this.calculateNodeBaselineVisibility);
+
+      // TODO: is there a way to get each label's/link's associated node(s)
+      // and just get its visibility rather than re-runing
+      // calculateNodeBaselineVisibility/calculateLinkBaselineVisibility
+      // for all of them?
+
+      svg.selectAll('.node-label')
+        .attr('visibility', this.calculateNodeBaselineVisibility);
+
+      svg.selectAll('.link')
+        .attr('visibility', this.calculateLinkBaselineVisibility);
+
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          baselineVis: this.query.baselineVis
         }
       });
     },
@@ -988,7 +1033,8 @@ export default {
         .data(links)
         .enter().append('line')
         .attr('class', 'link')
-        .attr('stroke-width', this.calculateLinkWeight);
+        .attr('stroke-width', this.calculateLinkWeight)
+        .attr('visibility', this.calculateLinkBaselineVisibility);
 
       // add link mouse listeners for showing popups
       link.on('mouseover', (l) => {
@@ -1017,6 +1063,7 @@ export default {
         .attr('r', this.calculateNodeWeight)
         .attr('stroke', this.calculateNodeStrokeColor)
         .attr('stroke-width', this.calculateNodeStrokeWidth)
+        .attr('visibility', this.calculateNodeBaselineVisibility)
         .call(d3.drag()
           .on('start', dragstarted)
           .on('drag', dragged)
@@ -1051,8 +1098,9 @@ export default {
         .style('font-size', this.fontSize + 'em')
         .style('font-weight', this.calculateNodeLabelWeight)
         .style('font-style', this.calculateNodeLabelStyle)
+        .attr('visibility', this.calculateNodeBaselineVisibility)
         .style('pointer-events', 'none') // to prevent mouseover/drag capture
-        .text((d) => { return d.id; });
+        .text((d) => { return d.id + this.calculateNodeLabelSuffix(d); });
 
       // listen on each tick of the simulation's internal timer
       simulation.on('tick', () => {
@@ -1129,39 +1177,45 @@ export default {
     },
     calculateNodeStrokeColor: function (n) {
       let val = this.foregroundColor;
-      if (String(this.query.baseline) === 'true') {
-        switch (n.inresult) {
-          case 3:
-            // "both" (in actual and baseline result set)
-            val = this.foregroundColor;
-            break;
-          case 2:
-            // "old" (in baseline, not in actual result set)
-            val = this.highlightTertiaryColor;
-            break;
-          case 1:
-            // "new" (in actual, not in baseline result set)
-            val = this.highlightPrimaryColor;
-            break;
-        }
-      }
       return val;
+      // TODO: for now I've disabled stroke colors as I think it was,
+      // visually confusing I may turn it back on for baseline
+      // if (String(this.query.baseline) === 'true') {
+      //   switch (n.inresult) {
+      //     case 3:
+      //       // "both" (in actual and baseline result set)
+      //       val = this.foregroundColor;
+      //       break;
+      //     case 2:
+      //       // "old" (in baseline, not in actual result set)
+      //       val = this.highlightTertiaryColor;
+      //       break;
+      //     case 1:
+      //       // "new" (in actual, not in baseline result set)
+      //       val = this.highlightPrimaryColor;
+      //       break;
+      //   }
+      // }
+      // return val;
     },
     calculateNodeStrokeWidth: function (n) {
       let val = 0.5;
-      if (String(this.query.baseline) === 'true') {
-        switch (n.inresult) {
-          case 2:
-            // "old" (in baseline, not in actual result set)
-            val = 0.75;
-            break;
-          case 1:
-            // "new" (in actual, not in baseline result set)
-            val = 1.0;
-            break;
-        }
-      }
       return val;
+      // TODO: for now I've disabled stroke width as I think it was,
+      // visually confusing I may turn it back on for baseline
+      // if (String(this.query.baseline) === 'true') {
+      //   switch (n.inresult) {
+      //     case 2:
+      //       // "old" (in baseline, not in actual result set)
+      //       val = 1.00;
+      //       break;
+      //     case 1:
+      //       // "new" (in actual, not in baseline result set)
+      //       val = 1.25;
+      //       break;
+      //   }
+      // }
+      // return val;
     },
     calculateNodeLabelWeight: function (n) {
       let val = 'normal';
@@ -1182,6 +1236,56 @@ export default {
     calculateNodeLabelStyle: function (n) {
       // italicize "old" nodes (in baseline, not in actual result set)
       return ((String(this.query.baseline) === 'true') && (n.inresult === 2)) ? 'italic' : 'normal';
+    },
+    calculateNodeLabelSuffix: function (n) {
+      let val = '';
+      if (String(this.query.baseline) === 'true') {
+        switch (n.inresult) {
+          case 2:
+            // "old" (in baseline, not in actual result set)
+            val = ' 🚫';
+            break;
+          case 1:
+            // "new" (in actual, not in baseline result set)
+            val = ' ✨';
+            break;
+        }
+      }
+      return val;
+    },
+    calculateNodeBaselineVisibility: function (n) {
+      let val = 'visible';
+
+      if (String(this.query.baseline) === 'true') {
+        let inActualSet = ((n.inresult & 0x1) !== 0);
+        let inBaselineSet = ((n.inresult & 0x2) !== 0);
+        switch (this.query.baselineVis) {
+          case 'actual':
+            val = inActualSet ? 'visible' : 'hidden';
+            break;
+          case 'actualold':
+            val = inBaselineSet ? 'visible' : 'hidden';
+            break;
+          case 'new':
+            val = (inActualSet && !inBaselineSet) ? 'visible' : 'hidden';
+            break;
+          case 'old':
+            val = (!inActualSet && inBaselineSet) ? 'visible' : 'hidden';
+            break;
+        }
+      }
+
+      return val;
+    },
+    calculateLinkBaselineVisibility: function (l) {
+      let val = 'visible';
+
+      if (String(this.query.baseline) === 'true') {
+        let nodesVisibilities = [this.calculateNodeBaselineVisibility(l.source), this.calculateNodeBaselineVisibility(l.target)];
+        val = (nodesVisibilities.includes('hidden')) ? 'hidden' : 'visible';
+      }
+
+      return val;
     },
     calculateCollisionRadius: function (n) {
       let val = this.calculateNodeWeight(n);
