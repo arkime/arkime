@@ -5244,12 +5244,16 @@ function buildConnections(req, res, cb) {
       // replace current time frame start/stop values with baseline time frame start/stop values
       // TODO: allow specifying arbitrary baseline start/stop times rather than fixed previous time?
       let currentQueryTimes = determineQueryTimes(req);
-      console.log("buildConnections baseline.0", "startTime", currentQueryTimes[0], "stopTime", currentQueryTimes[1])
+      if (Config.debug) {
+        console.log("buildConnections baseline.0", "startTime", currentQueryTimes[0], "stopTime", currentQueryTimes[1])
+      }
       if ((currentQueryTimes[0] !== undefined) && (currentQueryTimes[1] !== undefined)) {
         let diff = currentQueryTimes[1] - currentQueryTimes[0];
         req.query.stopTime = currentQueryTimes[0]-1;
         req.query.startTime = req.query.stopTime-diff;
-        console.log("buildConnections baseline.1", "startTime", req.query.startTime, "stopTime", req.query.stopTime, "diff", diff)
+        if (Config.debug) {
+          console.log("buildConnections baseline.1", "startTime", req.query.startTime, "stopTime", req.query.stopTime, "diff", diff)
+        }
       }
     }
 
