@@ -786,6 +786,7 @@ export default {
       if (!field) { field = 'dstIp'; }
 
       let query = this.constructQuery(field, 100);
+      query.facets = 1; // Force facets for map data
 
       this.get(query).promise
         .then((response) => {
@@ -799,7 +800,7 @@ export default {
     /* helper functions ---------------------------------------------------- */
     constructQuery: function (dbField, count) {
       return {
-        facets: 1,
+        facets: newQuery ? '1' : '0', // Only get facets for initial query for performance
         spi: `${dbField}:${count}`,
         date: this.query.date,
         startTime: this.query.startTime,
