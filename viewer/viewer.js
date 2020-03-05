@@ -5417,8 +5417,7 @@ app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
   }
 });
 
-app.get('/spigraphpie', noCacheJson, logAction(), (req, res) => {
-
+app.get('/spigraphhierarchy', noCacheJson, logAction(), (req, res) => {
   if (req.query.exp === undefined) {
     return res.molochError(403, 'Missing exp parameter');
   }
@@ -5476,7 +5475,7 @@ app.get('/spigraphpie', noCacheJson, logAction(), (req, res) => {
       }
 
       // format the data for the pie graph
-      let pieResults = { name: 'Top Talkers', children: [] };
+      let hierarchicalResults = { name: 'Top Talkers', children: [] };
       function addDataToPie (buckets, addTo) {
         for (let i = 0; i < buckets.length; i++) {
           let bucket = buckets[i];
@@ -5516,10 +5515,14 @@ app.get('/spigraphpie', noCacheJson, logAction(), (req, res) => {
         }
       }
 
-      addDataToPie(result.aggregations.field.buckets, pieResults.children);
+      addDataToPie(result.aggregations.field.buckets, hierarchicalResults.children);
       addDataToTable(result.aggregations.field.buckets);
 
-      return res.send({success:true, pieResults: pieResults, tableResults: tableResults});
+      return res.send({
+        success:true,
+        tableResults: tableResults,
+        hierarchicalResults: hierarchicalResults
+      });
     });
   });
 });

@@ -76,6 +76,7 @@
               <option value="default">timeline/map</option>
               <option value="pie">pie</option>
               <option value="table">table</option>
+              <option value="treemap">treemap</option>
             </select>
           </div>
         </div> <!-- /main graph type select -->
@@ -144,7 +145,7 @@
     <div class="spigraph-content">
 
       <!-- pie graph type -->
-      <div v-if="spiGraphType === 'pie' || spiGraphType === 'table'">
+      <div v-if="spiGraphType === 'pie' || spiGraphType === 'table' || spiGraphType === 'treemap'">
 
         <moloch-pie v-if="items && items.length"
           :base-field="baseField"
@@ -255,7 +256,7 @@ import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
 import MolochFieldTypeahead from '../utils/FieldTypeahead';
 import MolochVisualizations from '../visualizations/Visualizations';
-import MolochPie from '../visualizations/Pie';
+import MolochPie from './Hierarchy';
 // import utils
 import Utils from '../utils/utils';
 
@@ -444,7 +445,8 @@ export default {
       }
     },
     changeSpiGraphType: function () {
-      if (this.spiGraphType === 'pie' || this.spiGraphType === 'table') {
+      if (this.spiGraphType === 'pie' ||
+        this.spiGraphType === 'table' || this.spiGraphType === 'treemap') {
         if (!this.$route.query.size) {
           this.query.size = 5; // set default size to 5
         }
