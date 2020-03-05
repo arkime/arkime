@@ -68,6 +68,7 @@ var internals = {
   CYBERCHEFVERSION: '9.11.7',
   elasticBase: Config.getArray('elasticsearch', ',', 'http://localhost:9200'),
   esQueryTimeout: Config.get("elasticsearchTimeout", 300) + 's',
+  esScrollTimeout: Config.get("elasticsearchScrollTimeout", 900) + 's',
   userNameHeader: Config.get("userNameHeader"),
   requiredAuthHeader: Config.get("requiredAuthHeader"),
   requiredAuthHeaderVal: Config.get("requiredAuthHeaderVal"),
@@ -257,10 +258,6 @@ function molochError (status, text) {
 
 app.use(function(req, res, next) {
   res.molochError = molochError;
-
-  if (res.setTimeout) {
-    res.setTimeout(10 * 60 * 1000); // Increase default from 2 min to 10 min
-  }
 
   req.url = req.url.replace(Config.basePath(), "/");
   return next();
@@ -898,6 +895,7 @@ function proxyRequest (req, res, errCb) {
     var info = url.parse(viewUrl);
     info.path = req.url;
     info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
+    info.timeout = 20*60*1000;
     addAuth(info, req.user, req.params.nodeName);
     addCaTrust(info, req.params.nodeName);
 
@@ -946,11 +944,11 @@ function makeRequest (node, path, user, cb) {
       });
     }
     let preq = client.request(info, responseFunc);
-    preq.on('error', () => {
+    preq.on('error', (err) => {
       // Try a second time on errors
       console.log(`Retry ${info.path} on remote viewer: ${err}`);
       let preq2 = client.request(info, responseFunc);
-      preq2.on('error', function (err) {
+      preq2.on('error', (err) => {
         console.log(`Error with ${info.path} on remote viewer: ${err}`);
         cb(err);
       });
@@ -2981,7 +2979,7 @@ function buildSessionQuery (req, buildCb) {
       break;
   }
 
-  if (req.query.facets) {
+  if (req.query.facets === '1') {
     query.aggregations = {};
     // only add map aggregations if requested
     if (req.query.map === 'true') {
@@ -4783,7 +4781,7 @@ app.get('/sessions.json', [noCacheJson, recordResponseTime, logAction('sessions'
 });
 
 app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'), fieldToExp, setCookie], (req, res) => {
-  req.query.facets = 1;
+  req.query.facets = '1';
 
   buildSessionQuery(req, function(bsqErr, query, indices) {
     var results = {items: [], graph: {}, map: {}};
@@ -4962,7 +4960,7 @@ app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'),
       query.aggregations = {};
     }
 
-    if (req.query.facets) {
+    if (req.query.facets === '1') {
       query.aggregations.protocols = {terms: {field: "protocol", size:1000}};
     }
 
@@ -5025,7 +5023,7 @@ app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'),
         });
       }
 
-      if (req.query.facets) {
+      if (req.query.facets === '1') {
         graph = graphMerge(req, query, sessions.aggregations);
         map = mapMerge(sessions.aggregations);
         protocols = {};
@@ -5419,8 +5417,7 @@ app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
   }
 });
 
-app.get('/spigraphpie', noCacheJson, logAction(), (req, res) => {
-
+app.get('/spigraphhierarchy', noCacheJson, logAction(), (req, res) => {
   if (req.query.exp === undefined) {
     return res.molochError(403, 'Missing exp parameter');
   }
@@ -5478,7 +5475,7 @@ app.get('/spigraphpie', noCacheJson, logAction(), (req, res) => {
       }
 
       // format the data for the pie graph
-      let pieResults = { name: 'Top Talkers', children: [] };
+      let hierarchicalResults = { name: 'Top Talkers', children: [] };
       function addDataToPie (buckets, addTo) {
         for (let i = 0; i < buckets.length; i++) {
           let bucket = buckets[i];
@@ -5518,10 +5515,14 @@ app.get('/spigraphpie', noCacheJson, logAction(), (req, res) => {
         }
       }
 
-      addDataToPie(result.aggregations.field.buckets, pieResults.children);
+      addDataToPie(result.aggregations.field.buckets, hierarchicalResults.children);
       addDataToTable(result.aggregations.field.buckets);
 
-      return res.send({success:true, pieResults: pieResults, tableResults: tableResults});
+      return res.send({
+        success:true,
+        tableResults: tableResults,
+        hierarchicalResults: hierarchicalResults
+      });
     });
   });
 });
@@ -7252,7 +7253,7 @@ function runHuntJob (huntId, hunt, query, user) {
   let options = buildHuntOptions(huntId, hunt);
   let searchedSessions;
 
-  Db.search('sessions2-*', 'session', query, {scroll: '600s'}, function getMoreUntilDone (err, result) {
+  Db.search('sessions2-*', 'session', query, {scroll: internals.esScrollTimeout}, function getMoreUntilDone (err, result) {
     if (err || result.error) {
       pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching sessions: ${err}` });
       return;
@@ -7314,13 +7315,16 @@ function runHuntJob (huntId, hunt, query, user) {
 
       // Some kind of error, stop now
       if (err === 'paused' || err === 'undefined') {
+        if (result && result._scroll_id) {
+          Db.clearScroll({ body: { scroll_id: result._scroll_id } });
+        }
         internals.runningHuntJob = undefined;
         return;
       }
 
       // There might be more, issue another scroll
       if (result.hits.hits.length !== 0) {
-        return Db.scroll({ body: { scroll_id: result._scroll_id }, scroll: '600s' }, getMoreUntilDone);
+        return Db.scroll({ body: { scroll_id: result._scroll_id }, scroll: internals.esScrollTimeout }, getMoreUntilDone);
       }
 
       Db.clearScroll({ body: { scroll_id: result._scroll_id } });
@@ -7400,11 +7404,6 @@ function processHuntJob (huntId, hunt) {
             value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.'
           });
           return;
-        }
-
-        // get the size of the query if it is being restarted
-        if (hunt.lastPacketTime) {
-          query.size = hunt.totalSessions - hunt.searchedSessions;
         }
 
         lookupQueryItems(query.query.bool.filter, (lerr) => {
@@ -8780,7 +8779,7 @@ function processCronQuery(cq, options, query, endTime, cb) {
       console.log("CRON", cq.name, cq.creator, "- start:", new Date(cq.lpValue*1000), "stop:", new Date(singleEndTime*1000), "end:", new Date(endTime*1000), "remaining runs:", ((endTime-singleEndTime)/(24*60*60.0)));
     }
 
-    Db.search('sessions2-*', 'session', query, {scroll: '600s'}, function getMoreUntilDone(err, result) {
+    Db.search('sessions2-*', 'session', query, {scroll: internals.esScrollTimeout}, function getMoreUntilDone(err, result) {
       function doNext() {
         count += result.hits.hits.length;
 
@@ -8797,7 +8796,7 @@ function processCronQuery(cq, options, query, endTime, cb) {
           body: {
             scroll_id: result._scroll_id,
           },
-          scroll: '600s'
+          scroll: internals.esScrollTimeout
         };
 
         Db.scroll(query, getMoreUntilDone);
