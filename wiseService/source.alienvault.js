@@ -93,7 +93,7 @@ AlienVaultSource.prototype.loadFile = function() {
   }
 
   // Get the new revision
-  wiseSource.request('http://reputation.alienvault.com/' + this.key + '/reputation.rev',  '/tmp/alienvault.rev', (statusCode) => {
+  wiseSource.request('https://reputation.alienvault.com/' + this.key + '/reputation.rev',  '/tmp/alienvault.rev', (statusCode) => {
 
     // If statusCode isn't success or not changed then try again if not already
     if (statusCode !== 200 && statusCode != 304) {
@@ -114,7 +114,7 @@ AlienVaultSource.prototype.loadFile = function() {
       }
 
       // Fetch new data file
-      wiseSource.request('http://reputation.alienvault.com/' + this.key + '/reputation.data',  '/tmp/alienvault.data', (statusCode) => {
+      wiseSource.request('https://reputation.alienvault.com/' + this.key + '/reputation.data',  '/tmp/alienvault.data', (statusCode) => {
         if (statusCode === 200) {
           this.loaded = true;
           this.parseFile();
