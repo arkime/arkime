@@ -254,7 +254,7 @@
                   </span>
                 </td>
                 <td>
-                  {{ item.grandparent.size }}
+                  {{ item.grandparent.size | commaString }}
                 </td>
                 <td>
                   <moloch-session-field
@@ -266,7 +266,7 @@
                   </moloch-session-field>
                 </td>
                 <td>
-                  {{ item.parent.size }}
+                  {{ item.parent.size | commaString }}
                 </td>
                 <td>
                   <moloch-session-field
@@ -279,7 +279,7 @@
                   </moloch-session-field>
                 </td>
                 <td>
-                  {{ item.size }}
+                  {{ item.size | commaString }}
                 </td>
               </tr>
               <tr :key="key" v-else-if="item.parent">
@@ -296,7 +296,7 @@
                   </span>
                 </td>
                 <td>
-                  {{ item.parent.size }}
+                  {{ item.parent.size | commaString }}
                 </td>
                 <td>
                   <moloch-session-field
@@ -309,7 +309,7 @@
                   </moloch-session-field>
                 </td>
                 <td>
-                  {{ item.size }}
+                  {{ item.size | commaString }}
                 </td>
               </tr>
             </template>
@@ -330,7 +330,7 @@
                 </moloch-session-field>
               </td>
               <td>
-                {{ item.size }}
+                {{ item.size | commaString }}
               </td>
             </tr>
           </template>
@@ -969,7 +969,10 @@ export default {
         .attr('dy', (d) => { return d.y0 + 25; }) // adjust top position
         .attr('fill', fillBoxText) // color the font
         .style('font-size', '.85rem') // make it a little smaller than the name
-        .text((d) => { return d.data.size; }); // show the box size
+        .text((d) => { // show the box size
+          if (d.children) { return; } // only show size for leaf nodes
+          return this.$options.filters.commaString(d.data.size);
+        });
     },
     /**
      * Gets a field object based on an exp
@@ -1067,7 +1070,7 @@ export default {
                       </td>
                       <td>
                         <strong>
-                          {{ sliceData.data.size || sliceData.data.sizeValue }}
+                          {{ sliceData.data.size || sliceData.data.sizeValue | commaString }}
                         </strong>
                       </td>
                     </tr>
@@ -1086,7 +1089,7 @@ export default {
                       </td>
                       <td>
                         <strong>
-                          {{ sliceData.parent.data.size || sliceData.parent.data.sizeValue }}
+                          {{ sliceData.parent.data.size || sliceData.parent.data.sizeValue | commaString }}
                         </strong>
                       </td>
                     </tr>
@@ -1126,7 +1129,7 @@ export default {
                       </td>
                       <td>
                         <strong>
-                          {{ sliceData.data.size || sliceData.data.sizeValue }}
+                          {{ sliceData.data.size || sliceData.data.sizeValue | commaString }}
                         </strong>
                       </td>
                     </tr>
@@ -1165,7 +1168,7 @@ export default {
                     </td>
                     <td>
                       <strong>
-                        {{ sliceData.data.size || sliceData.data.sizeValue }}
+                        {{ sliceData.data.size || sliceData.data.sizeValue | commaString }}
                       </strong>
                     </td>
                   </tr>
