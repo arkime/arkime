@@ -254,6 +254,49 @@
           </template>
         </b-dropdown> <!-- /link fields button -->
 
+        <!-- network baseline diff checkbox -->
+        <!-- TODO: allow specifying arbitrary baseline start/stop times rather than fixed previous time? -->
+        <div class="input-group input-group-sm ml-1">
+          <div class="input-group-prepend help-cursor"
+            v-b-tooltip.hover
+            title="Query specified and immediately preceding time frames for graph comparison against a baseline">
+            <span class="input-group-text">
+              Compare Against Baseline
+            </span>
+          </div>
+          <div class="form-check ml-1">
+            <input class="form-check-input"
+              v-model="query.baseline"
+              true-value="true"
+              false-value="false"
+              @change="changeBaseline"
+              type="checkbox"
+              id="baseline"
+            />
+          </div>
+        </div> <!-- /network baseline diff checkbox -->
+
+        <!-- network baseline node visibility -->
+        <div class="input-group input-group-sm ml-1">
+          <div class="input-group-prepend help-cursor"
+            v-b-tooltip.hover
+            title="Toggle node visibility based on baseline result set membership">
+            <span class="input-group-text">
+              Baseline Node Visibility
+            </span>
+          </div>
+          <select class="form-control input-sm"
+            v-bind:disabled="String(query.baseline) !== 'true'"
+            v-model="query.baselineVis"
+            @change="changeBaselineVis">
+            <option value="all">All nodes</option>
+            <option value="actual">Actual nodes</option>
+            <option value="actualold">Baseline nodes</option>
+            <option value="new">New nodes only</option>
+            <option value="old">Baseline nodes only</option>
+          </select>
+        </div> <!-- /network baseline node visibility -->
+
       </div>
     </form> <!-- /connections sub navbar -->
 
@@ -398,7 +441,7 @@ import { mixin as clickaway } from 'vue-clickaway';
 import Utils from '../utils/utils';
 
 // d3 force directed graph vars/functions ---------------------------------- */
-let colors, foregroundColor;
+let nodeFillColors;
 let simulation, svg, container, zoom;
 let node, nodes, link, links, nodeLabel;
 let popupTimer, popupVue;
@@ -518,9 +561,13 @@ export default {
       srcFieldTypeahead: undefined,
       dstFieldTypeahead: undefined,
       groupedFields: undefined,
+      foregroundColor: undefined,
       primaryColor: undefined,
       secondaryColor: undefined,
       tertiaryColor: undefined,
+      highlightPrimaryColor: undefined,
+      highlightSecondaryColor: undefined,
+      highlightTertiaryColor: undefined,
       closePopups: closePopups,
       fontSize: 0.4,
       zoomLevel: 1,
@@ -540,6 +587,8 @@ export default {
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         minConn: this.$route.query.minConn || 1,
+        baseline: String(this.$route.query.baseline) || 'false',
+        baselineVis: this.$route.query.baselineVis || 'all',
         nodeDist: this.$route.query.nodeDist || 40,
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined
@@ -571,6 +620,9 @@ export default {
     '$route.query.length': function (newVal, oldVal) {
       this.cancelAndLoad(true);
     },
+    '$route.query.baseline': function (newVal, oldVal) {
+      this.cancelAndLoad(true);
+    },
     '$route.query.minConn': function (newVal, oldVal) {
       this.cancelAndLoad(true);
     },
@@ -596,11 +648,14 @@ export default {
   },
   mounted: function () {
     let styles = window.getComputedStyle(document.body);
+    this.foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
     this.primaryColor = styles.getPropertyValue('--color-primary').trim();
     this.secondaryColor = styles.getPropertyValue('--color-tertiary').trim();
     this.tertiaryColor = styles.getPropertyValue('--color-quaternary').trim();
-    foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
-    colors = ['', this.primaryColor, this.tertiaryColor, this.secondaryColor];
+    this.highlightPrimaryColor = styles.getPropertyValue('--color-primary-lighter').trim();
+    this.highlightSecondaryColor = styles.getPropertyValue('--color-secondary-lighter').trim();
+    this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
+    nodeFillColors = ['', this.primaryColor, this.tertiaryColor, this.secondaryColor];
 
     this.cancelAndLoad(true);
 
@@ -644,6 +699,36 @@ export default {
         query: {
           ...this.$route.query,
           length: this.query.length
+        }
+      });
+    },
+    changeBaseline: function () {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          baseline: this.query.baseline
+        }
+      });
+    },
+    changeBaselineVis: function () {
+      svg.selectAll('.node')
+        .attr('visibility', this.calculateNodeBaselineVisibility);
+
+      // TODO: is there a way to get each label's/link's associated node(s)
+      // and just get its visibility rather than re-runing
+      // calculateNodeBaselineVisibility/calculateLinkBaselineVisibility
+      // for all of them?
+
+      svg.selectAll('.node-label')
+        .attr('visibility', this.calculateNodeBaselineVisibility);
+
+      svg.selectAll('.link')
+        .attr('visibility', this.calculateLinkBaselineVisibility);
+
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          baselineVis: this.query.baselineVis
         }
       });
     },
@@ -942,13 +1027,14 @@ export default {
 
       // add links
       link = container.append('g')
-        .attr('stroke', foregroundColor)
+        .attr('stroke', this.foregroundColor)
         .attr('stroke-opacity', 0.4)
         .selectAll('line')
         .data(links)
         .enter().append('line')
         .attr('class', 'link')
-        .attr('stroke-width', this.calculateLinkWeight);
+        .attr('stroke-width', this.calculateLinkWeight)
+        .attr('visibility', this.calculateLinkBaselineVisibility);
 
       // add link mouse listeners for showing popups
       link.on('mouseover', (l) => {
@@ -963,8 +1049,6 @@ export default {
 
       // add nodes
       node = container.append('g')
-        .attr('stroke', foregroundColor)
-        .attr('stroke-width', 0.5)
         .selectAll('circle')
         .data(nodes)
         .enter()
@@ -974,9 +1058,12 @@ export default {
           return 'id' + d.id.replace(idRegex, '_');
         })
         .attr('fill', (d) => {
-          return colors[d.type];
+          return nodeFillColors[d.type];
         })
         .attr('r', this.calculateNodeWeight)
+        .attr('stroke', this.calculateNodeStrokeColor)
+        .attr('stroke-width', this.calculateNodeStrokeWidth)
+        .attr('visibility', this.calculateNodeBaselineVisibility)
         .call(d3.drag()
           .on('start', dragstarted)
           .on('drag', dragged)
@@ -1009,8 +1096,11 @@ export default {
         .attr('dy', '2px')
         .attr('class', 'node-label')
         .style('font-size', this.fontSize + 'em')
+        .style('font-weight', this.calculateNodeLabelWeight)
+        .style('font-style', this.calculateNodeLabelStyle)
+        .attr('visibility', this.calculateNodeBaselineVisibility)
         .style('pointer-events', 'none') // to prevent mouseover/drag capture
-        .text((d) => { return d.id; });
+        .text((d) => { return d.id + this.calculateNodeLabelSuffix(d); });
 
       // listen on each tick of the simulation's internal timer
       simulation.on('tick', () => {
@@ -1084,6 +1174,118 @@ export default {
     calculateNodeLabelOffset: function (nl) {
       let val = this.calculateNodeWeight(nl);
       return 2 + val;
+    },
+    calculateNodeStrokeColor: function (n) {
+      let val = this.foregroundColor;
+      return val;
+      // TODO: for now I've disabled stroke colors as I think it was,
+      // visually confusing I may turn it back on for baseline
+      // if (String(this.query.baseline) === 'true') {
+      //   switch (n.inresult) {
+      //     case 3:
+      //       // "both" (in actual and baseline result set)
+      //       val = this.foregroundColor;
+      //       break;
+      //     case 2:
+      //       // "old" (in baseline, not in actual result set)
+      //       val = this.highlightTertiaryColor;
+      //       break;
+      //     case 1:
+      //       // "new" (in actual, not in baseline result set)
+      //       val = this.highlightPrimaryColor;
+      //       break;
+      //   }
+      // }
+      // return val;
+    },
+    calculateNodeStrokeWidth: function (n) {
+      let val = 0.5;
+      return val;
+      // TODO: for now I've disabled stroke width as I think it was,
+      // visually confusing I may turn it back on for baseline
+      // if (String(this.query.baseline) === 'true') {
+      //   switch (n.inresult) {
+      //     case 2:
+      //       // "old" (in baseline, not in actual result set)
+      //       val = 1.00;
+      //       break;
+      //     case 1:
+      //       // "new" (in actual, not in baseline result set)
+      //       val = 1.25;
+      //       break;
+      //   }
+      // }
+      // return val;
+    },
+    calculateNodeLabelWeight: function (n) {
+      let val = 'normal';
+      if (String(this.query.baseline) === 'true') {
+        switch (n.inresult) {
+          case 2:
+            // "old" (in baseline, not in actual result set)
+            val = 'lighter';
+            break;
+          case 1:
+            // "new" (in actual, not in baseline result set)
+            val = 'bold';
+            break;
+        }
+      }
+      return val;
+    },
+    calculateNodeLabelStyle: function (n) {
+      // italicize "old" nodes (in baseline, not in actual result set)
+      return ((String(this.query.baseline) === 'true') && (n.inresult === 2)) ? 'italic' : 'normal';
+    },
+    calculateNodeLabelSuffix: function (n) {
+      let val = '';
+      if (String(this.query.baseline) === 'true') {
+        switch (n.inresult) {
+          case 2:
+            // "old" (in baseline, not in actual result set)
+            val = ' 🚫';
+            break;
+          case 1:
+            // "new" (in actual, not in baseline result set)
+            val = ' ✨';
+            break;
+        }
+      }
+      return val;
+    },
+    calculateNodeBaselineVisibility: function (n) {
+      let val = 'visible';
+
+      if (String(this.query.baseline) === 'true') {
+        let inActualSet = ((n.inresult & 0x1) !== 0);
+        let inBaselineSet = ((n.inresult & 0x2) !== 0);
+        switch (this.query.baselineVis) {
+          case 'actual':
+            val = inActualSet ? 'visible' : 'hidden';
+            break;
+          case 'actualold':
+            val = inBaselineSet ? 'visible' : 'hidden';
+            break;
+          case 'new':
+            val = (inActualSet && !inBaselineSet) ? 'visible' : 'hidden';
+            break;
+          case 'old':
+            val = (!inActualSet && inBaselineSet) ? 'visible' : 'hidden';
+            break;
+        }
+      }
+
+      return val;
+    },
+    calculateLinkBaselineVisibility: function (l) {
+      let val = 'visible';
+
+      if (String(this.query.baseline) === 'true') {
+        let nodesVisibilities = [this.calculateNodeBaselineVisibility(l.source), this.calculateNodeBaselineVisibility(l.target)];
+        val = (nodesVisibilities.includes('hidden')) ? 'hidden' : 'visible';
+      }
+
+      return val;
     },
     calculateCollisionRadius: function (n) {
       let val = this.calculateNodeWeight(n);
@@ -1164,6 +1366,9 @@ export default {
                     </span>&nbsp;
                   </dd>
                 </span>
+
+                <dt>Result Set</dt>
+                <dd>{{['','Actual','Baseline','Both'][dataNode.inresult]}}</dd>
 
                 <dt>Expressions</dt>
                 <dd>
@@ -1367,14 +1572,13 @@ export default {
     zoom = undefined;
     node = undefined;
     link = undefined;
-    colors = undefined;
+    nodeFillColors = undefined;
     popupVue = undefined;
     container = undefined;
     nodeLabel = undefined;
     popupTimer = undefined;
     simulation = undefined;
     draggingNode = undefined;
-    foregroundColor = undefined;
   }
 };
 </script>
@@ -1487,7 +1691,7 @@ export default {
 
 .field-vis-menu > button.btn {
   border-top-right-radius: 4px !important;
-  border-bottom-right-radius: 4px !important;;
+  border-bottom-right-radius: 4px !important;
 }
 .field-vis-menu .dropdown-menu input {
   width: 100%;
