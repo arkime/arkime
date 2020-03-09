@@ -513,6 +513,7 @@ void moloch_config_load()
     config.timeouts[SESSION_TCP] = moloch_config_int(keyfile, "tcpTimeout", 60*8, 10, 0xffff);
     config.timeouts[SESSION_SCTP]= moloch_config_int(keyfile, "sctpTimeout", 60, 10, 0xffff);
     config.timeouts[SESSION_ESP] = moloch_config_int(keyfile, "espTimeout", 60*10, 10, 0xffff);
+    config.timeouts[SESSION_OTHER] = 60*10;
     config.tcpSaveTimeout        = moloch_config_int(keyfile, "tcpSaveTimeout", 60*8, 10, 60*120);
     int maxStreams               = moloch_config_int(keyfile, "maxStreams", 1500000, 1, 16777215);
     config.maxPackets            = moloch_config_int(keyfile, "maxPackets", 10000, 1, 0xffff);
@@ -561,6 +562,7 @@ void moloch_config_load()
     config.maxStreams[SESSION_SCTP] = MAX(100, maxStreams/config.packetThreads/20);
     config.maxStreams[SESSION_ICMP] = MAX(100, maxStreams/config.packetThreads/200);
     config.maxStreams[SESSION_ESP] = MAX(100, maxStreams/config.packetThreads/200);
+    config.maxStreams[SESSION_OTHER] = MAX(100, maxStreams/config.packetThreads/20);
 
     gchar **saveUnknownPackets     = moloch_config_str_list(keyfile, "saveUnknownPackets", NULL);
     if (saveUnknownPackets) {

@@ -290,14 +290,14 @@ gchar *moloch_db_community_id(MolochSession_t *session)
         if (cmp < 0 || (cmp == 0 && session->port1 < session->port2)) {
             g_checksum_update(checksum, (guchar *)session->sessionId+1, 16);
             g_checksum_update(checksum, (guchar *)session->sessionId+19, 16);
-            g_checksum_update(checksum, (guchar *)&session->protocol, 1);
+            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
             g_checksum_update(checksum, (guchar *)&zero, 1);
             g_checksum_update(checksum, (guchar *)session->sessionId+17, 2);
             g_checksum_update(checksum, (guchar *)session->sessionId+35, 2);
         } else {
             g_checksum_update(checksum, (guchar *)session->sessionId+19, 16);
             g_checksum_update(checksum, (guchar *)session->sessionId+1, 16);
-            g_checksum_update(checksum, (guchar *)&session->protocol, 1);
+            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
             g_checksum_update(checksum, (guchar *)&zero, 1);
             g_checksum_update(checksum, (guchar *)session->sessionId+35, 2);
             g_checksum_update(checksum, (guchar *)session->sessionId+17, 2);
@@ -308,14 +308,14 @@ gchar *moloch_db_community_id(MolochSession_t *session)
         if (cmp < 0 || (cmp == 0 && session->port1 < session->port2)) {
             g_checksum_update(checksum, (guchar *)session->sessionId+1, 4);
             g_checksum_update(checksum, (guchar *)session->sessionId+7, 4);
-            g_checksum_update(checksum, (guchar *)&session->protocol, 1);
+            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
             g_checksum_update(checksum, (guchar *)&zero, 1);
             g_checksum_update(checksum, (guchar *)session->sessionId+5, 2);
             g_checksum_update(checksum, (guchar *)session->sessionId+11, 2);
         }  else {
             g_checksum_update(checksum, (guchar *)session->sessionId+7, 4);
             g_checksum_update(checksum, (guchar *)session->sessionId+1, 4);
-            g_checksum_update(checksum, (guchar *)&session->protocol, 1);
+            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
             g_checksum_update(checksum, (guchar *)&zero, 1);
             g_checksum_update(checksum, (guchar *)session->sessionId+11, 2);
             g_checksum_update(checksum, (guchar *)session->sessionId+5, 2);
@@ -384,6 +384,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     uint32_t               jsonSize;
     int                    pos;
     gpointer               ikey;
+    char                   ipsrc[INET6_ADDRSTRLEN];
+    char                   ipdst[INET6_ADDRSTRLEN];
 
     /* Let the plugins finish */
     if (pluginsCbs & MOLOCH_PLUGIN_SAVE)
@@ -519,24 +521,20 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                       "{\"firstPacket\":%" PRIu64 ","
                       "\"lastPacket\":%" PRIu64 ","
                       "\"length\":%u,"
-                      "\"srcPort\":%u,"
-                      "\"dstPort\":%u,"
                       "\"ipProtocol\":%u,",
                       ((uint64_t)session->firstPacket.tv_sec)*1000 + ((uint64_t)session->firstPacket.tv_usec)/1000,
                       ((uint64_t)session->lastPacket.tv_sec)*1000 + ((uint64_t)session->lastPacket.tv_usec)/1000,
                       timediff,
-                      session->port1,
-                      session->port2,
-                      session->protocol);
+                      session->ipProtocol);
 
     // Currently don't do communityId for ICMP because it requires magic
-    if (session->ses != SESSION_ICMP) {
+    if (session->ses != SESSION_ICMP && session->ses != SESSION_OTHER) {
         char *communityId = moloch_db_community_id(session);
         BSB_EXPORT_sprintf(jbsb, "\"communityId\": \"1:%s\",", communityId);
         g_free(communityId);
     }
 
-    if (session->protocol == IPPROTO_TCP) {
+    if (session->ipProtocol == IPPROTO_TCP) {
         BSB_EXPORT_sprintf(jbsb,
                            "\"tcpflags\":{"
                            "\"syn\": %d,"
@@ -582,60 +580,64 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         BSB_EXPORT_cstr(jbsb, "\",");
     }
 
-    char ipsrc[INET6_ADDRSTRLEN];
-    char ipdst[INET6_ADDRSTRLEN];
-    if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
-        uint32_t ip = MOLOCH_V6_TO_V4(session->addr1);
-        snprintf(ipsrc, sizeof(ipsrc), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
-        ip = MOLOCH_V6_TO_V4(session->addr2);
-        snprintf(ipdst, sizeof(ipdst), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
-    } else {
-        inet_ntop(AF_INET6, &session->addr1, ipsrc, sizeof(ipsrc));
-        inet_ntop(AF_INET6, &session->addr2, ipdst, sizeof(ipdst));
+    if (session->ipProtocol) {
+        if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
+            uint32_t ip = MOLOCH_V6_TO_V4(session->addr1);
+            snprintf(ipsrc, sizeof(ipsrc), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+            ip = MOLOCH_V6_TO_V4(session->addr2);
+            snprintf(ipdst, sizeof(ipdst), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+        } else {
+            inet_ntop(AF_INET6, &session->addr1, ipsrc, sizeof(ipsrc));
+            inet_ntop(AF_INET6, &session->addr2, ipdst, sizeof(ipdst));
+        }
+        BSB_EXPORT_sprintf(jbsb,
+                          "\"timestamp\":%" PRIu64 ","
+                          "\"srcIp\":\"%s\","
+                          "\"dstIp\":\"%s\","
+                          "\"srcPort\":%u,"
+                          "\"dstPort\":%u,",
+                          ((uint64_t)currentTime.tv_sec)*1000 + ((uint64_t)currentTime.tv_usec)/1000,
+                          ipsrc,
+                          ipdst,
+                          session->port1,
+                          session->port2);
+
+
+        char *g1, *g2, *as1, *as2, *rir1, *rir2;
+        int asFree1, asFree2;
+
+        moloch_db_geo_lookup6(session, session->addr1, &g1, &as1, &rir1, &asFree1);
+        moloch_db_geo_lookup6(session, session->addr2, &g2, &as2, &rir2, &asFree2);
+
+        if (g1)
+            BSB_EXPORT_sprintf(jbsb, "\"srcGEO\":\"%2.2s\",", g1);
+        if (g2)
+            BSB_EXPORT_sprintf(jbsb, "\"dstGEO\":\"%2.2s\",", g2);
+
+
+        if (as1) {
+            BSB_EXPORT_cstr(jbsb, "\"srcASN\":");
+            moloch_db_js0n_str(&jbsb, (unsigned char*)as1, TRUE);
+            BSB_EXPORT_u08(jbsb, ',');
+            if (asFree1)
+                free(as1);
+        }
+
+        if (as2) {
+            BSB_EXPORT_cstr(jbsb, "\"dstASN\":");
+            moloch_db_js0n_str(&jbsb, (unsigned char*)as2, TRUE);
+            BSB_EXPORT_u08(jbsb, ',');
+            if (asFree2)
+                free(as2);
+        }
+
+
+        if (rir1)
+            BSB_EXPORT_sprintf(jbsb, "\"srcRIR\":\"%s\",", rir1);
+
+        if (rir2)
+            BSB_EXPORT_sprintf(jbsb, "\"dstRIR\":\"%s\",", rir2);
     }
-    BSB_EXPORT_sprintf(jbsb,
-                      "\"timestamp\":%" PRIu64 ","
-                      "\"srcIp\":\"%s\","
-                      "\"dstIp\":\"%s\",",
-                      ((uint64_t)currentTime.tv_sec)*1000 + ((uint64_t)currentTime.tv_usec)/1000,
-                      ipsrc,
-                      ipdst);
-
-
-    char *g1, *g2, *as1, *as2, *rir1, *rir2;
-    int asFree1, asFree2;
-
-    moloch_db_geo_lookup6(session, session->addr1, &g1, &as1, &rir1, &asFree1);
-    moloch_db_geo_lookup6(session, session->addr2, &g2, &as2, &rir2, &asFree2);
-
-    if (g1)
-        BSB_EXPORT_sprintf(jbsb, "\"srcGEO\":\"%2.2s\",", g1);
-    if (g2)
-        BSB_EXPORT_sprintf(jbsb, "\"dstGEO\":\"%2.2s\",", g2);
-
-
-    if (as1) {
-        BSB_EXPORT_cstr(jbsb, "\"srcASN\":");
-        moloch_db_js0n_str(&jbsb, (unsigned char*)as1, TRUE);
-        BSB_EXPORT_u08(jbsb, ',');
-        if (asFree1)
-            free(as1);
-    }
-
-    if (as2) {
-        BSB_EXPORT_cstr(jbsb, "\"dstASN\":");
-        moloch_db_js0n_str(&jbsb, (unsigned char*)as2, TRUE);
-        BSB_EXPORT_u08(jbsb, ',');
-        if (asFree2)
-            free(as2);
-    }
-
-
-    if (rir1)
-        BSB_EXPORT_sprintf(jbsb, "\"srcRIR\":\"%s\",", rir1);
-
-    if (rir2)
-        BSB_EXPORT_sprintf(jbsb, "\"dstRIR\":\"%s\",", rir2);
 
     BSB_EXPORT_sprintf(jbsb,
                       "\"totPackets\":%u,"
@@ -1312,6 +1314,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         "\"icmpSessions\": %u, "
         "\"sctpSessions\": %u, "
         "\"espSessions\": %u, "
+        "\"otherSessions\": %u, "
         "\"deltaPackets\": %" PRIu64 ", "
         "\"deltaBytes\": %" PRIu64 ", "
         "\"deltaWrittenBytes\": %" PRIu64 ", "
@@ -1353,6 +1356,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         moloch_session_watch_count(SESSION_ICMP),
         moloch_session_watch_count(SESSION_SCTP),
         moloch_session_watch_count(SESSION_ESP),
+        moloch_session_watch_count(SESSION_OTHER),
         (totalPackets - lastPackets[n]),
         (totalBytes - lastBytes[n]),
         (writtenBytes - lastWrittenBytes[n]),

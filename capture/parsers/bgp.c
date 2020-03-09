@@ -18,12 +18,21 @@
 
 extern MolochConfig_t        config;
 
-LOCAL MolochPQ_t spq;
+LOCAL MolochPQ_t            *bgpPq;
+LOCAL  int                   typeField;
 
 /******************************************************************************/
-LOCAL int bgp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *UNUSED(data), int UNUSED(remaining), int UNUSED(which))
+LOCAL int bgp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
 {
-    moloch_pq_upsert(&spq, session, 5, NULL);
+    static const char *types[5] = {NULL, "OPEN", "UPDATE", "NOTIFICATION", "KEEPALIVE"};
+
+    if (len < 19 || memcmp("\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff", data, 16) != 0)
+        return 0;
+
+    if (data[18] > 0 && data[18] < 5)
+        moloch_field_string_add(typeField, session, types[data[18]], -1, TRUE);
+
+    moloch_pq_upsert(bgpPq, session, 5, NULL);
     return 0;
 }
 /******************************************************************************/
@@ -44,5 +53,11 @@ LOCAL void bgp_pq_cb(MolochSession_t *session, void UNUSED(*uw))
 void moloch_parser_init()
 {
     moloch_parsers_classifier_register_port("bgp",  NULL, 179, MOLOCH_PARSERS_PORT_TCP_DST, bgp_tcp_classify);
-    moloch_pq_init(&spq, 10, bgp_pq_cb);
+    bgpPq = moloch_pq_alloc(10, bgp_pq_cb);
+
+    typeField = moloch_field_define("bgp","uptermfield",
+        "bgp.type", "Type", "bgp.type",
+        "BGP Type field",
+        MOLOCH_FIELD_TYPE_STR_GHASH, 0,
+        (char *)NULL);
 }

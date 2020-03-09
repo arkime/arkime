@@ -2,6 +2,70 @@
    "sessions2" : [
       {
          "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "192.168.56.12",
+            "dstMac" : [
+               "08:00:27:ae:4d:62",
+               "08:00:27:f2:1d:8c"
+            ],
+            "dstMacCnt" : 2,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1467818432675,
+            "ipProtocol" : 17,
+            "lastPacket" : 1467818432675,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               108,
+               108
+            ],
+            "packetPos" : [
+               24,
+               132
+            ],
+            "protocol" : [
+               "arp",
+               "vxlan"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 184,
+            "srcDataBytes" : 0,
+            "srcIp" : "192.168.56.11",
+            "srcMac" : [
+               "08:00:27:ae:4d:62",
+               "08:00:27:f2:1d:8c"
+            ],
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 2,
+            "srcPort" : 0,
+            "srcRIR" : "ARIN",
+            "timestamp" : "SET",
+            "totBytes" : 184,
+            "totDataBytes" : 0,
+            "totPackets" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-160706",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
             "dstASN" : "AS0001 Cool Beans!",
             "dstBytes" : 592,
             "dstDataBytes" : 256,

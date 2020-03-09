@@ -2955,7 +2955,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     logmsg "Optimizing Admin Indices\n";
-    esForceMerge("${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v7,${PREFIX}queries_v3,${PREFIX}hunts_v2", 1, 0);
+    esForceMerge("${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v7,${PREFIX}queries_v3,${PREFIX}hunts_v2,${PREFIX}lookups_v1", 1, 0);
     logmsg "\n" if ($verbose > 0);
 }
 ################################################################################

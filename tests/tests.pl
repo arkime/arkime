@@ -45,6 +45,30 @@ sub doGeo {
     }
 }
 ################################################################################
+sub doFuzz2Pcap {
+    my @files = @ARGV;
+    foreach my $file (@files) {
+        print "$file\n";;
+        open my $in, '<', "$file" or die "error opening $file: $!";
+        open my $out, '>', "$file.pcap" or die "error opening $file.pcap: $!";
+        binmode($in);
+        binmode($out);
+
+        my $buf;
+        read($in, $buf, 1000000);
+
+        my $len = length($buf);
+
+        syswrite($out, pack('H*', "d4c3b2a1020004000000000000000000ffff000000000000"));
+        syswrite($out, pack('H*VV', "1234567800000000", $len, $len));
+
+        syswrite($out, $buf);
+
+        close($in);
+        close($out);
+    }
+}
+################################################################################
 sub sortObj {
     my ($parentkey,$obj) = @_;
     for my $key (keys %{$obj}) {
@@ -383,7 +407,7 @@ while (scalar (@ARGV) > 0) {
     } elsif ($ARGV[0] eq "--copy") {
         $main::copy = "--copy";
         shift @ARGV;
-    } elsif ($ARGV[0] =~ /^--(viewer|fix|make|capture|viewernostart|viewerstart|viewerhang|viewerload|help|reip|fuzz)$/) {
+    } elsif ($ARGV[0] =~ /^--(viewer|fix|make|capture|viewernostart|viewerstart|viewerhang|viewerload|help|reip|fuzz|fuzz2pcap)$/) {
         $main::cmd = $ARGV[0];
         shift @ARGV;
     } elsif ($ARGV[0] =~ /^--/) {
@@ -406,6 +430,8 @@ if ($main::cmd eq "--fix") {
     my $cmd = "ASAN_OPTIONS=fast_unwind_on_malloc=0 G_SLICE=always-malloc ../capture/fuzzloch-capture -max_len=8196 -timeout=5 @ARGV";
     print "$cmd\n";
     system($cmd);
+} elsif ($main::cmd eq "--fuzz2pcap") {
+    doFuzz2Pcap();
 } elsif ($main::cmd eq "--help") {
     print "$ARGV[0] [OPTIONS] [COMMAND] <pcap> files\n";
     print "Options:\n";
@@ -418,9 +444,10 @@ if ($main::cmd eq "--fix") {
     print "  --reip file ip newip  Create file.tmp, replace ip with newip\n";
     print "  --viewer              viewer tests\n";
     print "                        This will init local ES, import data, start a viewer, run tests\n";
-    print "  --viewerstart         viewer tests without reloading pcap\n";
-    print "  --fuzz                Run fuzzloch\n";
-    print " [default]              Run each .pcap file thru ../capture/moloch-capture and compare to .test file\n";
+    print "  --viewerstart         Viewer tests without reloading pcap\n";
+    print "  --fuzz [fuzzoptions]  Run fuzzloch\n";
+    print "  --fuzz2pcap           Convert a fuzzloch crash file into a pcap file\n";
+    print " [default] [pcap files] Run each .pcap (default pcap/*.pcap) file thru ../capture/moloch-capture and compare to .test file\n";
 } elsif ($main::cmd =~ "^--viewer") {
     doGeo();
     setpgrp $$, 0;

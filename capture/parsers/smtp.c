@@ -151,7 +151,7 @@ LOCAL char * smtp_quoteable_decode_inplace(char *str, gsize *olen)
         switch(str[ipos]) {
         case '=':
             if (str[ipos+1] && str[ipos+2] && str[ipos+1] != '\n') {
-                str[opos] = moloch_hex_to_char[(unsigned char)str[ipos+1]][(unsigned char)str[ipos+2]];
+                str[opos] = (char)moloch_hex_to_char[(unsigned char)str[ipos+1]][(unsigned char)str[ipos+2]];
                 ipos += 2;
             } else {
                 done = 1;
@@ -530,7 +530,7 @@ LOCAL int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *d
                 *state = EMAIL_DATA_HEADER_RETURN;
                 break;
             }
-            g_string_append_c(line, *data);
+            g_string_append_c(line, (gchar)*data);
             break;
         }
         case EMAIL_DATA_HEADER_RETURN: {
@@ -649,7 +649,7 @@ LOCAL int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *d
                 (*state)++;
                 break;
             }
-            g_string_append_c(line, *data);
+            g_string_append_c(line, (gchar)*data);
             break;
         }
         case EMAIL_MIME_DATA_RETURN:
@@ -1043,9 +1043,7 @@ void moloch_parser_init()
     moloch_config_add_header(&emailHeaders, "received", receivedField);
     moloch_config_load_header("headers-email", "email", "Email header ", "email.", "email.header-", &emailHeaders, 0);
 
-    if (config.parseSMTP) {
-        moloch_parsers_classifier_register_tcp("smtp", NULL, 0, (unsigned char*)"HELO", 4, smtp_classify);
-        moloch_parsers_classifier_register_tcp("smtp", NULL, 0, (unsigned char*)"EHLO", 4, smtp_classify);
-        moloch_parsers_classifier_register_tcp("smtp", NULL, 0, (unsigned char*)"220 ", 4, smtp_classify);
-    }
+    moloch_parsers_classifier_register_tcp("smtp", NULL, 0, (unsigned char*)"HELO", 4, smtp_classify);
+    moloch_parsers_classifier_register_tcp("smtp", NULL, 0, (unsigned char*)"EHLO", 4, smtp_classify);
+    moloch_parsers_classifier_register_tcp("smtp", NULL, 0, (unsigned char*)"220 ", 4, smtp_classify);
 }

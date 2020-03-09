@@ -68,7 +68,7 @@ typedef struct molochhttpconn_t {
     uint32_t                 h_hash;
     short                    h_bucket;
 
-    char                     sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t                  sessionId[MOLOCH_SESSIONID_LEN];
 } MolochHttpConn_t;
 
 typedef struct molochhttpconnhead_t {
@@ -550,7 +550,7 @@ LOCAL gboolean moloch_http_curl_watch_open_callback(int fd, GIOCondition conditi
     if (rc != 0)
         return CURLE_OK;
 
-    char sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t sessionId[MOLOCH_SESSIONID_LEN];
     int  localPort, remotePort;
     char remoteIp[INET6_ADDRSTRLEN+2];
     if (localAddressStorage.ss_family == AF_INET) {
@@ -650,7 +650,7 @@ int moloch_http_curl_close_callback(void *snameV, curl_socket_t fd)
         return 0;
     }
 
-    char sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t sessionId[MOLOCH_SESSIONID_LEN];
     int  localPort, remotePort;
     char remoteIp[INET6_ADDRSTRLEN+2];
     if (localAddressStorage.ss_family == AF_INET) {
@@ -970,12 +970,12 @@ void moloch_http_set_print_errors(void *serverV)
     server->printErrors = 1;
 }
 /******************************************************************************/
-gboolean moloch_http_is_moloch(uint32_t hash, char *key)
+gboolean moloch_http_is_moloch(uint32_t hash, uint8_t *sessionId)
 {
     MolochHttpConn_t *conn;
 
     MOLOCH_LOCK(connections);
-    HASH_FIND_HASH(h_, connections, hash, key, conn);
+    HASH_FIND_HASH(h_, connections, hash, sessionId, conn);
     MOLOCH_UNLOCK(connections);
     return (conn?1:0);
 }

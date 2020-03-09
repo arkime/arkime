@@ -2,6 +2,12 @@
    "sessions2" : [
       {
          "body" : {
+            "bgp" : {
+               "type" : [
+                  "KEEPALIVE",
+                  "OPEN"
+               ]
+            },
             "communityId" : "1:g99Vgks0T67b4ifViWJVGKZmmpU=",
             "dstBytes" : 643,
             "dstDataBytes" : 102,
@@ -96,6 +102,11 @@
       },
       {
          "body" : {
+            "bgp" : {
+               "type" : [
+                  "KEEPALIVE"
+               ]
+            },
             "communityId" : "1:g99Vgks0T67b4ifViWJVGKZmmpU=",
             "dstBytes" : 74,
             "dstDataBytes" : 19,
