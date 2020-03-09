@@ -96,6 +96,7 @@ my $SHARED = 0;
 my $DESCRIPTION = "";
 my $LOCKED = 0;
 my $GZ = 0;
+my $REFRESH = 60;
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -137,6 +138,7 @@ sub showHelp($)
     print "  init [<opts>]                - Clear ALL elasticsearch moloch data and create schema\n";
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
+    print "    --refresh <num>            - Number of seconds for ES refresh interval for sessions indices, default 60\n";
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
     print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
     print "    --ilm                      - Use ilm to manage\n";
@@ -144,6 +146,7 @@ sub showHelp($)
     print "  upgrade [<opts>]             - Upgrade Moloch's schema in elasticsearch from previous versions\n";
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
+    print "    --refresh <num>            - Number of seconds for ES refresh interval for sessions indices, default 60\n";
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
     print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
     print "    --ilm                      - Use ilm to manage\n";
@@ -2224,7 +2227,7 @@ if ($DOILM) {
   "settings": {
     "index": {
       "routing.allocation.total_shards_per_node": ' . $shardsPerNode . $settings . ',
-      "refresh_interval": "60s",
+      "refresh_interval": "' . $REFRESH . 's",
       "number_of_shards": ' . $SHARDS . ',
       "number_of_replicas": ' . $REPLICAS . ',
       "analysis": {
@@ -2966,6 +2969,9 @@ sub parseArgs {
         } elsif ($ARGV[$pos] eq "--replicas") {
             $pos++;
             $REPLICAS = int($ARGV[$pos]);
+        } elsif ($ARGV[$pos] eq "--refresh") {
+            $pos++;
+            $REFRESH = int($ARGV[$pos]);
         } elsif ($ARGV[$pos] eq "--history") {
             $pos++;
             $HISTORY = int($ARGV[$pos]);
