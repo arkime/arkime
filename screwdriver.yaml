@@ -15,7 +15,7 @@ shared:
         MOLOCH_FILE_NAME: "master"
         GIT_SHALLOW_CLONE: false
         ASAN_OPTIONS: "fast_unwind_on_malloc=0"
-        BUILD_NUM: 2
+        RELEASE_ITERATION: 1
 
 jobs:
     centos-6:
@@ -265,8 +265,8 @@ jobs:
             - npm install license-checker; release/notice.txt.pl /data/moloch NOTICE release/CAPTURENOTICE > /data/moloch/NOTICE.txt
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
-                scl enable rh-ruby23 "/opt/rh/rh-ruby23/root/usr/local/bin/fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration 1 --template-scripts --after-install 'release/afterinstall.sh' --url "https://molo.ch" --description 'Moloch Full Packet System' -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel /data/moloch"
-                scl enable python27 "aws s3 cp moloch-${MOLOCH_VERSION}-${BUILD_NUM}.x86_64.rpm s3://files.molo.ch/builds/centos-6/ --acl public-read"
+                scl enable rh-ruby23 "/opt/rh/rh-ruby23/root/usr/local/bin/fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install 'release/afterinstall.sh' --url "https://molo.ch" --description 'Moloch Full Packet System' -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel /data/moloch"
+                scl enable python27 "aws s3 cp moloch-${MOLOCH_VERSION}-${RELEASE_ITERATION}.x86_64.rpm s3://files.molo.ch/builds/centos-6/ --acl public-read"
                 ls -l *.rpm
         secrets:
             - AWS_ACCESS_KEY_ID
@@ -286,8 +286,8 @@ jobs:
             - npm install license-checker; release/notice.txt.pl /data/moloch NOTICE release/CAPTURENOTICE > /data/moloch/NOTICE.txt
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
-                fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration 1 --template-scripts --after-install "release/afterinstall.sh" --url "https://molo.ch" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /data/moloch
-                aws s3 cp moloch-${MOLOCH_VERSION}-${BUILD_NUM}.x86_64.rpm s3://files.molo.ch/builds/centos-7/ --acl public-read
+                fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://molo.ch" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /data/moloch
+                aws s3 cp moloch-${MOLOCH_VERSION}-${RELEASE_ITERATION}.x86_64.rpm s3://files.molo.ch/builds/centos-7/ --acl public-read
                 ls -l *.rpm
         secrets:
             - AWS_ACCESS_KEY_ID
@@ -307,8 +307,8 @@ jobs:
             - npm install license-checker; release/notice.txt.pl /data/moloch NOTICE release/CAPTURENOTICE > /data/moloch/NOTICE.txt
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
-                fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration 1 --template-scripts --after-install "release/afterinstall.sh" --url "https://molo.ch" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /data/moloch
-                aws s3 cp moloch-${MOLOCH_VERSION}-${BUILD_NUM}.x86_64.rpm s3://files.molo.ch/builds/centos-8/ --acl public-read
+                fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://molo.ch" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /data/moloch
+                aws s3 cp moloch-${MOLOCH_VERSION}-${RELEASE_ITERATION}.x86_64.rpm s3://files.molo.ch/builds/centos-8/ --acl public-read
                 ls -l *.rpm
         secrets:
             - AWS_ACCESS_KEY_ID
@@ -328,9 +328,9 @@ jobs:
 #            - npm install license-checker; release/notice.txt.pl /data/moloch NOTICE release/CAPTURENOTICE > /data/moloch/NOTICE.txt
 #            - build-package: |
 #                export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js`
-#                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration 1 --template-scripts --after-install "release/afterinstall.sh" --url "https://molo.ch" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
+#                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://molo.ch" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
 #
-#                aws s3 cp moloch_${MOLOCH_VERSION}-${BUILD_NUM}_amd64.deb s3://files.molo.ch/builds/ubuntu-14.04/ --acl public-read
+#                aws s3 cp moloch_${MOLOCH_VERSION}-${RELEASE_ITERATION}_amd64.deb s3://files.molo.ch/builds/ubuntu-14.04/ --acl public-read
 #                ls -l *.deb
 #        secrets:
 #            - AWS_ACCESS_KEY_ID
@@ -350,8 +350,8 @@ jobs:
             - npm install license-checker; release/notice.txt.pl /data/moloch NOTICE release/CAPTURENOTICE > /data/moloch/NOTICE.txt
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js`
-                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration 1 --template-scripts --after-install "release/afterinstall.sh" --url "https://molo.ch" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
-                aws s3 cp moloch_${MOLOCH_VERSION}-${BUILD_NUM}_amd64.deb s3://files.molo.ch/builds/ubuntu-16.04/ --acl public-read
+                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://molo.ch" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
+                aws s3 cp moloch_${MOLOCH_VERSION}-${RELEASE_ITERATION}_amd64.deb s3://files.molo.ch/builds/ubuntu-16.04/ --acl public-read
                 ls -l *.deb
         secrets:
             - AWS_ACCESS_KEY_ID
@@ -371,8 +371,8 @@ jobs:
             - npm install license-checker; release/notice.txt.pl /data/moloch NOTICE release/CAPTURENOTICE > /data/moloch/NOTICE.txt
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js`
-                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration 1 --template-scripts --after-install "release/afterinstall.sh" --url "https://molo.ch" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
-                aws s3 cp moloch_${MOLOCH_VERSION}-${BUILD_NUM}_amd64.deb s3://files.molo.ch/builds/ubuntu-18.04/ --acl public-read
+                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://molo.ch" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
+                aws s3 cp moloch_${MOLOCH_VERSION}-${RELEASE_ITERATION}_amd64.deb s3://files.molo.ch/builds/ubuntu-18.04/ --acl public-read
                 ls -l *.deb
         secrets:
             - AWS_ACCESS_KEY_ID
