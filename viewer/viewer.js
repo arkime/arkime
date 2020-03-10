@@ -2849,6 +2849,7 @@ function lookupQueryItems(query, doneCb) {
   finished = 1;
 }
 
+
 //////////////////////////////////////////////////////////////////////////////////
 //// determineQueryTimes(req)
 ////
@@ -5164,9 +5165,17 @@ function buildConnections(req, res, cb) {
   //   3 = 11 = seen during both the "current" time frame and the "baseline" time frame
   // This is only performed where startTime/startTime are defined, and never for "all" time range (date=-1).
   let doBaseline = false;
+  let baselineDate = 0;
   if ((req.query.baseline !== undefined) && (req.query.date !== '-1') &&
       (req.query.startTime !== undefined) && (req.query.stopTime !== undefined)) {
     doBaseline = (String(req.query.baseline) === 'true') ? true : false;
+  }
+  if (doBaseline === true) {
+    // With baselining, req.query.baselineDate can determine baseline time frame (being)
+    // the number of hours prior to the "start" query time, similar to req.query.date.
+    // if unspecified or zero, baseline uses the immediate time frame of the same
+    // duration immediately prior to the req.query.startTime
+    baselineDate = parseInt(req.query.baselineDate || '0', 10);
   }
 
   let dstIsIp = fdst.match(/(\.ip|Ip)$/);
@@ -5254,19 +5263,29 @@ function buildConnections(req, res, cb) {
 
   for (let resultId = 1; resultId <= maxResultId; resultId++) {
 
+    // TODO: remove this debug statement as it's excessive once I figure the async stuff out
+    if (Config.debug) {
+      console.log('buildConnections loop', resultId);
+    }
+
     if (resultId > 1) {
       // replace current time frame start/stop values with baseline time frame start/stop values
-      // TODO: allow specifying arbitrary baseline start/stop times rather than fixed previous time?
       let currentQueryTimes = determineQueryTimes(req);
       if (Config.debug) {
         console.log("buildConnections baseline.0", "startTime", currentQueryTimes[0], "stopTime", currentQueryTimes[1])
       }
       if ((currentQueryTimes[0] !== undefined) && (currentQueryTimes[1] !== undefined)) {
-        let diff = currentQueryTimes[1] - currentQueryTimes[0];
+        // baseline stop time ends 1 second prior to "current" start time
         req.query.stopTime = currentQueryTimes[0]-1;
-        req.query.startTime = req.query.stopTime-diff;
+        if (baselineDate > 0) {
+          // baseline time duration was specified (hours)
+          req.query.startTime = req.query.stopTime - (60 * 60 * baselineDate);
+        } else {
+          // baseline time frame is unspecified, so use the immediate prior time frame of same duration
+          req.query.startTime = req.query.stopTime - (currentQueryTimes[1] - currentQueryTimes[0]);
+        }
         if (Config.debug) {
-          console.log("buildConnections baseline.1", "startTime", req.query.startTime, "stopTime", req.query.stopTime, "diff", diff)
+          console.log("buildConnections baseline.1", "startTime", req.query.startTime, "stopTime", req.query.stopTime, "diff", (req.query.stopTime - req.query.startTime))
         }
       }
     }
@@ -5292,16 +5311,17 @@ function buildConnections(req, res, cb) {
       if (req.query.cancelId) { options = { cancelId: `${req.user.userId}::${req.query.cancelId}` }; }
 
       if (Config.debug) {
-        console.log('buildConnections query', JSON.stringify(query, null, 2));
+        console.log('buildConnections query', resultId, JSON.stringify(query, null, 2));
       }
 
       Db.searchPrimary(indices, 'session', query, options, function (err, graph) {
         if (Config.debug) {
-          console.log('buildConnections result', JSON.stringify(graph, null, 2));
+          console.log('buildConnections hits', resultId, graph.hits.hits);
+          console.log('buildConnections result', resultId, JSON.stringify(graph, null, 2));
         }
 
         if (err || graph.error) {
-          console.log('Build Connections ERROR', err, graph.error);
+          console.log('Build Connections ERROR', resultId, err, graph.error);
           return cb(err || graph.error);
         }
 
@@ -5343,6 +5363,9 @@ function buildConnections(req, res, cb) {
           // accumulate graph.hits.total into totalHits so that recordsFiltered
           // represents both current and baseline queries if baseline is enabled
           totalHits += graph.hits.total;
+          if (Config.debug) {
+            console.log(resultId, 'totalHits', totalHits);
+          }
 
           // only calculate final return values if we are in the last loop iteration
           if (resultId >= maxResultId) {

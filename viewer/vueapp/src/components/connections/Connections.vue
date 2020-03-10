@@ -589,6 +589,7 @@ export default {
         minConn: this.$route.query.minConn || 1,
         baseline: String(this.$route.query.baseline) || 'false',
         baselineVis: this.$route.query.baselineVis || 'all',
+        baselineDate: this.$route.query.baselineDate || 0,
         nodeDist: this.$route.query.nodeDist || 40,
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined
