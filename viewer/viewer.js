@@ -8651,12 +8651,21 @@ app.get('/cyberchef/:nodeName/session/:id', checkPermissions(['webEnabled']), ch
 app.use(['/cyberchef/', '/modules/'], unsafeInlineCspHeader, (req, res) => {
   let found = false;
   let path = req.path.substring(1);
+
   if (req.baseUrl === '/modules') {
     res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
     path = 'modules/' + path;
   }
   if (path === '') {
     path = `CyberChef_v${internals.CYBERCHEFVERSION}.html`;
+  }
+
+  if (path === "assets/main.js") {
+    res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
+  } else if (path === "assets/main.css") {
+    res.setHeader('Content-Type', 'text/css');
+  } else if (path.endsWith('.png')) {
+    res.setHeader('Content-Type', 'image/png');
   }
 
   fs.createReadStream(`public/CyberChef_v${internals.CYBERCHEFVERSION}.zip`)
