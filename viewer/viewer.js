@@ -5234,6 +5234,7 @@ async function buildConnections(req, res, cb) {
     let buildQueryPromise = new Promise((resolve, reject) => {
       buildSessionQuery(req, function(bsqErr, query, indices) {
         if (bsqErr) {
+          console.log('ERROR - buildConnections -> buildSessionQuery', bsqErr);
           reject(bsqErr);
         }
         query.query.bool.filter.push({exists: {field: req.query.srcField}});
@@ -5254,7 +5255,12 @@ async function buildConnections(req, res, cb) {
       }, tmpReqQuery);
     });
 
-    queryParams.push(await buildQueryPromise);
+    try {
+      queryParams.push(await buildQueryPromise);
+    } catch(err) {
+      console.log('ERROR - buildConnections -> buildSessionQuery catch', err);
+      return cb(err, null, null, null);
+    }
   } // for loop populating queryParams
 
   // updateValues and process are for aggregating query results into their final form
@@ -5331,7 +5337,7 @@ async function buildConnections(req, res, cb) {
     searchDbPromises.push(new Promise((resolve, reject) => {
       Db.searchPrimary(queryParam[1], 'session', queryParam[0], options, function (err, graph) {
         if (err || graph.error) {
-          console.log('Build Connections ERROR', resultId, err, graph.error);
+          console.log('ERROR - buildConnections -> Db.searchPrimary', err, graph.error);
           reject(err ? err : graph.error);
         } else {
           resolve(graph);
@@ -5426,7 +5432,7 @@ async function buildConnections(req, res, cb) {
     return cb(null, nodes, links, totalHits);
 
   }).catch(err => {
-    console.log('ERROR - buildConnections -> Db.searchPrimary', err);
+    console.log('ERROR - buildConnections -> Db.searchPrimary catch', err);
     return cb(err, null, null, null);
   }); // Promise.all(searchDbPromises)
 } // buildConnections
