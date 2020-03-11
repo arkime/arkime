@@ -2851,44 +2851,41 @@ function lookupQueryItems(query, doneCb) {
 
 
 //////////////////////////////////////////////////////////////////////////////////
-//// determineQueryTimes(req)
+//// determineQueryTimes(reqQuery)
 ////
-//// Returns [startTimeSec, stopTimeSec, interval] using values from req.query.date,
-////   req.query.startTime, req.query.stopTime, req.query.interval, and
-////   req.query.segments.
+//// Returns [startTimeSec, stopTimeSec, interval] using values from reqQuery.date,
+////   reqQuery.startTime, reqQuery.stopTime, reqQuery.interval, and
+////   reqQuery.segments.
 ////
 //// This code was factored out from buildSessionQuery.
 //////////////////////////////////////////////////////////////////////////////////
-function determineQueryTimes (req) {
+function determineQueryTimes (reqQuery) {
   let startTimeSec = undefined;
   let stopTimeSec = undefined;
   let interval = 60*60;
 
   if (Config.debug) {
-    console.log("determineQueryTimes", "req.query.date", req.query.date,
-                "req.query.segments", req.query.segments,
-                "req.query.startTime", req.query.startTime,
-                "req.query.stopTime", req.query.stopTime)
+    console.log("determineQueryTimes<-", reqQuery)
   }
 
-  if ((req.query.date && req.query.date === '-1') ||
-      (req.query.segments && req.query.segments === "all")) {
+  if ((reqQuery.date && reqQuery.date === '-1') ||
+      (reqQuery.segments && reqQuery.segments === "all")) {
     interval = 60*60; // Hour to be safe
 
-  } else if ((req.query.startTime !== undefined) && (req.query.stopTime !== undefined)) {
-    if (! /^[0-9]+$/.test(req.query.startTime)) {
-      startTimeSec = Date.parse(req.query.startTime.replace('+', ' ')) / 1000;
+  } else if ((reqQuery.startTime !== undefined) && (reqQuery.stopTime !== undefined)) {
+    if (! /^[0-9]+$/.test(reqQuery.startTime)) {
+      startTimeSec = Date.parse(reqQuery.startTime.replace('+', ' ')) / 1000;
     } else {
-      startTimeSec = parseInt(req.query.startTime, 10);
+      startTimeSec = parseInt(reqQuery.startTime, 10);
     }
 
-    if (! /^[0-9]+$/.test(req.query.stopTime)) {
-      stopTimeSec = Date.parse(req.query.stopTime.replace('+', ' ')) / 1000;
+    if (! /^[0-9]+$/.test(reqQuery.stopTime)) {
+      stopTimeSec = Date.parse(reqQuery.stopTime.replace('+', ' ')) / 1000;
     } else {
-      stopTimeSec = parseInt(req.query.stopTime, 10);
+      stopTimeSec = parseInt(reqQuery.stopTime, 10);
     }
 
-    var diff = req.query.stopTime - req.query.startTime;
+    var diff = reqQuery.stopTime - reqQuery.startTime;
     if (diff < 30*60) {
       interval = 1; // second
     } else if (diff <= 5*24*60*60) {
@@ -2898,7 +2895,7 @@ function determineQueryTimes (req) {
     }
 
   } else {
-    let queryDate = req.query.date || 1;
+    let queryDate = reqQuery.date || 1;
     startTimeSec = (Math.floor(Date.now() / 1000) - 60*60*parseInt(queryDate, 10));
     stopTimeSec = Date.now()/1000;
 
@@ -2909,7 +2906,7 @@ function determineQueryTimes (req) {
     }
   }
 
-  switch (req.query.interval) {
+  switch (reqQuery.interval) {
     case 'second':
       interval = 1;
       break;
@@ -2928,29 +2925,31 @@ function determineQueryTimes (req) {
   }
 
   if (Config.debug) {
-    console.log("determineQueryTimes", "startTimeSec", startTimeSec, "stopTimeSec", stopTimeSec, "interval", interval)
+    console.log("determineQueryTimes->", "startTimeSec", startTimeSec, "stopTimeSec", stopTimeSec, "interval", interval)
   }
 
   return [startTimeSec, stopTimeSec, interval];
 }
 
-function buildSessionQuery (req, buildCb) {
+function buildSessionQuery (req, buildCb, queryOverride=null) {
   // validate time limit is not exceeded
   let timeLimitExceeded = false;
   var interval;
 
-  // determineQueryTimes calculates startTime, stopTime, and interval from req.query
-  let startAndStopParams = determineQueryTimes(req);
-  if (startAndStopParams[0] !== undefined) req.query.startTime = startAndStopParams[0];
-  if (startAndStopParams[1] !== undefined) req.query.stopTime = startAndStopParams[1];
+  let reqQuery = queryOverride ? queryOverride : req.query;
+
+  // determineQueryTimes calculates startTime, stopTime, and interval from reqQuery
+  let startAndStopParams = determineQueryTimes(reqQuery);
+  if (startAndStopParams[0] !== undefined) reqQuery.startTime = startAndStopParams[0];
+  if (startAndStopParams[1] !== undefined) reqQuery.stopTime = startAndStopParams[1];
   interval = startAndStopParams[2];
 
-  if (parseInt(req.query.date) > parseInt(req.user.timeLimit) ||
-    (req.query.date === '-1') && req.user.timeLimit) {
+  if (parseInt(reqQuery.date) > parseInt(req.user.timeLimit) ||
+    (reqQuery.date === '-1') && req.user.timeLimit) {
     timeLimitExceeded = true;
 
-  } else if ((req.query.startTime) && (req.query.stopTime) && (req.user.timeLimit) &&
-             ((req.query.stopTime - req.query.startTime) / 3600 > req.user.timeLimit)) {
+  } else if ((reqQuery.startTime) && (reqQuery.stopTime) && (req.user.timeLimit) &&
+             ((reqQuery.stopTime - reqQuery.startTime) / 3600 > req.user.timeLimit)) {
       timeLimitExceeded = true;
   }
 
@@ -2959,9 +2958,9 @@ function buildSessionQuery (req, buildCb) {
     return buildCb(`User time limit (${req.user.timeLimit} hours) exceeded`, {});
   }
 
-  var limit = Math.min(2000000, +req.query.length || +req.query.iDisplayLength || 100);
+  var limit = Math.min(2000000, +reqQuery.length || +reqQuery.iDisplayLength || 100);
 
-  var query = {from: req.query.start || req.query.iDisplayStart || 0,
+  var query = {from: reqQuery.start || reqQuery.iDisplayStart || 0,
                size: limit,
                timeout: internals.esQueryTimeout,
                query: {bool: {filter: []}}
@@ -2971,60 +2970,60 @@ function buildSessionQuery (req, buildCb) {
     delete query.from;
   }
 
-  if (req.query.strictly === "true") {
-    req.query.bounding = "both";
+  if (reqQuery.strictly === "true") {
+    reqQuery.bounding = "both";
   }
 
-  if ((req.query.date && req.query.date === '-1') ||
-      (req.query.segments && req.query.segments === "all")) {
+  if ((reqQuery.date && reqQuery.date === '-1') ||
+      (reqQuery.segments && reqQuery.segments === "all")) {
     // interval is already assigned above from result of determineQueryTimes
 
-  } else if (req.query.startTime !== undefined && req.query.stopTime) {
-    switch (req.query.bounding) {
+  } else if (reqQuery.startTime !== undefined && reqQuery.stopTime) {
+    switch (reqQuery.bounding) {
     case "first":
-      query.query.bool.filter.push({range: {firstPacket: {gte: req.query.startTime*1000, lte: req.query.stopTime*1000}}});
+      query.query.bool.filter.push({range: {firstPacket: {gte: reqQuery.startTime*1000, lte: reqQuery.stopTime*1000}}});
       break;
     default:
     case "last":
-      query.query.bool.filter.push({range: {lastPacket: {gte: req.query.startTime*1000, lte: req.query.stopTime*1000}}});
+      query.query.bool.filter.push({range: {lastPacket: {gte: reqQuery.startTime*1000, lte: reqQuery.stopTime*1000}}});
       break;
     case "both":
-      query.query.bool.filter.push({range: {firstPacket: {gte: req.query.startTime*1000}}});
-      query.query.bool.filter.push({range: {lastPacket: {lte: req.query.stopTime*1000}}});
+      query.query.bool.filter.push({range: {firstPacket: {gte: reqQuery.startTime*1000}}});
+      query.query.bool.filter.push({range: {lastPacket: {lte: reqQuery.stopTime*1000}}});
       break;
     case "either":
-      query.query.bool.filter.push({range: {firstPacket: {lte: req.query.stopTime*1000}}});
-      query.query.bool.filter.push({range: {lastPacket: {gte: req.query.startTime*1000}}});
+      query.query.bool.filter.push({range: {firstPacket: {lte: reqQuery.stopTime*1000}}});
+      query.query.bool.filter.push({range: {lastPacket: {gte: reqQuery.startTime*1000}}});
       break;
     case "database":
-      query.query.bool.filter.push({range: {timestamp: {gte: req.query.startTime*1000, lte: req.query.stopTime*1000}}});
+      query.query.bool.filter.push({range: {timestamp: {gte: reqQuery.startTime*1000, lte: reqQuery.stopTime*1000}}});
       break;
     }
 
   } else {
-    switch (req.query.bounding) {
+    switch (reqQuery.bounding) {
     case "first":
-      query.query.bool.filter.push({range: {firstPacket: {gte: req.query.startTime*1000}}});
+      query.query.bool.filter.push({range: {firstPacket: {gte: reqQuery.startTime*1000}}});
       break;
     default:
     case "both":
     case "last":
-      query.query.bool.filter.push({range: {lastPacket: {gte: req.query.startTime*1000}}});
+      query.query.bool.filter.push({range: {lastPacket: {gte: reqQuery.startTime*1000}}});
       break;
     case "either":
-      query.query.bool.filter.push({range: {firstPacket: {lte: req.query.stopTime*1000}}});
-      query.query.bool.filter.push({range: {lastPacket: {gte: req.query.startTime*1000}}});
+      query.query.bool.filter.push({range: {firstPacket: {lte: reqQuery.stopTime*1000}}});
+      query.query.bool.filter.push({range: {lastPacket: {gte: reqQuery.startTime*1000}}});
       break;
     case "database":
-      query.query.bool.filter.push({range: {timestamp: {gte: req.query.startTime*1000}}});
+      query.query.bool.filter.push({range: {timestamp: {gte: reqQuery.startTime*1000}}});
       break;
     }
   }
 
-  if (req.query.facets === '1') {
+  if (reqQuery.facets === '1') {
     query.aggregations = {};
     // only add map aggregations if requested
-    if (req.query.map === 'true') {
+    if (reqQuery.map === 'true') {
       query.aggregations = {
         mapG1: { terms: { field: 'srcGEO', size: 1000, min_doc_count: 1} },
         mapG2: { terms: { field: 'dstGEO', size: 1000, min_doc_count: 1} },
@@ -3042,7 +3041,7 @@ function buildSessionQuery (req, buildCb) {
       }
     };
 
-    switch (req.query.bounding) {
+    switch (reqQuery.bounding) {
     case 'first':
        query.aggregations.dbHisto.histogram = { field:'firstPacket', interval:interval*1000, min_doc_count:1 };
       break;
@@ -3055,7 +3054,7 @@ function buildSessionQuery (req, buildCb) {
     }
   }
 
-  addSortToQuery(query, req.query, 'firstPacket');
+  addSortToQuery(query, reqQuery, 'firstPacket');
 
   let err = null;
 
@@ -3068,16 +3067,16 @@ function buildSessionQuery (req, buildCb) {
     lookupTypeMap: internals.lookupTypeMap
   };
 
-  if (req.query.expression) {
-    //req.query.expression = req.query.expression.replace(/\\/g, "\\\\");
+  if (reqQuery.expression) {
+    //reqQuery.expression = reqQuery.expression.replace(/\\/g, "\\\\");
     try {
-      query.query.bool.filter.push(molochparser.parse(req.query.expression));
+      query.query.bool.filter.push(molochparser.parse(reqQuery.expression));
     } catch (e) {
       err = e;
     }
   }
 
-  if (!err && req.query.view) {
+  if (!err && reqQuery.view) {
     addViewToQuery(req, query, continueBuildQuery, buildCb);
   } else {
     continueBuildQuery(req, query, err, buildCb);
@@ -5140,7 +5139,7 @@ app.get('/dns.json', [noCacheJson, logAction()], function(req, res) {
   });
 });
 
-function buildConnections(req, res, cb) {
+async function buildConnections(req, res, cb) {
 
   let dstipport;
   if (req.query.dstField === 'ip.dst:port') {
@@ -5166,6 +5165,7 @@ function buildConnections(req, res, cb) {
   // This is only performed where startTime/startTime are defined, and never for "all" time range (date=-1).
   let doBaseline = false;
   let baselineDate = 0;
+  let currentQueryTimes = null;
   if ((req.query.baseline !== undefined) && (req.query.date !== '-1') &&
       (req.query.startTime !== undefined) && (req.query.stopTime !== undefined)) {
     doBaseline = (String(req.query.baseline) === 'true') ? true : false;
@@ -5176,7 +5176,15 @@ function buildConnections(req, res, cb) {
     // if unspecified or zero, baseline uses the immediate time frame of the same
     // duration immediately prior to the req.query.startTime
     baselineDate = parseInt(req.query.baselineDate || '0', 10);
+    currentQueryTimes = determineQueryTimes(req.query);
   }
+
+  // get the requested fields
+  let fields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
+  if (req.query.fields) { fields = req.query.fields.split(','); }
+
+  let options;
+  if (req.query.cancelId) { options = { cancelId: `${req.user.userId}::${req.query.cancelId}` }; }
 
   let dstIsIp = fdst.match(/(\.ip|Ip)$/);
 
@@ -5185,6 +5193,71 @@ function buildConnections(req, res, cb) {
   let nodes = [];
   let links = [];
   let totalHits = 0;
+
+  // This loop (which handles buildSessionQuery->searchPrimary->process) will be run
+  //   once or twice, depending on if baseline is enabled:
+  //   1. for the "current" time frame, the one specified originally in req.query
+  //   2. for the "baseline" time frame immediately prior to the time frame of "1."
+  //      (only if baseline is enabled)
+  // The call to process() will ensure the resultId value is OR'ed into the .inresult
+  //   attribute of each node.
+  let maxResultId = 1 + ((doBaseline === false) ? 0 : 1);
+
+  let queryParams = [];
+
+  for (let resultId = 1; resultId <= maxResultId; resultId++) {
+
+    // use a copy of req.query as we will modify the startTime/stopTime if we are doing a baseline query
+    let tmpReqQuery = JSON.parse(JSON.stringify(req.query));
+
+    if (resultId > 1) {
+      // replace current time frame start/stop values with baseline time frame start/stop values
+      if (Config.debug) {
+        console.log("buildConnections baseline.0", "startTime", currentQueryTimes[0], "stopTime", currentQueryTimes[1])
+      }
+      if ((currentQueryTimes[0] !== undefined) && (currentQueryTimes[1] !== undefined)) {
+        // baseline stop time ends 1 second prior to "current" start time
+        tmpReqQuery.stopTime = currentQueryTimes[0]-1;
+        if (baselineDate > 0) {
+          // baseline time duration was specified (hours)
+          tmpReqQuery.startTime = tmpReqQuery.stopTime - (60 * 60 * baselineDate);
+        } else {
+          // baseline time frame is unspecified, so use the immediate prior time frame of same duration
+          tmpReqQuery.startTime = tmpReqQuery.stopTime - (currentQueryTimes[1] - currentQueryTimes[0]);
+        }
+        if (Config.debug) {
+          console.log("buildConnections baseline.1", "startTime", tmpReqQuery.startTime, "stopTime", tmpReqQuery.stopTime, "diff", (tmpReqQuery.stopTime - tmpReqQuery.startTime))
+        }
+      }
+    } // resultId > 1 (calculating baseline query time frame)
+
+    let buildQueryPromise = new Promise((resolve, reject) => {
+      buildSessionQuery(req, function(bsqErr, query, indices) {
+        if (bsqErr) {
+          reject(bsqErr);
+        }
+        query.query.bool.filter.push({exists: {field: req.query.srcField}});
+        query.query.bool.filter.push({exists: {field: req.query.dstField}});
+
+        query._source = fields;
+        query.docvalue_fields = [fsrc, fdst];
+
+        if (dstipport) {
+          query._source.push('dstPort');
+        }
+
+        if (Config.debug) {
+          console.log('buildConnections query', resultId, JSON.stringify(query, null, 2));
+        }
+
+        resolve([JSON.parse(JSON.stringify(query)), JSON.parse(JSON.stringify(indices))]);
+      }, tmpReqQuery);
+    });
+
+    queryParams.push(await buildQueryPromise);
+  } // for loop populating queryParams
+
+  // updateValues and process are for aggregating query results into their final form
 
   let dbFieldsMap = Config.getDBFieldsMap();
   function updateValues (data, property, fields) {
@@ -5252,159 +5325,111 @@ function buildConnections(req, res, cb) {
     updateValues(f, connects[linkId], fields);
   }
 
-  // This loop (which handles buildSessionQuery->searchPrimary->process) will be run
-  //   once or twice, depending on if baseline is enabled:
-  //   1. for the "current" time frame, the one specified originally in req.query
-  //   2. for the "baseline" time frame immediately prior to the time frame of "1."
-  //      (only if baseline is enabled)
-  // The call to process() will ensure the resultId value is OR'ed into the .inresult
-  //   attribute of each node.
-  let maxResultId = 1 + ((doBaseline === false) ? 0 : 1);
-
-  for (let resultId = 1; resultId <= maxResultId; resultId++) {
-
-    // TODO: remove this debug statement as it's excessive once I figure the async stuff out
-    if (Config.debug) {
-      console.log('buildConnections loop', resultId);
-    }
-
-    if (resultId > 1) {
-      // replace current time frame start/stop values with baseline time frame start/stop values
-      let currentQueryTimes = determineQueryTimes(req);
-      if (Config.debug) {
-        console.log("buildConnections baseline.0", "startTime", currentQueryTimes[0], "stopTime", currentQueryTimes[1])
-      }
-      if ((currentQueryTimes[0] !== undefined) && (currentQueryTimes[1] !== undefined)) {
-        // baseline stop time ends 1 second prior to "current" start time
-        req.query.stopTime = currentQueryTimes[0]-1;
-        if (baselineDate > 0) {
-          // baseline time duration was specified (hours)
-          req.query.startTime = req.query.stopTime - (60 * 60 * baselineDate);
-        } else {
-          // baseline time frame is unspecified, so use the immediate prior time frame of same duration
-          req.query.startTime = req.query.stopTime - (currentQueryTimes[1] - currentQueryTimes[0]);
-        }
-        if (Config.debug) {
-          console.log("buildConnections baseline.1", "startTime", req.query.startTime, "stopTime", req.query.stopTime, "diff", (req.query.stopTime - req.query.startTime))
-        }
-      }
-    }
-
-    buildSessionQuery(req, function(bsqErr, query, indices) {
-      if (bsqErr) {
-        return cb(bsqErr, 0, 0, 0);
-      }
-      query.query.bool.filter.push({exists: {field: req.query.srcField}});
-      query.query.bool.filter.push({exists: {field: req.query.dstField}});
-
-      // get the requested fields
-      let fields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
-      if (req.query.fields) { fields = req.query.fields.split(','); }
-      query._source = fields;
-      query.docvalue_fields = [fsrc, fdst];
-
-      if (dstipport) {
-        query._source.push('dstPort');
-      }
-
-      let options;
-      if (req.query.cancelId) { options = { cancelId: `${req.user.userId}::${req.query.cancelId}` }; }
-
-      if (Config.debug) {
-        console.log('buildConnections query', resultId, JSON.stringify(query, null, 2));
-      }
-
-      Db.searchPrimary(indices, 'session', query, options, function (err, graph) {
-        if (Config.debug) {
-          console.log('buildConnections hits', resultId, graph.hits.hits);
-          console.log('buildConnections result', resultId, JSON.stringify(graph, null, 2));
-        }
-
+  // prepare and execute the Db.searchPrimary query (or queries, if baseline is enabled)
+  let searchDbPromises = [];
+  queryParams.forEach(queryParam => {
+    searchDbPromises.push(new Promise((resolve, reject) => {
+      Db.searchPrimary(queryParam[1], 'session', queryParam[0], options, function (err, graph) {
         if (err || graph.error) {
           console.log('Build Connections ERROR', resultId, err, graph.error);
-          return cb(err || graph.error);
+          reject(err ? err : graph.error);
+        } else {
+          resolve(graph);
+        }
+      });
+    }));
+  });
+
+  Promise.all(searchDbPromises).then((resultSetGraphs) => {
+
+    // resultSetGraphs[0] is "current" time frame results, while
+    // resultSetGraphs[1] is "baseline" time frame results if baseline is enabled
+
+    for (var r = 0, rlen = resultSetGraphs.length; r < rlen; r++) {
+      let resultId = r + 1;
+
+      if (Config.debug) {
+        console.log('buildConnections result', resultId, JSON.stringify(resultSetGraphs[r], null, 2));
+      }
+
+      // accumulate resultSetGraphs[r].hits.total into totalHits so that recordsFiltered
+      // represents both current and baseline queries if baseline is enabled
+      totalHits += resultSetGraphs[r].hits.total;
+
+      // process each hit from each result set
+      async.eachLimit(resultSetGraphs[r].hits.hits, 10, function (hit, hitCb) {
+        let f = hit._source;
+        f = flattenFields(f);
+
+        let asrc = hit.fields[fsrc];
+        let adst = hit.fields[fdst];
+
+        if (asrc === undefined || adst === undefined) {
+          return setImmediate(hitCb);
         }
 
-        async.eachLimit(graph.hits.hits, 10, function (hit, hitCb) {
-          let f = hit._source;
-          f = flattenFields(f);
+        if (!Array.isArray(asrc)) {
+          asrc = [asrc];
+        }
 
-          let asrc = hit.fields[fsrc];
-          let adst = hit.fields[fdst];
+        if (!Array.isArray(adst)) {
+          adst = [adst];
+        }
 
-          if (asrc === undefined || adst === undefined) {
-            return setImmediate(hitCb);
-          }
-
-          if (!Array.isArray(asrc)) {
-            asrc = [asrc];
-          }
-
-          if (!Array.isArray(adst)) {
-            adst = [adst];
-          }
-
-          for (let vsrc of asrc) {
-            for (let vdst of adst) {
-              if (dstIsIp && dstipport) {
-                if (vdst.includes(':')) {
-                  vdst += '.' + f.dstPort;
-                } else {
-                  vdst += ':' + f.dstPort;
-                }
-              }
-              process(vsrc, vdst, f, fields, resultId);
-            }
-          }
-          setImmediate(hitCb);
-
-        }, function (err) {
-
-          // accumulate graph.hits.total into totalHits so that recordsFiltered
-          // represents both current and baseline queries if baseline is enabled
-          totalHits += graph.hits.total;
-          if (Config.debug) {
-            console.log(resultId, 'totalHits', totalHits);
-          }
-
-          // only calculate final return values if we are in the last loop iteration
-          if (resultId >= maxResultId) {
-            let nodeKeys = Object.keys(nodesHash);
-            if (Config.get('regressionTests', false)) {
-              nodeKeys = nodeKeys.sort(function (a,b) { return nodesHash[a].id.localeCompare(nodesHash[b].id); });
-            }
-            for (let node of nodeKeys) {
-              if (nodesHash[node].cnt < minConn) {
-                nodesHash[node].pos = -1;
+        for (let vsrc of asrc) {
+          for (let vdst of adst) {
+            if (dstIsIp && dstipport) {
+              if (vdst.includes(':')) {
+                vdst += '.' + f.dstPort;
               } else {
-                nodesHash[node].pos = nodes.length;
-                nodes.push(nodesHash[node]);
+                vdst += ':' + f.dstPort;
               }
             }
-
-            for (let key in connects) {
-              var c = connects[key];
-              c.source = nodesHash[c.source].pos;
-              c.target = nodesHash[c.target].pos;
-              if (c.source >= 0 && c.target >= 0) {
-                links.push(connects[key]);
-              }
-            }
-
-            if (Config.debug) {
-              console.log('nodesHash', nodesHash);
-              console.log('connects', connects);
-              console.log('nodes', nodes.length, nodes);
-              console.log('links', links.length, links);
-            }
-
-            return cb(null, nodes, links, totalHits);
+            process(vsrc, vdst, f, fields, resultId);
           }
-        });
+        }
+        setImmediate(hitCb);
       });
-    });
-  }
-}
+    } // for r loop over resultSetGraphs
+
+    // aggregate final return values for nodes and links
+
+    let nodeKeys = Object.keys(nodesHash);
+    if (Config.get('regressionTests', false)) {
+      nodeKeys = nodeKeys.sort(function (a,b) { return nodesHash[a].id.localeCompare(nodesHash[b].id); });
+    }
+    for (let node of nodeKeys) {
+      if (nodesHash[node].cnt < minConn) {
+        nodesHash[node].pos = -1;
+      } else {
+        nodesHash[node].pos = nodes.length;
+        nodes.push(nodesHash[node]);
+      }
+    }
+
+    for (let key in connects) {
+      var c = connects[key];
+      c.source = nodesHash[c.source].pos;
+      c.target = nodesHash[c.target].pos;
+      if (c.source >= 0 && c.target >= 0) {
+        links.push(connects[key]);
+      }
+    }
+
+    if (Config.debug) {
+      console.log('nodesHash', nodesHash);
+      console.log('connects', connects);
+      console.log('nodes', nodes.length, nodes);
+      console.log('links', links.length, links);
+    }
+
+    return cb(null, nodes, links, totalHits);
+
+  }).catch(err => {
+    console.log('ERROR - buildConnections -> Db.searchPrimary', err);
+    return cb(err, null, null, null);
+  }); // Promise.all(searchDbPromises)
+} // buildConnections
 
 app.get('/connections.json', [noCacheJson, recordResponseTime, logAction('connections'), setCookie], (req, res) => {
   let health;
