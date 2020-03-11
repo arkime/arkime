@@ -65,7 +65,7 @@ var app = express();
 //// Config
 //////////////////////////////////////////////////////////////////////////////////
 var internals = {
-  CYBERCHEFVERSION: '9.11.7',
+  CYBERCHEFVERSION: '9.16.2',
   elasticBase: Config.getArray('elasticsearch', ',', 'http://localhost:9200'),
   esQueryTimeout: Config.get("elasticsearchTimeout", 300) + 's',
   esScrollTimeout: Config.get("elasticsearchScrollTimeout", 900) + 's',
