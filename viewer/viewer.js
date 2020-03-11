@@ -5353,17 +5353,18 @@ async function buildConnections(req, res, cb) {
 
     for (var r = 0, rlen = resultSetGraphs.length; r < rlen; r++) {
       let resultId = r + 1;
+      let graph = resultSetGraphs[r];
 
       if (Config.debug) {
-        console.log('buildConnections result', resultId, JSON.stringify(resultSetGraphs[r], null, 2));
+        console.log('buildConnections result', resultId, JSON.stringify(graph, null, 2));
       }
 
       // accumulate resultSetGraphs[r].hits.total into totalHits so that recordsFiltered
       // represents both current and baseline queries if baseline is enabled
-      totalHits += resultSetGraphs[r].hits.total;
+      totalHits += graph.hits.total;
 
       // process each hit from each result set
-      async.eachLimit(resultSetGraphs[r].hits.hits, 10, function (hit, hitCb) {
+      async.eachLimit(graph.hits.hits, 10, function (hit, hitCb) {
         let f = hit._source;
         f = flattenFields(f);
 
@@ -5395,6 +5396,12 @@ async function buildConnections(req, res, cb) {
           }
         }
         setImmediate(hitCb);
+
+      }, function (err) {
+        if (err) {
+          console.log('ERROR - buildConnections -> async.eachLimit', err);
+          return cb(err, null, null, null);
+        }
       });
     } // for r loop over resultSetGraphs
 
