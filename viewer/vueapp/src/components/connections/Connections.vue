@@ -1072,8 +1072,8 @@ export default {
           return nodeFillColors[d.type];
         })
         .attr('r', this.calculateNodeWeight)
-        .attr('stroke', this.calculateNodeStrokeColor)
-        .attr('stroke-width', this.calculateNodeStrokeWidth)
+        .attr('stroke', this.foregroundColor)
+        .attr('stroke-width', 0.5)
         .attr('visibility', this.calculateNodeBaselineVisibility)
         .call(d3.drag()
           .on('start', dragstarted)
@@ -1185,48 +1185,6 @@ export default {
     calculateNodeLabelOffset: function (nl) {
       let val = this.calculateNodeWeight(nl);
       return 2 + val;
-    },
-    calculateNodeStrokeColor: function (n) {
-      let val = this.foregroundColor;
-      return val;
-      // TODO: for now I've disabled stroke colors as I think it was,
-      // visually confusing I may turn it back on for baseline
-      // if (this.query.baselineDate !== '0') {
-      //   switch (n.inresult) {
-      //     case 3:
-      //       // "both" (in actual and baseline result set)
-      //       val = this.foregroundColor;
-      //       break;
-      //     case 2:
-      //       // "old" (in baseline, not in actual result set)
-      //       val = this.highlightTertiaryColor;
-      //       break;
-      //     case 1:
-      //       // "new" (in actual, not in baseline result set)
-      //       val = this.highlightPrimaryColor;
-      //       break;
-      //   }
-      // }
-      // return val;
-    },
-    calculateNodeStrokeWidth: function (n) {
-      let val = 0.5;
-      return val;
-      // TODO: for now I've disabled stroke width as I think it was,
-      // visually confusing I may turn it back on for baseline
-      // if (this.query.baselineDate !== '0') {
-      //   switch (n.inresult) {
-      //     case 2:
-      //       // "old" (in baseline, not in actual result set)
-      //       val = 1.00;
-      //       break;
-      //     case 1:
-      //       // "new" (in actual, not in baseline result set)
-      //       val = 1.25;
-      //       break;
-      //   }
-      // }
-      // return val;
     },
     calculateNodeLabelWeight: function (n) {
       let val = 'normal';
