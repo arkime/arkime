@@ -5256,6 +5256,7 @@ async function buildConnections(req, res, cb) {
     });
 
     try {
+      // queryParams: [query, indices] or [[query, indices], [query, indices]]
       queryParams.push(await buildQueryPromise);
     } catch(err) {
       console.log('ERROR - buildConnections -> buildSessionQuery catch', err);
@@ -5264,7 +5265,6 @@ async function buildConnections(req, res, cb) {
   } // for loop populating queryParams
 
   // updateValues and process are for aggregating query results into their final form
-
   let dbFieldsMap = Config.getDBFieldsMap();
   function updateValues (data, property, fields) {
     for (let i in fields) {
@@ -5348,6 +5348,8 @@ async function buildConnections(req, res, cb) {
 
   Promise.all(searchDbPromises).then((resultSetGraphs) => {
 
+    let resultSetProcessPromises = [];
+
     // resultSetGraphs[0] is "current" time frame results, while
     // resultSetGraphs[1] is "baseline" time frame results if baseline is enabled
 
@@ -5364,84 +5366,96 @@ async function buildConnections(req, res, cb) {
       totalHits += graph.hits.total;
 
       // process each hit from each result set
-      async.eachLimit(graph.hits.hits, 10, function (hit, hitCb) {
-        let f = hit._source;
-        f = flattenFields(f);
+      resultSetProcessPromises.push(new Promise((resolve, reject) => {
+        async.eachLimit(graph.hits.hits, 10, function (hit, hitCb) {
+          let f = hit._source;
+          f = flattenFields(f);
 
-        let asrc = hit.fields[fsrc];
-        let adst = hit.fields[fdst];
+          let asrc = hit.fields[fsrc];
+          let adst = hit.fields[fdst];
 
-        if (asrc === undefined || adst === undefined) {
-          return setImmediate(hitCb);
-        }
-
-        if (!Array.isArray(asrc)) {
-          asrc = [asrc];
-        }
-
-        if (!Array.isArray(adst)) {
-          adst = [adst];
-        }
-
-        for (let vsrc of asrc) {
-          for (let vdst of adst) {
-            if (dstIsIp && dstipport) {
-              if (vdst.includes(':')) {
-                vdst += '.' + f.dstPort;
-              } else {
-                vdst += ':' + f.dstPort;
-              }
-            }
-            process(vsrc, vdst, f, fields, resultId);
+          if (asrc === undefined || adst === undefined) {
+            return setImmediate(hitCb);
           }
-        }
-        setImmediate(hitCb);
 
-      }, function (err) {
-        if (err) {
-          console.log('ERROR - buildConnections -> async.eachLimit', err);
-          return cb(err, null, null, null);
-        }
-      });
+          if (!Array.isArray(asrc)) {
+            asrc = [asrc];
+          }
+
+          if (!Array.isArray(adst)) {
+            adst = [adst];
+          }
+
+          for (let vsrc of asrc) {
+            for (let vdst of adst) {
+              if (dstIsIp && dstipport) {
+                if (vdst.includes(':')) {
+                  vdst += '.' + f.dstPort;
+                } else {
+                  vdst += ':' + f.dstPort;
+                }
+              }
+              process(vsrc, vdst, f, fields, resultId);
+            }
+          }
+          setImmediate(hitCb);
+
+        }, function (err) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(null);
+          }
+        }); // async.eachLimit
+
+      })); // resultSetProcessPromises.push(new...)
+
     } // for r loop over resultSetGraphs
 
-    // aggregate final return values for nodes and links
+    // resolve result sets processing and aggregate final return values for nodes and links
+    Promise.all(resultSetProcessPromises).then((resultSetProcessErrs) => {
 
-    let nodeKeys = Object.keys(nodesHash);
-    if (Config.get('regressionTests', false)) {
-      nodeKeys = nodeKeys.sort(function (a,b) { return nodesHash[a].id.localeCompare(nodesHash[b].id); });
-    }
-    for (let node of nodeKeys) {
-      if (nodesHash[node].cnt < minConn) {
-        nodesHash[node].pos = -1;
-      } else {
-        nodesHash[node].pos = nodes.length;
-        nodes.push(nodesHash[node]);
+      let nodeKeys = Object.keys(nodesHash);
+      if (Config.get('regressionTests', false)) {
+        nodeKeys = nodeKeys.sort(function (a,b) { return nodesHash[a].id.localeCompare(nodesHash[b].id); });
       }
-    }
-
-    for (let key in connects) {
-      var c = connects[key];
-      c.source = nodesHash[c.source].pos;
-      c.target = nodesHash[c.target].pos;
-      if (c.source >= 0 && c.target >= 0) {
-        links.push(connects[key]);
+      for (let node of nodeKeys) {
+        if (nodesHash[node].cnt < minConn) {
+          nodesHash[node].pos = -1;
+        } else {
+          nodesHash[node].pos = nodes.length;
+          nodes.push(nodesHash[node]);
+        }
       }
-    }
 
-    if (Config.debug) {
-      console.log('nodesHash', nodesHash);
-      console.log('connects', connects);
-      console.log('nodes', nodes.length, nodes);
-      console.log('links', links.length, links);
-    }
+      for (let key in connects) {
+        var c = connects[key];
+        c.source = nodesHash[c.source].pos;
+        c.target = nodesHash[c.target].pos;
+        if (c.source >= 0 && c.target >= 0) {
+          links.push(connects[key]);
+        }
+      }
 
-    return cb(null, nodes, links, totalHits);
+      if (Config.debug) {
+        console.log('nodesHash', nodesHash);
+        console.log('connects', connects);
+        console.log('nodes', nodes.length, nodes);
+        console.log('links', links.length, links);
+      }
+
+      return cb(null, nodes, links, totalHits);
+
+    }).catch(err => {
+      console.log('ERROR - buildConnections -> resultSetProcessPromises catch', err);
+      return cb(err, null, null, null);
+    }); // Promise.all(resultSetProcessPromises)
 
   }).catch(err => {
     console.log('ERROR - buildConnections -> Db.searchPrimary catch', err);
     return cb(err, null, null, null);
   }); // Promise.all(searchDbPromises)
+
 } // buildConnections
 
 app.get('/connections.json', [noCacheJson, recordResponseTime, logAction('connections'), setCookie], (req, res) => {
