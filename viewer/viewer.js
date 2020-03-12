@@ -5163,29 +5163,40 @@ async function buildConnections(req, res, cb) {
   let fdst                 = req.query.dstField;
   let minConn              = req.query.minConn || 1;
 
-  // If network graph baseline is enabled (enabled: req.query.baseline=true, disabled:req.query.baseline=false or undefined)
+  // If network graph baseline is enabled (enabled: req.query.baselineDate != 0, disabled:req.query.baselineDate=0 or undefined)
   //   then two queries will be run (ie., run buildSessionQuery->searchPrimary->process twice): first for the
   //   original specified time frame and second for the same time frame immediately preceding it.
+  //
   // Nodes have an .inresult attribute where:
   //   0 = 00 = not in either result set (although you'll never see these, obviously)
   //   1 = 01 = seen during the "current" time frame but not in the "baseline" time frame (ie., "new")
   //   2 = 10 = seen during the "baseline" time frame but not in the "current" time frame (ie., "old")
   //   3 = 11 = seen during both the "current" time frame and the "baseline" time frame
   // This is only performed where startTime/startTime are defined, and never for "all" time range (date=-1).
+  //
+  // With baselining, req.query.baselineDate can determine baseline time frame, which is the number of
+  // hours prior to the "start" query time, similar to req.query.date. If unspecified or zero, baseline
+  // uses the immediate time frame of the same duration immediately prior to the req.query.startTime.
+  // However, If req.query.baselineDate ends with x, the duration of the baseline is the time frame of
+  // the "current" time frame multiplied by that number.
   let doBaseline = false;
   let baselineDate = 0;
+  let baselineDateIsMultiplier = false;
   let currentQueryTimes = null;
-  if ((req.query.baseline !== undefined) && (req.query.date !== '-1') &&
-      (req.query.startTime !== undefined) && (req.query.stopTime !== undefined)) {
-    doBaseline = (String(req.query.baseline) === 'true') ? true : false;
-  }
-  if (doBaseline === true) {
-    // With baselining, req.query.baselineDate can determine baseline time frame (being)
-    // the number of hours prior to the "start" query time, similar to req.query.date.
-    // if unspecified or zero, baseline uses the immediate time frame of the same
-    // duration immediately prior to the req.query.startTime
-    baselineDate = parseInt(req.query.baselineDate || '0', 10);
-    currentQueryTimes = determineQueryTimes(req.query);
+  if ((req.query.baselineDate !== undefined) && (0 !== req.query.baselineDate.length) && (String(req.query.baselineDate) !== '0') &&
+      (req.query.date !== '-1') && (req.query.startTime !== undefined) && (req.query.stopTime !== undefined)) {
+    doBaseline = true;
+    let baselineDateTmpStr = req.query.baselineDate;
+    if (baselineDateTmpStr.endsWith('x')) {
+      baselineDateIsMultiplier = true;
+      baselineDateTmpStr = baselineDateTmpStr.slice(0, -1);
+    }
+    baselineDate = parseInt(baselineDateTmpStr, 10);
+    doBaseline = (doBaseline && (baselineDate > 0));
+    baselineDateIsMultiplier = (doBaseline && baselineDateIsMultiplier && (baselineDate > 0));
+    if (doBaseline) {
+      currentQueryTimes = determineQueryTimes(req.query);
+    }
   }
 
   // get the requested fields
@@ -5222,20 +5233,20 @@ async function buildConnections(req, res, cb) {
     if (resultId > 1) {
       // replace current time frame start/stop values with baseline time frame start/stop values
       if (Config.debug) {
-        console.log("buildConnections baseline.0", "startTime", currentQueryTimes[0], "stopTime", currentQueryTimes[1])
+        console.log("buildConnections baseline.0", "startTime", currentQueryTimes[0], "stopTime", currentQueryTimes[1], baselineDate, baselineDateIsMultiplier ? 'x' : '');
       }
       if ((currentQueryTimes[0] !== undefined) && (currentQueryTimes[1] !== undefined)) {
         // baseline stop time ends 1 second prior to "current" start time
         tmpReqQuery.stopTime = currentQueryTimes[0]-1;
-        if (baselineDate > 0) {
+        if ((baselineDate > 0) && (!baselineDateIsMultiplier)) {
           // baseline time duration was specified (hours)
           tmpReqQuery.startTime = tmpReqQuery.stopTime - (60 * 60 * baselineDate);
         } else {
-          // baseline time frame is unspecified, so use the immediate prior time frame of same duration
-          tmpReqQuery.startTime = tmpReqQuery.stopTime - (currentQueryTimes[1] - currentQueryTimes[0]);
+          // baseline time frame is unspecified, so use the immediate prior time frame of same (or multiplied) duration
+          tmpReqQuery.startTime = tmpReqQuery.stopTime - ((currentQueryTimes[1] - currentQueryTimes[0]) * (baselineDateIsMultiplier ? baselineDate : 1));
         }
         if (Config.debug) {
-          console.log("buildConnections baseline.1", "startTime", tmpReqQuery.startTime, "stopTime", tmpReqQuery.stopTime, "diff", (tmpReqQuery.stopTime - tmpReqQuery.startTime))
+          console.log("buildConnections baseline.1", "startTime", tmpReqQuery.startTime, "stopTime", tmpReqQuery.stopTime, "diff", (tmpReqQuery.stopTime - tmpReqQuery.startTime));
         }
       }
     } // resultId > 1 (calculating baseline query time frame)

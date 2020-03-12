@@ -254,27 +254,38 @@
           </template>
         </b-dropdown> <!-- /link fields button -->
 
-        <!-- network baseline diff checkbox -->
-        <!-- TODO: allow specifying arbitrary baseline start/stop times rather than fixed previous time? -->
+        <!-- network baseline time frame -->
         <div class="input-group input-group-sm ml-1">
           <div class="input-group-prepend help-cursor"
             v-b-tooltip.hover
-            title="Query specified and immediately preceding time frames for graph comparison against a baseline">
+            title="Time frame for baseline (preceding query time frame)">
             <span class="input-group-text">
-              Compare Against Baseline
+              Baseline Time Frame
             </span>
           </div>
-          <div class="form-check ml-1">
-            <input class="form-check-input"
-              v-model="query.baseline"
-              true-value="true"
-              false-value="false"
-              @change="changeBaseline"
-              type="checkbox"
-              id="baseline"
-            />
-          </div>
-        </div> <!-- /network baseline diff checkbox -->
+          <select class="form-control input-sm"
+            v-model="query.baselineDate"
+            @change="changeBaselineDate">
+            <option value="0">disabled</option>
+            <option value="1x">1 × actual time frame</option>
+            <option value="2x">2 × actual time frame</option>
+            <option value="4x">4 × actual time frame</option>
+            <option value="6x">6 × actual time frame</option>
+            <option value="8x">8 × actual time frame</option>
+            <option value="10x">10 × actual time frame</option>
+            <option value="1">1 hour</option>
+            <option value="6">6 hours</option>
+            <option value="24">24 hours</option>
+            <option value="48">48 hours</option>
+            <option value="72">72 hours</option>
+            <option value="168">1 week</option>
+            <option value="336">2 weeks</option>
+            <option value="720">1 month</option>
+            <option value="1440">2 months</option>
+            <option value="4380">6 months</option>
+            <option value="8760">1 year</option>
+          </select>
+        </div> <!-- /network baseline time frame -->
 
         <!-- network baseline node visibility -->
         <div class="input-group input-group-sm ml-1">
@@ -286,7 +297,7 @@
             </span>
           </div>
           <select class="form-control input-sm"
-            v-bind:disabled="String(query.baseline) !== 'true'"
+            v-bind:disabled="query.baselineDate === '0'"
             v-model="query.baselineVis"
             @change="changeBaselineVis">
             <option value="all">All nodes</option>
@@ -587,9 +598,8 @@ export default {
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         minConn: this.$route.query.minConn || 1,
-        baseline: String(this.$route.query.baseline) || 'false',
+        baselineDate: this.$route.query.baselineDate || '0',
         baselineVis: this.$route.query.baselineVis || 'all',
-        baselineDate: this.$route.query.baselineDate || 0,
         nodeDist: this.$route.query.nodeDist || 40,
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined
@@ -621,7 +631,7 @@ export default {
     '$route.query.length': function (newVal, oldVal) {
       this.cancelAndLoad(true);
     },
-    '$route.query.baseline': function (newVal, oldVal) {
+    '$route.query.baselineDate': function (newVal, oldVal) {
       this.cancelAndLoad(true);
     },
     '$route.query.minConn': function (newVal, oldVal) {
@@ -703,11 +713,11 @@ export default {
         }
       });
     },
-    changeBaseline: function () {
+    changeBaselineDate: function () {
       this.$router.push({
         query: {
           ...this.$route.query,
-          baseline: this.query.baseline
+          baselineDate: this.query.baselineDate
         }
       });
     },
@@ -1181,7 +1191,7 @@ export default {
       return val;
       // TODO: for now I've disabled stroke colors as I think it was,
       // visually confusing I may turn it back on for baseline
-      // if (String(this.query.baseline) === 'true') {
+      // if (this.query.baselineDate !== '0') {
       //   switch (n.inresult) {
       //     case 3:
       //       // "both" (in actual and baseline result set)
@@ -1204,7 +1214,7 @@ export default {
       return val;
       // TODO: for now I've disabled stroke width as I think it was,
       // visually confusing I may turn it back on for baseline
-      // if (String(this.query.baseline) === 'true') {
+      // if (this.query.baselineDate !== '0') {
       //   switch (n.inresult) {
       //     case 2:
       //       // "old" (in baseline, not in actual result set)
@@ -1220,7 +1230,7 @@ export default {
     },
     calculateNodeLabelWeight: function (n) {
       let val = 'normal';
-      if (String(this.query.baseline) === 'true') {
+      if (this.query.baselineDate !== '0') {
         switch (n.inresult) {
           case 2:
             // "old" (in baseline, not in actual result set)
@@ -1236,11 +1246,11 @@ export default {
     },
     calculateNodeLabelStyle: function (n) {
       // italicize "old" nodes (in baseline, not in actual result set)
-      return ((String(this.query.baseline) === 'true') && (n.inresult === 2)) ? 'italic' : 'normal';
+      return ((this.query.baselineDate !== '0') && (n.inresult === 2)) ? 'italic' : 'normal';
     },
     calculateNodeLabelSuffix: function (n) {
       let val = '';
-      if (String(this.query.baseline) === 'true') {
+      if (this.query.baselineDate !== '0') {
         switch (n.inresult) {
           case 2:
             // "old" (in baseline, not in actual result set)
@@ -1257,7 +1267,7 @@ export default {
     calculateNodeBaselineVisibility: function (n) {
       let val = 'visible';
 
-      if (String(this.query.baseline) === 'true') {
+      if (this.query.baselineDate !== '0') {
         let inActualSet = ((n.inresult & 0x1) !== 0);
         let inBaselineSet = ((n.inresult & 0x2) !== 0);
         switch (this.query.baselineVis) {
@@ -1281,7 +1291,7 @@ export default {
     calculateLinkBaselineVisibility: function (l) {
       let val = 'visible';
 
-      if (String(this.query.baseline) === 'true') {
+      if (this.query.baselineDate !== '0') {
         let nodesVisibilities = [this.calculateNodeBaselineVisibility(l.source), this.calculateNodeBaselineVisibility(l.target)];
         val = (nodesVisibilities.includes('hidden')) ? 'hidden' : 'visible';
       }
