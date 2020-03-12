@@ -482,6 +482,7 @@ typedef struct {
 
 struct moloch_session;
 
+#define MOLOCH_PARSER_UNREGISTER -1
 typedef int  (* MolochParserFunc) (struct moloch_session *session, void *uw, const unsigned char *data, int remaining, int which);
 typedef void (* MolochParserFreeFunc) (struct moloch_session *session, void *uw);
 typedef void (* MolochParserSaveFunc) (struct moloch_session *session, void *uw, int final);

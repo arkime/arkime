@@ -18,12 +18,14 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 2.3.0 2020/03/xx
+  - release - CyberChef 9.16.2
   - viewer - set content-type for cyberchef files
   - capture - new parsers arp, bgp, igmp, isis, lldp, ospf, pim, 
   - capture - protocol parsing code has been refactored, can now write parsers
               of ethernet and other ip protocols
   - capture - new disableParsers, default of arp.so
   - capture - new unkEthernet, unkIpProtocol protocols
+  - capture - support QUIC version 46
 
 2.2.3 2020/03/09
   - viewer - Experimental treemap view in spigraph

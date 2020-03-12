@@ -94,7 +94,14 @@ int udp_process(MolochSession_t *session, MolochPacket_t * const packet)
     int i;
     for (i = 0; i < session->parserNum; i++) {
         if (session->parserInfo[i].parserFunc) {
-            session->parserInfo[i].parserFunc(session, session->parserInfo[i].uw, data, len, packet->direction);
+            int consumed = session->parserInfo[i].parserFunc(session, session->parserInfo[i].uw, data, len, packet->direction);
+            if (consumed == MOLOCH_PARSER_UNREGISTER) {
+                if (session->parserInfo[i].parserFreeFunc) {
+                    session->parserInfo[i].parserFreeFunc(session, session->parserInfo[i].uw);
+                }
+                memset(&session->parserInfo[i], 0, sizeof(session->parserInfo[i]));
+                continue;
+            }
         }
     }
     return 1;

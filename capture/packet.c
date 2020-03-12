@@ -133,6 +133,13 @@ void moloch_packet_process_data(MolochSession_t *session, const uint8_t *data, i
         if (session->parserInfo[i].parserFunc) {
             int consumed = session->parserInfo[i].parserFunc(session, session->parserInfo[i].uw, data, len, which);
             if (consumed) {
+                if (consumed == MOLOCH_PARSER_UNREGISTER) {
+                    if (session->parserInfo[i].parserFreeFunc) {
+                        session->parserInfo[i].parserFreeFunc(session, session->parserInfo[i].uw);
+                    }
+                    memset(&session->parserInfo[i], 0, sizeof(session->parserInfo[i]));
+                    continue;
+                }
                 session->consumed[which] += consumed;
             }
 

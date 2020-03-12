@@ -881,15 +881,12 @@ void  moloch_parsers_unregister(MolochSession_t *session, void *uw)
 {
     int i;
     for (i = 0; i < session->parserNum; i++) {
-        if (session->parserInfo[i].uw == uw) {
+        if (session->parserInfo[i].uw == uw && session->parserInfo[i].parserFunc != 0) {
             if (session->parserInfo[i].parserFreeFunc) {
                 session->parserInfo[i].parserFreeFunc(session, uw);
-                session->parserInfo[i].parserFreeFunc = 0;
             }
 
-            session->parserInfo[i].parserSaveFunc = 0;
-            session->parserInfo[i].parserFunc = 0;
-            session->parserInfo[i].uw = 0;
+            memset(&session->parserInfo[i], 0, sizeof(session->parserInfo[i]));
             break;
         }
     }
