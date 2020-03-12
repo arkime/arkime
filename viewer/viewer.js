@@ -2936,6 +2936,7 @@ function buildSessionQuery (req, buildCb, queryOverride=null) {
   let timeLimitExceeded = false;
   var interval;
 
+  // queryOverride can supercede req.query if specified
   let reqQuery = queryOverride ? queryOverride : req.query;
 
   // determineQueryTimes calculates startTime, stopTime, and interval from reqQuery
@@ -3077,51 +3078,59 @@ function buildSessionQuery (req, buildCb, queryOverride=null) {
   }
 
   if (!err && reqQuery.view) {
-    addViewToQuery(req, query, continueBuildQuery, buildCb);
+    addViewToQuery(req, query, continueBuildQuery, buildCb, queryOverride);
   } else {
-    continueBuildQuery(req, query, err, buildCb);
+    continueBuildQuery(req, query, err, buildCb, queryOverride);
   }
 }
 
-function addViewToQuery(req, query, continueBuildQueryCb, finalCb) {
+function addViewToQuery(req, query, continueBuildQueryCb, finalCb, queryOverride=null) {
   let err;
   let viewExpression;
-  if (req.user.views && req.user.views[req.query.view]) { // it's a user's view
+
+  // queryOverride can supercede req.query if specified
+  let reqQuery = queryOverride ? queryOverride : req.query;
+
+  if (req.user.views && req.user.views[reqQuery.view]) { // it's a user's view
     try {
-      viewExpression = molochparser.parse(req.user.views[req.query.view].expression);
+      viewExpression = molochparser.parse(req.user.views[reqQuery.view].expression);
       query.query.bool.filter.push(viewExpression);
     } catch (e) {
-      console.log(`ERROR - User expression (${req.query.view}) doesn't compile -`, e);
+      console.log(`ERROR - User expression (${reqQuery.view}) doesn't compile -`, e);
       err = e;
     }
-    continueBuildQueryCb(req, query, err, finalCb);
+    continueBuildQueryCb(req, query, err, finalCb, queryOverride);
   } else { // it's a shared view
     Db.getUser('_moloch_shared', (err, sharedUser) => {
       if (sharedUser && sharedUser.found) {
         sharedUser = sharedUser._source;
         sharedUser.views = sharedUser.views || {};
         for (let viewName in sharedUser.views) {
-          if (viewName === req.query.view) {
+          if (viewName === reqQuery.view) {
             viewExpression = sharedUser.views[viewName].expression;
             break;
           }
         }
-        if (sharedUser.views[req.query.view]) {
+        if (sharedUser.views[reqQuery.view]) {
           try {
-            viewExpression = molochparser.parse(sharedUser.views[req.query.view].expression);
+            viewExpression = molochparser.parse(sharedUser.views[reqQuery.view].expression);
             query.query.bool.filter.push(viewExpression);
           } catch (e) {
-            console.log(`ERROR - Shared user expression (${req.query.view}) doesn't compile -`, e);
+            console.log(`ERROR - Shared user expression (${reqQuery.view}) doesn't compile -`, e);
             err = e;
           }
         }
-        continueBuildQueryCb(req, query, err, finalCb);
+        continueBuildQueryCb(req, query, err, finalCb, queryOverride);
       }
     });
   }
 }
 
-function continueBuildQuery(req, query, err, finalCb) {
+function continueBuildQuery(req, query, err, finalCb, queryOverride=null) {
+
+  // queryOverride can supercede req.query if specified
+  let reqQuery = queryOverride ? queryOverride : req.query;
+
   if (!err && req.user.expression && req.user.expression.length > 0) {
     try {
       // Expression was set by admin, so assume email search ok
@@ -3135,12 +3144,12 @@ function continueBuildQuery(req, query, err, finalCb) {
   }
 
   lookupQueryItems(query.query.bool.filter, function (lerr) {
-    if (req.query.date === '-1' ||                                      // An all query
+    if (reqQuery.date === '-1' ||                                       // An all query
         Config.get("queryAllIndices", Config.get("multiES", false))) {  // queryAllIndices (default: multiES)
       return finalCb(err || lerr, query, "sessions2-*"); // Then we just go against all indices for a slight overhead
     }
 
-    Db.getIndices(req.query.startTime, req.query.stopTime, req.query.bounding, Config.get("rotateIndex", "daily"), function(indices) {
+    Db.getIndices(reqQuery.startTime, reqQuery.stopTime, reqQuery.bounding, Config.get("rotateIndex", "daily"), function(indices) {
       if (indices.length > 3000) { // Will url be too long
         return finalCb(err || lerr, query, "sessions2-*");
       } else {
@@ -5248,7 +5257,8 @@ async function buildConnections(req, res, cb) {
         }
 
         if (Config.debug) {
-          console.log('buildConnections query', resultId, JSON.stringify(query, null, 2));
+          console.log('buildConnections query',  resultId, JSON.stringify(query, null, 2));
+          console.log('buildConnections indices', resultId, JSON.stringify(indices, null, 2));
         }
 
         resolve([JSON.parse(JSON.stringify(query)), JSON.parse(JSON.stringify(indices))]);
