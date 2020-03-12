@@ -1,0 +1,121 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "224.0.0.22",
+            "dstMac" : [
+               "01:00:5e:00:00:16",
+               "01:00:5e:01:01:01",
+               "01:00:5e:02:02:02",
+               "01:00:5e:03:03:03"
+            ],
+            "dstMacCnt" : 4,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1571745677855,
+            "ipProtocol" : 2,
+            "lastPacket" : 1571746105265,
+            "length" : 427410,
+            "node" : "test",
+            "packetLen" : [
+               86,
+               86,
+               86,
+               66,
+               66,
+               66,
+               86,
+               66,
+               66,
+               66,
+               66,
+               66,
+               66,
+               86,
+               86,
+               66,
+               66,
+               66,
+               86,
+               66,
+               66,
+               66,
+               66,
+               66,
+               66,
+               66,
+               66,
+               66,
+               66
+            ],
+            "packetPos" : [
+               24,
+               110,
+               196,
+               282,
+               348,
+               414,
+               480,
+               566,
+               632,
+               698,
+               764,
+               830,
+               896,
+               962,
+               1048,
+               1134,
+               1200,
+               1266,
+               1332,
+               1418,
+               1484,
+               1550,
+               1616,
+               1682,
+               1748,
+               1814,
+               1880,
+               1946,
+               2012
+            ],
+            "protocol" : [
+               "igmp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS8075",
+            "srcBytes" : 1590,
+            "srcDataBytes" : 0,
+            "srcGEO" : "US",
+            "srcIp" : "20.0.1.100",
+            "srcMac" : [
+               "08:00:27:30:c5:75",
+               "08:00:27:a5:d7:eb"
+            ],
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 29,
+            "srcPort" : 0,
+            "srcRIR" : "ARIN",
+            "timestamp" : "SET",
+            "totBytes" : 1590,
+            "totDataBytes" : 0,
+            "totPackets" : 29
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191022",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

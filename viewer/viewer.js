@@ -65,7 +65,7 @@ var app = express();
 //// Config
 //////////////////////////////////////////////////////////////////////////////////
 var internals = {
-  CYBERCHEFVERSION: '9.11.7',
+  CYBERCHEFVERSION: '9.16.2',
   elasticBase: Config.getArray('elasticsearch', ',', 'http://localhost:9200'),
   esQueryTimeout: Config.get("elasticsearchTimeout", 300) + 's',
   esScrollTimeout: Config.get("elasticsearchScrollTimeout", 900) + 's',
@@ -5511,8 +5511,7 @@ app.get(/\/sessions.csv.*/, logAction(), function(req, res) {
   }
 });
 
-app.get('/spigraphpie', noCacheJson, logAction(), (req, res) => {
-
+app.get('/spigraphhierarchy', noCacheJson, logAction(), (req, res) => {
   if (req.query.exp === undefined) {
     return res.molochError(403, 'Missing exp parameter');
   }
@@ -5570,7 +5569,7 @@ app.get('/spigraphpie', noCacheJson, logAction(), (req, res) => {
       }
 
       // format the data for the pie graph
-      let pieResults = { name: 'Top Talkers', children: [] };
+      let hierarchicalResults = { name: 'Top Talkers', children: [] };
       function addDataToPie (buckets, addTo) {
         for (let i = 0; i < buckets.length; i++) {
           let bucket = buckets[i];
@@ -5610,10 +5609,14 @@ app.get('/spigraphpie', noCacheJson, logAction(), (req, res) => {
         }
       }
 
-      addDataToPie(result.aggregations.field.buckets, pieResults.children);
+      addDataToPie(result.aggregations.field.buckets, hierarchicalResults.children);
       addDataToTable(result.aggregations.field.buckets);
 
-      return res.send({success:true, pieResults: pieResults, tableResults: tableResults});
+      return res.send({
+        success:true,
+        tableResults: tableResults,
+        hierarchicalResults: hierarchicalResults
+      });
     });
   });
 });
@@ -5902,7 +5905,7 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
 function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) {
   var options;
   if (!fullSession) {
-    options  = { _source: 'node,totPackets,packetLen,packetPos,srcIp,srcPort,ipProtocol' };
+    options  = { _source: 'node,totPackets,packetPos,srcIp,srcPort,ipProtocol,packetLen' };
   }
 
   Db.getWithOptions(Db.sid2Index(id), 'session', Db.sid2Id(id), options, function(err, session) {
@@ -6176,6 +6179,11 @@ function localSessionDetail(req, res) {
     } else if (packets.length === 0) {
       session._err = "No pcap data found";
       localSessionDetailReturn(req, res, session, []);
+    } else if (packets[0].ether.data !== undefined) {
+      Pcap.reassemble_generic_ether(packets, +req.query.packets || 200, function(err, results) {
+        session._err = err;
+        localSessionDetailReturn(req, res, session, results || []);
+      });
     } else if (packets[0].ip === undefined) {
       session._err = "Couldn't decode pcap file, check viewer log";
       localSessionDetailReturn(req, res, session, []);
@@ -6207,6 +6215,11 @@ function localSessionDetail(req, res) {
       });
     } else if (packets[0].ip.p === 58) {
       Pcap.reassemble_icmp(packets, +req.query.packets || 200, function(err, results) {
+        session._err = err;
+        localSessionDetailReturn(req, res, session, results || []);
+      });
+    } else if (packets[0].ip.data !== undefined) {
+      Pcap.reassemble_generic_ip(packets, +req.query.packets || 200, function(err, results) {
         session._err = err;
         localSessionDetailReturn(req, res, session, results || []);
       });
@@ -8732,12 +8745,21 @@ app.get('/cyberchef/:nodeName/session/:id', checkPermissions(['webEnabled']), ch
 app.use(['/cyberchef/', '/modules/'], unsafeInlineCspHeader, (req, res) => {
   let found = false;
   let path = req.path.substring(1);
+
   if (req.baseUrl === '/modules') {
     res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
     path = 'modules/' + path;
   }
   if (path === '') {
     path = `CyberChef_v${internals.CYBERCHEFVERSION}.html`;
+  }
+
+  if (path === "assets/main.js") {
+    res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
+  } else if (path === "assets/main.css") {
+    res.setHeader('Content-Type', 'text/css');
+  } else if (path.endsWith('.png')) {
+    res.setHeader('Content-Type', 'image/png');
   }
 
   fs.createReadStream(`public/CyberChef_v${internals.CYBERCHEFVERSION}.zip`)

@@ -363,27 +363,6 @@ void moloch_parsers_initial_tag(MolochSession_t *session)
         }
     }
 
-    switch(session->protocol) {
-    case IPPROTO_TCP:
-        moloch_session_add_protocol(session, "tcp");
-        break;
-    case IPPROTO_UDP:
-        moloch_session_add_protocol(session, "udp");
-        break;
-    case IPPROTO_ICMP:
-        moloch_session_add_protocol(session, "icmp");
-        break;
-    case IPPROTO_ICMPV6:
-        moloch_session_add_protocol(session, "icmp");
-        break;
-    case IPPROTO_SCTP:
-        moloch_session_add_protocol(session, "sctp");
-        break;
-    case IPPROTO_ESP:
-        moloch_session_add_protocol(session, "esp");
-        break;
-    }
-
     moloch_field_ops_run(session, &config.ops);
 }
 
@@ -684,6 +663,28 @@ void moloch_parsers_init()
     MolochString_t *hstring;
     int d;
 
+    char **disableParsers = moloch_config_str_list(NULL, "disableParsers", "arp.so");
+    for (d = 0; disableParsers[d]; d++) {
+        hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
+        hstring->str = disableParsers[d];
+        hstring->len = strlen(disableParsers[d]);
+        HASH_ADD(s_, loaded, hstring->str, hstring);
+    }
+
+    if (!config.parseSMTP) {
+        hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
+        hstring->str = g_strdup("smtp.so");
+        hstring->len = strlen(hstring->str);
+        HASH_ADD(s_, loaded, hstring->str, hstring);
+    }
+
+    if (!config.parseSMB) {
+        hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
+        hstring->str = g_strdup("smb.so");
+        hstring->len = strlen(hstring->str);
+        HASH_ADD(s_, loaded, hstring->str, hstring);
+    }
+
     for (d = 0; config.parsersDir[d]; d++) {
         GError      *error = 0;
         GDir *dir = g_dir_open(config.parsersDir[d], 0, &error);
@@ -750,22 +751,30 @@ void moloch_parsers_init()
                 LOG("Loaded %s", path);
             }
 
-            g_free (path);
-
             parser_init();
 
             hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
             hstring->str = filenames[i];
             hstring->len = strlen(filenames[i]);
             HASH_ADD(s_, loaded, hstring->str, hstring);
+
+            if (config.debug)
+                LOG("Loaded %s", path);
+
+            g_free (path);
         }
         g_dir_close(dir);
+    }
+
+    if (loaded.count == 0) {
+        LOG("WARNING - No parsers loaded, is parsersDir set correctly");
     }
 
     HASH_FORALL_POP_HEAD(s_, loaded, hstring,
         g_free(hstring->str);
         MOLOCH_TYPE_FREE(MolochString_t, hstring);
     );
+    g_free(disableParsers); // NOT, g_strfreev because using the pointers
 
     // Set tags field up AFTER loading plugins
     config.tagsStringField = moloch_field_define("general", "termfield",
@@ -872,15 +881,12 @@ void  moloch_parsers_unregister(MolochSession_t *session, void *uw)
 {
     int i;
     for (i = 0; i < session->parserNum; i++) {
-        if (session->parserInfo[i].uw == uw) {
+        if (session->parserInfo[i].uw == uw && session->parserInfo[i].parserFunc != 0) {
             if (session->parserInfo[i].parserFreeFunc) {
                 session->parserInfo[i].parserFreeFunc(session, uw);
-                session->parserInfo[i].parserFreeFunc = 0;
             }
 
-            session->parserInfo[i].parserSaveFunc = 0;
-            session->parserInfo[i].parserFunc = 0;
-            session->parserInfo[i].uw = 0;
+            memset(&session->parserInfo[i], 0, sizeof(session->parserInfo[i]));
             break;
         }
     }

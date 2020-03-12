@@ -17,6 +17,31 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
+2.3.0 2020/03/xx
+  - release - CyberChef 9.16.2
+  - viewer - set content-type for cyberchef files
+  - capture - new parsers arp, bgp, igmp, isis, lldp, ospf, pim, 
+  - capture - protocol parsing code has been refactored, can now write parsers
+              of ethernet and other ip protocols
+  - capture - new disableParsers, default of arp.so
+  - capture - new unkEthernet, unkIpProtocol protocols
+  - capture - support QUIC version 46
+
+2.2.3 2020/03/09
+  - viewer - Experimental treemap view in spigraph
+  - viewer - Hunts now retry talking to failed remote nodes
+  - viewer - Completed Hunts have a repeat button
+  - viewer - Fix some Hunt stat and display issues
+  - viewer - Fixed Hunts/Tags working with ILM
+  - viewer - Fixed notifier issues and issue #1365
+  - viewer - Increase navbar contrast
+  - viewer - Spiview should be faster loading data
+  - viewer - Debug now prints out config vars like capture
+  - release - Fix lua.so not being included with builds
+  - capture - Fix "-r -" not working
+  - parliament - Ignored issues should remain unless deleted
+  - db - Can set sessions refresh interval
+
 2.2.2 2020/02/18
   - release - node 10.19.0
   - capture - fix SYN retrans handling

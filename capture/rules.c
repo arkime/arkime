@@ -1125,7 +1125,7 @@ void moloch_rules_run_before_save(MolochSession_t *session, int final)
 /******************************************************************************/
 void moloch_rules_session_create(MolochSession_t *session)
 {
-    switch (session->protocol) {
+    switch (session->ipProtocol) {
     case IPPROTO_SCTP:
     case IPPROTO_TCP:
     case IPPROTO_UDP:

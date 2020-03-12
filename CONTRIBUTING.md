@@ -90,5 +90,18 @@ Feature requests are tracked as [GitHub Issues](https://guides.github.com/featur
 
 ---
 
+### Upgrading Cyberchef
+1. Update the CyberChef version ("CYBERCHEFVERSION") in `viewer/viewer.js `
+2. Update the CyberChef version in `viewer/Makefile.in` (there are two version numbers on line 23)
+3. Run `make` in viewer or download the new version of the CyberChef zip file manually to the `viewer/public` directory
+5. Unzip and copy `CyberChef_v*.html` to `viewer/public/CyberChef_v*.html`
+6. Add `<base href="./cyberchef/" />` in the `<head>` of `viewer/public/CyberChef_v*.html`
+7. Add the script section from the previous `viewer/public/cyberchef.html` file before the end `</body></html>` tags at the end of `viewer/public/CyberChef_v*.html`
+8. Delete the old CyberChef zip file
+9. Delete the old CyberChef html file
+10. Rename `viewer/public/CyberChef_v*.html` file to `viewer/public/cyberchef.html`
+
+---
+
 ### :heart: Thanks,
 Andy & Elyse

@@ -34,11 +34,14 @@ var Pcap = module.exports = exports = function Pcap (key) {
 var internals = {
   pr2name: {
     1:  "icmp",
+    2:  "igmp",
     6:  "tcp",
     17: "udp",
     47: "gre",
     50: "esp",
     58: "icmpv6",
+    89: "ospf",
+    103: "pim",
     132: "sctp"
   },
   pcaps: {}
@@ -478,7 +481,8 @@ Pcap.prototype.ip4 = function (buffer, obj, pos) {
     this.sctp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj, pos + obj.ip.hl*4);
     break;
   default:
-    console.log("v4 Unknown ip.p", obj);
+    obj.ip.data = buffer.slice(obj.ip.hl*4, obj.ip.len);
+    //console.log("v4 Unknown ip.p", obj);
   }
 };
 
@@ -527,7 +531,8 @@ Pcap.prototype.ip6 = function (buffer, obj, pos) {
       this.sctp(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
       return;
     default:
-      console.log("v6 Unknown ip.p", obj);
+      obj.ip.data = buffer.slice(offset, offset+obj.ip.len);
+      //console.log("v6 Unknown ip.p", obj);
       return;
     }
   }
@@ -611,7 +616,8 @@ Pcap.prototype.ethertype = function(buffer, obj, pos) {
     this.ethertype(buffer.slice(4), obj, pos+4);
     break;
   default:
-    console.trace("Unknown ether.type", obj);
+    obj.ether.data = buffer.slice(2);
+    //console.trace("Unknown ether.type", obj);
     break;
   }
 };
@@ -852,6 +858,50 @@ exports.reassemble_esp = function (packets, numPackets, cb) {
   cb(null, results);
 };
 
+exports.reassemble_generic_ip = function (packets, numPackets, cb) {
+  var results = [];
+  packets.length = Math.min(packets.length, numPackets);
+  packets.forEach((item) => {
+    var key = item.ip.addr1;
+    if (results.length === 0 || key !== results[results.length-1].key) {
+      var result = {
+        key: key,
+        data: item.ip.data,
+        ts: item.pcap.ts_sec*1000 + Math.round(item.pcap.ts_usec/1000)
+      };
+      results.push(result);
+    } else {
+      var newBuf = Buffer.alloc(results[results.length-1].data.length + item.ip.data.length);
+      results[results.length-1].data.copy(newBuf);
+      item.ip.data.copy(newBuf, results[results.length-1].data.length);
+      results[results.length-1].data = newBuf;
+    }
+  });
+  cb(null, results);
+};
+
+exports.reassemble_generic_ether = function (packets, numPackets, cb) {
+  var results = [];
+  packets.length = Math.min(packets.length, numPackets);
+  packets.forEach((item) => {
+    var key = item.ether.addr1;
+    if (results.length === 0 || key !== results[results.length-1].key) {
+      var result = {
+        key: key,
+        data: item.ether.data,
+        ts: item.pcap.ts_sec*1000 + Math.round(item.pcap.ts_usec/1000)
+      };
+      results.push(result);
+    } else {
+      var newBuf = Buffer.alloc(results[results.length-1].data.length + item.ether.data.length);
+      results[results.length-1].data.copy(newBuf);
+      item.ether.data.copy(newBuf, results[results.length-1].data.length);
+      results[results.length-1].data = newBuf;
+    }
+  });
+  cb(null, results);
+};
+
 // Needs to be rewritten since its possible for packets to be
 // dropped by windowing and other things to actually be displayed allowed.
 // If multiple tcp sessions in one moloch session display can be wacky/wrong.
@@ -1004,7 +1054,7 @@ exports.packetFlow = function (session, packets, numPackets, cb) {
 
     if (!sKey) {
       sKey = Pcap.keyFromSession(session);
-      if (packets[0].ip.p !== 6) {
+      if (!packets[0].ip || packets[0].ip.p !== 6) {
         sKey = Pcap.key(packets[0]);
       }
     }
@@ -1013,34 +1063,38 @@ exports.packetFlow = function (session, packets, numPackets, cb) {
     if (!dKey && !match) { dKey = result.key; }
     result.src = match;
 
-    switch (item.ip.p) {
-      case 1:
-      case 58:
-        result.data = item.icmp.data;
-        break;
-      case 6:
-        result.data = item.tcp.data;
-        result.tcpflags = {
-          syn: item.tcp.synflag,
-          ack: item.tcp.ackflag,
-          psh: item.tcp.pshflag,
-          rst: item.tcp.rstflag,
-          fin: item.tcp.finflag,
-          urg: item.tcp.urgflag
-        };
-        break;
-      case 17:
-        result.data = item.udp.data;
-        break;
-      case 132:
-        result.data = item.sctp.data;
-        break;
-      case 50:
-        result.data = item.esp.data;
-        break;
-      default:
-        error = 'Couldn\'t decode pcap file, check viewer log';
-        break;
+    if (!item.ip) {
+        result.data = item.ether.data;
+    } else {
+      switch (item.ip.p) {
+        case 1:
+        case 58:
+          result.data = item.icmp.data;
+          break;
+        case 6:
+          result.data = item.tcp.data;
+          result.tcpflags = {
+            syn: item.tcp.synflag,
+            ack: item.tcp.ackflag,
+            psh: item.tcp.pshflag,
+            rst: item.tcp.rstflag,
+            fin: item.tcp.finflag,
+            urg: item.tcp.urgflag
+          };
+          break;
+        case 17:
+          result.data = item.udp.data;
+          break;
+        case 132:
+          result.data = item.sctp.data;
+          break;
+        case 50:
+          result.data = item.esp.data;
+          break;
+        default:
+          result.data = item.ip.data;
+          break;
+      }
     }
 
     return result;
@@ -1052,6 +1106,7 @@ exports.packetFlow = function (session, packets, numPackets, cb) {
 };
 
 exports.key = function(packet) {
+  if (!packet.ip) { return packet.ether.addr1; }
   switch(packet.ip.p) {
   case 6: // tcp
     return packet.ip.addr1 + ':' + packet.tcp.sport;

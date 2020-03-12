@@ -309,8 +309,8 @@ my $hToken = getTokenCookie('huntuser');
   my $id = $HUNTS{"raw-regex-both-(.*a){25}x"}->{hunt}->{id};
   my $result = $RESULTS{$id};
   is ($result->{status}, 'finished', "raw-regex-both-(.*a){25}x finished check");
-  is ($result->{searchedSessions}, 67, "raw-regex-both-(.*a){25}x searchedSessions check");
-  is ($result->{totalSessions}, 67, "raw-regex-both-(.*a){25}x totalSessions check");
+  is ($result->{searchedSessions}, 68, "raw-regex-both-(.*a){25}x searchedSessions check");
+  is ($result->{totalSessions}, 68, "raw-regex-both-(.*a){25}x totalSessions check");
   is ($result->{matchedSessions}, 0, "raw-regex-both-(.*a){25}x match check");
 
 # cleanup

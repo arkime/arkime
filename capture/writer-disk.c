@@ -249,7 +249,6 @@ LOCAL void *writer_disk_output_thread(void *UNUSED(arg))
 
         if (out->close) {
             if (filelen) {
-                ftruncate(outputFd, filelen);
                 if (ftruncate(outputFd, filelen) < 0 && config.debug)
                     LOG("Truncate failed");
             } else {

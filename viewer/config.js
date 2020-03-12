@@ -38,7 +38,8 @@ var internals = {
     fields: [],
     fieldsMap: {},
     categories: {},
-    options: {}
+    options: {},
+    debugged: {}
   };
 
 function processArgs() {
@@ -282,6 +283,11 @@ exports.getFull = function(node, key, defaultValue) {
     value = internals.config["default"][key];
   } else {
     value = defaultValue;
+  }
+
+  if (exports.debug > 0 && internals.debugged[node + '::' + key] === undefined) {
+    console.log(`CONFIG - ${key} on node ${node} is ${value}`);
+    internals.debugged[node + '::' + key] = 1;
   }
 
   if (value === "false") {

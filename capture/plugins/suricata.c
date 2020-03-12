@@ -39,7 +39,7 @@ LOCAL GRegex     *slashslashRegex;
 typedef struct suricataitem_t SuricataItem_t;
 struct suricataitem_t {
     SuricataItem_t *items_next;
-    char            sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t         sessionId[MOLOCH_SESSIONID_LEN];
     time_t          timestamp;
     char           *flow_id;
     char           *action;

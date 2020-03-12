@@ -80,8 +80,16 @@ do
   esac
 done
 
+# Warn users
+echo ""
+echo "This script is for building Moloch from source and meant for people who enjoy pain. The prebuilt versions at https://molo.ch/#download are recommended for installation."
+echo ""
+
 # Check the existance of sudo
 command -v sudo >/dev/null 2>&1 || { echo >&2 "MOLOCH: sudo is required to be installed"; exit 1; }
+
+# Check if in right directory
+[ -f "./easybutton-build.sh" ] || { echo >&2 "MOLOCH: must run from moloch directory"; exit 1; }
 
 MAKE=make
 UNAME="$(uname)"

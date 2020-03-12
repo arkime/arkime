@@ -400,7 +400,10 @@
                   :opened="session.expanded"
                   @toggle="toggleSessionDetail(session)">
                 </toggle-btn>
-                <moloch-session-field
+                <span v-if="session.ipProtocol === 0">
+                  notip
+                </span>
+                <moloch-session-field v-else
                   :field="{dbField:'ipProtocol', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
                   :session="session"
                   :expr="'ip.protocol'"
