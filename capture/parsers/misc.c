@@ -340,6 +340,29 @@ LOCAL void telnet_tcp_classify(MolochSession_t *session, const unsigned char *da
     moloch_session_add_protocol(session, "telnet");
 }
 /******************************************************************************/
+LOCAL void netflow_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    // Exclude DNS and small packets
+    if (session->port1 == 53 || session->port2 == 53 || len < 24)
+        return;
+
+    BSB bsb;
+    uint16_t count = 0;
+    uint32_t systime = 0;
+
+    BSB_INIT(bsb, data, len);
+    BSB_IMPORT_skip(bsb, 2); //version
+    BSB_IMPORT_u16(bsb, count);
+    BSB_IMPORT_skip(bsb, 4); // sys_uptime
+    BSB_IMPORT_u32(bsb, systime);
+
+    // Make sure valid count and time
+    if (count == 0 || count > 200 || count*16 > len || systime < 1000000000 /*Sep 2001*/)
+        return;
+
+    moloch_session_add_protocol(session, "netflow");
+}
+/******************************************************************************/
 
 #define CLASSIFY_TCP(name, offset, bytes, cb) moloch_parsers_classifier_register_tcp(name, name, offset, (unsigned char*)bytes, sizeof(bytes)-1, cb);
 #define CLASSIFY_UDP(name, offset, bytes, cb) moloch_parsers_classifier_register_udp(name, name, offset, (unsigned char*)bytes, sizeof(bytes)-1, cb);
@@ -493,6 +516,9 @@ void moloch_parser_init()
     CLASSIFY_UDP("memcached", 6, "\x00\x00stats", misc_add_protocol_classify);
     CLASSIFY_UDP("memcached", 6, "\x00\x00gets ", misc_add_protocol_classify);
 
+    CLASSIFY_UDP("netflow", 0, "\x00\x05", netflow_classify);
+    CLASSIFY_UDP("netflow", 0, "\x00\x07", netflow_classify);
+    CLASSIFY_UDP("netflow", 0, "\x00\x09", netflow_classify);
 
     SIMPLE_CLASSIFY_TCP("hbase", "HBas\x00");
 
@@ -521,6 +547,8 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_port("safet",  NULL, 23294, MOLOCH_PARSERS_PORT_UDP, safet_udp_classify);
 
     moloch_parsers_classifier_register_port("telnet",  NULL, 23, MOLOCH_PARSERS_PORT_TCP_DST, telnet_tcp_classify);
+
+    moloch_parsers_classifier_register_port("whois",  "whois", 43, MOLOCH_PARSERS_PORT_TCP_DST, misc_add_protocol_classify);
 
     userField = moloch_field_by_db("user");
 }

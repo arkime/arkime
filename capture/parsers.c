@@ -1111,11 +1111,11 @@ void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *
         return;
 
     for (i = 0; i < classifersTcpPortSrc[session->port1].cnt; i++) {
-        classifersTcpPortSrc[session->port1].arr[i]->func(session, data, remaining, which, classifersTcpPortSrc[session->port1].arr[i]);
+        classifersTcpPortSrc[session->port1].arr[i]->func(session, data, remaining, which, classifersTcpPortSrc[session->port1].arr[i]->uw);
     }
 
     for (i = 0; i < classifersTcpPortDst[session->port2].cnt; i++) {
-        classifersTcpPortDst[session->port2].arr[i]->func(session, data, remaining, which, classifersTcpPortDst[session->port2].arr[i]);
+        classifersTcpPortDst[session->port2].arr[i]->func(session, data, remaining, which, classifersTcpPortDst[session->port2].arr[i]->uw);
     }
 
     for (i = 0; i < classifersTcp0.cnt; i++) {
