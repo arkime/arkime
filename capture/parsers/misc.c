@@ -500,6 +500,7 @@ void moloch_parser_init()
     SIMPLE_CLASSIFY_TCP("nzsql", "\x00\x00\x00\x08\x00\x01\x00\x03");
 
     SIMPLE_CLASSIFY_TCP("splunk", "--splunk-cooked-mode");
+    CLASSIFY_TCP("splunk-replication", 6, "\x00\x06\x00\x00\x00\x05_raw", misc_add_protocol_classify);
 
     moloch_parsers_classifier_register_port("isakmp",  NULL, 500, MOLOCH_PARSERS_PORT_UDP, isakmp_udp_classify);
     moloch_parsers_classifier_register_port("isakmp",  NULL, 4500, MOLOCH_PARSERS_PORT_UDP, isakmp_udp_classify);
