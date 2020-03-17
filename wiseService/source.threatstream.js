@@ -18,7 +18,7 @@
 'use strict';
 
 var fs             = require('fs')
-  , unzip          = require('unzip')
+  , unzipper       = require('unzipper')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
   , HashTable      = require('hashtable')
@@ -135,7 +135,7 @@ ThreatStreamSource.prototype.parseFile = function()
   this.urls.reserve(200000);
 
   fs.createReadStream('/tmp/threatstream.zip')
-    .pipe(unzip.Parse())
+    .pipe(unzipper.Parse())
     .on('entry', (entry) => {
       let bufs = [];
       entry.on('data', (buf) => {
