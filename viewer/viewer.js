@@ -5235,7 +5235,9 @@ function buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, resul
 
   buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
+      console.log('ERROR - buildConnectionQuery -> buildSessionQuery', resultId, bsqErr);
       result.err = bsqErr;
+      return cb([result]);
 
     } else {
       query.query.bool.filter.push({exists: {field: req.query.srcField}});
@@ -5447,7 +5449,7 @@ function buildConnections(req, res, cb) {
 
             if (connResultSets[r].err) {
               // error generating query or performing search, abort
-              return cb(err, null, null, null);
+              return cb(connResultSets[r].err, null, null, null);
 
             } else {
               let resultId = connResultSets[r].resultId;
