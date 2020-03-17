@@ -46,9 +46,9 @@
     "uuidv4": "^5.0.1",
     "vue": "^2.6.10",
     "vue-axios": "^2.1.2",
-    "vue-moment": "^4.0.0",
+    "vue-moment": "^4.1.0",
     "vue-router": "^3.0.2",
-    "vue-server-renderer": "^2.6.10",
+    "vue-server-renderer": "^2.6.11",
     "vue-template-compiler": "^2.6.10",
     "vuex": "^3.0.1"
   },
