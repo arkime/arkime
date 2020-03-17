@@ -69,7 +69,7 @@
     "html-webpack-plugin": "^3.2.0",
     "jquery": "^3.4.1",
     "js-yaml": "^3.13.1",
-    "jshint": "^2.9.6",
+    "jshint": "^2.11.0",
     "json-loader": "^0.5.7",
     "lodash": "^4.17.13",
     "lodash.mergewith": "^4.6.2",
@@ -95,7 +95,7 @@
     "vue-loader": "^15.9.0",
     "vue-style-loader": "^4.1.2",
     "webpack": "^4.41.6",
-    "webpack-bundle-analyzer": "^3.6.0",
+    "webpack-bundle-analyzer": "^3.6.1",
     "webpack-cli": "^3.3.11",
     "webpack-dev-server": "^3.10.3",
     "webpack-merge": "^4.2.2"
