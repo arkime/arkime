@@ -5148,20 +5148,28 @@ app.get('/dns.json', [noCacheJson, logAction()], function(req, res) {
   });
 });
 
-async function buildConnections(req, res, cb) {
+//////////////////////////////////////////////////////////////////////////////////
+//// buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, resultId, cb)
+////
+//// Returns (via "return cb(...)") an array of 1..2 connection query objects
+//// (see the definition of "result" at the beginning of the function), depending on
+//// whether or not baseline is enabled. The query and indices are initially returned
+//// from buildSessionQuery and then adjusted by this function.
+////
+//// The queries represented by these objects can be executed via
+//// dbConnectionQuerySearch.
+////
+//// This code was factored out from buildConnections.
+//////////////////////////////////////////////////////////////////////////////////
+function buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, resultId, cb) {
 
-  let dstipport;
-  if (req.query.dstField === 'ip.dst:port') {
-    dstipport = true;
-    req.query.dstField = 'dstIp';
-  }
-
-  req.query.srcField       = req.query.srcField || 'srcIp';
-  req.query.dstField       = req.query.dstField || 'dstIp';
-  req.query.iDisplayLength = req.query.iDisplayLength || '5000';
-  let fsrc                 = req.query.srcField;
-  let fdst                 = req.query.dstField;
-  let minConn              = req.query.minConn || 1;
+  let result = {
+    resultId: resultId,
+    err: null,
+    query: null,
+    indices: null,
+    options: options
+  };
 
   // If network graph baseline is enabled (enabled: req.query.baselineDate != 0, disabled:req.query.baselineDate=0 or undefined)
   //   then two queries will be run (ie., run buildSessionQuery->searchPrimary->process twice): first for the
@@ -5182,10 +5190,14 @@ async function buildConnections(req, res, cb) {
   let doBaseline = false;
   let baselineDate = 0;
   let baselineDateIsMultiplier = false;
-  let currentQueryTimes = null;
-  if ((req.query.baselineDate !== undefined) && (0 !== req.query.baselineDate.length) && (String(req.query.baselineDate) !== '0') &&
-      (req.query.date !== '-1') && (req.query.startTime !== undefined) && (req.query.stopTime !== undefined)) {
+
+  if (((req.query.baselineDate !== undefined) && (0 !== req.query.baselineDate.length) && (String(req.query.baselineDate) !== '0') &&
+        (req.query.date !== '-1') && (req.query.startTime !== undefined) && (req.query.stopTime !== undefined)) ||
+      (resultId > 1))  {
     doBaseline = true;
+  }
+
+  if (doBaseline) {
     let baselineDateTmpStr = req.query.baselineDate;
     if (baselineDateTmpStr.endsWith('x')) {
       baselineDateIsMultiplier = true;
@@ -5194,10 +5206,138 @@ async function buildConnections(req, res, cb) {
     baselineDate = parseInt(baselineDateTmpStr, 10);
     doBaseline = (doBaseline && (baselineDate > 0));
     baselineDateIsMultiplier = (doBaseline && baselineDateIsMultiplier && (baselineDate > 0));
-    if (doBaseline) {
-      currentQueryTimes = determineQueryTimes(req.query);
-    }
   }
+
+  // use a copy of req.query as we will modify the startTime/stopTime if we are doing a baseline query
+  let tmpReqQuery = JSON.parse(JSON.stringify(req.query));
+
+  if (resultId > 1) {
+    // replace current time frame start/stop values with baseline time frame start/stop values
+    let currentQueryTimes = determineQueryTimes(req.query);
+    if (Config.debug) {
+      console.log("buildConnections baseline.0", "startTime", currentQueryTimes[0], "stopTime", currentQueryTimes[1], baselineDate, baselineDateIsMultiplier ? 'x' : '');
+    }
+    if ((currentQueryTimes[0] !== undefined) && (currentQueryTimes[1] !== undefined)) {
+      // baseline stop time ends 1 second prior to "current" start time
+      tmpReqQuery.stopTime = currentQueryTimes[0]-1;
+      if ((baselineDate > 0) && (!baselineDateIsMultiplier)) {
+        // baseline time duration was specified (hours)
+        tmpReqQuery.startTime = tmpReqQuery.stopTime - (60 * 60 * baselineDate);
+      } else {
+        // baseline time frame is unspecified, so use the immediate prior time frame of same (or multiplied) duration
+        tmpReqQuery.startTime = tmpReqQuery.stopTime - ((currentQueryTimes[1] - currentQueryTimes[0]) * (baselineDateIsMultiplier ? baselineDate : 1));
+      }
+      if (Config.debug) {
+        console.log("buildConnections baseline.1", "startTime", tmpReqQuery.startTime, "stopTime", tmpReqQuery.stopTime, "diff", (tmpReqQuery.stopTime - tmpReqQuery.startTime));
+      }
+    }
+  } // resultId > 1 (calculating baseline query time frame)
+
+  buildSessionQuery(req, function(bsqErr, query, indices) {
+    if (bsqErr) {
+      console.log('ERROR - buildConnectionQuery -> buildSessionQuery', resultId, bsqErr);
+      result.err = bsqErr;
+      return cb([result]);
+
+    } else {
+      query.query.bool.filter.push({exists: {field: req.query.srcField}});
+      query.query.bool.filter.push({exists: {field: req.query.dstField}});
+
+      query._source = fields;
+      query.docvalue_fields = [fsrc, fdst];
+
+      if (dstipport) {
+        query._source.push('dstPort');
+      }
+
+      result.query = JSON.parse(JSON.stringify(query));
+      result.indices = JSON.parse(JSON.stringify(indices));
+
+      if ((resultId == 1) && (doBaseline)) {
+        buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, resultId+1, function(baselineResult) {
+          return cb([result].concat(baselineResult));
+        });
+      } else {
+        return cb([result]);
+      }
+
+    } // bsqErr if/else
+  }, tmpReqQuery); // buildSessionQuery
+} // buildConnectionQuery
+
+//////////////////////////////////////////////////////////////////////////////////
+//// buildConnectionQuery(connQueries, resultId, cb)
+////
+//// Executes the query/queries specified in the connQueries array (elements are
+//// of the type returned by buildConnectionQuery) by calling Db.searchPrimary
+//// and returns the results via callback (see the definition of the "resultSet"
+//// object at the beginning of this function). The results are returned in an
+//// array containing the result sets which correspond to the queries in the
+//// connQueries array.
+////
+//// This code was factored out from buildConnections.
+//////////////////////////////////////////////////////////////////////////////////
+function dbConnectionQuerySearch(connQueries, cb) {
+
+  let resultSet = {
+    resultId: null,
+    err: null,
+    graph: null
+  };
+
+  if (connQueries.length > 0) {
+
+    resultSet.resultId = connQueries[0].resultId;
+
+    if (connQueries[0].err) {
+      // propogate query errors up into the result set without doing a search
+      resultSet.err = connQueries[0].err;
+      return cb([resultSet]);
+
+    } else {
+      Db.searchPrimary(connQueries[0].indices, 'session', connQueries[0].query, connQueries[0].options, function (err, graph) {
+        if (err || graph.error) {
+          console.log('ERROR - dbConnectionQuerySearch -> Db.searchPrimary', resultId, err, graph.error);
+          resultSet.err = err ? err : graph.error;
+        }
+        resultSet.graph = graph;
+        if (connQueries.length > 1) {
+          dbConnectionQuerySearch(connQueries.slice(1), function(baselineResultSet) {
+            return cb([resultSet].concat(baselineResultSet));
+          });
+        } else {
+          return cb([resultSet]);
+        }
+      }); // Db.searchPrimary
+
+    } // if connQueries[0].err) / else
+
+  } else {
+    return cb([null]);
+  } // (connQueries.length > 0) / else
+
+} // dbConnectionQuerySearch
+
+//////////////////////////////////////////////////////////////////////////////////
+//// buildConnections(req, res, cb)
+////
+//// Returns objects needed to populate the graph of logical connections between
+//// nodes representing fields of sessions.
+//////////////////////////////////////////////////////////////////////////////////
+function buildConnections(req, res, cb) {
+
+  let dstipport;
+  if (req.query.dstField === 'ip.dst:port') {
+    dstipport = true;
+    req.query.dstField = 'dstIp';
+  }
+
+  req.query.srcField       = req.query.srcField || 'srcIp';
+  req.query.dstField       = req.query.dstField || 'dstIp';
+  req.query.iDisplayLength = req.query.iDisplayLength || '5000';
+  let fsrc                 = req.query.srcField;
+  let fdst                 = req.query.dstField;
+  let minConn              = req.query.minConn || 1;
 
   // get the requested fields
   let fields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
@@ -5213,77 +5353,6 @@ async function buildConnections(req, res, cb) {
   let nodes = [];
   let links = [];
   let totalHits = 0;
-
-  // This loop (which handles buildSessionQuery->searchPrimary->process) will be run
-  //   once or twice, depending on if baseline is enabled:
-  //   1. for the "current" time frame, the one specified originally in req.query
-  //   2. for the "baseline" time frame immediately prior to the time frame of "1."
-  //      (only if baseline is enabled)
-  // The call to process() will ensure the resultId value is OR'ed into the .inresult
-  //   attribute of each node.
-  let maxResultId = 1 + ((doBaseline === false) ? 0 : 1);
-
-  let queryParams = [];
-
-  for (let resultId = 1; resultId <= maxResultId; resultId++) {
-
-    // use a copy of req.query as we will modify the startTime/stopTime if we are doing a baseline query
-    let tmpReqQuery = JSON.parse(JSON.stringify(req.query));
-
-    if (resultId > 1) {
-      // replace current time frame start/stop values with baseline time frame start/stop values
-      if (Config.debug) {
-        console.log("buildConnections baseline.0", "startTime", currentQueryTimes[0], "stopTime", currentQueryTimes[1], baselineDate, baselineDateIsMultiplier ? 'x' : '');
-      }
-      if ((currentQueryTimes[0] !== undefined) && (currentQueryTimes[1] !== undefined)) {
-        // baseline stop time ends 1 second prior to "current" start time
-        tmpReqQuery.stopTime = currentQueryTimes[0]-1;
-        if ((baselineDate > 0) && (!baselineDateIsMultiplier)) {
-          // baseline time duration was specified (hours)
-          tmpReqQuery.startTime = tmpReqQuery.stopTime - (60 * 60 * baselineDate);
-        } else {
-          // baseline time frame is unspecified, so use the immediate prior time frame of same (or multiplied) duration
-          tmpReqQuery.startTime = tmpReqQuery.stopTime - ((currentQueryTimes[1] - currentQueryTimes[0]) * (baselineDateIsMultiplier ? baselineDate : 1));
-        }
-        if (Config.debug) {
-          console.log("buildConnections baseline.1", "startTime", tmpReqQuery.startTime, "stopTime", tmpReqQuery.stopTime, "diff", (tmpReqQuery.stopTime - tmpReqQuery.startTime));
-        }
-      }
-    } // resultId > 1 (calculating baseline query time frame)
-
-    let buildQueryPromise = new Promise((resolve, reject) => {
-      buildSessionQuery(req, function(bsqErr, query, indices) {
-        if (bsqErr) {
-          console.log('ERROR - buildConnections -> buildSessionQuery', bsqErr);
-          reject(bsqErr);
-        }
-        query.query.bool.filter.push({exists: {field: req.query.srcField}});
-        query.query.bool.filter.push({exists: {field: req.query.dstField}});
-
-        query._source = fields;
-        query.docvalue_fields = [fsrc, fdst];
-
-        if (dstipport) {
-          query._source.push('dstPort');
-        }
-
-        if (Config.debug) {
-          console.log('buildConnections query',  resultId, JSON.stringify(query, null, 2));
-          console.log('buildConnections indices', resultId, JSON.stringify(indices, null, 2));
-        }
-
-        resolve([JSON.parse(JSON.stringify(query)), JSON.parse(JSON.stringify(indices))]);
-      }, tmpReqQuery);
-    });
-
-    try {
-      // queryParams: [query, indices] or [[query, indices], [query, indices]]
-      queryParams.push(await buildQueryPromise);
-    } catch(err) {
-      console.log('ERROR - buildConnections -> buildSessionQuery catch', err);
-      return cb(err, null, null, null);
-    }
-  } // for loop populating queryParams
 
   // updateValues and process are for aggregating query results into their final form
   let dbFieldsMap = Config.getDBFieldsMap();
@@ -5311,7 +5380,7 @@ async function buildConnections(req, res, cb) {
         }
       }
     }
-  }
+  } // updateValues
 
   function process (vsrc, vdst, f, fields, resultId) {
     // ES 6 is returning formatted timestamps instead of ms like pre 6 did
@@ -5350,132 +5419,125 @@ async function buildConnections(req, res, cb) {
 
     connects[linkId].value++;
     updateValues(f, connects[linkId], fields);
-  }
+  } // process
 
-  // prepare and execute the Db.searchPrimary query (or queries, if baseline is enabled)
-  let searchDbPromises = [];
-  queryParams.forEach(queryParam => {
-    searchDbPromises.push(new Promise((resolve, reject) => {
-      Db.searchPrimary(queryParam[1], 'session', queryParam[0], options, function (err, graph) {
-        if (err || graph.error) {
-          console.log('ERROR - buildConnections -> Db.searchPrimary', err, graph.error);
-          reject(err ? err : graph.error);
-        } else {
-          resolve(graph);
+  // call to build the session query|queries and indices
+  buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, 1, function(connQueries) {
+
+    if (Config.debug) {
+      console.log('buildConnections.connQueries', connQueries.length, JSON.stringify(connQueries, null, 2));
+    }
+
+    // ONE or TWO session queries will be executed, depending on if baseline is enabled:
+    //   1. for the "current" time frame, the one specified originally in req.query
+    //   2. for the "baseline" time frame immediately prior to the time frame of "1."
+    //      (only if baseline is enabled)
+    // The call to process() will ensure the resultId value is OR'ed into the .inresult
+    //   attribute of each node.
+
+    // prepare and execute the Db.searchPrimary query|queries
+
+    if (connQueries.length > 0) {
+      dbConnectionQuerySearch(connQueries, function(connResultSets) {
+        if (Config.debug) {
+          console.log('buildConnections.connResultSets', connResultSets.length, JSON.stringify(connResultSets, null, 2));
         }
-      });
-    }));
-  });
 
-  Promise.all(searchDbPromises).then((resultSetGraphs) => {
+        // process the result set for each search
+        for (var r = 0, rlen = connResultSets.length; r < rlen; r++) {
+          if (connResultSets[r]) {
 
-    let resultSetProcessPromises = [];
+            if (connResultSets[r].err) {
+              // error generating query or performing search, abort
+              return cb(connResultSets[r].err, null, null, null);
 
-    // resultSetGraphs[0] is "current" time frame results, while
-    // resultSetGraphs[1] is "baseline" time frame results if baseline is enabled
+            } else {
+              let resultId = connResultSets[r].resultId;
+              let graph = connResultSets[r].graph;
 
-    for (var r = 0, rlen = resultSetGraphs.length; r < rlen; r++) {
-      let resultId = r + 1;
-      let graph = resultSetGraphs[r];
+              // accumulate resultSetGraphs[r].hits.total into totalHits so that recordsFiltered
+              // represents session records seen from all all queries
+              totalHits += graph.hits.total;
 
-      if (Config.debug) {
-        console.log('buildConnections result', resultId, JSON.stringify(graph, null, 2));
-      }
+              // process each hit from each result set
+              for (var hitIdx = 0; hitIdx < graph.hits.total; hitIdx++) {
+                let hit = graph.hits.hits[hitIdx];
+                let f = hit._source;
+                f = flattenFields(f);
 
-      // accumulate resultSetGraphs[r].hits.total into totalHits so that recordsFiltered
-      // represents both current and baseline queries if baseline is enabled
-      totalHits += graph.hits.total;
+                let asrc = hit.fields[fsrc];
+                let adst = hit.fields[fdst];
 
-      // process each hit from each result set
-      resultSetProcessPromises.push(new Promise((resolve, reject) => {
-        async.eachLimit(graph.hits.hits, 10, function (hit, hitCb) {
-          let f = hit._source;
-          f = flattenFields(f);
+                if (asrc !== undefined && adst !== undefined) {
+                  if (!Array.isArray(asrc)) {
+                    asrc = [asrc];
+                  }
 
-          let asrc = hit.fields[fsrc];
-          let adst = hit.fields[fdst];
+                  if (!Array.isArray(adst)) {
+                    adst = [adst];
+                  }
 
-          if (asrc === undefined || adst === undefined) {
-            return setImmediate(hitCb);
-          }
+                  for (let vsrc of asrc) {
+                    for (let vdst of adst) {
+                      if (dstIsIp && dstipport) {
+                        if (vdst.includes(':')) {
+                          vdst += '.' + f.dstPort;
+                        } else {
+                          vdst += ':' + f.dstPort;
+                        }
+                      }
+                      process(vsrc, vdst, f, fields, resultId);
+                    } // vdst of adst loop
+                  } // vsrc of asrc loop
+                } // arcs/adst !== undefined
 
-          if (!Array.isArray(asrc)) {
-            asrc = [asrc];
-          }
+              } // for hitIdx over graph.hits.hits
 
-          if (!Array.isArray(adst)) {
-            adst = [adst];
-          }
+            } // if (connResultSets[r].err) / else
+          } // if (connResultSets[r])
+        } // for r loop over resultSetGraphs
 
-          for (let vsrc of asrc) {
-            for (let vdst of adst) {
-              if (dstIsIp && dstipport) {
-                if (vdst.includes(':')) {
-                  vdst += '.' + f.dstPort;
-                } else {
-                  vdst += ':' + f.dstPort;
-                }
-              }
-              process(vsrc, vdst, f, fields, resultId);
-            }
-          }
-          setImmediate(hitCb);
-
-        }, function (err) {
-          if (err) {
-            reject(err);
+        // resolve result sets processing and aggregate final return values for nodes and links
+        let nodeKeys = Object.keys(nodesHash);
+        if (Config.get('regressionTests', false)) {
+          nodeKeys = nodeKeys.sort(function (a,b) { return nodesHash[a].id.localeCompare(nodesHash[b].id); });
+        }
+        for (let node of nodeKeys) {
+          if (nodesHash[node].cnt < minConn) {
+            nodesHash[node].pos = -1;
           } else {
-            resolve(null);
+            nodesHash[node].pos = nodes.length;
+            nodes.push(nodesHash[node]);
           }
-        }); // async.eachLimit
-
-      })); // resultSetProcessPromises.push(new...)
-
-    } // for r loop over resultSetGraphs
-
-    // resolve result sets processing and aggregate final return values for nodes and links
-    Promise.all(resultSetProcessPromises).then((resultSetProcessErrs) => {
-
-      let nodeKeys = Object.keys(nodesHash);
-      if (Config.get('regressionTests', false)) {
-        nodeKeys = nodeKeys.sort(function (a,b) { return nodesHash[a].id.localeCompare(nodesHash[b].id); });
-      }
-      for (let node of nodeKeys) {
-        if (nodesHash[node].cnt < minConn) {
-          nodesHash[node].pos = -1;
-        } else {
-          nodesHash[node].pos = nodes.length;
-          nodes.push(nodesHash[node]);
         }
-      }
 
-      for (let key in connects) {
-        var c = connects[key];
-        c.source = nodesHash[c.source].pos;
-        c.target = nodesHash[c.target].pos;
-        if (c.source >= 0 && c.target >= 0) {
-          links.push(connects[key]);
+        for (let key in connects) {
+          var c = connects[key];
+          c.source = nodesHash[c.source].pos;
+          c.target = nodesHash[c.target].pos;
+          if (c.source >= 0 && c.target >= 0) {
+            links.push(connects[key]);
+          }
         }
-      }
 
-      if (Config.debug) {
-        console.log('nodesHash', nodesHash);
-        console.log('connects', connects);
-        console.log('nodes', nodes.length, nodes);
-        console.log('links', links.length, links);
-      }
+        if (Config.debug) {
+          console.log('buildConnections.nodesHash', nodesHash);
+          console.log('buildConnections.connects', connects);
+          console.log('buildConnections.nodes', nodes.length, nodes);
+          console.log('buildConnections.links', links.length, links);
+        }
 
-      return cb(null, nodes, links, totalHits);
+        return cb(null, nodes, links, totalHits);
 
-    }).catch(err => {
-      console.log('ERROR - buildConnections -> resultSetProcessPromises catch', err);
+      }); // dbConnectionQuerySearch.callback
+
+    } else {
+      let err = 'no connection queries generated'
+      console.log('ERROR - buildConnections', err);
       return cb(err, null, null, null);
-    }); // Promise.all(resultSetProcessPromises)
+    } // connQueries.length check
 
-  }).catch(err => {
-    console.log('ERROR - buildConnections -> Db.searchPrimary catch', err);
-    return cb(err, null, null, null);
-  }); // Promise.all(searchDbPromises)
+  }); // buildConnectionQuery.callback
 
 } // buildConnections
 
