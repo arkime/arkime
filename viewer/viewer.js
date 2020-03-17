@@ -2860,12 +2860,12 @@ function lookupQueryItems(query, doneCb) {
 //// This code was factored out from buildSessionQuery.
 //////////////////////////////////////////////////////////////////////////////////
 function determineQueryTimes (reqQuery) {
-  let startTimeSec = undefined;
-  let stopTimeSec = undefined;
+  let startTimeSec = null;
+  let stopTimeSec = null;
   let interval = 60*60;
 
   if (Config.debug) {
-    console.log("determineQueryTimes<-", reqQuery)
+    console.log("determineQueryTimes<-", reqQuery);
   }
 
   if ((reqQuery.date && reqQuery.date === '-1') ||
@@ -2925,7 +2925,7 @@ function determineQueryTimes (reqQuery) {
   }
 
   if (Config.debug) {
-    console.log("determineQueryTimes->", "startTimeSec", startTimeSec, "stopTimeSec", stopTimeSec, "interval", interval)
+    console.log("determineQueryTimes->", "startTimeSec", startTimeSec, "stopTimeSec", stopTimeSec, "interval", interval);
   }
 
   return [startTimeSec, stopTimeSec, interval];
@@ -2941,8 +2941,12 @@ function buildSessionQuery (req, buildCb, queryOverride=null) {
 
   // determineQueryTimes calculates startTime, stopTime, and interval from reqQuery
   let startAndStopParams = determineQueryTimes(reqQuery);
-  if (startAndStopParams[0] !== undefined) reqQuery.startTime = startAndStopParams[0];
-  if (startAndStopParams[1] !== undefined) reqQuery.stopTime = startAndStopParams[1];
+  if (startAndStopParams[0] !== undefined) {
+    reqQuery.startTime = startAndStopParams[0];
+  }
+  if (startAndStopParams[1] !== undefined) {
+    reqQuery.stopTime = startAndStopParams[1];
+  }
   interval = startAndStopParams[2];
 
   if (parseInt(reqQuery.date) > parseInt(req.user.timeLimit) ||
@@ -5253,7 +5257,7 @@ function buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, resul
       result.query = JSON.parse(JSON.stringify(query));
       result.indices = JSON.parse(JSON.stringify(indices));
 
-      if ((resultId == 1) && (doBaseline)) {
+      if ((resultId === 1) && (doBaseline)) {
         buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, resultId+1, function(baselineResult) {
           return cb([result].concat(baselineResult));
         });
@@ -5297,7 +5301,7 @@ function dbConnectionQuerySearch(connQueries, cb) {
     } else {
       Db.searchPrimary(connQueries[0].indices, 'session', connQueries[0].query, connQueries[0].options, function (err, graph) {
         if (err || graph.error) {
-          console.log('ERROR - dbConnectionQuerySearch -> Db.searchPrimary', resultId, err, graph.error);
+          console.log('ERROR - dbConnectionQuerySearch -> Db.searchPrimary', connQueries[0].resultId, err, graph.error);
           resultSet.err = err ? err : graph.error;
         }
         resultSet.graph = graph;
@@ -5532,7 +5536,7 @@ function buildConnections(req, res, cb) {
       }); // dbConnectionQuerySearch.callback
 
     } else {
-      let err = 'no connection queries generated'
+      let err = 'no connection queries generated';
       console.log('ERROR - buildConnections', err);
       return cb(err, null, null, null);
     } // connQueries.length check
