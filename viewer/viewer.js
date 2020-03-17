@@ -44,7 +44,7 @@ var Config         = require('./config.js'),
     decode         = require('./decode.js'),
     onHeaders      = require('on-headers'),
     glob           = require('glob'),
-    unzip          = require('unzip'),
+    unzipper       = require('unzipper'),
     helmet         = require('helmet'),
     uuid           = require('uuidv4').default,
     RE2            = require('re2');
@@ -8669,7 +8669,7 @@ app.use(['/cyberchef/', '/modules/'], unsafeInlineCspHeader, (req, res) => {
   }
 
   fs.createReadStream(`public/CyberChef_v${internals.CYBERCHEFVERSION}.zip`)
-    .pipe(unzip.Parse())
+    .pipe(unzipper.Parse())
     .on('entry', function (entry) {
       if (entry.path === path) {
         entry.pipe(res);
