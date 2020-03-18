@@ -134,24 +134,6 @@
           </select>
         </div> <!-- /weight select -->
 
-        <!-- unlock button-->
-        <button class="btn btn-default btn-sm ml-1"
-          v-b-tooltip.hover
-          title="Unlock any nodes that you have set into place"
-          @click.stop.prevent="unlock">
-          <span class="fa fa-unlock"></span>&nbsp;
-          Unlock
-        </button> <!-- /unlock button-->
-
-        <!-- export button-->
-        <button class="btn btn-default btn-sm ml-1"
-          v-b-tooltip.hover
-          title="Export this graph as a png"
-          @click.stop.prevent="exportPng">
-          <span class="fa fa-download"></span>&nbsp;
-          Export
-        </button> <!-- /export button-->
-
         <!-- node fields button -->
         <b-dropdown
           size="sm"
@@ -424,6 +406,26 @@
           </button>
         </span>
       </div> <!-- /node distance -->
+
+      <!-- unlock button-->
+      <div class="btn-group-vertical unlock-btn overlay-btns">
+        <button class="btn btn-default btn-sm ml-1"
+          v-b-tooltip.hover
+          title="Unlock any nodes that you have set into place"
+          @click.stop.prevent="unlock">
+          <span class="fa fa-unlock"></span>
+        </button>
+      </div> <!-- /unlock button-->
+
+      <!-- export button-->
+      <div class="btn-group-vertical export-btn overlay-btns">
+        <button class="btn btn-default btn-sm ml-1"
+          v-b-tooltip.hover
+          title="Export this graph as a PNG"
+          @click.stop.prevent="exportPng">
+          <span class="fa fa-download"></span>
+        </button>
+      </div> <!-- /export button-->
 
     </div>
 
@@ -1615,6 +1617,16 @@ export default {
   position: fixed;
   top: 160px;
   right: 90px;
+}
+.connections-content .unlock-btn {
+  position: fixed;
+  top: 160px;
+  right: 135px;
+}
+.connections-content .export-btn {
+  position: fixed;
+  top: 190px;
+  right: 135px;
 }
 
 .connections-content .overlay-btns > span:first-child > button {
