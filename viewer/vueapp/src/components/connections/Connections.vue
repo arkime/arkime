@@ -236,25 +236,25 @@
           </template>
         </b-dropdown> <!-- /link fields button -->
 
-        <!-- network baseline time frame -->
+        <!-- network baseline time range -->
         <div class="input-group input-group-sm ml-1">
           <div class="input-group-prepend help-cursor"
             v-b-tooltip.hover
-            title="Time frame for baseline (preceding query time frame)">
+            title="Time range for baseline (preceding query time range)">
             <span class="input-group-text">
-              Baseline Time Frame
+              Baseline
             </span>
           </div>
           <select class="form-control input-sm"
             v-model="query.baselineDate"
             @change="changeBaselineDate">
             <option value="0">disabled</option>
-            <option value="1x">1 × actual time frame</option>
-            <option value="2x">2 × actual time frame</option>
-            <option value="4x">4 × actual time frame</option>
-            <option value="6x">6 × actual time frame</option>
-            <option value="8x">8 × actual time frame</option>
-            <option value="10x">10 × actual time frame</option>
+            <option value="1x">1 × query range</option>
+            <option value="2x">2 × query range</option>
+            <option value="4x">4 × query range</option>
+            <option value="6x">6 × query range</option>
+            <option value="8x">8 × query range</option>
+            <option value="10x">10 × query range</option>
             <option value="1">1 hour</option>
             <option value="6">6 hours</option>
             <option value="24">24 hours</option>
@@ -267,26 +267,27 @@
             <option value="4380">6 months</option>
             <option value="8760">1 year</option>
           </select>
-        </div> <!-- /network baseline time frame -->
+        </div> <!-- /network baseline time range -->
 
         <!-- network baseline node visibility -->
-        <div class="input-group input-group-sm ml-1">
+        <div class="input-group input-group-sm ml-1"
+          v-show="query.baselineDate !== '0'">
           <div class="input-group-prepend help-cursor"
             v-b-tooltip.hover
             title="Toggle node visibility based on baseline result set membership">
             <span class="input-group-text">
-              Baseline Node Visibility
+              Baseline Visibility
             </span>
           </div>
           <select class="form-control input-sm"
             v-bind:disabled="query.baselineDate === '0'"
             v-model="query.baselineVis"
             @change="changeBaselineVis">
-            <option value="all">All nodes</option>
-            <option value="actual">Actual nodes</option>
-            <option value="actualold">Baseline nodes</option>
-            <option value="new">New nodes only</option>
-            <option value="old">Baseline nodes only</option>
+            <option value="all">All</option>
+            <option value="actual">Actual</option>
+            <option value="actualold">Baseline</option>
+            <option value="new">New only</option>
+            <option value="old">Baseline only</option>
           </select>
         </div> <!-- /network baseline node visibility -->
 
