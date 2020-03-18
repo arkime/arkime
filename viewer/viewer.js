@@ -5291,11 +5291,12 @@ function dbConnectionQuerySearch(connQueries, cb) {
 
   if (connQueries.length > 0) {
 
-    resultSet.resultId = connQueries[0].resultId;
+    resultSet.resultId = connQueries[0] ? connQueries[0].resultId : null;
+    resultSet.err = connQueries[0] ? connQueries[0].err : 'null query object';
 
-    if (connQueries[0].err) {
+    if (((connQueries[0]) && (connQueries[0].err)) || (!connQueries[0])) {
       // propogate query errors up into the result set without doing a search
-      resultSet.err = connQueries[0].err;
+      console.log('ERROR - buildConnectionQuery -> dbConnectionQuerySearch', resultSet.resultId, resultSet.err);
       return cb([resultSet]);
 
     } else {
@@ -5327,6 +5328,17 @@ function dbConnectionQuerySearch(connQueries, cb) {
 ////
 //// Returns objects needed to populate the graph of logical connections between
 //// nodes representing fields of sessions.
+////
+//// function flow is:
+////
+//// 0. buildConnections
+//// 1. buildConnectionQuery       - creates array of 1..2 connQueries
+//// 2. dbConnectionQuerySearch    - executes connQueries searches via Db.searchPrimary
+//// 3. processResultSets          - accumulate nodes and links into nodesHash/connects hashes
+////    - process
+////      - updateValues
+//// 4. processResultSets callback - distill nodesHash/connects hashes into
+////                                 nodes/links arrays and return
 //////////////////////////////////////////////////////////////////////////////////
 function buildConnections(req, res, cb) {
 
@@ -5358,6 +5370,7 @@ function buildConnections(req, res, cb) {
   let links = [];
   let totalHits = 0;
 
+  ///////////////////////////////////////////////////////////////////////////////////
   // updateValues and process are for aggregating query results into their final form
   let dbFieldsMap = Config.getDBFieldsMap();
   function updateValues (data, property, fields) {
@@ -5386,6 +5399,7 @@ function buildConnections(req, res, cb) {
     }
   } // updateValues
 
+  ///////////////////////////////////////////////////////////////////////////////////
   function process (vsrc, vdst, f, fields, resultId) {
     // ES 6 is returning formatted timestamps instead of ms like pre 6 did
     // https://github.com/elastic/elasticsearch/issues/27740
@@ -5425,6 +5439,76 @@ function buildConnections(req, res, cb) {
     updateValues(f, connects[linkId], fields);
   } // process
 
+  ////////////////////////////////////////////////////////////////////////////////////////////
+  // processResultSets - process the hits of each search resultset into nodesHash and connects
+  function processResultSets (connResultSets, cb) {
+
+    let resultSetStatus = {
+      resultId: null,
+      err: null,
+      hits: 0
+    };
+
+    if (connResultSets.length > 0) {
+
+      resultSetStatus.resultId = connResultSets[0] ? connResultSets[0].resultId : null;
+      resultSetStatus.err = connResultSets[0] ? connResultSets[0].err : 'null resultset';
+
+      if (((connResultSets[0]) && (connResultSets[0].err)) || (!connResultSets[0])) {
+        // propogate errors up (and stop processing)
+        console.log('ERROR - buildConnectionQuery -> processResultSets', resultSetStatus.resultId, resultSetStatus.err);
+        return cb([resultSetStatus]);
+
+      } else {
+        async.eachLimit(connResultSets[0].graph.hits.hits, 10, function (hit, hitCb) {
+          let f = hit._source;
+          f = flattenFields(f);
+
+          let asrc = hit.fields[fsrc];
+          let adst = hit.fields[fdst];
+
+          if (asrc === undefined || adst === undefined) {
+            return setImmediate(hitCb);
+          }
+
+          if (!Array.isArray(asrc)) { asrc = [asrc]; }
+          if (!Array.isArray(adst)) { adst = [adst]; }
+
+          for (let vsrc of asrc) {
+            for (let vdst of adst) {
+              if (dstIsIp && dstipport) {
+                if (vdst.includes(':')) {
+                  vdst += '.' + f.dstPort;
+                } else {
+                  vdst += ':' + f.dstPort;
+                }
+              }
+              process(vsrc, vdst, f, fields, connResultSets[0].resultId);
+            } // let vdst of adst
+          } // for vsrc of asrc
+          setImmediate(hitCb);
+
+        }, function (err) {
+          resultSetStatus.err = err;
+          resultSetStatus.hits = connResultSets[0].graph.hits.total;
+          if (connResultSets.length > 1) {
+            processResultSets(connResultSets.slice(1), function(baselineResultSetStatus) {
+              return cb([resultSetStatus].concat(baselineResultSetStatus));
+            });
+          } else {
+            return cb([resultSetStatus]);
+          }
+
+        }); // async.eachLimit(graph.hits.hits) / function(err)
+      } // if connResultSets[0].err) / else
+
+    } else {
+      return cb([null]);
+    } // (connResultSets.length > 0) / else
+
+  } // processResultSets
+
+  ////////////////////////////////////////////////////////////////////////////////////////////
   // call to build the session query|queries and indices
   buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, 1, function(connQueries) {
 
@@ -5443,96 +5527,58 @@ function buildConnections(req, res, cb) {
 
     if (connQueries.length > 0) {
       dbConnectionQuerySearch(connQueries, function(connResultSets) {
+
         if (Config.debug) {
           console.log('buildConnections.connResultSets', connResultSets.length, JSON.stringify(connResultSets, null, 2));
         }
 
-        // process the result set for each search
-        for (var r = 0, rlen = connResultSets.length; r < rlen; r++) {
-          if (connResultSets[r]) {
+        // aggregate final return values for nodes and links
+        processResultSets(connResultSets, function(connResultSetStats) {
 
-            if (connResultSets[r].err) {
-              // error generating query or performing search, abort
-              return cb(connResultSets[r].err, null, null, null);
+          if (Config.debug) {
+            console.log('buildConnections.processResultSets', connResultSetStats.length, JSON.stringify(connResultSetStats, null, 2));
+          }
 
+          for (let stat of connResultSetStats) {
+            if (stat.err) {
+              return cb(stat.err, null, null, null);
+            }
+            totalHits += stat.hits;
+          }
+
+          let nodeKeys = Object.keys(nodesHash);
+          if (Config.get('regressionTests', false)) {
+            nodeKeys = nodeKeys.sort(function (a,b) { return nodesHash[a].id.localeCompare(nodesHash[b].id); });
+          }
+          for (let node of nodeKeys) {
+            if (nodesHash[node].cnt < minConn) {
+              nodesHash[node].pos = -1;
             } else {
-              let resultId = connResultSets[r].resultId;
-              let graph = connResultSets[r].graph;
-
-              // accumulate resultSetGraphs[r].hits.total into totalHits so that recordsFiltered
-              // represents session records seen from all all queries
-              totalHits += graph.hits.total;
-
-              // process each hit from each result set
-              for (var hitIdx = 0; hitIdx < graph.hits.total; hitIdx++) {
-                let hit = graph.hits.hits[hitIdx];
-                let f = hit._source;
-                f = flattenFields(f);
-
-                let asrc = hit.fields[fsrc];
-                let adst = hit.fields[fdst];
-
-                if (asrc !== undefined && adst !== undefined) {
-                  if (!Array.isArray(asrc)) {
-                    asrc = [asrc];
-                  }
-
-                  if (!Array.isArray(adst)) {
-                    adst = [adst];
-                  }
-
-                  for (let vsrc of asrc) {
-                    for (let vdst of adst) {
-                      if (dstIsIp && dstipport) {
-                        if (vdst.includes(':')) {
-                          vdst += '.' + f.dstPort;
-                        } else {
-                          vdst += ':' + f.dstPort;
-                        }
-                      }
-                      process(vsrc, vdst, f, fields, resultId);
-                    } // vdst of adst loop
-                  } // vsrc of asrc loop
-                } // arcs/adst !== undefined
-
-              } // for hitIdx over graph.hits.hits
-
-            } // if (connResultSets[r].err) / else
-          } // if (connResultSets[r])
-        } // for r loop over resultSetGraphs
-
-        // resolve result sets processing and aggregate final return values for nodes and links
-        let nodeKeys = Object.keys(nodesHash);
-        if (Config.get('regressionTests', false)) {
-          nodeKeys = nodeKeys.sort(function (a,b) { return nodesHash[a].id.localeCompare(nodesHash[b].id); });
-        }
-        for (let node of nodeKeys) {
-          if (nodesHash[node].cnt < minConn) {
-            nodesHash[node].pos = -1;
-          } else {
-            nodesHash[node].pos = nodes.length;
-            nodes.push(nodesHash[node]);
+              nodesHash[node].pos = nodes.length;
+              nodes.push(nodesHash[node]);
+            }
           }
-        }
 
-        for (let key in connects) {
-          var c = connects[key];
-          c.source = nodesHash[c.source].pos;
-          c.target = nodesHash[c.target].pos;
-          if (c.source >= 0 && c.target >= 0) {
-            links.push(connects[key]);
+          for (let key in connects) {
+            var c = connects[key];
+            c.source = nodesHash[c.source].pos;
+            c.target = nodesHash[c.target].pos;
+            if (c.source >= 0 && c.target >= 0) {
+              links.push(connects[key]);
+            }
           }
-        }
 
-        if (Config.debug) {
-          console.log('buildConnections.nodesHash', nodesHash);
-          console.log('buildConnections.connects', connects);
-          console.log('buildConnections.nodes', nodes.length, nodes);
-          console.log('buildConnections.links', links.length, links);
-        }
+          if (Config.debug) {
+            console.log('buildConnections.nodesHash', nodesHash);
+            console.log('buildConnections.connects', connects);
+            console.log('buildConnections.nodes', nodes.length, nodes);
+            console.log('buildConnections.links', links.length, links);
+            console.log('buildConnections.totalHits', totalHits);
+          }
 
-        return cb(null, nodes, links, totalHits);
+          return cb(null, nodes, links, totalHits);
 
+        }); // processResultSets.callback
       }); // dbConnectionQuerySearch.callback
 
     } else {
