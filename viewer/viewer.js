@@ -5270,7 +5270,7 @@ function buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, resul
 } // buildConnectionQuery
 
 //////////////////////////////////////////////////////////////////////////////////
-//// buildConnectionQuery(connQueries, resultId, cb)
+//// dbConnectionQuerySearch(connQueries, resultId, cb)
 ////
 //// Executes the query/queries specified in the connQueries array (elements are
 //// of the type returned by buildConnectionQuery) by calling Db.searchPrimary
