@@ -2873,13 +2873,13 @@ function determineQueryTimes (reqQuery) {
     interval = 60*60; // Hour to be safe
 
   } else if ((reqQuery.startTime !== undefined) && (reqQuery.stopTime !== undefined)) {
-    if (! /^[0-9]+$/.test(reqQuery.startTime)) {
+    if (! /^-?[0-9]+$/.test(reqQuery.startTime)) {
       startTimeSec = Date.parse(reqQuery.startTime.replace('+', ' ')) / 1000;
     } else {
       startTimeSec = parseInt(reqQuery.startTime, 10);
     }
 
-    if (! /^[0-9]+$/.test(reqQuery.stopTime)) {
+    if (! /^-?[0-9]+$/.test(reqQuery.stopTime)) {
       stopTimeSec = Date.parse(reqQuery.stopTime.replace('+', ' ')) / 1000;
     } else {
       stopTimeSec = parseInt(reqQuery.stopTime, 10);
