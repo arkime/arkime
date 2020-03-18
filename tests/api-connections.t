@@ -64,9 +64,9 @@ my ($json, $mjson);
     delete $json->{health};
     eq_or_diff($json, from_json('{ "success": false,  "text": "Unknown protocol string blah" }', {relaxed => 1}), "ip.protocol==blah", { context => 3 });
 
-    $json = multiGet("/connections.json?date=-1&expression=" . uri_escape("$files&&ip.protocol==blah"));
+    $mjson = multiGet("/connections.json?date=-1&expression=" . uri_escape("$files&&ip.protocol==blah"));
     delete $mjson->{health};
-    eq_or_diff($json, from_json('{ "success": false, "text": "Unknown protocol string blah" }', {relaxed => 1}), "multi ip.protocol==blah", { context => 3 });
+    eq_or_diff($mjson, from_json('{ "success": false, "text": "Unknown protocol string blah" }', {relaxed => 1}), "multi ip.protocol==blah", { context => 3 });
 
 # node to protocols with baseline
     $json = viewerGet("/connections.json?date=0&startTime=1388559600&stopTime=1404194399&srcField=node&dstField=protocol&baselineDate=1x&baselineVis=all&expression=" . uri_escape("$files_baseline"));
