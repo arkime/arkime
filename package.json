@@ -33,7 +33,7 @@
     "morgan": "^1.9.1",
     "native-dns": "^0.7.0",
     "natives": "^1.1.6",
-    "notifme-sdk": "^1.9.2",
+    "notifme-sdk": "^1.9.3",
     "on-headers": "^1.0.1",
     "pug": "^2.0.0",
     "request": "^2.88.0",
