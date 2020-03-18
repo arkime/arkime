@@ -18,7 +18,7 @@
 'use strict';
 
 var fs             = require('fs')
-  , unzip          = require('unzip')
+  , unzipper       = require('unzipper')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
   , HashTable      = require('hashtable')
@@ -83,7 +83,7 @@ ThreatQSource.prototype.parseFile = function()
 
   var count = 0;
   fs.createReadStream('/tmp/threatquotient.zip')
-    .pipe(unzip.Parse())
+    .pipe(unzipper.Parse())
     .on('entry', (entry) => {
       var bufs = [];
       entry.on('data', (buf) => {
