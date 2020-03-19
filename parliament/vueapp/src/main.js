@@ -6,11 +6,7 @@ import VueAxios from 'vue-axios';
 import VueMoment from 'vue-moment';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
-import vBTooltip from 'bootstrap-vue/es/directives/tooltip/tooltip';
-import bDropdown from 'bootstrap-vue/es/components/dropdown/dropdown';
-import bDropdownItem from 'bootstrap-vue/es/components/dropdown/dropdown-item';
-import bDropdownDropdown from 'bootstrap-vue/es/components/dropdown/dropdown-divider';
-import bPagination from 'bootstrap-vue/es/components/pagination/pagination';
+import BootstrapVue from 'bootstrap-vue/dist/bootstrap-vue.esm';
 
 // internal deps
 import App from './App';
@@ -23,12 +19,7 @@ Vue.config.productionTip = false;
 
 Vue.use(VueAxios, axios);
 Vue.use(VueMoment);
-
-Vue.directive('b-tooltip', vBTooltip);
-Vue.component('b-dropdown', bDropdown);
-Vue.component('b-dropdown-item', bDropdownItem);
-Vue.component('b-dropdown-divider', bDropdownDropdown);
-Vue.component('b-pagination', bPagination);
+Vue.use(BootstrapVue);
 
 // setup axios http interceptor to add token to reqs
 interceptorSetup();

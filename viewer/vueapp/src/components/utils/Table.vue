@@ -193,7 +193,6 @@ import UserService from '../users/UserService';
 import ToggleBtn from '../utils/ToggleBtn';
 
 let tableDestroyed;
-let draggableColumns;
 
 /**
  * IMPORTANT! This component kicks off the loading of the
@@ -525,7 +524,7 @@ export default {
     /* helper functions ------------------------------------------ */
     initializeColDragDrop: function () {
       setTimeout(() => { // wait for columns to render
-        draggableColumns = Sortable.create(this.$refs.draggableColumns, {
+        Sortable.create(this.$refs.draggableColumns, {
           animation: 100,
           filter: '.ignore-element',
           preventOnFilter: false, // allow clicks within the ignored element
