@@ -703,7 +703,6 @@ export default {
   },
   beforeDestroy: function () {
     tableDestroyed = true;
-    if (draggableColumns) { draggableColumns.destroy(); }
   }
 };
 </script>

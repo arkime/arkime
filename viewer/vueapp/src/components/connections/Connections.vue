@@ -1362,19 +1362,21 @@ export default {
     $('.connections-popup').remove();
     if (popupVue) { popupVue.$destroy(); }
 
-    // clean up global vars
-    svg = undefined;
-    zoom = undefined;
-    node = undefined;
-    link = undefined;
-    colors = undefined;
-    popupVue = undefined;
-    container = undefined;
-    nodeLabel = undefined;
-    popupTimer = undefined;
-    simulation = undefined;
-    draggingNode = undefined;
-    foregroundColor = undefined;
+    setTimeout(() => {
+      // clean up global vars
+      svg = undefined;
+      zoom = undefined;
+      node = undefined;
+      link = undefined;
+      colors = undefined;
+      popupVue = undefined;
+      container = undefined;
+      nodeLabel = undefined;
+      popupTimer = undefined;
+      simulation = undefined;
+      draggingNode = undefined;
+      foregroundColor = undefined;
+    });
   }
 };
 </script>

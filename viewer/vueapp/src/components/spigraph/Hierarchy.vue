@@ -1206,22 +1206,24 @@ export default {
     // remove listeners
     window.removeEventListener('resize', this.resize);
     window.removeEventListener('keyup', closeInfoOnEsc);
-    // d3 doesn't have .off function to remove listeners,
-    // so use .on('listener', null)
-    newSlice
-      .on('mouseover', null)
-      .on('mouseleave', null);
-    newBox
-      .on('mouseover', null)
-      .on('mouseleave', null);
 
     // remove elements
     if (newSlice) {
+      // d3 doesn't have .off function to remove listeners,
+      // so use .on('listener', null)
+      newSlice
+        .on('mouseover', null)
+        .on('mouseleave', null);
       newSlice.exit().remove();
       newSlice.selectAll('path').remove();
       newSlice.selectAll('text').remove();
     }
     if (newBox) {
+      // d3 doesn't have .off function to remove listeners,
+      // so use .on('listener', null)
+      newBox
+        .on('mouseover', null)
+        .on('mouseleave', null);
       newBox.exit().remove();
       newBox.selectAll('rect').remove();
       newBox.selectAll('text').remove();
