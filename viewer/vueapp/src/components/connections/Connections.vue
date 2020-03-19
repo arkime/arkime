@@ -938,6 +938,7 @@ export default {
           friendlyName: 'Dst IP:Dst Port'
         };
         this.fields.push(ipDstPortField);
+        this.fieldsMap['ip.dst:port'] = ipDstPortField;
         this.groupedFields.general.push(ipDstPortField);
       }
     },
@@ -1285,8 +1286,10 @@ export default {
     },
     showNodePopup: function (dataNode) {
       if (dataNode.type === 2) {
+        dataNode.dbField = this.query.dstField;
         dataNode.exp = this.dbField2Exp(this.query.dstField);
       } else {
+        dataNode.dbField = this.query.srcField;
         dataNode.exp = this.dbField2Exp(this.query.srcField);
       }
 
@@ -1296,7 +1299,15 @@ export default {
           template: `
             <div class="connections-popup">
               <div class="mb-2">
-                <strong>{{dataNode.id}}</strong>
+                <strong>
+                  <moloch-session-field
+                    :value="dataNode.id"
+                    :session="dataNode"
+                    :expr="dataNode.exp"
+                    :field="fields[dataNode.dbField]"
+                    :pull-left="true">
+                  </moloch-session-field>
+                </strong>
                 <a class="pull-right cursor-pointer no-decoration"
                   @click="closePopup">
                   <span class="fa fa-close"></span>
@@ -1313,8 +1324,8 @@ export default {
 
                 <span v-for="field in nodeFields"
                   :key="field">
-                  <dt :title="fields[field].friendlyName">
-                    {{ fields[field].exp }}
+                  <dt>
+                    {{ fields[field].friendlyName }}
                   </dt>
                   <dd>
                     <span v-if="!Array.isArray(dataNode[field])">
@@ -1339,22 +1350,10 @@ export default {
                   </dd>
                 </span>
 
-                <dt>Result Set</dt>
-                <dd>{{['','Actual','Baseline','Both'][dataNode.inresult]}}</dd>
-
-                <dt>Expressions</dt>
-                <dd>
-                  <a class="cursor-pointer no-decoration"
-                    href="javascript:void(0)"
-                    @click.stop.prevent="addExpression('&&')">
-                    AND
-                  </a>&nbsp;
-                  <a class="cursor-pointer no-decoration"
-                    href="javascript:void(0)"
-                    @click.stop.prevent="addExpression('||')">
-                    OR
-                  </a>
-                </dd>
+                <div v-if="baselineDate !== '0'">
+                  <dt>Result Set</dt>
+                  <dd>{{['','✨Actual','🚫 Baseline','Both'][dataNode.inresult]}}</dd>
+                </div>
               </dl>
 
               <a class="cursor-pointer no-decoration"
@@ -1370,7 +1369,8 @@ export default {
           data: {
             dataNode: dataNode,
             nodeFields: this.nodeFields,
-            fields: this.fieldsMap
+            fields: this.fieldsMap,
+            baselineDate: this.query.baselineDate
           },
           methods: {
             hideNode: function () {
@@ -1400,6 +1400,8 @@ export default {
       $('.connections-popup').show();
     },
     showLinkPopup: function (linkData) {
+      linkData.dstDbField = this.query.dstField;
+      linkData.srcDbField = this.query.srcField;
       linkData.dstExp = this.dbField2Exp(this.query.dstField);
       linkData.srcExp = this.dbField2Exp(this.query.srcField);
 
@@ -1415,9 +1417,23 @@ export default {
                   <span class="fa fa-close"></span>
                 </a>
               </div>
-              <div>{{linkData.source.id}}</div>
+              <div>
+                <moloch-session-field
+                  :value="linkData.source.id"
+                  :session="linkData"
+                  :expr="linkData.srcExp"
+                  :field="fields[linkData.srcDbField]"
+                  :pull-left="true">
+                </moloch-session-field>
+              </div>
               <div class="mb-2">
-                {{linkData.target.id}}
+                <moloch-session-field
+                  :value="linkData.target.id"
+                  :session="linkData"
+                  :expr="linkData.dstExp"
+                  :field="fields[linkData.dstDbField]"
+                  :pull-left="true">
+                </moloch-session-field>
               </div>
 
               <dl class="dl-horizontal">
@@ -1426,8 +1442,8 @@ export default {
 
                 <span v-for="field in linkFields"
                   :key="field">
-                  <dt :title="fields[field].friendlyName">
-                    {{ fields[field].exp }}
+                  <dt>
+                    {{ fields[field].friendlyName }}
                   </dt>
                   <dd>
                     <span v-if="!Array.isArray(linkData[field])">
@@ -1451,16 +1467,6 @@ export default {
                     </span>&nbsp;
                   </dd>
                 </span>
-
-                <dt>Expressions</dt>
-                <dd>
-                  <a class="cursor-pointer no-decoration"
-                    href="javascript:void(0)"
-                    @click="addExpression('&&')">AND</a>&nbsp;
-                  <a class="cursor-pointer no-decoration"
-                    href="javascript:void(0)"
-                    @click="addExpression('||')">OR</a>
-                </dd>
               </dl>
 
               <a class="cursor-pointer no-decoration"
@@ -1626,10 +1632,16 @@ export default {
   top: 160px;
   right: 135px;
 }
+.connections-content .unlock-btn > button {
+  height: 29px;
+}
 .connections-content .export-btn {
   position: fixed;
-  top: 190px;
+  top: 192px;
   right: 135px;
+}
+.connections-content .export-btn > button {
+  height: 29px;
 }
 
 .connections-content .overlay-btns > span:first-child > button {
