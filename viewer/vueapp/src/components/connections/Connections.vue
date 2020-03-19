@@ -1539,18 +1539,20 @@ export default {
     $('.connections-popup').remove();
     if (popupVue) { popupVue.$destroy(); }
 
-    // clean up global vars
-    svg = undefined;
-    zoom = undefined;
-    node = undefined;
-    link = undefined;
-    nodeFillColors = undefined;
-    popupVue = undefined;
-    container = undefined;
-    nodeLabel = undefined;
-    popupTimer = undefined;
-    simulation = undefined;
-    draggingNode = undefined;
+    setTimeout(() => {
+      // clean up global vars
+      svg = undefined;
+      zoom = undefined;
+      node = undefined;
+      link = undefined;
+      nodeFillColors = undefined;
+      popupVue = undefined;
+      container = undefined;
+      nodeLabel = undefined;
+      popupTimer = undefined;
+      simulation = undefined;
+      draggingNode = undefined;
+    });
   }
 };
 </script>

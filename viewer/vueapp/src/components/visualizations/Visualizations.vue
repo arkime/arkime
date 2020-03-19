@@ -9,7 +9,7 @@
 
       <!-- map open button -->
       <div class="map-btn"
-        v-if="!showMap && primary"
+        v-show="!showMap && primary"
         @click="toggleMap"
         v-b-tooltip.hover
         title="View map"

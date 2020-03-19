@@ -170,7 +170,7 @@ export default {
       let url = addTags ? 'addTags' : 'removeTags';
       let options = this.getReqOptions(url, 'POST', params, routeParams);
 
-      if (options.error) { return reject({text: options.error}); }
+      if (options.error) { return reject({ text: options.error }); }
 
       // add sort to params
       options.params.order = store.state.sortsParam;
@@ -199,7 +199,7 @@ export default {
     return new Promise((resolve, reject) => {
       let options = this.getReqOptions('delete', 'POST', params, routeParams);
 
-      if (options.error) { return reject({text: options.error}); }
+      if (options.error) { return reject({ text: options.error }); }
 
       // add sort to params
       options.params.order = store.state.sortsParam;
@@ -225,7 +225,7 @@ export default {
     return new Promise((resolve, reject) => {
       let options = this.getReqOptions('sendSessions', 'POST', params, routeParams);
 
-      if (options.error) { return reject({text: options.error}); };
+      if (options.error) { return reject({ text: options.error }); };
 
       // add sort to params
       options.params.order = store.state.sortsParam;
@@ -261,7 +261,7 @@ export default {
 
       let options = this.getReqOptions(baseUrl, '', params, routeParams);
 
-      if (options.error) { return reject({text: options.error}); };
+      if (options.error) { return reject({ text: options.error }); };
 
       // add missing params
       options.params.segments = segments;
@@ -276,7 +276,7 @@ export default {
 
       window.location = url;
 
-      return resolve({text: 'PCAP now exporting'});
+      return resolve({ text: 'PCAP now exporting' });
     });
   },
 
@@ -295,7 +295,7 @@ export default {
 
       let options = this.getReqOptions(baseUrl, '', params, routeParams);
 
-      if (options.error) { return reject({text: options.error}); };
+      if (options.error) { return reject({ text: options.error }); };
 
       // add missing params
       options.params.segments = segments;
@@ -310,7 +310,7 @@ export default {
 
       window.location = url;
 
-      return resolve({text: 'CSV Exported'});
+      return resolve({ text: 'CSV Exported' });
     });
   },
 

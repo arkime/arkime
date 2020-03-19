@@ -522,7 +522,6 @@ let timeout;
 
 let colResizeInitialized;
 let colDragDropInitialized;
-let draggableColumns;
 let tableDestroyed;
 
 // window/table resize variables
@@ -1513,7 +1512,7 @@ export default {
       if (!this.$refs.draggableColumns) { return; }
 
       colDragDropInitialized = true;
-      draggableColumns = Sortable.create(this.$refs.draggableColumns, {
+      Sortable.create(this.$refs.draggableColumns, {
         animation: 100,
         filter: '.ignore-element',
         preventOnFilter: false, // allow clicks within the ignored element
@@ -1638,8 +1637,6 @@ export default {
     if (timeout) { clearTimeout(timeout); }
 
     $('#sessionsTable').colResizable({ disable: true });
-
-    if (draggableColumns) { draggableColumns.destroy(); }
 
     window.removeEventListener('resize', windowResizeEvent);
   }

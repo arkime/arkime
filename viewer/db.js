@@ -262,7 +262,9 @@ function searchScrollInternal(index, type, query, options, cb) {
         if (totalResults && from > 0) {
           totalResults.hits.hits = totalResults.hits.hits.slice(from);
         }
-        exports.clearScroll({body:{scroll_id: response._scroll_id}});
+        if (response._scroll_id) {
+          exports.clearScroll({body:{scroll_id: response._scroll_id}});
+        }
         return cb(null, totalResults);
       }
     });

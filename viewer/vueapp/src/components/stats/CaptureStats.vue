@@ -110,7 +110,7 @@ export default {
         { id: 'diskQueue', name: 'Disk Q', sort: 'diskQueue', width: 85, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.diskQueue); } },
         { id: 'esQueue', name: 'ES Q', sort: 'esQueue', width: 85, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.esQueue); } },
         { id: 'deltaPackets', name: 'Packet/s', sort: 'deltaPackets', width: 100, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaPackets); } },
-        { id: 'deltaBytesPerSec', name: 'Bytes/s', sort: 'deltaBytes', width: 80, dataFunction: (item) => { console.log('ALW1', item); return this.$options.filters.humanReadableBytes(item.deltaBytesPerSec); }, default: true, doStats: true },
+        { id: 'deltaBytesPerSec', name: 'Bytes/s', sort: 'deltaBytes', width: 80, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.deltaBytesPerSec); }, default: true, doStats: true },
         { id: 'deltaSessions', name: 'Sessions/s', sort: 'deltaSessions', width: 100, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaSessions); } },
         { id: 'deltaDropped', name: 'Packet Drops/s', sort: 'deltaDropped', width: 130, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaDropped); } },
         // all the rest of the available stats

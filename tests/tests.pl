@@ -278,6 +278,7 @@ my ($cmd) = @_;
         if ($main::debug) {
             system("cd ../wiseService ; node wiseService.js -c ../tests/config.test.ini > /tmp/moloch.wise &");
             system("cd ../viewer ; node --trace-warnings multies.js -c ../tests/config.test.ini -n all --debug > /tmp/multies.all &");
+            waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test --debug > /tmp/moloch.test &");
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test2 --debug > /tmp/moloch.test2 &");
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n all --debug > /tmp/moloch.all &");
@@ -285,12 +286,13 @@ my ($cmd) = @_;
         } else {
             system("cd ../wiseService ; node wiseService.js -c ../tests/config.test.ini > /dev/null &");
             system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all > /dev/null &");
+            waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all > /dev/null &");
             system("cd ../parliament ; node parliament.js --regressionTests -c /dev/null > /dev/null 2>&1 &");
         }
-        waitFor($MolochTest::host, 8081);
+        waitFor($MolochTest::host, 8081, 1);
         sleep (10000) if ($cmd eq "--viewerhang");
     } else {
         print ("Initializing ES\n");
@@ -319,8 +321,7 @@ my ($cmd) = @_;
             system("cd ../wiseService ; node wiseService.js -c ../tests/config.test.ini > /dev/null &");
         }
 
-        waitFor($MolochTest::host, 8081);
-        sleep 1;
+        waitFor($MolochTest::host, 8081, 1);
 
         $main::userAgent->get("$ELASTICSEARCH/_flush");
         $main::userAgent->get("$ELASTICSEARCH/_refresh");
@@ -349,12 +350,14 @@ my ($cmd) = @_;
         print ("Starting viewer\n");
         if ($main::debug) {
             system("cd ../viewer ; node --trace-warnings multies.js -c ../tests/config.test.ini -n all --debug > /tmp/multies.all &");
+            waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test --debug > /tmp/moloch.test &");
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test2 --debug > /tmp/moloch.test2 &");
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n all --debug > /tmp/moloch.all &");
             system("cd ../parliament ; node --trace-warnings parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
         } else {
             system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all > /dev/null &");
+            waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all > /dev/null &");
@@ -366,7 +369,6 @@ my ($cmd) = @_;
     waitFor($MolochTest::host, 8124);
     waitFor($MolochTest::host, 8125);
     waitFor($MolochTest::host, 8008);
-    waitFor($MolochTest::host, 8200);
     sleep 1;
 
     $main::userAgent->get("$ELASTICSEARCH/_flush");
