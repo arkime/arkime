@@ -347,17 +347,17 @@ void moloch_plugins_cb_new(MolochSession_t *session)
     );
 }
 /******************************************************************************/
-void moloch_plugins_cb_tcp(MolochSession_t *session, unsigned char *data, int len)
+void moloch_plugins_cb_tcp(MolochSession_t *session, const unsigned char *data, int len, int which)
 {
     MolochPlugin_t *plugin;
 
     HASH_FORALL(p_, plugins, plugin,
         if (plugin->tcpFunc)
-            plugin->tcpFunc(session, data, len);
+            plugin->tcpFunc(session, data, len, which);
     );
 }
 /******************************************************************************/
-void moloch_plugins_cb_udp(MolochSession_t *session, struct udphdr *udphdr, unsigned char *data, int len)
+void moloch_plugins_cb_udp(MolochSession_t *session, struct udphdr *udphdr, const unsigned char *data, int len)
 {
     MolochPlugin_t *plugin;
 

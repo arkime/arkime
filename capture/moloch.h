@@ -1078,8 +1078,8 @@ void moloch_mprotocol_init();
  */
 typedef void (* MolochPluginInitFunc) ();
 typedef void (* MolochPluginIpFunc) (MolochSession_t *session, struct ip *packet, int len);
-typedef void (* MolochPluginUdpFunc) (MolochSession_t *session, struct udphdr *udphdr, unsigned char *data, int len);
-typedef void (* MolochPluginTcpFunc) (MolochSession_t *session, unsigned char *data, int len);
+typedef void (* MolochPluginUdpFunc) (MolochSession_t *session, struct udphdr *udphdr, const unsigned char *data, int len);
+typedef void (* MolochPluginTcpFunc) (MolochSession_t *session, const unsigned char *data, int len, int which);
 typedef void (* MolochPluginSaveFunc) (MolochSession_t *session, int final);
 typedef void (* MolochPluginNewFunc) (MolochSession_t *session);
 typedef void (* MolochPluginExitFunc) ();
@@ -1162,8 +1162,8 @@ void moloch_plugins_cb_pre_save(MolochSession_t *session, int final);
 void moloch_plugins_cb_save(MolochSession_t *session, int final);
 void moloch_plugins_cb_new(MolochSession_t *session);
 //void moloch_plugins_cb_ip(MolochSession_t *session, struct ip *packet, int len);
-void moloch_plugins_cb_udp(MolochSession_t *session, struct udphdr *udphdr, unsigned char *data, int len);
-//void moloch_plugins_cb_tcp(MolochSession_t *session, struct tcp_stream *a_tcp);
+void moloch_plugins_cb_udp(MolochSession_t *session, struct udphdr *udphdr, const unsigned char *data, int len);
+void moloch_plugins_cb_tcp(MolochSession_t *session, const unsigned char *data, int len, int which);
 
 void moloch_plugins_cb_hp_omb(MolochSession_t *session, http_parser *parser);
 void moloch_plugins_cb_hp_ou(MolochSession_t *session, http_parser *parser, const char *at, size_t length);

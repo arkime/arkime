@@ -31,6 +31,7 @@ extern int                   tcpMProtocol;
 
 extern MolochSessionHead_t   tcpWriteQ[MOLOCH_MAX_PACKET_THREADS];
 LOCAL int                    maxTcpOutOfOrderPackets;
+extern uint32_t              pluginsCbs;
 
 void moloch_packet_free(MolochPacket_t *packet);
 
@@ -119,6 +120,9 @@ void tcp_packet_finish(MolochSession_t *session)
             if (config.yara && config.yaraEveryPacket && !session->stopYara) {
                 moloch_yara_execute(session, data, len, 0);
             }
+
+            if (pluginsCbs & MOLOCH_PLUGIN_TCP)
+                moloch_plugins_cb_tcp(session, data, len, which);
 
             DLL_REMOVE(td_, tcpData, ftd);
             moloch_packet_free(ftd->packet);
