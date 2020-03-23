@@ -41,7 +41,7 @@
                   "notAfter" : 1584947742000,
                   "notBefore" : 1521875742000,
                   "publicAlgorithm" : "id-ecPublicKey",
-                  "remainingDays" : 1,
+                  "remainingDays" : 0,
                   "serial" : "5ecb7cee8ca206bf9ec00728889ad99f4362cfd9",
                   "subjectCN" : [
                      "sans isc dshield test"

@@ -36,7 +36,7 @@ var internals = {fileId2File: {},
                  nodesInfoCache: {},
                  masterCache: {},
                  qInProgress: 0,
-                 apiVersion: "6.7",
+                 apiVersion: "6.8",
                  q: []};
 
 exports.initialize = function (info, cb) {
@@ -88,8 +88,8 @@ exports.initialize = function (info, cb) {
     if (err) {
       console.log(err, data);
     }
-    if (data.version.number.match(/^(6.[0-6]|[0-5]|8)/)) {
-      console.log("ERROR - ES", data.version.number, "not supported, ES 6.7.x or later required.");
+    if (data.version.number.match(/^(6.[0-7]|[0-5]|8)/)) {
+      console.log("ERROR - ES", data.version.number, "not supported, ES 6.8.x or later required.");
       process.exit();
       throw new Error("Exiting");
     }
