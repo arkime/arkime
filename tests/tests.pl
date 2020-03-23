@@ -173,6 +173,9 @@ my ($json) = @_;
     foreach my $session (@{$json->{sessions2}}) {
         my $body = $session->{body};
 
+        # Keep as session for now
+        $session->{header}->{index}->{_type} = "session" if ($session->{header}->{index}->{_type} eq "_doc");
+
         delete $session->{header}->{index}->{_id};
         if (exists $body->{rootId}) {
             $body->{rootId} = "SET";
