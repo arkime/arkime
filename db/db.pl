@@ -217,7 +217,7 @@ sub showHelp($)
     print "\n";
     print "ES maintenance\n";
     print "  set-replicas <pat> <num>              - Set the number of replicas for index pattern\n";
-    print "  set-shards-per-node <pat> <num>       - Set the number of replicas for index pattern\n";
+    print "  set-shards-per-node <pat> <num>       - Set the number of shards per node for index pattern\n";
     print "  set-allocation-enable <mode>          - Set the allocation mode (all, primaries, new_primaries, none, null)\n";
     print "  allocate-empty <node> <index> <shard> - Allocate a empty shard on a node, DATA LOSS!\n";
     print "  unflood-stage <pat>                   - Mark index pattern as no longer flooded\n";
