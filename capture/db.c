@@ -510,9 +510,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     startPtr = BSB_WORK_PTR(jbsb);
 
     if (config.autoGenerateId) {
-        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_type\": \"session\"}}\n", config.prefix, dbInfo[thread].prefix);
+        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_type\": \"_doc\"}}\n", config.prefix, dbInfo[thread].prefix);
     } else {
-        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_type\": \"session\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
+        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_type\": \"_doc\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
     }
 
     dataPtr = BSB_WORK_PTR(jbsb);
@@ -1067,7 +1067,7 @@ LOCAL void moloch_db_load_stats()
 
     char     stats_key[200];
     int      stats_key_len = 0;
-    stats_key_len = snprintf(stats_key, sizeof(stats_key), "/%sstats/stat/%s", config.prefix, config.nodeName);
+    stats_key_len = snprintf(stats_key, sizeof(stats_key), "/%sstats/_doc/%s", config.prefix, config.nodeName);
 
     unsigned char     *data = moloch_http_get(esServer, stats_key, stats_key_len, &data_len);
 
@@ -1387,11 +1387,11 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         char     stats_key[200];
         int      stats_key_len = 0;
         if (config.pcapReadOffline) {
-            stats_key_len = snprintf(stats_key, sizeof(stats_key), "/%sstats/stat/%s", config.prefix, config.nodeName);
+            stats_key_len = snprintf(stats_key, sizeof(stats_key), "/%sstats/_doc/%s", config.prefix, config.nodeName);
         } else {
             // Prevent out of order stats records when doing live captures
             dbVersion++;
-            stats_key_len = snprintf(stats_key, sizeof(stats_key), "/%sstats/stat/%s?version_type=external&version=%" PRIu64, config.prefix, config.nodeName, dbVersion);
+            stats_key_len = snprintf(stats_key, sizeof(stats_key), "/%sstats/_doc/%s?version_type=external&version=%" PRIu64, config.prefix, config.nodeName, dbVersion);
         }
         if (sync) {
             unsigned char *data = moloch_http_send_sync(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, NULL);
@@ -1404,7 +1404,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         }
     } else {
         char key[200];
-        int key_len = snprintf(key, sizeof(key), "/%sdstats/dstat/%s-%d-%d", config.prefix, config.nodeName, (int)(currentTime.tv_sec/intervals[n])%1440, intervals[n]);
+        int key_len = snprintf(key, sizeof(key), "/%sdstats/_doc/%s-%d-%d", config.prefix, config.nodeName, (int)(currentTime.tv_sec/intervals[n])%1440, intervals[n]);
         moloch_http_send(esServer, "POST", key, key_len, json, json_len, NULL, TRUE, NULL, NULL);
     }
 }
@@ -1514,7 +1514,7 @@ void moloch_db_get_sequence_number(char *name, MolochSeqNum_cb func, gpointer uw
     r->func = func;
     r->uw   = uw;
 
-    key_len = snprintf(key, sizeof(key), "/%ssequence/sequence/%s", config.prefix, name);
+    key_len = snprintf(key, sizeof(key), "/%ssequence/_doc/%s", config.prefix, name);
     int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE, "{}");
     moloch_http_send(esServer, "POST", key, key_len, json, json_len, NULL, FALSE, moloch_db_get_sequence_number_cb, r);
 }
@@ -1524,7 +1524,7 @@ uint32_t moloch_db_get_sequence_number_sync(char *name)
 
     while (1) {
         char key[100];
-        int key_len = snprintf(key, sizeof(key), "/%ssequence/sequence/%s", config.prefix, name);
+        int key_len = snprintf(key, sizeof(key), "/%ssequence/_doc/%s", config.prefix, name);
 
         size_t data_len;
         uint8_t *data = moloch_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL, &data_len);
@@ -1563,60 +1563,20 @@ LOCAL void moloch_db_load_file_num()
     int                key_len;
     size_t             data_len;
     unsigned char     *data;
-    uint32_t           len;
-    unsigned char     *value;
-    uint32_t           source_len;
-    unsigned char     *source = 0;
     uint32_t           found_len;
     unsigned char     *found = 0;
 
     /* First see if we have the new style number or not */
-    key_len = snprintf(key, sizeof(key), "/%ssequence/sequence/fn-%s", config.prefix, config.nodeName);
+    key_len = snprintf(key, sizeof(key), "/%ssequence/_doc/fn-%s", config.prefix, config.nodeName);
     data = moloch_http_get(esServer, key, key_len, &data_len);
 
     found = moloch_js0n_get(data, data_len, "found", &found_len);
-    if (found && memcmp("true", found, 4) == 0) {
-        goto fetch_file_num;
+    if (found && memcmp("true", found, 4) != 0) {
+        free(data);
+
+        key_len = snprintf(key, sizeof(key), "/%ssequence/_doc/fn-%s?version_type=external&version=100", config.prefix, config.nodeName);
+        data = moloch_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL, NULL);
     }
-    free(data);
-
-
-    /* Don't have new style numbers, go create them */
-    key_len = snprintf(key, sizeof(key), "/%sfiles/file/_search?size=1&sort=num:desc&q=node:%s", config.prefix, config.nodeName);
-
-    data = moloch_http_get(esServer, key, key_len, &data_len);
-
-    uint32_t           hits_len;
-    unsigned char     *hits = moloch_js0n_get(data, data_len, "hits", &hits_len);
-
-    if (!hits_len || !hits)
-        goto fetch_file_num;
-
-    uint32_t           hit_len;
-    unsigned char     *hit = moloch_js0n_get(hits, hits_len, "hits", &hit_len);
-
-    if (!hit_len || !hit)
-        goto fetch_file_num;
-
-    /* Remove array wrapper */
-    source = moloch_js0n_get(hit+1, hit_len-2, "_source", &source_len);
-
-    if (!source_len || !source)
-        goto fetch_file_num;
-
-    int fileNum;
-    if ((value = moloch_js0n_get(source, source_len, "num", &len))) {
-        fileNum = atoi((char*)value);
-    } else {
-        LOGEXIT("ERROR - No num field in %.*s", source_len, source);
-    }
-    free(data);
-
-    /* Now create the new style */
-    key_len = snprintf(key, sizeof(key), "/%ssequence/sequence/fn-%s?version_type=external&version=%d", config.prefix, config.nodeName, fileNum + 100);
-    data = moloch_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL, NULL);
-
-fetch_file_num:
     if (data)
         free(data);
 
@@ -1699,7 +1659,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
         g_free(name1);
 
         BSB_EXPORT_sprintf(jbsb, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"filesize\":%" PRIu64 ", \"locked\":%d", num, name, fp, config.nodeName, size, locked);
-        key_len = snprintf(key, sizeof(key), "/%sfiles/file/%s-%u?refresh=true", config.prefix, config.nodeName,num);
+        key_len = snprintf(key, sizeof(key), "/%sfiles/_doc/%s-%u?refresh=true", config.prefix, config.nodeName,num);
     } else {
 
         uint16_t flen = strlen(config.pcapDir[config.pcapDirPos]);
@@ -1780,7 +1740,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
         snprintf(filename+flen, sizeof(filename) - flen, "/%s-%02d%02d%02d-%08u.pcap", config.nodeName, tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday, num);
 
         BSB_EXPORT_sprintf(jbsb, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"locked\":%d", num, filename, fp, config.nodeName, locked);
-        key_len = snprintf(key, sizeof(key), "/%sfiles/file/%s-%u?refresh=true", config.prefix, config.nodeName, num);
+        key_len = snprintf(key, sizeof(key), "/%sfiles/_doc/%s-%u?refresh=true", config.prefix, config.nodeName, num);
     }
 
     va_list  args;
@@ -2075,7 +2035,7 @@ LOCAL void moloch_db_load_fields()
     char                   key[100];
     int                    key_len;
 
-    key_len = snprintf(key, sizeof(key), "/%sfields/field/_search?size=3000", config.prefix);
+    key_len = snprintf(key, sizeof(key), "/%sfields/_search?size=3000", config.prefix);
     unsigned char     *data = moloch_http_get(esServer, key, key_len, &data_len);
 
     if (!data) {
@@ -2133,7 +2093,7 @@ void moloch_db_add_field(char *group, char *kind, char *expression, char *friend
 
     BSB_INIT(bsb, json, 10000);
 
-    key_len = snprintf(key, sizeof(key), "/%sfields/field/%s", config.prefix, expression);
+    key_len = snprintf(key, sizeof(key), "/%sfields/_doc/%s", config.prefix, expression);
 
     BSB_EXPORT_sprintf(bsb, "{\"friendlyName\": \"%s\", \"group\": \"%s\", \"help\": \"%s\", \"dbField2\": \"%s\", \"type\": \"%s\"",
              friendlyName,
@@ -2177,7 +2137,7 @@ void moloch_db_update_field(char *expression, char *name, char *value)
 
     BSB_INIT(bsb, json, 1000);
 
-    key_len = snprintf(key, sizeof(key), "/%sfields/field/%s/_update", config.prefix, expression);
+    key_len = snprintf(key, sizeof(key), "/%sfields/_doc/%s/_update", config.prefix, expression);
 
     BSB_EXPORT_sprintf(bsb, "{\"doc\": {\"%s\":", name);
     if (*value == '[') {
@@ -2200,7 +2160,7 @@ void moloch_db_update_filesize(uint32_t fileid, uint64_t filesize)
 
     char                  *json = moloch_http_get_buffer(1000);
 
-    key_len = snprintf(key, sizeof(key), "/%sfiles/file/%s-%u/_update", config.prefix, config.nodeName, fileid);
+    key_len = snprintf(key, sizeof(key), "/%sfiles/_doc/%s-%u/_update", config.prefix, config.nodeName, fileid);
 
     json_len = snprintf(json, 1000, "{\"doc\": {\"filesize\": %" PRIu64 "}}", filesize);
 
@@ -2213,7 +2173,7 @@ gboolean moloch_db_file_exists(const char *filename, uint32_t *outputId)
     char                   key[2000];
     int                    key_len;
 
-    key_len = snprintf(key, sizeof(key), "/%sfiles/file/_search?rest_total_hits_as_int&size=1&sort=num:desc&q=node:%s+AND+name:\"%s\"", config.prefix, config.nodeName, filename);
+    key_len = snprintf(key, sizeof(key), "/%sfiles/_search?rest_total_hits_as_int&size=1&sort=num:desc&q=node:%s+AND+name:\"%s\"", config.prefix, config.nodeName, filename);
 
     unsigned char *data = moloch_http_get(esServer, key, key_len, &data_len);
 

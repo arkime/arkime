@@ -53,7 +53,8 @@ function ElasticsearchSource (api, section) {
                       host: this.elasticsearch.split(","),
                       keepAlive: true,
                       minSockets: 5,
-                      maxSockets: 51
+                      maxSockets: 51,
+                      apiVersion: "6.8"
                     });
 
   api.addSource(section, this);

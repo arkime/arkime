@@ -161,21 +161,21 @@ exports.merge = function(to, from) {
 };
 
 exports.get = function (index, type, id, cb) {
-  return internals.elasticSearchClient.get({index: fixIndex(index), type: type, id: id}, cb);
+  return internals.elasticSearchClient.get({index: fixIndex(index), type: '_doc', id: id}, cb);
 };
 
 exports.getWithOptions = function (index, type, id, options, cb) {
-  var params = {index: fixIndex(index), type:type, id: id};
+  var params = {index: fixIndex(index), type: '_doc', id: id};
   exports.merge(params, options);
   return internals.elasticSearchClient.get(params, cb);
 };
 
 exports.index = function (index, type, id, document, cb) {
-  return internals.elasticSearchClient.index({index: fixIndex(index), type: type, body: document, id: id}, cb);
+  return internals.elasticSearchClient.index({index: fixIndex(index), type: '_doc', body: document, id: id}, cb);
 };
 
 exports.indexNow = function (index, type, id, document, cb) {
-  return internals.elasticSearchClient.index({index: fixIndex(index), type: type, body: document, id: id, refresh: true}, cb);
+  return internals.elasticSearchClient.index({index: fixIndex(index), type: '_doc', body: document, id: id, refresh: true}, cb);
 };
 
 exports.search = function (index, type, query, options, cb) {
@@ -187,7 +187,6 @@ exports.search = function (index, type, query, options, cb) {
 
   let params = {
     index: fixIndex(index),
-    type: type,
     body: query, rest_total_hits_as_int: true
   };
 
@@ -308,7 +307,7 @@ exports.msearch = function (index, type, queries, options, cb) {
   var body = [];
 
   for(var i = 0, ilen = queries.length; i < ilen; i++){
-    body.push({index: fixIndex(index), type: type});
+    body.push({index: fixIndex(index)});
     body.push(queries[i]);
   }
 
@@ -344,7 +343,7 @@ exports.deleteDocument = function (index, type, id, options, cb) {
     cb = options;
     options = undefined;
   }
-  var params = {index: fixIndex(index), type: type, id: id};
+  var params = {index: fixIndex(index), type: '_doc', id: id};
   exports.merge(params, options);
   return internals.elasticSearchClient.delete(params, cb);
 };
@@ -504,7 +503,7 @@ exports.update = function (index, type, id, document, options, cb) {
     options = undefined;
   }
 
-  var params = {index: fixIndex(index), type: type, body: document, id: id, timeout: '10m'};
+  var params = {index: fixIndex(index), type: '_doc', body: document, id: id, timeout: '10m'};
   exports.merge(params, options);
   return internals.elasticSearchClient.update(params, cb);
 };
@@ -513,7 +512,7 @@ exports.updateSession = function (index, id, document, cb) {
   let params = {
     retry_on_conflict: 3,
     index: fixIndex(index),
-    type: 'session',
+    type: '_doc',
     body: document,
     id: id,
     timeout: '10m'
@@ -664,11 +663,11 @@ exports.flushCache = function () {
   delete internals.aliasesCache;
 };
 exports.searchUsers = function(query, cb) {
-  return internals.usersElasticSearchClient.search({index: internals.usersPrefix + 'users', type: 'user', body: query, rest_total_hits_as_int: true}, cb);
+  return internals.usersElasticSearchClient.search({index: internals.usersPrefix + 'users', body: query, rest_total_hits_as_int: true}, cb);
 };
 
 exports.getUser = function (name, cb) {
-  return internals.usersElasticSearchClient.get({index: internals.usersPrefix + 'users', type: 'user', id: name}, cb);
+  return internals.usersElasticSearchClient.get({index: internals.usersPrefix + 'users', type: '_doc', id: name}, cb);
 };
 
 exports.getUserCache = function (name, cb) {
@@ -694,7 +693,7 @@ exports.numberOfUsers = function(cb) {
 
 exports.deleteUser = function (name, cb) {
   delete internals.usersCache[name];
-  return internals.usersElasticSearchClient.delete({index: internals.usersPrefix + 'users', type: 'user', id: name, refresh: true}, (err) => {
+  return internals.usersElasticSearchClient.delete({index: internals.usersPrefix + 'users', type: '_doc', id: name, refresh: true}, (err) => {
     delete internals.usersCache[name]; // Delete again after db says its done refreshing
     cb(err);
   });
@@ -702,14 +701,14 @@ exports.deleteUser = function (name, cb) {
 
 exports.setUser = function(name, doc, cb) {
   delete internals.usersCache[name];
-  return internals.usersElasticSearchClient.index({index: internals.usersPrefix + 'users', type: 'user', body: doc, id: name, refresh: true, timeout: '10m'}, (err) => {
+  return internals.usersElasticSearchClient.index({index: internals.usersPrefix + 'users', type: '_doc', body: doc, id: name, refresh: true, timeout: '10m'}, (err) => {
     delete internals.usersCache[name]; // Delete again after db says its done refreshing
     cb(err);
   });
 };
 
 exports.setLastUsed = function(name, now, cb) {
-  var params = {index: internals.usersPrefix + 'users', type: 'user', body: {doc: {lastUsed: now}}, id: name};
+  var params = {index: internals.usersPrefix + 'users', type: '_doc', body: {doc: {lastUsed: now}}, id: name};
 
   return internals.usersElasticSearchClient.update(params, cb);
 };
@@ -725,51 +724,51 @@ exports.historyIt = function(doc, cb) {
     twoDigitString(d.getUTCFullYear()%100) + 'w' +
     twoDigitString(Math.floor((d - jan) / 604800000));
 
-  return internals.elasticSearchClient.index({index:iname, type:'history', body:doc, refresh: true, timeout: '10m'}, cb);
+  return internals.elasticSearchClient.index({index:iname, type: '_doc', body: doc, refresh: true, timeout: '10m'}, cb);
 };
 exports.searchHistory = function(query, cb) {
-  return internals.elasticSearchClient.search({index:fixIndex('history_v1-*'), type:"history", body:query, rest_total_hits_as_int: true}, cb);
+  return internals.elasticSearchClient.search({index: fixIndex('history_v1-*'), body: query, rest_total_hits_as_int: true}, cb);
 };
 exports.numberOfLogs = function(cb) {
-  return internals.elasticSearchClient.count({index:fixIndex('history_v1-*'), type:"history", ignoreUnavailable:true}, cb);
+  return internals.elasticSearchClient.count({index: fixIndex('history_v1-*'), type: '_doc', ignoreUnavailable:true}, cb);
 };
 exports.deleteHistoryItem = function (id, index, cb) {
-  return internals.elasticSearchClient.delete({index:index, type: 'history', id: id, refresh: true}, cb);
+  return internals.elasticSearchClient.delete({index:index, type: '_doc', id: id, refresh: true}, cb);
 };
 
 exports.createHunt = function (doc, cb) {
-  return internals.elasticSearchClient.index({index:fixIndex('hunts'), type:'hunt', body:doc, refresh: "wait_for", timeout: '10m'}, cb);
+  return internals.elasticSearchClient.index({index: fixIndex('hunts'), type: '_doc', body: doc, refresh: "wait_for", timeout: '10m'}, cb);
 };
 exports.searchHunt = function (query, cb) {
-  return internals.elasticSearchClient.search({index:fixIndex('hunts'), type:'hunt', body:query, rest_total_hits_as_int: true}, cb);
+  return internals.elasticSearchClient.search({index: fixIndex('hunts'), body: query, rest_total_hits_as_int: true}, cb);
 };
 exports.numberOfHunts = function(cb) {
-  return internals.elasticSearchClient.count({index:fixIndex('hunts'), type:'hunt'}, cb);
+  return internals.elasticSearchClient.count({index: fixIndex('hunts'), type: '_doc'}, cb);
 };
 exports.deleteHuntItem = function (id, cb) {
-  return internals.elasticSearchClient.delete({index:fixIndex('hunts'), type:'hunt', id:id, refresh:true}, cb);
+  return internals.elasticSearchClient.delete({index: fixIndex('hunts'), type: '_doc', id: id, refresh:true}, cb);
 };
 exports.setHunt = function (id, doc, cb) {
-  return internals.elasticSearchClient.index({index:fixIndex('hunts'), type: 'hunt', body:doc, id: id, refresh:true, timeout: '10m'}, cb);
+  return internals.elasticSearchClient.index({index: fixIndex('hunts'), type: '_doc', body: doc, id: id, refresh:true, timeout: '10m'}, cb);
 };
 
 exports.searchLookups = function (query, cb) {
-  return internals.elasticSearchClient.search({index:fixIndex('lookups'), type:'lookup', body:query, rest_total_hits_as_int: true}, cb);
+  return internals.elasticSearchClient.search({index: fixIndex('lookups'), body: query, rest_total_hits_as_int: true}, cb);
 };
 exports.createLookup = function (doc, username, cb) {
   internals.lookupsCache = {};
-  return internals.elasticSearchClient.index({index:fixIndex('lookups'), type:'lookup', body:doc, refresh: "wait_for", timeout: '10m'}, cb);
+  return internals.elasticSearchClient.index({index: fixIndex('lookups'), type: '_doc', body: doc, refresh: "wait_for", timeout: '10m'}, cb);
 };
 exports.deleteLookup = function (id, username, cb) {
   internals.lookupsCache = {};
-  return internals.elasticSearchClient.delete({index:fixIndex('lookups'), type:'lookup', id:id, refresh:true}, cb);
+  return internals.elasticSearchClient.delete({index: fixIndex('lookups'), type: '_doc', id: id, refresh:true}, cb);
 };
 exports.setLookup = function (id, username, doc, cb) {
   internals.lookupsCache = {};
-  return internals.elasticSearchClient.index({index:fixIndex('lookups'), type: 'lookup', body:doc, id: id, refresh:true, timeout: '10m'}, cb);
+  return internals.elasticSearchClient.index({index: fixIndex('lookups'), type: '_doc', body: doc, id: id, refresh:true, timeout: '10m'}, cb);
 };
 exports.getLookup = function (id, cb) {
-  return internals.elasticSearchClient.get({index:fixIndex('lookups'), type:'lookup', id:id}, cb);
+  return internals.elasticSearchClient.get({index: fixIndex('lookups'), type: '_doc', id: id}, cb);
 };
 exports.getLookupsCache = function (name, cb) {
   if (internals.lookupsCache[name] && internals.lookupsCache._timeStamp > Date.now() - 30000) {

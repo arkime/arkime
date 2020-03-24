@@ -26,6 +26,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - new disableParsers, default of arp.so
   - capture - new unkEthernet, unkIpProtocol protocols
   - capture - support QUIC version 46
+  - all - switch most ES apis to typeless format
 
 2.2.3 2020/03/09
   - viewer - Experimental treemap view in spigraph
@@ -97,8 +98,6 @@ NOTICE: Restart wiseService before capture when upgrading
   - db - support creating ILM policys and assigning them for sessions2 and history
   - db - new optimize-admin that only optimizes admin indices
   - parliament - Click on ES health goes to ES Nodes tab
-
-
 
 2.1.2 2019/12/16
   - capture - no longer check in configure scripts, use autoreconf (thanks martinpaljak)

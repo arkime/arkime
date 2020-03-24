@@ -271,14 +271,14 @@ app.get("/_template/MULTIPREFIX_sessions2_template", (req, res) => {
   });
 });
 
-app.get("/users/user/:user", (req, res) => {
-  clients[nodes[0]].get({index: "users", type: "user", id: req.params.user}, (err, result) => {
+app.get(["/users/user/:user", "/users/_doc/:user"], (req, res) => {
+  clients[nodes[0]].get({index: "users", type: "_doc", id: req.params.user}, (err, result) => {
     res.send(result);
   });
 });
 
-app.post("/users/user/:user", (req, res) => {
-  clients[nodes[0]].index({index: "users", type: "user", id: req.params.user, body: req.body, refresh: true}, (err, result) => {
+app.post(["/users/user/:user", "/users/_doc/:user"], (req, res) => {
+  clients[nodes[0]].index({index: "users", type: "_doc", id: req.params.user, body: req.body, refresh: true}, (err, result) => {
     res.send(result);
   });
 });
@@ -289,7 +289,7 @@ app.get("/_cat/master", (req, res) => {
   });
 });
 
-app.get("/:index/:type/_search", (req, res) => {
+app.get(["/:index/:type/_search", "/:index/_search"], (req, res) => {
   simpleGather(req, res, null, (err, results) => {
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
@@ -501,7 +501,7 @@ function fixQuery(node, body, doneCb) {
       } else {
         query = {query: {term: {name: name}}};
       }
-      clients[node].search({index: node2Prefix(node) + 'files', type: 'file', size:500, body: query}, (err, result) => {
+      clients[node].search({index: node2Prefix(node) + 'files', size:500, body: query}, (err, result) => {
         outstanding--;
         obj.bool = {should: []};
         result.hits.hits.forEach((file) => {
@@ -612,7 +612,7 @@ function newResult(search) {
   return result;
 }
 
-app.post("/MULTIPREFIX_fields/field/_search", function(req, res) {
+app.post(["/MULTIPREFIX_fields/field/_search", "/MULTIPREFIX_fields/_search"], function(req, res) {
   simpleGather(req, res, null, (err, results) => {
     var obj = {
       hits: {
@@ -642,7 +642,7 @@ app.post("/MULTIPREFIX_fields/field/_search", function(req, res) {
   });
 });
 
-app.post("/:index/:type/_search", function(req, res) {
+app.post(["/:index/:type/_search", "/:index/_search"], function(req, res) {
   var bodies = {};
   var search = JSON.parse(req.body);
   //console.log("DEBUG - INCOMING SEARCH", JSON.stringify(search, null, 2));
@@ -742,7 +742,7 @@ app.post("/:index/:type/:id/_update", function(req, res) {
   }
 });
 
-app.post("/:index/history", simpleGatherFirst);
+app.post(["/:index/history", "/*history*/_doc"], simpleGatherFirst);
 
 app.post("/:index/:type/_msearch", msearch);
 app.post("/_msearch", msearch);
