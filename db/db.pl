@@ -152,7 +152,7 @@ sub showHelp($)
     print "    --ilm                      - Use ilm to manage\n";
     print "  expire <type> <num> [<opts>] - Perform daily ES maintenance and optimize all indices in ES\n";
     print "       type                    - Same as rotateIndex in ini file = hourly,hourlyN,daily,weekly,monthly\n";
-    print "       num                     - number of indexes to keep\n";
+    print "       num                     - Number of indexes to keep\n";
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
     print "    --nooptimize               - Do not optimize session indexes during this operation\n";
     print "    --history <num>            - Number of weeks of history to keep, default 13\n";
@@ -206,8 +206,8 @@ sub showHelp($)
     print "  sync-files  <nodes> <dirs>   - Add/Remove in db any MISSING files on THIS machine for named node(s) and directory(s), both comma separated\n";
     print "\n";
     print "Field Commands:\n";
-    print "  field disable <exp>          - disable a field from being indexed\n";
-    print "  field enable <exp>           - enable a field from being indexed\n";
+    print "  field disable <exp>          - Disable a field from being indexed\n";
+    print "  field enable <exp>           - Enable a field from being indexed\n";
     print "\n";
     print "Node Commands:\n";
     print "  rm-node <node>               - Remove from db all data for node (doesn't change disk)\n";
