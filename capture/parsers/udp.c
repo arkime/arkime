@@ -26,6 +26,7 @@
 extern MolochConfig_t        config;
 
 extern int                   udpMProtocol;
+extern uint32_t              pluginsCbs;
 
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
@@ -104,6 +105,10 @@ int udp_process(MolochSession_t *session, MolochPacket_t * const packet)
             }
         }
     }
+
+    if (pluginsCbs & MOLOCH_PLUGIN_UDP)
+        moloch_plugins_cb_udp(session, data, len, packet->direction);
+
     return 1;
 }
 /******************************************************************************/

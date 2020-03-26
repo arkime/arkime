@@ -357,13 +357,13 @@ void moloch_plugins_cb_tcp(MolochSession_t *session, const unsigned char *data, 
     );
 }
 /******************************************************************************/
-void moloch_plugins_cb_udp(MolochSession_t *session, struct udphdr *udphdr, const unsigned char *data, int len)
+void moloch_plugins_cb_udp(MolochSession_t *session, const unsigned char *data, int len, int which)
 {
     MolochPlugin_t *plugin;
 
     HASH_FORALL(p_, plugins, plugin,
         if (plugin->udpFunc)
-            plugin->udpFunc(session, udphdr, data, len);
+            plugin->udpFunc(session, data, len, which);
     );
 }
 /******************************************************************************/
