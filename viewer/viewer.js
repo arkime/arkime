@@ -3421,29 +3421,33 @@ app.get('/fields', function(req, res) {
 });
 
 app.get('/file/list', [noCacheJson, recordResponseTime, logAction('files'), checkPermissions(['hideFiles']), setCookie], (req, res) => {
-  var columns = ["num", "node", "name", "locked", "first", "filesize"];
+  const columns = ['num', 'node', 'name', 'locked', 'first', 'filesize', 'encoding'];
 
-  var query = {_source: columns,
-               from: +req.query.start || 0,
-               size: +req.query.length || 10,
-               sort: {}
-              };
+  let query = {
+    _source: columns,
+   from: +req.query.start || 0,
+   size: +req.query.length || 10,
+   sort: {}
+ };
 
-  query.sort[req.query.sortField || "num"] = { order: req.query.desc === "true" ? "desc": "asc"};
+  query.sort[req.query.sortField || 'num'] = {
+    order: req.query.desc === 'true' ? 'desc': 'asc'
+  };
 
   if (req.query.filter) {
-    query.query = {wildcard: {name: "*" + req.query.filter + "*"}};
+    query.query = { wildcard: { name: `*${req.query.filter}*` } };
   }
 
-  Promise.all([Db.search('files', 'file', query),
-               Db.numberOfDocuments('files')
-              ])
+  Promise.all([
+    Db.search('files', 'file', query),
+    Db.numberOfDocuments('files')
+  ])
   .then(([files, total]) => {
-    if (files.error) {throw files.error;}
+    if (files.error) { throw files.error; }
 
-    var results = {total: files.hits.total, results: []};
+    let results = { total: files.hits.total, results: [] };
     for (let i = 0, ilen = files.hits.hits.length; i < ilen; i++) {
-      var fields = files.hits.hits[i]._source || files.hits.hits[i].fields;
+      let fields = files.hits.hits[i]._source || files.hits.hits[i].fields;
       if (fields.locked === undefined) {
         fields.locked = 0;
       }
@@ -3451,14 +3455,16 @@ app.get('/file/list', [noCacheJson, recordResponseTime, logAction('files'), chec
       results.results.push(fields);
     }
 
-    var r = {recordsTotal: total.count,
-             recordsFiltered: results.total,
-             data: results.results};
+    const r = {
+      recordsTotal: total.count,
+      recordsFiltered: results.total,
+      data: results.results
+    };
+
     res.logCounts(r.data.length, r.recordsFiltered, r.total);
     res.send(r);
-
   }).catch((err) => {
-    console.log("ERROR - /file/list", err);
+    console.log('ERROR - /file/list', err);
     return res.send({recordsTotal: 0, recordsFiltered: 0, data: []});
   });
 });
