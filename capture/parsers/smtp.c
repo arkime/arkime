@@ -270,9 +270,9 @@ LOCAL void smtp_email_add_encoded(MolochSession_t *session, int pos, char *strin
             *question = 0;
             *endquestion = 0;
 
-            if (question[3])
+            if (question[3]) {
                 g_base64_decode_inplace(question+3, &olen);
-            else
+            } else
                 olen = 0;
 
             char *fmt = smtp_gformat(str+2);
@@ -962,7 +962,7 @@ void moloch_parser_init()
     fnField = moloch_field_define("email", "termfield",
         "email.fn", "Filenames", "email.filename",
         "Email attachment filenames",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
         "requiredRight", "emailSearch",
         (char *)NULL);
 
