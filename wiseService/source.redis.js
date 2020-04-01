@@ -43,7 +43,12 @@ function RedisSource (api, section) {
 
   this.client = api.createRedisClient(api.getConfig(section, 'redisType', 'redis'), section);
 
-  this[this.typeFunc] = RedisSource.prototype.fetch;
+  if (this.type === 'domain') {
+    this[this.typeFunc] = RedisSource.prototype.fetchDomain;
+  } else {
+    this[this.typeFunc] = RedisSource.prototype.fetch;
+  }
+
   this.api.addSource(this.section, this);
 }
 util.inherits(RedisSource, wiseSource);
@@ -63,6 +68,15 @@ RedisSource.prototype.fetch = function (key, cb) {
       var newresult = {num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer])};
       return cb(null, newresult);
     }, () => {});
+  });
+};
+//////////////////////////////////////////////////////////////////////////////////
+RedisSource.prototype.fetchDomain = function (key, cb) {
+  this.fetch(key, (err, result) => {
+    if (result === undefined) {
+      return this.fetch(key.substring(key.indexOf('.') + 1), cb);
+    }
+    return cb(err, result);
   });
 };
 //////////////////////////////////////////////////////////////////////////////////
