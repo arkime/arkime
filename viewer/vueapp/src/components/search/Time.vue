@@ -166,7 +166,7 @@
         </span>
         <b-tooltip
           v-if="isEndOfDay(time.stopTime)"
-          target="prevStartTime">
+          target="nextStopTime">
           End of next day
         </b-tooltip>
         <b-tooltip
