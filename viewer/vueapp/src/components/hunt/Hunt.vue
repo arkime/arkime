@@ -1676,10 +1676,6 @@ export default {
 </script>
 
 <style scoped>
-/* packet search page, navbar, and content styles */
-.packet-search-page {
-  margin-top: 36px;
-}
 
 .packet-search-content {
   margin-top: 100px;

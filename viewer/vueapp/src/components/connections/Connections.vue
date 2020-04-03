@@ -1564,10 +1564,6 @@ export default {
 </script>
 
 <style scoped>
-.connections-page {
-  /* account for main navbar height */
-  margin-top: 36px;
-}
 
 .connections-graph {
   /* don't allow selecting text */

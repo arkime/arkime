@@ -682,15 +682,13 @@ table .btn-group.row-actions-btn > .btn-sm {
 </style>
 
 <style scoped>
-.stats-content {
-  padding-top: 36px;
-}
 
 /* apply theme colors to subnavbar */
 form.stats-form {
   position: fixed;
   left: 0;
   right: 0;
+  top: 36px;
   z-index : 6;
   background-color: var(--color-quaternary-lightest);
 

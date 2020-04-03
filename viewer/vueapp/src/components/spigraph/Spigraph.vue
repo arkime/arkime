@@ -552,10 +552,7 @@ export default {
 </script>
 
 <style scoped>
-/* spigraph page and navbar styles ---------- */
-.spigraph-page {
-  margin-top: 36px;
-}
+
 .spigraph-page form.spigraph-form {
   z-index: 4;
   position: fixed;

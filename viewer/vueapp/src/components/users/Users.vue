@@ -885,7 +885,7 @@ export default {
 
 /* page content */
 .users-content {
-  margin-top: 125px;
+  margin-top: 89px;
 }
 
 .users-content form .form-group-sm .checkbox {

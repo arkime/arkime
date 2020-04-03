@@ -3431,10 +3431,7 @@ export default {
 </script>
 
 <style>
-/* settings page, navbar, and content styles - */
-.settings-page {
-  margin-top: 36px;
-}
+
 .settings-content {
   margin-top: 90px;
   margin-left: 0;

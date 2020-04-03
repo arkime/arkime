@@ -1,73 +1,74 @@
 <template>
+  <span>
+    <b-navbar
+      fixed="top"
+      toggleable="md"
+      type="dark">
 
-  <b-navbar
-    fixed="top"
-    toggleable="md"
-    type="dark">
+      <b-navbar-toggle
+        target="nav_collapse">
+      </b-navbar-toggle>
 
-    <b-navbar-toggle
-      target="nav_collapse">
-    </b-navbar-toggle>
+      <b-navbar-brand>
+        <router-link
+          :to="{ path: helpLink.href, query: helpLink.query, params: { nav: true } }">
+          <div id="helpTooltipContainer">
+            <img src="header_logo.png"
+              class="moloch-logo"
+              alt="hoot"
+              v-b-tooltip.hover
+              title="HOOT! Can I help you? Click me to see the help page"
+              id="tooltipHelp"
+            />
+          </div>
+        </router-link>
+        <b-tooltip :show="shiftKeyHold"
+          triggers=""
+          target="tooltipHelp"
+          placement="leftbottom"
+          container="helpTooltipContainer">
+          <strong class="help-shortcut">H</strong>
+        </b-tooltip>
+      </b-navbar-brand>
 
-    <b-navbar-brand>
-      <router-link
-        :to="{ path: helpLink.href, query: helpLink.query, params: { nav: true } }">
-        <div id="helpTooltipContainer">
-          <img src="header_logo.png"
-            class="moloch-logo"
-            alt="hoot"
-            v-b-tooltip.hover
-            title="HOOT! Can I help you? Click me to see the help page"
-            id="tooltipHelp"
-          />
-        </div>
-      </router-link>
-      <b-tooltip :show="shiftKeyHold"
-        triggers=""
-        target="tooltipHelp"
-        placement="leftbottom"
-        container="helpTooltipContainer">
-        <strong class="help-shortcut">H</strong>
-      </b-tooltip>
-    </b-navbar-brand>
+      <b-collapse is-nav
+        id="nav_collapse">
 
-    <b-collapse is-nav
-      id="nav_collapse">
-
-      <b-navbar-nav>
-        <template v-for="item of menuOrder">
-          <template v-if="user && menu[item] && menu[item].hasPermission">
-            <b-nav-item
-              :key="menu[item].link"
-              class="cursor-pointer"
-              :class="{'router-link-active': $route.path === `/${menu[item].link}`}">
-              <router-link
-                :to="{ path: menu[item].link, query: menu[item].query, params: { nav: true } }">
-                <span v-if="menu[item].hotkey">
-                  <p v-for="(text, index) in menu[item].hotkey"
-                    :key="text"
-                    :class="{'holding-shift':shiftKeyHold && index === menu[item].hotkey.length-1,'shortcut-letter': index === menu[item].hotkey.length-1}">{{ text }}</p>
-                </span>
-                <p v-else>
-                  {{ menu[item].title }}
-                </p>
-              </router-link>
-            </b-nav-item>
+        <b-navbar-nav>
+          <template v-for="item of menuOrder">
+            <template v-if="user && menu[item] && menu[item].hasPermission">
+              <b-nav-item
+                :key="menu[item].link"
+                class="cursor-pointer"
+                :class="{'router-link-active': $route.path === `/${menu[item].link}`}">
+                <router-link
+                  :to="{ path: menu[item].link, query: menu[item].query, params: { nav: true } }">
+                  <span v-if="menu[item].hotkey">
+                    <p v-for="(text, index) in menu[item].hotkey"
+                      :key="text"
+                      :class="{'holding-shift':shiftKeyHold && index === menu[item].hotkey.length-1,'shortcut-letter': index === menu[item].hotkey.length-1}">{{ text }}</p>
+                  </span>
+                  <p v-else>
+                    {{ menu[item].title }}
+                  </p>
+                </router-link>
+              </b-nav-item>
+            </template>
           </template>
-        </template>
-      </b-navbar-nav>
+        </b-navbar-nav>
 
-      <b-navbar-nav
-        class="ml-auto">
-        <small class="navbar-text mr-2 text-right">
-          v{{ molochVersion }}
-        </small>
-        <e-s-health></e-s-health>
-      </b-navbar-nav>
+        <b-navbar-nav
+          class="ml-auto">
+          <small class="navbar-text mr-2 text-right">
+            v{{ molochVersion }}
+          </small>
+          <e-s-health></e-s-health>
+        </b-navbar-nav>
 
-    </b-collapse>
-  </b-navbar>
-
+      </b-collapse>
+    </b-navbar>
+    <div class="navbarOffset" />
+  </span>
 </template>
 
 <script>
@@ -201,6 +202,9 @@ nav.navbar {
   z-index: 7;
   max-height: 36px;
   min-height: 36px;
+}
+.navbarOffset {
+  padding-top: 36px;
 }
 a.nav-link {
   max-height: 38px;

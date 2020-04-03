@@ -551,7 +551,7 @@ export default {
 
 /* table styles -------------------- */
 .history-page table {
-  margin-top: 160px;
+  margin-top: 124px;
   table-layout: fixed;
 }
 .history-page table tbody tr td.no-wrap {

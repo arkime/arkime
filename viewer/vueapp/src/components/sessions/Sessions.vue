@@ -1681,10 +1681,6 @@ export default {
 </style>
 
 <style scoped>
-/* sessions page, navbar, and content styles - */
-.sessions-page {
-  margin-top: 36px;
-}
 
 form.sessions-paging {
   z-index: 4;

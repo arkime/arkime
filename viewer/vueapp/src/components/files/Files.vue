@@ -208,6 +208,6 @@ export default {
 
 /* page content */
 .files-content {
-  margin-top: 90px;
+  margin-top: 78px;
 }
 </style>
