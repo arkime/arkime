@@ -1619,7 +1619,7 @@ export default {
     changePaging: function (args) {
       this.query.start = args.start;
       this.query.length = args.length;
-      this.cancelAndLoad(true);
+      if (args.issueQuery) { this.cancelAndLoad(true); }
     }
   },
   beforeDestroy: function () {
