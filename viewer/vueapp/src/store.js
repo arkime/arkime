@@ -14,6 +14,7 @@ const store = new Vuex.Store({
       stopTime: undefined
     },
     showMaps: true,
+    showToolBars: true,
     mapSrc: true,
     mapDst: true,
     xffGeo: false,
@@ -77,6 +78,9 @@ const store = new Vuex.Store({
     },
     toggleMaps (state, value) {
       state.showMaps = value;
+    },
+    toggleToolBars (state) {
+      state.showToolBars = !state.showToolBars;
     },
     toggleMapSrc (state, value) {
       state.mapSrc = value;

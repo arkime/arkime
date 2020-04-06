@@ -65,6 +65,11 @@
           <e-s-health></e-s-health>
         </b-navbar-nav>
 
+        <b-navbar-nav v-if="activePage !== 'settings'" class="toggleChevrons" @click="toggleToolBars">
+          <i v-if="showToolBars" class="fa fa-chevron-circle-up fa-lg" title="close tool bars"></i>
+          <i v-else class="fa fa-chevron-circle-down fa-lg" title="open tool bars"></i>
+        </b-navbar-nav>
+
       </b-collapse>
     </b-navbar>
     <div class="navbarOffset" />
@@ -73,6 +78,7 @@
 
 <script>
 import qs from 'qs';
+import { mapMutations } from 'vuex';
 
 import ESHealth from './ESHealth';
 
@@ -168,6 +174,9 @@ export default {
     user: function () {
       return this.$store.state.user;
     },
+    showToolBars: function () {
+      return this.$store.state.showToolBars;
+    },
     shiftKeyHold: function () {
       return this.$store.state.shiftKeyHold;
     }
@@ -175,7 +184,10 @@ export default {
   methods: {
     isActive: function (link) {
       return link === this.$route.path.split('/')[1];
-    }
+    },
+    ...mapMutations([
+      'toggleToolBars'
+    ])
   }
 };
 </script>
@@ -217,6 +229,11 @@ a.nav-link {
 }
 ul.navbar-nav {
   margin-left: 20px;
+}
+ul.toggleChevrons {
+  color: rgba(255, 255, 255, 0.75);
+  align-items: center;
+  cursor: pointer;
 }
 
 a.nav-link > a {
