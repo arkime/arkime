@@ -1,47 +1,48 @@
 <template>
 
   <div>
-
-    <div class="files-search">
-      <div class="mr-1 ml-1 mt-1 mb-1">
-        <div class="input-group input-group-sm pull-right" style="max-width:50%;">
-          <div class="input-group-prepend">
-            <span class="input-group-text input-group-text-fw">
-              <span v-if="!shiftKeyHold"
-                class="fa fa-search fa-fw">
+    <MolochCollapsible>
+      <div class="files-search">
+        <div class="mr-1 ml-1 mt-1 mb-1">
+          <div class="input-group input-group-sm pull-right" style="max-width:50%;">
+            <div class="input-group-prepend">
+              <span class="input-group-text input-group-text-fw">
+                <span v-if="!shiftKeyHold"
+                  class="fa fa-search fa-fw">
+                </span>
+                <span v-else
+                  class="query-shortcut">
+                  Q
+                </span>
               </span>
-              <span v-else
-                class="query-shortcut">
-                Q
-              </span>
+            </div>
+            <input type="text"
+              class="form-control"
+              v-model="query.filter"
+              v-focus-input="focusInput"
+              @blur="onOffFocus"
+              @input="searchForFiles"
+              placeholder="Begin typing to search for files by name"
+            />
+            <span class="input-group-append">
+              <button type="button"
+                @click="clear"
+                :disabled="!query.filter"
+                class="btn btn-outline-secondary btn-clear-input">
+                <span class="fa fa-close">
+                </span>
+              </button>
             </span>
           </div>
-          <input type="text"
-            class="form-control"
-            v-model="query.filter"
-            v-focus-input="focusInput"
-            @blur="onOffFocus"
-            @input="searchForFiles"
-            placeholder="Begin typing to search for files by name"
-          />
-          <span class="input-group-append">
-            <button type="button"
-              @click="clear"
-              :disabled="!query.filter"
-              class="btn btn-outline-secondary btn-clear-input">
-              <span class="fa fa-close">
-              </span>
-            </button>
-          </span>
+          <moloch-paging v-if="files"
+            :records-total="recordsTotal"
+            :records-filtered="recordsFiltered"
+            v-on:changePaging="changePaging"
+            length-default=500 >
+          </moloch-paging>
         </div>
-        <moloch-paging v-if="files"
-          :records-total="recordsTotal"
-          :records-filtered="recordsFiltered"
-          v-on:changePaging="changePaging"
-          length-default=500 >
-        </moloch-paging>
       </div>
-    </div>
+    </MolochCollapsible>
 
     <div class="files-content container-fluid">
 
@@ -81,6 +82,7 @@ import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import MolochTable from '../utils/Table';
+import MolochCollapsible from '../utils/CollapsibleWrapper';
 import FocusInput from '../utils/FocusInput';
 
 let searchInputTimeout; // timeout to debounce the search input
@@ -91,7 +93,8 @@ export default {
     MolochPaging,
     MolochError,
     MolochLoading,
-    MolochTable
+    MolochTable,
+    MolochCollapsible
   },
   directives: { FocusInput },
   data: function () {
@@ -208,6 +211,6 @@ export default {
 
 /* page content */
 .files-content {
-  margin-top: 78px;
+  margin-top: 10px;
 }
 </style>
