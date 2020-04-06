@@ -1006,7 +1006,8 @@ export default {
 
       // calculate the width and height of the canvas
       const width = $(window).width() - 10;
-      const height = $(window).height() - 171;
+      // 36px for navbar + 25px for footer = 61px.
+      const height = $(window).height() - (this.toolbarDown ? 171 : 61);
 
       // get the node and link data
       links = data.links.map(d => Object.create(d));
