@@ -1,146 +1,147 @@
 <template>
 
   <div class="spigraph-page">
+    <MolochCollapsible>
+      <!-- search navbar -->
+      <moloch-search
+        :num-matching-sessions="filtered"
+        :timezone="user.settings.timezone"
+        @changeSearch="cancelAndLoad(true)">
+      </moloch-search> <!-- /search navbar -->
 
-    <!-- search navbar -->
-    <moloch-search
-      :num-matching-sessions="filtered"
-      :timezone="user.settings.timezone"
-      @changeSearch="cancelAndLoad(true)">
-    </moloch-search> <!-- /search navbar -->
-
-    <!-- spigraph sub navbar -->
-    <form class="spigraph-form"
-      @submit.prevent>
-      <div class="form-inline pr-1 pl-1 pt-1 pb-1">
-        <!-- field select -->
-        <div class="form-group"
-          v-if="fields && fields.length && fieldTypeahead">
-          <div class="input-group input-group-sm">
-            <span class="input-group-prepend cursor-help"
-              v-b-tooltip.hover
-              title="SPI Graph Field">
-              <span class="input-group-text">
-                SPI Graph:
+      <!-- spigraph sub navbar -->
+      <form class="spigraph-form"
+        @submit.prevent>
+        <div class="form-inline pr-1 pl-1 pt-1 pb-1">
+          <!-- field select -->
+          <div class="form-group"
+            v-if="fields && fields.length && fieldTypeahead">
+            <div class="input-group input-group-sm">
+              <span class="input-group-prepend cursor-help"
+                v-b-tooltip.hover
+                title="SPI Graph Field">
+                <span class="input-group-text">
+                  SPI Graph:
+                </span>
               </span>
-            </span>
-            <moloch-field-typeahead
-              :fields="fields"
-              query-param="field"
-              :initial-value="fieldTypeahead"
-              @fieldSelected="changeField"
-              page="Spigraph">
-            </moloch-field-typeahead>
+              <moloch-field-typeahead
+                :fields="fields"
+                query-param="field"
+                :initial-value="fieldTypeahead"
+                @fieldSelected="changeField"
+                page="Spigraph">
+              </moloch-field-typeahead>
+            </div>
+          </div> <!-- /field select -->
+
+          <!-- maxElements select -->
+          <div class="form-group ml-1">
+            <div class="input-group input-group-sm">
+              <span class="input-group-prepend cursor-help"
+                v-b-tooltip.hover
+                title="Max Elements Shown">
+                <span class="input-group-text">
+                  Max Elements:
+                </span>
+              </span>
+              <select class="form-control"
+                v-model="query.size"
+                @change="changeMaxElements">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="200">200</option>
+                <option value="500">500</option>
+              </select>
+            </div>
+          </div> <!-- /maxElements select -->
+
+          <!-- main graph type select -->
+          <div class="form-group ml-1">
+            <div class="input-group input-group-sm">
+              <span class="input-group-prepend cursor-help"
+                v-b-tooltip.hover
+                title="Sort results by">
+                <span class="input-group-text">
+                  Graph Type:
+                </span>
+              </span>
+              <select class="form-control"
+                v-model="spiGraphType"
+                @change="changeSpiGraphType">
+                <option value="default">timeline/map</option>
+                <option value="pie">pie</option>
+                <option value="table">table</option>
+                <option value="treemap">treemap</option>
+              </select>
+            </div>
+          </div> <!-- /main graph type select -->
+
+          <!-- sort select (not shown for the pie graph) -->
+          <div class="form-group ml-1"
+            v-if="spiGraphType === 'default'">
+            <div class="input-group input-group-sm">
+              <span class="input-group-prepend cursor-help"
+                v-b-tooltip.hover
+                title="Sort results by">
+                <span class="input-group-text">
+                  Sort by:
+                </span>
+              </span>
+              <select class="form-control"
+                v-model="sortBy"
+                @change="changeSortBy">
+                <option value="name">alphabecially</option>
+                <option value="graph">count</option>
+              </select>
+            </div>
+          </div> <!-- /sort select -->
+
+          <!-- refresh input (not shown for pie) -->
+          <div class="form-group ml-1"
+            v-if="spiGraphType === 'default'">
+            <div class="input-group input-group-sm">
+              <span class="input-group-prepend cursor-help"
+                v-b-tooltip.hover
+                title="Refresh page every X seconds">
+                <span class="input-group-text">
+                  Refresh every:
+                </span>
+              </span>
+              <select class="form-control"
+                v-model="refresh"
+                @change="changeRefreshInterval">
+                <option value="0">0</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="30">30</option>
+                <option value="45">45</option>
+                <option value="60">60</option>
+              </select>
+              <span class="input-group-append">
+                <span class="input-group-text">
+                  seconds
+                </span>
+              </span>
+            </div>
+          </div> <!-- /refresh input-->
+
+          <div v-if="spiGraphType === 'default'"
+            class="ml-1 records-display">
+            <strong class="text-theme-accent"
+              v-if="!error && recordsFiltered !== undefined">
+              Showing {{ recordsFiltered | commaString }} entries filtered from
+              {{ recordsTotal | commaString }} total entries
+            </strong>
           </div>
-        </div> <!-- /field select -->
-
-        <!-- maxElements select -->
-        <div class="form-group ml-1">
-          <div class="input-group input-group-sm">
-            <span class="input-group-prepend cursor-help"
-              v-b-tooltip.hover
-              title="Max Elements Shown">
-              <span class="input-group-text">
-                Max Elements:
-              </span>
-            </span>
-            <select class="form-control"
-              v-model="query.size"
-              @change="changeMaxElements">
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="15">15</option>
-              <option value="20">20</option>
-              <option value="30">30</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-              <option value="200">200</option>
-              <option value="500">500</option>
-            </select>
-          </div>
-        </div> <!-- /maxElements select -->
-
-        <!-- main graph type select -->
-        <div class="form-group ml-1">
-          <div class="input-group input-group-sm">
-            <span class="input-group-prepend cursor-help"
-              v-b-tooltip.hover
-              title="Sort results by">
-              <span class="input-group-text">
-                Graph Type:
-              </span>
-            </span>
-            <select class="form-control"
-              v-model="spiGraphType"
-              @change="changeSpiGraphType">
-              <option value="default">timeline/map</option>
-              <option value="pie">pie</option>
-              <option value="table">table</option>
-              <option value="treemap">treemap</option>
-            </select>
-          </div>
-        </div> <!-- /main graph type select -->
-
-        <!-- sort select (not shown for the pie graph) -->
-        <div class="form-group ml-1"
-          v-if="spiGraphType === 'default'">
-          <div class="input-group input-group-sm">
-            <span class="input-group-prepend cursor-help"
-              v-b-tooltip.hover
-              title="Sort results by">
-              <span class="input-group-text">
-                Sort by:
-              </span>
-            </span>
-            <select class="form-control"
-              v-model="sortBy"
-              @change="changeSortBy">
-              <option value="name">alphabecially</option>
-              <option value="graph">count</option>
-            </select>
-          </div>
-        </div> <!-- /sort select -->
-
-        <!-- refresh input (not shown for pie) -->
-        <div class="form-group ml-1"
-          v-if="spiGraphType === 'default'">
-          <div class="input-group input-group-sm">
-            <span class="input-group-prepend cursor-help"
-              v-b-tooltip.hover
-              title="Refresh page every X seconds">
-              <span class="input-group-text">
-                Refresh every:
-              </span>
-            </span>
-            <select class="form-control"
-              v-model="refresh"
-              @change="changeRefreshInterval">
-              <option value="0">0</option>
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="15">15</option>
-              <option value="30">30</option>
-              <option value="45">45</option>
-              <option value="60">60</option>
-            </select>
-            <span class="input-group-append">
-              <span class="input-group-text">
-                seconds
-              </span>
-            </span>
-          </div>
-        </div> <!-- /refresh input-->
-
-        <div v-if="spiGraphType === 'default'"
-          class="ml-1 records-display">
-          <strong class="text-theme-accent"
-            v-if="!error && recordsFiltered !== undefined">
-            Showing {{ recordsFiltered | commaString }} entries filtered from
-            {{ recordsTotal | commaString }} total entries
-          </strong>
         </div>
-      </div>
-    </form>
+      </form>
+    </MolochCollapsible>
 
     <div class="spigraph-content">
 
@@ -256,6 +257,7 @@ import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
 import MolochFieldTypeahead from '../utils/FieldTypeahead';
 import MolochVisualizations from '../visualizations/Visualizations';
+import MolochCollapsible from '../utils/CollapsibleWrapper';
 import MolochPie from './Hierarchy';
 // import utils
 import Utils from '../utils/utils';
@@ -274,6 +276,7 @@ export default {
     MolochNoResults,
     MolochFieldTypeahead,
     MolochVisualizations,
+    MolochCollapsible,
     MolochPie
   },
   data: function () {
@@ -585,7 +588,7 @@ export default {
 
 /* spigraph content styles ------------------- */
 .spigraph-page .spigraph-content {
-  padding-top: 120px;
+  padding-top: 10px;
 }
 
 .spigraph-page .spi-graph-item .spi-bucket sup {
