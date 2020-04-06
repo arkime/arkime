@@ -144,7 +144,7 @@ done
 ################################################################################
 if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
     echo "Moloch - Downloading and installing demo OSS version of Elasticsearch"
-    ES_VERSION=7.5.1
+    ES_VERSION=7.6.2
     if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
         yum install https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-${ES_VERSION}-x86_64.rpm
     else
