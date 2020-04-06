@@ -336,6 +336,11 @@ export default {
       reqPromise = null;
     }
 
+    // cubism hijacks the entire window's keydown listener, so disable ALL
+    // keydown listeners when navigating from this page
+    // https://github.com/square/cubism/issues/16
+    window.removeEventListeners('keydown');
+
     if (document.removeEventListener) {
       document.removeEventListener('visibilitychange', this.handleVisibilityChange);
     }
