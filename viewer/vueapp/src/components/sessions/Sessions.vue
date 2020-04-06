@@ -2,28 +2,30 @@
 
   <div class="sessions-page">
 
-    <!-- search navbar -->
-    <moloch-search
-      :fields="headers"
-      :open-sessions="stickySessions"
-      :num-visible-sessions="query.length"
-      :num-matching-sessions="sessions.recordsFiltered"
-      :start="query.start"
-      :timezone="user.settings.timezone"
-      @changeSearch="cancelAndLoad(true)">
-    </moloch-search> <!-- /search navbar -->
+    <MolochCollapsible>
+      <!-- search navbar -->
+      <moloch-search
+        :fields="headers"
+        :open-sessions="stickySessions"
+        :num-visible-sessions="query.length"
+        :num-matching-sessions="sessions.recordsFiltered"
+        :start="query.start"
+        :timezone="user.settings.timezone"
+        @changeSearch="cancelAndLoad(true)">
+      </moloch-search> <!-- /search navbar -->
 
-    <!-- paging navbar -->
-    <form class="sessions-paging">
-      <div class="form-inline">
-        <moloch-paging
-          class="mt-1 ml-1"
-          :records-total="sessions.recordsTotal"
-          :records-filtered="sessions.recordsFiltered"
-          @changePaging="changePaging">
-        </moloch-paging>
-      </div>
-    </form> <!-- /paging navbar -->
+      <!-- paging navbar -->
+      <form class="sessions-paging">
+        <div class="form-inline">
+          <moloch-paging
+            class="mt-1 ml-1"
+            :records-total="sessions.recordsTotal"
+            :records-filtered="sessions.recordsFiltered"
+            @changePaging="changePaging">
+          </moloch-paging>
+        </div>
+      </form> <!-- /paging navbar -->
+    </MolochCollapsible>
 
     <div class="sessions-content ml-2 mr-2">
 
@@ -508,6 +510,7 @@ import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
 import MolochSessionDetail from './SessionDetail';
+import MolochCollapsible from '../utils/CollapsibleWrapper';
 import MolochVisualizations from '../visualizations/Visualizations';
 import MolochStickySessions from './StickySessions';
 // import external
@@ -554,7 +557,8 @@ export default {
     MolochNoResults,
     MolochSessionDetail,
     MolochVisualizations,
-    MolochStickySessions
+    MolochStickySessions,
+    MolochCollapsible
   },
   data: function () {
     return {
@@ -1697,7 +1701,7 @@ form.sessions-paging {
 }
 
 .sessions-content {
-  padding-top: 115px;
+  padding-top: 10px;
   overflow-y: auto;
 }
 
