@@ -65,10 +65,10 @@
           <e-s-health></e-s-health>
         </b-navbar-nav>
 
-        <b-navbar-nav v-if="isAToolBarPage" class="toggleChevrons" @click="toggleToolBars">
+        <div v-if="isAToolBarPage" class="toggleChevrons ml-2" @click="toggleToolBars">
           <i v-if="showToolBars" class="fa fa-chevron-circle-up fa-lg" title="close tool bars"></i>
           <i v-else class="fa fa-chevron-circle-down fa-lg" title="open tool bars"></i>
-        </b-navbar-nav>
+        </div>
 
       </b-collapse>
     </b-navbar>
@@ -222,6 +222,7 @@ nav.navbar {
   z-index: 7;
   max-height: 36px;
   min-height: 36px;
+  padding-right: 0.5rem;
 }
 .navbarOffset {
   padding-top: 36px;
@@ -238,10 +239,12 @@ a.nav-link {
 ul.navbar-nav {
   margin-left: 20px;
 }
-ul.toggleChevrons {
+.toggleChevrons {
   color: rgba(255, 255, 255, 0.75);
   align-items: center;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
 }
 
 a.nav-link > a {
