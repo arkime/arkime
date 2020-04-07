@@ -329,106 +329,110 @@
         </div>
       </div> <!-- /popup area -->
 
-      <!-- zoom in/out -->
-      <div class="btn-group-vertical zoom-btns overlay-btns">
-        <span title="Zoom in"
-          v-b-tooltip.hover.lefttop>
-          <button type="button"
-            class="btn btn-default btn-sm"
-            :class="{'disabled':zoomLevel >= 4}"
-            @click="zoomConnections(2)">
-            <span class="fa fa-lg fa-search-plus">
-            </span>
-          </button>
-        </span>
-        <span title="Zoom out"
-          v-b-tooltip.hover.lefttop>
-          <button type="button"
-            class="btn btn-default btn-sm"
-            :class="{'disabled':zoomLevel <= 0.0625}"
-            @click="zoomConnections(0.5)">
-            <span class="fa fa-lg fa-search-minus">
-            </span>
-          </button>
-        </span>
-      </div> <!-- /zoom in/out -->
+      <!-- Button group -->
+      <span class="connections-buttons" :style= "[showToolBars ? {'top': '160px'} : {'top': '40px'}]">
+        <div class="btn-group-vertical unlock-btn overlay-btns">
+          <!-- unlock button-->
+          <span class="unlock-btn">
+            <button class="btn btn-default btn-sm ml-1"
+              v-b-tooltip.hover
+              title="Unlock any nodes that you have set into place"
+              @click.stop.prevent="unlock">
+              <span class="fa fa-unlock"></span>
+            </button>
+          </span> <!-- /unlock button-->
 
-      <!-- text size increase/decrease -->
-      <div class="btn-group-vertical text-size-btns overlay-btns">
-        <span v-b-tooltip.hover.lefttop
-          title="Increase text size (you might also want to update the node distance using the buttons just to the left)">
-          <button type="button"
-            class="btn btn-default btn-sm"
-            :class="{'disabled':fontSize >= 1}"
-            @click="updateTextSize(0.1)">
-            <span class="fa fa-long-arrow-up">
-            </span>
-            <span class="fa fa-font">
-            </span>
-          </button>
-        </span>
-        <span v-b-tooltip.hover.lefttop
-          title="Decrease text size (you might also want to update the node distance using the buttons just to the left)">
-          <button type="button"
-            class="btn btn-default btn-sm"
-            :class="{'disabled':fontSize <= 0.2}"
-            @click="updateTextSize(-0.1)">
-            <span class="fa fa-long-arrow-down">
-            </span>
-            <span class="fa fa-font">
-            </span>
-          </button>
-        </span>
-      </div> <!-- /text size increase/decrease -->
+          <!-- export button-->
+          <span class="export-btn">
+            <button class="btn btn-default btn-sm ml-1"
+              v-b-tooltip.hover
+              title="Export this graph as a PNG"
+              @click.stop.prevent="exportPng">
+              <span class="fa fa-download"></span>
+            </button>
+          </span> <!-- /export button-->
+        </div>
 
-      <!-- node distance -->
-      <div class="btn-group-vertical node-distance-btns overlay-btns">
-        <span title="Increase node distance"
-          v-b-tooltip.hover.lefttop>
-          <button type="button"
-            class="btn btn-default btn-sm"
-            :class="{'disabled':query.nodeDist >= 200}"
-            @click="changeNodeDist(10)">
-            <span class="fa fa-plus">
-            </span>
-            <span class="fa fa-arrows-v">
-            </span>
-          </button>
-        </span>
-        <span title="Decrease node distance"
-          v-b-tooltip.hover.lefttop>
-          <button type="button"
-            class="btn btn-default btn-sm"
-            :class="{'disabled':query.nodeDist <= 10}"
-            @click="changeNodeDist(-10)">
-            <span class="fa fa-minus">
-            </span>
-            <span class="fa fa-arrows-v">
-            </span>
-          </button>
-        </span>
-      </div> <!-- /node distance -->
+        <!-- node distance -->
+        <div class="btn-group-vertical node-distance-btns overlay-btns">
+          <span title="Increase node distance"
+            v-b-tooltip.hover.lefttop>
+            <button type="button"
+              class="btn btn-default btn-sm"
+              :class="{'disabled':query.nodeDist >= 200}"
+              @click="changeNodeDist(10)">
+              <span class="fa fa-plus">
+              </span>
+              <span class="fa fa-arrows-v">
+              </span>
+            </button>
+          </span>
+          <span title="Decrease node distance"
+            v-b-tooltip.hover.lefttop>
+            <button type="button"
+              class="btn btn-default btn-sm"
+              :class="{'disabled':query.nodeDist <= 10}"
+              @click="changeNodeDist(-10)">
+              <span class="fa fa-minus">
+              </span>
+              <span class="fa fa-arrows-v">
+              </span>
+            </button>
+          </span>
+        </div> <!-- /node distance -->
 
-      <!-- unlock button-->
-      <div class="btn-group-vertical unlock-btn overlay-btns">
-        <button class="btn btn-default btn-sm ml-1"
-          v-b-tooltip.hover
-          title="Unlock any nodes that you have set into place"
-          @click.stop.prevent="unlock">
-          <span class="fa fa-unlock"></span>
-        </button>
-      </div> <!-- /unlock button-->
+        <!-- text size increase/decrease -->
+        <div class="btn-group-vertical text-size-btns overlay-btns">
+          <span v-b-tooltip.hover.lefttop
+            title="Increase text size (you might also want to update the node distance using the buttons just to the left)">
+            <button type="button"
+              class="btn btn-default btn-sm"
+              :class="{'disabled':fontSize >= 1}"
+              @click="updateTextSize(0.1)">
+              <span class="fa fa-long-arrow-up">
+              </span>
+              <span class="fa fa-font">
+              </span>
+            </button>
+          </span>
+          <span v-b-tooltip.hover.lefttop
+            title="Decrease text size (you might also want to update the node distance using the buttons just to the left)">
+            <button type="button"
+              class="btn btn-default btn-sm"
+              :class="{'disabled':fontSize <= 0.2}"
+              @click="updateTextSize(-0.1)">
+              <span class="fa fa-long-arrow-down">
+              </span>
+              <span class="fa fa-font">
+              </span>
+            </button>
+          </span>
+        </div> <!-- /text size increase/decrease -->
 
-      <!-- export button-->
-      <div class="btn-group-vertical export-btn overlay-btns">
-        <button class="btn btn-default btn-sm ml-1"
-          v-b-tooltip.hover
-          title="Export this graph as a PNG"
-          @click.stop.prevent="exportPng">
-          <span class="fa fa-download"></span>
-        </button>
-      </div> <!-- /export button-->
-
+        <!-- zoom in/out -->
+        <div class="btn-group-vertical zoom-btns overlay-btns">
+          <span title="Zoom in"
+            v-b-tooltip.hover.lefttop>
+            <button type="button"
+              class="btn btn-default btn-sm"
+              :class="{'disabled':zoomLevel >= 4}"
+              @click="zoomConnections(2)">
+              <span class="fa fa-lg fa-search-plus">
+              </span>
+            </button>
+          </span>
+          <span title="Zoom out"
+            v-b-tooltip.hover.lefttop>
+            <button type="button"
+              class="btn btn-default btn-sm"
+              :class="{'disabled':zoomLevel <= 0.0625}"
+              @click="zoomConnections(0.5)">
+              <span class="fa fa-lg fa-search-minus">
+              </span>
+            </button>
+          </span>
+        </div> <!-- /zoom in/out -->
+      </span> <!-- /Button group -->
     </div>
 
   </div>
@@ -1620,32 +1624,21 @@ export default {
 
 /* zoom/font size/node distance buttons overlaying the graph */
 .connections-content .zoom-btns {
-  position: fixed;
-  top: 160px;
-  right: 10px;
 }
 .connections-content .text-size-btns {
-  position: fixed;
-  top: 160px;
-  right: 47px;
+
 }
 .connections-content .node-distance-btns {
-  position: fixed;
-  top: 160px;
-  right: 90px;
+
 }
 .connections-content .unlock-btn {
-  position: fixed;
-  top: 160px;
-  right: 135px;
+
 }
 .connections-content .unlock-btn > button {
   height: 29px;
 }
 .connections-content .export-btn {
-  position: fixed;
-  top: 192px;
-  right: 135px;
+
 }
 .connections-content .export-btn > button {
   height: 29px;
@@ -1657,6 +1650,10 @@ export default {
 }
 .connections-content .overlay-btns > span:last-child > button {
   border-radius: 0 0 4px 4px;
+}
+.connections-buttons {
+  position: fixed;
+  right: 10px;
 }
 </style>
 
