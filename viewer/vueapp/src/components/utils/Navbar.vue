@@ -66,8 +66,8 @@
         </b-navbar-nav>
 
         <div v-if="isAToolBarPage" class="toggleChevrons ml-2" @click="toggleToolBars">
-          <i v-if="showToolBars" class="fa fa-chevron-circle-up fa-lg" title="close tool bars"></i>
-          <i v-else class="fa fa-chevron-circle-down fa-lg" title="open tool bars"></i>
+          <i v-if="showToolBars" v-b-tooltip.hover class="fa fa-chevron-circle-up fa-lg" title="Hide toolbars"></i>
+          <i v-else v-b-tooltip.hover class="fa fa-chevron-circle-down fa-lg" title="Unhide toolbars"></i>
         </div>
 
       </b-collapse>
