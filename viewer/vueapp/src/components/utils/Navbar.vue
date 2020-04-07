@@ -65,7 +65,7 @@
           <e-s-health></e-s-health>
         </b-navbar-nav>
 
-        <b-navbar-nav v-if="activePage !== 'settings'" class="toggleChevrons" @click="toggleToolBars">
+        <b-navbar-nav v-if="isAToolBarPage" class="toggleChevrons" @click="toggleToolBars">
           <i v-if="showToolBars" class="fa fa-chevron-circle-up fa-lg" title="close tool bars"></i>
           <i v-else class="fa fa-chevron-circle-down fa-lg" title="open tool bars"></i>
         </b-navbar-nav>
@@ -162,14 +162,22 @@ export default {
     },
     activePage: function () {
       let activeLink;
+      let chosenPath = this.$route.path.split('/')[1];
       for (let page in this.menu) {
         let link = this.menu[page].link;
-        if (link === this.$route.path.split('/')[1]) {
-          activeLink = link;
+        if (link === chosenPath) {
+          activeLink = chosenPath;
           break;
         }
       }
+      // Help page is not in menu options
+      if (chosenPath === 'help') {
+        activeLink = chosenPath;
+      }
       return activeLink;
+    },
+    isAToolBarPage: function () {
+      return ['settings', 'upload', 'help'].every(item => item !== this.activePage);
     },
     user: function () {
       return this.$store.state.user;
