@@ -1,59 +1,59 @@
 <template>
 
-  <div>
-
-    <div class="users-search">
-      <div class="mr-1 ml-1 mt-1 mb-1">
-        <div class="input-group input-group-sm">
-          <div class="input-group-prepend">
-            <span class="input-group-text input-group-text-fw">
-              <span v-if="!shiftKeyHold"
-                class="fa fa-search fa-fw">
+  <div class="user-page">
+    <MolochCollapsible>
+      <div class="users-search">
+        <div class="mr-1 ml-1 mt-1 mb-1">
+          <div class="input-group input-group-sm">
+            <div class="input-group-prepend">
+              <span class="input-group-text input-group-text-fw">
+                <span v-if="!shiftKeyHold"
+                  class="fa fa-search fa-fw">
+                </span>
+                <span v-else
+                  class="query-shortcut">
+                  Q
+                </span>
               </span>
-              <span v-else
-                class="query-shortcut">
-                Q
-              </span>
+            </div>
+            <input type="text"
+              class="form-control"
+              v-model="query.filter"
+              v-focus-input="focusInput"
+              @blur="onOffFocus"
+              @input="searchForUsers"
+              placeholder="Begin typing to search for users by name"
+            />
+            <span class="input-group-append">
+              <button type="button"
+                @click="clear"
+                :disabled="!query.filter"
+                class="btn btn-outline-secondary btn-clear-input">
+                <span class="fa fa-close">
+                </span>
+              </button>
             </span>
           </div>
-          <input type="text"
-            class="form-control"
-            v-model="query.filter"
-            v-focus-input="focusInput"
-            @blur="onOffFocus"
-            @input="searchForUsers"
-            placeholder="Begin typing to search for users by name"
-          />
-          <span class="input-group-append">
-            <button type="button"
-              @click="clear"
-              :disabled="!query.filter"
-              class="btn btn-outline-secondary btn-clear-input">
-              <span class="fa fa-close">
-              </span>
-            </button>
-          </span>
         </div>
       </div>
-    </div>
 
-    <div class="users-paging">
-      <div class="ml-1 mt-1 pull-right">
-        <moloch-toast
-          class="mr-1"
-          :message="msg"
-          :type="msgType"
-          :done="messageDone">
-        </moloch-toast>
+      <div class="users-paging">
+        <div class="ml-1 mt-1 pull-right">
+          <moloch-toast
+            class="mr-1"
+            :message="msg"
+            :type="msgType"
+            :done="messageDone">
+          </moloch-toast>
+        </div>
+        <moloch-paging v-if="users"
+          class="mt-1 ml-1"
+          :records-total="users.recordsTotal"
+          :records-filtered="users.recordsFiltered"
+          v-on:changePaging="changePaging">
+        </moloch-paging>
       </div>
-      <moloch-paging v-if="users"
-        class="mt-1 ml-1"
-        :records-total="users.recordsTotal"
-        :records-filtered="users.recordsFiltered"
-        v-on:changePaging="changePaging">
-      </moloch-paging>
-    </div>
-
+    </MolochCollapsible>
     <div class="users-content">
 
       <moloch-error v-if="error"
@@ -616,6 +616,7 @@ import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import MolochToast from '../utils/Toast';
+import MolochCollapsible from '../utils/CollapsibleWrapper';
 import FocusInput from '../utils/FocusInput';
 import ToggleBtn from '../utils/ToggleBtn';
 
@@ -628,6 +629,7 @@ export default {
     MolochError,
     MolochLoading,
     MolochToast,
+    MolochCollapsible,
     ToggleBtn
   },
   directives: { FocusInput },
@@ -885,7 +887,7 @@ export default {
 
 /* page content */
 .users-content {
-  margin-top: 125px;
+  margin-top: 10px;
 }
 
 .users-content form .form-group-sm .checkbox {

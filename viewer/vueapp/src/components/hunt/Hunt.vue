@@ -2,61 +2,61 @@
 
   <div class="packet-search-page ml-2 mr-2">
 
-    <!-- search navbar -->
-    <moloch-search
-      v-if="user.settings"
-      :start="sessionsQuery.start"
-      :timezone="user.settings.timezone"
-      :hide-actions="true"
-      :hide-interval="true"
-      @changeSearch="cancelAndLoad(true)">
-    </moloch-search> <!-- /search navbar -->
+    <MolochCollapsible>
+      <!-- search navbar -->
+      <moloch-search
+        v-if="user.settings"
+        :start="sessionsQuery.start"
+        :timezone="user.settings.timezone"
+        :hide-actions="true"
+        :hide-interval="true"
+        @changeSearch="cancelAndLoad(true)">
+      </moloch-search> <!-- /search navbar -->
 
-    <div>&nbsp;</div>
-
-    <!-- hunt create navbar -->
-    <form class="hunt-create-navbar">
-      <div class="mt-1 ml-1 mr-1">
-        <button type="button"
-          v-if="!createFormOpened"
-          @click="createFormOpened = true"
-          class="btn btn-theme-tertiary btn-sm pull-right">
-          Create a packet search job
-        </button>
-        <span v-if="loadingSessions">
-          <div class="mt-1" style="display:inline-block;">
-            <span class="fa fa-spinner fa-spin fa-fw">
-            </span>
-            Loading sessions...
-          </div>
+      <!-- hunt create navbar -->
+      <form class="hunt-create-navbar">
+        <div class="mt-1 ml-1 mr-1">
           <button type="button"
-            class="btn btn-warning btn-sm ml-3"
-            @click="cancelAndLoad">
-            <span class="fa fa-ban">
-            </span>&nbsp;
-            cancel
+            v-if="!createFormOpened"
+            @click="createFormOpened = true"
+            class="btn btn-theme-tertiary btn-sm pull-right">
+            Create a packet search job
           </button>
-        </span>
-        <span v-else-if="loadingSessionsError">
-          <div class="mt-1" style="display:inline-block;">
-            <span class="fa fa-exclamation-triangle fa-fw">
-            </span>
-            {{ loadingSessionsError }}
-          </div>
-        </span>
-        <span v-else-if="!loadingSessions && !loadingSessionsError">
-          <div class="mt-1" style="display:inline-block;">
-            <span class="fa fa-info-circle fa-fw">
-            </span>&nbsp;
-            Creating a new packet search job will search the packets of
-            <strong>
-              {{ sessions.recordsFiltered | commaString }}
-            </strong>
-            sessions.
-          </div>
-        </span>
-      </div>
-    </form> <!-- /hunt create navbar -->
+          <span v-if="loadingSessions">
+            <div class="mt-1" style="display:inline-block;">
+              <span class="fa fa-spinner fa-spin fa-fw">
+              </span>
+              Loading sessions...
+            </div>
+            <button type="button"
+              class="btn btn-warning btn-sm ml-3"
+              @click="cancelAndLoad">
+              <span class="fa fa-ban">
+              </span>&nbsp;
+              cancel
+            </button>
+          </span>
+          <span v-else-if="loadingSessionsError">
+            <div class="mt-1" style="display:inline-block;">
+              <span class="fa fa-exclamation-triangle fa-fw">
+              </span>
+              {{ loadingSessionsError }}
+            </div>
+          </span>
+          <span v-else-if="!loadingSessions && !loadingSessionsError">
+            <div class="mt-1" style="display:inline-block;">
+              <span class="fa fa-info-circle fa-fw">
+              </span>&nbsp;
+              Creating a new packet search job will search the packets of
+              <strong>
+                {{ sessions.recordsFiltered | commaString }}
+              </strong>
+              sessions.
+            </div>
+          </span>
+        </div>
+      </form> <!-- /hunt create navbar -->
+    </MolochCollapsible>
 
     <!-- loading overlay -->
     <moloch-loading
@@ -1203,6 +1203,7 @@ import ToggleBtn from '../utils/ToggleBtn';
 import MolochSearch from '../search/Search';
 import MolochLoading from '../utils/Loading';
 import MolochPaging from '../utils/Pagination';
+import MolochCollapsible from '../utils/CollapsibleWrapper';
 import FocusInput from '../utils/FocusInput';
 // import utils
 import Utils from '../utils/utils';
@@ -1218,6 +1219,7 @@ export default {
     ToggleBtn,
     MolochSearch,
     MolochLoading,
+    MolochCollapsible,
     MolochPaging
   },
   directives: { FocusInput },
@@ -1676,13 +1678,9 @@ export default {
 </script>
 
 <style scoped>
-/* packet search page, navbar, and content styles */
-.packet-search-page {
-  margin-top: 36px;
-}
 
 .packet-search-content {
-  margin-top: 100px;
+  margin-top: 10px;
 }
 
 .info-area {

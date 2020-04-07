@@ -1,77 +1,84 @@
 <template>
+  <span>
+    <b-navbar
+      fixed="top"
+      toggleable="md"
+      type="dark">
 
-  <b-navbar
-    fixed="top"
-    toggleable="md"
-    type="dark">
+      <b-navbar-toggle
+        target="nav_collapse">
+      </b-navbar-toggle>
 
-    <b-navbar-toggle
-      target="nav_collapse">
-    </b-navbar-toggle>
+      <b-navbar-brand>
+        <router-link
+          :to="{ path: helpLink.href, query: helpLink.query, params: { nav: true } }">
+          <div id="helpTooltipContainer">
+            <img src="header_logo.png"
+              class="moloch-logo"
+              alt="hoot"
+              v-b-tooltip.hover
+              title="HOOT! Can I help you? Click me to see the help page"
+              id="tooltipHelp"
+            />
+          </div>
+        </router-link>
+        <b-tooltip :show="shiftKeyHold"
+          triggers=""
+          target="tooltipHelp"
+          placement="leftbottom"
+          container="helpTooltipContainer">
+          <strong class="help-shortcut">H</strong>
+        </b-tooltip>
+      </b-navbar-brand>
 
-    <b-navbar-brand>
-      <router-link
-        :to="{ path: helpLink.href, query: helpLink.query, params: { nav: true } }">
-        <div id="helpTooltipContainer">
-          <img src="header_logo.png"
-            class="moloch-logo"
-            alt="hoot"
-            v-b-tooltip.hover
-            title="HOOT! Can I help you? Click me to see the help page"
-            id="tooltipHelp"
-          />
-        </div>
-      </router-link>
-      <b-tooltip :show="shiftKeyHold"
-        triggers=""
-        target="tooltipHelp"
-        placement="leftbottom"
-        container="helpTooltipContainer">
-        <strong class="help-shortcut">H</strong>
-      </b-tooltip>
-    </b-navbar-brand>
+      <b-collapse is-nav
+        id="nav_collapse">
 
-    <b-collapse is-nav
-      id="nav_collapse">
-
-      <b-navbar-nav>
-        <template v-for="item of menuOrder">
-          <template v-if="user && menu[item] && menu[item].hasPermission">
-            <b-nav-item
-              :key="menu[item].link"
-              class="cursor-pointer"
-              :class="{'router-link-active': $route.path === `/${menu[item].link}`}">
-              <router-link
-                :to="{ path: menu[item].link, query: menu[item].query, params: { nav: true } }">
-                <span v-if="menu[item].hotkey">
-                  <p v-for="(text, index) in menu[item].hotkey"
-                    :key="text"
-                    :class="{'holding-shift':shiftKeyHold && index === menu[item].hotkey.length-1,'shortcut-letter': index === menu[item].hotkey.length-1}">{{ text }}</p>
-                </span>
-                <p v-else>
-                  {{ menu[item].title }}
-                </p>
-              </router-link>
-            </b-nav-item>
+        <b-navbar-nav>
+          <template v-for="item of menuOrder">
+            <template v-if="user && menu[item] && menu[item].hasPermission">
+              <b-nav-item
+                :key="menu[item].link"
+                class="cursor-pointer"
+                :class="{'router-link-active': $route.path === `/${menu[item].link}`}">
+                <router-link
+                  :to="{ path: menu[item].link, query: menu[item].query, params: { nav: true } }">
+                  <span v-if="menu[item].hotkey">
+                    <p v-for="(text, index) in menu[item].hotkey"
+                      :key="text"
+                      :class="{'holding-shift':shiftKeyHold && index === menu[item].hotkey.length-1,'shortcut-letter': index === menu[item].hotkey.length-1}">{{ text }}</p>
+                  </span>
+                  <p v-else>
+                    {{ menu[item].title }}
+                  </p>
+                </router-link>
+              </b-nav-item>
+            </template>
           </template>
-        </template>
-      </b-navbar-nav>
+        </b-navbar-nav>
 
-      <b-navbar-nav
-        class="ml-auto">
-        <small class="navbar-text mr-2 text-right">
-          v{{ molochVersion }}
-        </small>
-        <e-s-health></e-s-health>
-      </b-navbar-nav>
+        <b-navbar-nav
+          class="ml-auto">
+          <small class="navbar-text mr-2 text-right">
+            v{{ molochVersion }}
+          </small>
+          <e-s-health></e-s-health>
+        </b-navbar-nav>
 
-    </b-collapse>
-  </b-navbar>
+        <div v-if="isAToolBarPage" class="toggleChevrons ml-2" @click="toggleToolBars">
+          <i v-if="showToolBars" v-b-tooltip.hover class="fa fa-chevron-circle-up fa-lg" title="Hide toolbars"></i>
+          <i v-else v-b-tooltip.hover class="fa fa-chevron-circle-down fa-lg" title="Unhide toolbars"></i>
+        </div>
 
+      </b-collapse>
+    </b-navbar>
+    <div class="navbarOffset" />
+  </span>
 </template>
 
 <script>
 import qs from 'qs';
+import { mapMutations } from 'vuex';
 
 import ESHealth from './ESHealth';
 
@@ -155,17 +162,28 @@ export default {
     },
     activePage: function () {
       let activeLink;
+      let chosenPath = this.$route.path.split('/')[1];
       for (let page in this.menu) {
         let link = this.menu[page].link;
-        if (link === this.$route.path.split('/')[1]) {
-          activeLink = link;
+        if (link === chosenPath) {
+          activeLink = chosenPath;
           break;
         }
       }
+      // Help page is not in menu options
+      if (chosenPath === 'help') {
+        activeLink = chosenPath;
+      }
       return activeLink;
+    },
+    isAToolBarPage: function () {
+      return ['settings', 'upload', 'help'].every(item => item !== this.activePage);
     },
     user: function () {
       return this.$store.state.user;
+    },
+    showToolBars: function () {
+      return this.$store.state.showToolBars;
     },
     shiftKeyHold: function () {
       return this.$store.state.shiftKeyHold;
@@ -174,7 +192,10 @@ export default {
   methods: {
     isActive: function (link) {
       return link === this.$route.path.split('/')[1];
-    }
+    },
+    ...mapMutations([
+      'toggleToolBars'
+    ])
   }
 };
 </script>
@@ -201,6 +222,10 @@ nav.navbar {
   z-index: 7;
   max-height: 36px;
   min-height: 36px;
+  padding-right: 0.5rem;
+}
+.navbarOffset {
+  padding-top: 36px;
 }
 a.nav-link {
   max-height: 38px;
@@ -213,6 +238,13 @@ a.nav-link {
 }
 ul.navbar-nav {
   margin-left: 20px;
+}
+.toggleChevrons {
+  color: rgba(255, 255, 255, 0.75);
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
 }
 
 a.nav-link > a {
