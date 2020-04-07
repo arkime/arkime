@@ -35,6 +35,12 @@ export default {
     // Check offset height after toggle is updated and mounted()
     showToolBars: function () {
       this.$nextTick(() => {
+        // Momentarily override toolbars position so animation can occur
+        // WARNING: inline position or non-scoped css position will be modified
+        Array.from(this.$refs.collapseBox.children).map((el) => {
+          el.style.position = (this.showToolBars) ? '' : 'static';
+        });
+
         this.getOffset();
       });
     }
