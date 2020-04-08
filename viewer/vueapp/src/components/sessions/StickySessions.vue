@@ -7,7 +7,7 @@
     <div class="sticky-session-btn"
       @click="toggleStickySessions"
       v-if="sessions && sessions.length > 0"
-      v-b-tooltip.hover
+      v-b-tooltip.hover.left
       title="Toggle view of expanded sessions">
       <span v-if="!open"
         class="fa fa-angle-double-left">

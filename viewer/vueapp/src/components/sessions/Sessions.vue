@@ -27,17 +27,17 @@
       </form> <!-- /paging navbar -->
     </MolochCollapsible>
 
-    <div class="sessions-content ml-2 mr-2">
+    <!-- visualizations -->
+    <moloch-visualizations
+      v-if="mapData && graphData"
+      :graph-data="graphData"
+      :map-data="mapData"
+      :primary="true"
+      :timezone="user.settings.timezone"
+      @fetchMapData="cancelAndLoad(true)">
+    </moloch-visualizations> <!-- /visualizations -->
 
-      <!-- session visualizations -->
-      <moloch-visualizations
-        v-if="mapData && graphData"
-        :graph-data="graphData"
-        :map-data="mapData"
-        :primary="true"
-        :timezone="user.settings.timezone"
-        @fetchMapData="cancelAndLoad(true)">
-      </moloch-visualizations> <!-- /session visualizations -->
+    <div class="sessions-content ml-2 mr-2">
 
       <!-- sticky (opened) sessions -->
       <transition name="leave">

@@ -132,19 +132,17 @@
       </form> <!-- /warning navbar -->
     </MolochCollapsible>
 
-    <div class="spiview-content mr-1 ml-1">
+    <!-- visualizations -->
+    <moloch-visualizations
+      v-if="mapData && graphData"
+      :graph-data="graphData"
+      :map-data="mapData"
+      :primary="true"
+      :timezone="user.settings.timezone"
+      @fetchMapData="fetchMapData">
+    </moloch-visualizations> <!-- /visualizations -->
 
-      <!-- session visualizations -->
-      <div class="spiview-visualizations">
-        <moloch-visualizations
-          v-if="mapData && graphData"
-          :graph-data="graphData"
-          :map-data="mapData"
-          :primary="true"
-          :timezone="user.settings.timezone"
-          @fetchMapData="fetchMapData">
-        </moloch-visualizations>
-      </div> <!-- /session visualizations -->
+    <div class="spiview-content mr-1 ml-1">
 
       <!-- page error -->
       <moloch-error
