@@ -217,7 +217,7 @@
 
         <!-- graph -->
         <div v-if="graphData"
-          class="plot-container">
+          class="plot-container pr-4">
           <div class="plot-area"
             :id="'plotArea' + id">
           </div>
@@ -709,7 +709,7 @@ export default {
         position: 'relative',
         top: '0',
         right: '0',
-        height: '150px',
+        height: '170px',
         width: '100%',
         'z-index': 2,
         'margin-bottom': '-25px'
@@ -831,7 +831,7 @@ export default {
 /* map styles ---------------------- */
 .inline-map .moloch-map-container > .moloch-map {
   z-index: 3;
-  height: 150px;
+  height: 170px;
   width: 100%;
   margin-bottom: -25px;
 }
@@ -1028,7 +1028,7 @@ export default {
 /* graph styles -------------------- */
 .plot-area {
   width: 100%;
-  height: 150px;
+  height: 170px;
 }
 
 .map-visible .plot-container {
@@ -1074,7 +1074,7 @@ export default {
 
 /* sticky vizualization styles --------------- */
 .sticky-viz {
-  padding-bottom: 164px;
+  padding-bottom: 178px;
 }
 
 .sticky-viz .viz-container {
