@@ -143,6 +143,18 @@
       </form>
     </MolochCollapsible>
 
+    <!-- main visualization -->
+    <div v-if="spiGraphType === 'default' && mapData && graphData && fieldObj">
+      <moloch-visualizations
+        id="primary"
+        :graph-data="graphData"
+        :map-data="mapData"
+        :primary="true"
+        :timezone="user.settings.timezone"
+        @fetchMapData="cancelAndLoad(true)">
+      </moloch-visualizations>
+    </div> <!-- /main visualization -->
+
     <div class="spigraph-content">
 
       <!-- pie graph type -->
@@ -162,18 +174,6 @@
 
       <!-- default graph type -->
       <div v-else>
-        <!-- main visualization -->
-        <div v-if="mapData && graphData"
-          class="well well-sm mb-3 ml-2 mr-2">
-          <moloch-visualizations
-            id="primary"
-            :graph-data="graphData"
-            :map-data="mapData"
-            :primary="true"
-            :timezone="user.settings.timezone"
-            @fetchMapData="cancelAndLoad(true)">
-          </moloch-visualizations>
-        </div> <!-- /main visualization -->
 
         <!-- values -->
         <template v-if="fieldObj">
@@ -293,7 +293,7 @@ export default {
       items: [],
       showDropdown: false,
       fieldTypeahead: 'node',
-      baseField: 'node',
+      baseField: this.$route.query.field || 'node',
       sortBy: this.$route.query.sort || 'graph',
       spiGraphType: this.$route.query.spiGraphType || 'default'
     };
@@ -511,8 +511,9 @@ export default {
         respondedAt = Date.now();
         this.error = '';
         this.loading = false;
-        this.items = []; // clear items
-        this.processData(response.data);
+        this.items = response.data.items;
+        this.mapData = response.data.map;
+        this.graphData = response.data.graph;
         this.recordsTotal = response.data.recordsTotal;
         this.recordsFiltered = response.data.recordsFiltered;
       }).catch((error) => {
@@ -521,28 +522,6 @@ export default {
         this.loading = false;
         this.error = error.text || error;
       });
-    },
-    processData: function (json) {
-      this.mapData = json.map;
-      this.graphData = json.graph;
-
-      let finfo = this.db2Field(this.filed);
-
-      for (let i = 0, len = json.items.length; i < len; i++) {
-        json.items[i].type = finfo.type;
-      }
-
-      this.items = json.items;
-    },
-    db2Field: function (dbField) {
-      for (let k in this.fields) {
-        if (dbField === this.fields[k].dbField ||
-            dbField === this.fields[k].rawField) {
-          return this.fields[k];
-        }
-      }
-
-      return undefined;
     }
   },
   beforeDestroy: function () {
