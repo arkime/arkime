@@ -34,7 +34,7 @@
 
 <script>
 import d3 from '../../../../public/d3.min.js';
-import cubism from '../../../../public/cubism.v1.js';
+import cubism from '../../../../public/cubism.v1.min.js';
 import '../../../../public/highlight.min.js';
 
 import '../../cubismoverrides.css';
@@ -276,11 +276,6 @@ export default {
   },
   beforeDestroy: function () {
     initialized = false;
-
-    // cubism hijacks the entire window's keydown listener, so disable ALL
-    // keydown listeners when navigating from this page
-    // https://github.com/square/cubism/issues/16
-    window.removeEventListeners('keydown');
 
     if (this.context) {
       this.context.stop(); // stop cubism context from continuing to issue reqs

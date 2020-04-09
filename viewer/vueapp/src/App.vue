@@ -31,39 +31,6 @@ import MolochWelcomeMessage from './components/utils/WelcomeMessage';
 import MolochUpgradeBrowser from './components/utils/UpgradeBrowser';
 import MolochKeyboardShortcuts from './components/utils/KeyboardShortcuts';
 
-let shiftKeyListener;
-let _listeners = [];
-// trap function for logging all add listener calls
-// save the normal add event listener to apply after saving the listener
-EventTarget.prototype.addEventListenerBase = EventTarget.prototype.addEventListener;
-EventTarget.prototype.addEventListener = function (type, listener) {
-  _listeners.push({ target: this, type: type, listener: listener });
-  this.addEventListenerBase(type, listener);
-};
-
-// remove event listener*S* function to remove listener for a specific target
-// use => window.removeEventListeners('keydown');
-EventTarget.prototype.removeEventListeners = function (targetType) {
-  let shiftKeyListenerRemoved = false;
-
-  for (let index = 0; index < _listeners.length; index++) {
-    let item = _listeners[index];
-    let target = item.target;
-    let type = item.type;
-    let listener = item.listener;
-
-    if (target === this && type === targetType) {
-      if ($.isWindow(target) && targetType === 'keydown') {
-        shiftKeyListenerRemoved = true;
-      }
-      this.removeEventListener(type, listener);
-    }
-  }
-
-  // reregister shift key listener if it has been removed
-  if (shiftKeyListenerRemoved) { shiftKeyListener(); }
-};
-
 export default {
   name: 'App',
   components: {
@@ -200,9 +167,18 @@ export default {
       }
     });
 
-    this.shiftKeyListener();
-    // save shift key listener globally so it can be reregistered
-    shiftKeyListener = this.shiftKeyListener;
+    window.addEventListener('keydown', (event) => {
+      const activeElement = document.activeElement;
+      // quit if the user is in an input or not holding the shift key
+      if (activeElement && this.inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1) {
+        return;
+      }
+      if (event.keyCode === 16) { // shift
+        this.shiftKeyHold = true;
+      } else if (event.keyCode === 27) { // esc
+        this.shiftKeyHold = false;
+      }
+    });
 
     // if the user clicks something, remove shift hold
     window.addEventListener('mousedown', (event) => {
@@ -223,20 +199,6 @@ export default {
           expression: this.$store.state.expression
         },
         hash: this.$route.hash
-      });
-    },
-    shiftKeyListener: function () {
-      window.addEventListener('keydown', (event) => {
-        const activeElement = document.activeElement;
-        // quit if the user is in an input or not holding the shift key
-        if (activeElement && this.inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1) {
-          return;
-        }
-        if (event.keyCode === 16) { // shift
-          this.shiftKeyHold = true;
-        } else if (event.keyCode === 27) { // esc
-          this.shiftKeyHold = false;
-        }
       });
     }
   }
