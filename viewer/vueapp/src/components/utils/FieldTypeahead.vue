@@ -1,6 +1,6 @@
 <template>
 
-  <span :class="{'dropup':dropup}">
+  <div :class="{'dropup':dropup}">
     <input
       type="text"
       ref="typeahead"
@@ -46,7 +46,7 @@
         No fields match your query
       </a>
     </div>
-  </span>
+  </div>
 
 </template>
 
@@ -237,12 +237,10 @@ export default {
 </script>
 
 <style scoped>
-.dropup .field-typeahead {
-  margin-bottom: 34px;
-}
 .field-typeahead {
   max-height: 300px;
   overflow-y: auto;
+  width: 100%;
 }
 .input-group input {
   border-radius: 0 .2rem .2rem 0;
