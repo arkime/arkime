@@ -84,7 +84,7 @@ function ThreatStreamSource (api, section) {
     sqlite3           = require('sqlite3');
     this.cacheTimeout = -1;
     this.openDb();
-    setInterval(this.openDb.bind(this), 5*60*1000);
+    setInterval(this.openDb.bind(this), 15*60*1000);
     ThreatStreamSource.prototype.getDomain = getDomainSqlite3;
     ThreatStreamSource.prototype.getIp     = getIpSqlite3;
     ThreatStreamSource.prototype.getMd5    = getMd5Sqlite3;
