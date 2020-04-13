@@ -421,7 +421,9 @@ ThreatStreamSource.prototype.openDb = function() {
     // Repeat until we lock the DB
     if (err && err.code === "SQLITE_BUSY") {
       console.log(this.section, "Failed to lock sqlite DB", dbFile);
-      return realDb.run("BEGIN IMMEDIATE", beginImmediate);
+      return setTimeout(() => {
+        realDb.run("BEGIN IMMEDIATE", beginImmediate);
+      }, 30 * 1000);  // Try to lock in 30 seconds
     }
 
     console.log(this.section, "- Copying DB", dbStat.mtime);
