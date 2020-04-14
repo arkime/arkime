@@ -1330,7 +1330,8 @@ let settingDefaults = {
   connSrcField  : 'srcIp',
   connDstField  : 'ip.dst:port',
   numPackets    : 'last',
-  theme         : 'default-theme'
+  theme         : 'default-theme',
+  timelineDataFilters: ['bytes', 'databytes', 'packets']
 };
 
 // gets the current user

@@ -418,7 +418,7 @@
           </div> <!-- /connections src field -->
 
           <!-- connections dst field -->
-          <div v-if="fields && settings.connDstField"
+          <div v-if="fieldsPlus && settings.connDstField"
             class="form-group row">
             <label class="col-sm-3 col-form-label text-right font-weight-bold">
               Connections Dst
@@ -443,7 +443,34 @@
             </div>
           </div> <!-- /connections dst field -->
 
-        </form> <!-- / general settings -->
+          <div v-if="integerFields"
+            class="form-group row">
+            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+              Timeline Data Filters (max 4)
+            </label>
+
+            <div class="col-sm-6">
+              <moloch-field-typeahead
+                :dropup="true"
+                :fields="integerFields"
+                query-param="field"
+                @fieldSelected="timelineFilterSelected">
+              </moloch-field-typeahead>
+            </div>
+            <div class="col-sm-3">
+              <h4 v-if="timelineDataFilters.length > 0">
+                <label class="badge badge-info cursor-help small-badge"
+                  v-for="filter in timelineDataFilters" :key="filter.dbField + 'DataFilterBadge'"
+                  @click="timelineFilterSelected(filter)"
+                  v-b-tooltip.hover
+                  :title="filter.help">
+                  <span class="fa fa-times"></span>
+                  {{ filter.friendlyName || 'unknown field' }}
+                </label>
+              </h4>
+            </div>
+          </div>
+        </form>
 
         <!-- view settings -->
         <form v-if="visibleTab === 'views'"
@@ -2203,6 +2230,7 @@ export default {
       fields: undefined,
       fieldsMap: undefined,
       fieldsPlus: undefined,
+      integerFields: undefined,
       columns: [],
       // general settings vars
       date: undefined,
@@ -2212,6 +2240,7 @@ export default {
       connSrcFieldTypeahead: undefined,
       connDstField: undefined,
       connDstFieldTypeahead: undefined,
+      timelineDataFilters: [],
       // view settings vars
       viewListError: '',
       viewFormError: '',
@@ -2450,6 +2479,19 @@ export default {
       this.$set(this.settings, 'connDstField', field.dbField);
       this.$set(this, 'connDstFieldTypeahead', field.friendlyName);
       this.update();
+    },
+    timelineFilterSelected: function (field) {
+      let index = this.settings.timelineDataFilters.indexOf(field.exp);
+
+      if (index >= 0) {
+        this.timelineDataFilters.splice(index, 1);
+        this.settings.timelineDataFilters.splice(index, 1);
+        this.update();
+      } else if (this.timelineDataFilters.length < 4) {
+        this.timelineDataFilters.push(field);
+        this.settings.timelineDataFilters.push(field.exp);
+        this.update();
+      }
     },
     /* starts the clock for the timezone setting */
     startClock: function () {
@@ -3238,6 +3280,13 @@ export default {
             friendlyName: 'Dst IP:Dst Port'
           });
 
+          this.integerFields = this.fieldsPlus.filter(i => i.type === 'integer');
+          // attach the full field object to the component's timelineDataFilters from array of exp
+          for (let i = 0, len = this.settings.timelineDataFilters.length; i < len; i++) {
+            let filter = this.settings.timelineDataFilters[i];
+            this.timelineDataFilters.push(this.integerFields.find(i => i.exp === filter));
+          }
+
           // add custom columns to the fields array
           for (let key in customCols) {
             if (customCols.hasOwnProperty(key)) {
@@ -3444,6 +3493,16 @@ export default {
 
 .settings-page .sub-navbar {
   z-index: 4;
+}
+
+.settings-page .small-badge {
+  font-size: 60%;
+  margin-right: 5px;
+}
+
+.settings-page .small-badge:hover {
+  background-color: #dc3545;
+  cursor: pointer;
 }
 
 /* fixed tab buttons */

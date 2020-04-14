@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import store from '../../store';
 
+// default settings also in view.js
 const defaultSettings = {
   connDstField: 'ip.dst:port',
   connSrcField: 'srcIp',
@@ -11,7 +12,8 @@ const defaultSettings = {
   sortDirection: 'desc',
   spiGraph: 'node',
   theme: 'default-theme',
-  timezone: 'local'
+  timezone: 'local',
+  timelineDataFilters: ['bytes', 'databytes', 'packets']
 };
 
 export default {
@@ -113,7 +115,7 @@ export default {
         .then((response) => {
           resolve(response.data);
         }, (error) => {
-          reject(error.data);
+          reject(error);
         });
     });
   },
