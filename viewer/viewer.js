@@ -4266,7 +4266,14 @@ function mergeUnarray(to, from) {
 // No auth necessary for parliament.json
 app.get('/parliament.json', [noCacheJson], (req, res) => {
   let query = {
-    size: 500,
+    size: 1000,
+    query: {
+      bool: {
+        must_not: [
+          { term: { hide: true } }
+        ]
+      }
+    },
     _source: [
       'ver', 'nodeName', 'currentTime', 'monitoring', 'deltaBytes', 'deltaPackets', 'deltaMS',
       'deltaESDropped', 'deltaDropped', 'deltaOverloadDropped'
@@ -7265,7 +7272,7 @@ app.get('/state/:name', [noCacheJson], function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////
 function addTagsList (allTagNames, sessionList, doneCb) {
   if (!sessionList.length) {
-    console.log('No sessions to add tags to');
+    console.log('No sessions to add tags (', allTagNames,') to');
     return doneCb(null);
   }
 
