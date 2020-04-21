@@ -54,6 +54,7 @@
 
       <!-- sessions results -->
       <table class="table-striped sessions-table"
+        :class="{'sticky-header':stickyHeader}"
         :style="tableStyle"
         id="sessionsTable">
         <thead>
@@ -197,7 +198,7 @@
               <th v-for="header of headers"
                 :key="header.dbField"
                 class="moloch-col-header"
-                :style="{'width': header.width + 'px'}"
+                :style="{'width': `${header.width}px`}"
                 :class="{'active':isSorted(header.sortBy || header.dbField) >= 0, 'info-col-header': header.dbField === 'info'}">
                 <!-- non-sortable column -->
                 <span v-if="header.dbField === 'info'"
@@ -391,13 +392,15 @@
             </template>
           </tr>
         </thead>
+
         <tbody class="small">
           <!-- session + detail -->
           <template v-for="(session, index) of sessions.data">
             <tr :key="session.id"
               :id="'session'+session.id">
               <!-- toggle button and ip protocol -->
-              <td style="width: 85px;">
+              <td width="85"
+                style="white-space: nowrap; width: 85px !important;">
                 <toggle-btn class="mt-1"
                   :opened="session.expanded"
                   @toggle="toggleSessionDetail(session)">
@@ -418,7 +421,7 @@
               <!-- field values -->
               <td v-for="col in headers"
                 :key="col.dbField"
-                :style="{'width': col.width + 'px'}">
+                :style="{'width': `${col.width}px`}">
                 <!-- field value is an array -->
                 <span v-if="Array.isArray(session[col.dbField])">
                   <span v-for="value in session[col.dbField]"
@@ -578,7 +581,8 @@ export default {
       viewChanged: false,
       infoFields: customCols.info.children,
       colVisMenuOpen: false,
-      infoFieldVisMenuOpen: false
+      infoFieldVisMenuOpen: false,
+      stickyHeader: false
     };
   },
   created: function () {
@@ -647,6 +651,9 @@ export default {
   watch: {
     'query.view': function (newView, oldView) {
       this.viewChanged = true;
+    },
+    '$store.state.stickyViz': function () {
+      this.stickyHeader = this.$store.state.stickyViz;
     }
   },
   methods: {
@@ -1752,6 +1759,33 @@ table.sessions-table tbody tr td {
 /*!* table.sessions-table column reorder *!*/
 .JColResizer > tbody > tr > td, .JColResizer > tbody > tr > th {
   overflow: visible !important; /* show overflow for clickable fields */
+}
+
+/* sticky table header ----------------------- */
+table.sessions-table.sticky-header > thead {
+  left: 0;
+  right: 0;
+  z-index: 3;
+  position: fixed;
+  overflow: hidden;
+  margin-top: -12px;
+  padding-top: 12px;
+  padding-left: 0.5rem;
+  box-shadow: 0 6px 9px -6px black;
+  background-color: var(--color-background, white);
+}
+table.sessions-table.sticky-header > thead > tr {
+  border-top: 1px solid rgb(238, 238, 238);
+  height: 50px; /* TODO ECR have to set specific height for body? */
+}
+table.sessions-table.sticky-header > tbody > tr:first-child {
+  margin-top: 54px; /* TODO ECR push body down under sticky header */
+}
+/* need this to make sure that the body cells are the correct width */
+table.sessions-table.sticky-header > tbody > tr {
+  width: 100%;
+  display: table;
+  table-layout: fixed;
 }
 
 /* table column headers -------------------- */

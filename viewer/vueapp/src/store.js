@@ -13,6 +13,7 @@ const store = new Vuex.Store({
       startTime: undefined,
       stopTime: undefined
     },
+    stickyViz: false,
     showMaps: true,
     showToolBars: true,
     mapSrc: true,
@@ -75,6 +76,9 @@ const store = new Vuex.Store({
     },
     clearExpression (state) {
       state.expression = undefined;
+    },
+    toggleStickyViz (state, value) {
+      state.stickyViz = value;
     },
     toggleMaps (state, value) {
       state.showMaps = value;
