@@ -169,7 +169,7 @@ jobs:
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
-            - build: scl enable devtoolset-7 "./easybutton-build.sh --rminstall"
+            - build: scl enable devtoolset-7 "./easybutton-build.sh --daq --pfring --rminstall"
             - yum -y install libasan-static devtoolset-7-libasan-devel libasan4 devtoolset-7-libubsan-devel libubsan which
             - build-sanitize: (cd capture; scl enable devtoolset-7 "make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize")
             - test-capture: (cd tests ; ./tests.pl)
@@ -200,7 +200,7 @@ jobs:
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh --rminstall
+            - build: ./easybutton-build.sh --daq --pfring --rminstall
             - build-sanitize: (cd capture; make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999

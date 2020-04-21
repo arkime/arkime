@@ -262,7 +262,7 @@ else
 
     if [ ! -f "daq-$DAQ/api/.libs/libdaq_static.a" ]; then
       tar zxf daq-$DAQ.tar.gz
-      ( cd daq-$DAQ; ./configure --with-libpcap-includes=$TPWD/libpcap-$PCAP/ --with-libpcap-libraries=$TPWD/libpcap-$PCAP; make; sudo make install)
+      ( cd daq-$DAQ; autoreconf -f -i; ./configure --with-libpcap-includes=$TPWD/libpcap-$PCAP/ --with-libpcap-libraries=$TPWD/libpcap-$PCAP; make; sudo make install)
       if [ $? -ne 0 ]; then
         echo "MOLOCH: $MAKE failed"
         exit 1
