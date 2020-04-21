@@ -460,7 +460,7 @@
             <div class="col-sm-3">
               <h4 v-if="timelineDataFilters.length > 0">
                 <label class="badge badge-info cursor-help small-badge"
-                  v-for="filter in timelineDataFilters" :key="filter.dbField + 'DataFilterBadge'"
+                  v-for="filter in timelineDataFilters" :key="filter.dbField2 + 'DataFilterBadge'"
                   @click="timelineFilterSelected(filter)"
                   v-b-tooltip.hover
                   :title="filter.help">
@@ -2481,7 +2481,7 @@ export default {
       this.update();
     },
     timelineFilterSelected: function (field) {
-      let index = this.settings.timelineDataFilters.indexOf(field.exp);
+      let index = this.settings.timelineDataFilters.indexOf(field.dbField2);
 
       if (index >= 0) {
         this.timelineDataFilters.splice(index, 1);
@@ -2489,7 +2489,7 @@ export default {
         this.update();
       } else if (this.timelineDataFilters.length < 4) {
         this.timelineDataFilters.push(field);
-        this.settings.timelineDataFilters.push(field.exp);
+        this.settings.timelineDataFilters.push(field.dbField2);
         this.update();
       }
     },
@@ -3280,11 +3280,22 @@ export default {
             friendlyName: 'Dst IP:Dst Port'
           });
 
-          this.integerFields = this.fieldsPlus.filter(i => i.type === 'integer');
-          // attach the full field object to the component's timelineDataFilters from array of exp
+          this.integerFields = this.fields.filter(i => i.type === 'integer');
+          // this.integerFields.push({
+          //   dbField: 'lp',
+          //   dbField2: 'lp',
+          //   exp: 'num.sessions',
+          //   help: 'Get number of Sessions',
+          //   group: 'general',
+          //   friendlyName: 'Sessions Count'
+          // });
+          // attach the full field object to the component's timelineDataFilters from array of dbField2
           for (let i = 0, len = this.settings.timelineDataFilters.length; i < len; i++) {
             let filter = this.settings.timelineDataFilters[i];
-            this.timelineDataFilters.push(this.integerFields.find(i => i.exp === filter));
+            let fieldOBJ = this.integerFields.find(i => i.dbField2 === filter);
+            if (fieldOBJ) {
+              this.timelineDataFilters.push(fieldOBJ);
+            }
           }
 
           // add custom columns to the fields array

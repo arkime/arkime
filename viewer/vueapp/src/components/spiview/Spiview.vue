@@ -139,6 +139,7 @@
       :map-data="mapData"
       :primary="true"
       :timezone="user.settings.timezone"
+      :timelineDataFilters="timelineDataFilters"
       @fetchMapData="fetchMapData">
     </moloch-visualizations> <!-- /visualizations -->
 
@@ -437,6 +438,10 @@ export default {
     },
     user: function () {
       return this.$store.state.user;
+    },
+    timelineDataFilters: function () {
+      let filters = this.$store.state.user.settings.timelineDataFilters;
+      return filters.map(i => this.fields.find(f => f.dbField2 === i));
     }
   },
   mounted: function () {

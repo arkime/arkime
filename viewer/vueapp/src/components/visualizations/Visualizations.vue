@@ -178,21 +178,12 @@
               buttons
               v-model="graphType"
               @input="changeGraphType">
-              <b-radio value="lpHisto"
+              <b-radio
+                v-for="filter in timelineDataFilters"
+                :value="filter.dbField2 + 'Histo'"
+                :key="filter.dbField2"
                 class="btn-radio">
-                Session
-              </b-radio>
-              <b-radio value="paHisto"
-                class="btn-radio">
-                Packets
-              </b-radio>
-              <b-radio value="byHisto"
-                class="btn-radio">
-                Bytes
-              </b-radio>
-              <b-radio value="dbHisto"
-                class="btn-radio">
-                Databytes
+                {{ filter.friendlyName }}
               </b-radio>
             </b-form-radio-group>
           </div> <!-- graph type -->
@@ -268,6 +259,10 @@ export default {
     id: {
       type: String,
       default: 'primary'
+    },
+    timelineDataFilters: {
+      type: Array,
+      required: true
     }
   },
   data: function () {
@@ -431,7 +426,7 @@ export default {
     if (this.primary) {
       this.$store.commit('toggleMaps', showMap);
 
-      this.graphType = this.$route.query.graphType || 'lpHisto';
+      this.graphType = this.getDefaultGraphType();
       this.$store.commit('updateGraphType', this.graphType);
 
       this.seriesType = this.$route.query.seriesType || 'bars';
@@ -444,6 +439,28 @@ export default {
     }
   },
   methods: {
+    getDefaultGraphType: function () {
+      let storedFilters = this.$store.state.user.settings.timelineDataFilters;
+      let routeFilter = this.$route.query.graphType;
+
+      // filter is included in route and is enabled in settings
+      if (routeFilter && storedFilters.includes(routeFilter.slice(0, -5))) {
+        return routeFilter;
+      }
+
+      // user has selected a filter and it hasnt been removed from settings page
+      if (this.graphType && storedFilters.includes(this.graphType.slice(0, -5))) {
+        return this.graphType;
+      }
+
+      // return first button data type or undefined if # butons == 0
+      let filters = this.$store.state.user.settings.timelineDataFilters;
+      if (filters.length > 0) {
+        return filters[0] + 'Histo'
+      } else {
+        return undefined;
+      }
+    },
     /* exposed functions --------------------------------------------------- */
     toggleStickyViz: function () {
       this.stickyViz = !this.stickyViz;
@@ -577,7 +594,7 @@ export default {
             };
 
             let type;
-            if (this.graphType === 'byHisto' || this.graphType === 'dbHisto' || this.graphType === 'paHisto') {
+            if (this.graphType === 'totPacketsHisto' || this.graphType === 'totBytesHisto' || this.graphType === 'totDataBytesHisto') {
               type = item.seriesIndex === 0 ? 'Src' : 'Dst';
             }
 
@@ -605,20 +622,20 @@ export default {
       });
     },
     setupGraphData: function () {
-      if (this.graphType === 'dbHisto') {
+      if (this.graphType === 'totPacketsHisto') {
         this.graph = [
-          { data: this.graphData.db1Histo, color: srcColor },
-          { data: this.graphData.db2Histo, color: dstColor }
+          { data: this.graphData.srcPacketsHisto, color: srcColor },
+          { data: this.graphData.dstPacketsHisto, color: dstColor }
         ];
-      } else if (this.graphType === 'byHisto') {
+      } else if (this.graphType === 'totBytesHisto') {
         this.graph = [
-          { data: this.graphData.by1Histo, color: srcColor },
-          { data: this.graphData.by2Histo, color: dstColor }
+          { data: this.graphData.srcBytesHisto, color: srcColor },
+          { data: this.graphData.dstBytesHisto, color: dstColor }
         ];
-      } else if (this.graphType === 'paHisto') {
+      } else if (this.graphType === 'totDataBytesHisto') {
         this.graph = [
-          { data: this.graphData.pa1Histo, color: srcColor },
-          { data: this.graphData.pa2Histo, color: dstColor }
+          { data: this.graphData.srcDataBytesHisto, color: srcColor },
+          { data: this.graphData.dstDataBytesHisto, color: dstColor }
         ];
       } else {
         this.graph = [{ data: this.graphData[this.graphType], color: primaryColor }];

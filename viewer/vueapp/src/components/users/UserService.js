@@ -13,7 +13,7 @@ const defaultSettings = {
   spiGraph: 'node',
   theme: 'default-theme',
   timezone: 'local',
-  timelineDataFilters: ['bytes', 'databytes', 'packets']
+  timelineDataFilters: ['totPackets', 'totBytes', 'totDataBytes'] // dbField2 values from fields
 };
 
 export default {
