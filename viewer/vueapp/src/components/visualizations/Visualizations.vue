@@ -605,9 +605,12 @@ export default {
               parseInt(item.datapoint[0].toFixed(0)), this.timezone || 'local', false
             );
 
+            let filterName = this.timelineDataFilters.find(i => i.dbField2 === this.graphType.slice(0,-5)).friendlyName || '';
+
             let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
-                                <strong>${type || ''}</strong>
-                                ${val} <strong>at</strong> ${d}
+                                <strong>${val}</strong> ${type || ''} ${filterName}'s
+                                out of filtered <strong>${this.graphData[this.graphType.slice(0,-5) + 'Total'] || ''}</strong> ${filterName}'s
+                                <strong>on</strong> ${d}
                               </div>`;
 
             $(tooltipHTML).css({

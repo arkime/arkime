@@ -95,7 +95,7 @@
               <select class="form-control"
                 v-model="sortBy"
                 @change="changeSortBy">
-                <option value="name">alphabecially</option>
+                <option value="name">alphabetically</option>
                 <option value="graph">count</option>
               </select>
             </div>
@@ -135,8 +135,8 @@
             class="ml-1 records-display">
             <strong class="text-theme-accent"
               v-if="!error && recordsFiltered !== undefined">
-              Showing {{ recordsFiltered | commaString }} entries filtered from
-              {{ recordsTotal | commaString }} total entries
+              Showing {{ recordsFiltered }} entries filtered from
+              {{ recordsTotal }} total entries
             </strong>
           </div>
         </div>
@@ -195,7 +195,7 @@
                       :session-btn="true">
                     </moloch-session-field>
                   </strong>
-                  <sup>({{ item.count | commaString }})</sup>
+                  <sup>({{ item[graphType] }})</sup>
                 </div>
               </div>
             </div> <!-- /field value -->

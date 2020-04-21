@@ -4623,6 +4623,11 @@ function graphMerge(req, query, aggregations) {
           graph[name] = []
         }
         graph[name].push([key, item[prop].value]);
+
+        if (graph[prop + 'Total'] === undefined) {
+          graph[prop + 'Total'] = 0;
+        }
+        graph[prop + 'Total'] += item[prop].value;
       }
     }
   });
