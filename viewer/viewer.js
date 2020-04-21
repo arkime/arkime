@@ -4600,7 +4600,8 @@ function graphMerge(req, query, aggregations) {
     xmin: req.query.startTime * 1000 || null,
     xmax: req.query.stopTime * 1000 || null,
     interval: query.aggregations?query.aggregations.dbHisto.histogram.interval / 1000 || 60 : 60,
-    lpHisto: []
+    lpHisto: [],
+    lpTotal: 0
   };
 
   if (!aggregations || !aggregations.dbHisto) {
@@ -4612,6 +4613,7 @@ function graphMerge(req, query, aggregations) {
     let key = item.key;
 
     graph.lpHisto.push([key, item.doc_count]);
+    graph.lpTotal += item.doc_count;
 
     for (let prop in item) {
       // excluding everything that isnt a summed up aggregate collection

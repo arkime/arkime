@@ -185,6 +185,12 @@
                 class="btn-radio">
                 {{ filter.friendlyName }}
               </b-radio>
+              <b-radio
+                value="lpHisto"
+                key="lpHisto"
+                class="btn-radio">
+                {{ "Session" }}
+              </b-radio>
             </b-form-radio-group>
           </div> <!-- graph type -->
           <!-- series type -->
@@ -453,12 +459,12 @@ export default {
         return this.graphType;
       }
 
-      // return first button data type or undefined if # butons == 0
+      // return first button data type or lpHisto if # butons == 0
       let filters = this.$store.state.user.settings.timelineDataFilters;
       if (filters.length > 0) {
         return filters[0] + 'Histo'
       } else {
-        return undefined;
+        return 'lpHisto';
       }
     },
     /* exposed functions --------------------------------------------------- */
@@ -605,12 +611,13 @@ export default {
               parseInt(item.datapoint[0].toFixed(0)), this.timezone || 'local', false
             );
 
-            let filterName = this.timelineDataFilters.find(i => i.dbField2 === this.graphType.slice(0,-5)).friendlyName || '';
+            let filterName = (this.graphType === 'lpHisto')? 'Sessions' :
+            this.timelineDataFilters.find(i => i.dbField2 === this.graphType.slice(0,-5)).friendlyName || '';
 
             let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
                                 <strong>${val}</strong> ${type || ''} ${filterName}'s
-                                out of filtered <strong>${this.graphData[this.graphType.slice(0,-5) + 'Total'] || ''}</strong> ${filterName}'s
-                                <strong>on</strong> ${d}
+                                out of <strong>${this.graphData[this.graphType.slice(0,-5) + 'Total']}</strong> filtered ${filterName}'s
+                                on ${d}
                               </div>`;
 
             $(tooltipHTML).css({
