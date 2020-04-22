@@ -179,17 +179,17 @@
               v-model="graphType"
               @input="changeGraphType">
               <b-radio
+                value="lpHisto"
+                key="lpHisto"
+                class="btn-radio">
+                {{ "Session" }}
+              </b-radio>
+              <b-radio
                 v-for="filter in timelineDataFilters"
                 :value="filter.dbField2 + 'Histo'"
                 :key="filter.dbField2"
                 class="btn-radio">
                 {{ filter.friendlyName }}
-              </b-radio>
-              <b-radio
-                value="lpHisto"
-                key="lpHisto"
-                class="btn-radio">
-                {{ "Session" }}
               </b-radio>
             </b-form-radio-group>
           </div> <!-- graph type -->
@@ -459,13 +459,7 @@ export default {
         return this.graphType;
       }
 
-      // return first button data type or lpHisto if # butons == 0
-      let filters = this.$store.state.user.settings.timelineDataFilters;
-      if (filters.length > 0) {
-        return filters[0] + 'Histo'
-      } else {
-        return 'lpHisto';
-      }
+      return 'lpHisto'
     },
     /* exposed functions --------------------------------------------------- */
     toggleStickyViz: function () {
