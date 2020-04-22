@@ -124,7 +124,20 @@
           v-if="visibleTab === 'general'"
           id="general">
 
-          <h3>General</h3>
+          <h3>
+            General
+
+            <template class="form-group row justify-content-md-center">
+              <button type="button"
+                title="Reset settings to default"
+                @click="resetSettings()"
+                class="btn btn-theme-quaternary btn-sm pull-right ml-1">
+                <span class="fa fa-repeat">
+                </span>&nbsp;
+                Reset General Settings
+              </button>
+            </template>
+          </h3>
 
           <hr>
 
@@ -470,14 +483,6 @@
                 </label>
               </h4>
             </div>
-          </div>
-          <div class="form-group row justify-content-md-center">
-            <button type="button"
-              title="Reset settings to default"
-              @click="resetSettings()"
-              class="btn btn-sm btn-theme-primary">
-              Reset General Settings
-            </button>
           </div>
         </form>
 
