@@ -13,6 +13,7 @@ const defaultSettings = {
   spiGraph: 'node',
   theme: 'default-theme',
   timezone: 'local',
+  manualQuery: false,
   timelineDataFilters: ['totPackets', 'totBytes', 'totDataBytes'] // dbField2 values from fields
 };
 
@@ -118,6 +119,24 @@ export default {
           reject(error);
         });
     });
+  },
+
+  /**
+   * Resets a user's settings
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @param {string} theme      Current theme identifier.
+   *                            Avoid resetting the current theme if it exists
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  resetSettings: function (userId, theme) {
+    let settings = JSON.parse(JSON.stringify(defaultSettings));
+
+    if (theme) {
+      settings.theme = theme;
+    }
+    return this.saveSettings(settings, userId)
   },
 
   /**

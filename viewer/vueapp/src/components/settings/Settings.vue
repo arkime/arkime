@@ -453,6 +453,7 @@
               <moloch-field-typeahead
                 :dropup="true"
                 :fields="integerFields"
+                :initial-value="filtersTypeahead"
                 query-param="field"
                 @fieldSelected="timelineFilterSelected">
               </moloch-field-typeahead>
@@ -469,6 +470,14 @@
                 </label>
               </h4>
             </div>
+          </div>
+          <div class="form-group row justify-content-md-center">
+            <button type="button"
+              title="Reset settings to default"
+              @click="resetSettings()"
+              class="btn btn-sm btn-theme-primary">
+              Reset General Settings
+            </button>
           </div>
         </form>
 
@@ -2241,6 +2250,7 @@ export default {
       connDstField: undefined,
       connDstFieldTypeahead: undefined,
       timelineDataFilters: [],
+      filtersTypeahead: '',
       // view settings vars
       viewListError: '',
       viewFormError: '',
@@ -2436,6 +2446,21 @@ export default {
           this.msgType = 'danger';
         });
     },
+    resetSettings: function () {
+      // Chosing to skip reset of theme. UserService will save state to store
+      UserService.resetSettings(this.userId, this.settings.theme)
+        .then((response) => {
+          // display success message to user
+          this.msg = response.text;
+          this.msgType = 'success';
+          this.getSettings();
+        })
+        .catch((error) => {
+          // display error message to user
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
+    },
     /* updates the displayed date for the timzeone setting
      * triggered by the user changing the timezone setting */
     updateTime: function (newTimezone) {
@@ -2482,6 +2507,7 @@ export default {
     },
     timelineFilterSelected: function (field) {
       let index = this.settings.timelineDataFilters.indexOf(field.dbField2);
+      this.$set(this, 'filtersTypeahead', field.friendlyName);
 
       if (index >= 0) {
         this.timelineDataFilters.splice(index, 1);
@@ -3281,15 +3307,9 @@ export default {
           });
 
           this.integerFields = this.fields.filter(i => i.type === 'integer');
-          // this.integerFields.push({
-          //   dbField: 'lp',
-          //   dbField2: 'lp',
-          //   exp: 'num.sessions',
-          //   help: 'Get number of Sessions',
-          //   group: 'general',
-          //   friendlyName: 'Sessions Count'
-          // });
+
           // attach the full field object to the component's timelineDataFilters from array of dbField2
+          this.timelineDataFilters = [];
           for (let i = 0, len = this.settings.timelineDataFilters.length; i < len; i++) {
             let filter = this.settings.timelineDataFilters[i];
             let fieldOBJ = this.integerFields.find(i => i.dbField2 === filter);
@@ -3322,6 +3342,7 @@ export default {
               this.$set(this, 'connDstFieldTypeahead', field.friendlyName);
             }
           }
+          this.$set(this, 'filtersTypeahead', '');
 
           // build fields map for quick lookup by dbField
           this.fieldsMap = {};

@@ -1331,6 +1331,7 @@ let settingDefaults = {
   connDstField  : 'ip.dst:port',
   numPackets    : 'last',
   theme         : 'default-theme',
+  manualQuery   : false,
   timelineDataFilters: ['totPackets', 'totBytes', 'totDataBytes'] // dbField2 values from fields
 };
 

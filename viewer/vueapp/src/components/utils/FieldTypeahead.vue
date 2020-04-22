@@ -87,6 +87,9 @@ export default {
           continue;
         }
       }
+    },
+    'initialValue': function () {
+      this.value = this.initialValue;
     }
   },
   computed: {
