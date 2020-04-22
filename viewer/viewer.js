@@ -4630,7 +4630,7 @@ function graphMerge(req, query, aggregations) {
         prop === 'dstBytes' || prop === 'srcDataBytes' || prop === 'dstDataBytes') {
         let name = prop + 'Histo';
         if (graph[name] === undefined) {
-          graph[name] = []
+          graph[name] = [];
         }
         graph[name].push([key, item[prop].value]);
 
@@ -4961,9 +4961,10 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
 
             var graph = r.graph;
             for (let i = 0; i < graph.lpHisto.length; i++) {
-              histoKeys.forEach(item => {
+              for (let j = 0; j < histoKeys.length; j++) {
+                item = histoKeys[j];
                 r[item] += graph[item][i][1];
-              });
+              }
             }
             if (results.items.length === result.responses.length) {
               var s = req.query.sort || 'lpHisto';

@@ -136,7 +136,7 @@ export default {
     if (theme) {
       settings.theme = theme;
     }
-    return this.saveSettings(settings, userId)
+    return this.saveSettings(settings, userId);
   },
 
   /**

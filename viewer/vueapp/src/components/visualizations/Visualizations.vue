@@ -459,7 +459,7 @@ export default {
         return this.graphType;
       }
 
-      return 'lpHisto'
+      return 'lpHisto';
     },
     /* exposed functions --------------------------------------------------- */
     toggleStickyViz: function () {
@@ -605,12 +605,12 @@ export default {
               parseInt(item.datapoint[0].toFixed(0)), this.timezone || 'local', false
             );
 
-            let filterName = (this.graphType === 'lpHisto')? 'Sessions' :
-            this.timelineDataFilters.find(i => i.dbField2 === this.graphType.slice(0,-5)).friendlyName || '';
+            let filterName = (this.graphType === 'lpHisto') ? 'Sessions'
+              : this.timelineDataFilters.find(i => i.dbField2 === this.graphType.slice(0, -5)).friendlyName || '';
 
             let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
                                 <strong>${val}</strong> ${type || ''} ${filterName}'s
-                                out of <strong>${this.graphData[this.graphType.slice(0,-5) + 'Total']}</strong> filtered ${filterName}'s
+                                out of <strong>${this.graphData[this.graphType.slice(0, -5) + 'Total']}</strong> filtered ${filterName}'s
                                 on ${d}
                               </div>`;
 
