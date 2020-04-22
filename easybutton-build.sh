@@ -17,8 +17,8 @@ MAXMIND=1.3.2
 PCAP=1.9.1
 CURL=7.68.0
 LUA=5.3.5
-DAQ=2.0.6
-NODE=10.19.0
+DAQ=2.0.7
+NODE=10.20.1
 
 TDIR="/data/moloch"
 DOPFRING=0
@@ -262,7 +262,7 @@ else
 
     if [ ! -f "daq-$DAQ/api/.libs/libdaq_static.a" ]; then
       tar zxf daq-$DAQ.tar.gz
-      ( cd daq-$DAQ; ./configure --with-libpcap-includes=$TPWD/libpcap-$PCAP/ --with-libpcap-libraries=$TPWD/libpcap-$PCAP; make; sudo make install)
+      ( cd daq-$DAQ; autoreconf -f -i; ./configure --with-libpcap-includes=$TPWD/libpcap-$PCAP/ --with-libpcap-libraries=$TPWD/libpcap-$PCAP; make; sudo make install)
       if [ $? -ne 0 ]; then
         echo "MOLOCH: $MAKE failed"
         exit 1

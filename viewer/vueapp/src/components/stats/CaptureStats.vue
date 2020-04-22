@@ -50,7 +50,7 @@
 
 <script>
 import d3 from '../../../../public/d3.min.js';
-import cubism from '../../../../public/cubism.v1.js';
+import cubism from '../../../../public/cubism.v1.min.js';
 import '../../../../public/highlight.min.js';
 
 import '../../cubismoverrides.css';
@@ -335,11 +335,6 @@ export default {
       clearInterval(reqPromise);
       reqPromise = null;
     }
-
-    // cubism hijacks the entire window's keydown listener, so disable ALL
-    // keydown listeners when navigating from this page
-    // https://github.com/square/cubism/issues/16
-    window.removeEventListeners('keydown');
 
     if (document.removeEventListener) {
       document.removeEventListener('visibilitychange', this.handleVisibilityChange);

@@ -84,7 +84,7 @@ function ThreatStreamSource (api, section) {
     sqlite3           = require('sqlite3');
     this.cacheTimeout = -1;
     this.openDb();
-    setInterval(this.openDb.bind(this), 5*60*1000);
+    setInterval(this.openDb.bind(this), 15*60*1000);
     ThreatStreamSource.prototype.getDomain = getDomainSqlite3;
     ThreatStreamSource.prototype.getIp     = getIpSqlite3;
     ThreatStreamSource.prototype.getMd5    = getMd5Sqlite3;
@@ -421,7 +421,9 @@ ThreatStreamSource.prototype.openDb = function() {
     // Repeat until we lock the DB
     if (err && err.code === "SQLITE_BUSY") {
       console.log(this.section, "Failed to lock sqlite DB", dbFile);
-      return realDb.run("BEGIN IMMEDIATE", beginImmediate);
+      return setTimeout(() => {
+        realDb.run("BEGIN IMMEDIATE", beginImmediate);
+      }, 30 * 1000);  // Try to lock in 30 seconds
     }
 
     console.log(this.section, "- Copying DB", dbStat.mtime);

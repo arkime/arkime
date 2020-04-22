@@ -82,6 +82,12 @@ Now browse to the app at `http://localhost:8123`.
 
 ---
 
+### External File Fixes:
+
+[cubism](https://github.com/square/cubism) has a [bug](https://github.com/square/cubism/issues/16) where it hijacks the entire window's keydown listener. This caused issues with other window keydown listeners throughout the application. The current solution is to remove cubism's window keydown listener entirely. Since cubism is no longer being supported, we have opted to host a minified stable version in the public directory that includes this change.
+
+---
+
 ### Contributing
 
 View the [contributing guide](../CONTRIBUTING.md) for more information.

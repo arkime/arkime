@@ -3057,7 +3057,7 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|recreate-users|recreate-stats|recreate-dstats)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut|ilm)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
@@ -3468,6 +3468,24 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     } else {
         logmsg("Doc counts don't match, not deleting old index\n");
     }
+    exit 0;
+} elsif ($ARGV[1] eq "recreate-users") {
+    waitFor("USERS", "This will delete and recreate the users index");
+    esDelete("/${PREFIX}users_*", 1);
+    esDelete("/${PREFIX}users", 1);
+    usersCreate();
+    exit 0;
+} elsif ($ARGV[1] eq "recreate-stats") {
+    waitFor("STATS", "This will delete and recreate the stats index, make sure no captures are running");
+    esDelete("/${PREFIX}stats_*", 1);
+    esDelete("/${PREFIX}stats", 1);
+    statsCreate();
+    exit 0;
+} elsif ($ARGV[1] eq "recreate-dstats") {
+    waitFor("DSTATS", "This will delete and recreate the dstats index, make sure no captures are running");
+    esDelete("/${PREFIX}dstats_*", 1);
+    esDelete("/${PREFIX}dstats", 1);
+    dstatsCreate();
     exit 0;
 } elsif ($ARGV[1] eq "info") {
     dbVersion(0);

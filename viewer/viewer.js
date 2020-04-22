@@ -4277,7 +4277,14 @@ function mergeUnarray(to, from) {
 // No auth necessary for parliament.json
 app.get('/parliament.json', [noCacheJson], (req, res) => {
   let query = {
-    size: 500,
+    size: 1000,
+    query: {
+      bool: {
+        must_not: [
+          { term: { hide: true } }
+        ]
+      }
+    },
     _source: [
       'ver', 'nodeName', 'currentTime', 'monitoring', 'deltaBytes', 'deltaPackets', 'deltaMS',
       'deltaESDropped', 'deltaDropped', 'deltaOverloadDropped'
@@ -6423,7 +6430,7 @@ function localSessionDetail(req, res) {
     } else if (packets.length === 0) {
       session._err = "No pcap data found";
       localSessionDetailReturn(req, res, session, []);
-    } else if (packets[0].ether.data !== undefined) {
+    } else if (packets[0].ether !== undefined && packets[0].ether.data !== undefined) {
       Pcap.reassemble_generic_ether(packets, +req.query.packets || 200, function(err, results) {
         session._err = err;
         localSessionDetailReturn(req, res, session, results || []);
@@ -7291,7 +7298,7 @@ app.get('/state/:name', [noCacheJson], function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////
 function addTagsList (allTagNames, sessionList, doneCb) {
   if (!sessionList.length) {
-    console.log('No sessions to add tags to');
+    console.log('No sessions to add tags (', allTagNames,') to');
     return doneCb(null);
   }
 
