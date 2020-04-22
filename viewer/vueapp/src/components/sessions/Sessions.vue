@@ -57,7 +57,7 @@
         :class="{'sticky-header':stickyHeader}"
         :style="tableStyle"
         id="sessionsTable">
-        <thead>
+        <thead ref="tableHeader">
           <tr ref="draggableColumns">
             <!-- table options -->
             <th class="ignore-element"
@@ -73,7 +73,7 @@
                 @hide="colVisMenuOpen = false">
                 <template slot="button-content">
                   <span class="fa fa-th"
-                    v-b-tooltip.hover
+                    v-b-tooltip.hover.right
                     title="Toggle visible columns">
                   </span>
                 </template>
@@ -123,7 +123,7 @@
                 variant="theme-secondary">
                 <template slot="button-content">
                   <span class="fa fa-columns"
-                    v-b-tooltip.hover
+                    v-b-tooltip.hover.right
                     title="Save or load custom column configuration">
                   </span>
                 </template>
@@ -205,6 +205,8 @@
                   class="cursor-pointer">
                   {{ header.friendlyName }}
                   <!-- info field visibility button -->
+                  <!-- TODO ECR if the table header is sticky and the info
+                  header is not visible, this button cannot be reached -->
                   <b-dropdown
                     size="sm"
                     no-flip
@@ -216,7 +218,7 @@
                     @hide="infoFieldVisMenuOpen = false">
                     <template slot="button-content">
                       <span class="fa fa-th-list"
-                        v-b-tooltip.hover
+                        v-b-tooltip.hover.left
                         title="Toggle visible fields">
                       </span>
                     </template>
@@ -397,7 +399,8 @@
           <!-- session + detail -->
           <template v-for="(session, index) of sessions.data">
             <tr :key="session.id"
-              :id="'session'+session.id">
+              :ref="`tableRow${index}`"
+              :id="`session${session.id}`">
               <!-- toggle button and ip protocol -->
               <td width="85"
                 style="white-space: nowrap; width: 85px !important;">
@@ -654,6 +657,7 @@ export default {
     },
     '$store.state.stickyViz': function () {
       this.stickyHeader = this.$store.state.stickyViz;
+      this.toggleStickyHeader();
     }
   },
   methods: {
@@ -1496,6 +1500,7 @@ export default {
       this.sumOfColWidths = Math.round(this.sumOfColWidths);
 
       this.calculateInfoColumnWidth(defaultColWidths['info']);
+      this.toggleStickyHeader();
     },
     /* Opens up to 10 session details in the table */
     openAll: function () {
@@ -1622,6 +1627,34 @@ export default {
         }
       }
     },
+    /* Toggles the sticky table header */
+    toggleStickyHeader: function () {
+      let firstTableRow = this.$refs.tableRow0;
+      if (this.stickyHeader) {
+        // calculate the height of the header row
+        const height = this.$refs.draggableColumns.clientHeight + 2;
+        const windowWidth = window.innerWidth;
+        // calculate how much the header row is overflowing the window
+        const tableHeaderOverflow = Math.min(0, windowWidth - this.tableWidth);
+        if (tableHeaderOverflow) { // if it's overflowing the window
+          // set the right style to the amount of the overflow
+          this.$refs.tableHeader.style.right = `${tableHeaderOverflow}px`;
+          this.$refs.draggableColumns.style.right = `${tableHeaderOverflow}px`;
+        } else { // otherwise unset it (default = auto, see css)
+          this.$refs.tableHeader.style = undefined;
+          this.$refs.draggableColumns.style = undefined;
+        }
+        if (firstTableRow) { // if there is a table row in the body
+          // set the margin top to the height of the header so it renders below it
+          firstTableRow[0].style.marginTop = `${height}px`;
+        }
+      } else { // if the header is not sticky
+        if (firstTableRow) { // and there is a table row in the body
+          // unset the top margin because the table header won't overlay it
+          firstTableRow[0].style = undefined;
+        }
+      }
+    },
     /* event handlers ------------------------------------------------------ */
     /**
      * Fired when paging changes (from utils/Pagination)
@@ -1692,7 +1725,6 @@ export default {
 </style>
 
 <style scoped>
-
 form.sessions-paging {
   z-index: 4;
   position: fixed;
@@ -1764,25 +1796,38 @@ table.sessions-table tbody tr td {
 /* sticky table header ----------------------- */
 table.sessions-table.sticky-header > thead {
   left: 0;
-  right: 0;
   z-index: 3;
+  /* TODO ECR right side of header is ugly if it's not overlowing the container */
+  /* need to unset right because sometimes the header overflows the window */
+  right: auto;
   position: fixed;
-  overflow: hidden;
   margin-top: -12px;
   padding-top: 12px;
+  /* need x overflow for the table to be able to overflow the window width */
+  overflow-x: scroll;
+  /* TODO ECR dropdowns not overflowing container. WHY!? */
+  overflow-y: visible;
   padding-left: 0.5rem;
   box-shadow: 0 6px 9px -6px black;
   background-color: var(--color-background, white);
 }
 table.sessions-table.sticky-header > thead > tr {
-  border-top: 1px solid rgb(238, 238, 238);
-  height: 50px; /* TODO ECR have to set specific height for body? */
+  display: table;
+  /* need x overflow for the table to be able to overflow the window width */
+  overflow-x: scroll;
+  /* TODO ECR dropdowns not overflowing container. WHY!? */
+  overflow-y: visible;
+  table-layout: fixed;
 }
-table.sessions-table.sticky-header > tbody > tr:first-child {
-  margin-top: 54px; /* TODO ECR push body down under sticky header */
+table.sessions-table.sticky-header > thead > tr > th {
+  /* TODO ECR dropdowns not overflowing container. WHY!? */
+  overflow-y: visible;
+  border-bottom: none; /* shadow works as bottom border */
+  border-top: 1px solid rgb(238, 238, 238);
 }
 /* need this to make sure that the body cells are the correct width */
 table.sessions-table.sticky-header > tbody > tr {
+  /* need full width for body rows to be able to take up the entire window when resizing */
   width: 100%;
   display: table;
   table-layout: fixed;
