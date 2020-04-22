@@ -683,7 +683,7 @@ export default {
           zoomRange: false,
           autoscaleMargin: 0.2,
           tickFormatter: (v) => {
-            if (this.graphType === 'byHisto' || this.graphType === 'dbHisto') {
+            if (this.graphType === 'totBytesHisto' || this.graphType === 'totDataBytesHisto') {
               return this.$options.filters.humanReadableBytes(v);
             } else {
               return this.$options.filters.humanReadableNumber(v);
