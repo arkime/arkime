@@ -572,6 +572,7 @@ export default {
       colConfigError: '',
       colConfigSuccess: '',
       headers: [],
+      fields: [],
       graphData: undefined,
       mapData: undefined,
       colQuery: '', // query for columns to toggle visibility
