@@ -279,6 +279,57 @@ CollectBodyStream.prototype._write = function(chunk, encoding, callback) {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+function ItemSocksStream(options) {
+    ItemTransform.call(this, {maxPeekItems: 3});
+    mkname(this, "ItemSocksStream");
+    this.options = options;
+    this.state = ItemSocksStream.STATES.socks;
+    this.version = 0;
+}
+
+util.inherits(ItemSocksStream, ItemTransform);
+ItemSocksStream.STATES = {
+    socks: 1,
+    data:  2
+};
+
+ItemSocksStream.prototype._shouldProcess = function(item) {
+    /* Socks V4 connect */
+    if (item.data[0] === 0x04 && item.data[1] === 0x01 && item.data.length <= 255) {
+        this.version = 4;
+        return true;
+    }
+    /* Socks V5 connect */
+    if (item.data[0] === 0x05 && item.data[1] === 0x01 && item.data.length <= 255) {
+        this.version = 5;
+        return true;
+    }
+    return false;
+};
+
+ItemSocksStream.prototype._process = function(item, callback) {
+    switch (this.state) {
+        /* Keep processing socks commands until we get a connection success */
+        case ItemSocksStream.STATES.socks:
+            if (this.version === 4 && item.data[0] === 0x00 && item.data[1] === 0x90) {
+                this.state = ItemSocksStream.STATES.data;
+            } else if (this.version === 5 && item.data[0] === 0x05 && item.data[1] === 0x00 && item.data[2] === 0x00) {
+                this.state = ItemSocksStream.STATES.data;
+            }
+            break;
+        /* Process the socks data */
+        case ItemSocksStream.STATES.data:
+            this.push(item);
+            break;
+    }
+    callback();
+};
+
+ItemSocksStream.prototype._finish = function(callback) {
+    callback();
+};
+
+////////////////////////////////////////////////////////////////////////////////
 function ItemSMTPStream(options) {
   ItemTransform.call(this, {maxPeekItems: 3});
   mkname(this, "ItemSMTPStream");
@@ -720,6 +771,7 @@ exports.register("BODY-UNXOR", createKeyUnxorStream,
 exports.register("BODY-UNCOMPRESS", createUncompressStream);
 exports.register("BODY-UNBASE64", createUnbase64Stream, {name: "Unbase64"});
 
+exports.register("ITEM-SOCKS", ItemSocksStream);
 exports.register("ITEM-HTTP", ItemHTTPStream);
 exports.register("ITEM-SMTP", ItemSMTPStream);
 exports.register("ITEM-SORTER", createItemSorterStream);
@@ -830,6 +882,9 @@ if(require.main === module) {
     nodeName: "nodeName",
     id: "id",
     order: [],
+    "ITEM-SOCKS": {
+        order: []
+    },
     "ITEM-HTTP": {
       order: []
     },
@@ -878,6 +933,7 @@ if(require.main === module) {
   }
 
 
+  options.order.push("ITEM-SOCKS");
   options.order.push("ITEM-HTTP");
   options.order.push("ITEM-SMTP");
 

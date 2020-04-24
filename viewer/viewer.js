@@ -6293,6 +6293,7 @@ function localSessionDetailReturn(req, res, session, incoming) {
     options["ITEM-SMTP"].order.push("BODY-UNCOMPRESS");
   }
 
+  options.order.push("ITEM-SOCKS");
   options.order.push("ITEM-HTTP");
   options.order.push("ITEM-SMTP");
 
@@ -6547,6 +6548,7 @@ function reqGetRawBody(req, cb) {
       options["ITEM-SMTP"].order.push("BODY-UNCOMPRESS");
     }
 
+    options.order.push("ITEM-SOCKS");
     options.order.push("ITEM-HTTP");
     options.order.push("ITEM-SMTP");
 
