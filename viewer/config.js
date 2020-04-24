@@ -270,8 +270,6 @@ exports.sectionGet = function(section, key, defaultValue) {
 };
 
 exports.getFull = function(node, key, defaultValue) {
-
-
   var value;
   if (internals.options[key] !== undefined && (node === 'default' || node === internals.nodeName)) {
     value = internals.options[key];
@@ -342,6 +340,36 @@ exports.getObj = function(key, defaultValue) {
     }
   });
   return obj;
+};
+
+exports.getCaTrustCerts = function(node) {
+  var caTrustFile = exports.getFull(node, 'caTrustFile');
+
+  if (caTrustFile && caTrustFile.length > 0) {
+    let certs = [];
+
+    let caTrustFileLines = fs.readFileSync(caTrustFile, 'utf8').split('\n');
+
+    var foundCert = [];
+
+    for (let i = 0, ilen = caTrustFileLines.length; i < ilen; i++) {
+      let line = caTrustFileLines[i];
+      if (line.length === 0) {
+        continue;
+      }
+      foundCert.push(line);
+      if (line.match(/-END CERTIFICATE-/)) {
+        certs.push(foundCert.join('\n'));
+        foundCert = [];
+      }
+    }
+
+    if (certs.length > 0) {
+      return certs;
+    }
+  }
+
+  return undefined;
 };
 
 function loadIncludes(includes) {

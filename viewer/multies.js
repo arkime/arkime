@@ -37,7 +37,7 @@ var Config         = require('./config.js'),
   process.exit(1);
 }
 
-var esSSLOptions = {rejectUnauthorized: !Config.insecure};
+var esSSLOptions = {rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName())};
 var esClientKey = Config.get("esClientKey");
 var esClientCert = Config.get("esClientCert");
 if(esClientKey) {

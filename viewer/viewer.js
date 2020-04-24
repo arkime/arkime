@@ -790,38 +790,6 @@ function addAuth(info, user, node, secret) {
                                                     }, false, secret);
 }
 
-function loadCaTrust(node) {
-  var caTrustFile = Config.getFull(node, "caTrustFile");
-
-  if (caTrustFile && caTrustFile.length > 0) {
-    let certs = [];
-
-    var caTrustFileLines = fs.readFileSync(caTrustFile, 'utf8');
-    caTrustFileLines = caTrustFileLines.split("\n");
-
-    var foundCert = [];
-
-    for (let i = 0, ilen = caTrustFileLines.length; i < ilen; i++) {
-      let line = caTrustFileLines[i];
-      if (line.length === 0) {
-        continue;
-      }
-      foundCert.push(line);
-      if (line.match(/-END CERTIFICATE-/)) {
-        certs.push(foundCert.join("\n"));
-        foundCert = [];
-      }
-    }
-
-    if (certs.length > 0) {
-      return certs;
-    }
-  }
-
-  return undefined;
-}
-
-
 function addCaTrust(info, node) {
   if (!Config.isHTTPS(node)) {
     return;
@@ -833,7 +801,7 @@ function addCaTrust(info, node) {
     return;
   }
 
-  internals.caTrustCerts[node] = loadCaTrust(node);
+  internals.caTrustCerts[node] = Config.getCaTrustCerts(node);
 
   if (internals.caTrustCerts[node] !== undefined && internals.caTrustCerts[node].length > 0) {
     info.ca = internals.caTrustCerts[node];
@@ -9422,7 +9390,7 @@ Db.initialize({host: internals.elasticBase,
                esClientKeyPass: Config.get("esClientKeyPass", null),
                multiES: Config.get('multiES', false),
                insecure: Config.insecure,
-               ca: loadCaTrust(internals.nodeName),
+               ca: Config.getCaTrustCerts(Config.nodeName()),
                requestTimeout: Config.get("elasticsearchTimeout", 300),
                esProfile: Config.esProfile,
                debug: Config.debug

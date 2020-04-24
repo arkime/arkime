@@ -139,5 +139,6 @@ Db.initialize({host : escInfo,
                esClientCert: Config.get("esClientCert", null),
                esClientKeyPass: Config.get("esClientKeyPass", null),
                insecure: Config.insecure,
+               ca: Config.getCaTrustCerts(Config.nodeName()),
                usersHost: Config.get("usersElasticsearch"),
                usersPrefix: Config.get("usersPrefix")}, main);
