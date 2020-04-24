@@ -4655,13 +4655,15 @@ function graphMerge(req, query, aggregations) {
         prop === 'srcPackets' || prop === 'dstPackets' || prop === 'srcBytes' ||
         prop === 'dstBytes' || prop === 'srcDataBytes' || prop === 'dstDataBytes') {
 
+        // Note: prop will never be one of the chosen tot* exceptions
         graph[prop + 'Histo'].push([key, item[prop].value]);
 
-        // Note: prop will never be one of the tot* exceptions
+        // Need to specify for when src/dst AND tot* filters are chosen
         if (filters.includes(prop)) {
           graph[prop + 'Total'] += item[prop].value;
         }
-        // add src/dst to tot* counters
+
+        // Add src/dst to tot* counters.
         if ((prop === 'srcPackets' || prop === 'dstPackets') && filters.includes('totPackets')) {
           graph['totPackets' + 'Total'] += item[prop].value;
         } else if ((prop === 'srcBytes' || prop === 'dstBytes') && filters.includes('totBytes')) {
@@ -4970,11 +4972,12 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
             r.graph = graphMerge(req, query, result.responses[i].aggregations);
 
             let histoKeys = Object.keys(results.graph).filter(i => i.toLowerCase().includes("histo"));
-
             let xMinName = histoKeys.reduce((prev, curr) => results.graph[prev][0][0] < results.graph[curr][0][0] ? prev : curr);
             let histoXMin = results.graph[xMinName][0][0];
-            let xMaxName = histoKeys.reduce((prev, curr) => results.graph[prev][0][0] > results.graph[curr][0][0] ? prev : curr);
-            let histoXMax = results.graph[xMaxName][0][0];
+            let xMaxName = histoKeys.reduce((prev, curr) => {
+              return results.graph[prev][results.graph[prev].length-1][0] > results.graph[curr][results.graph[curr].length-1][0] ? prev : curr
+            });
+            let histoXMax = results.graph[xMaxName][results.graph[xMaxName].length-1][0];
 
             if (r.graph.xmin === null) {
               r.graph.xmin = results.graph.xmin || histoXMin;
@@ -4985,19 +4988,20 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
             }
 
             r.map = mapMerge(result.responses[i].aggregations);
+
             results.items.push(r);
             histoKeys.forEach(item => {
               r[item] = 0.0;
             });
 
             var graph = r.graph;
-
-            for (let i = 0; i < graph.lpHisto.length; i++) {
-              for (let j = 0; j < histoKeys.length; j++) {
-                item = histoKeys[j];
+            for (let j = 0; j < histoKeys.length; j++) {
+              item = histoKeys[j];
+              for (let i = 0; i < graph[item].length; i++) {
                 r[item] += graph[item][i][1];
               }
             }
+
             if (Object.keys(graph).includes('totPacketsTotal')) {
               r['totPacketsHisto'] = graph.totPacketsTotal;
             }
