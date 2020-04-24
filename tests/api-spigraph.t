@@ -98,4 +98,3 @@ cmp_ok ($json->{recordsFiltered}, '==', 6);
 # file field works
     $json = get("/spigraph.json?date=-1&field=fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
     cmp_ok ($json->{recordsFiltered}, '==', 6);
-totDataBytesHisto
