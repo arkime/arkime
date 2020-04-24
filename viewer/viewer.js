@@ -3043,8 +3043,8 @@ function buildSessionQuery (req, buildCb, queryOverride=null) {
     let filters = req.user.settings.timelineDataFilters || settingDefaults.timelineDataFilters;
     for (let i=0; i < filters.length; i++) {
       let filter = filters[i];
-      query.aggregations.dbHisto.aggregations[filter] = { sum: { field: filter } };
-      // Will also grap src/dst of these options to show on the timeline
+
+      // Will also grap src/dst of these options instead to show on the timeline
       if (filter === 'totPackets') {
         query.aggregations.dbHisto.aggregations.srcPackets = { sum: { field: 'srcPackets' } };
         query.aggregations.dbHisto.aggregations.dstPackets = { sum: { field: 'dstPackets' } };
@@ -3054,6 +3054,8 @@ function buildSessionQuery (req, buildCb, queryOverride=null) {
       } else if (filter === 'totDataBytes') {
         query.aggregations.dbHisto.aggregations.srcDataBytes = { sum: { field: 'srcDataBytes' } };
         query.aggregations.dbHisto.aggregations.dstDataBytes = { sum: { field: 'dstDataBytes' } };
+      } else {
+        query.aggregations.dbHisto.aggregations[filter] = { sum: { field: filter } };
       }
     }
 
@@ -4604,40 +4606,69 @@ function mapMerge (aggregations) {
 }
 
 function graphMerge(req, query, aggregations) {
+  let filters = req.user.settings.timelineDataFilters || settingDefaults.timelineDataFilters;
+
   let graph = {
     xmin: req.query.startTime * 1000 || null,
     xmax: req.query.stopTime * 1000 || null,
-    interval: query.aggregations?query.aggregations.dbHisto.histogram.interval / 1000 || 60 : 60,
+    interval: query.aggregations ? query.aggregations.dbHisto.histogram.interval / 1000 || 60 : 60,
     lpHisto: [],
     lpTotal: 0
   };
+
+  // allowed tot* data map
+  let filtersMap = {
+    'totPackets':   ['srcPackets', 'dstPackets'],
+    'totBytes':     ['srcBytes', 'dstBytes'],
+    'totDataBytes': ['srcDataBytes', 'dstDataBytes'],
+  }
+
+  for (let i = 0; i < filters.length; i++) {
+    let filter = filters[i];
+    if (Object.keys(filtersMap).includes(filter)) {
+      filtersMap[filter].forEach(j => {
+        graph[j + 'Histo'] = [];
+      });
+    } else {
+      graph[filter + 'Histo'] = [];
+    }
+
+    graph[filters[i] + 'Total'] = 0;
+  }
 
   if (!aggregations || !aggregations.dbHisto) {
     return graph;
   }
 
-  let filters = req.user.settings.timelineDataFilters || settingDefaults.timelineDataFilters;
   aggregations.dbHisto.buckets.forEach(function (item) {
     let key = item.key;
 
+    // always add session information
     graph.lpHisto.push([key, item.doc_count]);
     graph.lpTotal += item.doc_count;
 
     for (let prop in item) {
-      // excluding everything that isnt a summed up aggregate collection
+      // excluding every item prop that isnt a summed up aggregate collection (ie. es keys)
+      // tot* filters are exceptions: they will pass src/dst histo [], but keep a *Total count for filtered total
+      // ie. totPackets selected filter => {srcPacketsHisto: [], dstPacketsHisto:[], totPacketsTotal: n, ...}
       if (filters.includes(prop) ||
         prop === 'srcPackets' || prop === 'dstPackets' || prop === 'srcBytes' ||
         prop === 'dstBytes' || prop === 'srcDataBytes' || prop === 'dstDataBytes') {
-        let name = prop + 'Histo';
-        if (graph[name] === undefined) {
-          graph[name] = [];
-        }
-        graph[name].push([key, item[prop].value]);
 
-        if (graph[prop + 'Total'] === undefined) {
-          graph[prop + 'Total'] = 0;
+        graph[prop + 'Histo'].push([key, item[prop].value]);
+
+        // Note: prop will never be one of the tot* exceptions
+        if (filters.includes(prop)) {
+          graph[prop + 'Total'] += item[prop].value;
         }
-        graph[prop + 'Total'] += item[prop].value;
+        // add src/dst to tot* counters
+        if ((prop === 'srcPackets' || prop === 'dstPackets') && filters.includes('totPackets')) {
+          graph['totPackets' + 'Total'] += item[prop].value;
+        } else if ((prop === 'srcBytes' || prop === 'dstBytes') && filters.includes('totBytes')) {
+          graph['totBytes' + 'Total'] += item[prop].value;
+        } else if ((prop === 'srcDataBytes' || prop === 'dstDataBytes') && filters.includes('totDataBytes')) {
+          graph['totDataBytes' + 'Total'] += item[prop].value;
+        }
       }
     }
   });
@@ -4960,12 +4991,23 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
             });
 
             var graph = r.graph;
+
             for (let i = 0; i < graph.lpHisto.length; i++) {
               for (let j = 0; j < histoKeys.length; j++) {
                 item = histoKeys[j];
                 r[item] += graph[item][i][1];
               }
             }
+            if (Object.keys(graph).includes('totPacketsTotal')) {
+              r['totPacketsHisto'] = graph.totPacketsTotal;
+            }
+            if (Object.keys(graph).includes('totDataBytesTotal')) {
+              r['totDataBytesHisto'] = graph.totDataBytesTotal;
+            }
+            if (Object.keys(graph).includes('totBytesTotal')) {
+              r['totBytesHisto'] = graph.totBytesTotal;
+            }
+
             if (results.items.length === result.responses.length) {
               var s = req.query.sort || 'lpHisto';
               results.items = results.items.sort(function (a, b) {
