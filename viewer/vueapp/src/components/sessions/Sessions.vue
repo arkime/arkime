@@ -67,7 +67,8 @@
                 size="sm"
                 no-flip
                 no-caret
-                class="col-vis-menu"
+                boundary="viewport"
+                class="col-vis-menu col-dropdown"
                 variant="theme-primary"
                 @show="colVisMenuOpen = true"
                 @hide="colVisMenuOpen = false">
@@ -119,7 +120,7 @@
                 size="sm"
                 no-flip
                 no-caret
-                class="col-config-menu"
+                class="col-config-menu col-dropdown"
                 variant="theme-secondary">
                 <template slot="button-content">
                   <span class="fa fa-columns"
@@ -205,14 +206,12 @@
                   class="cursor-pointer">
                   {{ header.friendlyName }}
                   <!-- info field visibility button -->
-                  <!-- TODO ECR if the table header is sticky and the info
-                  header is not visible, this button cannot be reached -->
                   <b-dropdown
                     size="sm"
                     no-flip
                     no-caret
                     right
-                    class="col-vis-menu info-vis-menu pull-right"
+                    class="col-vis-menu info-vis-menu pull-right col-dropdown"
                     variant="theme-primary"
                     @show="infoFieldVisMenuOpen = true"
                     @hide="infoFieldVisMenuOpen = false">
@@ -279,7 +278,7 @@
                   right
                   no-flip
                   size="sm"
-                  class="pull-right">
+                  class="pull-right col-dropdown">
                   <b-dropdown-item
                     @click="toggleColVis(header.dbField, header.sortBy)">
                     Hide Column
@@ -399,6 +398,7 @@
           <!-- session + detail -->
           <template v-for="(session, index) of sessions.data">
             <tr :key="session.id"
+              :class="{'no-table-header-overflow':!tableHeaderOverflow}"
               :ref="`tableRow${index}`"
               :id="`session${session.id}`">
               <!-- toggle button and ip protocol -->
@@ -585,7 +585,8 @@ export default {
       infoFields: customCols.info.children,
       colVisMenuOpen: false,
       infoFieldVisMenuOpen: false,
-      stickyHeader: false
+      stickyHeader: false,
+      tableHeaderOverflow: undefined
     };
   },
   created: function () {
@@ -604,6 +605,25 @@ export default {
     };
 
     window.addEventListener('resize', windowResizeEvent, { passive: true });
+
+    // show the overflow when a dropdown in a column header is shown. otherwise,
+    // the dropdown is cut off and scrolls vertically in the column header
+    this.$root.$on('bv::dropdown::show', bvEvent => {
+      if (!this.stickyHeader) { return; }
+      let target = $(bvEvent.target);
+      if (!target.parent().hasClass('col-dropdown')) { return; }
+      $('thead').css('overflow-x', 'visible');
+      $('thead > tr').css('overflow-x', 'visible');
+    });
+    // when the column header dropdown is hidden, go back to the default scroll
+    // behavior so that the table can overflow the window width
+    this.$root.$on('bv::dropdown::hide', bvEvent => {
+      if (!this.stickyHeader) { return; }
+      let target = $(bvEvent.target);
+      if (!target.parent().hasClass('col-dropdown')) { return; }
+      $('thead').css('overflow-x', 'scroll');
+      $('thead > tr').css('overflow-x', 'scroll');
+    });
   },
   computed: {
     query: function () {
@@ -1637,10 +1657,12 @@ export default {
         // calculate how much the header row is overflowing the window
         const tableHeaderOverflow = Math.min(0, windowWidth - this.tableWidth);
         if (tableHeaderOverflow) { // if it's overflowing the window
+          this.tableHeaderOverflow = tableHeaderOverflow;
           // set the right style to the amount of the overflow
           this.$refs.tableHeader.style.right = `${tableHeaderOverflow}px`;
           this.$refs.draggableColumns.style.right = `${tableHeaderOverflow}px`;
         } else { // otherwise unset it (default = auto, see css)
+          this.tableHeaderOverflow = undefined;
           this.$refs.tableHeader.style = undefined;
           this.$refs.draggableColumns.style = undefined;
         }
@@ -1722,6 +1744,11 @@ export default {
   visibility: hidden;
   margin-left: -25px;
 }
+
+/* clear the box shadow above the sticky column headers */
+.sessions-page .sticky-viz .viz-container {
+  box-shadow: none !important;
+}
 </style>
 
 <style scoped>
@@ -1797,7 +1824,6 @@ table.sessions-table tbody tr td {
 table.sessions-table.sticky-header > thead {
   left: 0;
   z-index: 3;
-  /* TODO ECR right side of header is ugly if it's not overlowing the container */
   /* need to unset right because sometimes the header overflows the window */
   right: auto;
   position: fixed;
@@ -1805,8 +1831,6 @@ table.sessions-table.sticky-header > thead {
   padding-top: 12px;
   /* need x overflow for the table to be able to overflow the window width */
   overflow-x: scroll;
-  /* TODO ECR dropdowns not overflowing container. WHY!? */
-  overflow-y: visible;
   padding-left: 0.5rem;
   box-shadow: 0 6px 9px -6px black;
   background-color: var(--color-background, white);
@@ -1815,22 +1839,21 @@ table.sessions-table.sticky-header > thead > tr {
   display: table;
   /* need x overflow for the table to be able to overflow the window width */
   overflow-x: scroll;
-  /* TODO ECR dropdowns not overflowing container. WHY!? */
-  overflow-y: visible;
   table-layout: fixed;
 }
 table.sessions-table.sticky-header > thead > tr > th {
-  /* TODO ECR dropdowns not overflowing container. WHY!? */
-  overflow-y: visible;
   border-bottom: none; /* shadow works as bottom border */
   border-top: 1px solid rgb(238, 238, 238);
 }
 /* need this to make sure that the body cells are the correct width */
 table.sessions-table.sticky-header > tbody > tr {
-  /* need full width for body rows to be able to take up the entire window when resizing */
-  width: 100%;
   display: table;
   table-layout: fixed;
+}
+/* need full width for body rows to be able to take up the entire window when
+resizing but the table doesn't overflow the window */
+table.sessions-table.sticky-header > tbody > tr.no-table-header-overflow {
+  width: 100%;
 }
 
 /* table column headers -------------------- */
