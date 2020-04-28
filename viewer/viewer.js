@@ -4625,7 +4625,7 @@ function graphMerge(req, query, aggregations) {
 
   for (let i = 0; i < filters.length; i++) {
     let filter = filters[i];
-    if (Object.keys(filtersMap).includes(filter)) {
+    if (filtersMap[filter] !== undefined) {
       filtersMap[filter].forEach(j => {
         graph[j + 'Histo'] = [];
       });
@@ -5002,13 +5002,13 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
               }
             }
 
-            if (Object.keys(graph).includes('totPacketsTotal')) {
+            if (graph['totPacketsTotal'] !== undefined) {
               r['totPacketsHisto'] = graph.totPacketsTotal;
             }
-            if (Object.keys(graph).includes('totDataBytesTotal')) {
+            if (graph['totDataBytesTotal'] !== undefined) {
               r['totDataBytesHisto'] = graph.totDataBytesTotal;
             }
-            if (Object.keys(graph).includes('totBytesTotal')) {
+            if (graph['totBytesTotal'] !== undefined) {
               r['totBytesHisto'] = graph.totBytesTotal;
             }
 
