@@ -52,23 +52,24 @@
         </moloch-sticky-sessions>
       </transition> <!-- /sticky (opened) sessions -->
 
-      <!-- table fit button -->
-      <button type="button"
-        v-if="showFitButton && !loading"
-        class="btn btn-xs btn-theme-quaternary fit-btn"
-        @click="fitTable"
-        v-b-tooltip.hover
-        title="Fit the table to the current window size">
-        <span class="fa fa-arrows-h">
-        </span>
-      </button> <!-- /table fit button -->
-
       <!-- sessions results -->
       <table class="table-striped sessions-table"
         :class="{'sticky-header':stickyHeader}"
         :style="tableStyle"
         id="sessionsTable">
         <thead ref="tableHeader">
+          <!-- table fit button -->
+          <div class="fit-btn-container">
+            <button type="button"
+              v-if="showFitButton && !loading"
+              class="btn btn-xs btn-theme-quaternary fit-btn"
+              @click="fitTable"
+              v-b-tooltip.hover
+              title="Fit the table to the current window size">
+              <span class="fa fa-arrows-h">
+              </span>
+            </button>
+          </div> <!-- /table fit button -->
           <tr ref="draggableColumns">
             <!-- table options -->
             <th class="ignore-element"
@@ -1779,7 +1780,6 @@ form.sessions-paging {
 
 .sessions-content {
   padding-top: 10px;
-  overflow-y: auto;
 }
 
 /* sessions table -------------------------- */
@@ -1919,10 +1919,12 @@ table.sessions-table.sticky-header > tbody > tr.no-table-header-overflow {
 }
 
 /* table fit button -------------------------- */
-button.fit-btn {
-  top: 310px;
-  left: 10px;
-  z-index: 5;
+div.fit-btn-container {
+  top: -18px;
+  z-index: 3;
+  position: relative;
+}
+div.fit-btn-container > button.fit-btn {
   position: absolute;
 }
 
