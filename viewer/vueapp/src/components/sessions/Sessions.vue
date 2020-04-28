@@ -52,6 +52,17 @@
         </moloch-sticky-sessions>
       </transition> <!-- /sticky (opened) sessions -->
 
+      <!-- table fit button -->
+      <button type="button"
+        v-if="showFitButton && !loading"
+        class="btn btn-xs btn-theme-quaternary fit-btn"
+        @click="fitTable"
+        v-b-tooltip.hover
+        title="Fit the table to the current window size">
+        <span class="fa fa-arrows-h">
+        </span>
+      </button> <!-- /table fit button -->
+
       <!-- sessions results -->
       <table class="table-striped sessions-table"
         :class="{'sticky-header':stickyHeader}"
@@ -381,15 +392,6 @@
                   </div>
                 </span> <!-- /sortable column -->
               </th> <!-- /table headers -->
-              <button type="button"
-                v-if="showFitButton && !loading"
-                class="btn btn-xs btn-theme-quaternary fit-btn"
-                @click="fitTable"
-                v-b-tooltip.hover
-                title="Fit the table to the current window size">
-                <span class="fa fa-arrows-h">
-                </span>
-              </button>
             </template>
           </tr>
         </thead>
@@ -586,7 +588,8 @@ export default {
       colVisMenuOpen: false,
       infoFieldVisMenuOpen: false,
       stickyHeader: false,
-      tableHeaderOverflow: undefined
+      tableHeaderOverflow: undefined,
+      showFitButton: false
     };
   },
   created: function () {
@@ -661,12 +664,9 @@ export default {
       return this.$store.state.views;
     },
     tableStyle: function () {
-      let style = { width: this.tableWidth + 'px' };
-      // pad the bottom of the table so that opening a field
-      // dropdowns at the bottom doesn't make the table scrolly
-      if (this.sessions && this.sessions.data &&
-        this.sessions.data.length) {
-        style['margin-bottom'] = '300px';
+      let style = {};
+      if (this.tableHeaderOverflow < 0) {
+        style.width = `${this.tableWidth}px`;
       }
       return style;
     }
@@ -1154,7 +1154,10 @@ export default {
 
       this.saveColumnWidths();
 
-      setTimeout(() => { this.initializeColResizable(); });
+      this.$nextTick(() => {
+        this.initializeColResizable();
+        this.toggleStickyHeader();
+      });
     },
     /**
      * Opens the spi graph page in a new browser tab
@@ -1654,13 +1657,15 @@ export default {
         // calculate the height of the header row
         const height = this.$refs.draggableColumns.clientHeight + 2;
         const windowWidth = window.innerWidth;
-        // calculate how much the header row is overflowing the window
-        const tableHeaderOverflow = Math.min(0, windowWidth - this.tableWidth);
-        if (tableHeaderOverflow) { // if it's overflowing the window
+        // calculate how much the header row is under or overflowing the window
+        const tableHeaderOverflow = windowWidth - this.tableWidth;
+        if (tableHeaderOverflow !== 0) { // if it's overflowing the window
           this.tableHeaderOverflow = tableHeaderOverflow;
           // set the right style to the amount of the overflow
-          this.$refs.tableHeader.style.right = `${tableHeaderOverflow}px`;
-          this.$refs.draggableColumns.style.right = `${tableHeaderOverflow}px`;
+          if (tableHeaderOverflow < 0) {
+            this.$refs.tableHeader.style.right = `${tableHeaderOverflow}px`;
+            this.$refs.draggableColumns.style.right = `${tableHeaderOverflow}px`;
+          }
         } else { // otherwise unset it (default = auto, see css)
           this.tableHeaderOverflow = undefined;
           this.$refs.tableHeader.style = undefined;
@@ -1675,6 +1680,9 @@ export default {
           // unset the top margin because the table header won't overlay it
           firstTableRow[0].style = undefined;
         }
+        // set the overflow to visible so that the dropdowns overflow the header
+        $('thead').css('overflow-x', 'visible');
+        $('thead > tr').css('overflow-x', 'visible');
       }
     },
     /* event handlers ------------------------------------------------------ */
@@ -1705,6 +1713,9 @@ export default {
     $('#sessionsTable').colResizable({ disable: true });
 
     window.removeEventListener('resize', windowResizeEvent);
+
+    this.$root.$on('bv::dropdown::show', undefined);
+    this.$root.$on('bv::dropdown::hide', undefined);
   }
 };
 </script>
@@ -1909,9 +1920,10 @@ table.sessions-table.sticky-header > tbody > tr.no-table-header-overflow {
 
 /* table fit button -------------------------- */
 button.fit-btn {
-  position: absolute;
-  top: 290px;
+  top: 310px;
   left: 10px;
+  z-index: 5;
+  position: absolute;
 }
 
 /* animate sticky sessions enter/leave */
