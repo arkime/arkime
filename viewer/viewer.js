@@ -4589,14 +4589,14 @@ function graphMerge(req, query, aggregations) {
     'totPackets':   ['srcPackets', 'dstPackets'],
     'totBytes':     ['srcBytes', 'dstBytes'],
     'totDataBytes': ['srcDataBytes', 'dstDataBytes'],
-  }
+  };
 
   for (let i = 0; i < filters.length; i++) {
     let filter = filters[i];
     if (filtersMap[filter] !== undefined) {
-      filtersMap[filter].forEach(j => {
+      for (const j of filtersMap[filter]) {
         graph[j + 'Histo'] = [];
-      });
+      }
     } else {
       graph[filter + 'Histo'] = [];
     }
@@ -4633,11 +4633,11 @@ function graphMerge(req, query, aggregations) {
 
         // Add src/dst to tot* counters.
         if ((prop === 'srcPackets' || prop === 'dstPackets') && filters.includes('totPackets')) {
-          graph['totPackets' + 'Total'] += item[prop].value;
+          graph.totPacketsTotal += item[prop].value;
         } else if ((prop === 'srcBytes' || prop === 'dstBytes') && filters.includes('totBytes')) {
-          graph['totBytes' + 'Total'] += item[prop].value;
+          graph.totBytesTotal += item[prop].value;
         } else if ((prop === 'srcDataBytes' || prop === 'dstDataBytes') && filters.includes('totDataBytes')) {
-          graph['totDataBytes' + 'Total'] += item[prop].value;
+          graph.totDataBytesTotal += item[prop].value;
         }
       }
     }
@@ -4943,7 +4943,7 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
             let xMinName = histoKeys.reduce((prev, curr) => results.graph[prev][0][0] < results.graph[curr][0][0] ? prev : curr);
             let histoXMin = results.graph[xMinName][0][0];
             let xMaxName = histoKeys.reduce((prev, curr) => {
-              return results.graph[prev][results.graph[prev].length-1][0] > results.graph[curr][results.graph[curr].length-1][0] ? prev : curr
+              return results.graph[prev][results.graph[prev].length-1][0] > results.graph[curr][results.graph[curr].length-1][0] ? prev : curr;
             });
             let histoXMax = results.graph[xMaxName][results.graph[xMaxName].length-1][0];
 
@@ -4970,14 +4970,14 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
               }
             }
 
-            if (graph['totPacketsTotal'] !== undefined) {
-              r['totPacketsHisto'] = graph.totPacketsTotal;
+            if (graph.totPacketsTotal !== undefined) {
+              r.totPacketsHisto = graph.totPacketsTotal;
             }
-            if (graph['totDataBytesTotal'] !== undefined) {
-              r['totDataBytesHisto'] = graph.totDataBytesTotal;
+            if (graph.totDataBytesTotal !== undefined) {
+              r.totDataBytesHisto = graph.totDataBytesTotal;
             }
-            if (graph['totBytesTotal'] !== undefined) {
-              r['totBytesHisto'] = graph.totBytesTotal;
+            if (graph.totBytesTotal !== undefined) {
+              r.totBytesHisto = graph.totBytesTotal;
             }
 
             if (results.items.length === result.responses.length) {
