@@ -558,12 +558,18 @@ LOCAL gboolean reader_libpcapfile_read()
 LOCAL void reader_libpcapfile_opened()
 {
     int dlt_to_linktype(int dlt);
+    int moloch_db_can_quit();
 
     if (config.flushBetween) {
         moloch_session_flush();
+        int rc[5];
 
         // Pause until all packets and commands are done
-        while (moloch_session_cmd_outstanding() || moloch_session_close_outstanding() || moloch_packet_outstanding() || moloch_session_monitoring()) {
+        while ((rc[0] = moloch_session_cmd_outstanding()) || (rc[1] = moloch_session_close_outstanding()) || (rc[2] = moloch_packet_outstanding()) || (rc[3] = moloch_session_monitoring()) || (rc[4] = moloch_db_can_quit())) {
+            if (config.debug) {
+                LOG("Waiting next file %d %d %d %d %d", rc[0], rc[1], rc[2], rc[3], rc[4]);
+            }
+            usleep(50000);
             g_main_context_iteration(NULL, TRUE);
         }
     }
