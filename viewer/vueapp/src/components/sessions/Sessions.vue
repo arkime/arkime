@@ -728,6 +728,8 @@ export default {
         let index = this.stickySessions.indexOf(session);
         if (index >= 0) { this.stickySessions.splice(index, 1); }
       }
+
+      this.$store.commit('setStickySessionsBtn', !!this.stickySessions.length);
     },
     /**
      * Closes the session detail for a session
