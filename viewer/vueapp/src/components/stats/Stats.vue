@@ -705,9 +705,6 @@ select {
   -webkit-appearance: none;
 }
 
-.stats-tabs {
-  margin-top: 10px;
-}
 .stats-tabs .input-group {
   max-width: 333px;
   position: fixed;

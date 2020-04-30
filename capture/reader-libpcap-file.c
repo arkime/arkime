@@ -559,8 +559,14 @@ LOCAL void reader_libpcapfile_opened()
 {
     int dlt_to_linktype(int dlt);
 
-    if (config.flushBetween)
+    if (config.flushBetween) {
         moloch_session_flush();
+
+        // Pause until all packets and commands are done
+        while (moloch_session_cmd_outstanding() || moloch_session_close_outstanding() || moloch_packet_outstanding() || moloch_session_monitoring()) {
+            g_main_context_iteration(NULL, TRUE);
+        }
+    }
 
     moloch_packet_set_linksnap(dlt_to_linktype(pcap_datalink(pcap)) | pcap_datalink_ext(pcap), pcap_snapshot(pcap));
 

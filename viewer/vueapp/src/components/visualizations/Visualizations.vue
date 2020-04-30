@@ -426,6 +426,8 @@ export default {
     let stickyViz = localStorage && localStorage[`${basePath}-sticky-viz`] &&
       localStorage[`${basePath}-sticky-viz`] !== 'false';
 
+    this.$store.commit('toggleStickyViz', stickyViz);
+
     this.showMap = showMap;
     this.stickyViz = stickyViz;
 
@@ -464,6 +466,7 @@ export default {
     /* exposed functions --------------------------------------------------- */
     toggleStickyViz: function () {
       this.stickyViz = !this.stickyViz;
+      this.$store.commit('toggleStickyViz', this.stickyViz);
       localStorage[`${basePath}-sticky-viz`] = this.stickyViz;
     },
     /* exposed MAP functions */

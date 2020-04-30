@@ -59,10 +59,12 @@ extern unsigned char    moloch_hex_to_char[256][256];
 LOCAL uint32_t          nextFileNum;
 LOCAL MOLOCH_LOCK_DEFINE(nextFileNum);
 
-LOCAL struct timespec startHealthCheck;
-LOCAL uint64_t        esHealthMS;
+LOCAL struct timespec   startHealthCheck;
+LOCAL uint64_t          esHealthMS;
 
-LOCAL int             dbExit;
+LOCAL int               dbExit;
+LOCAL char             *esBulkQuery;
+LOCAL int               esBulkQueryLen;
 
 /******************************************************************************/
 extern MolochConfig_t        config;
@@ -265,7 +267,7 @@ LOCAL void moloch_db_send_bulk_cb(int code, unsigned char *data, int data_len, g
 /******************************************************************************/
 LOCAL void moloch_db_send_bulk(char *json, int len)
 {
-    moloch_http_send(esServer, "POST", "/_bulk", 6, json, len, NULL, FALSE, moloch_db_send_bulk_cb, NULL);
+    moloch_http_send(esServer, "POST", esBulkQuery, esBulkQueryLen, json, len, NULL, FALSE, moloch_db_send_bulk_cb, NULL);
 }
 LOCAL MolochDbSendBulkFunc sendBulkFunc = moloch_db_send_bulk;
 /******************************************************************************/
@@ -2295,6 +2297,9 @@ void moloch_db_init()
         char* clientKey = moloch_config_str(NULL, "esClientKey", NULL);
         char* clientKeyPass = moloch_config_str(NULL, "esClientKeyPass", NULL);
         moloch_http_set_client_cert(esServer, clientCert, clientKey, clientKeyPass);
+
+        esBulkQuery = moloch_config_str(NULL, "esBulkQuery", "/_bulk");
+        esBulkQueryLen = strlen(esBulkQuery);
 
         moloch_db_health_check((gpointer)1L);
     }
