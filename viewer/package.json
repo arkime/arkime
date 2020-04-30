@@ -67,7 +67,7 @@
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "friendly-errors-webpack-plugin": "^1.6.1",
     "html-webpack-plugin": "^3.2.0",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "js-yaml": "^3.13.1",
     "jshint": "^2.11.0",
     "json-loader": "^0.5.7",
