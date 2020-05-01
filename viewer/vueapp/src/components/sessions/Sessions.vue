@@ -35,6 +35,7 @@
       :map-data="mapData"
       :primary="true"
       :timezone="user.settings.timezone"
+      :timelineDataFilters="timelineDataFilters"
       @fetchMapData="cancelAndLoad(true)">
     </moloch-visualizations> <!-- /visualizations -->
 
@@ -582,6 +583,7 @@ export default {
       colConfigError: '',
       colConfigSuccess: '',
       headers: [],
+      fields: [],
       graphData: undefined,
       mapData: undefined,
       colQuery: '', // query for columns to toggle visibility
@@ -656,6 +658,9 @@ export default {
     },
     user: function () {
       return this.$store.state.user;
+    },
+    timelineDataFilters: function () {
+      return this.$store.state.user.settings.timelineDataFilters.map(i => this.getField(i));
     },
     filteredFields: function () {
       return this.filterFields(false, true, false);

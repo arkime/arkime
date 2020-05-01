@@ -65,7 +65,7 @@
             <div class="input-group input-group-sm">
               <span class="input-group-prepend cursor-help"
                 v-b-tooltip.hover
-                title="Sort results by">
+                title="Chosen SPIGraph Type">
                 <span class="input-group-text">
                   Graph Type:
                 </span>
@@ -95,7 +95,7 @@
               <select class="form-control"
                 v-model="sortBy"
                 @change="changeSortBy">
-                <option value="name">alphabecially</option>
+                <option value="name">alphabetically</option>
                 <option value="graph">count</option>
               </select>
             </div>
@@ -151,6 +151,7 @@
         :map-data="mapData"
         :primary="true"
         :timezone="user.settings.timezone"
+        :timelineDataFilters="timelineDataFilters"
         @fetchMapData="cancelAndLoad(true)">
       </moloch-visualizations>
     </div> <!-- /main visualization -->
@@ -194,7 +195,7 @@
                       :session-btn="true">
                     </moloch-session-field>
                   </strong>
-                  <sup>({{ item.count | commaString }})</sup>
+                  <sup>({{ item[graphType] | commaString }})</sup>
                 </div>
               </div>
             </div> <!-- /field value -->
@@ -206,6 +207,7 @@
                   :graph-data="item.graph"
                   :map-data="item.map"
                   :primary="false"
+                  :timelineDataFilters="timelineDataFilters"
                   :timezone="user.settings.timezone">
                 </moloch-visualizations>
               </div>
@@ -302,13 +304,17 @@ export default {
     user: function () {
       return this.$store.state.user;
     },
+    timelineDataFilters: function () {
+      let filters = this.$store.state.user.settings.timelineDataFilters;
+      return filters.map(i => this.fields.find(f => f.dbField === i));
+    },
     graphType: function () {
       return this.$store.state.graphType;
     },
     query: function () {
       let sort = 'name';
       if (!this.$route.query.sort || this.$route.query.sort === 'graph') {
-        sort = this.$route.query.graphType || 'lpHisto';
+        sort = this.$route.query.graphType || this.$store.state.graphType || 'lpHisto';
       }
       return {
         sort: sort,

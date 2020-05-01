@@ -1298,7 +1298,9 @@ let settingDefaults = {
   connSrcField  : 'srcIp',
   connDstField  : 'ip.dst:port',
   numPackets    : 'last',
-  theme         : 'default-theme'
+  theme         : 'default-theme',
+  manualQuery   : false,
+  timelineDataFilters: ['totPackets', 'totBytes', 'totDataBytes'] // dbField2 values from fields
 };
 
 // gets the current user
@@ -3003,16 +3005,27 @@ function buildSessionQuery (req, buildCb, queryOverride=null) {
         mapG3: { terms: { field: 'http.xffGEO', size: 1000, min_doc_count: 1} }
       };
     }
-    query.aggregations.dbHisto = {
-      aggregations: {
-        srcDataBytes: { sum: { field: 'srcDataBytes' } },
-        dstDataBytes: { sum: { field: 'dstDataBytes' } },
-        srcBytes: { sum: { field: 'srcBytes' } },
-        dstBytes: { sum: { field: 'dstBytes' } },
-        srcPackets: { sum: { field: 'srcPackets' } },
-        dstPackets: { sum: { field: 'dstPackets' } }
+
+    query.aggregations.dbHisto = { aggregations: {} };
+
+    let filters = req.user.settings.timelineDataFilters || settingDefaults.timelineDataFilters;
+    for (let i=0; i < filters.length; i++) {
+      let filter = filters[i];
+
+      // Will also grap src/dst of these options instead to show on the timeline
+      if (filter === 'totPackets') {
+        query.aggregations.dbHisto.aggregations.srcPackets = { sum: { field: 'srcPackets' } };
+        query.aggregations.dbHisto.aggregations.dstPackets = { sum: { field: 'dstPackets' } };
+      } else if (filter === 'totBytes') {
+        query.aggregations.dbHisto.aggregations.srcBytes = { sum: { field: 'srcBytes' } };
+        query.aggregations.dbHisto.aggregations.dstBytes = { sum: { field: 'dstBytes' } };
+      } else if (filter === 'totDataBytes') {
+        query.aggregations.dbHisto.aggregations.srcDataBytes = { sum: { field: 'srcDataBytes' } };
+        query.aggregations.dbHisto.aggregations.dstDataBytes = { sum: { field: 'dstDataBytes' } };
+      } else {
+        query.aggregations.dbHisto.aggregations[filter] = { sum: { field: filter } };
       }
-    };
+    }
 
     switch (reqQuery.bounding) {
     case 'first':
@@ -4561,34 +4574,73 @@ function mapMerge (aggregations) {
 }
 
 function graphMerge(req, query, aggregations) {
+  let filters = req.user.settings.timelineDataFilters || settingDefaults.timelineDataFilters;
+
   let graph = {
-    lpHisto: [],
-    db1Histo: [],
-    db2Histo: [],
-    pa1Histo: [],
-    pa2Histo: [],
-    by1Histo: [],
-    by2Histo: [],
-    xmin: req.query.startTime * 1000|| null,
+    xmin: req.query.startTime * 1000 || null,
     xmax: req.query.stopTime * 1000 || null,
-    interval: query.aggregations?query.aggregations.dbHisto.histogram.interval / 1000 || 60 : 60
+    interval: query.aggregations ? query.aggregations.dbHisto.histogram.interval / 1000 || 60 : 60,
+    lpHisto: [],
+    lpTotal: 0
   };
+
+  // allowed tot* data map
+  let filtersMap = {
+    'totPackets':   ['srcPackets', 'dstPackets'],
+    'totBytes':     ['srcBytes', 'dstBytes'],
+    'totDataBytes': ['srcDataBytes', 'dstDataBytes'],
+  };
+
+  for (let i = 0; i < filters.length; i++) {
+    let filter = filters[i];
+    if (filtersMap[filter] !== undefined) {
+      for (const j of filtersMap[filter]) {
+        graph[j + 'Histo'] = [];
+      }
+    } else {
+      graph[filter + 'Histo'] = [];
+    }
+
+    graph[filters[i] + 'Total'] = 0;
+  }
 
   if (!aggregations || !aggregations.dbHisto) {
     return graph;
   }
 
-  graph.interval = query.aggregations?(query.aggregations.dbHisto.histogram.interval / 1000) || 60 : 60;
-
   aggregations.dbHisto.buckets.forEach(function (item) {
     let key = item.key;
+
+    // always add session information
     graph.lpHisto.push([key, item.doc_count]);
-    graph.pa1Histo.push([key, item.srcPackets.value]);
-    graph.pa2Histo.push([key, item.dstPackets.value]);
-    graph.db1Histo.push([key, item.srcDataBytes.value]);
-    graph.db2Histo.push([key, item.dstDataBytes.value]);
-    graph.by1Histo.push([key, item.srcBytes.value]);
-    graph.by2Histo.push([key, item.dstBytes.value]);
+    graph.lpTotal += item.doc_count;
+
+    for (let prop in item) {
+      // excluding every item prop that isnt a summed up aggregate collection (ie. es keys)
+      // tot* filters are exceptions: they will pass src/dst histo [], but keep a *Total count for filtered total
+      // ie. totPackets selected filter => {srcPacketsHisto: [], dstPacketsHisto:[], totPacketsTotal: n, ...}
+      if (filters.includes(prop) ||
+        prop === 'srcPackets' || prop === 'dstPackets' || prop === 'srcBytes' ||
+        prop === 'dstBytes' || prop === 'srcDataBytes' || prop === 'dstDataBytes') {
+
+        // Note: prop will never be one of the chosen tot* exceptions
+        graph[prop + 'Histo'].push([key, item[prop].value]);
+
+        // Need to specify for when src/dst AND tot* filters are chosen
+        if (filters.includes(prop)) {
+          graph[prop + 'Total'] += item[prop].value;
+        }
+
+        // Add src/dst to tot* counters.
+        if ((prop === 'srcPackets' || prop === 'dstPackets') && filters.includes('totPackets')) {
+          graph.totPacketsTotal += item[prop].value;
+        } else if ((prop === 'srcBytes' || prop === 'dstBytes') && filters.includes('totBytes')) {
+          graph.totBytesTotal += item[prop].value;
+        } else if ((prop === 'srcDataBytes' || prop === 'dstDataBytes') && filters.includes('totDataBytes')) {
+          graph.totDataBytesTotal += item[prop].value;
+        }
+      }
+    }
   });
 
   return graph;
@@ -4886,27 +4938,48 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
             var r = {name: queriesInfo[i].key, count: queriesInfo[i].doc_count};
 
             r.graph = graphMerge(req, query, result.responses[i].aggregations);
+
+            let histoKeys = Object.keys(results.graph).filter(i => i.toLowerCase().includes("histo"));
+            let xMinName = histoKeys.reduce((prev, curr) => results.graph[prev][0][0] < results.graph[curr][0][0] ? prev : curr);
+            let histoXMin = results.graph[xMinName][0][0];
+            let xMaxName = histoKeys.reduce((prev, curr) => {
+              return results.graph[prev][results.graph[prev].length-1][0] > results.graph[curr][results.graph[curr].length-1][0] ? prev : curr;
+            });
+            let histoXMax = results.graph[xMaxName][results.graph[xMaxName].length-1][0];
+
             if (r.graph.xmin === null) {
-              r.graph.xmin = results.graph.xmin || results.graph.pa1Histo[0][0];
+              r.graph.xmin = results.graph.xmin || histoXMin;
             }
 
             if (r.graph.xmax === null) {
-              r.graph.xmax = results.graph.xmax || results.graph.pa1Histo[results.graph.pa1Histo.length - 1][0];
+              r.graph.xmax = results.graph.xmax || histoXMax;
             }
 
             r.map = mapMerge(result.responses[i].aggregations);
+
             results.items.push(r);
-            r.lpHisto = 0.0;
-            r.dbHisto = 0.0;
-            r.byHisto = 0.0;
-            r.paHisto = 0.0;
+            histoKeys.forEach(item => {
+              r[item] = 0.0;
+            });
+
             var graph = r.graph;
-            for (let i = 0; i < graph.lpHisto.length; i++) {
-              r.lpHisto += graph.lpHisto[i][1];
-              r.dbHisto += graph.db1Histo[i][1] + graph.db2Histo[i][1];
-              r.byHisto += graph.by1Histo[i][1] + graph.by2Histo[i][1];
-              r.paHisto += graph.pa1Histo[i][1] + graph.pa2Histo[i][1];
+            for (let j = 0; j < histoKeys.length; j++) {
+              item = histoKeys[j];
+              for (let i = 0; i < graph[item].length; i++) {
+                r[item] += graph[item][i][1];
+              }
             }
+
+            if (graph.totPacketsTotal !== undefined) {
+              r.totPacketsHisto = graph.totPacketsTotal;
+            }
+            if (graph.totDataBytesTotal !== undefined) {
+              r.totDataBytesHisto = graph.totDataBytesTotal;
+            }
+            if (graph.totBytesTotal !== undefined) {
+              r.totBytesHisto = graph.totBytesTotal;
+            }
+
             if (results.items.length === result.responses.length) {
               var s = req.query.sort || 'lpHisto';
               results.items = results.items.sort(function (a, b) {

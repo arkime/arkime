@@ -52,10 +52,10 @@ my ($url) = @_;
 
     eq_or_diff($json->{map}, from_json('{"dst":{"US": 3}, "src":{"US": 3}, "xffGeo":{}}'), "map short");
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1386004309000", 1], ["1386004312000", 1], [1386004317000, 1]]'), "lpHisto short");
-    eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1386004309000", 8], ["1386004312000", 8], [1386004317000, 10]]'), "pa1Histo short");
-    eq_or_diff($json->{graph}->{pa2Histo}, from_json('[["1386004309000", 6], ["1386004312000", 7], [1386004317000, 7]]'), "pa2Histo short");
-    eq_or_diff($json->{graph}->{db1Histo}, from_json('[["1386004309000", 155], ["1386004312000", 171], [1386004317000, 160]]'), "db1Histo short");
-    eq_or_diff($json->{graph}->{db2Histo}, from_json('[["1386004309000", 1599], ["1386004312000", 1599], [1386004317000, 1603]]'), "db2Histo short");
+    eq_or_diff($json->{graph}->{srcPacketsHisto}, from_json('[["1386004309000", 8], ["1386004312000", 8], [1386004317000, 10]]'), "srcPacketsHisto short");
+    eq_or_diff($json->{graph}->{dstPacketsHisto}, from_json('[["1386004309000", 6], ["1386004312000", 7], [1386004317000, 7]]'), "dstPacketsHisto short");
+    eq_or_diff($json->{graph}->{srcDataBytesHisto}, from_json('[["1386004309000", 155], ["1386004312000", 171], [1386004317000, 160]]'), "srcDataBytesHisto short");
+    eq_or_diff($json->{graph}->{dstDataBytesHisto}, from_json('[["1386004309000", 1599], ["1386004312000", 1599], [1386004317000, 1603]]'), "dstDataBytesHisto short");
     is ($json->{recordsFiltered}, 3, "records short");
     is ($json->{graph}->{interval}, 1, "correct interval short");
     is ($json->{graph}->{xmax}, 1386004400000, "correct xmax short");
@@ -66,10 +66,10 @@ my ($url) = @_;
 
     eq_or_diff($json->{map}, from_json('{"dst":{"US": 3}, "src":{"US": 3}, "xffGeo":{}}'), "map medium");
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1386004260000", 3]]'), "lpHisto medium");
-    eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1386004260000", 26]]'), "pa1Histo medium");
-    eq_or_diff($json->{graph}->{pa2Histo}, from_json('[["1386004260000", 20]]'), "pa2Histo medium");
-    eq_or_diff($json->{graph}->{db1Histo}, from_json('[["1386004260000", 486]]'), "db1Histo medium");
-    eq_or_diff($json->{graph}->{db2Histo}, from_json('[["1386004260000", 4801]]'), "db2Histo medium");
+    eq_or_diff($json->{graph}->{srcPacketsHisto}, from_json('[["1386004260000", 26]]'), "srcPacketsHisto medium");
+    eq_or_diff($json->{graph}->{dstPacketsHisto}, from_json('[["1386004260000", 20]]'), "dstPacketsHisto medium");
+    eq_or_diff($json->{graph}->{srcDataBytesHisto}, from_json('[["1386004260000", 486]]'), "srcDataBytesHisto medium");
+    eq_or_diff($json->{graph}->{dstDataBytesHisto}, from_json('[["1386004260000", 4801]]'), "dstDataBytesHisto medium");
     is ($json->{recordsFiltered}, 3, "records medium");
     is ($json->{graph}->{interval}, 60, "correct interval medium");
     is ($json->{graph}->{xmax}, 1386349908000, "correct xmax medium");
@@ -80,10 +80,10 @@ my ($url) = @_;
 
     eq_or_diff($json->{map}, from_json('{"dst":{"US": 3, "CA": 1}, "src":{"US": 3, "RU":1}, "xffGeo":{}}'), "map ALL");
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000,1]]'), "lpHisto ALL");
-    eq_or_diff($json->{graph}->{pa1Histo}, from_json('[["1335956400000", 2], ["1386003600000", 26], [1387742400000, 3], [1482552000000,3]]'), "pa1Histo ALL");
-    eq_or_diff($json->{graph}->{pa2Histo}, from_json('[["1335956400000", 0], ["1386003600000", 20], [1387742400000, 1], [1482552000000,1]]'), "pa2Histo ALL");
-    eq_or_diff($json->{graph}->{db1Histo}, from_json('[["1335956400000", 128], ["1386003600000", 486], [1387742400000, 68], [1482552000000,68]]'), "db1Histo ALL");
-    eq_or_diff($json->{graph}->{db2Histo}, from_json('[["1335956400000", 0], ["1386003600000", 4801], [1387742400000, 0], [1482552000000,0]]'), "db2Histo ALL");
+    eq_or_diff($json->{graph}->{srcPacketsHisto}, from_json('[["1335956400000", 2], ["1386003600000", 26], [1387742400000, 3], [1482552000000,3]]'), "srcPacketsHisto ALL");
+    eq_or_diff($json->{graph}->{dstPacketsHisto}, from_json('[["1335956400000", 0], ["1386003600000", 20], [1387742400000, 1], [1482552000000,1]]'), "dstPacketsHisto ALL");
+    eq_or_diff($json->{graph}->{srcDataBytesHisto}, from_json('[["1335956400000", 128], ["1386003600000", 486], [1387742400000, 68], [1482552000000,68]]'), "srcDataBytesHisto ALL");
+    eq_or_diff($json->{graph}->{dstDataBytesHisto}, from_json('[["1335956400000", 0], ["1386003600000", 4801], [1387742400000, 0], [1482552000000,0]]'), "dstDataBytesHisto ALL");
     is ($json->{recordsFiltered}, 6, "records ALL");
     is ($json->{graph}->{interval}, 3600, "correct interval ALL");
 

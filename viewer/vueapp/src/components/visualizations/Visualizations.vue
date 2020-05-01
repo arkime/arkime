@@ -178,21 +178,18 @@
               buttons
               v-model="graphType"
               @input="changeGraphType">
-              <b-radio value="lpHisto"
+              <b-radio
+                value="lpHisto"
+                key="lpHisto"
                 class="btn-radio">
-                Session
+                {{ "Session" }}
               </b-radio>
-              <b-radio value="paHisto"
+              <b-radio
+                v-for="filter in timelineDataFilters"
+                :value="filter.dbField + 'Histo'"
+                :key="filter.dbField"
                 class="btn-radio">
-                Packets
-              </b-radio>
-              <b-radio value="byHisto"
-                class="btn-radio">
-                Bytes
-              </b-radio>
-              <b-radio value="dbHisto"
-                class="btn-radio">
-                Databytes
+                {{ filter.friendlyName }}
               </b-radio>
             </b-form-radio-group>
           </div> <!-- graph type -->
@@ -268,6 +265,10 @@ export default {
     id: {
       type: String,
       default: 'primary'
+    },
+    timelineDataFilters: {
+      type: Array,
+      required: true
     }
   },
   data: function () {
@@ -433,7 +434,7 @@ export default {
     if (this.primary) {
       this.$store.commit('toggleMaps', showMap);
 
-      this.graphType = this.$route.query.graphType || 'lpHisto';
+      this.graphType = this.getDefaultGraphType();
       this.$store.commit('updateGraphType', this.graphType);
 
       this.seriesType = this.$route.query.seriesType || 'bars';
@@ -446,6 +447,22 @@ export default {
     }
   },
   methods: {
+    getDefaultGraphType: function () {
+      let storedFilters = this.$store.state.user.settings.timelineDataFilters;
+      let routeFilter = this.$route.query.graphType;
+
+      // filter is included in route and is enabled in settings
+      if (routeFilter && storedFilters.includes(routeFilter.slice(0, -5))) {
+        return routeFilter;
+      }
+
+      // user has selected a filter and it hasnt been removed from settings page
+      if (this.graphType && storedFilters.includes(this.graphType.slice(0, -5))) {
+        return this.graphType;
+      }
+
+      return 'lpHisto';
+    },
     /* exposed functions --------------------------------------------------- */
     toggleStickyViz: function () {
       this.stickyViz = !this.stickyViz;
@@ -580,7 +597,7 @@ export default {
             };
 
             let type;
-            if (this.graphType === 'byHisto' || this.graphType === 'dbHisto' || this.graphType === 'paHisto') {
+            if (this.graphType === 'totPacketsHisto' || this.graphType === 'totBytesHisto' || this.graphType === 'totDataBytesHisto') {
               type = item.seriesIndex === 0 ? 'Src' : 'Dst';
             }
 
@@ -591,9 +608,13 @@ export default {
               parseInt(item.datapoint[0].toFixed(0)), this.timezone || 'local', false
             );
 
+            let filterName = (this.graphType === 'lpHisto') ? 'Sessions'
+              : this.timelineDataFilters.find(i => i.dbField === this.graphType.slice(0, -5)).friendlyName || '';
+
             let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
-                                <strong>${type || ''}</strong>
-                                ${val} <strong>at</strong> ${d}
+                                <strong>${val}</strong> ${type || ''} ${filterName}'s
+                                out of <strong>${this.graphData[this.graphType.slice(0, -5) + 'Total']}</strong> filtered ${filterName}'s
+                                on ${d}
                               </div>`;
 
             $(tooltipHTML).css({
@@ -608,20 +629,20 @@ export default {
       });
     },
     setupGraphData: function () {
-      if (this.graphType === 'dbHisto') {
+      if (this.graphType === 'totPacketsHisto') {
         this.graph = [
-          { data: this.graphData.db1Histo, color: srcColor },
-          { data: this.graphData.db2Histo, color: dstColor }
+          { data: this.graphData.srcPacketsHisto, color: srcColor },
+          { data: this.graphData.dstPacketsHisto, color: dstColor }
         ];
-      } else if (this.graphType === 'byHisto') {
+      } else if (this.graphType === 'totBytesHisto') {
         this.graph = [
-          { data: this.graphData.by1Histo, color: srcColor },
-          { data: this.graphData.by2Histo, color: dstColor }
+          { data: this.graphData.srcBytesHisto, color: srcColor },
+          { data: this.graphData.dstBytesHisto, color: dstColor }
         ];
-      } else if (this.graphType === 'paHisto') {
+      } else if (this.graphType === 'totDataBytesHisto') {
         this.graph = [
-          { data: this.graphData.pa1Histo, color: srcColor },
-          { data: this.graphData.pa2Histo, color: dstColor }
+          { data: this.graphData.srcDataBytesHisto, color: srcColor },
+          { data: this.graphData.dstDataBytesHisto, color: dstColor }
         ];
       } else {
         this.graph = [{ data: this.graphData[this.graphType], color: primaryColor }];
@@ -665,7 +686,7 @@ export default {
           zoomRange: false,
           autoscaleMargin: 0.2,
           tickFormatter: (v) => {
-            if (this.graphType === 'byHisto' || this.graphType === 'dbHisto') {
+            if (this.graphType === 'totBytesHisto' || this.graphType === 'totDataBytesHisto') {
               return this.$options.filters.humanReadableBytes(v);
             } else {
               return this.$options.filters.humanReadableNumber(v);
