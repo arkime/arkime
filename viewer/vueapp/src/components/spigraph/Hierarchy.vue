@@ -2,7 +2,7 @@
   <div class="spigraph-pie">
 
     <!-- field select -->
-    <div class="form-inline pl-1">
+    <div class="form-inline pl-1 position-absolute">
       <div class="form-group"
         v-if="fields && fields.length">
         <div class="input-group input-group-sm mr-2">
@@ -37,10 +37,10 @@
     </div> <!-- /field select -->
 
     <!-- info area -->
-    <div ref="infoPopup">
+    <span ref="infoPopup">
       <div class="pie-popup">
       </div>
-    </div> <!-- /info area -->
+    </span> <!-- /info area -->
 
     <!-- pie chart area -->
     <div id="pie-area"
@@ -49,14 +49,14 @@
     <!-- /pie chart area -->
 
     <!-- treemap area -->
-    <div id="treemap-area"
+    <div id="treemap-area" class="pt-3"
       v-show="spiGraphType === 'treemap' && vizData && vizData.children.length">
     </div>
     <!-- /treemap area -->
 
     <!-- table area -->
     <div v-show="spiGraphType === 'table' && tableData.length"
-      class="container mt-4">
+      class="container mt-2 pt-5">
       <table class="table table-bordered table-condensed table-sm">
         <thead>
           <tr>
@@ -846,6 +846,7 @@ export default {
           }, 400);
         })
         .on('mouseleave', function (d) {
+          closeInfo();
           mouseleave(d, this);
           if (popupTimer) { clearTimeout(popupTimer); }
         });
@@ -941,6 +942,7 @@ export default {
           }, 400);
         })
         .on('mouseleave', function (d) {
+          closeInfo();
           mouseleaveBox(d, this);
           if (popupTimer) { clearTimeout(popupTimer); }
         });
@@ -1267,7 +1269,6 @@ export default {
   z-index: 9;
   position: absolute;
   right: 5px;
-  top: 160px;
   max-height: 500px;
   display: none;
   padding: 4px 8px;
