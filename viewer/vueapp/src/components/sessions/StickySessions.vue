@@ -127,6 +127,8 @@ export default {
     sessions: function (newVal, oldVal) {
       let newLength = newVal.length;
 
+      this.$store.commit('setStickySessionsBtn', !!newLength);
+
       // only sort changed, nothing to do
       if (newLength === oldLength) { return; }
 
@@ -206,13 +208,15 @@ export default {
     closeAll: function () {
       this.open = false;
       this.$emit('closeAllSessions');
+      this.$store.commit('setStickySessionsBtn', false);
     },
     /**
      * Scrolls to specified session
      * @param {string} id The id of the session to scroll to
      */
     scrollTo: function (id) {
-      window.location.hash = 'session' + id;
+      let el = document.getElementById(`session${id}`);
+      if (el) { el.scrollIntoView(true); }
     }
   }
 };
