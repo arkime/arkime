@@ -135,8 +135,8 @@
             class="ml-1 records-display">
             <strong class="text-theme-accent"
               v-if="!error && recordsFiltered !== undefined">
-              Showing {{ recordsFiltered }} entries filtered from
-              {{ recordsTotal }} total entries
+              Showing {{ recordsFiltered | commaString }} entries filtered from
+              {{ recordsTotal | commaString }} total entries
             </strong>
           </div>
         </div>
@@ -195,7 +195,7 @@
                       :session-btn="true">
                     </moloch-session-field>
                   </strong>
-                  <sup>({{ item[graphType] }})</sup>
+                  <sup>({{ item[graphType] | commaString }})</sup>
                 </div>
               </div>
             </div> <!-- /field value -->
