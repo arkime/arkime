@@ -1,7 +1,12 @@
 <template>
 
   <div class="bounce"
-    ref="stickyContainer">
+    ref="stickyContainer"
+    :class="{
+      'hide-toolbars': !showToolBars,
+      'show-sticky-sessions-btn': sessions && sessions.length
+    }"
+  >
 
     <!-- toggle button -->
     <div class="sticky-session-btn"
@@ -122,6 +127,8 @@ export default {
     sessions: function (newVal, oldVal) {
       let newLength = newVal.length;
 
+      this.$store.commit('setStickySessionsBtn', !!newLength);
+
       // only sort changed, nothing to do
       if (newLength === oldLength) { return; }
 
@@ -145,6 +152,11 @@ export default {
       }
 
       oldLength = newLength;
+    }
+  },
+  computed: {
+    showToolBars: function () {
+      return this.$store.state.showToolBars;
     }
   },
   methods: {
@@ -196,13 +208,15 @@ export default {
     closeAll: function () {
       this.open = false;
       this.$emit('closeAllSessions');
+      this.$store.commit('setStickySessionsBtn', false);
     },
     /**
      * Scrolls to specified session
      * @param {string} id The id of the session to scroll to
      */
     scrollTo: function (id) {
-      window.location.hash = 'session' + id;
+      let el = document.getElementById(`session${id}`);
+      if (el) { el.scrollIntoView(true); }
     }
   }
 };
@@ -225,6 +239,12 @@ export default {
   color: #FFFFFF;
 }
 
+/* move the sticky session button up when the toolbars are hidden */
+.hide-toolbars.show-sticky-sessions-btn .sticky-session-btn {
+  top: 4px;
+  z-index: 8;
+}
+
 .sort-by-select {
   width: 90px;
 }
@@ -243,6 +263,11 @@ export default {
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
           box-shadow: 0 0 16px -2px black;
+}
+
+/* move the sticky session detail up when the toolbars are hidden */
+.hide-toolbars.show-sticky-sessions-btn .sticky-session-detail {
+  top: 35px;
 }
 
 .sticky-session-detail ul {

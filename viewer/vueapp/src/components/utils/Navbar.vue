@@ -1,5 +1,8 @@
 <template>
-  <span>
+  <span :class="{
+    'hide-tool-bars': !showToolBars,
+    'show-sticky-sessions-btn': stickySessionsBtn
+  }">
     <b-navbar
       fixed="top"
       toggleable="md"
@@ -187,6 +190,9 @@ export default {
     },
     shiftKeyHold: function () {
       return this.$store.state.shiftKeyHold;
+    },
+    stickySessionsBtn: function () {
+      return this.$store.state.stickySessionsBtn;
     }
   },
   methods: {
@@ -290,5 +296,11 @@ p.shortcut-letter.holding-shift::first-letter {
 /* color the help shortcut letter in the tooltip */
 .help-shortcut {
   color: var(--color-tertiary-lighter);
+}
+
+/* move the top nav content to the left to accommodate the sticky sessions
+ button when the user has the tool bars collapsed and session(s) open */
+span.show-sticky-sessions-btn.hide-tool-bars > nav > div.navbar-collapse.collapse {
+  margin-right: 32px;
 }
 </style>

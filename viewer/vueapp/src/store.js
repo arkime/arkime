@@ -32,7 +32,8 @@ const store = new Vuex.Store({
     views: undefined,
     loadingData: false,
     sorts: [['firstPacket', 'desc']],
-    sortsParam: 'firstPacket:desc'
+    sortsParam: 'firstPacket:desc',
+    stickySessionsBtn: false
   },
   getters: {
     sessionsTableState (state) {
@@ -156,6 +157,9 @@ const store = new Vuex.Store({
         state.sortsParam += item[0] + ':' + item[1];
         if (i < len - 1) { state.sortsParam += ','; }
       }
+    },
+    setStickySessionsBtn (state, value) {
+      state.stickySessionsBtn = value;
     }
   }
 });

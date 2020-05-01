@@ -1,6 +1,7 @@
 <template>
 
-  <div class="sessions-page">
+  <div class="sessions-page"
+    :class="{'hide-tool-bars': !showToolBars}">
 
     <MolochCollapsible>
       <!-- search navbar -->
@@ -401,6 +402,7 @@
           <!-- session + detail -->
           <template v-for="(session, index) of sessions.data">
             <tr :key="session.id"
+              class="sessions-scroll-margin"
               :class="{'no-table-header-overflow':!tableHeaderOverflow}"
               :ref="`tableRow${index}`"
               :id="`session${session.id}`">
@@ -670,6 +672,9 @@ export default {
         style.width = `${this.tableWidth}px`;
       }
       return style;
+    },
+    showToolBars: function () {
+      return this.$store.state.showToolBars;
     }
   },
   watch: {
@@ -728,6 +733,8 @@ export default {
         let index = this.stickySessions.indexOf(session);
         if (index >= 0) { this.stickySessions.splice(index, 1); }
       }
+
+      this.$store.commit('setStickySessionsBtn', !!this.stickySessions.length);
     },
     /**
      * Closes the session detail for a session
@@ -740,6 +747,7 @@ export default {
         if (session.id === sessionId) {
           session.expanded = false;
           this.stickySessions.splice(i, 1);
+          this.$store.commit('setStickySessionsBtn', !!this.stickySessions.length);
           return;
         }
       }
@@ -1944,5 +1952,14 @@ div.fit-btn-container > button.fit-btn {
 .leave-leave-to {
   transform: translateY(1000px);
   opacity: 0;
+}
+
+/* set scroll margin offset for scrolling to sessions */
+.sessions-scroll-margin {
+  scroll-margin: 115px;
+}
+/* if there are no toolbars, there is no offset */
+.hide-tool-bars .sessions-scroll-margin {
+  scroll-margin: 0px;
 }
 </style>
