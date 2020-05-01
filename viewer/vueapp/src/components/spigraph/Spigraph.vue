@@ -65,7 +65,7 @@
             <div class="input-group input-group-sm">
               <span class="input-group-prepend cursor-help"
                 v-b-tooltip.hover
-                title="Chose SPIGraph Type">
+                title="Chosen SPIGraph Type">
                 <span class="input-group-text">
                   Graph Type:
                 </span>
