@@ -62,11 +62,11 @@ int gre_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * con
     if (flags_version & 0x4000) {
         while (BSB_NOT_ERROR(bsb)) {
             BSB_IMPORT_skip(bsb, 3);
-            int len = 0;
-            BSB_IMPORT_u08(bsb, len);
-            if (len == 0)
+            int tlen = 0;
+            BSB_IMPORT_u08(bsb, tlen);
+            if (tlen == 0)
                 break;
-            BSB_IMPORT_skip(bsb, len);
+            BSB_IMPORT_skip(bsb, tlen);
         }
     }
 

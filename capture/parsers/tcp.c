@@ -78,7 +78,7 @@ void tcp_packet_finish(MolochSession_t *session)
 #ifdef DEBUG_TCP
     LOG("START %u %u", session->tcpSeq[0], session->tcpSeq[1]);
     DLL_FOREACH(td_, tcpData, ftd) {
-        LOG("dir: %d seq: %8u ack: %8u len: %4u", ftd->packet->direction, ftd->seq, ftd->ack, ftd->len);
+        LOG("dir: %u seq: %8u ack: %8u len: %4u", ftd->packet->direction, ftd->seq, ftd->ack, ftd->len);
     }
 #endif
 
@@ -279,7 +279,7 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
     td->dataOffset = packet->payloadOffset + 4*tcphdr->th_off;
 
 #ifdef DEBUG_TCP
-    LOG("dir: %d seq: %u ack: %u len: %d diff0: %lld", packet->direction, seq, ack, len, diff);
+    LOG("dir: %u seq: %u ack: %u len: %d diff0: %" PRIu64, packet->direction, seq, ack, len, diff);
 #endif
 
     if (DLL_COUNT(td_, tcpData) == 0) {

@@ -335,14 +335,14 @@ const char *moloch_parsers_magic(MolochSession_t *session, int field, const char
     case MOLOCH_MAGICMODE_LIBMAGIC:
         m = magic_buffer(cookie[session->thread], data, MIN(len,50));
         if (m) {
-            int len;
+            int mlen;
             char *semi = strchr(m, ';');
             if (semi) {
-                len = semi - m;
+                mlen = semi - m;
             } else {
-                len = strlen(m);
+                mlen = strlen(m);
             }
-            return moloch_field_string_add(field, session, m, len, TRUE);
+            return moloch_field_string_add(field, session, m, mlen, TRUE);
         }
         return NULL;
     case MOLOCH_MAGICMODE_NONE:
@@ -504,7 +504,6 @@ void moloch_parsers_asn_decode_oid(char *buf, int bufsz, unsigned char *oid, int
 uint64_t moloch_parsers_asn_parse_time(MolochSession_t *session, int tag, unsigned char* value, int len)
 {
     int        offset = 0;
-    int        pos = 0;
     struct tm  tm;
     time_t     val;
 
@@ -535,6 +534,7 @@ uint64_t moloch_parsers_asn_parse_time(MolochSession_t *session, int tag, unsign
     }
     //GeneralizedTime
     else if (tag == 24 && len >= 10) {
+        int pos;
         memset(&tm, 0, sizeof(tm));
         tm.tm_year = str4num(value+0) - 1900;
         tm.tm_mon  = str2num(value+4) - 1;

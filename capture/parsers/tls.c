@@ -110,7 +110,7 @@ LOCAL void tls_certinfo_process_publickey(MolochCertsInfo_t *certs, unsigned cha
         else {
             oid[0] = 0;
             moloch_parsers_asn_decode_oid(oid, sizeof(oid), value, alen);
-            int nid = OBJ_txt2nid(oid);
+            nid = OBJ_txt2nid(oid);
             if (nid == 0)
                 certs->curve = "unknown";
             else
@@ -361,11 +361,11 @@ LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsign
         BSB_INIT(bsb, cdata + 3, clen);
 
         guchar digest[20];
-        gsize  len = sizeof(digest);
+        gsize  dlen = sizeof(digest);
 
         g_checksum_update(checksum, cdata+3, clen);
-        g_checksum_get_digest(checksum, digest, &len);
-        if (len > 0) {
+        g_checksum_get_digest(checksum, digest, &dlen);
+        if (dlen > 0) {
             int i;
             for(i = 0; i < 20; i++) {
                 certs->hash[i*3] = moloch_char_to_hexstr[digest[i]][0];
@@ -619,15 +619,15 @@ LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *dat
                             BSB_INIT(bsb, BSB_WORK_PTR(ebsb), elen);
                             BSB_IMPORT_skip (ebsb, elen);
 
-                            uint16_t len = 0;
-                            BSB_IMPORT_u16(bsb, len); // list len
-                            while (len > 0 && !BSB_IS_ERROR(bsb)) {
+                            uint16_t llen = 0;
+                            BSB_IMPORT_u16(bsb, llen); // list len
+                            while (llen > 0 && !BSB_IS_ERROR(bsb)) {
                                 uint16_t c = 0;
                                 BSB_IMPORT_u16(bsb, c);
                                 if (!tls_is_grease_value(c)) {
                                     BSB_EXPORT_sprintf(ecja3bsb, "%d-", c);
                                 }
-                                len -= 2;
+                                llen -= 2;
                             }
                             BSB_EXPORT_rewind(ecja3bsb, 1); // Remove last -
                         } else if (etype == 0x000b) { // Elliptic Curves point formats
@@ -635,13 +635,13 @@ LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *dat
                             BSB_INIT(bsb, BSB_WORK_PTR(ebsb), elen);
                             BSB_IMPORT_skip (ebsb, elen);
 
-                            uint16_t len = 0;
-                            BSB_IMPORT_u08(bsb, len); // list len
-                            while (len > 0 && !BSB_IS_ERROR(bsb)) {
+                            uint16_t llen = 0;
+                            BSB_IMPORT_u08(bsb, llen); // list len
+                            while (llen > 0 && !BSB_IS_ERROR(bsb)) {
                                 uint8_t c = 0;
                                 BSB_IMPORT_u08(bsb, c);
                                 BSB_EXPORT_sprintf(ecfja3bsb, "%d-", c);
-                                len -= 1;
+                                llen -= 1;
                             }
                             BSB_EXPORT_rewind(ecfja3bsb, 1); // Remove last -
                         } else {

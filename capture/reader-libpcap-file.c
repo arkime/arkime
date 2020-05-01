@@ -565,7 +565,7 @@ LOCAL void reader_libpcapfile_opened()
         int rc[5];
 
         // Pause until all packets and commands are done
-        while ((rc[0] = moloch_session_cmd_outstanding()) || (rc[1] = moloch_session_close_outstanding()) || (rc[2] = moloch_packet_outstanding()) || (rc[3] = moloch_session_monitoring()) || (rc[4] = moloch_db_can_quit())) {
+        while ((rc[0] = moloch_session_cmd_outstanding()) + (rc[1] = moloch_session_close_outstanding()) + (rc[2] = moloch_packet_outstanding()) + (rc[3] = moloch_session_monitoring()) + (rc[4] = moloch_db_can_quit()) > 0) {
             if (config.debug) {
                 LOG("Waiting next file %d %d %d %d %d", rc[0], rc[1], rc[2], rc[3], rc[4]);
             }

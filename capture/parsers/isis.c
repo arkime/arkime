@@ -24,7 +24,7 @@ LOCAL int isisMProtocol;
 LOCAL int typeField;
 
 /******************************************************************************/
-void isis_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
+void isis_create_sessionid(uint8_t *sessionId, MolochPacket_t *UNUSED(packet))
 {
     sessionId[0] = 1;
     sessionId[1] = 0x83;
@@ -75,7 +75,8 @@ void isis_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(pa
         break;
       default:
         sprintf (msg, "unk-%d", packet->pkt[21]);
-        LOG("isis %s\n", msg);
+        if (config.debug)
+            LOG("isis %s\n", msg);
         moloch_field_string_add(typeField, session, msg, -1, TRUE);
     }
 }

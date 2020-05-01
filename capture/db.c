@@ -1073,8 +1073,8 @@ LOCAL void moloch_db_load_stats()
 
     unsigned char     *data = moloch_http_get(esServer, stats_key, stats_key_len, &data_len);
 
-    uint32_t            version_len;
-    unsigned char *version = moloch_js0n_get(data, data_len, "_version", &version_len);
+    uint32_t           version_len;
+    unsigned char     *version = moloch_js0n_get(data, data_len, "_version", &version_len);
 
     if (!version_len || !version) {
         dbVersion = 0;
@@ -1835,12 +1835,15 @@ LOCAL void moloch_db_check()
         LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
     }
 
-    uint32_t           version_len;
+    uint32_t           version_len = 0;
     unsigned char     *version = 0;
 
     version = moloch_js0n_get(meta, meta_len, "molochDbVersion", &version_len);
 
-    if (!version || atoi((char*)version) < MOLOCH_MIN_DB_VERSION) {
+    if (!version)
+        LOGEXIT("ERROR - Database version couldn't be found, have your run \"db/db.pl host:port init\"");
+
+    if (atoi((char*)version) < MOLOCH_MIN_DB_VERSION) {
         LOGEXIT("ERROR - Database version '%.*s' is too old, needs to be at least (%d), run \"db/db.pl host:port upgrade\"", version_len, version, MOLOCH_MIN_DB_VERSION);
     }
     free(data);
