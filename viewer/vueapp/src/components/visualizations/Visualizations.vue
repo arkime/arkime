@@ -186,8 +186,8 @@
               </b-radio>
               <b-radio
                 v-for="filter in timelineDataFilters"
-                :value="filter.dbField2 + 'Histo'"
-                :key="filter.dbField2"
+                :value="filter.dbField + 'Histo'"
+                :key="filter.dbField"
                 class="btn-radio">
                 {{ filter.friendlyName }}
               </b-radio>
@@ -609,7 +609,7 @@ export default {
             );
 
             let filterName = (this.graphType === 'lpHisto') ? 'Sessions'
-              : this.timelineDataFilters.find(i => i.dbField2 === this.graphType.slice(0, -5)).friendlyName || '';
+              : this.timelineDataFilters.find(i => i.dbField === this.graphType.slice(0, -5)).friendlyName || '';
 
             let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
                                 <strong>${val}</strong> ${type || ''} ${filterName}'s

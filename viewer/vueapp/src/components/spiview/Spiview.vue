@@ -441,7 +441,7 @@ export default {
     },
     timelineDataFilters: function () {
       let filters = this.$store.state.user.settings.timelineDataFilters;
-      return filters.map(i => this.fields.find(f => f.dbField2 === i));
+      return filters.map(i => this.fields.find(f => f.dbField === i));
     }
   },
   mounted: function () {

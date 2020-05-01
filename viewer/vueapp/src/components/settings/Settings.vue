@@ -474,7 +474,7 @@
             <div class="col-sm-3">
               <h4 v-if="timelineDataFilters.length > 0">
                 <label class="badge badge-info cursor-help small-badge"
-                  v-for="filter in timelineDataFilters" :key="filter.dbField2 + 'DataFilterBadge'"
+                  v-for="filter in timelineDataFilters" :key="filter.dbField + 'DataFilterBadge'"
                   @click="timelineFilterSelected(filter)"
                   v-b-tooltip.hover
                   :title="filter.help">
@@ -2511,7 +2511,7 @@ export default {
       this.update();
     },
     timelineFilterSelected: function (field) {
-      let index = this.settings.timelineDataFilters.indexOf(field.dbField2);
+      let index = this.settings.timelineDataFilters.indexOf(field.dbField);
       this.$set(this, 'filtersTypeahead', field.friendlyName);
 
       if (index >= 0) {
@@ -2520,7 +2520,7 @@ export default {
         this.update();
       } else if (this.timelineDataFilters.length < 4) {
         this.timelineDataFilters.push(field);
-        this.settings.timelineDataFilters.push(field.dbField2);
+        this.settings.timelineDataFilters.push(field.dbField);
         this.update();
       }
     },
@@ -3313,11 +3313,11 @@ export default {
 
           this.integerFields = this.fields.filter(i => i.type === 'integer');
 
-          // attach the full field object to the component's timelineDataFilters from array of dbField2
+          // attach the full field object to the component's timelineDataFilters from array of dbField
           this.timelineDataFilters = [];
           for (let i = 0, len = this.settings.timelineDataFilters.length; i < len; i++) {
             let filter = this.settings.timelineDataFilters[i];
-            let fieldOBJ = this.integerFields.find(i => i.dbField2 === filter);
+            let fieldOBJ = this.integerFields.find(i => i.dbField === filter);
             if (fieldOBJ) {
               this.timelineDataFilters.push(fieldOBJ);
             }
