@@ -63,7 +63,7 @@
             </b-dropdown-item>
             <b-dropdown-item
               v-b-tooltip.hover
-              @click.stop.prevent="loadFieldConfiguration"
+              @click.stop.prevent="loadFieldConfiguration(-1)"
               title="Reset visible fields to the default fields: Dst IP, Src IP, and Protocols">
               Moloch Default
             </b-dropdown-item>
@@ -728,10 +728,10 @@ export default {
      * @param {int} index The index in the array of the spiview fields configs to load
      */
     loadFieldConfiguration: function (index) {
-      if (!index && index !== 0) {
-        this.spiQuery = defaultSpi;
-      } else {
+      if (index !== -1) {
         this.spiQuery = this.fieldConfigs[index].fields;
+      } else {
+        this.spiQuery = defaultSpi;
       }
 
       this.saveFieldState();
