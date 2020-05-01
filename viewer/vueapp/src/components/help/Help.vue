@@ -219,9 +219,9 @@
           <dd>
             A regex query must be surrounded by forward slashes and will always be
             anchored. This means you will almost always want to include a leading
-            and trailing <code>.*.</code> within your regex query. The regex query
+            and trailing <code>.*</code> within your regex query. The regex query
             is run against the full text strings, after case normalization (if enabled) for the field.
-            For example <code>http.uri == /.*www\.f.*k\.com.*/.</code> It uses the
+            For example <code>http.uri == /.*www\.f.*k\.com.*/</code>. It uses the
             Lucene regex implementation which doesn't support most PCRE features.
             Check out the ES <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/regexp-syntax.html">Regexp Syntax</a> guide.
           </dd>
