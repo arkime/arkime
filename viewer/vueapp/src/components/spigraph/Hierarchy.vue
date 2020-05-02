@@ -555,7 +555,7 @@ export default {
     // Boolean in the store will remember chosen toggle state for all pages
     showToolBars: function () {
       return this.$store.state.showToolBars;
-    },
+    }
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
@@ -613,15 +613,12 @@ export default {
      * Waits for the window resize to stop for .5 sec
      */
     resize: function () {
-      // 36px for navbar + 25px for footer = 61px.
-      //const height = $(window).height() - (toolbarDown ? 171 : 61);
-
       if (resizeTimer) { clearTimeout(resizeTimer); }
       resizeTimer = setTimeout(() => {
         // recalculate width, height, and radius
         width = getWindowWidth();
         // re-add the header space if collapsed
-        height = getWindowHeight() + (this.showToolBars? 0 : 113);
+        height = getWindowHeight() + (this.showToolBars ? 0 : 113);
         radius = getRadius();
 
         // set the new width and height of the pie
