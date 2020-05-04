@@ -604,6 +604,9 @@ export default {
             const val = this.$options.filters.commaString(
               Math.round(item.series.data[item.dataIndex][1] * 100) / 100
             );
+            const total = this.$options.filters.commaString(
+              this.graphData[this.graphType.slice(0, -5) + 'Total']
+            );
             const d = this.$options.filters.timezoneDateString(
               parseInt(item.datapoint[0].toFixed(0)), this.timezone || 'local', false
             );
@@ -612,8 +615,8 @@ export default {
               : this.timelineDataFilters.find(i => i.dbField === this.graphType.slice(0, -5)).friendlyName || '';
 
             let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
-                                <strong>${val}</strong> ${type || ''} ${filterName}'s
-                                out of <strong>${this.graphData[this.graphType.slice(0, -5) + 'Total']}</strong> filtered ${filterName}'s
+                                <strong>${val}</strong> ${type || ''} ${filterName}
+                                out of <strong>${total}</strong> filtered ${filterName}
                                 on ${d}
                               </div>`;
 

@@ -1759,7 +1759,7 @@ app.post('/notifiers/:name/test', [noCacheJson, getSettingUserCache, checkCookie
 
 // gets a user's settings
 app.get('/user/settings', [noCacheJson, recordResponseTime, getSettingUserDb, checkPermissions(['webEnabled']), setCookie], (req, res) => {
-  let settings = req.settingUser.settings || settingDefaults;
+  let settings = Object.assign(JSON.parse(JSON.stringify(settingDefaults)), JSON.parse(JSON.stringify(req.settingUser.settings)));
 
   let cookieOptions = { path: app.locals.basePath, sameSite: 'Strict' };
   if (Config.isHTTPS()) { cookieOptions.secure = true; }

@@ -2,7 +2,7 @@
   <div class="spigraph-pie">
 
     <!-- field select -->
-    <div class="form-inline pl-1">
+    <div class="form-inline pl-1 position-absolute">
       <div class="form-group"
         v-if="fields && fields.length">
         <div class="input-group input-group-sm mr-2">
@@ -37,10 +37,10 @@
     </div> <!-- /field select -->
 
     <!-- info area -->
-    <div ref="infoPopup">
+    <span ref="infoPopup">
       <div class="pie-popup">
       </div>
-    </div> <!-- /info area -->
+    </span> <!-- /info area -->
 
     <!-- pie chart area -->
     <div id="pie-area"
@@ -49,14 +49,14 @@
     <!-- /pie chart area -->
 
     <!-- treemap area -->
-    <div id="treemap-area"
+    <div id="treemap-area" class="pt-3"
       v-show="spiGraphType === 'treemap' && vizData && vizData.children.length">
     </div>
     <!-- /treemap area -->
 
     <!-- table area -->
     <div v-show="spiGraphType === 'table' && tableData.length"
-      class="container mt-4">
+      class="container mt-2 pt-5">
       <table class="table table-bordered table-condensed table-sm">
         <thead>
           <tr>
@@ -388,8 +388,8 @@ function getWindowWidth () {
   return window.innerWidth;
 }
 
-function getWindowHeight () {
-  return window.innerHeight - 225; // height - (footer + headers + padding)
+function getWindowHeight (toolbarDown = true) {
+  return window.innerHeight - 184; // height - (footer + headers + padding)
 }
 
 function getRadius () {
@@ -539,10 +539,23 @@ export default {
       }
     },
     'spiGraphType': function (newVal, oldVal) {
+      this.closeInfo();
       this.applyGraphData(this.vizData);
     },
     '$route.query.subFields': function (newVal, oldVal) {
       this.loadData();
+    },
+    // Resize svg height after toggle is updated and mounted()
+    'showToolBars': function () {
+      this.$nextTick(() => {
+        this.resize();
+      });
+    }
+  },
+  computed: {
+    // Boolean in the store will remember chosen toggle state for all pages
+    showToolBars: function () {
+      return this.$store.state.showToolBars;
     }
   },
   methods: {
@@ -605,7 +618,8 @@ export default {
       resizeTimer = setTimeout(() => {
         // recalculate width, height, and radius
         width = getWindowWidth();
-        height = getWindowHeight();
+        // re-add the header space if collapsed
+        height = getWindowHeight() + (this.showToolBars ? 0 : 113);
         radius = getRadius();
 
         // set the new width and height of the pie
@@ -1267,7 +1281,6 @@ export default {
   z-index: 9;
   position: absolute;
   right: 5px;
-  top: 160px;
   max-height: 500px;
   display: none;
   padding: 4px 8px;
