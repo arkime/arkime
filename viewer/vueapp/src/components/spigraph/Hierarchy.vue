@@ -539,6 +539,7 @@ export default {
       }
     },
     'spiGraphType': function (newVal, oldVal) {
+      this.closeInfo();
       this.applyGraphData(this.vizData);
     },
     '$route.query.subFields': function (newVal, oldVal) {
@@ -859,7 +860,6 @@ export default {
           }, 400);
         })
         .on('mouseleave', function (d) {
-          closeInfo();
           mouseleave(d, this);
           if (popupTimer) { clearTimeout(popupTimer); }
         });
@@ -955,7 +955,6 @@ export default {
           }, 400);
         })
         .on('mouseleave', function (d) {
-          closeInfo();
           mouseleaveBox(d, this);
           if (popupTimer) { clearTimeout(popupTimer); }
         });
