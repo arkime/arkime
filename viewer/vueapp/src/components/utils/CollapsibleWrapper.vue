@@ -1,5 +1,5 @@
 <template>
-  <b-collapse :visible="showToolBars">
+  <b-collapse :visible="showToolBars" v-on:recalc-collapse="getOffset">
     <span ref="collapseBox">
       <slot></slot>
     </span>
@@ -26,9 +26,11 @@ export default {
   methods: {
     // Dynamically sets the height of the wrapper component to the total of inner components
     getOffset: function () {
-      // Could give odd results passing in a mix of position:fixed and others
-      this.offset = Array.from(this.$refs.collapseBox.children)
-        .reduce((total, el) => (el.offsetHeight) ? el.offsetHeight + total : total, 0);
+      this.$nextTick(() => {
+        // Could give odd results passing in a mix of position:fixed and others
+        this.offset = Array.from(this.$refs.collapseBox.children)
+          .reduce((total, el) => (el.offsetHeight) ? el.offsetHeight + total : total, 0);
+      });
     }
   },
   watch: {

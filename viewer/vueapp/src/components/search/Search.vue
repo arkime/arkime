@@ -323,6 +323,9 @@ export default {
     },
     issueSearch: function (newVal, oldVal) {
       if (newVal) { this.applyParams(); }
+    },
+    actionForm: function () {
+      this.$parent.$emit('recalc-collapse');
     }
   },
   created: function () {
