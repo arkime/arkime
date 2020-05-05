@@ -3,59 +3,61 @@
   <div class="packet-search-page ml-2 mr-2">
 
     <MolochCollapsible>
-      <!-- search navbar -->
-      <moloch-search
-        v-if="user.settings"
-        :start="sessionsQuery.start"
-        :timezone="user.settings.timezone"
-        :hide-actions="true"
-        :hide-interval="true"
-        @changeSearch="cancelAndLoad(true)">
-      </moloch-search> <!-- /search navbar -->
+      <span class="fixed-header">
+        <!-- search navbar -->
+        <moloch-search
+          v-if="user.settings"
+          :start="sessionsQuery.start"
+          :timezone="user.settings.timezone"
+          :hide-actions="true"
+          :hide-interval="true"
+          @changeSearch="cancelAndLoad(true)">
+        </moloch-search> <!-- /search navbar -->
 
-      <!-- hunt create navbar -->
-      <form class="hunt-create-navbar">
-        <div class="mt-1 ml-1 mr-1">
-          <button type="button"
-            v-if="!createFormOpened"
-            @click="createFormOpened = true"
-            class="btn btn-theme-tertiary btn-sm pull-right">
-            Create a packet search job
-          </button>
-          <span v-if="loadingSessions">
-            <div class="mt-1" style="display:inline-block;">
-              <span class="fa fa-spinner fa-spin fa-fw">
-              </span>
-              Loading sessions...
-            </div>
+        <!-- hunt create navbar -->
+        <form class="hunt-create-navbar">
+          <div class="p-2 form-inline justify-content-between flex-row-reverse">
             <button type="button"
-              class="btn btn-warning btn-sm ml-3"
-              @click="cancelAndLoad">
-              <span class="fa fa-ban">
-              </span>&nbsp;
-              cancel
+              v-if="!createFormOpened"
+              @click="createFormOpened = true"
+              class="btn btn-theme-tertiary btn-sm pull-right">
+              Create a packet search job
             </button>
-          </span>
-          <span v-else-if="loadingSessionsError">
-            <div class="mt-1" style="display:inline-block;">
-              <span class="fa fa-exclamation-triangle fa-fw">
-              </span>
-              {{ loadingSessionsError }}
-            </div>
-          </span>
-          <span v-else-if="!loadingSessions && !loadingSessionsError">
-            <div class="mt-1" style="display:inline-block;">
-              <span class="fa fa-info-circle fa-fw">
-              </span>&nbsp;
-              Creating a new packet search job will search the packets of
-              <strong>
-                {{ sessions.recordsFiltered | commaString }}
-              </strong>
-              sessions.
-            </div>
-          </span>
-        </div>
-      </form> <!-- /hunt create navbar -->
+            <span v-if="loadingSessions">
+              <div class="mt-1" style="display:inline-block;">
+                <span class="fa fa-spinner fa-spin fa-fw">
+                </span>
+                Loading sessions...
+              </div>
+              <button type="button"
+                class="btn btn-warning btn-sm ml-3"
+                @click="cancelAndLoad">
+                <span class="fa fa-ban">
+                </span>&nbsp;
+                cancel
+              </button>
+            </span>
+            <span v-else-if="loadingSessionsError">
+              <div class="mt-1" style="display:inline-block;">
+                <span class="fa fa-exclamation-triangle fa-fw">
+                </span>
+                {{ loadingSessionsError }}
+              </div>
+            </span>
+            <span v-else-if="!loadingSessions && !loadingSessionsError">
+              <div class="mt-1" style="display:inline-block;">
+                <span class="fa fa-info-circle fa-fw">
+                </span>&nbsp;
+                Creating a new packet search job will search the packets of
+                <strong>
+                  {{ sessions.recordsFiltered | commaString }}
+                </strong>
+                sessions.
+              </div>
+            </span>
+          </div>
+        </form> <!-- /hunt create navbar -->
+      </span>
     </MolochCollapsible>
 
     <!-- loading overlay -->
@@ -1689,11 +1691,7 @@ export default {
 
 form.hunt-create-navbar {
   z-index: 4;
-  position: fixed;
-  top: 110px;
-  left: 0;
-  right: 0;
-  height: 40px;
+  height: 45px;
   background-color: var(--color-quaternary-lightest);
 
   -webkit-box-shadow: 0 0 16px -2px black;
