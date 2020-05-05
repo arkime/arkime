@@ -2,297 +2,299 @@
 
   <div class="connections-page">
     <MolochCollapsible>
-      <!-- search navbar -->
-      <moloch-search
-        :start="query.start"
-        :timezone="user.settings.timezone"
-        @changeSearch="cancelAndLoad(true)">
-      </moloch-search> <!-- /search navbar -->
+      <span class="fixed-header">
+        <!-- search navbar -->
+        <moloch-search
+          :start="query.start"
+          :timezone="user.settings.timezone"
+          @changeSearch="cancelAndLoad(true)">
+        </moloch-search> <!-- /search navbar -->
 
-      <!-- connections sub navbar -->
-      <form class="connections-form">
-        <div class="form-inline pr-1 pl-1 pt-1 pb-1">
+        <!-- connections sub navbar -->
+        <form class="connections-form">
+          <div class="form-inline pr-1 pl-1 pt-1 pb-1">
 
-          <!-- query size select -->
-          <div class="input-group input-group-sm">
-            <div class="input-group-prepend help-cursor"
-              v-b-tooltip.hover
-              title="Query Size">
-              <span class="input-group-text">
-                Query Size
-              </span>
-            </div>
-            <select class="form-control input-sm"
-              v-model="query.length"
-              @change="changeLength">
-              <option value="100">100</option>
-              <option value="500">500</option>
-              <option value="1000">1,000</option>
-              <option value="5000">5,000</option>
-              <option value="10000">10,000</option>
-              <option value="50000">50,000</option>
-              <option value="100000">100,000</option>
-            </select>
-          </div> <!-- /query size select -->
-
-          <!-- src select -->
-          <div class="form-group ml-1"
-            v-if="fields && fields.length && srcFieldTypeahead">
+            <!-- query size select -->
             <div class="input-group input-group-sm">
-              <span class="input-group-prepend legend cursor-help"
+              <div class="input-group-prepend help-cursor"
                 v-b-tooltip.hover
-                title="Select a field for the source nodes">
-                <span class="input-group-text"
-                  :style="{'background-color': primaryColor + '!important'}">
-                  Src:
+                title="Query Size">
+                <span class="input-group-text">
+                  Query Size
                 </span>
-              </span>
-              <moloch-field-typeahead
-                :fields="fields"
-                query-param="srcField"
-                :initial-value="srcFieldTypeahead"
-                @fieldSelected="changeSrcField"
-                page="ConnectionsSrc">
-              </moloch-field-typeahead>
-            </div>
-          </div> <!-- /src select -->
+              </div>
+              <select class="form-control input-sm"
+                v-model="query.length"
+                @change="changeLength">
+                <option value="100">100</option>
+                <option value="500">500</option>
+                <option value="1000">1,000</option>
+                <option value="5000">5,000</option>
+                <option value="10000">10,000</option>
+                <option value="50000">50,000</option>
+                <option value="100000">100,000</option>
+              </select>
+            </div> <!-- /query size select -->
 
-          <!-- dst select -->
-          <div class="form-group ml-1"
-            v-if="fields && dstFieldTypeahead">
-            <div class="input-group input-group-sm">
-              <span class="input-group-prepend legend cursor-help"
-                v-b-tooltip.hover
-                title="Select a field for the destination nodes">
-                <span class="input-group-text"
-                  :style="{'background-color': tertiaryColor + '!important'}">
-                  Dst:
+            <!-- src select -->
+            <div class="form-group ml-1"
+              v-if="fields && fields.length && srcFieldTypeahead">
+              <div class="input-group input-group-sm">
+                <span class="input-group-prepend legend cursor-help"
+                  v-b-tooltip.hover
+                  title="Select a field for the source nodes">
+                  <span class="input-group-text"
+                    :style="{'background-color': primaryColor + '!important'}">
+                    Src:
+                  </span>
                 </span>
-              </span>
-              <moloch-field-typeahead
-                :fields="fields"
-                query-param="dstField"
-                :initial-value="dstFieldTypeahead"
-                @fieldSelected="changeDstField"
-                page="ConnectionsDst">
-              </moloch-field-typeahead>
-            </div>
-          </div> <!-- /dst select -->
+                <moloch-field-typeahead
+                  :fields="fields"
+                  query-param="srcField"
+                  :initial-value="srcFieldTypeahead"
+                  @fieldSelected="changeSrcField"
+                  page="ConnectionsSrc">
+                </moloch-field-typeahead>
+              </div>
+            </div> <!-- /src select -->
 
-          <!-- src & dst color -->
-          <div class="form-group ml-1">
-            <div class="input-group input-group-sm">
-              <span class="input-group-prepend legend cursor-help"
-                v-b-tooltip.hover
-                title="This is the color of a node that is both a source and destination node">
-                <span class="input-group-text"
-                  style="border-radius: 4px"
-                  :style="{'background-color': secondaryColor + '!important'}">
-                  Src & Dst
+            <!-- dst select -->
+            <div class="form-group ml-1"
+              v-if="fields && dstFieldTypeahead">
+              <div class="input-group input-group-sm">
+                <span class="input-group-prepend legend cursor-help"
+                  v-b-tooltip.hover
+                  title="Select a field for the destination nodes">
+                  <span class="input-group-text"
+                    :style="{'background-color': tertiaryColor + '!important'}">
+                    Dst:
+                  </span>
                 </span>
-              </span>
-            </div>
-          </div> <!-- /src & dst color -->
+                <moloch-field-typeahead
+                  :fields="fields"
+                  query-param="dstField"
+                  :initial-value="dstFieldTypeahead"
+                  @fieldSelected="changeDstField"
+                  page="ConnectionsDst">
+                </moloch-field-typeahead>
+              </div>
+            </div> <!-- /dst select -->
 
-          <!-- min connections select -->
-          <div class="input-group input-group-sm ml-1">
-            <div class="input-group-prepend help-cursor"
-              v-b-tooltip.hover
-              title="Minimum number of sessions between nodes">
-              <span class="input-group-text">
-                Min. Connections
-              </span>
-            </div>
-            <select class="form-control input-sm"
-              v-model="query.minConn"
-              @change="changeMinConn">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-            </select>
-          </div> <!-- /min connections select -->
+            <!-- src & dst color -->
+            <div class="form-group ml-1">
+              <div class="input-group input-group-sm">
+                <span class="input-group-prepend legend cursor-help"
+                  v-b-tooltip.hover
+                  title="This is the color of a node that is both a source and destination node">
+                  <span class="input-group-text"
+                    style="border-radius: 4px"
+                    :style="{'background-color': secondaryColor + '!important'}">
+                    Src & Dst
+                  </span>
+                </span>
+              </div>
+            </div> <!-- /src & dst color -->
 
-          <!-- weight select -->
-          <div class="input-group input-group-sm ml-1">
-            <div class="input-group-prepend help-cursor"
-              v-b-tooltip.hover
-              title="Change the field that calculates the radius of nodes and the width links">
-              <span class="input-group-text">
-                Node/Link Weight
-              </span>
-            </div>
-            <select class="form-control input-sm"
-              v-model="weight"
-              @change="changeWeight">
-              <option value="sessions">Sessions</option>
-              <option value="totPackets">Packets</option>
-              <option value="totBytes">Total Raw Bytes</option>
-              <option value="totDataBytes">Total Data Bytes</option>
-              <option value="">None</option>
-            </select>
-          </div> <!-- /weight select -->
-
-          <!-- node fields button -->
-          <b-dropdown
-            size="sm"
-            no-flip
-            no-caret
-            toggle-class="rounded"
-            class="field-vis-menu ml-1"
-            variant="theme-primary"
-            v-if="fields && groupedFields && nodeFields">
-            <template slot="button-content">
-              <span class="fa fa-circle-o"
+            <!-- min connections select -->
+            <div class="input-group input-group-sm ml-1">
+              <div class="input-group-prepend help-cursor"
                 v-b-tooltip.hover
-                title="Toggle visible fields in the node popups">
-              </span>
-            </template>
-            <b-dropdown-header>
-              <input type="text"
-                v-model="fieldQuery"
-                class="form-control form-control-sm dropdown-typeahead"
-                placeholder="Search for fields..."
-              />
-            </b-dropdown-header>
-            <b-dropdown-divider>
-            </b-dropdown-divider>
-            <template v-for="(group, key) in filteredFields">
-              <b-dropdown-header
-                :key="key"
-                v-if="group.length"
-                class="group-header">
-                {{ key }}
-              </b-dropdown-header>
-              <template v-for="(field, k) in group">
-                <b-dropdown-item
-                  :id="key + k + 'itemnode'"
-                  :key="key + k + 'itemnode'"
-                  :class="{'active':isFieldVisible(field.dbField, nodeFields) >= 0}"
-                  @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)">
-                  {{ field.friendlyName }}
-                  <small>({{ field.exp }})</small>
-                </b-dropdown-item>
-                <b-tooltip v-if="field.help"
-                  :key="key + k + 'tooltipnode'"
-                  :target="key + k + 'itemnode'"
-                  placement="left"
-                  boundary="window">
-                  {{ field.help }}
-                </b-tooltip>
+                title="Minimum number of sessions between nodes">
+                <span class="input-group-text">
+                  Min. Connections
+                </span>
+              </div>
+              <select class="form-control input-sm"
+                v-model="query.minConn"
+                @change="changeMinConn">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div> <!-- /min connections select -->
+
+            <!-- weight select -->
+            <div class="input-group input-group-sm ml-1">
+              <div class="input-group-prepend help-cursor"
+                v-b-tooltip.hover
+                title="Change the field that calculates the radius of nodes and the width links">
+                <span class="input-group-text">
+                  Node/Link Weight
+                </span>
+              </div>
+              <select class="form-control input-sm"
+                v-model="weight"
+                @change="changeWeight">
+                <option value="sessions">Sessions</option>
+                <option value="totPackets">Packets</option>
+                <option value="totBytes">Total Raw Bytes</option>
+                <option value="totDataBytes">Total Data Bytes</option>
+                <option value="">None</option>
+              </select>
+            </div> <!-- /weight select -->
+
+            <!-- node fields button -->
+            <b-dropdown
+              size="sm"
+              no-flip
+              no-caret
+              toggle-class="rounded"
+              class="field-vis-menu ml-1"
+              variant="theme-primary"
+              v-if="fields && groupedFields && nodeFields">
+              <template slot="button-content">
+                <span class="fa fa-circle-o"
+                  v-b-tooltip.hover
+                  title="Toggle visible fields in the node popups">
+                </span>
               </template>
-            </template>
-          </b-dropdown> <!-- /node fields button -->
-
-          <!-- link fields button -->
-          <b-dropdown
-            size="sm"
-            no-flip
-            no-caret
-            toggle-class="rounded"
-            class="field-vis-menu ml-1"
-            variant="theme-primary"
-            v-if="fields && groupedFields && linkFields">
-            <template slot="button-content">
-              <span class="fa fa-link"
-                v-b-tooltip.hover
-                title="Toggle visible fields in the link popups">
-              </span>
-            </template>
-            <b-dropdown-header>
-              <input type="text"
-                v-model="fieldQuery"
-                class="form-control form-control-sm dropdown-typeahead"
-                placeholder="Search for fields..."
-              />
-            </b-dropdown-header>
-            <b-dropdown-divider>
-            </b-dropdown-divider>
-            <template v-for="(group, key) in filteredFields">
-              <b-dropdown-header
-                :key="key"
-                v-if="group.length"
-                class="group-header">
-                {{ key }}
+              <b-dropdown-header>
+                <input type="text"
+                  v-model="fieldQuery"
+                  class="form-control form-control-sm dropdown-typeahead"
+                  placeholder="Search for fields..."
+                />
               </b-dropdown-header>
-              <template v-for="(field, k) in group">
-                <b-dropdown-item
-                  :id="key + k + 'itemlink'"
-                  :key="key + k + 'itemlink'"
-                  :class="{'active':isFieldVisible(field.dbField, linkFields) >= 0}"
-                  @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)">
-                  {{ field.friendlyName }}
-                  <small>({{ field.exp }})</small>
-                </b-dropdown-item>
-                <b-tooltip v-if="field.help"
-                  :key="key + k + 'tooltiplink'"
-                  :target="key + k + 'itemlink'"
-                  placement="left"
-                  boundary="window">
-                  {{ field.help }}
-                </b-tooltip>
+              <b-dropdown-divider>
+              </b-dropdown-divider>
+              <template v-for="(group, key) in filteredFields">
+                <b-dropdown-header
+                  :key="key"
+                  v-if="group.length"
+                  class="group-header">
+                  {{ key }}
+                </b-dropdown-header>
+                <template v-for="(field, k) in group">
+                  <b-dropdown-item
+                    :id="key + k + 'itemnode'"
+                    :key="key + k + 'itemnode'"
+                    :class="{'active':isFieldVisible(field.dbField, nodeFields) >= 0}"
+                    @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)">
+                    {{ field.friendlyName }}
+                    <small>({{ field.exp }})</small>
+                  </b-dropdown-item>
+                  <b-tooltip v-if="field.help"
+                    :key="key + k + 'tooltipnode'"
+                    :target="key + k + 'itemnode'"
+                    placement="left"
+                    boundary="window">
+                    {{ field.help }}
+                  </b-tooltip>
+                </template>
               </template>
-            </template>
-          </b-dropdown> <!-- /link fields button -->
+            </b-dropdown> <!-- /node fields button -->
 
-          <!-- network baseline time range -->
-          <div class="input-group input-group-sm ml-1">
-            <div class="input-group-prepend help-cursor"
-              v-b-tooltip.hover
-              title="Time range for baseline (preceding query time range)">
-              <span class="input-group-text">
-                Baseline
-              </span>
-            </div>
-            <select class="form-control input-sm"
-              v-model="query.baselineDate"
-              @change="changeBaselineDate">
-              <option value="0">disabled</option>
-              <option value="1x">1 × query range</option>
-              <option value="2x">2 × query range</option>
-              <option value="4x">4 × query range</option>
-              <option value="6x">6 × query range</option>
-              <option value="8x">8 × query range</option>
-              <option value="10x">10 × query range</option>
-              <option value="1">1 hour</option>
-              <option value="6">6 hours</option>
-              <option value="24">24 hours</option>
-              <option value="48">48 hours</option>
-              <option value="72">72 hours</option>
-              <option value="168">1 week</option>
-              <option value="336">2 weeks</option>
-              <option value="720">1 month</option>
-              <option value="1440">2 months</option>
-              <option value="4380">6 months</option>
-              <option value="8760">1 year</option>
-            </select>
-          </div> <!-- /network baseline time range -->
+            <!-- link fields button -->
+            <b-dropdown
+              size="sm"
+              no-flip
+              no-caret
+              toggle-class="rounded"
+              class="field-vis-menu ml-1"
+              variant="theme-primary"
+              v-if="fields && groupedFields && linkFields">
+              <template slot="button-content">
+                <span class="fa fa-link"
+                  v-b-tooltip.hover
+                  title="Toggle visible fields in the link popups">
+                </span>
+              </template>
+              <b-dropdown-header>
+                <input type="text"
+                  v-model="fieldQuery"
+                  class="form-control form-control-sm dropdown-typeahead"
+                  placeholder="Search for fields..."
+                />
+              </b-dropdown-header>
+              <b-dropdown-divider>
+              </b-dropdown-divider>
+              <template v-for="(group, key) in filteredFields">
+                <b-dropdown-header
+                  :key="key"
+                  v-if="group.length"
+                  class="group-header">
+                  {{ key }}
+                </b-dropdown-header>
+                <template v-for="(field, k) in group">
+                  <b-dropdown-item
+                    :id="key + k + 'itemlink'"
+                    :key="key + k + 'itemlink'"
+                    :class="{'active':isFieldVisible(field.dbField, linkFields) >= 0}"
+                    @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)">
+                    {{ field.friendlyName }}
+                    <small>({{ field.exp }})</small>
+                  </b-dropdown-item>
+                  <b-tooltip v-if="field.help"
+                    :key="key + k + 'tooltiplink'"
+                    :target="key + k + 'itemlink'"
+                    placement="left"
+                    boundary="window">
+                    {{ field.help }}
+                  </b-tooltip>
+                </template>
+              </template>
+            </b-dropdown> <!-- /link fields button -->
 
-          <!-- network baseline node visibility -->
-          <div class="input-group input-group-sm ml-1"
-            v-show="query.baselineDate !== '0'">
-            <div class="input-group-prepend help-cursor"
-              v-b-tooltip.hover
-              title="Toggle node visibility based on baseline result set membership">
-              <span class="input-group-text">
-                Baseline Visibility
-              </span>
-            </div>
-            <select class="form-control input-sm"
-              v-bind:disabled="query.baselineDate === '0'"
-              v-model="query.baselineVis"
-              @change="changeBaselineVis">
-              <option value="all">All</option>
-              <option value="actual">Actual</option>
-              <option value="actualold">Baseline</option>
-              <option value="new">New only</option>
-              <option value="old">Baseline only</option>
-            </select>
-          </div> <!-- /network baseline node visibility -->
+            <!-- network baseline time range -->
+            <div class="input-group input-group-sm ml-1">
+              <div class="input-group-prepend help-cursor"
+                v-b-tooltip.hover
+                title="Time range for baseline (preceding query time range)">
+                <span class="input-group-text">
+                  Baseline
+                </span>
+              </div>
+              <select class="form-control input-sm"
+                v-model="query.baselineDate"
+                @change="changeBaselineDate">
+                <option value="0">disabled</option>
+                <option value="1x">1 × query range</option>
+                <option value="2x">2 × query range</option>
+                <option value="4x">4 × query range</option>
+                <option value="6x">6 × query range</option>
+                <option value="8x">8 × query range</option>
+                <option value="10x">10 × query range</option>
+                <option value="1">1 hour</option>
+                <option value="6">6 hours</option>
+                <option value="24">24 hours</option>
+                <option value="48">48 hours</option>
+                <option value="72">72 hours</option>
+                <option value="168">1 week</option>
+                <option value="336">2 weeks</option>
+                <option value="720">1 month</option>
+                <option value="1440">2 months</option>
+                <option value="4380">6 months</option>
+                <option value="8760">1 year</option>
+              </select>
+            </div> <!-- /network baseline time range -->
 
-        </div>
-      </form> <!-- /connections sub navbar -->
+            <!-- network baseline node visibility -->
+            <div class="input-group input-group-sm ml-1"
+              v-show="query.baselineDate !== '0'">
+              <div class="input-group-prepend help-cursor"
+                v-b-tooltip.hover
+                title="Toggle node visibility based on baseline result set membership">
+                <span class="input-group-text">
+                  Baseline Visibility
+                </span>
+              </div>
+              <select class="form-control input-sm"
+                v-bind:disabled="query.baselineDate === '0'"
+                v-model="query.baselineVis"
+                @change="changeBaselineVis">
+                <option value="all">All</option>
+                <option value="actual">Actual</option>
+                <option value="actualold">Baseline</option>
+                <option value="new">New only</option>
+                <option value="old">Baseline only</option>
+              </select>
+            </div> <!-- /network baseline node visibility -->
+
+          </div>
+        </form> <!-- /connections sub navbar -->
+      </span>
     </MolochCollapsible>
 
     <div class="connections-content">
@@ -1594,10 +1596,6 @@ export default {
 
 /* position the subnavbar */
 .connections-page form.connections-form {
-  position: fixed;
-  top: 110px;
-  left: 0;
-  right: 0;
   z-index: 4;
   background-color: var(--color-quaternary-lightest);
 
