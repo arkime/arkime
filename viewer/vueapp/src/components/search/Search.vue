@@ -4,7 +4,7 @@
     <div class="pr-1 pl-1 pt-1 pb-1">
 
       <!-- actions dropdown menu -->
-      <b-dropdown v-if="!hideActions"
+      <b-dropdown v-if="!hideActions && $route.name === 'Sessions'"
         right
         size="sm"
         class="pull-right ml-1 action-menu-dropdown"
