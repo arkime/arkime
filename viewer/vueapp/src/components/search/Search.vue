@@ -1,6 +1,6 @@
 <template>
 
-  <form>
+  <form class="position-relative">
     <div class="pr-1 pl-1 pt-1 pb-1">
 
       <!-- actions dropdown menu -->
