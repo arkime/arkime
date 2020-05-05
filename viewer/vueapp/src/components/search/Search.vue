@@ -1,7 +1,7 @@
 <template>
 
   <form>
-    <div class="mr-1 ml-1 mt-1 mb-1">
+    <div class="pr-1 pl-1 pt-1 pb-1">
 
       <!-- actions dropdown menu -->
       <b-dropdown v-if="!hideActions"
@@ -491,9 +491,6 @@ export default {
 
 <style scoped>
 form {
-  position: fixed;
-  right: 0;
-  left: 0;
   border: none;
   z-index: 5;
   background-color: var(--color-secondary-lightest);
