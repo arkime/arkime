@@ -4,28 +4,30 @@
     :class="{'hide-tool-bars': !showToolBars}">
 
     <MolochCollapsible>
-      <!-- search navbar -->
-      <moloch-search
-        :fields="headers"
-        :open-sessions="stickySessions"
-        :num-visible-sessions="query.length"
-        :num-matching-sessions="sessions.recordsFiltered"
-        :start="query.start"
-        :timezone="user.settings.timezone"
-        @changeSearch="cancelAndLoad(true)">
-      </moloch-search> <!-- /search navbar -->
+      <span class="fixed-header">
+        <!-- search navbar -->
+        <moloch-search
+          :fields="headers"
+          :open-sessions="stickySessions"
+          :num-visible-sessions="query.length"
+          :num-matching-sessions="sessions.recordsFiltered"
+          :start="query.start"
+          :timezone="user.settings.timezone"
+          @changeSearch="cancelAndLoad(true)">
+        </moloch-search> <!-- /search navbar -->
 
-      <!-- paging navbar -->
-      <form class="sessions-paging">
-        <div class="form-inline">
-          <moloch-paging
-            class="mt-1 ml-1"
-            :records-total="sessions.recordsTotal"
-            :records-filtered="sessions.recordsFiltered"
-            @changePaging="changePaging">
-          </moloch-paging>
-        </div>
-      </form> <!-- /paging navbar -->
+        <!-- paging navbar -->
+        <form class="sessions-paging">
+          <div class="form-inline">
+            <moloch-paging
+              class="mt-1 ml-1"
+              :records-total="sessions.recordsTotal"
+              :records-filtered="sessions.recordsFiltered"
+              @changePaging="changePaging">
+            </moloch-paging>
+          </div>
+        </form> <!-- /paging navbar -->
+      </span>
     </MolochCollapsible>
 
     <!-- visualizations -->
@@ -1778,17 +1780,7 @@ export default {
 
 <style scoped>
 form.sessions-paging {
-  z-index: 4;
-  position: fixed;
-  top: 110px;
-  left: 0;
-  right: 0;
   height: 40px;
-  background-color: var(--color-quaternary-lightest);
-
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
 }
 
 .sessions-content {
