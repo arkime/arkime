@@ -4,114 +4,116 @@
   <div class="spiview-page">
 
     <MolochCollapsible>
-      <!-- search navbar -->
-      <moloch-search
-        :num-matching-sessions="filtered"
-        :timezone="user.settings.timezone"
-        @changeSearch="changeSearch">
-      </moloch-search> <!-- /search navbar -->
+      <span class="fixed-header">
+        <!-- search navbar -->
+        <moloch-search
+          :num-matching-sessions="filtered"
+          :timezone="user.settings.timezone"
+          @changeSearch="changeSearch">
+        </moloch-search> <!-- /search navbar -->
 
-      <!-- info navbar -->
-      <form class="info-nav">
-        <div v-if="!dataLoading">
-          <!-- field config save button -->
-          <b-dropdown
-            size="sm"
-            no-caret
-            class="field-config-menu"
-            toggle-class="rounded"
-            variant="theme-secondary">
-            <template slot="button-content">
-              <span class="fa fa-columns"
-                v-b-tooltip.hover
-                title="Save or load custom visible field configurations">
-              </span>
-            </template>
-            <b-dropdown-header>
-              <div class="input-group input-group-sm">
-                <input type="text"
-                  maxlength="30"
-                  class="form-control"
-                  v-model="newFieldConfigName"
-                  placeholder="Enter new field configuration name"
-                  @keydown.enter.stop.prevent="saveFieldConfiguration"
-                />
-                <div class="input-group-append">
-                  <button type="button"
-                    class="btn btn-theme-secondary"
-                    :disabled="!newFieldConfigName"
-                    @click="saveFieldConfiguration"
-                    v-b-tooltip.hover
-                    title="Save this custom spiview field configuration">
-                    <span class="fa fa-save">
-                    </span>
-                  </button>
+        <!-- info navbar -->
+        <form class="info-nav">
+          <div v-if="!dataLoading">
+            <!-- field config save button -->
+            <b-dropdown
+              size="sm"
+              no-caret
+              class="field-config-menu"
+              toggle-class="rounded"
+              variant="theme-secondary">
+              <template slot="button-content">
+                <span class="fa fa-columns"
+                  v-b-tooltip.hover
+                  title="Save or load custom visible field configurations">
+                </span>
+              </template>
+              <b-dropdown-header>
+                <div class="input-group input-group-sm">
+                  <input type="text"
+                    maxlength="30"
+                    class="form-control"
+                    v-model="newFieldConfigName"
+                    placeholder="Enter new field configuration name"
+                    @keydown.enter.stop.prevent="saveFieldConfiguration"
+                  />
+                  <div class="input-group-append">
+                    <button type="button"
+                      class="btn btn-theme-secondary"
+                      :disabled="!newFieldConfigName"
+                      @click="saveFieldConfiguration"
+                      v-b-tooltip.hover
+                      title="Save this custom spiview field configuration">
+                      <span class="fa fa-save">
+                      </span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </b-dropdown-header>
-            <b-dropdown-divider>
-            </b-dropdown-divider>
-            <b-dropdown-item
-              v-if="fieldConfigError"
-              class="text-danger">
-              {{ fieldConfigError }}
-            </b-dropdown-item>
-            <b-dropdown-item
-              v-if="fieldConfigSuccess"
-              class="text-success">
-              {{ fieldConfigSuccess }}
-            </b-dropdown-item>
-            <b-dropdown-item
-              v-b-tooltip.hover
-              @click.stop.prevent="loadFieldConfiguration(-1)"
-              title="Reset visible fields to the default fields: Dst IP, Src IP, and Protocols">
-              Moloch Default
-            </b-dropdown-item>
-            <b-dropdown-item
-              v-for="(config, key) in fieldConfigs"
-              :key="key"
-              @click.self.stop.prevent="loadFieldConfiguration(key)">
-              <button class="btn btn-xs btn-danger pull-right ml-1"
-                type="button"
-                @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
-                <span class="fa fa-trash-o">
-                </span>
-              </button>
-              <button class="btn btn-xs btn-warning pull-right"
-                type="button"
+              </b-dropdown-header>
+              <b-dropdown-divider>
+              </b-dropdown-divider>
+              <b-dropdown-item
+                v-if="fieldConfigError"
+                class="text-danger">
+                {{ fieldConfigError }}
+              </b-dropdown-item>
+              <b-dropdown-item
+                v-if="fieldConfigSuccess"
+                class="text-success">
+                {{ fieldConfigSuccess }}
+              </b-dropdown-item>
+              <b-dropdown-item
                 v-b-tooltip.hover
-                title="Update this field configuration with the currently visible fields"
-                @click.stop.prevent="updateFieldConfiguration(config.name, key)">
-                <span class="fa fa-save">
-                </span>
-              </button>
-              {{ config.name }}
-            </b-dropdown-item>
-          </b-dropdown> <!-- /field config save button -->
-          <small>
-            <strong class="ml-2 text-theme-accent"
-              v-if="!error && filtered !== undefined">
-              Showing {{ filtered | commaString }} entries filtered from
-              {{ total | commaString }} total entries
-            </strong>
-          </small>
-        </div>
-        <div v-if="dataLoading"
-          class="info-nav-loading">
-          <span class="fa fa-spinner fa-lg fa-spin">
-          </span>&nbsp;
-          <em>
-            Loading SPI data
-          </em>
-          <button type="button"
-            class="btn btn-warning btn-sm pull-right"
-            @click="cancelLoading">
-            <span class="fa fa-ban">
+                @click.stop.prevent="loadFieldConfiguration(-1)"
+                title="Reset visible fields to the default fields: Dst IP, Src IP, and Protocols">
+                Moloch Default
+              </b-dropdown-item>
+              <b-dropdown-item
+                v-for="(config, key) in fieldConfigs"
+                :key="key"
+                @click.self.stop.prevent="loadFieldConfiguration(key)">
+                <button class="btn btn-xs btn-danger pull-right ml-1"
+                  type="button"
+                  @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
+                  <span class="fa fa-trash-o">
+                  </span>
+                </button>
+                <button class="btn btn-xs btn-warning pull-right"
+                  type="button"
+                  v-b-tooltip.hover
+                  title="Update this field configuration with the currently visible fields"
+                  @click.stop.prevent="updateFieldConfiguration(config.name, key)">
+                  <span class="fa fa-save">
+                  </span>
+                </button>
+                {{ config.name }}
+              </b-dropdown-item>
+            </b-dropdown> <!-- /field config save button -->
+            <small>
+              <strong class="ml-2 text-theme-accent"
+                v-if="!error && filtered !== undefined">
+                Showing {{ filtered | commaString }} entries filtered from
+                {{ total | commaString }} total entries
+              </strong>
+            </small>
+          </div>
+          <div v-if="dataLoading"
+            class="info-nav-loading">
+            <span class="fa fa-spinner fa-lg fa-spin">
             </span>&nbsp;
-            cancel
-          </button>
-        </div>
-      </form> <!-- /info navbar -->
+            <em>
+              Loading SPI data
+            </em>
+            <button type="button"
+              class="btn btn-warning btn-sm pull-right"
+              @click="cancelLoading">
+              <span class="fa fa-ban">
+              </span>&nbsp;
+              cancel
+            </button>
+          </div>
+        </form> <!-- /info navbar -->
+      </span>
 
       <!-- warning navbar -->
       <form v-if="staleData && !dataLoading"
@@ -1259,18 +1261,9 @@ export default {
 
 /* info navbar --------------------- */
 .spiview-page form.info-nav {
-  z-index: 4;
-  position: fixed;
-  top: 110px;
-  left: 0;
-  right: 0;
   height: 42px;
   padding: var(--px-md);
   background-color: var(--color-quaternary-lightest);
-
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
 }
 
 .spiview-page form.info-nav .field-config-menu .dropdown-header {
