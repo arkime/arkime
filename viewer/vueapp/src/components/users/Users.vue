@@ -2,57 +2,59 @@
 
   <div class="user-page">
     <MolochCollapsible>
-      <div class="users-search">
-        <div class="mr-1 ml-1 mt-1 mb-1">
-          <div class="input-group input-group-sm">
-            <div class="input-group-prepend">
-              <span class="input-group-text input-group-text-fw">
-                <span v-if="!shiftKeyHold"
-                  class="fa fa-search fa-fw">
+      <span class="fixed-header">
+        <div class="users-search">
+          <div class="p-1">
+            <div class="input-group input-group-sm">
+              <div class="input-group-prepend">
+                <span class="input-group-text input-group-text-fw">
+                  <span v-if="!shiftKeyHold"
+                    class="fa fa-search fa-fw">
+                  </span>
+                  <span v-else
+                    class="query-shortcut">
+                    Q
+                  </span>
                 </span>
-                <span v-else
-                  class="query-shortcut">
-                  Q
-                </span>
+              </div>
+              <input type="text"
+                class="form-control"
+                v-model="query.filter"
+                v-focus-input="focusInput"
+                @blur="onOffFocus"
+                @input="searchForUsers"
+                placeholder="Begin typing to search for users by name"
+              />
+              <span class="input-group-append">
+                <button type="button"
+                  @click="clear"
+                  :disabled="!query.filter"
+                  class="btn btn-outline-secondary btn-clear-input">
+                  <span class="fa fa-close">
+                  </span>
+                </button>
               </span>
             </div>
-            <input type="text"
-              class="form-control"
-              v-model="query.filter"
-              v-focus-input="focusInput"
-              @blur="onOffFocus"
-              @input="searchForUsers"
-              placeholder="Begin typing to search for users by name"
-            />
-            <span class="input-group-append">
-              <button type="button"
-                @click="clear"
-                :disabled="!query.filter"
-                class="btn btn-outline-secondary btn-clear-input">
-                <span class="fa fa-close">
-                </span>
-              </button>
-            </span>
           </div>
         </div>
-      </div>
 
-      <div class="users-paging">
-        <div class="ml-1 mt-1 pull-right">
-          <moloch-toast
-            class="mr-1"
-            :message="msg"
-            :type="msgType"
-            :done="messageDone">
-          </moloch-toast>
+        <div class="users-paging">
+          <div class="ml-1 mt-1 pull-right">
+            <moloch-toast
+              class="mr-1"
+              :message="msg"
+              :type="msgType"
+              :done="messageDone">
+            </moloch-toast>
+          </div>
+          <moloch-paging v-if="users"
+            class="mt-1 ml-1"
+            :records-total="users.recordsTotal"
+            :records-filtered="users.recordsFiltered"
+            v-on:changePaging="changePaging">
+          </moloch-paging>
         </div>
-        <moloch-paging v-if="users"
-          class="mt-1 ml-1"
-          :records-total="users.recordsTotal"
-          :records-filtered="users.recordsFiltered"
-          v-on:changePaging="changePaging">
-        </moloch-paging>
-      </div>
+      </span>
     </MolochCollapsible>
     <div class="users-content">
 
@@ -858,12 +860,9 @@ export default {
 /* search navbar */
 .users-search {
   z-index: 5;
-  position: fixed;
-  right: 0;
-  left: 0;
-  top: 36px;
   border: none;
   background-color: var(--color-secondary-lightest);
+  position: relative;
 
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
@@ -873,16 +872,7 @@ export default {
 /* paging/toast navbar */
 .users-paging {
   z-index: 4;
-  position: fixed;
-  top: 75px;
-  left: 0;
-  right: 0;
-  height: 40px;
   background-color: var(--color-quaternary-lightest);
-
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
 }
 
 /* page content */

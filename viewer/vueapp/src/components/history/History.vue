@@ -2,86 +2,88 @@
 
   <div class="history-page">
     <MolochCollapsible>
-      <!-- search navbar -->
-      <form class="history-search">
-        <div class="mr-1 ml-1 mt-1 mb-1">
-          <span class="fa fa-lg fa-question-circle text-theme-primary help-cursor mt-2 pull-right"
-            title="Tip: use ? to replace a single character and * to replace zero or more characters in your query"
-            v-b-tooltip.hover>
-          </span>
-          <button type="button"
-            class="btn btn-sm btn-theme-tertiary pull-right ml-1 search-btn"
-            @click="loadData">
-            <span v-if="!shiftKeyHold">
-              Search
+      <span class="fixed-header">
+        <!-- search navbar -->
+        <form class="history-search">
+          <div class="p-1">
+            <span class="fa fa-lg fa-question-circle text-theme-primary help-cursor mt-2 pull-right"
+              title="Tip: use ? to replace a single character and * to replace zero or more characters in your query"
+              v-b-tooltip.hover>
             </span>
-            <span v-else
-              class="enter-icon">
-              <span class="fa fa-long-arrow-left fa-lg">
+            <button type="button"
+              class="btn btn-sm btn-theme-tertiary pull-right ml-1 search-btn"
+              @click="loadData">
+              <span v-if="!shiftKeyHold">
+                Search
               </span>
-              <div class="enter-arm">
+              <span v-else
+                class="enter-icon">
+                <span class="fa fa-long-arrow-left fa-lg">
+                </span>
+                <div class="enter-arm">
+                </div>
+              </span>
+            </button>
+            <div class="input-group input-group-sm">
+              <div class="input-group-prepend">
+                <span class="input-group-text input-group-text-fw">
+                  <span v-if="!shiftKeyHold"
+                    class="fa fa-search fa-fw">
+                  </span>
+                  <span v-else
+                    class="query-shortcut">
+                    Q
+                  </span>
+                </span>
               </div>
-            </span>
-          </button>
-          <div class="input-group input-group-sm">
-            <div class="input-group-prepend">
-              <span class="input-group-text input-group-text-fw">
-                <span v-if="!shiftKeyHold"
-                  class="fa fa-search fa-fw">
-                </span>
-                <span v-else
-                  class="query-shortcut">
-                  Q
-                </span>
+              <input type="text"
+                @keyup.enter="loadData"
+                @input="debounceSearch"
+                class="form-control"
+                v-model="searchTerm"
+                v-focus-input="focusInput"
+                @blur="onOffFocus"
+                placeholder="Search for history in the table below"
+              />
+              <span class="input-group-append">
+                <button type="button"
+                  @click="clear"
+                  :disabled="!searchTerm"
+                  class="btn btn-outline-secondary btn-clear-input">
+                  <span class="fa fa-close">
+                  </span>
+                </button>
               </span>
             </div>
-            <input type="text"
-              @keyup.enter="loadData"
-              @input="debounceSearch"
-              class="form-control"
-              v-model="searchTerm"
-              v-focus-input="focusInput"
-              @blur="onOffFocus"
-              placeholder="Search for history in the table below"
-            />
-            <span class="input-group-append">
-              <button type="button"
-                @click="clear"
-                :disabled="!searchTerm"
-                class="btn btn-outline-secondary btn-clear-input">
-                <span class="fa fa-close">
-                </span>
-              </button>
-            </span>
+            <div class="form-inline mt-1">
+              <moloch-time :timezone="user.settings.timezone"
+                @timeChange="loadData"
+                :hide-bounding="true"
+                :hide-interval="true">
+              </moloch-time>
+            </div>
           </div>
-          <div class="form-inline mt-1">
-            <moloch-time :timezone="user.settings.timezone"
-              @timeChange="loadData"
-              :hide-bounding="true"
-              :hide-interval="true">
-            </moloch-time>
-          </div>
-        </div>
-      </form> <!-- /search navbar -->
+        </form> <!-- /search navbar -->
 
-      <!-- paging navbar -->
-      <form class="history-paging">
-        <div class="form-inline">
-          <moloch-paging v-if="history"
-            class="mt-1 ml-1"
-            :records-total="history.recordsTotal"
-            :records-filtered="history.recordsFiltered"
-            @changePaging="changePaging"
-            length-default=100>
-          </moloch-paging>
-          <moloch-toast
-            class="ml-2 mb-3 mt-1"
-            :message="msg"
-            :type="msgType"
-            :done="messageDone">
-          </moloch-toast>
-        </div>
-      </form> <!-- /paging navbar -->
+        <!-- paging navbar -->
+        <form class="history-paging">
+          <div class="form-inline">
+            <moloch-paging v-if="history"
+              class="mt-1 ml-1"
+              :records-total="history.recordsTotal"
+              :records-filtered="history.recordsFiltered"
+              @changePaging="changePaging"
+              length-default=100>
+            </moloch-paging>
+            <moloch-toast
+              class="ml-2 mb-3 mt-1"
+              :message="msg"
+              :type="msgType"
+              :done="messageDone">
+            </moloch-toast>
+          </div>
+        </form> <!-- /paging navbar -->
+      </span>
     </MolochCollapsible>
 
     <table class="table table-sm table-striped small">
@@ -516,13 +518,9 @@ export default {
 /* navbar styles ------------------- */
 .history-page form.history-search {
   z-index: 5;
-  position: fixed;
-  right: 0;
-  left: 0;
-  top: 36px;
   border: none;
   background-color: var(--color-secondary-lightest);
-
+  position: relative;
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
           box-shadow: 0 0 16px -2px black;
@@ -535,16 +533,7 @@ export default {
 /* navbar with pagination */
 .history-page form.history-paging {
   z-index: 4;
-  position: fixed;
-  top: 110px;
-  left: 0;
-  right: 0;
   height: 40px;
-  background-color: var(--color-quaternary-lightest);
-
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
 }
 
 .input-group {

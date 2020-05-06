@@ -1,10 +1,10 @@
 <template>
 
-  <form>
-    <div class="mr-1 ml-1 mt-1 mb-1">
+  <form class="position-relative">
+    <div class="pr-1 pl-1 pt-1 pb-1">
 
       <!-- actions dropdown menu -->
-      <b-dropdown v-if="!hideActions"
+      <b-dropdown v-if="!hideActions && $route.name === 'Sessions'"
         right
         size="sm"
         class="pull-right ml-1 action-menu-dropdown"
@@ -323,6 +323,9 @@ export default {
     },
     issueSearch: function (newVal, oldVal) {
       if (newVal) { this.applyParams(); }
+    },
+    actionForm: function () {
+      this.$parent.$emit('recalc-collapse');
     }
   },
   created: function () {
@@ -488,9 +491,6 @@ export default {
 
 <style scoped>
 form {
-  position: fixed;
-  right: 0;
-  left: 0;
   border: none;
   z-index: 5;
   background-color: var(--color-secondary-lightest);

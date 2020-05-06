@@ -259,6 +259,17 @@ body {
 
 /* displaying */
 .display-inline { display: inline; }
+.fixed-header {
+  z-index: 5;
+  position: fixed;
+  left: 0;
+  right: 0;
+  background-color: var(--color-quaternary-lightest);
+
+  -webkit-box-shadow: 0 0 16px -2px black;
+     -moz-box-shadow: 0 0 16px -2px black;
+          box-shadow: 0 0 16px -2px black;
+}
 
 /* overflow */
 .no-overflow    { overflow: hidden; }

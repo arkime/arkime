@@ -4,28 +4,30 @@
     :class="{'hide-tool-bars': !showToolBars}">
 
     <MolochCollapsible>
-      <!-- search navbar -->
-      <moloch-search
-        :fields="headers"
-        :open-sessions="stickySessions"
-        :num-visible-sessions="query.length"
-        :num-matching-sessions="sessions.recordsFiltered"
-        :start="query.start"
-        :timezone="user.settings.timezone"
-        @changeSearch="cancelAndLoad(true)">
-      </moloch-search> <!-- /search navbar -->
+      <span class="fixed-header">
+        <!-- search navbar -->
+        <moloch-search
+          :fields="headers"
+          :open-sessions="stickySessions"
+          :num-visible-sessions="query.length"
+          :num-matching-sessions="sessions.recordsFiltered"
+          :start="query.start"
+          :timezone="user.settings.timezone"
+          @changeSearch="cancelAndLoad(true)">
+        </moloch-search> <!-- /search navbar -->
 
-      <!-- paging navbar -->
-      <form class="sessions-paging">
-        <div class="form-inline">
-          <moloch-paging
-            class="mt-1 ml-1"
-            :records-total="sessions.recordsTotal"
-            :records-filtered="sessions.recordsFiltered"
-            @changePaging="changePaging">
-          </moloch-paging>
-        </div>
-      </form> <!-- /paging navbar -->
+        <!-- paging navbar -->
+        <form class="sessions-paging">
+          <div class="form-inline">
+            <moloch-paging
+              class="mt-1 ml-1"
+              :records-total="sessions.recordsTotal"
+              :records-filtered="sessions.recordsFiltered"
+              @changePaging="changePaging">
+            </moloch-paging>
+          </div>
+        </form> <!-- /paging navbar -->
+      </span>
     </MolochCollapsible>
 
     <!-- visualizations -->
@@ -613,25 +615,8 @@ export default {
     };
 
     window.addEventListener('resize', windowResizeEvent, { passive: true });
-
-    // show the overflow when a dropdown in a column header is shown. otherwise,
-    // the dropdown is cut off and scrolls vertically in the column header
-    this.$root.$on('bv::dropdown::show', bvEvent => {
-      if (!this.stickyHeader) { return; }
-      let target = $(bvEvent.target);
-      if (!target.parent().hasClass('col-dropdown')) { return; }
-      $('thead').css('overflow-x', 'visible');
-      $('thead > tr').css('overflow-x', 'visible');
-    });
-    // when the column header dropdown is hidden, go back to the default scroll
-    // behavior so that the table can overflow the window width
-    this.$root.$on('bv::dropdown::hide', bvEvent => {
-      if (!this.stickyHeader) { return; }
-      let target = $(bvEvent.target);
-      if (!target.parent().hasClass('col-dropdown')) { return; }
-      $('thead').css('overflow-x', 'scroll');
-      $('thead > tr').css('overflow-x', 'scroll');
-    });
+    this.$root.$on('bv::dropdown::show', this.dropdownShowListener);
+    this.$root.$on('bv::dropdown::hide', this.dropdownHideListener);
   },
   computed: {
     query: function () {
@@ -692,6 +677,26 @@ export default {
     }
   },
   methods: {
+    /* show the overflow when a dropdown in a column header is shown. otherwise,
+     * the dropdown is cut off and scrolls vertically in the column header */
+    dropdownShowListener: function (bvEvent) {
+      if (!this.stickyHeader) { return; }
+      let target = $(bvEvent.target);
+      if (!target) { return; }
+      if (!target.parent().hasClass('col-dropdown')) { return; }
+      $('thead').css('overflow-x', 'visible');
+      $('thead > tr').css('overflow-x', 'visible');
+    },
+    /* when the column header dropdown is hidden, go back to the default scroll
+     * behavior so that the table can overflow the window width */
+    dropdownHideListener: function (bvEvent) {
+      if (!this.stickyHeader) { return; }
+      let target = $(bvEvent.target);
+      if (!target) { return; }
+      if (!target.parent().hasClass('col-dropdown')) { return; }
+      $('thead').css('overflow-x', 'scroll');
+      $('thead > tr').css('overflow-x', 'scroll');
+    },
     /* exposed page functions ---------------------------------------------- */
     /* SESSIONS DATA */
     /**
@@ -1727,9 +1732,8 @@ export default {
     $('#sessionsTable').colResizable({ disable: true });
 
     window.removeEventListener('resize', windowResizeEvent);
-
-    this.$root.$on('bv::dropdown::show', undefined);
-    this.$root.$on('bv::dropdown::hide', undefined);
+    this.$root.$off('bv::dropdown::show', this.dropdownShowListener);
+    this.$root.$off('bv::dropdown::hide', this.dropdownHideListener);
   }
 };
 </script>
@@ -1778,17 +1782,7 @@ export default {
 
 <style scoped>
 form.sessions-paging {
-  z-index: 4;
-  position: fixed;
-  top: 110px;
-  left: 0;
-  right: 0;
   height: 40px;
-  background-color: var(--color-quaternary-lightest);
-
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
 }
 
 .sessions-content {
