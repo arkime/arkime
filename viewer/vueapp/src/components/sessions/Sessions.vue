@@ -615,25 +615,8 @@ export default {
     };
 
     window.addEventListener('resize', windowResizeEvent, { passive: true });
-
-    // show the overflow when a dropdown in a column header is shown. otherwise,
-    // the dropdown is cut off and scrolls vertically in the column header
-    this.$root.$on('bv::dropdown::show', bvEvent => {
-      if (!this.stickyHeader) { return; }
-      let target = $(bvEvent.target);
-      if (!target.parent().hasClass('col-dropdown')) { return; }
-      $('thead').css('overflow-x', 'visible');
-      $('thead > tr').css('overflow-x', 'visible');
-    });
-    // when the column header dropdown is hidden, go back to the default scroll
-    // behavior so that the table can overflow the window width
-    this.$root.$on('bv::dropdown::hide', bvEvent => {
-      if (!this.stickyHeader) { return; }
-      let target = $(bvEvent.target);
-      if (!target.parent().hasClass('col-dropdown')) { return; }
-      $('thead').css('overflow-x', 'scroll');
-      $('thead > tr').css('overflow-x', 'scroll');
-    });
+    this.$root.$on('bv::dropdown::show', this.dropdownShowListener);
+    this.$root.$on('bv::dropdown::hide', this.dropdownHideListener);
   },
   computed: {
     query: function () {
@@ -694,6 +677,26 @@ export default {
     }
   },
   methods: {
+    /* show the overflow when a dropdown in a column header is shown. otherwise,
+     * the dropdown is cut off and scrolls vertically in the column header */
+    dropdownShowListener: function (bvEvent) {
+      if (!this.stickyHeader) { return; }
+      let target = $(bvEvent.target);
+      if (!target) { return; }
+      if (!target.parent().hasClass('col-dropdown')) { return; }
+      $('thead').css('overflow-x', 'visible');
+      $('thead > tr').css('overflow-x', 'visible');
+    },
+    /* when the column header dropdown is hidden, go back to the default scroll
+     * behavior so that the table can overflow the window width */
+    dropdownHideListener: function (bvEvent) {
+      if (!this.stickyHeader) { return; }
+      let target = $(bvEvent.target);
+      if (!target) { return; }
+      if (!target.parent().hasClass('col-dropdown')) { return; }
+      $('thead').css('overflow-x', 'scroll');
+      $('thead > tr').css('overflow-x', 'scroll');
+    },
     /* exposed page functions ---------------------------------------------- */
     /* SESSIONS DATA */
     /**
@@ -1729,9 +1732,8 @@ export default {
     $('#sessionsTable').colResizable({ disable: true });
 
     window.removeEventListener('resize', windowResizeEvent);
-
-    this.$root.$on('bv::dropdown::show', undefined);
-    this.$root.$on('bv::dropdown::hide', undefined);
+    this.$root.$off('bv::dropdown::show', this.dropdownShowListener);
+    this.$root.$off('bv::dropdown::hide', this.dropdownHideListener);
   }
 };
 </script>
