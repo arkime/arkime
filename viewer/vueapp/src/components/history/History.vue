@@ -521,7 +521,6 @@ export default {
   border: none;
   background-color: var(--color-secondary-lightest);
   position: relative;
-  
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
           box-shadow: 0 0 16px -2px black;
