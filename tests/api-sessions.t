@@ -51,7 +51,7 @@ my ($url) = @_;
     $json = get("/sessions.json?map=true&startTime=1386004308&stopTime=1386004400&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
 
     eq_or_diff($json->{map}, from_json('{"dst":{"US": 3}, "src":{"US": 3}, "xffGeo":{}}'), "map short");
-    eq_or_diff($json->{graph}->{SessionsHisto}, from_json('[["1386004309000", 1], ["1386004312000", 1], [1386004317000, 1]]'), "SessionsHisto short");
+    eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[["1386004309000", 1], ["1386004312000", 1], [1386004317000, 1]]'), "sessionsHisto short");
     eq_or_diff($json->{graph}->{srcPacketsHisto}, from_json('[["1386004309000", 8], ["1386004312000", 8], [1386004317000, 10]]'), "srcPacketsHisto short");
     eq_or_diff($json->{graph}->{dstPacketsHisto}, from_json('[["1386004309000", 6], ["1386004312000", 7], [1386004317000, 7]]'), "dstPacketsHisto short");
     eq_or_diff($json->{graph}->{srcDataBytesHisto}, from_json('[["1386004309000", 155], ["1386004312000", 171], [1386004317000, 160]]'), "srcDataBytesHisto short");
@@ -65,7 +65,7 @@ my ($url) = @_;
     $json = get("/sessions.json?map=true&startTime=1386004308&stopTime=1386349908&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
 
     eq_or_diff($json->{map}, from_json('{"dst":{"US": 3}, "src":{"US": 3}, "xffGeo":{}}'), "map medium");
-    eq_or_diff($json->{graph}->{SessionsHisto}, from_json('[["1386004260000", 3]]'), "SessionsHisto medium");
+    eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[["1386004260000", 3]]'), "sessionsHisto medium");
     eq_or_diff($json->{graph}->{srcPacketsHisto}, from_json('[["1386004260000", 26]]'), "srcPacketsHisto medium");
     eq_or_diff($json->{graph}->{dstPacketsHisto}, from_json('[["1386004260000", 20]]'), "dstPacketsHisto medium");
     eq_or_diff($json->{graph}->{srcDataBytesHisto}, from_json('[["1386004260000", 486]]'), "srcDataBytesHisto medium");
@@ -79,7 +79,7 @@ my ($url) = @_;
     $json = get("/sessions.json?map=true&date=-1&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
 
     eq_or_diff($json->{map}, from_json('{"dst":{"US": 3, "CA": 1}, "src":{"US": 3, "RU":1}, "xffGeo":{}}'), "map ALL");
-    eq_or_diff($json->{graph}->{SessionsHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000,1]]'), "SessionsHisto ALL");
+    eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000,1]]'), "sessionsHisto ALL");
     eq_or_diff($json->{graph}->{srcPacketsHisto}, from_json('[["1335956400000", 2], ["1386003600000", 26], [1387742400000, 3], [1482552000000,3]]'), "srcPacketsHisto ALL");
     eq_or_diff($json->{graph}->{dstPacketsHisto}, from_json('[["1335956400000", 0], ["1386003600000", 20], [1387742400000, 1], [1482552000000,1]]'), "dstPacketsHisto ALL");
     eq_or_diff($json->{graph}->{srcDataBytesHisto}, from_json('[["1335956400000", 128], ["1386003600000", 486], [1387742400000, 68], [1482552000000,68]]'), "srcDataBytesHisto ALL");

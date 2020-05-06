@@ -316,7 +316,7 @@ export default {
     query: function () {
       let sort = 'name';
       if (!this.$route.query.sort || this.$route.query.sort === 'graph') {
-        sort = this.$route.query.graphType || this.$store.state.graphType || 'SessionsHisto';
+        sort = this.$route.query.graphType || this.$store.state.graphType || 'sessionsHisto';
       }
       return {
         sort: sort,

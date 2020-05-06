@@ -4582,8 +4582,8 @@ function graphMerge(req, query, aggregations) {
     xmin: req.query.startTime * 1000 || null,
     xmax: req.query.stopTime * 1000 || null,
     interval: query.aggregations ? query.aggregations.dbHisto.histogram.interval / 1000 || 60 : 60,
-    SessionsHisto: [],
-    SessionsTotal: 0
+    sessionsHisto: [],
+    sessionsTotal: 0
   };
 
   // allowed tot* data map
@@ -4614,8 +4614,8 @@ function graphMerge(req, query, aggregations) {
     let key = item.key;
 
     // always add session information
-    graph.SessionsHisto.push([key, item.doc_count]);
-    graph.SessionsTotal += item.doc_count;
+    graph.sessionsHisto.push([key, item.doc_count]);
+    graph.sessionsTotal += item.doc_count;
 
     for (let prop in item) {
       // excluding every item prop that isnt a summed up aggregate collection (ie. es keys)
@@ -4983,7 +4983,7 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
             }
 
             if (results.items.length === result.responses.length) {
-              var s = req.query.sort || 'SessionsHisto';
+              var s = req.query.sort || 'sessionsHisto';
               results.items = results.items.sort(function (a, b) {
                 var result;
                 if (s === 'name') { result = a.name.localeCompare(b.name); }
