@@ -123,6 +123,7 @@ function getActiveNodes(){
   return activeESNodes.slice();
 }
 
+// Go thru all the ES nodes and perform the same query and return the bodies for further processing
 function simpleGather(req, res, bodies, doneCb) {
   var nodes = getActiveNodes();
   async.map(nodes, (node, asyncCb) => {
@@ -158,6 +159,9 @@ function simpleGather(req, res, bodies, doneCb) {
       });
     });
     preq.setHeader('content-type', "application/json");
+    if (req.headers['x-opaque-id'] !== undefined) {
+      preq.setHeader('X-Opaque-Id', req.headers['x-opaque-id']);
+    }
     if (req._body) {
       if (bodies && bodies[node]) {
         preq.end(bodies[node]);
@@ -178,15 +182,8 @@ function shallowCopy(obj1, obj2) {
   }
 }
 
-function shallowAdd(obj1, obj2) {
-  for (var attrname in obj2) {
-    if (typeof obj2[attrname] === "number") {
-      obj1[attrname] += obj2[attrname];
-    }
-  }
-}
-
-function simpleGatherCopy(req, res) {
+// Merge all the top level nodes fields
+function simpleGatherNodes(req, res) {
   simpleGather(req, res, null, (err, results) => {
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
@@ -196,6 +193,25 @@ function simpleGatherCopy(req, res) {
   });
 }
 
+// Merge all the top level tasks fields
+function simpleGatherTasks(req, res) {
+  simpleGather(req, res, null, (err, results) => {
+    var obj = results[0];
+    for (var i = 1; i < results.length; i++) {
+      shallowCopy(obj.tasks, results[i].tasks);
+    }
+    res.send(obj);
+  });
+}
+
+function shallowAdd(obj1, obj2) {
+  for (var attrname in obj2) {
+    if (typeof obj2[attrname] === "number") {
+      obj1[attrname] += obj2[attrname];
+    }
+  }
+}
+// For any top level number field add them together
 function simpleGatherAdd(req, res) {
   simpleGather(req, res, null, (err, results) => {
     var obj = results[0];
@@ -213,14 +229,17 @@ function simpleGatherFirst(req, res) {
   });
 }
 
-app.get("/_cluster/nodes/stats", simpleGatherCopy);
-app.get("/_nodes", simpleGatherCopy);
-app.get("/_nodes/stats", simpleGatherCopy);
-app.get("/_nodes/stats/:kinds", simpleGatherCopy);
+app.get("/_tasks", simpleGatherTasks);
+app.post("/_tasks/:taskId/_cancel", simpleGatherFirst);
+
+app.get("/_cluster/nodes/stats", simpleGatherNodes);
+app.get("/_nodes", simpleGatherNodes);
+app.get("/_nodes/stats", simpleGatherNodes);
+app.get("/_nodes/stats/:kinds", simpleGatherNodes);
 app.get("/_cluster/health", simpleGatherAdd);
 
-app.get("/:index/_aliases", simpleGatherCopy);
-app.get("/:index/_alias", simpleGatherCopy);
+app.get("/:index/_aliases", simpleGatherNodes);
+app.get("/:index/_alias", simpleGatherNodes);
 
 app.get("/:index/_status", (req, res) => {
   simpleGather(req, res, null, (err, results) => {
@@ -751,7 +770,6 @@ app.get("/:index/_count", simpleGatherAdd);
 app.post("/:index/_count", simpleGatherAdd);
 app.get("/:index/:type/_count", simpleGatherAdd);
 app.post("/:index/:type/_count", simpleGatherAdd);
-
 
 if (Config.get("regressionTests")) {
   app.post('/shutdown', function(req, res) {

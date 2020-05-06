@@ -21,12 +21,21 @@ NOTICE: Restart wiseService before capture when upgrading
   - release - CyberChef 9.16.2, node 10.20.1, daq 2.0.7
   - viewer - set content-type for cyberchef files
   - viewer - add support for caTrustFile to addUser and multies
+  - viewer - can now select to show any integer field in graphs on settings page
+  - viewer - graph/header can now be pinned to not scroll off page
+  - viewer - most navbars can be collapsed and hidden
+  - viewer - mouse over in graphs now show total values too
+  - viewer - fixed left/right keys not working in search bar after visiting stats page
+  - viewer - support cancel for multies
   - capture - new parsers arp, bgp, igmp, isis, lldp, ospf, pim, 
   - capture - protocol parsing code has been refactored, can now write parsers
               of ethernet and other ip protocols
   - capture - new disableParsers, default of arp.so
   - capture - new unkEthernet, unkIpProtocol protocols
   - capture - support QUIC version 46
+  - capture - new esBulkQuery setting to override the /bulk call
+  - capture - added some more lua examples (thanks Antipokemon)
+  - wise - threatstream fixes to be nicer to the sql database
   - all - switch most ES apis to typeless format
 
 2.2.3 2020/03/09

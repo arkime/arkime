@@ -196,7 +196,7 @@ exports.search = function (index, type, query, options, cb) {
 };
 
 exports.cancelByOpaqueId = function(cancelId, cb) {
-  internals.elasticSearchClient.tasks.list({detailed: "false", group_by: "parents"})
+  internals.elasticSearchClient.tasks.list({detailed: false, group_by: "parents"})
     .then((results) => {
       let found = false;
 
@@ -480,7 +480,7 @@ exports.putClusterSettings = function(options, cb) {
 };
 
 exports.tasks = function(cb) {
-  return internals.elasticSearchClient.tasks.list({detailed: "false", group_by: "parents"}, cb);
+  return internals.elasticSearchClient.tasks.list({detailed: true, group_by: "parents"}, cb);
 };
 
 exports.taskCancel = function(taskId, cb) {
