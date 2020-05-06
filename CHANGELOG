@@ -17,16 +17,17 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.3.0 2020/03/xx
+2.3.0 2020/05/06
   - release - CyberChef 9.16.2, node 10.20.1, daq 2.0.7
   - viewer - set content-type for cyberchef files
   - viewer - add support for caTrustFile to addUser and multies
-  - viewer - can now select to show any integer field in graphs on settings page
+  - viewer - can now select to show any integer field in graphs, set on the settings page
   - viewer - graph/header can now be pinned to not scroll off page
   - viewer - most navbars can be collapsed and hidden
   - viewer - mouse over in graphs now show total values too
   - viewer - fixed left/right keys not working in search bar after visiting stats page
   - viewer - support cancel for multies
+  - viewer - cleaned up some of the Help docs
   - capture - new parsers arp, bgp, igmp, isis, lldp, ospf, pim, 
   - capture - protocol parsing code has been refactored, can now write parsers
               of ethernet and other ip protocols
