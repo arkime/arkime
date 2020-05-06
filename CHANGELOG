@@ -17,6 +17,8 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
+2.3.1 2020/05/XX
+
 2.3.0 2020/05/06
   - release - CyberChef 9.16.2, node 10.20.1, daq 2.0.7
   - viewer - set content-type for cyberchef files
