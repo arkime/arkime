@@ -17,8 +17,8 @@ my $fpwd = getcwd() . "/pcap";
 
     eq_or_diff($json->{map}, from_json('{"src": {}, "dst":{}, "xffGeo":{}}'), "map bigendian");
     eq_or_diff($json->{protocols}, from_json('{"icmp": 1}'), "protocols bigendian");
-    eq_or_diff($json->{graph}, from_json('{"lpHisto":[[1335956400000,1]],"dstBytesHisto":[[1335956400000,0]],"srcPacketsHisto":[[1335956400000,2]],"srcBytesHisto":[[1335956400000,196]],"xmax":null,"srcDataBytesHisto":[[1335956400000,128]],"interval":3600,"xmin":null,"dstDataBytesHisto":[[1335956400000,0]],"dstPacketsHisto":[[1335956400000,0]],"lpTotal":1,"totBytesTotal":196,"totDataBytesTotal":128,"totPacketsTotal":2}'), "graph bigendian");
-    eq_or_diff($djson->{graph}, from_json('{"srcDataBytesHisto":[[1335956400000,128]],"xmax":1389743152000,"srcBytesHisto":[[1335956400000,196]],"dstDataBytesHisto":[[1335956400000,0]],"interval":3600,"xmin":1332734457000,"dstPacketsHisto":[[1335956400000,0]],"dstBytesHisto":[[1335956400000,0]],"lpHisto":[[1335956400000,1]],"srcPacketsHisto":[[1335956400000,2]],"lpTotal":1,"totBytesTotal":196,"totDataBytesTotal":128,"totPacketsTotal":2}'), "date graph bigendian");
+    eq_or_diff($json->{graph}, from_json('{"SessionsHisto":[[1335956400000,1]],"dstBytesHisto":[[1335956400000,0]],"srcPacketsHisto":[[1335956400000,2]],"srcBytesHisto":[[1335956400000,196]],"xmax":null,"srcDataBytesHisto":[[1335956400000,128]],"interval":3600,"xmin":null,"dstDataBytesHisto":[[1335956400000,0]],"dstPacketsHisto":[[1335956400000,0]],"SessionsTotal":1,"totBytesTotal":196,"totDataBytesTotal":128,"totPacketsTotal":2}'), "graph bigendian");
+    eq_or_diff($djson->{graph}, from_json('{"srcDataBytesHisto":[[1335956400000,128]],"xmax":1389743152000,"srcBytesHisto":[[1335956400000,196]],"dstDataBytesHisto":[[1335956400000,0]],"interval":3600,"xmin":1332734457000,"dstPacketsHisto":[[1335956400000,0]],"dstBytesHisto":[[1335956400000,0]],"SessionsHisto":[[1335956400000,1]],"srcPacketsHisto":[[1335956400000,2]],"SessionsTotal":1,"totBytesTotal":196,"totDataBytesTotal":128,"totPacketsTotal":2}'), "date graph bigendian");
     eq_or_diff($json->{spi}->{srcIp}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"192.168.177.160"}]}'), "bigendian srcIp");
     eq_or_diff($json->{spi}->{dstIp}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"10.64.11.49"}]}'), "bigendian dstIp");
     eq_or_diff($json->{spi}->{ipProtocol}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"icmp"}]}'), "bigendian ipProtocol");
@@ -58,7 +58,7 @@ my $fpwd = getcwd() . "/pcap";
 
     eq_or_diff($json->{map}, from_json('{"src":{"US": 3}, "dst":{"US": 3}, "xffGeo":{}}'), "map short");
     eq_or_diff($json->{protocols}, from_json('{"http": 3, "socks": 3, "tcp": 3}'), "protocols short");
-    eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1386004309000", 1], ["1386004312000", 1], [1386004317000, 1]]'), "lpHisto short");
+    eq_or_diff($json->{graph}->{SessionsHisto}, from_json('[["1386004309000", 1], ["1386004312000", 1], [1386004317000, 1]]'), "SessionsHisto short");
     eq_or_diff($json->{graph}->{srcPacketsHisto}, from_json('[["1386004309000", 8], ["1386004312000", 8], [1386004317000, 10]]'), "srcPacketsHisto short");
     eq_or_diff($json->{graph}->{dstPacketsHisto}, from_json('[["1386004309000", 6], ["1386004312000", 7], [1386004317000, 7]]'), "dstPacketsHisto short");
     eq_or_diff($json->{graph}->{srcDataBytesHisto}, from_json('[["1386004309000", 155], ["1386004312000", 171], [1386004317000, 160]]'), "srcDataBytesHisto short");
@@ -82,7 +82,7 @@ my $fpwd = getcwd() . "/pcap";
 
     eq_or_diff($json->{map}, from_json('{"src":{"US": 3}, "dst":{"US": 3}, "xffGeo":{}}'), "map medium");
     eq_or_diff($json->{protocols}, from_json('{"http": 3, "socks": 3, "tcp": 3}'), "protocols medium");
-    eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1386004260000", 3]]'), "lpHisto medium");
+    eq_or_diff($json->{graph}->{SessionsHisto}, from_json('[["1386004260000", 3]]'), "SessionsHisto medium");
     eq_or_diff($json->{graph}->{srcPacketsHisto}, from_json('[["1386004260000", 26]]'), "srcPacketsHisto medium");
     eq_or_diff($json->{graph}->{dstPacketsHisto}, from_json('[["1386004260000", 20]]'), "srcPacketsHisto medium");
     eq_or_diff($json->{graph}->{srcDataBytesHisto}, from_json('[["1386004260000", 486]]'), "dstDataBytesHisto medium");
@@ -114,7 +114,7 @@ my $fpwd = getcwd() . "/pcap";
 
     eq_or_diff($json->{map}, from_json('{"dst":{"US": 3, "CA": 1}, "src":{"US": 3, "RU":1}, "xffGeo":{}}'), "map ALL");
     eq_or_diff($json->{protocols}, from_json('{"tcp": 5, "http": 3, "socks": 3, "bittorrent": 2, "icmp": 1}'), "protocols ALL");
-    eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000,1]]'), "lpHisto ALL");
+    eq_or_diff($json->{graph}->{SessionsHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000,1]]'), "SessionsHisto ALL");
     eq_or_diff($json->{graph}->{srcPacketsHisto}, from_json('[["1335956400000", 2], ["1386003600000", 26], [1387742400000, 3], [1482552000000,3]]'), "srcPacketsHisto ALL");
     eq_or_diff($json->{graph}->{dstPacketsHisto}, from_json('[["1335956400000", 0], ["1386003600000", 20], [1387742400000, 1], [1482552000000,1]]'), "dstPacketsHisto ALL");
     eq_or_diff($json->{graph}->{srcDataBytesHisto}, from_json('[["1335956400000", 128], ["1386003600000", 486], [1387742400000, 68], [1482552000000,68]]'), "srcDataBytesHisto ALL");

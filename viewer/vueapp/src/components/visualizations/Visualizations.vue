@@ -179,8 +179,8 @@
               v-model="graphType"
               @input="changeGraphType">
               <b-radio
-                value="lpHisto"
-                key="lpHisto"
+                value="SessionsHisto"
+                key="SessionsHisto"
                 class="btn-radio">
                 {{ "Session" }}
               </b-radio>
@@ -461,7 +461,7 @@ export default {
         return this.graphType;
       }
 
-      return 'lpHisto';
+      return 'SessionsHisto';
     },
     /* exposed functions --------------------------------------------------- */
     toggleStickyViz: function () {
@@ -611,7 +611,7 @@ export default {
               parseInt(item.datapoint[0].toFixed(0)), this.timezone || 'local', false
             );
 
-            let filterName = (this.graphType === 'lpHisto') ? 'Sessions'
+            let filterName = (this.graphType === 'SessionsHisto') ? 'Sessions'
               : this.timelineDataFilters.find(i => i.dbField === this.graphType.slice(0, -5)).friendlyName || '';
 
             let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
