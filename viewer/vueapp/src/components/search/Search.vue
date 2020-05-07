@@ -360,6 +360,7 @@ export default {
     messageDone: function () {
       this.message = undefined;
       this.messageType = undefined;
+      this.$parent.$emit('recalc-collapse');
     },
     applyExpression: function () {
       this.$router.push({
