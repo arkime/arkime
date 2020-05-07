@@ -17,6 +17,7 @@
           type="text"
           maxlength="20"
           class="form-control"
+          v-on:keydown.enter="$event.stopPropagation()"
           placeholder="Enter a (short) view name"
         />
       </div>
@@ -35,6 +36,7 @@
         <input v-model="viewExpression"
           type="text"
           class="form-control"
+          v-on:keydown.enter="$event.stopPropagation()"
           placeholder="Enter a query expression"
         />
       </div> <!-- /view expression input -->
