@@ -386,8 +386,10 @@
           Views
         </h6>
         <p>
-          The eyeball icon ( <span class="fa fa-eye"></span> ) button allows an analyst to either overlay a saved "View" onto their current query, or save the current query as a "View" for easy recall in the future.
-          Views should be used for often used search queries that an analyst regularly finds themselves running.
+          A "View" is an expression that gets added to existing queries. It limits the session set and is analogous to a database view.
+          The eyeball icon ( <span class="fa fa-eye"></span> ) button allows an analyst to: overlay a saved "View" onto their current query,
+          save the current query as a new "View", update a "View" preset to match the current query, or delete a "View" preset.
+          "View"s should be used for common search queries that an analyst regularly finds themselves running.
         </p>
         <h6>
           <span class="fa fa-fw fa-exchange"></span>&nbsp;
