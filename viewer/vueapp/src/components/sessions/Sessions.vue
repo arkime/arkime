@@ -13,7 +13,8 @@
           :num-matching-sessions="sessions.recordsFiltered"
           :start="query.start"
           :timezone="user.settings.timezone"
-          @changeSearch="cancelAndLoad(true)">
+          @changeSearch="cancelAndLoad(true)"
+          @setView="loadNewView()">
         </moloch-search> <!-- /search navbar -->
 
         <!-- paging navbar -->
@@ -668,18 +669,18 @@ export default {
     }
   },
   watch: {
-    'query.view': function (newView, oldView) {
-      this.viewChanged = true;
-      this.$nextTick(() => {
-        this.loadData(true);
-      });
-    },
     '$store.state.stickyViz': function () {
       this.stickyHeader = this.$store.state.stickyViz;
       this.toggleStickyHeader();
     }
   },
   methods: {
+    loadNewView: function () {
+      this.viewChanged = true;
+      this.$nextTick(() => {
+        this.loadData(true);
+      });
+    },
     /* show the overflow when a dropdown in a column header is shown. otherwise,
      * the dropdown is cut off and scrolls vertically in the column header */
     dropdownShowListener: function (bvEvent) {
@@ -1361,8 +1362,6 @@ export default {
       this.sorts = this.tableState.order || JSON.parse(JSON.stringify(Utils.getDefaultTableState().order));
 
       if (this.viewChanged && this.views) {
-        this.mapHeadersToFields();
-
         for (let view in this.views) {
           if (view === this.query.view && this.views[view].sessionsColConfig) {
             this.tableState = JSON.parse(JSON.stringify(this.views[view].sessionsColConfig));
@@ -1370,6 +1369,8 @@ export default {
             this.saveTableState();
           }
         }
+
+        this.mapHeadersToFields();
 
         this.updateTable = true;
         this.viewChanged = false;

@@ -485,6 +485,8 @@ export default {
           view: view
         }
       });
+
+      this.$emit('setView');
     },
     /* helper functions ------------------------------------------ */
     getViews: function () {
