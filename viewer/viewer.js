@@ -1929,6 +1929,7 @@ app.post('/user/views/create', [noCacheJson, checkCookieToken, logAction(), getS
 
   let newView = {
     expression: req.body.expression,
+    name: req.body.name,
     user: user.userId
   };
 

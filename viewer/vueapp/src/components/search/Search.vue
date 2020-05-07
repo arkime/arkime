@@ -88,6 +88,29 @@
           <span v-if="value.shared"
             class="fa fa-share-square">
           </span>
+
+          <button class="btn btn-xs btn-danger pull-right ml-1"
+            type="button"
+            @click.stop.prevent="deleteView(value, key)">
+            <span class="fa fa-trash-o">
+            </span>
+          </button>
+          <button class="btn btn-xs btn-warning pull-right"
+            :disabled="!expression"
+            type="button"
+            :id="'updateview' + key"
+            @click.stop.prevent="updateView(key)">
+            <span class="fa fa-save">
+            </span>
+          </button>
+
+          <b-tooltip v-if="value.sessionsColConfig"
+            :target="'updateview' + key"
+            placement="topleft"
+            boundary="window">
+            Update view WITH current table configuration
+          </b-tooltip>
+
           {{ key }}&nbsp;
           <span v-if="value.sessionsColConfig"
             class="fa fa-columns cursor-help"
@@ -397,8 +420,58 @@ export default {
     /* updates the views list with the included new view */
     newView: function (view, viewName) {
       if (view && viewName && this.views) {
-        this.views[viewName] = view;
+        this.$set(this.views, viewName, view);
       }
+    },
+    deleteView: function (view, name) {
+      // check if deleting current view
+      if (this.view === name) {
+        this.setView(undefined);
+      }
+
+      UserService.deleteView(view, this.user.userId)
+        .then((response) => {
+          // remove the view from the view list
+          this.views[name] = null;
+          delete this.views[name];
+          // display success message to user
+          this.msg = response.text;
+          this.msgType = 'success';
+        })
+        .catch((error) => {
+          // display error message to user
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
+    },
+    updateView: function (key) {
+      let data = this.views[key];
+
+      if (!data) {
+        this.msg = 'Could not find corresponding view';
+        this.msgType = 'danger';
+        return;
+      }
+
+      // updateView will not run with undefined expressions
+      data.expression = this.expression;
+      if (data.sessionsColConfig !== undefined) {
+        // save the current sessions table column configuration
+        data.sessionsColConfig = this.$store.getters.sessionsTableState;
+      }
+      data.key = key;
+
+      UserService.updateView(data, this.userId)
+        .then((response) => {
+          // display success message to user
+          this.msg = response.text;
+          this.msgType = 'success';
+        })
+        .catch((error) => {
+          // display error message to user
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
     },
     setView: function (view) {
       this.view = view;
