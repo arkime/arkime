@@ -670,6 +670,9 @@ export default {
   watch: {
     'query.view': function (newView, oldView) {
       this.viewChanged = true;
+      this.$nextTick(() => {
+        this.loadData(true);
+      });
     },
     '$store.state.stickyViz': function () {
       this.stickyHeader = this.$store.state.stickyViz;
@@ -1690,12 +1693,12 @@ export default {
           this.$refs.tableHeader.style = undefined;
           this.$refs.draggableColumns.style = undefined;
         }
-        if (firstTableRow) { // if there is a table row in the body
+        if (firstTableRow && firstTableRow.length > 0) { // if there is a table row in the body
           // set the margin top to the height of the header so it renders below it
           firstTableRow[0].style.marginTop = `${height}px`;
         }
       } else { // if the header is not sticky
-        if (firstTableRow) { // and there is a table row in the body
+        if (firstTableRow && firstTableRow.length > 0) { // and there is a table row in the body
           // unset the top margin because the table header won't overlay it
           firstTableRow[0].style = undefined;
         }
