@@ -52,7 +52,21 @@
     "vue-template-compiler": "^2.6.11",
     "vuex": "^3.0.1"
   },
-  "scripts": {},
-  "devDependencies": {},
+  "scripts": {
+    "lint": "eslint --ext .js,.vue parliament viewer notifiers",
+    "lint-fix": "eslint --fix --ext .js,.vue parliament viewer notifiers"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.3",
+    "eslint": "^6.8.0",
+    "eslint-config-standard": "^12.0.0-alpha.0",
+    "eslint-friendly-formatter": "^4.0.1",
+    "eslint-loader": "^3.0.0",
+    "eslint-plugin-import": "^2.13.0",
+    "eslint-plugin-node": "^6.0.1",
+    "eslint-plugin-promise": "^3.8.0",
+    "eslint-plugin-standard": "^3.1.0",
+    "eslint-plugin-vue": "^5.2.3"
+  },
   "optionalDependencies": {}
 }

@@ -75,7 +75,7 @@ exports.init = function (api) {
       description: 'The subject of the email (defaults to "Parliament Alert")'
     }],
     sendAlert: exports.sendEmailAlert
-  })
+  });
 };
 
 // Slack
@@ -85,7 +85,8 @@ exports.sendSlackAlert = function (config, message, links, cb) {
     return;
   }
 
-  const slackNotifier = new Notifme.default({
+  /* eslint new-cap: ["error", { "properties": false }] */
+  const SlackNotifier = new Notifme.default({
     channels: {
       slack: {
         providers: [{
@@ -112,7 +113,7 @@ exports.sendSlackAlert = function (config, message, links, cb) {
     }
   }
 
-  slackNotifier.send(slackMsgObj)
+  SlackNotifier.send(slackMsgObj)
     .then((response) => { if (cb) { cb(response); } });
 };
 
@@ -123,7 +124,8 @@ exports.sendTwilioAlert = function (config, message, links, cb) {
     return;
   }
 
-  const twilioNotifier = new Notifme.default({
+  /* eslint new-cap: ["error", { "properties": false }] */
+  const TwilioNotifier = new Notifme.default({
     channels: {
       sms: {
         providers: [{
@@ -141,7 +143,7 @@ exports.sendTwilioAlert = function (config, message, links, cb) {
     }
   }
 
-  twilioNotifier.send({
+  TwilioNotifier.send({
     sms: {
       from: config.fromNumber,
       to: config.toNumber,
@@ -161,7 +163,8 @@ exports.sendEmailAlert = function (config, message, links, cb) {
     config.secure = false;
   }
 
-  const emailNotifier = new Notifme.default({
+  /* eslint new-cap: ["error", { "properties": false }] */
+  const EmailNotifier = new Notifme.default({
     channels: {
       email: {
         providers: [{
@@ -184,7 +187,7 @@ exports.sendEmailAlert = function (config, message, links, cb) {
     }
   }
 
-  emailNotifier.send({
+  EmailNotifier.send({
     email: {
       html: message,
       to: config.to,

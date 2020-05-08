@@ -21,7 +21,7 @@ export default {
       .then((response) => {
         this.saveToken('');
       })
-      .catch((error) =>  {
+      .catch((error) => {
         this.saveToken('');
       });
   },
