@@ -54,6 +54,8 @@
   },
   "scripts": {
     "lint": "eslint --ext .js,.vue parliament viewer notifiers",
+    "lint-viewer": "eslint --ext .js,.vue viewer",
+    "lint-parliament": "eslint --ext .js,.vue parliament",
     "lint-fix": "eslint --fix --ext .js,.vue parliament viewer notifiers"
   },
   "devDependencies": {
