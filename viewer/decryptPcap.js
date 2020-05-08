@@ -19,9 +19,6 @@
  * limitations under the License.
  */
 
-/* jshint
-  node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
-*/
 'use strict';
 var Config = require('./config.js');
 var Db = require('./db.js');
