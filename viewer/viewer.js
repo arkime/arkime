@@ -18,9 +18,9 @@
 'use strict';
 
 const MIN_DB_VERSION = 62;
-
-/// / Modules
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// Modules
+// ----------------------------------------------------------------------------
 try {
   var Config = require('./config.js');
   var express = require('express');
@@ -62,9 +62,9 @@ if (typeof express !== 'function') {
 }
 var app = express();
 
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / Config
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// Config
+// ----------------------------------------------------------------------------
 var internals = {
   CYBERCHEFVERSION: '9.16.2',
   elasticBase: Config.getArray('elasticsearch', ',', 'http://localhost:9200'),
@@ -552,9 +552,9 @@ function loadPlugins () {
   });
 }
 
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / Utility
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// Utility
+// ----------------------------------------------------------------------------
 function safeStr (str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\//g, '&#47;');
 }
@@ -768,9 +768,9 @@ class Mutex {
   }
 }
 
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / Requests
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// Requests
+// ----------------------------------------------------------------------------
 
 function addAuth (info, user, node, secret) {
   if (!info.headers) {
@@ -937,9 +937,9 @@ function isLocalView (node, yesCb, noCb) {
   return Db.isLocalView(node, yesCb, noCb);
 }
 
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / Middleware
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// Middleware
+// ----------------------------------------------------------------------------
 function checkProxyRequest (req, res, next) {
   isLocalView(req.params.nodeName, function () {
     return next();
@@ -1149,9 +1149,9 @@ function recordResponseTime (req, res, next) {
   next();
 }
 
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / Pages
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// Pages
+// ----------------------------------------------------------------------------
 // APIs disabled in demoMode, needs to be before real callbacks
 if (Config.get('demoMode', false)) {
   console.log('WARNING - Starting in demo mode, some APIs disabled');
@@ -2524,9 +2524,9 @@ app.get('/decodings', [noCacheJson], function (req, res) {
   res.send(JSON.stringify(decodeItems));
 });
 
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / EXPIRING
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// EXPIRING
+// ----------------------------------------------------------------------------
 // Search for all files on a set of nodes in a set of directories.
 // If less then size items are returned we don't delete anything.
 // Doesn't support mounting sub directories in main directory, don't do it.
@@ -2657,9 +2657,9 @@ function expireCheckAll () {
     });
   });
 }
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / Sessions Query
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// Sessions Query
+// ----------------------------------------------------------------------------
 function addSortToQuery (query, info, d) {
   function addSortDefault () {
     if (d) {
@@ -2801,15 +2801,15 @@ function lookupQueryItems (query, doneCb) {
   finished = 1;
 }
 
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / determineQueryTimes(reqQuery)
-/// /
-/// / Returns [startTimeSec, stopTimeSec, interval] using values from reqQuery.date,
-/// /   reqQuery.startTime, reqQuery.stopTime, reqQuery.interval, and
-/// /   reqQuery.segments.
-/// /
-/// / This code was factored out from buildSessionQuery.
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// determineQueryTimes(reqQuery)
+//
+// Returns [startTimeSec, stopTimeSec, interval] using values from reqQuery.date,
+//   reqQuery.startTime, reqQuery.stopTime, reqQuery.interval, and
+//   reqQuery.segments.
+//
+// This code was factored out from buildSessionQuery.
+// ----------------------------------------------------------------------------
 function determineQueryTimes (reqQuery) {
   let startTimeSec = null;
   let stopTimeSec = null;
@@ -3119,9 +3119,9 @@ function continueBuildQuery (req, query, err, finalCb, queryOverride = null) {
     });
   });
 }
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / Sessions List
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// Sessions List
+// ----------------------------------------------------------------------------
 function sessionsListAddSegments (req, indices, query, list, cb) {
   var processedRo = {};
 
@@ -3239,9 +3239,9 @@ function sessionsListFromIds (req, ids, fields, cb) {
   });
 }
 
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / APIs
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// APIs
+// ----------------------------------------------------------------------------
 app.get('/history/list', [noCacheJson, recordResponseTime, setCookie], (req, res) => {
   let userId;
   if (req.user.createEnabled) { // user is an admin, they can view all logs
@@ -3750,7 +3750,7 @@ app.post('/estask/cancelAll', [noCacheJson, logAction(), checkCookieToken, check
   });
 });
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function checkEsAdminUser (req, res, next) {
   if (internals.esAdminUsers.includes(req.user.userId)) {
     return next();
@@ -5173,19 +5173,19 @@ app.get('/dns.json', [noCacheJson, logAction()], function (req, res) {
   });
 });
 
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, resultId, cb)
-/// /
-/// / Returns (via "return cb(...)") an array of 1..2 connection query objects
-/// / (see the definition of "result" at the beginning of the function), depending on
-/// / whether or not baseline is enabled. The query and indices are initially returned
-/// / from buildSessionQuery and then adjusted by this function.
-/// /
-/// / The queries represented by these objects can be executed via
-/// / dbConnectionQuerySearch.
-/// /
-/// / This code was factored out from buildConnections.
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, resultId, cb)
+//
+// Returns (via "return cb(...)") an array of 1..2 connection query objects
+// (see the definition of "result" at the beginning of the function), depending on
+// whether or not baseline is enabled. The query and indices are initially returned
+// from buildSessionQuery and then adjusted by this function.
+//
+// The queries represented by these objects can be executed via
+// dbConnectionQuerySearch.
+//
+// This code was factored out from buildConnections.
+// ----------------------------------------------------------------------------
 function buildConnectionQuery (req, fields, options, fsrc, fdst, dstipport, resultId, cb) {
   let result = {
     resultId: resultId,
@@ -5287,18 +5287,18 @@ function buildConnectionQuery (req, fields, options, fsrc, fdst, dstipport, resu
   }, tmpReqQuery); // buildSessionQuery
 } // buildConnectionQuery
 
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / dbConnectionQuerySearch(connQueries, resultId, cb)
-/// /
-/// / Executes the query/queries specified in the connQueries array (elements are
-/// / of the type returned by buildConnectionQuery) by calling Db.searchPrimary
-/// / and returns the results via callback (see the definition of the "resultSet"
-/// / object at the beginning of this function). The results are returned in an
-/// / array containing the result sets which correspond to the queries in the
-/// / connQueries array.
-/// /
-/// / This code was factored out from buildConnections.
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// dbConnectionQuerySearch(connQueries, resultId, cb)
+//
+// Executes the query/queries specified in the connQueries array (elements are
+// of the type returned by buildConnectionQuery) by calling Db.searchPrimary
+// and returns the results via callback (see the definition of the "resultSet"
+// object at the beginning of this function). The results are returned in an
+// array containing the result sets which correspond to the queries in the
+// connQueries array.
+//
+// This code was factored out from buildConnections.
+// ----------------------------------------------------------------------------
 function dbConnectionQuerySearch (connQueries, cb) {
   let resultSet = {
     resultId: null,
@@ -5335,23 +5335,23 @@ function dbConnectionQuerySearch (connQueries, cb) {
   } // (connQueries.length > 0) / else
 } // dbConnectionQuerySearch
 
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / buildConnections(req, res, cb)
-/// /
-/// / Returns objects needed to populate the graph of logical connections between
-/// / nodes representing fields of sessions.
-/// /
-/// / function flow is:
-/// /
-/// / 0. buildConnections
-/// / 1. buildConnectionQuery       - creates array of 1..2 connQueries
-/// / 2. dbConnectionQuerySearch    - executes connQueries searches via Db.searchPrimary
-/// / 3. processResultSets          - accumulate nodes and links into nodesHash/connects hashes
-/// /    - process
-/// /      - updateValues
-/// / 4. processResultSets callback - distill nodesHash/connects hashes into
-/// /                                 nodes/links arrays and return
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// buildConnections(req, res, cb)
+//
+// Returns objects needed to populate the graph of logical connections between
+// nodes representing fields of sessions.
+//
+// function flow is:
+//
+// 0. buildConnections
+// 1. buildConnectionQuery       - creates array of 1..2 connQueries
+// 2. dbConnectionQuerySearch    - executes connQueries searches via Db.searchPrimary
+// 3. processResultSets          - accumulate nodes and links into nodesHash/connects hashes
+//    - process
+//      - updateValues
+// 4. processResultSets callback - distill nodesHash/connects hashes into
+//                                 nodes/links arrays and return
+// ----------------------------------------------------------------------------
 function buildConnections (req, res, cb) {
   let dstipport;
   if (req.query.dstField === 'ip.dst:port') {
@@ -5381,7 +5381,7 @@ function buildConnections (req, res, cb) {
   let links = [];
   let totalHits = 0;
 
-  /// ////////////////////////////////////////////////////////////////////////////////
+  // ----------------------------------------------------------------------------/
   // updateValues and process are for aggregating query results into their final form
   let dbFieldsMap = Config.getDBFieldsMap();
   function updateValues (data, property, fields) {
@@ -5410,7 +5410,7 @@ function buildConnections (req, res, cb) {
     }
   } // updateValues
 
-  /// ////////////////////////////////////////////////////////////////////////////////
+  // ----------------------------------------------------------------------------/
   function process (vsrc, vdst, f, fields, resultId) {
     // ES 6 is returning formatted timestamps instead of ms like pre 6 did
     // https://github.com/elastic/elasticsearch/issues/27740
@@ -5450,7 +5450,7 @@ function buildConnections (req, res, cb) {
     updateValues(f, connects[linkId], fields);
   } // process
 
-  /// /////////////////////////////////////////////////////////////////////////////////////////
+  // ----------------------------------------------------------------------------//////////
   // processResultSets - process the hits of each search resultset into nodesHash and connects
   function processResultSets (connResultSets, cb) {
     let resultSetStatus = {
@@ -5512,7 +5512,7 @@ function buildConnections (req, res, cb) {
     } // (connResultSets.length > 0) / else
   } // processResultSets
 
-  /// /////////////////////////////////////////////////////////////////////////////////////////
+  // ----------------------------------------------------------------------------//////////
   // call to build the session query|queries and indices
   buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, 1, function (connQueries) {
     if (Config.debug) {
@@ -7245,9 +7245,9 @@ app.get('/state/:name', [noCacheJson], function (req, res) {
   return res.send(req.user.tableStates[req.params.name]);
 });
 
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / Session Add/Remove Tags
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// Session Add/Remove Tags
+// ----------------------------------------------------------------------------
 function addTagsList (allTagNames, sessionList, doneCb) {
   if (!sessionList.length) {
     console.log('No sessions to add tags (', allTagNames, ') to');
@@ -7343,9 +7343,9 @@ app.post('/removeTags', [noCacheJson, checkHeaderToken, logAction(), checkPermis
   }
 });
 
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / Packet Search
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// Packet Search
+// ----------------------------------------------------------------------------
 function packetSearch (packet, options) {
   let found = false;
 
@@ -7997,9 +7997,9 @@ app.get('/:nodeName/hunt/:huntId/remote/:sessionId', [noCacheJson], function (re
     });
 });
 
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / Lookups
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// Lookups
+// ----------------------------------------------------------------------------
 let lookupMutex = new Mutex();
 
 app.get('/lookups', [noCacheJson, getSettingUserCache, recordResponseTime], function (req, res) {
@@ -8258,9 +8258,9 @@ app.delete('/lookups/:id', [noCacheJson, getSettingUserDb, logAction('lookups/:i
   });
 });
 
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / SPI/PCAP Delete/Scrub
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// SPI/PCAP Delete/Scrub
+// ----------------------------------------------------------------------------
 function pcapScrub (req, res, sid, whatToRemove, endCb) {
   if (pcapScrub.scrubbingBuffers === undefined) {
     pcapScrub.scrubbingBuffers = [Buffer.alloc(5000), Buffer.alloc(5000), Buffer.alloc(5000)];
@@ -8427,9 +8427,9 @@ app.post('/delete', [noCacheJson, checkCookieToken, logAction(), checkPermission
   }
 });
 
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / Sending/Receive sessions
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// Sending/Receive sessions
+// ----------------------------------------------------------------------------
 function sendSessionWorker (options, cb) {
   var packetslen = 0;
   var packets = [];
@@ -8915,9 +8915,9 @@ if (Config.get('regressionTests')) {
   });
 }
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 // Cyberchef
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 /* cyberchef endpoint - loads the src or dst packets for a session and
  * sends them to cyberchef */
 app.get('/cyberchef/:nodeName/session/:id', checkPermissions(['webEnabled']), checkProxyRequest, unsafeInlineCspHeader, (req, res) => {
@@ -8973,9 +8973,9 @@ app.use(['/cyberchef/', '/modules/'], unsafeInlineCspHeader, (req, res) => {
     });
 });
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 // Vue app
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 const Vue = require('vue');
 const vueServerRenderer = require('vue-server-renderer');
 
@@ -9051,9 +9051,9 @@ app.use(cspHeader, setCookie, (req, res) => {
   });
 });
 
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / Cron Queries
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// Cron Queries
+// ----------------------------------------------------------------------------
 
 /* Process a single cron query.  At max it will process 24 hours worth of data
  * to give other queries a chance to run.  Because its timestamp based and not
@@ -9296,9 +9296,9 @@ function processCronQueries () {
   });
 }
 
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / Main
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// Main
+// ----------------------------------------------------------------------------
 function main () {
   Db.checkVersion(MIN_DB_VERSION, Config.get('passwordSecret') !== undefined);
   Db.healthCache(function (err, health) {
@@ -9360,9 +9360,9 @@ function main () {
     .listen(Config.get('viewPort', '8005'), viewHost)
     .setTimeout(20 * 60 * 1000);
 }
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / Command Line Parsing
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// Command Line Parsing
+// ----------------------------------------------------------------------------
 function processArgs (argv) {
   for (var i = 0, ilen = argv.length; i < ilen; i++) {
     if (argv[i] === '--help') {
@@ -9381,9 +9381,9 @@ function processArgs (argv) {
   }
 }
 processArgs(process.argv);
-/// ///////////////////////////////////////////////////////////////////////////////
-/// / DB
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// DB
+// ----------------------------------------------------------------------------
 Db.initialize({ host: internals.elasticBase,
   prefix: Config.get('prefix', ''),
   usersHost: Config.get('usersElasticsearch') ? Config.getArray('usersElasticsearch', ',', '') : undefined,
