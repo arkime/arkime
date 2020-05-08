@@ -723,7 +723,7 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
                                                    NULL);
         snprintf(name, sizeof(name), "%s", keys[k]);
         int type = 0;
-        int t = 0;
+        MolochFieldTypes t = MOLOCH_FIELD_TYPE_INT;
         int unique = 1;
         int count  = 0;
         char *kind = 0;

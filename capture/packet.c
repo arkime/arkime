@@ -611,7 +611,7 @@ int moloch_packet_frags_outstanding()
     return 0;
 }
 /******************************************************************************/
-LOCAL void moloch_packet_log(int ses)
+LOCAL void moloch_packet_log(SessionTypes ses)
 {
     MolochReaderStats_t stats;
     if (moloch_reader_stats(&stats)) {

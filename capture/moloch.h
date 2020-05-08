@@ -164,17 +164,19 @@ typedef HASH_VAR(s_, MolochCertsInfoHashStd_t, MolochCertsInfoHead_t, 5);
  * Information about the various fields that we capture
  */
 
-#define MOLOCH_FIELD_TYPE_INT        0
-#define MOLOCH_FIELD_TYPE_INT_ARRAY  1
-#define MOLOCH_FIELD_TYPE_INT_HASH   2
-#define MOLOCH_FIELD_TYPE_INT_GHASH  3
-#define MOLOCH_FIELD_TYPE_STR        4
-#define MOLOCH_FIELD_TYPE_STR_ARRAY  5
-#define MOLOCH_FIELD_TYPE_STR_HASH   6
-#define MOLOCH_FIELD_TYPE_STR_GHASH  7
-#define MOLOCH_FIELD_TYPE_IP         8
-#define MOLOCH_FIELD_TYPE_IP_GHASH   9
-#define MOLOCH_FIELD_TYPE_CERTSINFO 10
+typedef enum {
+    MOLOCH_FIELD_TYPE_INT,
+    MOLOCH_FIELD_TYPE_INT_ARRAY,
+    MOLOCH_FIELD_TYPE_INT_HASH,
+    MOLOCH_FIELD_TYPE_INT_GHASH,
+    MOLOCH_FIELD_TYPE_STR,
+    MOLOCH_FIELD_TYPE_STR_ARRAY,
+    MOLOCH_FIELD_TYPE_STR_HASH,
+    MOLOCH_FIELD_TYPE_STR_GHASH,
+    MOLOCH_FIELD_TYPE_IP,
+    MOLOCH_FIELD_TYPE_IP_GHASH,
+    MOLOCH_FIELD_TYPE_CERTSINFO
+} MolochFieldTypes;
 
 /* These are ones you should set */
 /* Field should be set on all linked sessions */
@@ -216,7 +218,7 @@ typedef struct moloch_field_info {
     char                     *kind;
     char                     *category;
     int                       pos;
-    uint16_t                  type;
+    MolochFieldTypes          type;
     uint16_t                  flags;
     char                      ruleEnabled;
     char                     *transform;
@@ -289,13 +291,15 @@ typedef struct {
 
 /******************************************************************************/
 
-#define SESSION_TCP   0
-#define SESSION_UDP   1
-#define SESSION_ICMP  2
-#define SESSION_SCTP  3
-#define SESSION_ESP   4
-#define SESSION_OTHER 5
-#define SESSION_MAX   6
+typedef enum {
+    SESSION_TCP,
+    SESSION_UDP,
+    SESSION_ICMP,
+    SESSION_SCTP,
+    SESSION_ESP,
+    SESSION_OTHER,
+    SESSION_MAX
+} SessionTypes;
 
 /******************************************************************************/
 /*
@@ -653,7 +657,7 @@ typedef struct moloch_session {
     uint16_t               stopSPI:1;
     uint16_t               closingQ:1;
     uint16_t               stopTCP:1;
-    uint16_t               ses:3;
+    SessionTypes           ses:3;
     uint16_t               midSave:1;
     uint16_t               outOfOrder:2;
     uint16_t               ackedUnseenSegment:2;
@@ -971,12 +975,12 @@ void     moloch_session_add_tag(MolochSession_t *session, const char *tag);
 #define  moloch_session_incr_outstanding(session) (session)->outstandingQueries++
 gboolean moloch_session_decr_outstanding(MolochSession_t *session);
 
-void     moloch_session_mark_for_close (MolochSession_t *session, int ses);
+void     moloch_session_mark_for_close(MolochSession_t *session, SessionTypes ses);
 
 void     moloch_session_mid_save(MolochSession_t *session, uint32_t tv_sec);
 
-int      moloch_session_watch_count(int ses);
-int      moloch_session_idle_seconds(int ses);
+int      moloch_session_watch_count(SessionTypes ses);
+int      moloch_session_idle_seconds(SessionTypes ses);
 int      moloch_session_close_outstanding();
 
 void     moloch_session_flush();
@@ -1198,7 +1202,7 @@ void moloch_field_init();
 void moloch_field_define_json(unsigned char *expression, int expression_len, unsigned char *data, int data_len);
 int  moloch_field_define_text(char *text, int *shortcut);
 int  moloch_field_define_text_full(char *field, char *text, int *shortcut);
-int  moloch_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int type, int flags, ...);
+int  moloch_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, MolochFieldTypes type, int flags, ...);
 int  moloch_field_by_db(const char *dbField);
 int  moloch_field_by_exp(const char *exp);
 const char *moloch_field_string_add(int pos, MolochSession_t *session, const char *string, int len, gboolean copy);

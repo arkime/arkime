@@ -54,7 +54,7 @@ struct suricataitem_t {
     uint16_t        action_len;
     uint16_t        signature_len;
     uint16_t        category_len;
-    char            ses;
+    SessionTypes    ses;
 };
 
 #define SURICATA_HASH_SIZE 7919
