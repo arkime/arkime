@@ -31,6 +31,7 @@ module.exports = {
     'prefer-promise-reject-errors': 0,
     'standard/no-callback-literal': 'off',
     'no-labels': ['error', { 'allowLoop': true }],
-    'no-new-func': 'off'
+    'no-new-func': 'off',
+    'indent': 'off'
   }
 }

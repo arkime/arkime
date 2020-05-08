@@ -2856,21 +2856,21 @@ function determineQueryTimes (reqQuery) {
   }
 
   switch (reqQuery.interval) {
-    case 'second':
-      interval = 1;
-      break;
-    case 'minute':
-      interval = 60;
-      break;
-    case 'hour':
-      interval = 60 * 60;
-      break;
-    case 'day':
-      interval = 60 * 60 * 24;
-      break;
-    case 'week':
-      interval = 60 * 60 * 24 * 7;
-      break;
+  case 'second':
+    interval = 1;
+    break;
+  case 'minute':
+    interval = 60;
+    break;
+  case 'hour':
+    interval = 60 * 60;
+    break;
+  case 'day':
+    interval = 60 * 60 * 24;
+    break;
+  case 'week':
+    interval = 60 * 60 * 24 * 7;
+    break;
   }
 
   if (Config.debug) {
@@ -2933,42 +2933,42 @@ function buildSessionQuery (req, buildCb, queryOverride = null) {
 
   } else if (reqQuery.startTime !== undefined && reqQuery.stopTime) {
     switch (reqQuery.bounding) {
-      case 'first':
-        query.query.bool.filter.push({ range: { firstPacket: { gte: reqQuery.startTime * 1000, lte: reqQuery.stopTime * 1000 } } });
-        break;
-      default:
-      case 'last':
-        query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000, lte: reqQuery.stopTime * 1000 } } });
-        break;
-      case 'both':
-        query.query.bool.filter.push({ range: { firstPacket: { gte: reqQuery.startTime * 1000 } } });
-        query.query.bool.filter.push({ range: { lastPacket: { lte: reqQuery.stopTime * 1000 } } });
-        break;
-      case 'either':
-        query.query.bool.filter.push({ range: { firstPacket: { lte: reqQuery.stopTime * 1000 } } });
-        query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
-        break;
-      case 'database':
-        query.query.bool.filter.push({ range: { timestamp: { gte: reqQuery.startTime * 1000, lte: reqQuery.stopTime * 1000 } } });
-        break;
+    case 'first':
+      query.query.bool.filter.push({ range: { firstPacket: { gte: reqQuery.startTime * 1000, lte: reqQuery.stopTime * 1000 } } });
+      break;
+    default:
+    case 'last':
+      query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000, lte: reqQuery.stopTime * 1000 } } });
+      break;
+    case 'both':
+      query.query.bool.filter.push({ range: { firstPacket: { gte: reqQuery.startTime * 1000 } } });
+      query.query.bool.filter.push({ range: { lastPacket: { lte: reqQuery.stopTime * 1000 } } });
+      break;
+    case 'either':
+      query.query.bool.filter.push({ range: { firstPacket: { lte: reqQuery.stopTime * 1000 } } });
+      query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
+      break;
+    case 'database':
+      query.query.bool.filter.push({ range: { timestamp: { gte: reqQuery.startTime * 1000, lte: reqQuery.stopTime * 1000 } } });
+      break;
     }
   } else {
     switch (reqQuery.bounding) {
-      case 'first':
-        query.query.bool.filter.push({ range: { firstPacket: { gte: reqQuery.startTime * 1000 } } });
-        break;
-      default:
-      case 'both':
-      case 'last':
-        query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
-        break;
-      case 'either':
-        query.query.bool.filter.push({ range: { firstPacket: { lte: reqQuery.stopTime * 1000 } } });
-        query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
-        break;
-      case 'database':
-        query.query.bool.filter.push({ range: { timestamp: { gte: reqQuery.startTime * 1000 } } });
-        break;
+    case 'first':
+      query.query.bool.filter.push({ range: { firstPacket: { gte: reqQuery.startTime * 1000 } } });
+      break;
+    default:
+    case 'both':
+    case 'last':
+      query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
+      break;
+    case 'either':
+      query.query.bool.filter.push({ range: { firstPacket: { lte: reqQuery.stopTime * 1000 } } });
+      query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
+      break;
+    case 'database':
+      query.query.bool.filter.push({ range: { timestamp: { gte: reqQuery.startTime * 1000 } } });
+      break;
     }
   }
 
@@ -3005,15 +3005,15 @@ function buildSessionQuery (req, buildCb, queryOverride = null) {
     }
 
     switch (reqQuery.bounding) {
-      case 'first':
-        query.aggregations.dbHisto.histogram = { field: 'firstPacket', interval: interval * 1000, min_doc_count: 1 };
-        break;
-      case 'database':
-        query.aggregations.dbHisto.histogram = { field: 'timestamp', interval: interval * 1000, min_doc_count: 1 };
-        break;
-      default:
-        query.aggregations.dbHisto.histogram = { field: 'lastPacket', interval: interval * 1000, min_doc_count: 1 };
-        break;
+    case 'first':
+      query.aggregations.dbHisto.histogram = { field: 'firstPacket', interval: interval * 1000, min_doc_count: 1 };
+      break;
+    case 'database':
+      query.aggregations.dbHisto.histogram = { field: 'timestamp', interval: interval * 1000, min_doc_count: 1 };
+      break;
+    default:
+      query.aggregations.dbHisto.histogram = { field: 'lastPacket', interval: interval * 1000, min_doc_count: 1 };
+      break;
     }
   }
 
@@ -6041,16 +6041,16 @@ function processSessionIdDisk (session, headerCb, packetCb, endCb, limit) {
     pcap.ref();
     pcap.readPacket(pos, function (packet) {
       switch (packet) {
-        case null:
-          let msg = util.format(session._id, 'in file', pcap.filename, "couldn't read packet at", pos, 'packet #', i, 'of', fields.packetPos.length);
-          console.log('ERROR - processSessionIdDisk -', msg);
-          endCb(msg, null);
-          break;
-        case undefined:
-          break;
-        default:
-          packetCb(pcap, packet, nextCb, i);
-          break;
+      case null:
+        let msg = util.format(session._id, 'in file', pcap.filename, "couldn't read packet at", pos, 'packet #', i, 'of', fields.packetPos.length);
+        console.log('ERROR - processSessionIdDisk -', msg);
+        endCb(msg, null);
+        break;
+      case undefined:
+        break;
+      default:
+        packetCb(pcap, packet, nextCb, i);
+        break;
       }
       pcap.unref();
     });
@@ -7350,33 +7350,33 @@ function packetSearch (packet, options) {
   let found = false;
 
   switch (options.searchType) {
-    case 'asciicase':
-      if (packet.toString().includes(options.search)) {
-        found = true;
-      }
-      break;
-    case 'ascii':
-      if (packet.toString().toLowerCase().includes(options.search.toLowerCase())) {
-        found = true;
-      }
-      break;
-    case 'regex':
-      if (options.regex && packet.toString().match(options.regex)) {
-        found = true;
-      }
-      break;
-    case 'hex':
-      if (packet.toString('hex').includes(options.search)) {
-        found = true;
-      }
-      break;
-    case 'hexregex':
-      if (options.regex && packet.toString('hex').match(options.regex)) {
-        found = true;
-      }
-      break;
-    default:
-      console.log('Invalid hunt search type');
+  case 'asciicase':
+    if (packet.toString().includes(options.search)) {
+      found = true;
+    }
+    break;
+  case 'ascii':
+    if (packet.toString().toLowerCase().includes(options.search.toLowerCase())) {
+      found = true;
+    }
+    break;
+  case 'regex':
+    if (options.regex && packet.toString().match(options.regex)) {
+      found = true;
+    }
+    break;
+  case 'hex':
+    if (packet.toString('hex').includes(options.search)) {
+      found = true;
+    }
+    break;
+  case 'hexregex':
+    if (options.regex && packet.toString('hex').match(options.regex)) {
+      found = true;
+    }
+    break;
+  default:
+    console.log('Invalid hunt search type');
   }
 
   return found;
