@@ -14,7 +14,6 @@
     "dev:debug": "node parliament.js --pass admin --port 8008 -c ./parliament.dev.json --debug & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
     "dev:noauth": "node parliament.js --port 8008 -c ./parliament.dev.json & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
     "dev:dashboard": "node parliament.js --port 8008 -c ./parliament.dev.json --dashboardOnly & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "lint": "eslint parliament.js --ext .js,.vue vueapp/src",
     "bundle": "webpack -d --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
     "bundle:min": "node vueapp/build/build.js"
   },
@@ -26,7 +25,6 @@
   "devDependencies": {
     "autoprefixer": "^7.1.2",
     "babel-core": "^6.22.1",
-    "babel-eslint": "^10.0.3",
     "babel-helper-vue-jsx-merge-props": "^2.0.3",
     "babel-loader": "^7.1.1",
     "babel-plugin-syntax-jsx": "^6.18.0",
@@ -39,15 +37,6 @@
     "chalk": "^2.0.1",
     "copy-webpack-plugin": "^5.1.1",
     "css-loader": "^2.1.1",
-    "eslint": "^6.2.2",
-    "eslint-config-standard": "^12.0.0-alpha.0",
-    "eslint-friendly-formatter": "^4.0.1",
-    "eslint-loader": "^3.0.0",
-    "eslint-plugin-import": "^2.13.0",
-    "eslint-plugin-node": "^6.0.1",
-    "eslint-plugin-promise": "^3.8.0",
-    "eslint-plugin-standard": "^3.1.0",
-    "eslint-plugin-vue": "^5.2.3",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "file-loader": "^1.1.4",
     "friendly-errors-webpack-plugin": "^1.6.1",
@@ -72,7 +61,7 @@
     "webpack": "^4.43.0",
     "webpack-bundle-analyzer": "^3.6.1",
     "webpack-cli": "^3.3.1",
-    "webpack-dev-server": "^3.3.1",
+    "webpack-dev-server": "^3.11.0",
     "webpack-merge": "4.1.2"
   },
   "engines": {

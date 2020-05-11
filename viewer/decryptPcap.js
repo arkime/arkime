@@ -19,22 +19,19 @@
  * limitations under the License.
  */
 
-/*jshint
-  node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
-*/
 'use strict';
-var Config = require("./config.js");
-var Db = require ("./db.js");
+var Config = require('./config.js');
+var Db = require('./db.js');
 var crypto = require('crypto');
 var fs = require('fs');
 
-var escInfo = Config.getArray("elasticsearch", ',', "http://localhost:9200");
+var escInfo = Config.getArray('elasticsearch', ',', 'http://localhost:9200');
 
-function main() {
-  let query = {size: 100, query: {term: {name: process.argv[2]}}, sort: [{num: {order: "desc"}}]};
+function main () {
+  let query = { size: 100, query: { term: { name: process.argv[2] } }, sort: [{ num: { order: 'desc' } }] };
   Db.search('files', 'file', query, (err, data) => {
     if (err) {
-      console.error("ES Error", err);
+      console.error('ES Error', err);
       process.exit();
     }
     if (data.hits.hits.length === 0) {
@@ -48,14 +45,14 @@ function main() {
     }
 
     // Get the kek
-    let kek = Config.sectionGet("keks", info.kekId, undefined);
+    let kek = Config.sectionGet('keks', info.kekId, undefined);
     if (kek === undefined) {
-      console.error("ERROR - Couldn't find kek", info.kekId, "in keks section");
+      console.error("ERROR - Couldn't find kek", info.kekId, 'in keks section');
       process.exit();
     }
 
-    // Decrypt the dek 
-    let kdecipher = crypto.createDecipher("aes-192-cbc", kek);
+    // Decrypt the dek
+    let kdecipher = crypto.createDecipher('aes-192-cbc', kek);
     let encKey = Buffer.concat([kdecipher.update(Buffer.from(info.dek, 'hex')), kdecipher.final()]);
 
     // Setup IV
@@ -65,26 +62,25 @@ function main() {
     // Setup streams
     let r = fs.createReadStream(process.argv[2]);
     let d = crypto.createDecipheriv(info.encoding, encKey, iv);
-    d.on('end', function() {
+    d.on('end', function () {
       process.exit();
     });
 
     // Doit
     r.pipe(d).pipe(process.stdout);
   });
-
 }
 
 if (process.argv.length < 3) {
-  console.log("Missing full path filename");
+  console.log('Missing full path filename');
   process.exit();
 }
 
-Db.initialize({host : escInfo,
-               prefix: Config.get("prefix", ""),
-               esClientKey: Config.get("esClientKey", null),
-               esClientCert: Config.get("esClientCert", null),
-               esClientKeyPass: Config.get("esClientKeyPass", null),
-               insecure: Config.insecure,
-               usersHost: Config.get("usersElasticsearch"),
-               usersPrefix: Config.get("usersPrefix")}, main);
+Db.initialize({ host: escInfo,
+  prefix: Config.get('prefix', ''),
+  esClientKey: Config.get('esClientKey', null),
+  esClientCert: Config.get('esClientCert', null),
+  esClientKeyPass: Config.get('esClientKeyPass', null),
+  insecure: Config.insecure,
+  usersHost: Config.get('usersElasticsearch'),
+  usersPrefix: Config.get('usersPrefix') }, main);
