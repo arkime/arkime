@@ -249,7 +249,7 @@ LOCAL void smtp_email_add_encoded(MolochSession_t *session, int pos, char *strin
 
         /* Start of encoded token */
         char *question = strchr(str+2, '?');
-        if (!question) {
+        if (!question || strlen(question) < 5) { /* ?[qQbB]?<encoded-text>?= support empty text*/
             moloch_field_string_add(pos, session, string, len, TRUE);
             return;
         }
