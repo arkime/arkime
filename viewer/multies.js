@@ -15,56 +15,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*jshint
-  node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
-*/
+
 'use strict';
 
-
-//// Modules
-//////////////////////////////////////////////////////////////////////////////////
+/// / Modules
+/// ///////////////////////////////////////////////////////////////////////////////
 try {
-var Config         = require('./config.js'),
-    express        = require('express'),
-    async          = require('async'),
-    URL            = require('url'),
-    ESC            = require('elasticsearch'),
-    http           = require('http'),
-    https          = require('https'),
-    fs             = require('fs');
+  var Config = require('./config.js');
+  var express = require('express');
+  var async = require('async');
+  var URL = require('url');
+  var ESC = require('elasticsearch');
+  var http = require('http');
+  var https = require('https');
+  var fs = require('fs');
+  var path = require('path');
 } catch (e) {
-  console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
+  console.log("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
 }
 
-var esSSLOptions = {rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName())};
-var esClientKey = Config.get("esClientKey");
-var esClientCert = Config.get("esClientCert");
-if(esClientKey) {
+var esSSLOptions = { rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName()) };
+var esClientKey = Config.get('esClientKey');
+var esClientCert = Config.get('esClientCert');
+if (esClientKey) {
   esSSLOptions.key = fs.readFileSync(esClientKey);
   esSSLOptions.cert = fs.readFileSync(esClientCert);
-  var esClientKeyPass = Config.get("esClientKeyPass");
-  if(esClientKeyPass) {
-     esSSLOptions.passphrase = esClientKeyPass;
+  var esClientKeyPass = Config.get('esClientKeyPass');
+  if (esClientKeyPass) {
+    esSSLOptions.passphrase = esClientKeyPass;
   }
 }
 
 var clients = {};
 var nodes = [];
-var httpAgent  =  new http.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 100});
-var httpsAgent =  new https.Agent(Object.assign({keepAlive: true, keepAliveMsecs:5000, maxSockets: 100}, esSSLOptions));
+var httpAgent = new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 });
+var httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 }, esSSLOptions));
 
-function hasBody(req) {
+function hasBody (req) {
   var encoding = 'transfer-encoding' in req.headers;
   var length = 'content-length' in req.headers && req.headers['content-length'] !== '0';
   return encoding || length;
 }
 
 function saveBody (req, res, next) {
-  if (req._body) {return next();}
+  if (req._body) { return next(); }
   req.body = req.body || {};
 
-  if (!hasBody(req)) {return next();}
+  if (!hasBody(req)) { return next(); }
 
   // flag as parsed
   req._body = true;
@@ -80,54 +78,54 @@ function saveBody (req, res, next) {
 }
 
 // app.configure
-var logger = require("morgan");
-var favicon = require("serve-favicon");
+var logger = require('morgan');
+var favicon = require('serve-favicon');
 var compression = require('compression');
 
 var app = express();
-app.enable("jsonp callback");
-app.use(favicon(__dirname + '/public/favicon.ico'));
+app.enable('jsonp callback');
+app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
 app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'));
 app.use(saveBody);
 app.use(compression());
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   if (res.setTimeout) {
     res.setTimeout(10 * 60 * 1000); // Increase default from 2 min to 10 min
     return next();
   }
 });
 
-function node2Url(node) {
+function node2Url (node) {
   var url = node.split(',')[0];
-  if (url.match(/^http/)) {return url;}
-  return "http://" + url;
+  if (url.match(/^http/)) { return url; }
+  return 'http://' + url;
 }
 
-function node2Prefix(node) {
+function node2Prefix (node) {
   var parts = node.split(',');
   for (var p = 1; p < parts.length; p++) {
     var kv = parts[p].split(':');
-    if (kv[0] === "prefix") {
-      if (kv[1].charAt(kv[1].length-1) !== "_") {
-        return kv[1] + "_";
+    if (kv[0] === 'prefix') {
+      if (kv[1].charAt(kv[1].length - 1) !== '_') {
+        return kv[1] + '_';
       }
       return kv[1];
     }
   }
-  return "";
+  return '';
 }
 
 var activeESNodes = [];
 
-function getActiveNodes(){
+function getActiveNodes () {
   return activeESNodes.slice();
 }
 
 // Go thru all the ES nodes and perform the same query and return the bodies for further processing
-function simpleGather(req, res, bodies, doneCb) {
+function simpleGather (req, res, bodies, doneCb) {
   var nodes = getActiveNodes();
   async.map(nodes, (node, asyncCb) => {
-    var result = "";
+    var result = '';
     var url = node2Url(node) + req.url;
     var prefix = node2Prefix(node);
 
@@ -136,10 +134,10 @@ function simpleGather(req, res, bodies, doneCb) {
     info.method = req.method;
     var client;
     if (url.match(/^https:/)) {
-      info.agent  = httpsAgent;
+      info.agent = httpsAgent;
       client = https;
     } else {
-      info.agent  = httpAgent;
+      info.agent = httpAgent;
       client = http;
     }
     var preq = client.request(info, (pres) => {
@@ -148,8 +146,8 @@ function simpleGather(req, res, bodies, doneCb) {
       });
       pres.on('end', () => {
         if (result.length) {
-          result = result.replace(new RegExp('(index":\s*|[,{]|  )"' + prefix + "(sessions2|sessions|stats|dstats|sequence|files|users|history)", "g"), "$1\"MULTIPREFIX_$2");
-          result = result.replace(new RegExp('(index":\s*)"' + prefix + "(fields_v[1-4])\"", "g"), "$1\"MULTIPREFIX_$2\"");
+          result = result.replace(new RegExp('(index":\\s*|[,{]|  )"' + prefix + '(sessions2|sessions|stats|dstats|sequence|files|users|history)', 'g'), '$1"MULTIPREFIX_$2');
+          result = result.replace(new RegExp('(index":\\s*)"' + prefix + '(fields_v[1-4])"', 'g'), '$1"MULTIPREFIX_$2"');
           result = JSON.parse(result);
         } else {
           result = {};
@@ -158,7 +156,7 @@ function simpleGather(req, res, bodies, doneCb) {
         asyncCb(null, result);
       });
     });
-    preq.setHeader('content-type', "application/json");
+    preq.setHeader('content-type', 'application/json');
     if (req.headers['x-opaque-id'] !== undefined) {
       preq.setHeader('X-Opaque-Id', req.headers['x-opaque-id']);
     }
@@ -170,20 +168,20 @@ function simpleGather(req, res, bodies, doneCb) {
       }
     }
     preq.on('error', (e) => {
-      console.log("Request error with node", node, e);
+      console.log('Request error with node', node, e);
     });
     preq.end();
   }, doneCb);
 }
 
-function shallowCopy(obj1, obj2) {
+function shallowCopy (obj1, obj2) {
   for (var attrname in obj2) {
     obj1[attrname] = obj2[attrname];
   }
 }
 
 // Merge all the top level nodes fields
-function simpleGatherNodes(req, res) {
+function simpleGatherNodes (req, res) {
   simpleGather(req, res, null, (err, results) => {
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
@@ -194,7 +192,7 @@ function simpleGatherNodes(req, res) {
 }
 
 // Merge all the top level tasks fields
-function simpleGatherTasks(req, res) {
+function simpleGatherTasks (req, res) {
   simpleGather(req, res, null, (err, results) => {
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
@@ -204,44 +202,44 @@ function simpleGatherTasks(req, res) {
   });
 }
 
-function shallowAdd(obj1, obj2) {
+function shallowAdd (obj1, obj2) {
   for (var attrname in obj2) {
-    if (typeof obj2[attrname] === "number") {
+    if (typeof obj2[attrname] === 'number') {
       obj1[attrname] += obj2[attrname];
     }
   }
 }
 // For any top level number field add them together
-function simpleGatherAdd(req, res) {
+function simpleGatherAdd (req, res) {
   simpleGather(req, res, null, (err, results) => {
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
       shallowAdd(obj, results[i]);
     }
-    obj.cluster_name = "COMBINED";
+    obj.cluster_name = 'COMBINED';
     res.send(obj);
   });
 }
 
-function simpleGatherFirst(req, res) {
+function simpleGatherFirst (req, res) {
   simpleGather(req, res, null, (err, results) => {
     res.send(results[0]);
   });
 }
 
-app.get("/_tasks", simpleGatherTasks);
-app.post("/_tasks/:taskId/_cancel", simpleGatherFirst);
+app.get('/_tasks', simpleGatherTasks);
+app.post('/_tasks/:taskId/_cancel', simpleGatherFirst);
 
-app.get("/_cluster/nodes/stats", simpleGatherNodes);
-app.get("/_nodes", simpleGatherNodes);
-app.get("/_nodes/stats", simpleGatherNodes);
-app.get("/_nodes/stats/:kinds", simpleGatherNodes);
-app.get("/_cluster/health", simpleGatherAdd);
+app.get('/_cluster/nodes/stats', simpleGatherNodes);
+app.get('/_nodes', simpleGatherNodes);
+app.get('/_nodes/stats', simpleGatherNodes);
+app.get('/_nodes/stats/:kinds', simpleGatherNodes);
+app.get('/_cluster/health', simpleGatherAdd);
 
-app.get("/:index/_aliases", simpleGatherNodes);
-app.get("/:index/_alias", simpleGatherNodes);
+app.get('/:index/_aliases', simpleGatherNodes);
+app.get('/:index/_alias', simpleGatherNodes);
 
-app.get("/:index/_status", (req, res) => {
+app.get('/:index/_status', (req, res) => {
   simpleGather(req, res, null, (err, results) => {
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
@@ -258,9 +256,9 @@ app.get("/:index/_status", (req, res) => {
   });
 });
 
-app.get("/:index/_stats", (req, res) => {
+app.get('/:index/_stats', (req, res) => {
   simpleGather(req, res, null, (err, results) => {
-    //console.log("DEBUG - _stats results", JSON.stringify(results, null, 2));
+    // console.log("DEBUG - _stats results", JSON.stringify(results, null, 2));
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
       for (var index in results[i].indices) {
@@ -276,9 +274,9 @@ app.get("/:index/_stats", (req, res) => {
   });
 });
 
-app.get("/_template/MULTIPREFIX_sessions2_template", (req, res) => {
+app.get('/_template/MULTIPREFIX_sessions2_template', (req, res) => {
   simpleGather(req, res, null, (err, results) => {
-    //console.log("DEBUG -", JSON.stringify(results, null, 2));
+    // console.log("DEBUG -", JSON.stringify(results, null, 2));
 
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
@@ -290,30 +288,30 @@ app.get("/_template/MULTIPREFIX_sessions2_template", (req, res) => {
   });
 });
 
-app.get(["/users/user/:user", "/users/_doc/:user"], (req, res) => {
-  clients[nodes[0]].get({index: "users", type: "_doc", id: req.params.user}, (err, result) => {
+app.get(['/users/user/:user', '/users/_doc/:user'], (req, res) => {
+  clients[nodes[0]].get({ index: 'users', type: '_doc', id: req.params.user }, (err, result) => {
     res.send(result);
   });
 });
 
-app.post(["/users/user/:user", "/users/_doc/:user"], (req, res) => {
-  clients[nodes[0]].index({index: "users", type: "_doc", id: req.params.user, body: req.body, refresh: true}, (err, result) => {
+app.post(['/users/user/:user', '/users/_doc/:user'], (req, res) => {
+  clients[nodes[0]].index({ index: 'users', type: '_doc', id: req.params.user, body: req.body, refresh: true }, (err, result) => {
     res.send(result);
   });
 });
 
-app.get("/_cat/master", (req, res) => {
-  clients[nodes[0]].cat.master({format: "json"}, (err, result) => {
+app.get('/_cat/master', (req, res) => {
+  clients[nodes[0]].cat.master({ format: 'json' }, (err, result) => {
     res.send(result);
   });
 });
 
-app.get(["/:index/:type/_search", "/:index/_search"], (req, res) => {
+app.get(['/:index/:type/_search', '/:index/_search'], (req, res) => {
   simpleGather(req, res, null, (err, results) => {
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
       if (results[i].error) {
-        console.log("ERROR - GET _search", req.query.index, req.query.type,  results[i].error);
+        console.log('ERROR - GET _search', req.query.index, req.query.type, results[i].error);
       }
       obj.hits.total += results[i].hits.total;
       obj.hits.hits = obj.hits.hits.concat(results[i].hits.hits);
@@ -322,7 +320,7 @@ app.get(["/:index/:type/_search", "/:index/_search"], (req, res) => {
   });
 });
 
-app.get("/:index/:type/:id", function(req, res) {
+app.get('/:index/:type/:id', function (req, res) {
   simpleGather(req, res, null, (err, results) => {
     for (var i = 0; i < results.length; i++) {
       if (results[i].found) {
@@ -333,33 +331,30 @@ app.get("/:index/:type/:id", function(req, res) {
   });
 });
 
-app.get("/_cluster/settings", function(req, res) {
-  res.send({persistent: {}, transient: {}});
+app.get('/_cluster/settings', function (req, res) {
+  res.send({ persistent: {}, transient: {} });
 });
 
-
-app.head(/^\/$/, function(req, res) {
-  res.send("");
+app.head(/^\/$/, function (req, res) {
+  res.send('');
 });
 
-app.get(/^\/$/, function(req, res) {
+app.get(/^\/$/, function (req, res) {
   simpleGather(req, res, null, (err, results) => {
     res.send(results[0]);
   });
 });
 
-app.get(/./, function(req, res) {
+app.get(/./, function (req, res) {
   simpleGather(req, res, null, (err, results) => {
-    console.log("UNKNOWN", req.method, req.url, results);
+    console.log('UNKNOWN', req.method, req.url, results);
   });
-
 });
 
-
 // Facets are a pain, we convert from array to map to back to array
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
 
-function facet2Obj(field, facet) {
+function facet2Obj (field, facet) {
   var obj = {};
   for (var i = 0; i < facet.length; i++) {
     obj[facet[i][field]] = facet[i];
@@ -367,43 +362,42 @@ function facet2Obj(field, facet) {
   return obj;
 }
 
-function facet2Arr(facet, type) {
+function facet2Arr (facet, type) {
   var arr = [];
   for (var attrname in facet) {
     arr.push(facet[attrname]);
   }
 
-  if (type === "histogram") {
-    arr = arr.sort((a,b) => {return a.key - b.key;});
+  if (type === 'histogram') {
+    arr = arr.sort((a, b) => { return a.key - b.key; });
   } else {
-    arr = arr.sort((a,b) => {return b.count - a.count;});
+    arr = arr.sort((a, b) => { return b.count - a.count; });
   }
   return arr;
 }
 
-function facetConvert2Obj(facets) {
+function facetConvert2Obj (facets) {
   for (var facetname in facets) {
-    if (facets[facetname]._type === "histogram") {
-      facets[facetname].entries = facet2Obj("key", facets[facetname].entries);
-    } else if (facets[facetname]._type === "terms") {
-      facets[facetname].terms = facet2Obj("term", facets[facetname].terms);
+    if (facets[facetname]._type === 'histogram') {
+      facets[facetname].entries = facet2Obj('key', facets[facetname].entries);
+    } else if (facets[facetname]._type === 'terms') {
+      facets[facetname].terms = facet2Obj('term', facets[facetname].terms);
     } else {
-      console.log("Unknown facet type", facets[facetname]._type);
+      console.log('Unknown facet type', facets[facetname]._type);
     }
   }
 }
 
-function facetConvert2Arr(facets) {
+function facetConvert2Arr (facets) {
   for (var facetname in facets) {
-    var facetarray = facets[facetname]._type === "histogram"?"entries":"terms";
-    facets[facetname][facetarray]= facet2Arr(facets[facetname][facetarray], facets[facetname]._type);
-
+    var facetarray = facets[facetname]._type === 'histogram' ? 'entries' : 'terms';
+    facets[facetname][facetarray] = facet2Arr(facets[facetname][facetarray], facets[facetname]._type);
   }
 }
 
-function facetAdd(obj1, obj2) {
+function facetAdd (obj1, obj2) {
   for (var facetname in obj2) {
-    var facetarray = obj1[facetname]._type === "histogram"?"entries":"terms";
+    var facetarray = obj1[facetname]._type === 'histogram' ? 'entries' : 'terms';
 
     obj1[facetname].total += obj2[facetname].total;
     obj1[facetname].missing += obj2[facetname].missing;
@@ -426,9 +420,9 @@ function facetAdd(obj1, obj2) {
 }
 
 // Aggregations are a pain, we convert from array to map to back to array
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
 
-function agg2Obj(field, agg) {
+function agg2Obj (field, agg) {
   var obj = {};
   for (var i = 0; i < agg.length; i++) {
     obj[agg[i][field]] = agg[i];
@@ -436,16 +430,16 @@ function agg2Obj(field, agg) {
   return obj;
 }
 
-function agg2Arr(agg, type) {
+function agg2Arr (agg, type) {
   var arr = [];
   for (var attrname in agg) {
     arr.push(agg[attrname]);
   }
 
-  if (type === "histogram") {
-    arr = arr.sort((a,b) => {return a.key - b.key;});
+  if (type === 'histogram') {
+    arr = arr.sort((a, b) => { return a.key - b.key; });
   } else {
-    arr = arr.sort((a,b) => {
+    arr = arr.sort((a, b) => {
       if (b.doc_count !== a.doc_count) {
         return b.doc_count - a.doc_count;
       }
@@ -455,20 +449,20 @@ function agg2Arr(agg, type) {
   return arr;
 }
 
-function aggConvert2Obj(aggs) {
+function aggConvert2Obj (aggs) {
   for (var aggname in aggs) {
-    aggs[aggname].buckets = agg2Obj("key", aggs[aggname].buckets);
+    aggs[aggname].buckets = agg2Obj('key', aggs[aggname].buckets);
   }
 }
 
-function aggConvert2Arr(aggs) {
+function aggConvert2Arr (aggs) {
   for (var aggname in aggs) {
     aggs[aggname].buckets = agg2Arr(aggs[aggname].buckets, aggs[aggname]._type);
     delete aggs[aggname]._type;
   }
 }
 
-function aggAdd(obj1, obj2) {
+function aggAdd (obj1, obj2) {
   for (var aggname in obj2) {
     obj1[aggname].doc_count_error_upper_bound += obj2[aggname].doc_count_error_upper_bound;
     obj1[aggname].sum_other_doc_count += obj2[aggname].sum_other_doc_count;
@@ -489,7 +483,7 @@ function aggAdd(obj1, obj2) {
   }
 }
 
-function fixQuery(node, body, doneCb) {
+function fixQuery (node, body, doneCb) {
   body = JSON.parse(body);
 
   // Reset from & size since we do aggregation
@@ -505,35 +499,35 @@ function fixQuery(node, body, doneCb) {
 
   var convert;
 
-  function process(parent, obj, item) {
+  function process (parent, obj, item) {
     var query;
 
-    if (item === "fileand" && typeof obj[item] === "string") {
+    if (item === 'fileand' && typeof obj[item] === 'string') {
       var name = obj.fileand;
       delete obj.fileand;
       outstanding++;
 
-      if (name[0] === "/" && name[name.length - 1] === "/") {
-        query = {query: {regexp: {name: name.substring(1, name.length-1)}}};
-      } else if (name.indexOf("*") !== -1) {
-        query = {query: {wildcard: {name: name}}};
+      if (name[0] === '/' && name[name.length - 1] === '/') {
+        query = { query: { regexp: { name: name.substring(1, name.length - 1) } } };
+      } else if (name.indexOf('*') !== -1) {
+        query = { query: { wildcard: { name: name } } };
       } else {
-        query = {query: {term: {name: name}}};
+        query = { query: { term: { name: name } } };
       }
-      clients[node].search({index: node2Prefix(node) + 'files', size:500, body: query}, (err, result) => {
+      clients[node].search({ index: node2Prefix(node) + 'files', size: 500, body: query }, (err, result) => {
         outstanding--;
-        obj.bool = {should: []};
+        obj.bool = { should: [] };
         result.hits.hits.forEach((file) => {
-          obj.bool.should.push({bool: {must:[{term: {node: file._source.node}}, {term: {fileId: file._source.num}}]}});
+          obj.bool.should.push({ bool: { must: [{ term: { node: file._source.node } }, { term: { fileId: file._source.num } }] } });
         });
         if (obj.bool.should.length === 0) {
-          err = "No matching files found";
+          err = 'No matching files found';
         }
         if (finished && outstanding === 0) {
           doneCb(err, body);
         }
       });
-    } else if (typeof obj[item] === "object") {
+    } else if (typeof obj[item] === 'object') {
       convert(obj, obj[item]);
     }
   }
@@ -552,9 +546,9 @@ function fixQuery(node, body, doneCb) {
   finished = 1;
 }
 
-function combineResults(obj, result) {
+function combineResults (obj, result) {
   if (!result.hits) {
-    console.log("NO RESULTS", result);
+    console.log('NO RESULTS', result);
     return;
   }
 
@@ -578,12 +572,12 @@ function combineResults(obj, result) {
   }
 }
 
-function sortResults(search, obj) {
+function sortResults (search, obj) {
   // Resort items
   if (search.sort && search.sort.length > 0) {
     var sortorder = [];
     for (var i = 0; i < search.sort.length; i++) {
-      sortorder[i] = search.sort[i][Object.keys(search.sort[i])[0]].order === "asc"? 1:-1;
+      sortorder[i] = search.sort[i][Object.keys(search.sort[i])[0]].order === 'asc' ? 1 : -1;
     }
 
     obj.hits.hits = obj.hits.hits.sort((a, b) => {
@@ -591,7 +585,7 @@ function sortResults(search, obj) {
         if (a.sort[i] === b.sort[i]) {
           continue;
         }
-        if (typeof a.sort[i] === "string") {
+        if (typeof a.sort[i] === 'string') {
           return sortorder[i] * a.sort[i].localeCompare(b.sort[i]);
         } else {
           return sortorder[i] * (a.sort[i] - b.sort[i]);
@@ -606,15 +600,15 @@ function sortResults(search, obj) {
     obj.hits.hits = obj.hits.hits.slice(from, from + (+search.size));
   }
 }
-function newResult(search) {
-  var result = {hits: {hits: [], total: 0}};
+function newResult (search) {
+  var result = { hits: { hits: [], total: 0 } };
   if (search.facets) {
     result.facets = {};
     for (var facet in search.facets) {
       if (search.facets[facet].histogram) {
-        result.facets[facet] = {entries: [], _type: "histogram", total: 0, other: 0, missing: 0};
+        result.facets[facet] = { entries: [], _type: 'histogram', total: 0, other: 0, missing: 0 };
       } else {
-        result.facets[facet] = {terms: [], _type: "terms", total: 0, other: 0, missing: 0};
+        result.facets[facet] = { terms: [], _type: 'terms', total: 0, other: 0, missing: 0 };
       }
     }
   }
@@ -622,16 +616,16 @@ function newResult(search) {
     result.aggregations = {};
     for (var agg in search.aggregations) {
       if (search.aggregations[agg].histogram) {
-        result.aggregations[agg] = {buckets: {}, _type: "histogram", doc_count_error_upper_bound: 0, sum_other_doc_count: 0};
+        result.aggregations[agg] = { buckets: {}, _type: 'histogram', doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
       } else {
-        result.aggregations[agg] = {buckets: {}, _type: "terms", doc_count_error_upper_bound: 0, sum_other_doc_count: 0};
+        result.aggregations[agg] = { buckets: {}, _type: 'terms', doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
       }
     }
   }
   return result;
 }
 
-app.post(["/MULTIPREFIX_fields/field/_search", "/MULTIPREFIX_fields/_search"], function(req, res) {
+app.post(['/MULTIPREFIX_fields/field/_search', '/MULTIPREFIX_fields/_search'], function (req, res) {
   simpleGather(req, res, null, (err, results) => {
     var obj = {
       hits: {
@@ -645,7 +639,7 @@ app.post(["/MULTIPREFIX_fields/field/_search", "/MULTIPREFIX_fields/_search"], f
       var result = results[i];
 
       if (result.error) {
-        console.log("ERROR - GET /fields/field/_search", result.error);
+        console.log('ERROR - GET /fields/field/_search', result.error);
       }
 
       for (var h = 0; h < result.hits.total; h++) {
@@ -661,14 +655,14 @@ app.post(["/MULTIPREFIX_fields/field/_search", "/MULTIPREFIX_fields/_search"], f
   });
 });
 
-app.post(["/:index/:type/_search", "/:index/_search"], function(req, res) {
+app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
   var bodies = {};
   var search = JSON.parse(req.body);
-  //console.log("DEBUG - INCOMING SEARCH", JSON.stringify(search, null, 2));
+  // console.log("DEBUG - INCOMING SEARCH", JSON.stringify(search, null, 2));
   var nodes = getActiveNodes();
   async.each(nodes, (node, asyncCb) => {
     fixQuery(node, req.body, (err, body) => {
-      //console.log("DEBUG - OUTGOING SEARCH", node, JSON.stringify(body, null, 2));
+      // console.log("DEBUG - OUTGOING SEARCH", node, JSON.stringify(body, null, 2));
       bodies[node] = JSON.stringify(body);
       asyncCb(null);
     });
@@ -695,15 +689,15 @@ app.post(["/:index/:type/_search", "/:index/_search"], function(req, res) {
   });
 });
 
-function msearch(req, res) {
+function msearch (req, res) {
   var lines = req.body.split(/[\r\n]/);
   var bodies = {};
   var nodes = getActiveNodes();
   async.each(nodes, (node, nodeCb) => {
     var nlines = [];
     async.eachSeries(lines, (line, lineCb) => {
-      if (line === "{}" || line === "") {
-        nlines.push("{}");
+      if (line === '{}' || line === '') {
+        nlines.push('{}');
         return lineCb();
       }
       fixQuery(node, line, (err, body) => {
@@ -711,16 +705,16 @@ function msearch(req, res) {
         lineCb();
       });
     }, (err) => {
-      bodies[node] = nlines.join("\n") + "\n";
+      bodies[node] = nlines.join('\n') + '\n';
       var prefix = node2Prefix(node);
       bodies[node] = bodies[node].replace(/MULTIPREFIX_/g, prefix);
       nodeCb();
     });
   }, (err) => {
     simpleGather(req, res, bodies, (err, results) => {
-      var obj = {responses:[]};
+      var obj = { responses: [] };
       for (var h = 0; h < results[0].responses.length; h++) {
-        obj.responses[h] = newResult(JSON.parse(lines[h*2+1]));
+        obj.responses[h] = newResult(JSON.parse(lines[h * 2 + 1]));
 
         for (var i = 0; i < results.length; i++) {
           combineResults(obj.responses[h], results[i].responses[h]);
@@ -734,7 +728,7 @@ function msearch(req, res) {
           aggConvert2Arr(obj.responses[h].aggregations);
         }
 
-        sortResults(JSON.parse(lines[h*2+1]), obj.responses[h]);
+        sortResults(JSON.parse(lines[h * 2 + 1]), obj.responses[h]);
       }
 
       res.send(obj);
@@ -742,61 +736,60 @@ function msearch(req, res) {
   });
 }
 
-app.post("/:index/:type/:id/_update", function(req, res) {
+app.post('/:index/:type/:id/_update', function (req, res) {
   var body = JSON.parse(req.body);
   if (body._node && clients[body._node]) {
-
     var node = body._node;
     delete body._node;
 
     var prefix = node2Prefix(node);
     var index = req.params.index.replace(/MULTIPREFIX_/g, prefix);
 
-    clients[node].update({index: index, type: req.params.type, id: req.params.id, body: body}, (err, result) => {
+    clients[node].update({ index: index, type: req.params.type, id: req.params.id, body: body }, (err, result) => {
       return res.send(result);
     });
   } else {
-    console.log ('ERROR - body of the request does not contain _node field', req.method, req.url, req.body);
+    console.log('ERROR - body of the request does not contain _node field', req.method, req.url, req.body);
     return res.end();
   }
 });
 
-app.post(["/:index/history", "/*history*/_doc"], simpleGatherFirst);
+app.post(['/:index/history', '/*history*/_doc'], simpleGatherFirst);
 
-app.post("/:index/:type/_msearch", msearch);
-app.post("/_msearch", msearch);
+app.post('/:index/:type/_msearch', msearch);
+app.post('/_msearch', msearch);
 
-app.get("/:index/_count", simpleGatherAdd);
-app.post("/:index/_count", simpleGatherAdd);
-app.get("/:index/:type/_count", simpleGatherAdd);
-app.post("/:index/:type/_count", simpleGatherAdd);
+app.get('/:index/_count', simpleGatherAdd);
+app.post('/:index/_count', simpleGatherAdd);
+app.get('/:index/:type/_count', simpleGatherAdd);
+app.post('/:index/:type/_count', simpleGatherAdd);
 
-if (Config.get("regressionTests")) {
-  app.post('/shutdown', function(req, res) {
+if (Config.get('regressionTests')) {
+  app.post('/shutdown', function (req, res) {
     process.exit(0);
-    throw new Error("Exiting");
+    throw new Error('Exiting');
   });
 }
 
-app.post(/./, function(req, res) {
-  console.log("UNKNOWN", req.method, req.url, req.body);
+app.post(/./, function (req, res) {
+  console.log('UNKNOWN', req.method, req.url, req.body);
 });
 
-//////////////////////////////////////////////////////////////////////////////////
-//// Main
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
+/// / Main
+/// ///////////////////////////////////////////////////////////////////////////////
 
-nodes = Config.get("multiESNodes", "").split(";");
-if (nodes.length === 0 || nodes[0] === "") {
-  console.log("ERROR - Empty multiESNodes");
+nodes = Config.get('multiESNodes', '').split(';');
+if (nodes.length === 0 || nodes[0] === '') {
+  console.log('ERROR - Empty multiESNodes');
   process.exit(1);
 }
 
 // First connect
 nodes.forEach((node) => {
   clients[node] = new ESC.Client({
-    host: node.split(",")[0],
-    apiVersion: "6.8",
+    host: node.split(',')[0],
+    apiVersion: '6.8',
     requestTimeout: 300000,
     keepAlive: true,
     ssl: esSSLOptions
@@ -805,12 +798,12 @@ nodes.forEach((node) => {
 
 // Now check version numbers
 nodes.forEach((node) => {
-  clients[node].info((err,data) => {
+  clients[node].info((err, data) => {
     if (err) {
       console.log(err);
     }
     if (data.version.number.match(/^([012345])/)) {
-      console.log("ES", data.version.number, "is not supported, upgrade to >= 6.8.x:", node);
+      console.log('ES', data.version.number, 'is not supported, upgrade to >= 6.8.x:', node);
       process.exit();
     }
   });
@@ -819,41 +812,41 @@ nodes.forEach((node) => {
 activeESNodes = nodes.slice();
 
 // Ping (HEAD /) periodically to maintian a list of active ES nodes
-function pingESNode(client, node){
+function pingESNode (client, node) {
   return new Promise((resolve, reject) => {
-      client.ping({
-        requestTimeout: 3*1000 //ping usually has a 3000ms timeout
-      }, function (error) {
-        resolve({isActive: error ? false : true, node: node});
-      });
+    client.ping({
+      requestTimeout: 3 * 1000 // ping usually has a 3000ms timeout
+    }, function (error) {
+      resolve({ isActive: !error, node: node });
     });
-}
-
-function enumerateActiveNodes(){
-  var ping_tasks = [];
-  for (var i = 0; i < nodes.length; i++) {
-    ping_tasks.push(pingESNode(clients[nodes[i]], nodes[i]));
-  }
-  Promise.all(ping_tasks).then(function(values) {
-    var active_nodes = [];
-    for (var i = 0; i < values.length; i++) {
-      if(values[i].isActive) { // true -> node is active
-        active_nodes.push(values[i].node);
-      } else { // false -> node is down
-        // remove credential from the url
-        var host = values[i].node.split("://");
-        host = host[host.length > 1 ? 1 : 0 ].split("@"); // user:pass@elastic.com:9200
-        host = host [host.length > 1 ? host.length-1 : 0];
-        console.log("Elasticsearch is down at ", host);
-      }
-    }
-    activeESNodes = active_nodes.slice();
   });
 }
 
-setInterval(enumerateActiveNodes, 1*60*1000); // 1*60*1000 ms
+function enumerateActiveNodes () {
+  var pingTasks = [];
+  for (var i = 0; i < nodes.length; i++) {
+    pingTasks.push(pingESNode(clients[nodes[i]], nodes[i]));
+  }
+  Promise.all(pingTasks).then(function (values) {
+    var activeNodes = [];
+    for (var i = 0; i < values.length; i++) {
+      if (values[i].isActive) { // true -> node is active
+        activeNodes.push(values[i].node);
+      } else { // false -> node is down
+        // remove credential from the url
+        var host = values[i].node.split('://');
+        host = host[host.length > 1 ? 1 : 0].split('@'); // user:pass@elastic.com:9200
+        host = host[host.length > 1 ? host.length - 1 : 0];
+        console.log('Elasticsearch is down at ', host);
+      }
+    }
+    activeESNodes = activeNodes.slice();
+  });
+}
+
+setInterval(enumerateActiveNodes, 1 * 60 * 1000); // 1*60*1000 ms
 
 console.log(nodes);
 
-console.log("Listen on ", Config.get("multiESPort", "8200"));
-http.createServer(app).listen(Config.get("multiESPort", "8200"), Config.get("multiESHost", undefined));
+console.log('Listen on ', Config.get('multiESPort', '8200'));
+http.createServer(app).listen(Config.get('multiESPort', '8200'), Config.get('multiESHost', undefined));

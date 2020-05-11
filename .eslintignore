@@ -1,0 +1,11 @@
+/parliament/vueapp/build/
+/parliament/vueapp/config/
+/parliament/vueapp/dist/
+/parliament/node_modules
+/viewer/vueapp/build/
+/viewer/vueapp/config/
+/viewer/vueapp/dist/
+/viewer/molochparser.js
+/viewer/node_modules
+/viewer/public
+/viewer/version.js

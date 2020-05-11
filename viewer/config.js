@@ -16,45 +16,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*jshint
-  node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
-*/
+
 'use strict';
 
-//////////////////////////////////////////////////////////////////////////////////
-//// Command Line Parsing
-//////////////////////////////////////////////////////////////////////////////////
-var ini    = require('iniparser'),
-    os     = require('os'),
-    fs     = require('fs'),
-    crypto = require('crypto');
+/// ///////////////////////////////////////////////////////////////////////////////
+/// / Command Line Parsing
+/// ///////////////////////////////////////////////////////////////////////////////
+var ini = require('iniparser');
+var os = require('os');
+var fs = require('fs');
+var crypto = require('crypto');
 
 exports.debug = 0;
 exports.insecure = false;
 exports.esProfile = false;
 var internals = {
-    configFile: "/data/moloch/etc/config.ini",
-    hostName: os.hostname(),
-    fields: [],
-    fieldsMap: {},
-    categories: {},
-    options: {},
-    debugged: {}
-  };
+  configFile: '/data/moloch/etc/config.ini',
+  hostName: os.hostname(),
+  fields: [],
+  fieldsMap: {},
+  categories: {},
+  options: {},
+  debugged: {}
+};
 
-function processArgs() {
+function processArgs () {
   var args = [];
   for (var i = 0, ilen = process.argv.length; i < ilen; i++) {
-    if (process.argv[i] === "-c") {
+    if (process.argv[i] === '-c') {
       i++;
       internals.configFile = process.argv[i];
-    } else if (process.argv[i] === "--host") {
+    } else if (process.argv[i] === '--host') {
       i++;
       internals.hostName = process.argv[i];
-    } else if (process.argv[i] === "-n") {
+    } else if (process.argv[i] === '-n') {
       i++;
       internals.nodeName = process.argv[i];
-    } else if (process.argv[i] === "-o" || process.argv[i] === "--option") {
+    } else if (process.argv[i] === '-o' || process.argv[i] === '--option') {
       i++;
       let equal = process.argv[i].indexOf('=');
       if (equal === -1) {
@@ -62,12 +60,12 @@ function processArgs() {
         process.exit(1);
       }
 
-      internals.options[process.argv[i].slice(0,equal)] = process.argv[i].slice(equal+1);
-    } else if (process.argv[i] === "--debug") {
+      internals.options[process.argv[i].slice(0, equal)] = process.argv[i].slice(equal + 1);
+    } else if (process.argv[i] === '--debug') {
       exports.debug++;
-    } else if (process.argv[i] === "--insecure") {
+    } else if (process.argv[i] === '--insecure') {
       exports.insecure = true;
-    } else if (process.argv[i] === "--esprofile") {
+    } else if (process.argv[i] === '--esprofile') {
       exports.esProfile = true;
     } else {
       args.push(process.argv[i]);
@@ -76,19 +74,19 @@ function processArgs() {
   process.argv = args;
 
   if (!internals.nodeName) {
-    internals.nodeName = internals.hostName.split(".")[0];
+    internals.nodeName = internals.hostName.split('.')[0];
   }
 
   if (exports.debug > 0) {
-    console.log ("Debug Level", exports.debug);
+    console.log('Debug Level', exports.debug);
   }
 }
 processArgs();
 
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
 // Encryption stuff
-//////////////////////////////////////////////////////////////////////////////////
-exports.md5 = function (str, encoding){
+/// ///////////////////////////////////////////////////////////////////////////////
+exports.md5 = function (str, encoding) {
   return crypto
     .createHash('md5')
     .update(str)
@@ -97,9 +95,9 @@ exports.md5 = function (str, encoding){
 
 // Hash (MD5) and encrypt the password before storing.
 // Encryption is used because ES is insecure by default and we don't want others adding accounts.
-exports.pass2store = function(userid, password) {
+exports.pass2store = function (userid, password) {
   // md5 is required because of http digest
-  var m = exports.md5(userid + ":" + exports.getFull("default", "httpRealm", "Moloch") + ":" + password);
+  var m = exports.md5(userid + ':' + exports.getFull('default', 'httpRealm', 'Moloch') + ':' + password);
 
   if (internals.aes256Encryption) {
     // New style with IV: IV.E
@@ -111,14 +109,14 @@ exports.pass2store = function(userid, password) {
   } else {
     // Old style without IV: E
     var c = crypto.createCipher('aes192', internals.passwordSecret);
-    var e = c.update(m, "binary", "hex");
-    e += c.final("hex");
+    var e = c.update(m, 'binary', 'hex');
+    e += c.final('hex');
     return e;
   }
 };
 
 // Decrypt the encrypted hashed password, it is still hashed
-exports.store2ha1 = function(passstore) {
+exports.store2ha1 = function (passstore) {
   try {
     var parts = passstore.split('.');
     if (parts.length === 2) {
@@ -130,8 +128,8 @@ exports.store2ha1 = function(passstore) {
     } else {
       // Old style without IV: E
       var c = crypto.createDecipher('aes192', internals.passwordSecret);
-      var d = c.update(passstore, "hex", "binary");
-      d += c.final("binary");
+      var d = c.update(passstore, 'hex', 'binary');
+      d += c.final('binary');
       return d;
     }
   } catch (e) {
@@ -141,7 +139,7 @@ exports.store2ha1 = function(passstore) {
 };
 
 // Encrypt an object into an auth string
-exports.obj2auth = function(obj, c2s, secret) {
+exports.obj2auth = function (obj, c2s, secret) {
   if (internals.aes256Encryption) {
     // New style with IV: IV.E.H
     if (secret) {
@@ -152,7 +150,7 @@ exports.obj2auth = function(obj, c2s, secret) {
 
     let iv = crypto.randomBytes(16);
     let c = crypto.createCipheriv('aes-256-cbc', secret, iv);
-    let e = c.update(JSON.stringify(obj), "binary", "hex");
+    let e = c.update(JSON.stringify(obj), 'binary', 'hex');
     e += c.final('hex');
     e = iv.toString('hex') + '.' + e;
     let h = crypto.createHmac('sha256', secret).update(e).digest('hex');
@@ -162,8 +160,8 @@ exports.obj2auth = function(obj, c2s, secret) {
     secret = secret || internals.serverSecret;
 
     let c = crypto.createCipher('aes192', secret);
-    let e = c.update(JSON.stringify(obj), "binary", "hex");
-    e += c.final("hex");
+    let e = c.update(JSON.stringify(obj), 'binary', 'hex');
+    e += c.final('hex');
 
     let h = crypto.createHmac('sha256', secret).update(e, 'hex').digest('hex');
 
@@ -177,7 +175,7 @@ exports.obj2auth = function(obj, c2s, secret) {
 };
 
 // Decrypt the auth string into an object
-exports.auth2obj = function(auth, c2s, secret) {
+exports.auth2obj = function (auth, c2s, secret) {
   let parts = auth.split('.');
 
   if (parts.length === 3) {
@@ -192,18 +190,17 @@ exports.auth2obj = function(auth, c2s, secret) {
     let h = crypto.createHmac('sha256', secret).update(parts[0] + '.' + parts[1]).digest();
 
     if (!crypto.timingSafeEqual(signature, h)) {
-      throw 'Incorrect signature';
+      throw new Error('Incorrect signature');
     }
 
     try {
       let c = crypto.createDecipheriv('aes-256-cbc', secret, Buffer.from(parts[0], 'hex'));
-      let d = c.update(parts[1], "hex", "binary");
-      d += c.final("binary");
+      let d = c.update(parts[1], 'hex', 'binary');
+      d += c.final('binary');
       return JSON.parse(d);
-    }
-    catch(error) {
+    } catch (error) {
       console.log(error);
-      throw 'Incorrect auth supplied';
+      throw new Error('Incorrect auth supplied');
     }
   } else {
     // Old style without IV: E or E.H
@@ -212,7 +209,7 @@ exports.auth2obj = function(auth, c2s, secret) {
 
     // if sig missing error if c2s or s2sSignedAuth
     if (parts.length === 1 && (c2s || internals.s2sSignedAuth)) {
-      throw 'Missing signature';
+      throw new Error('Missing signature');
     }
 
     if (parts.length > 1) {
@@ -220,26 +217,25 @@ exports.auth2obj = function(auth, c2s, secret) {
       let h = crypto.createHmac('sha256', secret).update(parts[0], 'hex').digest();
 
       if (!crypto.timingSafeEqual(signature, h)) {
-        throw 'Incorrect signature';
+        throw new Error('Incorrect signature');
       }
     }
 
     try {
       let c = crypto.createDecipher('aes192', secret);
-      let d = c.update(parts[0], "hex", "binary");
-      d += c.final("binary");
+      let d = c.update(parts[0], 'hex', 'binary');
+      d += c.final('binary');
       return JSON.parse(d);
-    }
-    catch(error) {
+    } catch (error) {
       console.log(error);
-      throw 'Incorrect auth supplied';
+      throw new Error('Incorrect auth supplied');
     }
   }
 };
 
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
 // Config File & Dropping Privileges
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
 
 if (!fs.existsSync(internals.configFile)) {
   console.log("ERROR - Couldn't open config file '" + internals.configFile + "' maybe use the -c <configfile> option");
@@ -247,38 +243,37 @@ if (!fs.existsSync(internals.configFile)) {
 }
 internals.config = ini.parseSync(internals.configFile);
 
-
-if (internals.config["default"] === undefined) {
-  console.log("ERROR - [default] section missing from", internals.configFile);
+if (internals.config['default'] === undefined) {
+  console.log('ERROR - [default] section missing from', internals.configFile);
   process.exit(1);
 }
 
-exports.sectionGet = function(section, key, defaultValue) {
+exports.sectionGet = function (section, key, defaultValue) {
   var value;
 
-  if (internals.config[section] && internals.config[section][key] !== undefined ) {
+  if (internals.config[section] && internals.config[section][key] !== undefined) {
     value = internals.config[section][key];
   } else {
     value = defaultValue;
   }
 
-  if (value === "false") {
+  if (value === 'false') {
     return false;
   }
 
   return value;
 };
 
-exports.getFull = function(node, key, defaultValue) {
+exports.getFull = function (node, key, defaultValue) {
   var value;
   if (internals.options[key] !== undefined && (node === 'default' || node === internals.nodeName)) {
     value = internals.options[key];
-  } else if (internals.config[node] && internals.config[node][key] !== undefined ) {
+  } else if (internals.config[node] && internals.config[node][key] !== undefined) {
     value = internals.config[node][key];
   } else if (internals.config[node] && internals.config[node].nodeClass && internals.config[internals.config[node].nodeClass] && internals.config[internals.config[node].nodeClass][key]) {
     value = internals.config[internals.config[node].nodeClass][key];
-  } else if (internals.config["default"][key]) {
-    value = internals.config["default"][key];
+  } else if (internals.config['default'][key]) {
+    value = internals.config['default'][key];
   } else {
     value = defaultValue;
   }
@@ -288,40 +283,40 @@ exports.getFull = function(node, key, defaultValue) {
     internals.debugged[node + '::' + key] = 1;
   }
 
-  if (value === "false") {
+  if (value === 'false') {
     return false;
   }
   return value;
 };
 
-exports.get = function(key, defaultValue) {
+exports.get = function (key, defaultValue) {
   return exports.getFull(internals.nodeName, key, defaultValue);
 };
 
-exports.getBoolFull = function(node, key, defaultValue) {
+exports.getBoolFull = function (node, key, defaultValue) {
   var value = exports.getFull(node, key);
   if (value !== undefined) {
-    if (value === "true" || value === "1") {
+    if (value === 'true' || value === '1') {
       return true;
-    } else if (value === "false" || value === "0") {
+    } else if (value === 'false' || value === '0') {
       return false;
     } else {
-      console.log("ERROR - invalid value for ", key);
+      console.log('ERROR - invalid value for ', key);
     }
   }
   return defaultValue;
 };
 
-exports.getBool = function(key, defaultValue) {
+exports.getBool = function (key, defaultValue) {
   return exports.getBoolFull(internals.nodeName, key, defaultValue);
 };
 
 // Return an array split on separator, remove leading/trailing spaces, remove empty elements
-exports.getArray = function(key, separator, defaultValue) {
-  return exports.get(key, defaultValue).split(separator).map(s=>s.trim()).filter(s=>s.match(/^\S+$/));
+exports.getArray = function (key, separator, defaultValue) {
+  return exports.get(key, defaultValue).split(separator).map(s => s.trim()).filter(s => s.match(/^\S+$/));
 };
 
-exports.getObj = function(key, defaultValue) {
+exports.getObj = function (key, defaultValue) {
   var full = exports.getFull(internals.nodeName, key, defaultValue);
   if (!full) {
     return null;
@@ -329,11 +324,11 @@ exports.getObj = function(key, defaultValue) {
 
   var obj = {};
   full.split(';').forEach((element) => {
-    var parts = element.split("=");
+    var parts = element.split('=');
     if (parts && parts.length === 2) {
-      if (parts[1] === "true") {
+      if (parts[1] === 'true') {
         parts[1] = true;
-      } else if (parts[1] === "false") {
+      } else if (parts[1] === 'false') {
         parts[1] = false;
       }
       obj[parts[0]] = parts[1];
@@ -342,7 +337,7 @@ exports.getObj = function(key, defaultValue) {
   return obj;
 };
 
-exports.getCaTrustCerts = function(node) {
+exports.getCaTrustCerts = function (node) {
   var caTrustFile = exports.getFull(node, 'caTrustFile');
 
   if (caTrustFile && caTrustFile.length > 0) {
@@ -372,7 +367,7 @@ exports.getCaTrustCerts = function(node) {
   return undefined;
 };
 
-function loadIncludes(includes) {
+function loadIncludes (includes) {
   if (!includes) {
     return;
   }
@@ -394,66 +389,66 @@ function loadIncludes(includes) {
   });
 }
 
-loadIncludes(exports.get("includes", null));
+loadIncludes(exports.get('includes', null));
 
-function dropPrivileges() {
+function dropPrivileges () {
   if (process.getuid() !== 0) {
     return;
   }
 
-  var group = exports.get("dropGroup", null);
+  var group = exports.get('dropGroup', null);
   if (group !== null) {
     process.setgid(group);
   }
 
-  var user = exports.get("dropUser", null);
+  var user = exports.get('dropUser', null);
   if (user !== null) {
     process.setuid(user);
   }
 }
 
-exports.getConfigFile = function() {
+exports.getConfigFile = function () {
   return internals.configFile;
 };
 
-exports.isHTTPS = function(node) {
-  return exports.getFull(node || internals.nodeName, "keyFile") &&
-         exports.getFull(node || internals.nodeName, "certFile");
+exports.isHTTPS = function (node) {
+  return exports.getFull(node || internals.nodeName, 'keyFile') &&
+         exports.getFull(node || internals.nodeName, 'certFile');
 };
 
-exports.basePath = function(node) {
-  return exports.getFull(node || internals.nodeName, "webBasePath", "/");
+exports.basePath = function (node) {
+  return exports.getFull(node || internals.nodeName, 'webBasePath', '/');
 };
 
-exports.nodeName = function() {
+exports.nodeName = function () {
   return internals.nodeName;
 };
 
-exports.hostName = function() {
+exports.hostName = function () {
   return internals.hostName;
 };
 
-exports.keys = function(section) {
-  if (internals.config[section] === undefined) {return [];}
+exports.keys = function (section) {
+  if (internals.config[section] === undefined) { return []; }
   return Object.keys(internals.config[section]);
 };
 
-exports.headers = function(section) {
-  if (internals.config[section] === undefined) {return [];}
+exports.headers = function (section) {
+  if (internals.config[section] === undefined) { return []; }
   var keys = Object.keys(internals.config[section]);
-  if (!keys) {return [];}
+  if (!keys) { return []; }
   var headers = Object.keys(internals.config[section]).map((key) => {
-    var obj = {name: key};
+    var obj = { name: key };
     internals.config[section][key].split(';').forEach((element) => {
       var i = element.indexOf(':');
       if (i === -1) {
         return;
       }
 
-      var parts = [element.slice(0, i), element.slice(i+1)];
-      if (parts[1] === "true") {
+      var parts = [element.slice(0, i), element.slice(i + 1)];
+      if (parts[1] === 'true') {
         parts[1] = true;
-      } else if (parts[1] === "false") {
+      } else if (parts[1] === 'false') {
         parts[1] = false;
       }
       obj[parts[0]] = parts[1];
@@ -464,11 +459,11 @@ exports.headers = function(section) {
   return headers;
 };
 
-exports.configMap = function(section, name, d) {
+exports.configMap = function (section, name, d) {
   var data = internals.config[section] || d;
-  if (data === undefined) {return {};}
+  if (data === undefined) { return {}; }
   var keys = Object.keys(data);
-  if (!keys) {return {};}
+  if (!keys) { return {}; }
   var map = {};
   keys.forEach((key) => {
     var obj = {};
@@ -478,10 +473,10 @@ exports.configMap = function(section, name, d) {
         return;
       }
 
-      var parts = [element.slice(0, i), element.slice(i+1)];
-      if (parts[1] === "true") {
+      var parts = [element.slice(0, i), element.slice(i + 1)];
+      if (parts[1] === 'true') {
         parts[1] = true;
-      } else if (parts[1] === "false") {
+      } else if (parts[1] === 'false') {
         parts[1] = false;
       }
       obj[parts[0]] = parts[1];
@@ -493,46 +488,46 @@ exports.configMap = function(section, name, d) {
 };
 
 if (exports.isHTTPS()) {
-    exports.keyFileData = fs.readFileSync(exports.get("keyFile"));
-    exports.certFileData = fs.readFileSync(exports.get("certFile"));
+  exports.keyFileData = fs.readFileSync(exports.get('keyFile'));
+  exports.certFileData = fs.readFileSync(exports.get('certFile'));
 }
 dropPrivileges();
 
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
 // Fields
-//////////////////////////////////////////////////////////////////////////////////
-exports.getFields = function() {
+/// ///////////////////////////////////////////////////////////////////////////////
+exports.getFields = function () {
   return internals.fields;
 };
 
-exports.getFieldsMap = function() {
+exports.getFieldsMap = function () {
   return internals.fieldsMap;
 };
 
-exports.getDBFieldsMap = function() {
+exports.getDBFieldsMap = function () {
   return internals.dbFieldsMap;
 };
 
-exports.getCategories = function() {
+exports.getCategories = function () {
   return internals.categories;
 };
 
-exports.loadFields = function(data) {
+exports.loadFields = function (data) {
   internals.fields = [];
   internals.fieldsMap = {};
   internals.dbFieldsMap = {};
-  internals.categories =  {};
+  internals.categories = {};
   data.forEach((field) => {
     var source = field._source;
     source.exp = field._id;
 
     // Add some transforms
     if (!source.transform) {
-      if (source.exp === "http.uri" || source.exp === "http.uri.tokens") {
-        source.transform = "removeProtocol";
+      if (source.exp === 'http.uri' || source.exp === 'http.uri.tokens') {
+        source.transform = 'removeProtocol';
       }
-      if (source.exp === "host" || source.exp.startsWith("host.")) {
-        source.transform = "removeProtocolAndURI";
+      if (source.exp === 'host' || source.exp.startsWith('host.')) {
+        source.transform = 'removeProtocolAndURI';
       }
     }
 
@@ -548,7 +543,7 @@ exports.loadFields = function(data) {
     });
   });
 
-  function sortFunc(a,b) {
+  function sortFunc (a, b) {
     return a.exp.localeCompare(b.exp);
   }
 
@@ -557,18 +552,18 @@ exports.loadFields = function(data) {
   }
 };
 
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
 // Globals
-//////////////////////////////////////////////////////////////////////////////////
-internals.s2sSignedAuth = exports.getFull("default", "s2sSignedAuth", true);
-internals.aes256Encryption = exports.getFull("default", "aes256Encryption", false);
+/// ///////////////////////////////////////////////////////////////////////////////
+internals.s2sSignedAuth = exports.getFull('default', 's2sSignedAuth', true);
+internals.aes256Encryption = exports.getFull('default', 'aes256Encryption', false);
 
 // If passwordSecret isn't set, viewer will treat accounts as anonymous
-internals.passwordSecret = exports.getFull("default", "passwordSecret", "password");
+internals.passwordSecret = exports.getFull('default', 'passwordSecret', 'password');
 internals.passwordSecret256 = crypto.createHash('sha256').update(internals.passwordSecret).digest();
 
-if (exports.getFull("default", "serverSecret")) {
-  internals.serverSecret = exports.getFull("default", "serverSecret");
+if (exports.getFull('default', 'serverSecret')) {
+  internals.serverSecret = exports.getFull('default', 'serverSecret');
   internals.serverSecret256 = crypto.createHash('sha256').update(internals.serverSecret).digest();
 } else {
   internals.serverSecret = internals.passwordSecret;

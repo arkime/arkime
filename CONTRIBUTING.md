@@ -84,7 +84,7 @@ Feature requests are tracked as [GitHub Issues](https://guides.github.com/featur
 * Clearly describe the problem and solution
 * Include the relevant issue number(s) if applicable
 * If changes are made to the capture component, verify all tests in the tests direction pass by running `./tests.pl`
-* If changes are mode to the viewer or parlimant components, run `npm run lint` from the viewer or parliament directory (whichever you are making changes to) and correct any errors
+* Run `npm run lint` from the top level directory and correct any errors
 * Additionally, for any viewer or parliament changes, verify that all UI tests pass by runnning `./tests.pl --viewer`
 * The README file in the tests directory provides additional information on the test cases
 
