@@ -108,7 +108,7 @@
             :target="'updateview' + key"
             placement="topleft"
             boundary="window">
-            Update view WITH current table configuration
+            Update view query WITH current table configuration
           </b-tooltip>
 
           {{ key }}&nbsp;
@@ -446,7 +446,7 @@ export default {
         });
     },
     updateView: function (key) {
-      let data = this.views[key];
+      let data = JSON.parse(JSON.stringify(this.views[key]));
 
       if (!data) {
         this.msg = 'Could not find corresponding view';
@@ -458,8 +458,12 @@ export default {
       data.expression = this.expression;
       if (data.sessionsColConfig !== undefined) {
         // save the current sessions table column configuration
-        data.sessionsColConfig = this.$store.getters.sessionsTableState;
+        let tableClone = JSON.parse(JSON.stringify(this.$store.getters.sessionsTableState));
+        data.sessionsColConfig = tableClone;
       }
+
+      this.$set(this.views, key, data);
+
       data.key = key;
 
       UserService.updateView(data, this.userId)

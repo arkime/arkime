@@ -1007,7 +1007,7 @@ export default {
 
       if (index === -1) { // default columns
         this.tableState.visibleHeaders = Utils.getDefaultTableState().visibleHeaders.slice();
-        this.tableState.order = Utils.getDefaultTableState().order.slice();
+        this.tableState.order = JSON.parse(JSON.stringify(Utils.getDefaultTableState().order));
         this.colWidths = {}; // clear out column widths to load defaults
         setTimeout(() => { this.saveColumnWidths(); });
         // reset field widths
@@ -1017,7 +1017,7 @@ export default {
         }
       } else {
         this.tableState.visibleHeaders = this.colConfigs[index].columns.slice();
-        this.tableState.order = this.colConfigs[index].order.slice();
+        this.tableState.order = JSON.parse(JSON.stringify(this.colConfigs[index].order));
       }
 
       this.sorts = this.tableState.order;
@@ -1050,7 +1050,7 @@ export default {
       let data = {
         name: name,
         columns: this.tableState.visibleHeaders.slice(),
-        order: this.tableState.order.slice()
+        order: JSON.parse(JSON.stringify(this.tableState.order))
       };
 
       UserService.updateColumnConfig(data)
@@ -1524,7 +1524,6 @@ export default {
     mapHeadersToFields: function () {
       this.headers = [];
       this.sumOfColWidths = 85;
-
       if (!this.colWidths) { this.colWidths = {}; }
 
       for (let headerId of this.tableState.visibleHeaders) {
