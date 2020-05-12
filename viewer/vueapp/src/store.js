@@ -137,6 +137,23 @@ const store = new Vuex.Store({
     setViews (state, value) {
       state.views = value;
     },
+    addViews (state, value) {
+      state.views[value.name] = value;
+    },
+    deleteViews (state, value) {
+      state.views[value] = null;
+      delete state.views[value];
+    },
+    updateViews (state, value) {
+      // if name of view changes in update
+      if (value.name !== value.key) {
+        state.views[value.key] = null;
+        delete state.views[value.key];
+      }
+      delete value.key;
+
+      state.views[value.name] = value;
+    },
     setLoadingData (state, value) {
       state.loadingData = value;
     },
