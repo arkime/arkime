@@ -178,6 +178,7 @@ export default {
           this.done(response.text, response.success);
           // add the new view to the views dropdown
           this.$store.commit('addViews', data);
+          this.$emit('setView', data.name);
         })
         .catch((error) => {
           // display the error under the form so that user

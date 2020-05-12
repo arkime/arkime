@@ -185,7 +185,8 @@
             <moloch-modify-view v-if="actionForm === 'modify:view'"
               :done="actionFormDone"
               :editView="editableView"
-              :initialExpression="expression">
+              :initialExpression="expression"
+              @setView="setView">
             </moloch-modify-view>
             <moloch-tag-sessions v-else-if="actionForm === 'add:tags' || actionForm === 'remove:tags'"
               :add="actionForm === 'add:tags'"
