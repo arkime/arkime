@@ -70,7 +70,7 @@
             <span class="sr-only">Views</span>
           </div>
         </template>
-        <b-dropdown-item @click="createView">
+        <b-dropdown-item @click="modView()">
           <span class="fa fa-plus-circle"></span>&nbsp;
           New View
         </b-dropdown-item>
@@ -96,20 +96,12 @@
             </span>
           </button>
           <button class="btn btn-xs btn-warning pull-right"
-            :disabled="!expression"
             type="button"
             :id="'updateview' + key"
-            @click.stop.prevent="updateView(key)">
-            <span class="fa fa-save">
+            @click.stop.prevent="modView(views[key])">
+            <span class="fa fa-edit">
             </span>
           </button>
-
-          <b-tooltip v-if="value.sessionsColConfig"
-            :target="'updateview' + key"
-            placement="topleft"
-            boundary="window">
-            Update view query WITH current table configuration
-          </b-tooltip>
 
           {{ key }}&nbsp;
           <span v-if="value.sessionsColConfig"
@@ -190,10 +182,11 @@
           </div>
           <!-- actions menu forms -->
           <div :class="{'col-md-9':showApplyButtons,'col-md-12':!showApplyButtons}">
-            <moloch-create-view v-if="actionForm === 'create:view'"
+            <moloch-modify-view v-if="actionForm === 'modify:view'"
               :done="actionFormDone"
-              @newView="newView">
-            </moloch-create-view>
+              :editView="editableView"
+              :initialExpression="expression">
+            </moloch-modify-view>
             <moloch-tag-sessions v-else-if="actionForm === 'add:tags' || actionForm === 'remove:tags'"
               :add="actionForm === 'add:tags'"
               :start="start"
@@ -256,7 +249,7 @@ import ConfigService from '../utils/ConfigService';
 import ExpressionTypeahead from './ExpressionTypeahead';
 import MolochTime from './Time';
 import MolochToast from '../utils/Toast';
-import MolochCreateView from '../sessions/CreateView';
+import MolochModifyView from '../sessions/ModifyView';
 import MolochTagSessions from '../sessions/Tags';
 import MolochRemoveData from '../sessions/Remove';
 import MolochSendSessions from '../sessions/Send';
@@ -270,7 +263,7 @@ export default {
     ExpressionTypeahead,
     MolochTime,
     MolochToast,
-    MolochCreateView,
+    MolochModifyView,
     MolochTagSessions,
     MolochRemoveData,
     MolochSendSessions,
@@ -303,7 +296,8 @@ export default {
       view: this.$route.query.view,
       message: undefined,
       messageType: undefined,
-      updateTime: false
+      updateTime: false,
+      editableView: undefined // Not necessarily active view
     };
   },
   computed: {
@@ -403,8 +397,9 @@ export default {
       this.actionForm = 'send:session';
       this.showApplyButtons = true;
     },
-    createView: function () {
-      this.actionForm = 'create:view';
+    modView: function (view) {
+      this.editableView = view;
+      this.actionForm = 'modify:view';
       this.showApplyButtons = false;
     },
     viewIntersection: function () {
@@ -412,16 +407,13 @@ export default {
       this.showApplyButtons = false;
     },
     actionFormDone: function (message, success) {
+      // If a view was being edited, remove selection name
+      this.editableView = undefined;
       this.actionForm = undefined;
+
       if (message) {
         this.message = message;
         this.messageType = success ? 'success' : 'warning';
-      }
-    },
-    /* updates the views list with the included new view */
-    newView: function (view, viewName) {
-      if (view && viewName && this.views) {
-        this.$set(this.views, viewName, view);
       }
     },
     deleteView: function (view, name) {
@@ -433,46 +425,14 @@ export default {
       UserService.deleteView(view, this.user.userId)
         .then((response) => {
           // remove the view from the view list
-          this.views[name] = null;
-          delete this.views[name];
+          this.$store.commit('deleteViews', name);
+          this.getViews();
           // display success message to user
           this.msg = response.text;
           this.msgType = 'success';
         })
         .catch((error) => {
-          // display error message to user
-          this.msg = error.text;
-          this.msgType = 'danger';
-        });
-    },
-    updateView: function (key) {
-      let data = JSON.parse(JSON.stringify(this.views[key]));
-
-      if (!data) {
-        this.msg = 'Could not find corresponding view';
-        this.msgType = 'danger';
-        return;
-      }
-
-      // updateView will not run with undefined expressions
-      data.expression = this.expression;
-      if (data.sessionsColConfig !== undefined) {
-        // save the current sessions table column configuration
-        let tableClone = JSON.parse(JSON.stringify(this.$store.getters.sessionsTableState));
-        data.sessionsColConfig = tableClone;
-      }
-
-      this.$set(this.views, key, data);
-
-      data.key = key;
-
-      UserService.updateView(data, this.userId)
-        .then((response) => {
-          // display success message to user
-          this.msg = response.text;
-          this.msgType = 'success';
-        })
-        .catch((error) => {
+          console.log(error);
           // display error message to user
           this.msg = error.text;
           this.msgType = 'danger';
