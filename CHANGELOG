@@ -18,6 +18,10 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 2.3.1 2020/05/XX
+  - viewer - use the same eslint as the UI & parliament, lots of lines changed
+  - viewer - can now delete a view from the popup
+  - viewer - fix so non admins can cancel their searches
+  - capture - fixed out of bounds read in smtp parsing
 
 2.3.0 2020/05/06
   - release - CyberChef 9.16.2, node 10.20.1, daq 2.0.7

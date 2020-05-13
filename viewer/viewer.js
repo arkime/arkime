@@ -3734,7 +3734,8 @@ app.post('/estask/cancel', [noCacheJson, logAction(), checkCookieToken, checkPer
   });
 });
 
-app.post('/estask/cancelById', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
+// Should not have createEnabled check so that users can use, each user is named spaced below
+app.post('/estask/cancelById', [noCacheJson, logAction(), checkCookieToken], (req, res) => {
   if (!req.body || !req.body.cancelId) {
     return res.molochError(403, 'Missing cancel ID');
   }
