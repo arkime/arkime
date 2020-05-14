@@ -1234,6 +1234,13 @@ sub sessions2Update
       "assetCnt" : {
         "type" : "long"
       },
+      "bgp" : {
+        "properties" : {
+          "type" : {
+            "type" : "keyword"
+          }
+        }
+      },
       "cert" : {
         "properties" : {
           "alt" : {
@@ -1546,6 +1553,21 @@ sub sessions2Update
       },
       "firstPacket" : {
         "type" : "date"
+      },
+      "greASN" : {
+	"type" : "keyword"
+      },
+      "greGEO" : {
+	"type" : "keyword"
+      },
+      "greIp" : {
+	"type" : "ip"
+      },
+      "greIpCnt" : {
+	"type" : "long"
+      },
+      "greRIR" : {
+	"type" : "keyword"
       },
       "http" : {
         "properties" : {
