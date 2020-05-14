@@ -2296,6 +2296,9 @@ void moloch_db_init()
         moloch_http_set_headers(esServer, headers);
         moloch_http_set_print_errors(esServer);
 
+        int maxRetries = moloch_config_int(NULL, "esMaxRetries", 2, 0, 10);
+        moloch_http_set_retries(esServer, maxRetries);
+
         char* clientCert = moloch_config_str(NULL, "esClientCert", NULL);
         char* clientKey = moloch_config_str(NULL, "esClientKey", NULL);
         char* clientKeyPass = moloch_config_str(NULL, "esClientKeyPass", NULL);

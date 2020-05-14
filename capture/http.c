@@ -993,7 +993,7 @@ void *moloch_http_create_server(const char *hostnames, int maxConns, int maxOuts
     server->maxConns = maxConns;
     server->maxOutstandingRequests = maxOutstandingRequests;
     server->compress = compress;
-    server->maxRetries = 3;
+    server->maxRetries = 2;
     server->clientAuth = NULL;
 
     for (i = 0; names[i]; i++) {
