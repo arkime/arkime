@@ -21,6 +21,7 @@
 #include <arpa/inet.h>
 #include <net/ethernet.h>
 #include <errno.h>
+#include <net/bpf.h>
 
 //#define DEBUG_PACKET
 
@@ -69,6 +70,18 @@ LOCAL int                    mProtocolCnt;
 MolochProtocol_t             mProtocols[0x100];
 
 /******************************************************************************/
+// lookup table https://godoc.org/github.com/0intro/pcap
+#define LINKTYPE_PPP_HDLC 50
+#define LINKTYPE_PPP_ETHER 51
+#define LINKTYPE_ATM_RFC1483 100
+#define LINKTYPE_RAW 101
+#define LINKTYPE_SLIP_BSDOS 102
+#define LINKTYPE_PPP_BSDOS 103
+#define LINKTYPE_C_HDLC 104
+#define LINKTYPE_ATM_CLIP 106
+#define LINKTYPE_FRELAY 107
+#define LINKTYPE_PFSYNC 246
+#define LINKTYPE_PKTAP 258
 
 LOCAL uint64_t               packetStats[MOLOCH_PACKET_MAX];
 
@@ -302,7 +315,7 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
     if (session->firstBytesLen[packet->direction] < 8 && session->packets[packet->direction] < 10) {
         const uint8_t *pcapData = packet->pkt;
 
-        if (pcapFileHeader.linktype == 1) {
+        if (pcapFileHeader.dlt == 1) {
             if (packet->direction == 1) {
                 moloch_field_macoui_add(session, mac1Field, oui1Field, pcapData+0);
                 moloch_field_macoui_add(session, mac2Field, oui2Field, pcapData+6);
@@ -435,7 +448,9 @@ LOCAL void moloch_packet_save_unknown_packet(int type, MolochPacket_t * const pa
           return;
         }
 
-        fwrite(&pcapFileHeader, 24, 1, unknownPacketFile[type]);
+        MolochPcapFileHdr_t pcapFileHeader_dlt_link = pcapFileHeader; // create copy
+        moloch_packet_dlt_to_linktype(&pcapFileHeader_dlt_link);
+        fwrite(&pcapFileHeader_dlt_link, sizeof(MolochPcapFileHdr_t), 1, unknownPacketFile[type]);
     }
 
     fwrite(&hdr, 16, 1, unknownPacketFile[type]);
@@ -1188,11 +1203,11 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
     int rc;
 
 #ifdef DEBUG_PACKET
-    LOG("enter %p %u %d", packet, pcapFileHeader.linktype, packet->pktlen);
+    LOG("enter %p %u %d", packet, pcapFileHeader.dlt, packet->pktlen);
     moloch_print_hex_string(packet->pkt, packet->pktlen);
 #endif
 
-    switch(pcapFileHeader.linktype) {
+    switch(pcapFileHeader.dlt) {
     case 0: // NULL
         if (packet->pktlen > 4) {
             if (packet->pkt[0] == 30)
@@ -1235,7 +1250,7 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
         if (config.ignoreErrors)
             rc = MOLOCH_PACKET_CORRUPT;
         else
-            LOGEXIT("ERROR - Unsupported pcap link type %u", pcapFileHeader.linktype);
+            LOGEXIT("ERROR - Unsupported pcap link type/dlt %u", pcapFileHeader.dlt);
     }
 
     if (likely(rc == MOLOCH_PACKET_DO_PROCESS) && unlikely(packet->mProtocol == 0)) {
@@ -1383,7 +1398,7 @@ int moloch_packet_run_ethernet_cb(MolochPacketBatch_t * batch, MolochPacket_t * 
 /******************************************************************************/
 void moloch_packet_set_ethernet_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb)
 {
-    if (ethernetCbs[type]) 
+    if (ethernetCbs[type])
       LOG ("redining existing callback type %d", type);
 
     ethernetCbs[type] = enqueueCb;
@@ -1416,7 +1431,7 @@ int moloch_packet_run_ip_cb(MolochPacketBatch_t * batch, MolochPacket_t * const 
 /******************************************************************************/
 void moloch_packet_set_ip_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb)
 {
-    if (type >= MOLOCH_IPPROTO_MAX) 
+    if (type >= MOLOCH_IPPROTO_MAX)
       LOGEXIT ("type value to large %d", type);
 
     ipCbs[type] = enqueueCb;
@@ -1630,9 +1645,9 @@ void moloch_packet_add_packet_ip(char *ipstr, int mode)
     node->data = (void *)(long)mode;
 }
 /******************************************************************************/
-void moloch_packet_set_linksnap(int linktype, int snaplen)
+void moloch_packet_set_linksnap(int dlt, int snaplen)
 {
-    pcapFileHeader.linktype = linktype;
+    pcapFileHeader.dlt = dlt;
     pcapFileHeader.snaplen = snaplen;
     moloch_rules_recompile();
 }
@@ -1658,6 +1673,37 @@ void moloch_packet_drophash_add(MolochSession_t *session, int which, int min)
             moloch_drophash_add(&packetDrop4, port, &((uint32_t *)session->addr2.s6_addr)[3], session->lastPacket.tv_sec, min*60);
         }
     }
+}
+/******************************************************************************/
+void moloch_packet_dlt_to_linktype(MolochPcapFileHdr_t *pcapFileHeader_dlt)
+{
+    int dlt = pcapFileHeader_dlt->dlt;
+    if(dlt <= 10 || dlt >= 104) {
+        return;
+    } else if(dlt == DLT_FRELAY) {
+        pcapFileHeader_dlt->dlt =LINKTYPE_FRELAY;
+    } else if(dlt == DLT_ATM_RFC1483) {
+        pcapFileHeader_dlt->dlt =LINKTYPE_ATM_RFC1483;
+    } else if(dlt == DLT_RAW) {
+        pcapFileHeader_dlt->dlt =LINKTYPE_RAW;
+    } else if(dlt == DLT_SLIP_BSDOS) {
+        pcapFileHeader_dlt->dlt =LINKTYPE_SLIP_BSDOS;
+    } else if(dlt == DLT_PPP_BSDOS) {
+        pcapFileHeader_dlt->dlt =LINKTYPE_PPP_BSDOS;
+    } else if(dlt == DLT_C_HDLC) {
+        pcapFileHeader_dlt->dlt =LINKTYPE_FRELAY;
+    } else if(dlt == DLT_ATM_CLIP) {
+        pcapFileHeader_dlt->dlt =LINKTYPE_ATM_CLIP;
+    } else if(dlt == DLT_PPP_SERIAL) {
+        pcapFileHeader_dlt->dlt =LINKTYPE_PPP_HDLC;  // both 50
+    } else if(dlt == DLT_PPP_ETHER) {
+        pcapFileHeader_dlt->dlt =LINKTYPE_PPP_ETHER; // both 51
+    } else if(dlt == DLT_PFSYNC) {
+        pcapFileHeader_dlt->dlt =LINKTYPE_PFSYNC; // both 246
+    } else if(dlt == DLT_PKTAP) {
+        pcapFileHeader_dlt->dlt =LINKTYPE_PKTAP; // both 258
+    } // error handling?
+    return;
 }
 /******************************************************************************/
 void moloch_packet_exit()

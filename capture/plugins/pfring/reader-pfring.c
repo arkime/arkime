@@ -88,9 +88,7 @@ LOCAL void *reader_pfring_thread(void *posv)
 }
 /******************************************************************************/
 void reader_pfring_start() {
-    int dlt_to_linktype(int dlt);
-
-    moloch_packet_set_linksnap(1, config.snapLen);
+    moloch_packet_set_linksnap(DLT_EN10MB, config.snapLen);
 
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {

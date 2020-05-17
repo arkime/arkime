@@ -350,8 +350,12 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         if (currentInfo[thread]->file->fd < 0) {
             LOGEXIT("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d) -- You may need to check directory permissions or set pcapWriteMethod=simple-nodirect in config.ini file.  See https://molo.ch/settings#pcapwritemethod", name, strerror(errno), errno);
         }
-        info->file->pos = currentInfo[thread]->bufpos = 24;
-        memcpy(info->buf, &pcapFileHeader, 24);
+        info->file->pos = currentInfo[thread]->bufpos = sizeof(MolochPcapFileHdr_t);
+
+        MolochPcapFileHdr_t pcapFileHeader_dlt_link = pcapFileHeader; // create copy
+        moloch_packet_dlt_to_linktype(&pcapFileHeader_dlt_link);
+        memcpy(info->buf, &pcapFileHeader_dlt_link, sizeof(MolochPcapFileHdr_t));
+
         if (config.debug)
             LOG("opened %d %s %d", thread, name, info->file->fd);
         g_free(name);

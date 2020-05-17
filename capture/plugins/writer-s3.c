@@ -603,7 +603,7 @@ void writer_s3_exit()
     writer_s3_flush(TRUE);
 }
 /******************************************************************************/
-extern MolochPcapFileHdr_t pcapFileHeader;
+extern MolochPcapFileHdr_t pcapFileHeader   ;
 void writer_s3_create(const MolochPacket_t *packet)
 {
     char               filename[1000];
@@ -627,7 +627,9 @@ void writer_s3_create(const MolochPacket_t *packet)
 
     outputBuffer = moloch_http_get_buffer(config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN);
     outputPos = 0;
-    append_to_output(&pcapFileHeader, 24, FALSE, 0);
+    MolochPcapFileHdr_t pcapFileHeader_dlt_link = pcapFileHeader; // create copy
+    moloch_packet_dlt_to_linktype(&pcapFileHeader_dlt_link);
+    append_to_output(&pcapFileHeader_dlt_link, sizeof(MolochPcapFileHdr_t), FALSE, 0);
     make_new_block();                   // So we can read the header in a small amount of data fetched
 
     if (config.debug)
