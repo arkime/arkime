@@ -21,7 +21,6 @@ var fs             = require('fs')
   , unzipper       = require('unzipper')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
-  , HashTable      = require('hashtable')
   , request        = require('request')
   , exec           = require('child_process').exec
   ;
@@ -59,11 +58,11 @@ function ThreatStreamSource (api, section) {
     this.loadTypes();
     break;
   case "zip":
-    this.ips          = new HashTable();
-    this.domains      = new HashTable();
-    this.emails       = new HashTable();
-    this.md5s         = new HashTable();
-    this.urls         = new HashTable();
+    this.ips          = new Map();
+    this.domains      = new Map();
+    this.emails       = new Map();
+    this.md5s         = new Map();
+    this.urls         = new Map();
     this.cacheTimeout = -1;
     setImmediate(this.loadFile.bind(this));
     setInterval(this.loadFile.bind(this), 8*60*60*1000); // Reload file every 8 hours

@@ -21,7 +21,6 @@ var wiseSource     = require('./wiseSource.js')
   , util           = require('util')
   , splunkjs       = require('splunk-sdk')
   , iptrie         = require('iptrie')
-  , HashTable      = require('hashtable')
   ;
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -90,9 +89,9 @@ SplunkSource.prototype.periodicRefresh = function() {
 
     var cache;
     if (this.type === "ip") {
-      cache = {items: new HashTable(), trie: new iptrie.IPTrie()};
+      cache = {items: new Map(), trie: new iptrie.IPTrie()};
     } else {
-      cache = new HashTable();
+      cache = new Map();
     }
 
     for (let item of results.results) {
