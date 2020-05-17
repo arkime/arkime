@@ -21,7 +21,6 @@ var fs             = require('fs')
   , unzipper       = require('unzipper')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
-  , HashTable      = require('hashtable')
   ;
 //////////////////////////////////////////////////////////////////////////////////
 function ThreatQSource (api, section) {
@@ -40,10 +39,10 @@ function ThreatQSource (api, section) {
   }
 
 
-  this.ips          = new HashTable();
-  this.domains      = new HashTable();
-  this.emails       = new HashTable();
-  this.md5s         = new HashTable();
+  this.ips          = new Map();
+  this.domains      = new Map();
+  this.emails       = new Map();
+  this.md5s         = new Map();
   this.cacheTimeout = -1;
 
 

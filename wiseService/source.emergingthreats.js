@@ -21,7 +21,6 @@ var fs             = require('fs')
   , csv            = require('csv')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
-  , HashTable      = require('hashtable')
   ;
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -34,8 +33,8 @@ function EmergingThreatsSource (api, section) {
     return;
   }
 
-  this.ips          = new HashTable();
-  this.domains      = new HashTable();
+  this.ips          = new Map();
+  this.domains      = new Map();
   this.categories   = {};
   this.cacheTimeout = -1;
 

@@ -20,7 +20,6 @@ var fs             = require('fs')
   , csv            = require('csv')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
-  , HashTable      = require('hashtable')
   ;
 //////////////////////////////////////////////////////////////////////////////////
 function AlienVaultSource (api, section) {
@@ -32,7 +31,7 @@ function AlienVaultSource (api, section) {
     console.log(this.section, "- No export key defined");
     return;
   }
-  this.ips          = new HashTable();
+  this.ips          = new Map();
 
   this.api.addSource("alienvault", this);
 
