@@ -3512,16 +3512,30 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 } elsif ($ARGV[1] eq "info") {
     dbVersion(0);
     my $esversion = dbESVersion();
-    my $nodes = esGet("/_nodes");
+    my $catNodes = esGet("/_cat/nodes?format=json&bytes=b&h=name,diskTotal,role");
     my $status = esGet("/_stats/docs,store", 1);
+    my $minMax = esPost("/${PREFIX}sessions2-*/_search?size=0", '{"aggs":{ "min" : { "min" : { "field" : "lastPacket" } }, "max" : { "max" : { "field" : "lastPacket" } } } }', 1);
 
     my $sessions = 0;
     my $sessionsBytes = 0;
+    my $sessionsTotalBytes = 0;
+
     my @sessions = grep /^${PREFIX}sessions2-/, keys %{$status->{indices}};
     foreach my $index (@sessions) {
-        next if ($index !~ /^${PREFIX}sessions2-/);
         $sessions += $status->{indices}->{$index}->{primaries}->{docs}->{count};
-        $sessionsBytes += $status->{indices}->{$index}->{primaries}->{store}->{size_in_bytes};
+        $sessionsBytes += int($status->{indices}->{$index}->{primaries}->{store}->{size_in_bytes});
+        $sessionsTotalBytes += int($status->{indices}->{$index}->{total}->{store}->{size_in_bytes});
+    }
+
+    my $diskTotal = 0;
+    my $dataNodes = 0;
+    my $totalNodes = 0;
+    foreach my $node (@{$catNodes}) {
+        $totalNodes++;
+        if ($node->{role} =~ /d/) {
+            $diskTotal += $node->{diskTotal};
+            $dataNodes++;
+        }
     }
 
     my $historys = 0;
@@ -3543,18 +3557,23 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     printf "Cluster Name:        %17s\n", $esversion->{cluster_name};
     printf "ES Version:          %17s\n", $esversion->{version}->{number};
     printf "DB Version:          %17s\n", $main::versionNumber;
-    printf "ES Nodes:            %17s/%s\n", commify(dataNodes($nodes->{nodes})), commify(scalar(keys %{$nodes->{nodes}}));
-    printf "Session Indices:     %17s\n", commify(scalar(@sessions));
-    printf "Sessions2:           %17s (%s bytes)\n", commify($sessions), commify($sessionsBytes);
+    printf "ES Data Nodes:       %17s/%s\n", commify($dataNodes), commify($totalNodes);
+    printf "Sessions2 Indices:   %17s\n", commify(scalar(@sessions));
+    printf "Sessions:            %17s (%s bytes)\n", commify($sessions), commify($sessionsBytes);
     if (scalar(@sessions) > 0) {
-        printf "Session Density:     %17s (%s bytes)\n", commify(int($sessions/(scalar(keys %{$nodes->{nodes}})*scalar(@sessions)))),
-                                                       commify(int($sessionsBytes/(scalar(keys %{$nodes->{nodes}})*scalar(@sessions))));
+        printf "Sessions Density:    %17s (%s bytes)\n", commify(int($sessions/($dataNodes*scalar(@sessions)))),
+                                                       commify(int($sessionsBytes/($dataNodes*scalar(@sessions))));
+        my $days =  (int($minMax->{aggregations}->{max}->{value}) - int($minMax->{aggregations}->{min}->{value}))/(24*60*60*1000);
+
+        printf "MB per Day:          %17s\n", commify(int($sessionsTotalBytes/($days*1000*1000)));
+        printf "Sessions Days:       %17.2f (%s - %s)\n", $days, $minMax->{aggregations}->{min}->{value_as_string}, $minMax->{aggregations}->{max}->{value_as_string};
+        printf "Possible Sessions Days:  %13.2f\n", (0.95*$diskTotal)/($sessionsTotalBytes/$days);
     }
     printf "History Indices:     %17s\n", commify(scalar(@historys));
     printf "Histories:           %17s (%s bytes)\n", commify($historys), commify($historysBytes);
     if (scalar(@historys) > 0) {
-        printf "History Density:     %17s (%s bytes)\n", commify(int($historys/(scalar(keys %{$nodes->{nodes}})*scalar(@historys)))),
-                                                       commify(int($historysBytes/(scalar(keys %{$nodes->{nodes}})*scalar(@historys))));
+        printf "History Density:     %17s (%s bytes)\n", commify(int($historys/($dataNodes*scalar(@historys)))),
+                                                       commify(int($historysBytes/($dataNodes*scalar(@historys))));
     }
     printIndex($status, "stats_v4");
     printIndex($status, "stats_v3");
