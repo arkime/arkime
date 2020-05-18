@@ -92,7 +92,7 @@ EmergingThreatsSource.prototype.parse = function (fn, hash)
         value.num += 2;
         value.buffer = Buffer.concat([value.buffer, encoded]);
       } else {
-        hash.put(data[i][0], {num: 2, buffer: encoded});
+        hash.set(data[i][0], {num: 2, buffer: encoded});
       }
     }
     console.log(this.section, "- Done Loading", fn);

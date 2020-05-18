@@ -172,18 +172,18 @@ ThreatStreamSource.prototype.parseFile = function()
 
 
           if (item.itype.match(/(_ip|anon_proxy|anon_vpn)/)) {
-            this.ips.put(item.srcip, {num: num, buffer: encoded});
+            this.ips.set(item.srcip, {num: num, buffer: encoded});
           } else if (item.itype.match(/_domain|_dns/)) {
-            this.domains.put(item.domain, {num: num, buffer: encoded});
+            this.domains.set(item.domain, {num: num, buffer: encoded});
           } else if (item.itype.match(/_email/)) {
-            this.emails.put(item.email, {num: num, buffer: encoded});
+            this.emails.set(item.email, {num: num, buffer: encoded});
           } else if (item.itype.match(/_md5/)) {
-            this.md5s.put(item.md5, {num: num, buffer: encoded});
+            this.md5s.set(item.md5, {num: num, buffer: encoded});
           } else if (item.itype.match(/_url/)) {
             if (item.url.lastIndexOf("http://", 0) === 0) {
               item.url = item.url.substring(7);
             }
-            this.urls.put(item.url, {num: num, buffer: encoded});
+            this.urls.set(item.url, {num: num, buffer: encoded});
           }
         });
         //console.log(this.section, "- Done", entry.path);

@@ -108,13 +108,13 @@ ThreatQSource.prototype.parseFile = function()
 
           count++;
           if (item.type === "IP Address") {
-            this.ips.put(item.indicator, {num: args.length/2, buffer: encoded});
+            this.ips.set(item.indicator, {num: args.length/2, buffer: encoded});
           } else if (item.type === "FQDN") {
-            this.domains.put(item.indicator, {num: args.length/2, buffer: encoded});
+            this.domains.set(item.indicator, {num: args.length/2, buffer: encoded});
           } else if (item.type === "Email Address") {
-            this.emails.put(item.indicator, {num: args.length/2, buffer: encoded});
+            this.emails.set(item.indicator, {num: args.length/2, buffer: encoded});
           } else if (item.type === "MD5") {
-            this.md5s.put(item.indicator, {num: args.length/2, buffer: encoded});
+            this.md5s.set(item.indicator, {num: args.length/2, buffer: encoded});
           }
         });
       });

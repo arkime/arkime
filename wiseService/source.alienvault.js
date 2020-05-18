@@ -73,7 +73,7 @@ AlienVaultSource.prototype.parseFile = function()
                                       this.reliabilityField, data[i][1],
                                       this.threatlevelField, data[i][2],
                                       this.activityField, data[i][3]);
-      this.ips.put(data[i][0], {num: 4, buffer: encoded});
+      this.ips.set(data[i][0], {num: 4, buffer: encoded});
       count++;
     }
     console.log(this.section, "- Done Loading", count, "elements");
