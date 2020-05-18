@@ -192,7 +192,7 @@ export default {
 
       data.expression = this.viewExpression;
       data.name = this.name;
-      
+
       if (this.useColConfig === true) {
         // save the current sessions table column configuration
         let tableClone = JSON.parse(JSON.stringify(this.$store.getters.sessionsTableState));
