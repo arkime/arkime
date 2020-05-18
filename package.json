@@ -40,7 +40,7 @@
     "request-promise": "^4.2.2",
     "sortablejs": "^1.7.0",
     "splunk-sdk": "^1.9.0",
-    "sqlite3": "^4.0.2",
+    "sqlite3": "^4.2.0",
     "stylus": "^0.54.5",
     "unzipper": "^0.10.10",
     "uuidv4": "^5.0.1",
