@@ -21,7 +21,7 @@
 #include <arpa/inet.h>
 #include <net/ethernet.h>
 #include <errno.h>
-#include <net/bpf.h>
+#include <pcap-bpf.h>
 
 //#define DEBUG_PACKET
 
