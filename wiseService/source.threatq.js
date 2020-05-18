@@ -21,7 +21,6 @@ var fs             = require('fs')
   , unzipper       = require('unzipper')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
-  , HashTable      = require('hashtable')
   ;
 //////////////////////////////////////////////////////////////////////////////////
 function ThreatQSource (api, section) {
@@ -40,10 +39,10 @@ function ThreatQSource (api, section) {
   }
 
 
-  this.ips          = new HashTable();
-  this.domains      = new HashTable();
-  this.emails       = new HashTable();
-  this.md5s         = new HashTable();
+  this.ips          = new Map();
+  this.domains      = new Map();
+  this.emails       = new Map();
+  this.md5s         = new Map();
   this.cacheTimeout = -1;
 
 
@@ -109,13 +108,13 @@ ThreatQSource.prototype.parseFile = function()
 
           count++;
           if (item.type === "IP Address") {
-            this.ips.put(item.indicator, {num: args.length/2, buffer: encoded});
+            this.ips.set(item.indicator, {num: args.length/2, buffer: encoded});
           } else if (item.type === "FQDN") {
-            this.domains.put(item.indicator, {num: args.length/2, buffer: encoded});
+            this.domains.set(item.indicator, {num: args.length/2, buffer: encoded});
           } else if (item.type === "Email Address") {
-            this.emails.put(item.indicator, {num: args.length/2, buffer: encoded});
+            this.emails.set(item.indicator, {num: args.length/2, buffer: encoded});
           } else if (item.type === "MD5") {
-            this.md5s.put(item.indicator, {num: args.length/2, buffer: encoded});
+            this.md5s.set(item.indicator, {num: args.length/2, buffer: encoded});
           }
         });
       });

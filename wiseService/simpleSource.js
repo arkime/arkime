@@ -21,7 +21,6 @@
 var util           = require('util')
   , wiseSource     = require('./wiseSource.js')
   , iptrie         = require('iptrie')
-  , HashTable      = require('hashtable')
   ;
 
 function SimpleSource (api, section) {
@@ -32,9 +31,9 @@ function SimpleSource (api, section) {
   this.typeSetting();
 
   if (this.type === "ip") {
-    this.cache = {items: new HashTable(), trie: new iptrie.IPTrie()};
+    this.cache = {items: new Map(), trie: new iptrie.IPTrie()};
   } else {
-    this.cache = new HashTable();
+    this.cache = new Map();
   }
 }
 util.inherits(SimpleSource, wiseSource);
@@ -99,7 +98,7 @@ SimpleSource.prototype.load = function() {
   var newCache;
   var count = 0;
   if (this.type === "ip") {
-    newCache = {items: new HashTable(), trie: new iptrie.IPTrie()};
+    newCache = {items: new Map(), trie: new iptrie.IPTrie()};
     setFunc  = (key, value) => {
       key.split(",").forEach((cidr) => {
         var parts = cidr.split("/");
@@ -108,23 +107,23 @@ SimpleSource.prototype.load = function() {
         } catch (e) {
           console.log("ERROR adding", this.section, cidr, e);
         }
-        newCache.items.put(cidr, value);
+        newCache.items.set(cidr, value);
         count++;
       });
     };
   } else {
-    newCache = new HashTable();
+    newCache = new Map();
     if (this.type === "url") {
       setFunc = (key, value) => {
         if (key.lastIndexOf("http://", 0) === 0) {
           key = key.substring(7);
         }
-        newCache.put(key, value);
+        newCache.set(key, value);
         count++;
       };
     } else {
       setFunc = function(key, value) {
-        newCache.put(key, value);
+        newCache.set(key, value);
         count++;
       };
     }
