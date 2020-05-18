@@ -128,7 +128,7 @@ export default {
       mode: (this.editView) ? 'edit' : 'create',
       name: (this.editView) ? this.editView.name : '',
       viewExpression: (this.editView) ? this.editView.expression : (this.initialExpression || ''),
-      useColConfig: (this.editView && this.editView.sessionsColConfig),
+      useColConfig: (this.editView && (this.editView.sessionsColConfig !== undefined)),
       loading: false,
       error: ''
     };
@@ -192,6 +192,7 @@ export default {
 
       data.expression = this.viewExpression;
       data.name = this.name;
+      
       if (this.useColConfig === true) {
         // save the current sessions table column configuration
         let tableClone = JSON.parse(JSON.stringify(this.$store.getters.sessionsTableState));
