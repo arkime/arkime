@@ -107,7 +107,7 @@ SimpleSource.prototype.load = function() {
         } catch (e) {
           console.log("ERROR adding", this.section, cidr, e);
         }
-        newCache.items.put(cidr, value);
+        newCache.items.set(cidr, value);
         count++;
       });
     };
@@ -118,12 +118,12 @@ SimpleSource.prototype.load = function() {
         if (key.lastIndexOf("http://", 0) === 0) {
           key = key.substring(7);
         }
-        newCache.put(key, value);
+        newCache.set(key, value);
         count++;
       };
     } else {
       setFunc = function(key, value) {
-        newCache.put(key, value);
+        newCache.set(key, value);
         count++;
       };
     }

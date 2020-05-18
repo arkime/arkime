@@ -26,7 +26,9 @@ try {
   var express = require('express');
   var stylus = require('stylus');
   var util = require('util');
-  var fs = require('fs-ext');
+  var fs = require('fs');
+  var {flock} = require('fs-ext');
+  var fse = require('fs-ext');
   var async = require('async');
   var url = require('url');
   var dns = require('dns');
@@ -2567,7 +2569,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
 
       var freeG;
       try {
-        var stat = fs.statVFS(fields.name);
+        var stat = fse.statVFS(fields.name);
         freeG = stat.f_frsize / 1024.0 * stat.f_bavail / (1024.0 * 1024.0);
       } catch (e) {
         console.log('ERROR', e);
@@ -2636,7 +2638,7 @@ function expireCheckAll () {
         }
         pcapDir = pcapDir.trim();
         var fileStat = fs.statSync(pcapDir);
-        var vfsStat = fs.statVFS(pcapDir);
+        var vfsStat = fse.statVFS(pcapDir);
         if (!devToStat[fileStat.dev]) {
           vfsStat.dirs = {};
           vfsStat.dirs[pcapDir] = {};

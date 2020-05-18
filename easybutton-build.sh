@@ -11,14 +11,14 @@
 # * install moloch if --install
 
 
-GLIB=2.56.2
+GLIB=2.64.2
 YARA=3.11.0
 MAXMIND=1.3.2
 PCAP=1.9.1
 CURL=7.68.0
 LUA=5.3.5
 DAQ=2.0.7
-NODE=10.20.1
+NODE=14.2.1
 
 TDIR="/data/moloch"
 DOPFRING=0

@@ -115,9 +115,9 @@ SplunkSource.prototype.periodicRefresh = function() {
       if (this.type === "ip") {
         var parts = key.split("/");
         cache.trie.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), newitem);
-        cache.items.put(key, newitem);
+        cache.items.set(key, newitem);
       } else {
-        cache.put(key, newitem);
+        cache.set(key, newitem);
       }
     }
     this.cache = cache;
