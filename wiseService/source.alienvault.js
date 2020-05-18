@@ -140,7 +140,7 @@ AlienVaultSource.prototype.getIp = function(ip, cb) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 AlienVaultSource.prototype.dump = function(res) {
-  this.ips.forEach((key, value) => {
+  this.ips.forEach((value, key) => {
     var str = "{key: \"" + key + "\", ops:\n" +
                wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
     res.write(str);

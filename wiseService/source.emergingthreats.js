@@ -136,7 +136,7 @@ EmergingThreatsSource.prototype.getIp = function(ip, cb) {
 EmergingThreatsSource.prototype.dump = function(res) {
   ["ips", "domains"].forEach((ckey) => {
     res.write(`${ckey}:\n`);
-    this[ckey].forEach((key, value) => {
+    this[ckey].forEach((value, key) => {
       var str = `{key: "${key}", ops:\n` +
         wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
       res.write(str);

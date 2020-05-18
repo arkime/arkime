@@ -41,7 +41,7 @@ module.exports = SimpleSource;
 //////////////////////////////////////////////////////////////////////////////////
 SimpleSource.prototype.dump = function(res) {
   var cache = this.type === "ip"?this.cache.items:this.cache;
-  cache.forEach((key, value) => {
+  cache.forEach((value, key) => {
     var str = `{key: "${key}", ops:\n` +
       wiseSource.result2Str(wiseSource.combineResults([this.tagsResult, value])) + "},\n";
     res.write(str);

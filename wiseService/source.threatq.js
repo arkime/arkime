@@ -154,7 +154,7 @@ ThreatQSource.prototype.getEmail = function(email, cb) {
 ThreatQSource.prototype.dump = function(res) {
   ["ips", "domains", "emails", "md5s"].forEach((ckey) => {
     res.write(`${ckey}:\n`);
-    this[ckey].forEach((key, value) => {
+    this[ckey].forEach((value, key) => {
       var str = `{key: "${key}", ops:\n` +
         wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
       res.write(str);
