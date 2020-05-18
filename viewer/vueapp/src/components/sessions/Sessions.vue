@@ -13,7 +13,8 @@
           :num-matching-sessions="sessions.recordsFiltered"
           :start="query.start"
           :timezone="user.settings.timezone"
-          @changeSearch="cancelAndLoad(true)">
+          @changeSearch="cancelAndLoad(true)"
+          @setView="loadNewView()">
         </moloch-search> <!-- /search navbar -->
 
         <!-- paging navbar -->
@@ -668,15 +669,18 @@ export default {
     }
   },
   watch: {
-    'query.view': function (newView, oldView) {
-      this.viewChanged = true;
-    },
     '$store.state.stickyViz': function () {
       this.stickyHeader = this.$store.state.stickyViz;
       this.toggleStickyHeader();
     }
   },
   methods: {
+    loadNewView: function () {
+      this.viewChanged = true;
+      this.$nextTick(() => {
+        this.loadData(true);
+      });
+    },
     /* show the overflow when a dropdown in a column header is shown. otherwise,
      * the dropdown is cut off and scrolls vertically in the column header */
     dropdownShowListener: function (bvEvent) {
@@ -1003,7 +1007,7 @@ export default {
 
       if (index === -1) { // default columns
         this.tableState.visibleHeaders = Utils.getDefaultTableState().visibleHeaders.slice();
-        this.tableState.order = Utils.getDefaultTableState().order.slice();
+        this.tableState.order = JSON.parse(JSON.stringify(Utils.getDefaultTableState().order));
         this.colWidths = {}; // clear out column widths to load defaults
         setTimeout(() => { this.saveColumnWidths(); });
         // reset field widths
@@ -1013,7 +1017,7 @@ export default {
         }
       } else {
         this.tableState.visibleHeaders = this.colConfigs[index].columns.slice();
-        this.tableState.order = this.colConfigs[index].order.slice();
+        this.tableState.order = JSON.parse(JSON.stringify(this.colConfigs[index].order));
       }
 
       this.sorts = this.tableState.order;
@@ -1046,7 +1050,7 @@ export default {
       let data = {
         name: name,
         columns: this.tableState.visibleHeaders.slice(),
-        order: this.tableState.order.slice()
+        order: JSON.parse(JSON.stringify(this.tableState.order))
       };
 
       UserService.updateColumnConfig(data)
@@ -1358,8 +1362,6 @@ export default {
       this.sorts = this.tableState.order || JSON.parse(JSON.stringify(Utils.getDefaultTableState().order));
 
       if (this.viewChanged && this.views) {
-        this.mapHeadersToFields();
-
         for (let view in this.views) {
           if (view === this.query.view && this.views[view].sessionsColConfig) {
             this.tableState = JSON.parse(JSON.stringify(this.views[view].sessionsColConfig));
@@ -1367,6 +1369,8 @@ export default {
             this.saveTableState();
           }
         }
+
+        this.mapHeadersToFields();
 
         this.updateTable = true;
         this.viewChanged = false;
@@ -1520,7 +1524,6 @@ export default {
     mapHeadersToFields: function () {
       this.headers = [];
       this.sumOfColWidths = 85;
-
       if (!this.colWidths) { this.colWidths = {}; }
 
       for (let headerId of this.tableState.visibleHeaders) {
@@ -1690,12 +1693,12 @@ export default {
           this.$refs.tableHeader.style = undefined;
           this.$refs.draggableColumns.style = undefined;
         }
-        if (firstTableRow) { // if there is a table row in the body
+        if (firstTableRow && firstTableRow.length > 0) { // if there is a table row in the body
           // set the margin top to the height of the header so it renders below it
           firstTableRow[0].style.marginTop = `${height}px`;
         }
       } else { // if the header is not sticky
-        if (firstTableRow) { // and there is a table row in the body
+        if (firstTableRow && firstTableRow.length > 0) { // and there is a table row in the body
           // unset the top margin because the table header won't overlay it
           firstTableRow[0].style = undefined;
         }

@@ -2089,6 +2089,7 @@ app.post('/user/views/update', [noCacheJson, checkCookieToken, logAction(), getS
   } else {
     if (user.views[req.body.name]) {
       user.views[req.body.name].expression = req.body.expression;
+      user.views[req.body.name].sessionsColConfig = req.body.sessionsColConfig;
     } else { // the name has changed, so create a new entry
       user.views[req.body.name] = {
         expression: req.body.expression,

@@ -573,7 +573,7 @@
                       v-b-tooltip.hover
                       title="Copy this views's expression"
                       class="btn btn-sm btn-theme-secondary"
-                      v-clipboard:copy="item.expression">
+                      @click="copyValue(item.expression)">
                       <span class="fa fa-clipboard fa-fw">
                       </span>
                     </button>
@@ -1579,7 +1579,7 @@
                   <span class="input-group-append">
                     <button class="btn btn-theme-secondary"
                       type="button"
-                      v-clipboard:copy="themeString">
+                      @click="copyValue(themeString)">
                       <span class="fa fa-clipboard">
                       </span>&nbsp;
                       Copy
@@ -1998,7 +1998,7 @@
                         v-b-tooltip.hover
                         title="Copy this shortcut's value"
                         class="btn btn-sm btn-theme-secondary"
-                        v-clipboard:copy="item.value">
+                        @click="copyValue(item.value)">
                         <span class="fa fa-clipboard fa-fw">
                         </span>
                       </button>
@@ -2410,6 +2410,10 @@ export default {
       });
   },
   methods: {
+    /* vue-clipboard2 directives are broken, use their internal method instead */
+    copyValue: function (val) {
+      this.$copyText(val);
+    },
     /* exposed page functions ---------------------------------------------- */
     /* opens a specific settings tab */
     openView: function (tabName) {

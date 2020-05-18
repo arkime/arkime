@@ -70,7 +70,7 @@
             <span class="sr-only">Views</span>
           </div>
         </template>
-        <b-dropdown-item @click="createView">
+        <b-dropdown-item @click="modView()">
           <span class="fa fa-plus-circle"></span>&nbsp;
           New View
         </b-dropdown-item>
@@ -88,6 +88,21 @@
           <span v-if="value.shared"
             class="fa fa-share-square">
           </span>
+
+          <button class="btn btn-xs btn-danger pull-right ml-1"
+            type="button"
+            @click.stop.prevent="deleteView(value, key)">
+            <span class="fa fa-trash-o">
+            </span>
+          </button>
+          <button class="btn btn-xs btn-warning pull-right"
+            type="button"
+            :id="'updateview' + key"
+            @click.stop.prevent="modView(views[key])">
+            <span class="fa fa-edit">
+            </span>
+          </button>
+
           {{ key }}&nbsp;
           <span v-if="value.sessionsColConfig"
             class="fa fa-columns cursor-help"
@@ -167,10 +182,12 @@
           </div>
           <!-- actions menu forms -->
           <div :class="{'col-md-9':showApplyButtons,'col-md-12':!showApplyButtons}">
-            <moloch-create-view v-if="actionForm === 'create:view'"
+            <moloch-modify-view v-if="actionForm === 'modify:view'"
               :done="actionFormDone"
-              @newView="newView">
-            </moloch-create-view>
+              :editView="editableView"
+              :initialExpression="expression"
+              @setView="setView">
+            </moloch-modify-view>
             <moloch-tag-sessions v-else-if="actionForm === 'add:tags' || actionForm === 'remove:tags'"
               :add="actionForm === 'add:tags'"
               :start="start"
@@ -233,7 +250,7 @@ import ConfigService from '../utils/ConfigService';
 import ExpressionTypeahead from './ExpressionTypeahead';
 import MolochTime from './Time';
 import MolochToast from '../utils/Toast';
-import MolochCreateView from '../sessions/CreateView';
+import MolochModifyView from '../sessions/ModifyView';
 import MolochTagSessions from '../sessions/Tags';
 import MolochRemoveData from '../sessions/Remove';
 import MolochSendSessions from '../sessions/Send';
@@ -247,7 +264,7 @@ export default {
     ExpressionTypeahead,
     MolochTime,
     MolochToast,
-    MolochCreateView,
+    MolochModifyView,
     MolochTagSessions,
     MolochRemoveData,
     MolochSendSessions,
@@ -280,7 +297,8 @@ export default {
       view: this.$route.query.view,
       message: undefined,
       messageType: undefined,
-      updateTime: false
+      updateTime: false,
+      editableView: undefined // Not necessarily active view
     };
   },
   computed: {
@@ -337,6 +355,7 @@ export default {
     messageDone: function () {
       this.message = undefined;
       this.messageType = undefined;
+      this.$parent.$emit('recalc-collapse');
     },
     applyExpression: function () {
       this.$router.push({
@@ -379,8 +398,9 @@ export default {
       this.actionForm = 'send:session';
       this.showApplyButtons = true;
     },
-    createView: function () {
-      this.actionForm = 'create:view';
+    modView: function (view) {
+      this.editableView = view;
+      this.actionForm = 'modify:view';
       this.showApplyButtons = false;
     },
     viewIntersection: function () {
@@ -388,17 +408,36 @@ export default {
       this.showApplyButtons = false;
     },
     actionFormDone: function (message, success) {
+      // If a view was being edited, remove selection name
+      this.editableView = undefined;
       this.actionForm = undefined;
+
       if (message) {
         this.message = message;
         this.messageType = success ? 'success' : 'warning';
       }
     },
-    /* updates the views list with the included new view */
-    newView: function (view, viewName) {
-      if (view && viewName && this.views) {
-        this.views[viewName] = view;
+    deleteView: function (view, name) {
+      // check if deleting current view
+      if (this.view === name) {
+        this.setView(undefined);
       }
+
+      UserService.deleteView(view, this.user.userId)
+        .then((response) => {
+          // remove the view from the view list
+          this.$store.commit('deleteViews', name);
+          this.getViews();
+          // display success message to user
+          this.msg = response.text;
+          this.msgType = 'success';
+        })
+        .catch((error) => {
+          console.log(error);
+          // display error message to user
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
     },
     setView: function (view) {
       this.view = view;
@@ -412,6 +451,8 @@ export default {
           view: view
         }
       });
+
+      this.$emit('setView');
     },
     /* helper functions ------------------------------------------ */
     getViews: function () {
