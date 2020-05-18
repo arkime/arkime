@@ -4,7 +4,6 @@
   "private": true,
   "license": "Apache-2.0",
   "dependencies": {
-    "hashtable": "http://github.com/awick/node-hashtable/tarball/master",
     "iptrie": "http://github.com/awick/node-iptrie/tarball/master"
   },
   "scripts": {

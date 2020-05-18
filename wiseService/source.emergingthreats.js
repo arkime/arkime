@@ -21,7 +21,6 @@ var fs             = require('fs')
   , csv            = require('csv')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
-  , HashTable      = require('hashtable')
   ;
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -34,8 +33,8 @@ function EmergingThreatsSource (api, section) {
     return;
   }
 
-  this.ips          = new HashTable();
-  this.domains      = new HashTable();
+  this.ips          = new Map();
+  this.domains      = new Map();
   this.categories   = {};
   this.cacheTimeout = -1;
 
@@ -93,7 +92,7 @@ EmergingThreatsSource.prototype.parse = function (fn, hash)
         value.num += 2;
         value.buffer = Buffer.concat([value.buffer, encoded]);
       } else {
-        hash.put(data[i][0], {num: 2, buffer: encoded});
+        hash.set(data[i][0], {num: 2, buffer: encoded});
       }
     }
     console.log(this.section, "- Done Loading", fn);
@@ -137,7 +136,7 @@ EmergingThreatsSource.prototype.getIp = function(ip, cb) {
 EmergingThreatsSource.prototype.dump = function(res) {
   ["ips", "domains"].forEach((ckey) => {
     res.write(`${ckey}:\n`);
-    this[ckey].forEach((key, value) => {
+    this[ckey].forEach((value, key) => {
       var str = `{key: "${key}", ops:\n` +
         wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
       res.write(str);
