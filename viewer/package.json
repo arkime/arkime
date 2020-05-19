@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "compression": "^1.6.2",
-    "fs-ext": "^0.5.0",
+    "fs-ext": "^2.0.0",
     "method-override": "^2.3.6",
     "multer": "^1.2.0",
     "passport": "^0.3.2",
