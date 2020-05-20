@@ -138,7 +138,18 @@ function parseIpPort(yy, field, ipPortStr) {
   function singleIp(exp, dbField, ip, port) {
     var obj;
 
+    if (typeof(port) === 'string' && port.match(/[^0-9]/)) {
+        throw port + ' not a valid port';
+    }
+
     if (ip !== undefined) {
+      let colon = ip.indexOf(":");
+      if ((colon === -1 && ip.match(/[^.0-9/]/)) ||        // IP4
+          (colon !== -1 && ip.match(/[^a-fA-F:0-9\/]/)) || // IP6
+          ip.match(/\/.*[^0-9]/)) {                        // CIDR
+          throw ip + ' not a valid ip';
+      }
+
       obj = {term: {}};
       obj.term[dbField] = ip;
     }
@@ -213,14 +224,14 @@ function parseIpPort(yy, field, ipPortStr) {
     // Everything after . is port
     let dots = ipPortStr.split('.');
     if (dots.length > 1 && dots[1] !== '') {
-      port = +dots[1];
+      port = dots[1];
     }
     // Everything before . is ip and slash
     ip = dots[0];
   } else {
     // everything after : is port
     if (colons.length > 1 && colons[1] !== '') {
-      port = +colons[1];
+      port = colons[1];
     }
 
     // Have to do extra because we allow shorthand for /8, /16, /24

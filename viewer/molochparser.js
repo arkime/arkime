@@ -50,6 +50,7 @@
     }
   }
 
+
   token location info (@$, _$, etc.): {
     first_line: n,
     last_line: n,
@@ -57,6 +58,7 @@
     last_column: n,
     range: [start_number, end_number]       (where the numbers are indexes into the input string, regular zero-based)
   }
+
 
   the parseError function receives a 'hash' object with these members for lexer and parser errors: {
     text:        (matched text)
@@ -69,202 +71,202 @@
     recoverable: (boolean: TRUE when the parser has a error recovery rule available for this particular error)
   }
 */
-var molochparser = (function () {
-  var o = function (k, v, o, l) { for (o = o || {}, l = k.length; l--; o[k[l]] = v);return o; }; var $V0 = [1, 6]; var $V1 = [1, 3]; var $V2 = [1, 4]; var $V3 = [1, 5]; var $V4 = [1, 8]; var $V5 = [1, 9]; var $V6 = [5, 18, 19, 23]; var $V7 = [14, 15, 16, 17];
-  var parser = { trace: function trace () { },
-    yy: {},
-    symbols_: { 'error': 2, 'expressions': 3, 'e': 4, 'EOF': 5, 'OP': 6, 'lt': 7, 'lte': 8, 'gt': 9, 'gte': 10, '==': 11, '!=': 12, 'VALUE': 13, 'STR': 14, 'QUOTEDSTR': 15, 'REGEXSTR': 16, 'LIST': 17, '&&': 18, '||': 19, '!': 20, '-': 21, '(': 22, ')': 23, 'EXISTS': 24, '$accept': 0, '$end': 1 },
-    terminals_: { 2: 'error', 5: 'EOF', 7: 'lt', 8: 'lte', 9: 'gt', 10: 'gte', 11: '==', 12: '!=', 14: 'STR', 15: 'QUOTEDSTR', 16: 'REGEXSTR', 17: 'LIST', 18: '&&', 19: '||', 20: '!', 21: '-', 22: '(', 23: ')', 24: 'EXISTS' },
-    productions_: [0, [3, 2], [6, 1], [6, 1], [6, 1], [6, 1], [6, 1], [6, 1], [13, 1], [13, 1], [13, 1], [13, 1], [4, 3], [4, 3], [4, 2], [4, 2], [4, 3], [4, 3], [4, 3], [4, 3]],
-    performAction: function anonymous (yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
-      /* this == yyval */
+var molochparser = (function(){
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,6],$V1=[1,3],$V2=[1,4],$V3=[1,5],$V4=[1,8],$V5=[1,9],$V6=[5,18,19,23],$V7=[14,15,16,17];
+var parser = {trace: function trace () { },
+yy: {},
+symbols_: {"error":2,"expressions":3,"e":4,"EOF":5,"OP":6,"lt":7,"lte":8,"gt":9,"gte":10,"==":11,"!=":12,"VALUE":13,"STR":14,"QUOTEDSTR":15,"REGEXSTR":16,"LIST":17,"&&":18,"||":19,"!":20,"-":21,"(":22,")":23,"EXISTS":24,"$accept":0,"$end":1},
+terminals_: {2:"error",5:"EOF",7:"lt",8:"lte",9:"gt",10:"gte",11:"==",12:"!=",14:"STR",15:"QUOTEDSTR",16:"REGEXSTR",17:"LIST",18:"&&",19:"||",20:"!",21:"-",22:"(",23:")",24:"EXISTS"},
+productions_: [0,[3,2],[6,1],[6,1],[6,1],[6,1],[6,1],[6,1],[13,1],[13,1],[13,1],[13,1],[4,3],[4,3],[4,2],[4,2],[4,3],[4,3],[4,3],[4,3]],
+performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
+/* this == yyval */
 
-      var $0 = $$.length - 1;
-      switch (yystate) {
-        case 1:
-          return $$[$0 - 1];
-          break;
-        case 2:
-          this.$ = 'lt';
-          break;
-        case 3:
-          this.$ = 'lte';
-          break;
-        case 4:
-          this.$ = 'gt';
-          break;
-        case 5:
-          this.$ = 'gte';
-          break;
-        case 6:
-          this.$ = 'eq';
-          break;
-        case 7:
-          this.$ = 'ne';
-          break;
-        case 12:
-          this.$ = { bool: { must: [$$[$0 - 2], $$[$0]] } };
-          break;
-        case 13:
-          this.$ = { bool: { should: [$$[$0 - 2], $$[$0]] } };
-          break;
-        case 14:
-          this.$ = { bool: { must_not: $$[$0] } };
-          break;
-        case 15:
-          this.$ = -$$[$0];
-          break;
-        case 16:
-          this.$ = $$[$0 - 1];
-          break;
-        case 17:
-          this.$ = formatExists(yy, $$[$0 - 2], 'eq');
-          break;
-        case 18:
-          this.$ = formatExists(yy, $$[$0 - 2], 'ne');
-          break;
-        case 19:
-          this.$ = formatQuery(yy, $$[$0 - 2], $$[$0 - 1], $$[$0]);
-          // console.log(util.inspect(this.$, false, 50));
-
-          break;
-      }
-    },
-    table: [{ 3: 1, 4: 2, 14: $V0, 20: $V1, 21: $V2, 22: $V3 }, { 1: [3] }, { 5: [1, 7], 18: $V4, 19: $V5 }, { 4: 10, 14: $V0, 20: $V1, 21: $V2, 22: $V3 }, { 4: 11, 14: $V0, 20: $V1, 21: $V2, 22: $V3 }, { 4: 12, 14: $V0, 20: $V1, 21: $V2, 22: $V3 }, { 6: 15, 7: [1, 16], 8: [1, 17], 9: [1, 18], 10: [1, 19], 11: [1, 13], 12: [1, 14] }, { 1: [2, 1] }, { 4: 20, 14: $V0, 20: $V1, 21: $V2, 22: $V3 }, { 4: 21, 14: $V0, 20: $V1, 21: $V2, 22: $V3 }, o($V6, [2, 14]), o($V6, [2, 15]), { 18: $V4, 19: $V5, 23: [1, 22] }, o($V7, [2, 6], { 24: [1, 23] }), o($V7, [2, 7], { 24: [1, 24] }), { 13: 25, 14: [1, 26], 15: [1, 27], 16: [1, 28], 17: [1, 29] }, o($V7, [2, 2]), o($V7, [2, 3]), o($V7, [2, 4]), o($V7, [2, 5]), o($V6, [2, 12]), o([5, 19, 23], [2, 13], { 18: $V4 }), o($V6, [2, 16]), o($V6, [2, 17]), o($V6, [2, 18]), o($V6, [2, 19]), o($V6, [2, 8]), o($V6, [2, 9]), o($V6, [2, 10]), o($V6, [2, 11])],
-    defaultActions: { 7: [2, 1] },
-    parseError: function parseError (str, hash) {
-      if (hash.recoverable) {
+var $0 = $$.length - 1;
+switch (yystate) {
+case 1:
+ return $$[$0-1]; 
+break;
+case 2:
+this.$ = 'lt'
+break;
+case 3:
+this.$ = 'lte'
+break;
+case 4:
+this.$ = 'gt'
+break;
+case 5:
+this.$ = 'gte'
+break;
+case 6:
+this.$ = 'eq'
+break;
+case 7:
+this.$ = 'ne'
+break;
+case 12:
+this.$ = {bool: {must: [$$[$0-2], $$[$0]]}};
+break;
+case 13:
+this.$ = {bool: {should: [$$[$0-2], $$[$0]]}};
+break;
+case 14:
+this.$ = {bool: {must_not: $$[$0]}};
+break;
+case 15:
+this.$ = -$$[$0];
+break;
+case 16:
+this.$ = $$[$0-1];
+break;
+case 17:
+this.$ = formatExists(yy, $$[$0-2], "eq");
+break;
+case 18:
+this.$ = formatExists(yy, $$[$0-2], "ne");
+break;
+case 19:
+ this.$ = formatQuery(yy, $$[$0-2], $$[$0-1], $$[$0]);
+          //console.log(util.inspect(this.$, false, 50));
+        
+break;
+}
+},
+table: [{3:1,4:2,14:$V0,20:$V1,21:$V2,22:$V3},{1:[3]},{5:[1,7],18:$V4,19:$V5},{4:10,14:$V0,20:$V1,21:$V2,22:$V3},{4:11,14:$V0,20:$V1,21:$V2,22:$V3},{4:12,14:$V0,20:$V1,21:$V2,22:$V3},{6:15,7:[1,16],8:[1,17],9:[1,18],10:[1,19],11:[1,13],12:[1,14]},{1:[2,1]},{4:20,14:$V0,20:$V1,21:$V2,22:$V3},{4:21,14:$V0,20:$V1,21:$V2,22:$V3},o($V6,[2,14]),o($V6,[2,15]),{18:$V4,19:$V5,23:[1,22]},o($V7,[2,6],{24:[1,23]}),o($V7,[2,7],{24:[1,24]}),{13:25,14:[1,26],15:[1,27],16:[1,28],17:[1,29]},o($V7,[2,2]),o($V7,[2,3]),o($V7,[2,4]),o($V7,[2,5]),o($V6,[2,12]),o([5,19,23],[2,13],{18:$V4}),o($V6,[2,16]),o($V6,[2,17]),o($V6,[2,18]),o($V6,[2,19]),o($V6,[2,8]),o($V6,[2,9]),o($V6,[2,10]),o($V6,[2,11])],
+defaultActions: {7:[2,1]},
+parseError: function parseError (str, hash) {
+    if (hash.recoverable) {
         this.trace(str);
-      } else {
+    } else {
         var error = new Error(str);
         error.hash = hash;
         throw error;
-      }
-    },
-    parse: function parse (input) {
-      var self = this; var stack = [0]; var tstack = []; var vstack = [null]; var lstack = []; var table = this.table; var yytext = ''; var yylineno = 0; var yyleng = 0; var recovering = 0; var TERROR = 2; var EOF = 1;
-      var args = lstack.slice.call(arguments, 1);
-      var lexer = Object.create(this.lexer);
-      var sharedState = { yy: {} };
-      for (var k in this.yy) {
+    }
+},
+parse: function parse(input) {
+    var self = this, stack = [0], tstack = [], vstack = [null], lstack = [], table = this.table, yytext = '', yylineno = 0, yyleng = 0, recovering = 0, TERROR = 2, EOF = 1;
+    var args = lstack.slice.call(arguments, 1);
+    var lexer = Object.create(this.lexer);
+    var sharedState = { yy: {} };
+    for (var k in this.yy) {
         if (Object.prototype.hasOwnProperty.call(this.yy, k)) {
-          sharedState.yy[k] = this.yy[k];
+            sharedState.yy[k] = this.yy[k];
         }
-      }
-      lexer.setInput(input, sharedState.yy);
-      sharedState.yy.lexer = lexer;
-      sharedState.yy.parser = this;
-      if (typeof lexer.yylloc === 'undefined') {
+    }
+    lexer.setInput(input, sharedState.yy);
+    sharedState.yy.lexer = lexer;
+    sharedState.yy.parser = this;
+    if (typeof lexer.yylloc == 'undefined') {
         lexer.yylloc = {};
-      }
-      var yyloc = lexer.yylloc;
-      lstack.push(yyloc);
-      var ranges = lexer.options && lexer.options.ranges;
-      if (typeof sharedState.yy.parseError === 'function') {
+    }
+    var yyloc = lexer.yylloc;
+    lstack.push(yyloc);
+    var ranges = lexer.options && lexer.options.ranges;
+    if (typeof sharedState.yy.parseError === 'function') {
         this.parseError = sharedState.yy.parseError;
-      } else {
+    } else {
         this.parseError = Object.getPrototypeOf(this).parseError;
-      }
-      function popStack (n) {
+    }
+    function popStack(n) {
         stack.length = stack.length - 2 * n;
         vstack.length = vstack.length - n;
         lstack.length = lstack.length - n;
-      }
-      _token_stack:
-      var lex = function () {
-        var token;
-        token = lexer.lex() || EOF;
-        if (typeof token !== 'number') {
-          token = self.symbols_[token] || token;
-        }
-        return token;
-      };
-      var symbol; var preErrorSymbol; var state; var action; var a; var r; var yyval = {}; var p; var len; var newState; var expected;
-      while (true) {
+    }
+    _token_stack:
+        var lex = function () {
+            var token;
+            token = lexer.lex() || EOF;
+            if (typeof token !== 'number') {
+                token = self.symbols_[token] || token;
+            }
+            return token;
+        };
+    var symbol, preErrorSymbol, state, action, a, r, yyval = {}, p, len, newState, expected;
+    while (true) {
         state = stack[stack.length - 1];
         if (this.defaultActions[state]) {
-          action = this.defaultActions[state];
+            action = this.defaultActions[state];
         } else {
-          if (symbol === null || typeof symbol === 'undefined') {
-            symbol = lex();
-          }
-          action = table[state] && table[state][symbol];
-        }
-        if (typeof action === 'undefined' || !action.length || !action[0]) {
-          var errStr = '';
-          expected = [];
-          for (p in table[state]) {
-            if (this.terminals_[p] && p > TERROR) {
-              expected.push('\'' + this.terminals_[p] + '\'');
+            if (symbol === null || typeof symbol == 'undefined') {
+                symbol = lex();
             }
-          }
-          if (lexer.showPosition) {
-            errStr = 'Parse error on line ' + (yylineno + 1) + ':\n' + lexer.showPosition() + '\nExpecting ' + expected.join(', ') + ', got \'' + (this.terminals_[symbol] || symbol) + '\'';
-          } else {
-            errStr = 'Parse error on line ' + (yylineno + 1) + ': Unexpected ' + (symbol == EOF ? 'end of input' : '\'' + (this.terminals_[symbol] || symbol) + '\'');
-          }
-          this.parseError(errStr, {
-            text: lexer.match,
-            token: this.terminals_[symbol] || symbol,
-            line: lexer.yylineno,
-            loc: yyloc,
-            expected: expected
-          });
+            action = table[state] && table[state][symbol];
         }
+                    if (typeof action === 'undefined' || !action.length || !action[0]) {
+                var errStr = '';
+                expected = [];
+                for (p in table[state]) {
+                    if (this.terminals_[p] && p > TERROR) {
+                        expected.push('\'' + this.terminals_[p] + '\'');
+                    }
+                }
+                if (lexer.showPosition) {
+                    errStr = 'Parse error on line ' + (yylineno + 1) + ':\n' + lexer.showPosition() + '\nExpecting ' + expected.join(', ') + ', got \'' + (this.terminals_[symbol] || symbol) + '\'';
+                } else {
+                    errStr = 'Parse error on line ' + (yylineno + 1) + ': Unexpected ' + (symbol == EOF ? 'end of input' : '\'' + (this.terminals_[symbol] || symbol) + '\'');
+                }
+                this.parseError(errStr, {
+                    text: lexer.match,
+                    token: this.terminals_[symbol] || symbol,
+                    line: lexer.yylineno,
+                    loc: yyloc,
+                    expected: expected
+                });
+            }
         if (action[0] instanceof Array && action.length > 1) {
-          throw new Error('Parse Error: multiple actions possible at state: ' + state + ', token: ' + symbol);
+            throw new Error('Parse Error: multiple actions possible at state: ' + state + ', token: ' + symbol);
         }
         switch (action[0]) {
-          case 1:
+        case 1:
             stack.push(symbol);
             vstack.push(lexer.yytext);
             lstack.push(lexer.yylloc);
             stack.push(action[1]);
             symbol = null;
             if (!preErrorSymbol) {
-              yyleng = lexer.yyleng;
-              yytext = lexer.yytext;
-              yylineno = lexer.yylineno;
-              yyloc = lexer.yylloc;
-              if (recovering > 0) {
-                recovering--;
-              }
+                yyleng = lexer.yyleng;
+                yytext = lexer.yytext;
+                yylineno = lexer.yylineno;
+                yyloc = lexer.yylloc;
+                if (recovering > 0) {
+                    recovering--;
+                }
             } else {
-              symbol = preErrorSymbol;
-              preErrorSymbol = null;
+                symbol = preErrorSymbol;
+                preErrorSymbol = null;
             }
             break;
-          case 2:
+        case 2:
             len = this.productions_[action[1]][1];
             yyval.$ = vstack[vstack.length - len];
             yyval._$ = {
-              first_line: lstack[lstack.length - (len || 1)].first_line,
-              last_line: lstack[lstack.length - 1].last_line,
-              first_column: lstack[lstack.length - (len || 1)].first_column,
-              last_column: lstack[lstack.length - 1].last_column
+                first_line: lstack[lstack.length - (len || 1)].first_line,
+                last_line: lstack[lstack.length - 1].last_line,
+                first_column: lstack[lstack.length - (len || 1)].first_column,
+                last_column: lstack[lstack.length - 1].last_column
             };
             if (ranges) {
-              yyval._$.range = [
-                lstack[lstack.length - (len || 1)].range[0],
-                lstack[lstack.length - 1].range[1]
-              ];
+                yyval._$.range = [
+                    lstack[lstack.length - (len || 1)].range[0],
+                    lstack[lstack.length - 1].range[1]
+                ];
             }
             r = this.performAction.apply(yyval, [
-              yytext,
-              yyleng,
-              yylineno,
-              sharedState.yy,
-              action[1],
-              vstack,
-              lstack
+                yytext,
+                yyleng,
+                yylineno,
+                sharedState.yy,
+                action[1],
+                vstack,
+                lstack
             ].concat(args));
             if (typeof r !== 'undefined') {
-              return r;
+                return r;
             }
             if (len) {
-              stack = stack.slice(0, -1 * len * 2);
-              vstack = vstack.slice(0, -1 * len);
-              lstack = lstack.slice(0, -1 * len);
+                stack = stack.slice(0, -1 * len * 2);
+                vstack = vstack.slice(0, -1 * len);
+                lstack = lstack.slice(0, -1 * len);
             }
             stack.push(this.productions_[action[1]][0]);
             vstack.push(yyval.$);
@@ -272,49 +274,53 @@ var molochparser = (function () {
             newState = table[stack[stack.length - 2]][stack[stack.length - 1]];
             stack.push(newState);
             break;
-          case 3:
+        case 3:
             return true;
         }
-      }
-      return true;
-    } };
+    }
+    return true;
+}};
 
-  var util = require('util');
-  var moment = require('moment');
 
-  /* Build a list of all the field infos for ip field types.
+var    util           = require('util');
+var    moment         = require('moment');
+
+/* Build a list of all the field infos for ip field types.
  * Can specify if a port field needs to be available for the type or not
  */
-  function getIpInfoList (yy, needPort) {
-    let ors = [];
-    let completed = {};
+function getIpInfoList(yy, needPort)
+{
+  let ors = [];
+  let completed = {};
 
-    for (field in yy.fieldsMap) {
-      let info = yy.fieldsMap[field];
+  for (field in yy.fieldsMap) {
+    let info = yy.fieldsMap[field];
 
-      // If ip itself or not an ip field stop
-      if (field === 'ip' || info.type !== 'ip') { continue; }
+    // If ip itself or not an ip field stop
+    if (field === "ip" || info.type !== "ip")
+      continue;
 
-      // Already completed
-      if (completed[info.dbField]) { continue; }
-      completed[info.dbField] = 1;
+    // Already completed
+    if (completed[info.dbField])
+      continue;
+    completed[info.dbField] = 1;
 
-      // If port specified then skip ips without ports
-      if (needPort && !info.portField) {
-        continue;
-      }
-
-      if (info.requiredRight && yy[info.requiredRight] !== true) {
-        continue;
-      }
-
-      ors.push(info);
+    // If port specified then skip ips without ports
+    if (needPort && !info.portField) {
+      continue;
     }
 
-    return ors;
+    if (info.requiredRight && yy[info.requiredRight] !== true) {
+      continue;
+    }
+
+    ors.push(info);
   }
 
-  /* Do all the magic around ip field parsing.
+  return ors;
+}
+
+/* Do all the magic around ip field parsing.
  * Supports many formats such as
  * ip
  * ip/cidr
@@ -324,57 +330,69 @@ var molochparser = (function () {
  * All of the above with a :port(v4) or .port(v6) at the end
  * Arrays of all of the above
  */
-  function parseIpPort (yy, field, ipPortStr) {
-    var dbField = yy.fieldsMap[field].dbField;
+function parseIpPort(yy, field, ipPortStr) {
+  var dbField = yy.fieldsMap[field].dbField;
 
-    // Have just a single Ip, create obj for it
-    function singleIp (exp, dbField, ip, port) {
-      var obj;
-
-      if (ip !== undefined) {
-        obj = { term: {} };
-        obj.term[dbField] = ip;
-      }
-
-      if (port !== -1) {
-        if (yy.fieldsMap[exp].portField) {
-          obj = { bool: { must: [obj, { term: {} }] } };
-          obj.bool.must[1].term[yy.fieldsMap[exp].portField] = port;
-        } else {
-          throw exp + " doesn't support port";
-        }
-
-        if (ip === undefined) {
-          obj = obj.bool.must[1];
-        }
-      }
-
-      return obj;
-    }
-
-    // Special case of ip=
-    function allIp (ip, port) {
-      let infos = getIpInfoList(yy, port !== -1);
-
-      var ors = [];
-      for (let info of infos) {
-        obj = singleIp(info.exp, info.dbField, ip, port);
-        if (obj) {
-          ors.push(obj);
-        }
-      }
-
-      return { bool: { should: ors } };
-    }
-
+  // Have just a single Ip, create obj for it
+  function singleIp(exp, dbField, ip, port) {
     var obj;
 
-    ipPortStr = ipPortStr.trim();
+    if (typeof(port) === 'string' && port.match(/[^0-9]/)) {
+        throw port + ' not a valid port';
+    }
 
-    // We really have a list of them
-    if (ipPortStr[0] === '[' && ipPortStr[ipPortStr.length - 1] === ']') {
-      obj = { bool: { should: [] } };
-      ListToArray(ipPortStr).forEach(function (str) {
+    if (ip !== undefined) {
+      let colon = ip.indexOf(":");
+      if ((colon === -1 && ip.match(/[^.0-9/]/)) ||        // IP4
+          (colon !== -1 && ip.match(/[^a-fA-F:0-9\/]/)) || // IP6
+          ip.match(/\/.*[^0-9]/)) {                        // CIDR
+          throw ip + ' not a valid ip';
+      }
+
+      obj = {term: {}};
+      obj.term[dbField] = ip;
+    }
+
+    if (port !== -1) {
+      if (yy.fieldsMap[exp].portField) {
+        obj = {bool: {must: [obj, {term: {}}]}};
+        obj.bool.must[1].term[yy.fieldsMap[exp].portField] = port;
+      } else {
+        throw exp + " doesn't support port";
+      }
+
+      if (ip === undefined) {
+        obj = obj.bool.must[1];
+      }
+    }
+
+    return obj;
+  }
+
+  // Special case of ip=
+  function allIp(ip, port) {
+    let infos = getIpInfoList(yy, port !== -1);
+
+    var ors = [];
+    for (let info of infos) {
+      obj = singleIp(info.exp, info.dbField, ip, port);
+      if (obj) {
+        ors.push(obj);
+      }
+    }
+
+    return {bool: {should: ors}};
+  }
+
+
+  var obj;
+
+  ipPortStr = ipPortStr.trim();
+
+// We really have a list of them
+  if (ipPortStr[0] === "[" && ipPortStr[ipPortStr.length -1] === "]") {
+      obj =  {bool: {should: []}};
+      ListToArray(ipPortStr).forEach(function(str) {
         obj.bool.should.push(parseIpPort(yy, field, str));
       });
       // Optimize 1 item in array
@@ -382,651 +400,697 @@ var molochparser = (function () {
         obj = obj.bool.should[0];
       }
       return obj;
-    }
+  }
 
-    // Support ':80' and '.80'
-    if ((ipPortStr[0] === ':' && ipPortStr[0] !== ':') ||
+  // Support ':80' and '.80'
+  if ((ipPortStr[0] === ':' && ipPortStr[0] !== ':') ||
       (ipPortStr[0] === '.')) {
-      if (dbField !== 'ipall') {
-        return singleIp(field, dbField, undefined, +ipPortStr.slice(1));
-      } else {
-        return allIp(undefined, +ipPortStr.slice(1));
-      }
+    if (dbField !== "ipall") {
+      return singleIp(field, dbField, undefined, +ipPortStr.slice(1));
+    } else {
+      return allIp(undefined, +ipPortStr.slice(1));
     }
+  }
 
-    // Support ip4: '10.10.10.10' '10.10.10/16:80' '10.10.10:80' '10.10.10/16'
-    // Support ip6: '1::2' '1::2/16.80' '1::2.80' '1::2/16'
-    var ip;
-    var port = -1;
-    var colons = ipPortStr.split(':');
+  // Support ip4: '10.10.10.10' '10.10.10/16:80' '10.10.10:80' '10.10.10/16'
+  // Support ip6: '1::2' '1::2/16.80' '1::2.80' '1::2/16'
+  var ip;
+  var port = -1;
+  var colons = ipPortStr.split(':');
 
-    // More then 1 colon is ip 6
-    if (colons.length > 2) {
+  // More then 1 colon is ip 6
+  if (colons.length > 2) {
     // Everything after . is port
-      let dots = ipPortStr.split('.');
-      if (dots.length > 1 && dots[1] !== '') {
-        port = +dots[1];
-      }
-      // Everything before . is ip and slash
-      ip = dots[0];
-    } else {
+    let dots = ipPortStr.split('.');
+    if (dots.length > 1 && dots[1] !== '') {
+      port = dots[1];
+    }
+    // Everything before . is ip and slash
+    ip = dots[0];
+  } else {
     // everything after : is port
-      if (colons.length > 1 && colons[1] !== '') {
-        port = +colons[1];
-      }
-
-      // Have to do extra because we allow shorthand for /8, /16, /24
-      let slash = colons[0].split('/');
-      let dots = slash[0].split('.');
-
-      switch (dots.length) {
-        case 4:
-          ip = `${dots[0]}.${dots[1]}.${dots[2]}.${dots[3]}`;
-          break;
-        case 3:
-          ip = `${dots[0]}.${dots[1]}.${dots[2]}.0`;
-          if (slash[1] === undefined) { slash[1] = '24'; }
-          break;
-        case 2:
-          ip = `${dots[0]}.${dots[1]}.0.0`;
-          if (slash[1] === undefined) { slash[1] = '16'; }
-          break;
-        case 1:
-          if (dots[0].length > 0) {
-            ip = `${dots[0]}.0.0.0`;
-            if (slash[1] === undefined) { slash[1] = '8'; }
-          }
-          break;
-      }
-
-      // Add the slash back to the ip
-      if (slash[1] && slash[1] !== '32') {
-        ip = `${ip}/${slash[1]}`;
-      }
+    if (colons.length > 1 && colons[1] !== '') {
+      port = colons[1];
     }
 
-    if (dbField !== 'ipall') {
-      return singleIp(field, dbField, ip, port);
+    // Have to do extra because we allow shorthand for /8, /16, /24
+    let slash = colons[0].split('/');
+    let dots = slash[0].split('.');
+
+    switch(dots.length) {
+    case 4:
+      ip = `${dots[0]}.${dots[1]}.${dots[2]}.${dots[3]}`;
+      break;
+    case 3:
+      ip = `${dots[0]}.${dots[1]}.${dots[2]}.0`;
+      if (slash[1] === undefined) {slash[1] = '24';}
+      break;
+    case 2:
+      ip = `${dots[0]}.${dots[1]}.0.0`;
+      if (slash[1] === undefined) {slash[1] = '16';}
+      break;
+    case 1:
+      if (dots[0].length > 0) {
+        ip = `${dots[0]}.0.0.0`;
+        if (slash[1] === undefined) {slash[1] = '8';}
+      }
+      break;
+    }
+
+    // Add the slash back to the ip
+    if (slash[1] && slash[1] !== '32') {
+      ip = `${ip}/${slash[1]}`;
+    }
+  }
+
+  if (dbField !== "ipall") {
+    return singleIp(field, dbField, ip, port);
+  } else {
+    return allIp(ip, port);
+  }
+}
+
+function stripQuotes (str) {
+  if (str[0] === "\"") {
+    str =  str.substring(1, str.length-1);
+  }
+  return str;
+}
+
+function formatExists(yy, field, op)
+{
+  if (!yy.fieldsMap[field])
+    throw "Unknown field " + field;
+
+  var info = yy.fieldsMap[field];
+
+  if (info.requiredRight && yy[info.requiredRight] !== true) {
+    throw field + " - permission denied";
+  }
+
+  if (info.regex) {
+    var regex = new RegExp(info.regex);
+    var obj = [];
+    var completed = [];
+    for (var f in yy.fieldsMap) {
+      if (f.match(regex) && !completed[yy.fieldsMap[f].dbField]) {
+        if (yy.fieldsMap[f].requiredRight && yy[yy.fieldsMap[f].requiredRight] !== true) {
+          continue;
+        }
+        obj.push(formatExists(yy, f, "eq"));
+        completed[yy.fieldsMap[f].dbField] = 1;
+      }
+    }
+    if (op === "ne") {
+      return {bool: {must_not: obj}};
     } else {
-      return allIp(ip, port);
+      return {bool: {should: obj}};
     }
   }
 
-  function stripQuotes (str) {
-    if (str[0] === '"') {
-      str = str.substring(1, str.length - 1);
-    }
-    return str;
+  if (op === "ne") {
+    return {bool: {must_not: {exists: {field: field2Raw(yy, field)}}}};
   }
 
-  function formatExists (yy, field, op) {
-    if (!yy.fieldsMap[field]) { throw 'Unknown field ' + field; }
+  return {exists: {field: field2Raw(yy, field)}};
+}
 
-    var info = yy.fieldsMap[field];
+function formatQuery(yy, field, op, value)
+{
+  var obj;
+  //console.log("field", field, "op", op, "value", value);
+  //console.log("yy", util.inspect(yy, false, 50));
+  if (value[0] === "/" && value[value.length -1] === "/") {
+    checkRegex(value);
+  }
 
-    if (info.requiredRight && yy[info.requiredRight] !== true) {
-      throw field + ' - permission denied';
-    }
+  if (!yy.fieldsMap[field])
+    throw "Unknown field " + field;
 
-    if (info.regex) {
-      var regex = new RegExp(info.regex);
-      var obj = [];
-      var completed = [];
-      for (var f in yy.fieldsMap) {
-        if (f.match(regex) && !completed[yy.fieldsMap[f].dbField]) {
-          if (yy.fieldsMap[f].requiredRight && yy[yy.fieldsMap[f].requiredRight] !== true) {
-            continue;
-          }
-          obj.push(formatExists(yy, f, 'eq'));
-          completed[yy.fieldsMap[f].dbField] = 1;
+  var info = yy.fieldsMap[field];
+
+  if (info.requiredRight && yy[info.requiredRight] !== true) {
+    throw field + " - permission denied";
+  }
+
+  if (info.regex) {
+    var regex = new RegExp(info.regex);
+    var obj = [];
+    var completed = [];
+    for (var f in yy.fieldsMap) {
+      if (f.match(regex) && !completed[yy.fieldsMap[f].dbField]) {
+        if (yy.fieldsMap[f].requiredRight && yy[yy.fieldsMap[f].requiredRight] !== true) {
+          continue;
         }
+        /* If a not equal op then format as if an equal and do the not below */
+        obj.push(formatQuery(yy, f, (op === "ne"?"eq":op), value));
+        completed[yy.fieldsMap[f].dbField] = 1;
       }
-      if (op === 'ne') {
-        return { bool: { must_not: obj } };
+    }
+    if (op === "ne")
+      return {bool: {must_not: obj}};
+    else
+      return {bool: {should: obj}};
+    throw "Invalid operator '" + op + "' for " + field;
+  }
+
+  /* look for value that starts with $ */
+  if (value[0] === '$') {
+    if (op !== "eq" && op !== "ne") {
+      throw 'Shortcuts only support == and !=';
+    }
+
+    value = value.substr(1); /* remove $ */
+    if (!yy.lookups || !yy.lookups[value]) {
+      throw value + ' - Shortcut not found';
+    }
+
+    var lookup = yy.lookups[value];
+
+    obj = { terms: {} };
+    obj.terms[info.dbField] = {
+      index : `${yy.prefix}lookups`,
+      id : lookup._id,
+      type: 'lookup'
+    };
+
+    var type = info.type2 || info.type;
+    var lookupType = yy.lookupTypeMap[type];
+
+    if (!lookupType) {
+      throw "Unsupported field type: " + type
+    }
+
+    if (!lookup._source[lookupType]) {
+      throw 'lookup must be of type ' + lookupType;
+    }
+
+    switch (type) {
+    case 'ip':
+      if (field === 'ip') {
+        let infos = getIpInfoList(yy, false);
+        var ors = [];
+        for (let info of infos) {
+          obj = formatQuery(yy, info.exp, op, '$' + value);
+          if (obj) {
+            ors.push(obj);
+          }
+        }
+        obj = {bool: {should: ors}};
       } else {
-        return { bool: { should: obj } };
-      }
-    }
-
-    if (op === 'ne') {
-      return { bool: { must_not: { exists: { field: field2Raw(yy, field) } } } };
-    }
-
-    return { exists: { field: field2Raw(yy, field) } };
-  }
-
-  function formatQuery (yy, field, op, value) {
-    var obj;
-    // console.log("field", field, "op", op, "value", value);
-    // console.log("yy", util.inspect(yy, false, 50));
-    if (value[0] === '/' && value[value.length - 1] === '/') {
-      checkRegex(value);
-    }
-
-    if (!yy.fieldsMap[field]) { throw 'Unknown field ' + field; }
-
-    var info = yy.fieldsMap[field];
-
-    if (info.requiredRight && yy[info.requiredRight] !== true) {
-      throw field + ' - permission denied';
-    }
-
-    if (info.regex) {
-      var regex = new RegExp(info.regex);
-      var obj = [];
-      var completed = [];
-      for (var f in yy.fieldsMap) {
-        if (f.match(regex) && !completed[yy.fieldsMap[f].dbField]) {
-          if (yy.fieldsMap[f].requiredRight && yy[yy.fieldsMap[f].requiredRight] !== true) {
-            continue;
-          }
-          /* If a not equal op then format as if an equal and do the not below */
-          obj.push(formatQuery(yy, f, (op === 'ne' ? 'eq' : op), value));
-          completed[yy.fieldsMap[f].dbField] = 1;
-        }
-      }
-      if (op === 'ne') { return { bool: { must_not: obj } }; } else { return { bool: { should: obj } }; }
-      throw "Invalid operator '" + op + "' for " + field;
-    }
-
-    /* look for value that starts with $ */
-    if (value[0] === '$') {
-      if (op !== 'eq' && op !== 'ne') {
-        throw 'Shortcuts only support == and !=';
+        obj.terms[info.dbField].path = 'ip';
       }
 
-      value = value.substr(1); /* remove $ */
-      if (!yy.lookups || !yy.lookups[value]) {
-        throw value + ' - Shortcut not found';
+      if (op === "ne") {
+        return { bool: { must_not: obj } };
       }
-
-      var lookup = yy.lookups[value];
-
-      obj = { terms: {} };
-      obj.terms[info.dbField] = {
-        index: `${yy.prefix}lookups`,
-        id: lookup._id,
-        type: 'lookup'
-      };
-
-      var type = info.type2 || info.type;
-      var lookupType = yy.lookupTypeMap[type];
-
-      if (!lookupType) {
-        throw 'Unsupported field type: ' + type;
+      return obj;
+    case 'integer':
+      obj.terms[info.dbField].path = 'number';
+      if (op === "ne") {
+        return { bool: { must_not: obj } };
       }
-
-      if (!lookup._source[lookupType]) {
-        throw 'lookup must be of type ' + lookupType;
+      return obj;
+    case 'lotermfield':
+    case 'lotextfield':
+    case 'termfield':
+    case 'textfield':
+    case 'uptermfield':
+    case 'uptextfield':
+      obj.terms[info.dbField].path = 'string';
+      if (op === "ne") {
+        return { bool: { must_not: obj } };
       }
-
-      switch (type) {
-        case 'ip':
-          if (field === 'ip') {
-            let infos = getIpInfoList(yy, false);
-            var ors = [];
-            for (let info of infos) {
-              obj = formatQuery(yy, info.exp, op, '$' + value);
-              if (obj) {
-                ors.push(obj);
-              }
-            }
-            obj = { bool: { should: ors } };
-          } else {
-            obj.terms[info.dbField].path = 'ip';
-          }
-
-          if (op === 'ne') {
-            return { bool: { must_not: obj } };
-          }
-          return obj;
-        case 'integer':
-          obj.terms[info.dbField].path = 'number';
-          if (op === 'ne') {
-            return { bool: { must_not: obj } };
-          }
-          return obj;
-        case 'lotermfield':
-        case 'lotextfield':
-        case 'termfield':
-        case 'textfield':
-        case 'uptermfield':
-        case 'uptextfield':
-          obj.terms[info.dbField].path = 'string';
-          if (op === 'ne') {
-            return { bool: { must_not: obj } };
-          }
-          return obj;
-        default:
-          throw 'Unsupported field type: ' + type;
-      }
-    }
-
-    switch (info.type2 || info.type) {
-      case 'ip':
-        if (value[0] === '/') { throw value + ' - Regex not supported for ip queries'; }
-
-        if (value.indexOf('*') !== -1) { throw value + ' - Wildcard not supported for ip queries'; }
-
-        if (value === 'ipv4') {
-          value = '0.0.0.0/0';
-        } if (value === 'ipv6') {
-          value = '0.0.0.0/0';
-          if (op === 'ne') { op = 'eq'; } else { op = 'ne'; }
-        }
-
-        if (op === 'eq') { return parseIpPort(yy, field, value); }
-        if (op === 'ne') { return { bool: { must_not: parseIpPort(yy, field, value) } }; }
-
-        if (value[0] === '\[') { throw value + ' - List queries not supported for gt/lt queries - ' + value; }
-
-        obj = { range: {} };
-        obj.range[info.dbField] = {};
-        obj.range[info.dbField][op] = value;
-        return obj;
-      case 'integer':
-        if (value[0] === '/') { throw value + ' - Regex queries not supported for integer queries'; }
-
-        if (op === 'eq' || op === 'ne') {
-          obj = termOrTermsInt(info.dbField, value);
-          if (op === 'ne') {
-            obj = { bool: { must_not: obj } };
-          }
-          return obj;
-        }
-
-        if (value[0] === '\[') { throw value + ' - List queries not supported for gt/lt queries - ' + value; }
-
-        obj = { range: {} };
-        obj.range[info.dbField] = {};
-        obj.range[info.dbField][op] = value;
-        return obj;
-      case 'lotermfield':
-      case 'lotextfield':
-        if (op === 'eq') { return stringQuery(yy, field, value.toLowerCase()); }
-        if (op === 'ne') { return { bool: { must_not: stringQuery(yy, field, value.toLowerCase()) } }; }
-        throw "Invalid operator '" + op + "' for " + field;
-      case 'termfield':
-      case 'textfield':
-        if (op === 'eq') { return stringQuery(yy, field, value); }
-        if (op === 'ne') { return { bool: { must_not: stringQuery(yy, field, value) } }; }
-        throw "Invalid operator '" + op + "' for " + field;
-      case 'uptermfield':
-      case 'uptextfield':
-        if (op === 'eq') { return stringQuery(yy, field, value.toUpperCase()); }
-        if (op === 'ne') { return { bool: { must_not: stringQuery(yy, field, value.toUpperCase()) } }; }
-        throw "Invalid operator '" + op + "' for " + field;
-      case 'fileand':
-        if (value[0] === '\[') { throw value + ' - List queries not supported for file queries - ' + value; }
-
-        if (op === 'eq') { return { fileand: stripQuotes(value) }; }
-        if (op === 'ne') { return { bool: { must_not: { fileand: stripQuotes(value) } } }; }
-        throw op + ' - not supported for file queries';
-        break;
-      case 'viewand':
-        if (value[0] === '\[') { throw value + ' - List queries not supported for view queries - ' + value; }
-
-        value = stripQuotes(value);
-        if (!yy.views || !yy.views[value]) { throw value + ' - View not found for user'; }
-
-        if (op === 'eq') { return exports.parse(yy.views[value].expression); }
-        if (op === 'ne') { return { bool: { must_not: exports.parse(yy.views[value].expression) } }; }
-        throw op + ' - not supported for view queries';
-        break;
-      case 'seconds':
-        if (value[0] === '/') { throw value + ' - Regex queries not supported for date queries'; }
-
-        if (op === 'eq' || op === 'ne') {
-          obj = termOrTermsSeconds(info.dbField, value);
-          if (op === 'ne') {
-            obj = { bool: { must_not: obj } };
-          }
-          return obj;
-        }
-
-        if (value[0] === '\[') { throw value + ' - List queries not supported for gt/lt queries - ' + value; }
-
-        obj = { range: {} };
-        obj.range[info.dbField] = {};
-        obj.range[info.dbField][op] = parseSeconds(stripQuotes(value));
-        return obj;
-      case 'date':
-        if (value[0] === '/') { throw value + ' - Regex queries not supported for date queries'; }
-
-        if (op === 'eq' || op === 'ne') {
-          obj = termOrTermsDate(info.dbField, value);
-          if (op === 'ne') {
-            obj = { bool: { must_not: obj } };
-          }
-          return obj;
-        }
-
-        if (value[0] === '\[') { throw value + ' - List queries not supported for gt/lt queries - ' + value; }
-
-        obj = { range: {} };
-        obj.range[info.dbField] = {};
-        obj.range[info.dbField][op] = moment.unix(parseSeconds(stripQuotes(value))).format();
-        return obj;
-      default:
-        throw 'Unknown field type: ' + info.type;
+      return obj;
+    default:
+      throw "Unsupported field type: " + type;
     }
   }
 
-  function checkRegex (str) {
+  switch (info.type2 || info.type) {
+  case "ip":
+    if (value[0] === "/")
+      throw value + " - Regex not supported for ip queries";
+
+    if (value.indexOf("*") !== -1)
+      throw value + " - Wildcard not supported for ip queries";
+
+    if (value === "ipv4") {
+      value = "0.0.0.0/0";
+    } if (value === "ipv6") {
+      value = "0.0.0.0/0";
+      if (op === "ne")
+        op = "eq";
+      else
+        op = "ne";
+    }
+
+    if (op === "eq")
+      return parseIpPort(yy, field, value);
+    if (op === "ne")
+      return {bool: {must_not: parseIpPort(yy, field, value)}};
+
+    if (value[0] === "\[")
+      throw value + " - List queries not supported for gt/lt queries - " + value;
+
+    obj = {range: {}};
+    obj.range[info.dbField] = {};
+    obj.range[info.dbField][op] = value;
+    return obj;
+  case "integer":
+    if (value[0] === "/")
+      throw value + " - Regex queries not supported for integer queries";
+
+    if (op === "eq" || op === "ne") {
+      obj = termOrTermsInt(info.dbField, value);
+      if (op === "ne") {
+        obj = {bool: {must_not: obj}};
+      }
+      return obj;
+    }
+
+    if (value[0] === "\[")
+      throw value + " - List queries not supported for gt/lt queries - " + value;
+
+    obj = {range: {}};
+    obj.range[info.dbField] = {};
+    obj.range[info.dbField][op] = value;
+    return obj;
+  case "lotermfield":
+  case "lotextfield":
+    if (op === "eq")
+      return stringQuery(yy, field, value.toLowerCase());
+    if (op === "ne")
+      return {bool: {must_not: stringQuery(yy, field, value.toLowerCase())}};
+    throw "Invalid operator '" + op + "' for " + field;
+  case "termfield":
+  case "textfield":
+    if (op === "eq")
+      return stringQuery(yy, field, value);
+    if (op === "ne")
+      return {bool: {must_not: stringQuery(yy, field, value)}};
+    throw "Invalid operator '" + op + "' for " + field;
+  case "uptermfield":
+  case "uptextfield":
+    if (op === "eq")
+      return stringQuery(yy, field, value.toUpperCase());
+    if (op === "ne")
+      return {bool: {must_not: stringQuery(yy, field, value.toUpperCase())}};
+    throw "Invalid operator '" + op + "' for " + field;
+  case "fileand":
+    if (value[0] === "\[")
+      throw value + " - List queries not supported for file queries - " + value;
+
+    if (op === "eq")
+      return {fileand: stripQuotes(value)}
+    if (op === "ne")
+      return {bool: {must_not: {fileand: stripQuotes(value)}}};
+    throw op + " - not supported for file queries";
+    break;
+  case "viewand":
+    if (value[0] === "\[")
+      throw value + " - List queries not supported for view queries - " + value;
+
+    value = stripQuotes(value);
+    if (!yy.views || !yy.views[value])
+        throw value + " - View not found for user";
+
+    if (op === "eq")
+      return exports.parse(yy.views[value].expression);
+    if (op === "ne")
+      return {bool: {must_not: exports.parse(yy.views[value].expression)}};
+    throw op + " - not supported for view queries";
+    break;
+  case "seconds":
+    if (value[0] === "/")
+      throw value + " - Regex queries not supported for date queries";
+
+    if (op === "eq" || op === "ne") {
+      obj = termOrTermsSeconds(info.dbField, value);
+      if (op === "ne") {
+        obj = {bool: {must_not: obj}};
+      }
+      return obj;
+    }
+
+    if (value[0] === "\[")
+      throw value + " - List queries not supported for gt/lt queries - " + value;
+
+    obj = {range: {}};
+    obj.range[info.dbField] = {};
+    obj.range[info.dbField][op] = parseSeconds(stripQuotes(value));
+    return obj;
+  case "date":
+    if (value[0] === "/")
+      throw value + " - Regex queries not supported for date queries";
+
+    if (op === "eq" || op === "ne") {
+      obj = termOrTermsDate(info.dbField, value);
+      if (op === "ne") {
+        obj = {bool: {must_not: obj}};
+      }
+      return obj;
+    }
+
+    if (value[0] === "\[")
+      throw value + " - List queries not supported for gt/lt queries - " + value;
+
+    obj = {range: {}};
+    obj.range[info.dbField] = {};
+    obj.range[info.dbField][op] = moment.unix(parseSeconds(stripQuotes(value))).format();
+    return obj;
+  default:
+    throw "Unknown field type: " + info.type;
+  }
+}
+
+function checkRegex(str) {
     var m;
     if ((m = str.match(/^\/(?:\\?.)*?\//)) && m[0].length != str.length) {
-      throw 'Must back slash any forward slashes in regexp query - ' + m[0];
+      throw "Must back slash any forward slashes in regexp query - " + m[0];
     }
-  }
+}
 
-  function field2Raw (yy, field) {
-    var info = yy.fieldsMap[field];
-    var dbField = info.dbField;
-    if (info.rawField) { return info.rawField; }
+function field2Raw(yy, field) {
+  var info = yy.fieldsMap[field];
+  var dbField = info.dbField;
+  if (info.rawField)
+    return info.rawField;
 
-    if (dbField.indexOf('.snow', dbField.length - 5) === 0) { return dbField.substring(0, dbField.length - 5) + '.raw'; }
+  if (dbField.indexOf(".snow", dbField.length - 5) === 0)
+    return dbField.substring(0, dbField.length - 5) + ".raw";
 
-    return dbField;
-  }
+  return dbField;
+}
 
-  function stringQuery (yy, field, str) {
-    var info = yy.fieldsMap[field];
-    var dbField = info.dbField;
+function stringQuery(yy, field, str) {
 
-    if (str[0] === '/' && str[str.length - 1] === '/') {
-      checkRegex(str);
+  var info = yy.fieldsMap[field];
+  var dbField = info.dbField;
 
-      str = str.substring(1, str.length - 1);
-      if (info.transform) {
-        str = global.moloch[info.transform](str).replace(/2e/g, '.');
-      }
-      dbField = field2Raw(yy, field);
-      obj = { regexp: {} };
-      obj.regexp[dbField] = str.replace(/\\(.)/g, '$1');
-      return obj;
-    }
 
-    var quoted = false;
-    if (str[0] === '"' && str[str.length - 1] === '"') {
-      str = str.substring(1, str.length - 1).replace(/\\(.)/g, '$1');
-      quoted = true;
-    } else if (str[0] === '[' && str[str.length - 1] === ']') {
-      var rawField = field2Raw(yy, field);
-      strs = ListToArray(str);
-      if (info.transform) {
-        for (var i = 0; i < strs.length; i++) {
-          strs[i] = global.moloch[info.transform](strs[i]);
-        }
-      }
+  if (str[0] === "/" && str[str.length -1] === "/") {
+    checkRegex(str);
 
-      var obj = [];
-      var terms = null;
-      strs.forEach(function (str) {
-        var should;
-
-        if (typeof str === 'string' && str[0] === '/' && str[str.length - 1] === '/') {
-          checkRegex(str);
-
-          should = { regexp: {} };
-          should.regexp[rawField] = str.substring(1, str.length - 1);
-          obj.push(should);
-        } else if (typeof str === 'string' && str.indexOf('*') !== -1) {
-          if (str === '*') {
-            throw "Please use 'EXISTS!' instead of a '*' in expression";
-          }
-
-          should = { wildcard: {} };
-          should.wildcard[rawField] = str;
-          obj.push(should);
-        } else {
-          if (str[0] === '"' && str[str.length - 1] === '"') {
-            str = str.substring(1, str.length - 1).replace(/\\(.)/g, '$1');
-          }
-
-          if (info.type.match(/termfield/)) {
-          // Reuse same terms element
-            if (terms === null) {
-              terms = { terms: {} };
-              terms.terms[dbField] = [];
-              obj.push(terms);
-            }
-            terms.terms[dbField].push(str);
-          } else {
-            should = { match_phrase: {} };
-            should.match_phrase[dbField] = str;
-            obj.push(should);
-          }
-        }
-      });
-
-      if (obj.length === 1) {
-        obj = obj[0];
-      } else {
-        obj = { bool: { should: obj } };
-      }
-
-      return obj;
-    }
-
+    str = str.substring(1, str.length-1);
     if (info.transform) {
-      str = global.moloch[info.transform](str);
+      str = global.moloch[info.transform](str).replace(/2e/g, '.');
+    }
+    dbField = field2Raw(yy, field);
+    obj = {regexp: {}};
+    obj.regexp[dbField] = str.replace(/\\(.)/g, "$1");
+    return obj;
+  }
+
+
+  var quoted = false;
+  if (str[0] === "\"" && str[str.length -1] === "\"") {
+    str = str.substring(1, str.length-1).replace(/\\(.)/g, "$1");
+    quoted = true;
+  } else if (str[0] === "[" && str[str.length -1] === "]") {
+    var rawField = field2Raw(yy, field);
+    strs = ListToArray(str);
+    if (info.transform) {
+      for (var i = 0; i < strs.length; i++) {
+        strs[i] = global.moloch[info.transform](strs[i]);
+      }
     }
 
-    if (!isNaN(str) && !quoted) {
-      obj = { term: {} };
-      obj.term[dbField] = str;
-    } else if (typeof str === 'string' && str.indexOf('*') !== -1) {
-      if (str === '*') {
-        throw "Please use 'EXISTS!' instead of a '*' in expression";
+    var obj =  [];
+    var terms = null;
+    strs.forEach(function(str) {
+      var should;
+
+      if (typeof str === "string" && str[0] === "/" && str[str.length -1] === "/") {
+        checkRegex(str);
+
+        should = {regexp: {}};
+        should.regexp[rawField] = str.substring(1, str.length-1);
+        obj.push(should);
+      } else if (typeof str === "string" && str.indexOf("*") !== -1) {
+        if (str === "*") {
+          throw "Please use 'EXISTS!' instead of a '*' in expression";
+        }
+
+        should = {wildcard: {}};
+        should.wildcard[rawField] = str;
+        obj.push(should);
+      } else {
+        if (str[0] === "\"" && str[str.length -1] === "\"") {
+          str = str.substring(1, str.length-1).replace(/\\(.)/g, "$1");
+        }
+
+        if (info.type.match(/termfield/)) {
+          // Reuse same terms element
+          if (terms === null) {
+            terms = {terms: {}};
+            terms.terms[dbField] = [];
+            obj.push(terms);
+          }
+          terms.terms[dbField].push(str);
+        } else {
+          should = {match_phrase: {}};
+          should.match_phrase[dbField] = str;
+          obj.push(should);
+        }
       }
-      dbField = field2Raw(yy, field);
-      obj = { wildcard: {} };
-      obj.wildcard[dbField] = str;
-    } else if (info.type.match(/textfield/)) {
-      obj = { match_phrase: {} };
-      obj.match_phrase[dbField] = str;
-    } else if (info.type.match(/termfield/)) {
-      obj = { term: {} };
-      obj.term[dbField] = str;
+    });
+
+    if (obj.length === 1) {
+      obj = obj[0];
+    } else {
+      obj = {bool: {should: obj}};
     }
 
     return obj;
   }
 
-  if (!global.moloch) global.moloch = {};
-  global.moloch.utf8ToHex = function (utf8) {
-    var hex = Buffer.from(stripQuotes(utf8)).toString('hex').toLowerCase();
+  if (info.transform) {
+    str = global.moloch[info.transform](str);
+  }
+
+  if (!isNaN(str) && !quoted) {
+    obj = {term: {}};
+    obj.term[dbField] = str;
+  } else if (typeof str === "string" && str.indexOf("*") !== -1) {
+    if (str === "*") {
+      throw "Please use 'EXISTS!' instead of a '*' in expression";
+    }
+    dbField = field2Raw(yy, field);
+    obj = {wildcard: {}};
+    obj.wildcard[dbField] = str;
+  } else if (info.type.match(/textfield/)) {
+    obj = {match_phrase: {}};
+    obj.match_phrase[dbField] = str;
+  } else if (info.type.match(/termfield/)) {
+    obj = {term: {}};
+    obj.term[dbField] = str;
+  }
+
+  return obj;
+}
+
+if (!global.moloch) global.moloch = {};
+global.moloch.utf8ToHex = function (utf8) {
+    var hex = Buffer.from(stripQuotes(utf8)).toString("hex").toLowerCase();
     hex = hex.replace(/2a/g, '*');
     return hex;
-  };
+}
 
-  global.moloch.dash2Colon = function (str) {
-    return str.replace(/-/g, ':');
-  };
+global.moloch.dash2Colon = function (str) {
+  return str.replace(/-/g, ':');
+}
 
-  var protocols = {
-    icmp: 1,
-    igmp: 2,
-    tcp: 6,
-    udp: 17,
-    gre: 47,
-    esp: 50,
-    icmp6: 58,
+var protocols = {
+    icmp:   1,
+    igmp:   2,
+    tcp:    6,
+    udp:    17,
+    gre:    47,
+    esp:    50,
+    icmp6:  58,
     icmpv6: 58,
-    ospf: 89,
-    pim: 103,
-    sctp: 132
-  };
+    ospf:   89,
+    pim:    103,
+    sctp:   132,
+};
 
-  global.moloch.ipProtocolLookup = function (text) {
-    if (typeof text !== 'string') {
-      for (var i = 0; i < text.length; i++) {
-        if (!protocols[text[i]] && isNaN(text[i])) { throw ('Unknown protocol string ' + text); }
-        text[i] = protocols[text[i]] || +text[i];
-      }
-      return text;
-    } else {
-      if (!protocols[text] && isNaN(text)) { throw ('Unknown protocol string ' + text); }
-      return protocols[text] || +text;
+global.moloch.ipProtocolLookup = function (text) {
+  if (typeof text !== "string") {
+    for (var i = 0; i < text.length; i++) {
+      if (!protocols[text[i]] && isNaN(text[i]))
+        throw ("Unknown protocol string " + text);
+      text[i] = protocols[text[i]] || +text[i];
     }
-  };
-
-  // Remove the "http://", "https://", etc from http.uri queries
-  global.moloch.removeProtocol = function (text) {
-    text = text.replace(/^[a-z]+:\/\//i, '');
     return text;
-  };
-
-  // Remove the "http://", "https://" and after the first slash, etc from host queries
-  global.moloch.removeProtocolAndURI = function (text) {
-    text = text.replace(/^[a-z]+:\/\//i, '');
-    text = text.replace(/\/.*/, '');
-    return text;
-  };
-
-  function ListToArray (text) {
-    if (text[0] !== '[' || text[text.length - 1] !== ']') { return text; }
-
-    // JS doesn't have negative look behind
-    text = text.substring(1, text.length - 1);
-    strs = text.replace(/\\\\/g, '**BACKSLASH**').replace(/\\,/g, '**COMMA**').split(/\s*,\s*/);
-    for (var i = 0; i < strs.length; i++) {
-      strs[i] = strs[i].replace('**COMMA**', ',').replace('**BACKSLASH**', '\\');
-    }
-    return strs;
+  } else {
+    if (!protocols[text] && isNaN(text))
+      throw ("Unknown protocol string " + text);
+    return protocols[text] || +text;
   }
+};
 
-  function termOrTermsInt (dbField, str) {
-    var obj = {};
-    if (str[0] === '[' && str[str.length - 1] === ']') {
-      obj = { terms: {} };
-      obj.terms[dbField] = ListToArray(str);
-      obj.terms[dbField].forEach(function (str) {
-        str = stripQuotes(str);
-        if (typeof str !== 'integer' && str.match(/[^\d]+/)) { throw str + ' is not a number'; }
-      });
-    } else {
+// Remove the "http://", "https://", etc from http.uri queries
+global.moloch.removeProtocol = function (text) {
+  text = text.replace(/^[a-z]+:\/\//i, '');
+  return text;
+}
+
+// Remove the "http://", "https://" and after the first slash, etc from host queries
+global.moloch.removeProtocolAndURI = function (text) {
+  text = text.replace(/^[a-z]+:\/\//i, '');
+  text = text.replace(/\/.*/, '');
+  return text;
+}
+
+function ListToArray(text) {
+  if (text[0] !== "[" || text[text.length -1] !== "]")
+    return text;
+
+  // JS doesn't have negative look behind
+  text = text.substring(1, text.length-1);
+  strs = text.replace(/\\\\/g, "**BACKSLASH**").replace(/\\,/g, "**COMMA**").split(/\s*,\s*/);
+  for (var i = 0; i < strs.length; i++) {
+    strs[i] = strs[i].replace("**COMMA**", ",").replace("**BACKSLASH**", "\\");
+  }
+  return strs;
+}
+
+function termOrTermsInt(dbField, str) {
+  var obj = {};
+  if (str[0] === "[" && str[str.length -1] === "]") {
+    obj = {terms: {}};
+    obj.terms[dbField] = ListToArray(str);
+    obj.terms[dbField].forEach(function(str) {
       str = stripQuotes(str);
-      let match;
-      if ((match = str.match(/(-?\d+)-(-?\d+)/))) {
-        obj = { range: {} };
-        obj.range[dbField] = { gte: match[1], lte: match[2] };
-        return obj;
-      } else if (str.match(/[^\d]+/)) {
-        throw str + ' is not a number';
-      }
-      obj = { term: {} };
-      obj.term[dbField] = str;
+      if (typeof str !== "integer" && str.match(/[^\d]+/))
+        throw str + " is not a number";
+    });
+  } else {
+    str = stripQuotes(str);
+    let match;
+    if ((match = str.match(/(-?\d+)-(-?\d+)/))) {
+      obj = {range: {}};
+      obj.range[dbField] = {gte: match[1], lte: match[2]};
+      return obj;
+    } else if (str.match(/[^\d]+/)) {
+      throw str + " is not a number";
     }
-    return obj;
+    obj = {term: {}};
+    obj.term[dbField] = str;
   }
+  return obj;
+}
 
-  function termOrTermsSeconds (dbField, str) {
-    var obj = {};
-    if (str[0] === '[' && str[str.length - 1] === ']') {
-      obj = { terms: {} };
-      obj.terms[dbField] = ListToArray(str);
-      obj.terms[dbField].forEach(function (str) {
-        str = parseSeconds(stripQuotes(str));
-      });
-    } else {
+function termOrTermsSeconds(dbField, str) {
+  var obj = {};
+  if (str[0] === "[" && str[str.length -1] === "]") {
+    obj = {terms: {}};
+    obj.terms[dbField] = ListToArray(str);
+    obj.terms[dbField].forEach(function(str) {
       str = parseSeconds(stripQuotes(str));
-      obj = { term: {} };
-      obj.term[dbField] = str;
-    }
-    return obj;
+    });
+  } else {
+    str = parseSeconds(stripQuotes(str));
+    obj = {term: {}};
+    obj.term[dbField] = str;
   }
+  return obj;
+}
 
-  function termOrTermsDate (dbField, str) {
-    var obj = {};
-    if (str[0] === '[' && str[str.length - 1] === ']') {
-      obj = { bool: { should: [] } };
-      ListToArray(str).forEach(function (str) {
-        let r = { range: {} };
-        r.range[dbField] = { gte: d, lte: d };
-        obj.bool.should.push(r);
-      });
-    } else {
-      let d = moment.unix(parseSeconds(stripQuotes(str))).format();
-      obj = { range: {} };
-      obj.range[dbField] = { gte: d, lte: d };
-    }
-    return obj;
+function termOrTermsDate(dbField, str) {
+  var obj = {};
+  if (str[0] === "[" && str[str.length -1] === "]") {
+    obj = {bool: {should: []}};
+    ListToArray(str).forEach(function(str) {
+      let r = {range: {}};
+      r.range[dbField] = {gte: d, lte: d};
+      obj.bool.should.push(r);
+    });
+  } else {
+    let d = moment.unix(parseSeconds(stripQuotes(str))).format();
+    obj = {range: {}};
+    obj.range[dbField] = {gte: d, lte: d};
   }
+  return obj;
+}
 
-  function str2format (str) {
-    var m;
-    if (str.match(/^(s|sec|secs|second|seconds)$/)) {
-      return 'seconds';
-    } else if (str.match(/^(m|min|mins|minute|minutes)$/)) {
-      return 'minutes';
-    } else if (str.match(/^(h|hr|hrs|hour|hours)$/)) {
-      return 'hours';
-    } else if (str.match(/^(d|day|days)$/)) {
-      return 'days';
-    } else if (m = str.match(/^(w|week|weeks)\d*$/)) {
-      return 'weeks';
-    } else if (str.match(/^(M|mon|mons|month|months)$/)) {
-      return 'months';
-    } else if (str.match(/^(q|qtr|qtrs|quarter|quarters)$/)) {
-      return 'quarters';
-    } else if (str.match(/^(y|yr|yrs|year|years)$/)) {
-      return 'years';
-    }
-    return undefined;
+function str2format(str) {
+  var m;
+  if (str.match(/^(s|sec|secs|second|seconds)$/)) {
+    return "seconds";
+  } else if (str.match(/^(m|min|mins|minute|minutes)$/)) {
+    return "minutes";
+  } else if (str.match(/^(h|hr|hrs|hour|hours)$/)) {
+    return "hours";
+  } else if (str.match(/^(d|day|days)$/)) {
+    return "days";
+  } else if (m = str.match(/^(w|week|weeks)\d*$/)) {
+    return "weeks";
+  } else if (str.match(/^(M|mon|mons|month|months)$/)) {
+    return "months";
+  } else if (str.match(/^(q|qtr|qtrs|quarter|quarters)$/)) {
+    return "quarters";
+  } else if (str.match(/^(y|yr|yrs|year|years)$/)) {
+    return "years";
   }
+  return undefined;
+}
 
-  function parseSeconds (str) {
-    var m, n;
-    if (m = str.match(/^([+-])(\d*)([a-z]*)([@]*)([a-z0-9]*)/)) {
-      var d = moment();
-      var format = str2format(m[3]);
-      var snap = str2format(m[5]);
+function parseSeconds(str) {
+  var m, n;
+  if (m = str.match(/^([+-])(\d*)([a-z]*)([@]*)([a-z0-9]*)/)) {
 
-      if (m[2] === '') {
-        m[2] = 1;
-      }
+    var d       = moment();
+    var format  = str2format(m[3]);
+    var snap    = str2format(m[5]);
 
-      if (snap) {
-        d.startOf(snap);
-        if (n = m[5].match(/^(w|week|weeks)(\d+)$/)) {
-          d.day(n[2]);
-        }
-      }
-
-      d.add((m[1] === '-' ? -1 : 1) * m[2], format);
-      return d.unix();
+    if (m[2] === "") {
+      m[2] = 1;
     }
 
-    if (m = str.match(/^@([a-z0-9]+)/)) {
-      var d = moment();
-      var snap = str2format(m[1]);
-
+    if (snap) {
       d.startOf(snap);
-      if (n = m[1].match(/^(w|week|weeks)(\d+)$/)) {
+      if (n = m[5].match(/^(w|week|weeks)(\d+)$/)) {
         d.day(n[2]);
       }
-      return d.unix();
     }
 
-    return new moment(str, ['YYYY/MM/DD HH:mm:ss', 'YYYY/MM/DD HH:mm:ss Z', moment.ISO_8601]).unix();
+
+    d.add((m[1]==='-'?-1:1)* m[2], format);
+    return d.unix();
   }
-  /* generated by jison-lex 0.3.4 */
-  var lexer = (function () {
-    var lexer = ({
 
-      EOF: 1,
+  if (m = str.match(/^@([a-z0-9]+)/)) {
 
-      parseError: function parseError (str, hash) {
+    var d       = moment();
+    var snap    = str2format(m[1]);
+
+    d.startOf(snap);
+    if (n = m[1].match(/^(w|week|weeks)(\d+)$/)) {
+      d.day(n[2]);
+    }
+    return d.unix();
+  }
+
+  return new moment(str, ["YYYY/MM/DD HH:mm:ss", "YYYY/MM/DD HH:mm:ss Z", moment.ISO_8601]).unix();
+}
+/* generated by jison-lex 0.3.4 */
+var lexer = (function(){
+var lexer = ({
+
+EOF:1,
+
+parseError:function parseError(str, hash) {
         if (this.yy.parser) {
-          this.yy.parser.parseError(str, hash);
+            this.yy.parser.parseError(str, hash);
         } else {
-          throw new Error(str);
+            throw new Error(str);
         }
-      },
+    },
 
-      // resets the lexer, sets new input
-      setInput: function (input, yy) {
+// resets the lexer, sets new input
+setInput:function (input, yy) {
         this.yy = yy || this.yy || {};
         this._input = input;
         this._more = this._backtrack = this.done = false;
@@ -1034,20 +1098,20 @@ var molochparser = (function () {
         this.yytext = this.matched = this.match = '';
         this.conditionStack = ['INITIAL'];
         this.yylloc = {
-          first_line: 1,
-          first_column: 0,
-          last_line: 1,
-          last_column: 0
+            first_line: 1,
+            first_column: 0,
+            last_line: 1,
+            last_column: 0
         };
         if (this.options.ranges) {
-          this.yylloc.range = [0, 0];
+            this.yylloc.range = [0,0];
         }
         this.offset = 0;
         return this;
-      },
+    },
 
-      // consumes and returns one char from the input
-      input: function () {
+// consumes and returns one char from the input
+input:function () {
         var ch = this._input[0];
         this.yytext += ch;
         this.yyleng++;
@@ -1056,152 +1120,153 @@ var molochparser = (function () {
         this.matched += ch;
         var lines = ch.match(/(?:\r\n?|\n).*/g);
         if (lines) {
-          this.yylineno++;
-          this.yylloc.last_line++;
+            this.yylineno++;
+            this.yylloc.last_line++;
         } else {
-          this.yylloc.last_column++;
+            this.yylloc.last_column++;
         }
         if (this.options.ranges) {
-          this.yylloc.range[1]++;
+            this.yylloc.range[1]++;
         }
 
         this._input = this._input.slice(1);
         return ch;
-      },
+    },
 
-      // unshifts one char (or a string) into the input
-      unput: function (ch) {
+// unshifts one char (or a string) into the input
+unput:function (ch) {
         var len = ch.length;
         var lines = ch.split(/(?:\r\n?|\n)/g);
 
         this._input = ch + this._input;
         this.yytext = this.yytext.substr(0, this.yytext.length - len);
-        // this.yyleng -= len;
+        //this.yyleng -= len;
         this.offset -= len;
         var oldLines = this.match.split(/(?:\r\n?|\n)/g);
         this.match = this.match.substr(0, this.match.length - 1);
         this.matched = this.matched.substr(0, this.matched.length - 1);
 
         if (lines.length - 1) {
-          this.yylineno -= lines.length - 1;
+            this.yylineno -= lines.length - 1;
         }
         var r = this.yylloc.range;
 
         this.yylloc = {
-          first_line: this.yylloc.first_line,
-          last_line: this.yylineno + 1,
-          first_column: this.yylloc.first_column,
-          last_column: lines
-            ? (lines.length === oldLines.length ? this.yylloc.first_column : 0) +
-                 oldLines[oldLines.length - lines.length].length - lines[0].length
-            : this.yylloc.first_column - len
+            first_line: this.yylloc.first_line,
+            last_line: this.yylineno + 1,
+            first_column: this.yylloc.first_column,
+            last_column: lines ?
+                (lines.length === oldLines.length ? this.yylloc.first_column : 0)
+                 + oldLines[oldLines.length - lines.length].length - lines[0].length :
+              this.yylloc.first_column - len
         };
 
         if (this.options.ranges) {
-          this.yylloc.range = [r[0], r[0] + this.yyleng - len];
+            this.yylloc.range = [r[0], r[0] + this.yyleng - len];
         }
         this.yyleng = this.yytext.length;
         return this;
-      },
+    },
 
-      // When called from action, caches matched text and appends it on next action
-      more: function () {
+// When called from action, caches matched text and appends it on next action
+more:function () {
         this._more = true;
         return this;
-      },
+    },
 
-      // When called from action, signals the lexer that this rule fails to match the input, so the next matching rule (regex) should be tested instead.
-      reject: function () {
+// When called from action, signals the lexer that this rule fails to match the input, so the next matching rule (regex) should be tested instead.
+reject:function () {
         if (this.options.backtrack_lexer) {
-          this._backtrack = true;
+            this._backtrack = true;
         } else {
-          return this.parseError('Lexical error on line ' + (this.yylineno + 1) + '. You can only invoke reject() in the lexer when the lexer is of the backtracking persuasion (options.backtrack_lexer = true).\n' + this.showPosition(), {
-            text: '',
-            token: null,
-            line: this.yylineno
-          });
+            return this.parseError('Lexical error on line ' + (this.yylineno + 1) + '. You can only invoke reject() in the lexer when the lexer is of the backtracking persuasion (options.backtrack_lexer = true).\n' + this.showPosition(), {
+                text: "",
+                token: null,
+                line: this.yylineno
+            });
+
         }
         return this;
-      },
+    },
 
-      // retain first n characters of the match
-      less: function (n) {
+// retain first n characters of the match
+less:function (n) {
         this.unput(this.match.slice(n));
-      },
+    },
 
-      // displays already matched input, i.e. for error messages
-      pastInput: function () {
+// displays already matched input, i.e. for error messages
+pastInput:function () {
         var past = this.matched.substr(0, this.matched.length - this.match.length);
-        return (past.length > 20 ? '...' : '') + past.substr(-20).replace(/\n/g, '');
-      },
+        return (past.length > 20 ? '...':'') + past.substr(-20).replace(/\n/g, "");
+    },
 
-      // displays upcoming input, i.e. for error messages
-      upcomingInput: function () {
+// displays upcoming input, i.e. for error messages
+upcomingInput:function () {
         var next = this.match;
         if (next.length < 20) {
-          next += this._input.substr(0, 20 - next.length);
+            next += this._input.substr(0, 20-next.length);
         }
-        return (next.substr(0, 20) + (next.length > 20 ? '...' : '')).replace(/\n/g, '');
-      },
+        return (next.substr(0,20) + (next.length > 20 ? '...' : '')).replace(/\n/g, "");
+    },
 
-      // displays the character position where the lexing error occurred, i.e. for error messages
-      showPosition: function () {
+// displays the character position where the lexing error occurred, i.e. for error messages
+showPosition:function () {
         var pre = this.pastInput();
-        var c = new Array(pre.length + 1).join('-');
-        return pre + this.upcomingInput() + '\n' + c + '^';
-      },
+        var c = new Array(pre.length + 1).join("-");
+        return pre + this.upcomingInput() + "\n" + c + "^";
+    },
 
-      // test the lexed token: return FALSE when not a match, otherwise return token
-      test_match: function (match, indexed_rule) {
+// test the lexed token: return FALSE when not a match, otherwise return token
+test_match:function(match, indexed_rule) {
         var token,
-          lines,
-          backup;
+            lines,
+            backup;
 
         if (this.options.backtrack_lexer) {
-          // save context
-          backup = {
-            yylineno: this.yylineno,
-            yylloc: {
-              first_line: this.yylloc.first_line,
-              last_line: this.last_line,
-              first_column: this.yylloc.first_column,
-              last_column: this.yylloc.last_column
-            },
-            yytext: this.yytext,
-            match: this.match,
-            matches: this.matches,
-            matched: this.matched,
-            yyleng: this.yyleng,
-            offset: this.offset,
-            _more: this._more,
-            _input: this._input,
-            yy: this.yy,
-            conditionStack: this.conditionStack.slice(0),
-            done: this.done
-          };
-          if (this.options.ranges) {
-            backup.yylloc.range = this.yylloc.range.slice(0);
-          }
+            // save context
+            backup = {
+                yylineno: this.yylineno,
+                yylloc: {
+                    first_line: this.yylloc.first_line,
+                    last_line: this.last_line,
+                    first_column: this.yylloc.first_column,
+                    last_column: this.yylloc.last_column
+                },
+                yytext: this.yytext,
+                match: this.match,
+                matches: this.matches,
+                matched: this.matched,
+                yyleng: this.yyleng,
+                offset: this.offset,
+                _more: this._more,
+                _input: this._input,
+                yy: this.yy,
+                conditionStack: this.conditionStack.slice(0),
+                done: this.done
+            };
+            if (this.options.ranges) {
+                backup.yylloc.range = this.yylloc.range.slice(0);
+            }
         }
 
         lines = match[0].match(/(?:\r\n?|\n).*/g);
         if (lines) {
-          this.yylineno += lines.length;
+            this.yylineno += lines.length;
         }
         this.yylloc = {
-          first_line: this.yylloc.last_line,
-          last_line: this.yylineno + 1,
-          first_column: this.yylloc.last_column,
-          last_column: lines
-            ? lines[lines.length - 1].length - lines[lines.length - 1].match(/\r?\n?/)[0].length
-            : this.yylloc.last_column + match[0].length
+            first_line: this.yylloc.last_line,
+            last_line: this.yylineno + 1,
+            first_column: this.yylloc.last_column,
+            last_column: lines ?
+                         lines[lines.length - 1].length - lines[lines.length - 1].match(/\r?\n?/)[0].length :
+                         this.yylloc.last_column + match[0].length
         };
         this.yytext += match[0];
         this.match += match[0];
         this.matches = match;
         this.yyleng = this.yytext.length;
         if (this.options.ranges) {
-          this.yylloc.range = [this.offset, this.offset += this.yyleng];
+            this.yylloc.range = [this.offset, this.offset += this.yyleng];
         }
         this._more = false;
         this._backtrack = false;
@@ -1209,209 +1274,210 @@ var molochparser = (function () {
         this.matched += match[0];
         token = this.performAction.call(this, this.yy, this, indexed_rule, this.conditionStack[this.conditionStack.length - 1]);
         if (this.done && this._input) {
-          this.done = false;
+            this.done = false;
         }
         if (token) {
-          return token;
+            return token;
         } else if (this._backtrack) {
-          // recover context
-          for (var k in backup) {
-            this[k] = backup[k];
-          }
-          return false; // rule action called reject() implying the next rule should be tested instead.
+            // recover context
+            for (var k in backup) {
+                this[k] = backup[k];
+            }
+            return false; // rule action called reject() implying the next rule should be tested instead.
         }
         return false;
-      },
+    },
 
-      // return next match in input
-      next: function () {
+// return next match in input
+next:function () {
         if (this.done) {
-          return this.EOF;
+            return this.EOF;
         }
         if (!this._input) {
-          this.done = true;
+            this.done = true;
         }
 
         var token,
-          match,
-          tempMatch,
-          index;
+            match,
+            tempMatch,
+            index;
         if (!this._more) {
-          this.yytext = '';
-          this.match = '';
+            this.yytext = '';
+            this.match = '';
         }
         var rules = this._currentRules();
         for (var i = 0; i < rules.length; i++) {
-          tempMatch = this._input.match(this.rules[rules[i]]);
-          if (tempMatch && (!match || tempMatch[0].length > match[0].length)) {
-            match = tempMatch;
-            index = i;
-            if (this.options.backtrack_lexer) {
-              token = this.test_match(tempMatch, rules[i]);
-              if (token !== false) {
-                return token;
-              } else if (this._backtrack) {
-                match = false;
-                continue; // rule action called reject() implying a rule MISmatch.
-              } else {
-                // else: this is a lexer rule which consumes input without producing a token (e.g. whitespace)
-                return false;
-              }
-            } else if (!this.options.flex) {
-              break;
+            tempMatch = this._input.match(this.rules[rules[i]]);
+            if (tempMatch && (!match || tempMatch[0].length > match[0].length)) {
+                match = tempMatch;
+                index = i;
+                if (this.options.backtrack_lexer) {
+                    token = this.test_match(tempMatch, rules[i]);
+                    if (token !== false) {
+                        return token;
+                    } else if (this._backtrack) {
+                        match = false;
+                        continue; // rule action called reject() implying a rule MISmatch.
+                    } else {
+                        // else: this is a lexer rule which consumes input without producing a token (e.g. whitespace)
+                        return false;
+                    }
+                } else if (!this.options.flex) {
+                    break;
+                }
             }
-          }
         }
         if (match) {
-          token = this.test_match(match, rules[index]);
-          if (token !== false) {
-            return token;
-          }
-          // else: this is a lexer rule which consumes input without producing a token (e.g. whitespace)
-          return false;
+            token = this.test_match(match, rules[index]);
+            if (token !== false) {
+                return token;
+            }
+            // else: this is a lexer rule which consumes input without producing a token (e.g. whitespace)
+            return false;
         }
-        if (this._input === '') {
-          return this.EOF;
+        if (this._input === "") {
+            return this.EOF;
         } else {
-          return this.parseError('Lexical error on line ' + (this.yylineno + 1) + '. Unrecognized text.\n' + this.showPosition(), {
-            text: '',
-            token: null,
-            line: this.yylineno
-          });
+            return this.parseError('Lexical error on line ' + (this.yylineno + 1) + '. Unrecognized text.\n' + this.showPosition(), {
+                text: "",
+                token: null,
+                line: this.yylineno
+            });
         }
-      },
+    },
 
-      // return next match that has a token
-      lex: function lex () {
+// return next match that has a token
+lex:function lex () {
         var r = this.next();
         if (r) {
-          return r;
+            return r;
         } else {
-          return this.lex();
+            return this.lex();
         }
-      },
+    },
 
-      // activates a new lexer condition state (pushes the new lexer condition state onto the condition stack)
-      begin: function begin (condition) {
+// activates a new lexer condition state (pushes the new lexer condition state onto the condition stack)
+begin:function begin (condition) {
         this.conditionStack.push(condition);
-      },
+    },
 
-      // pop the previously active lexer condition state off the condition stack
-      popState: function popState () {
+// pop the previously active lexer condition state off the condition stack
+popState:function popState () {
         var n = this.conditionStack.length - 1;
         if (n > 0) {
-          return this.conditionStack.pop();
+            return this.conditionStack.pop();
         } else {
-          return this.conditionStack[0];
+            return this.conditionStack[0];
         }
-      },
+    },
 
-      // produce the lexer rule set which is active for the currently active lexer condition state
-      _currentRules: function _currentRules () {
+// produce the lexer rule set which is active for the currently active lexer condition state
+_currentRules:function _currentRules () {
         if (this.conditionStack.length && this.conditionStack[this.conditionStack.length - 1]) {
-          return this.conditions[this.conditionStack[this.conditionStack.length - 1]].rules;
+            return this.conditions[this.conditionStack[this.conditionStack.length - 1]].rules;
         } else {
-          return this.conditions['INITIAL'].rules;
+            return this.conditions["INITIAL"].rules;
         }
-      },
+    },
 
-      // return the currently active lexer condition state; when an index argument is provided it produces the N-th previous condition state, if available
-      topState: function topState (n) {
+// return the currently active lexer condition state; when an index argument is provided it produces the N-th previous condition state, if available
+topState:function topState (n) {
         n = this.conditionStack.length - 1 - Math.abs(n || 0);
         if (n >= 0) {
-          return this.conditionStack[n];
+            return this.conditionStack[n];
         } else {
-          return 'INITIAL';
+            return "INITIAL";
         }
-      },
+    },
 
-      // alias for begin(condition)
-      pushState: function pushState (condition) {
+// alias for begin(condition)
+pushState:function pushState (condition) {
         this.begin(condition);
-      },
+    },
 
-      // return the number of states currently on the stack
-      stateStackSize: function stateStackSize () {
+// return the number of states currently on the stack
+stateStackSize:function stateStackSize() {
         return this.conditionStack.length;
-      },
-      options: { 'flex': true },
-      performAction: function anonymous (yy, yy_, $avoiding_name_collisions, YY_START) {
-        var YYSTATE = YY_START;
-        switch ($avoiding_name_collisions) {
-          case 0:/* skip whitespace */
-            break;
-          case 1:return 15;
-            break;
-          case 2:return 16;
-            break;
-          case 3:return 14;
-            break;
-          case 4:return 17;
-            break;
-          case 5:return 'EXISTS';
-            break;
-          case 6:return 8;
-            break;
-          case 7:return 7;
-            break;
-          case 8:return 10;
-            break;
-          case 9:return 9;
-            break;
-          case 10:return 12;
-            break;
-          case 11:return 11;
-            break;
-          case 12:return 11;
-            break;
-          case 13:return 19;
-            break;
-          case 14:return 19;
-            break;
-          case 15:return 18;
-            break;
-          case 16:return 18;
-            break;
-          case 17:return 22;
-            break;
-          case 18:return 23;
-            break;
-          case 19:return 20;
-            break;
-          case 20:return 5;
-            break;
-          case 21:return 'INVALID';
-            break;
-          case 22:console.log(yy_.yytext);
-            break;
-        }
-      },
-      rules: [/^(?:\s+)/, /^(?:"(?:\\?.)*?")/, /^(?:\/(?:\\?.)*?\/)/, /^(?:[-+a-zA-Z0-9_.@:*?\/$]+)/, /^(?:\[[^\]\\]*(?:\\.[^\]\\]*)*\])/, /^(?:EXISTS!)/, /^(?:<=)/, /^(?:<)/, /^(?:>=)/, /^(?:>)/, /^(?:!=)/, /^(?:==)/, /^(?:=)/, /^(?:\|\|)/, /^(?:\|)/, /^(?:&&)/, /^(?:&)/, /^(?:\()/, /^(?:\))/, /^(?:!)/, /^(?:$)/, /^(?:.)/, /^(?:.)/],
-      conditions: { 'INITIAL': { 'rules': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], 'inclusive': true } }
-    });
-    return lexer;
-  })();
-  parser.lexer = lexer;
-  function Parser () {
-    this.yy = {};
-  }
-  Parser.prototype = parser; parser.Parser = Parser;
-  return new Parser();
+    },
+options: {"flex":true},
+performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
+var YYSTATE=YY_START;
+switch($avoiding_name_collisions) {
+case 0:/* skip whitespace */
+break;
+case 1:return 15
+break;
+case 2:return 16
+break;
+case 3:return 14
+break;
+case 4:return 17
+break;
+case 5:return "EXISTS"
+break;
+case 6:return 8
+break;
+case 7:return 7
+break;
+case 8:return 10
+break;
+case 9:return 9
+break;
+case 10:return 12
+break;
+case 11:return 11
+break;
+case 12:return 11
+break;
+case 13:return 19
+break;
+case 14:return 19
+break;
+case 15:return 18
+break;
+case 16:return 18
+break;
+case 17:return 22
+break;
+case 18:return 23
+break;
+case 19:return 20
+break;
+case 20:return 5
+break;
+case 21:return 'INVALID'
+break;
+case 22:console.log(yy_.yytext);
+break;
+}
+},
+rules: [/^(?:\s+)/,/^(?:"(?:\\?.)*?")/,/^(?:\/(?:\\?.)*?\/)/,/^(?:[-+a-zA-Z0-9_.@:*?\/$]+)/,/^(?:\[[^\]\\]*(?:\\.[^\]\\]*)*\])/,/^(?:EXISTS!)/,/^(?:<=)/,/^(?:<)/,/^(?:>=)/,/^(?:>)/,/^(?:!=)/,/^(?:==)/,/^(?:=)/,/^(?:\|\|)/,/^(?:\|)/,/^(?:&&)/,/^(?:&)/,/^(?:\()/,/^(?:\))/,/^(?:!)/,/^(?:$)/,/^(?:.)/,/^(?:.)/],
+conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],"inclusive":true}}
+});
+return lexer;
+})();
+parser.lexer = lexer;
+function Parser () {
+  this.yy = {};
+}
+Parser.prototype = parser;parser.Parser = Parser;
+return new Parser;
 })();
 
+
 if (typeof require !== 'undefined' && typeof exports !== 'undefined') {
-  exports.parser = molochparser;
-  exports.Parser = molochparser.Parser;
-  exports.parse = function () { return molochparser.parse.apply(molochparser, arguments); };
-  exports.main = function commonjsMain (args) {
+exports.parser = molochparser;
+exports.Parser = molochparser.Parser;
+exports.parse = function () { return molochparser.parse.apply(molochparser, arguments); };
+exports.main = function commonjsMain (args) {
     if (!args[1]) {
-      console.log('Usage: ' + args[0] + ' FILE');
-      process.exit(1);
+        console.log('Usage: '+args[0]+' FILE');
+        process.exit(1);
     }
-    var source = require('fs').readFileSync(require('path').normalize(args[1]), 'utf8');
+    var source = require('fs').readFileSync(require('path').normalize(args[1]), "utf8");
     return exports.parser.parse(source);
-  };
-  if (typeof module !== 'undefined' && require.main === module) {
-    exports.main(process.argv.slice(1));
-  }
+};
+if (typeof module !== 'undefined' && require.main === module) {
+  exports.main(process.argv.slice(1));
+}
 }
