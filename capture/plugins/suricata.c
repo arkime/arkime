@@ -485,6 +485,8 @@ LOCAL gboolean suricata_timer(gpointer UNUSED(user_data))
 void moloch_plugin_init()
 {
     line = malloc(lineSize);
+    if (!line)
+      LOGEXIT("ERROR - Couldn't initialize plugin by out of memory: %d", lineSize);
 
     suricataAlertFile     = moloch_config_str(NULL, "suricataAlertFile", NULL);
     suricataExpireSeconds = moloch_config_int(NULL, "suricataExpireMinutes", 60, 10, 0xffffff) * 60;
