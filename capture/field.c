@@ -46,7 +46,7 @@ void moloch_field_by_exp_add_special(char *exp, int pos)
     HASH_ADD(e_, fieldsByExp, info->expression, info);
 }
 /******************************************************************************/
-void moloch_field_by_exp_add_special_type(char *exp, int pos, MolochFieldTypes type)
+void moloch_field_by_exp_add_special_type(char *exp, int pos, MolochFieldType type)
 {
     MolochFieldInfo_t *info = MOLOCH_TYPE_ALLOC0(MolochFieldInfo_t);
     info->expression   = g_strdup(exp);
@@ -208,7 +208,7 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
     if (!help)
         help = field;
 
-    MolochFieldTypes type;
+    MolochFieldType type;
     int flags = 0;
     if (strcmp(kind, "integer") == 0 ||
         strcmp(kind, "seconds") == 0)
@@ -248,7 +248,7 @@ int moloch_field_define_text(char *text, int *shortcut)
     va_end(args);
 }*/
 /******************************************************************************/
-int moloch_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, MolochFieldTypes type, int flags, ...)
+int moloch_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, MolochFieldType type, int flags, ...)
 {
     char dbField2[100];
     char expression2[1000];
