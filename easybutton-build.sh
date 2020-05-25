@@ -97,7 +97,7 @@ UNAME="$(uname)"
 # Installing dependencies
 echo "MOLOCH: Installing Dependencies"
 if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
-  sudo yum -y install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences
+  sudo yum -y install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel python perl-Socket6 perl-Test-Differences
   if [ $? -ne 0 ]; then
     echo "MOLOCH: yum failed"
     exit 1
@@ -105,7 +105,7 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
 fi
 
 if [ -f "/etc/debian_version" ]; then
-  sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
+  sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf python libsocket6-perl libtest-differences-perl
   if [ $? -ne 0 ]; then
     echo "MOLOCH: apt-get failed"
     exit 1
@@ -311,14 +311,23 @@ if [ $DORMINSTALL -eq 1 ]; then
 fi
 
 # Install node if not already there
+case "$(uname -m)" in
+    "x86_64")
+        ARCH="x64"
+        ;;
+    "aarch64")
+        ARCH="arm64"
+        ;;
+esac
+
 if [ $DONODE -eq 1 ] && [ ! -f "$TDIR/bin/node" ]; then
     echo "MOLOCH: Installing node $NODE"
     sudo mkdir -p $TDIR/bin $TDIR/etc
     if [ ! -f node-v$NODE-linux-x64.tar.xz ] ; then
-        wget https://nodejs.org/download/release/v$NODE/node-v$NODE-linux-x64.tar.xz
+        wget https://nodejs.org/download/release/v$NODE/node-v$NODE-linux-$ARCH.tar.xz
     fi
-    sudo tar xfC node-v$NODE-linux-x64.tar.xz $TDIR
-    (cd $TDIR/bin ; sudo ln -sf ../node-v$NODE-linux-x64/bin/* .)
+    sudo tar xfC node-v$NODE-linux-$ARCH.tar.xz $TDIR
+    (cd $TDIR/bin ; sudo ln -sf ../node-v$NODE-linux-$ARCH/bin/* .)
 fi
 
 if [ $DOINSTALL -eq 1 ]; then
