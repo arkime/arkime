@@ -872,6 +872,7 @@ export default {
 /* paging/toast navbar */
 .users-paging {
   z-index: 4;
+  height: 40px;
   background-color: var(--color-quaternary-lightest);
 }
 
