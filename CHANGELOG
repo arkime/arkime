@@ -17,6 +17,8 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
+2.3.2 2020/06/xx
+
 2.3.1 2020/05/27
   - all - Lots of changes to support node 12 in the future (thanks rnbwdsh)
   - viewer - fix bug where the next query after an empty query might hang the UI
