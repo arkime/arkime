@@ -17,11 +17,21 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.3.1 2020/05/XX
+2.3.1 2020/05/27
+  - all - Lots of changes to support node 12 in the future (thanks rnbwdsh)
+  - viewer - fix bug where the next query after an empty query might hang the UI
   - viewer - use the same eslint as the UI & parliament, lots of lines changed
-  - viewer - can now delete a view from the popup
-  - viewer - fix so non admins can cancel their searches
+  - viewer - can now modify or delete a view from the popup
+  - viewer - fixed so non admins can cancel their searches again
+  - viewer - fixed columns not always loading with views
+  - viewer - when user creates a view it will auto switch
+  - viewer - does basic ip validation in queries
+  - viewer - fixed users tab header being hidden
   - capture - fixed out of bounds read in smtp parsing
+  - capture - Lowered the default number of ES retries to 2, added new
+              esMaxRetries setting
+  - wise - upgraded sqlite version and changed from hashtable to Map (thanks rnbwdsh)
+  - db.pl - The info command will now display estimate for how many days can be stored
 
 2.3.0 2020/05/06
   - release - CyberChef 9.16.2, node 10.20.1, daq 2.0.7
