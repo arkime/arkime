@@ -9303,6 +9303,10 @@ function processCronQueries () {
 // Main
 // ----------------------------------------------------------------------------
 function main () {
+  if (!fs.existsSync('./vueapp/dist/index.html')) {
+    console.log('WARNING - ./vueapp/dist/index.html missing - The viewer app must be run from inside the viewer directory');
+  }
+
   Db.checkVersion(MIN_DB_VERSION, Config.get('passwordSecret') !== undefined);
   Db.healthCache(function (err, health) {
     internals.clusterName = health.cluster_name;
