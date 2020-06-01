@@ -329,6 +329,9 @@ void moloch_rules_load_add_field(MolochRule_t *rule, int pos, char *key)
         }
         g_ptr_array_add(rules, rule);
         break;
+    case MOLOCH_FIELD_TYPE_CERTSINFO:
+        // Unsupported
+        break;
     }
 }
 /******************************************************************************/
@@ -892,6 +895,9 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
                 shash = session->fields[cp]->shash;
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)HASH_COUNT(s_, *shash));
                 break;
+            case MOLOCH_FIELD_TYPE_CERTSINFO:
+                // Unsupported
+                break;
             } /* switch */
             continue;
         }
@@ -985,6 +991,9 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
                     break;
                 }
             );
+            break;
+        case MOLOCH_FIELD_TYPE_CERTSINFO:
+            // Unsupported
             break;
         } /* switch */
 #ifdef RULES_DEBUG

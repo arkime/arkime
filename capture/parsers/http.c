@@ -267,6 +267,7 @@ LOCAL void http_add_value(MolochSession_t *session, HTTPInfo_t *http)
         else
             moloch_field_string_add(pos, session, s, l, TRUE);
         break;
+    case MOLOCH_FIELD_TYPE_IP:
     case MOLOCH_FIELD_TYPE_IP_GHASH:
     {
         int i;
@@ -288,6 +289,9 @@ LOCAL void http_add_value(MolochSession_t *session, HTTPInfo_t *http)
         g_strfreev(parts);
         break;
     }
+    case MOLOCH_FIELD_TYPE_CERTSINFO:
+        // Unsupported
+        break;
     } /* SWITCH */
 
     g_string_truncate(http->valueString[http->which], 0);

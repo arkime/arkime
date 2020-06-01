@@ -730,6 +730,21 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 g_free(session->fields[pos]->str);
             }
             break;
+        case MOLOCH_FIELD_TYPE_INT_ARRAY:
+            if (flags & MOLOCH_FIELD_FLAG_CNT) {
+                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", config.fields[pos]->dbField, session->fields[pos]->iarray->len);
+            }
+            BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
+            for(i = 0; i < session->fields[pos]->iarray->len; i++) {
+                BSB_EXPORT_sprintf(jbsb, "%u", g_array_index(session->fields[pos]->iarray, uint32_t, i));
+                BSB_EXPORT_u08(jbsb, ',');
+            }
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_cstr(jbsb, "],");
+            if (freeField) {
+                g_array_free(session->fields[pos]->iarray, TRUE);
+            }
+            break;
         case MOLOCH_FIELD_TYPE_STR_ARRAY:
             if (flags & MOLOCH_FIELD_FLAG_CNT) {
                 BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", config.fields[pos]->dbField, session->fields[pos]->sarray->len);

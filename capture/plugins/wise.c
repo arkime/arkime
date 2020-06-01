@@ -677,12 +677,27 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
             gpointer               ikey;
             GHashTable            *ghash;
             GHashTableIter         iter;
+            MolochIntHashStd_t    *ihash;
+            MolochInt_t           *hint;
             char                   buf[20];
 
             switch(config.fields[pos]->type) {
             case MOLOCH_FIELD_TYPE_INT:
                 snprintf(buf, sizeof(buf), "%d", session->fields[pos]->i);
                 wise_lookup(session, iRequest, buf, type);
+                break;
+            case MOLOCH_FIELD_TYPE_INT_ARRAY:
+                for(i = 0; i < (int)session->fields[pos]->iarray->len; i++) {
+                    snprintf(buf, sizeof(buf), "%u", g_array_index(session->fields[pos]->iarray, uint32_t, i));
+                    wise_lookup(session, iRequest, buf, type);
+                }
+                break;
+            case MOLOCH_FIELD_TYPE_INT_HASH:
+                ihash = session->fields[pos]->ihash;
+                HASH_FORALL(i_, *ihash, hint,
+                    snprintf(buf, sizeof(buf), "%u", hint->i_hash);
+                    wise_lookup(session, iRequest, buf, type);
+                );
                 break;
             case MOLOCH_FIELD_TYPE_INT_GHASH:
                 ghash = session->fields[pos]->ghash;
@@ -707,6 +722,14 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
                     wise_lookup_domain(session, iRequest, session->fields[pos]->str);
                 else
                     wise_lookup(session, iRequest, session->fields[pos]->str, type);
+                break;
+            case MOLOCH_FIELD_TYPE_STR_ARRAY:
+                for(i = 0; i < (int)session->fields[pos]->sarray->len; i++) {
+                    if (type == INTEL_TYPE_DOMAIN)
+                        wise_lookup_domain(session, iRequest, g_ptr_array_index(session->fields[pos]->sarray, i));
+                    else
+                        wise_lookup(session, iRequest, g_ptr_array_index(session->fields[pos]->sarray, i), type);
+                }
                 break;
             case MOLOCH_FIELD_TYPE_STR_HASH:
                 shash = session->fields[pos]->shash;
@@ -735,6 +758,9 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
                     else
                         wise_lookup(session, iRequest, ikey, type);
                 }
+            case MOLOCH_FIELD_TYPE_CERTSINFO:
+                // Unsupported
+                break;
             } /* switch */
         }
     }

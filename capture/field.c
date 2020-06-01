@@ -1320,21 +1320,24 @@ void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
         }
 
         switch (config.fields[op->fieldPos]->type) {
-        case  MOLOCH_FIELD_TYPE_INT_HASH:
-        case  MOLOCH_FIELD_TYPE_INT_GHASH:
-        case  MOLOCH_FIELD_TYPE_INT:
-        case  MOLOCH_FIELD_TYPE_INT_ARRAY:
+        case MOLOCH_FIELD_TYPE_INT_HASH:
+        case MOLOCH_FIELD_TYPE_INT_GHASH:
+        case MOLOCH_FIELD_TYPE_INT:
+        case MOLOCH_FIELD_TYPE_INT_ARRAY:
             moloch_field_int_add(op->fieldPos, session, op->strLenOrInt);
             break;
-        case  MOLOCH_FIELD_TYPE_IP:
-        case  MOLOCH_FIELD_TYPE_IP_GHASH:
+        case MOLOCH_FIELD_TYPE_IP:
+        case MOLOCH_FIELD_TYPE_IP_GHASH:
             moloch_field_ip_add_str(op->fieldPos, session, op->str);
             break;
-        case  MOLOCH_FIELD_TYPE_STR:
-        case  MOLOCH_FIELD_TYPE_STR_ARRAY:
-        case  MOLOCH_FIELD_TYPE_STR_HASH:
-        case  MOLOCH_FIELD_TYPE_STR_GHASH:
+        case MOLOCH_FIELD_TYPE_STR:
+        case MOLOCH_FIELD_TYPE_STR_ARRAY:
+        case MOLOCH_FIELD_TYPE_STR_HASH:
+        case MOLOCH_FIELD_TYPE_STR_GHASH:
             moloch_field_string_add(op->fieldPos, session, op->str, op->strLenOrInt, TRUE);
+            break;
+        case MOLOCH_FIELD_TYPE_CERTSINFO:
+            // Unsupported
             break;
         }
     }
