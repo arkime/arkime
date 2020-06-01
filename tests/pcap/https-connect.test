@@ -21,7 +21,7 @@
                   "notAfter" : 1590753600000,
                   "notBefore" : 1495670400000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 1,
+                  "remainingDays" : -1,
                   "serial" : "048d398cbd9d68c87e1ba3ec99c2b07d",
                   "subjectCN" : [
                      "lfoup01-b.cloudsink.net"
