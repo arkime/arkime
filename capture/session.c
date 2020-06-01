@@ -217,7 +217,7 @@ void moloch_session_add_tag(MolochSession_t *session, const char *tag) {
     moloch_field_string_add(config.tagsStringField, session, tag, -1, TRUE);
 }
 /******************************************************************************/
-void moloch_session_mark_for_close (MolochSession_t *session, int ses)
+void moloch_session_mark_for_close (MolochSession_t *session, SessionTypes ses)
 {
     session->closingQ = 1;
     session->saveTime = session->lastPacket.tv_sec + 5;
@@ -421,8 +421,8 @@ MolochSession_t *moloch_session_find_or_create(int mProtocol, uint32_t hash, uin
         hash = moloch_session_hash(sessionId);
     }
 
-    int      thread = hash % config.packetThreads;
-    int      ses = mProtocols[mProtocol].ses;
+    int          thread = hash % config.packetThreads;
+    SessionTypes ses = mProtocols[mProtocol].ses;
 
     HASH_FIND_HASH(h_, sessions[thread][ses], hash, sessionId, session);
 
@@ -540,7 +540,7 @@ void moloch_session_process_commands(int thread)
 }
 
 /******************************************************************************/
-int moloch_session_watch_count(int ses)
+int moloch_session_watch_count(SessionTypes ses)
 {
     int count = 0;
     int t;
@@ -552,7 +552,7 @@ int moloch_session_watch_count(int ses)
 }
 
 /******************************************************************************/
-int moloch_session_idle_seconds(int ses)
+int moloch_session_idle_seconds(SessionTypes ses)
 {
     int idle = 0;
     int tmp;
