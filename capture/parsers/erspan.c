@@ -17,7 +17,7 @@
 extern MolochConfig_t        config;
 
 /******************************************************************************/
-int erspan_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC erspan_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (unlikely(len) < 8 || unlikely(!data))
         return MOLOCH_PACKET_CORRUPT;

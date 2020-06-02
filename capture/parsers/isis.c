@@ -24,7 +24,7 @@ LOCAL int isisMProtocol;
 LOCAL int typeField;
 
 /******************************************************************************/
-void isis_create_sessionid(uint8_t *sessionId, MolochPacket_t *UNUSED(packet))
+LOCAL void isis_create_sessionid(uint8_t *sessionId, MolochPacket_t *UNUSED(packet))
 {
     sessionId[0] = 1;
     sessionId[1] = 0x83;
@@ -32,7 +32,7 @@ void isis_create_sessionid(uint8_t *sessionId, MolochPacket_t *UNUSED(packet))
     // for now, lump all isis into the same session
 }
 /******************************************************************************/
-void isis_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
+LOCAL void isis_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
 {
     char msg[32];
 
@@ -81,12 +81,12 @@ void isis_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(pa
     }
 }
 /******************************************************************************/
-int isis_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))
+LOCAL int isis_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))
 {
     return 1;
 }
 /******************************************************************************/
-int isis_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC isis_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     uint8_t sessionId[MOLOCH_SESSIONID_LEN];
 

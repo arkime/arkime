@@ -23,7 +23,7 @@ LOCAL MolochPQ_t *lldpPq;
 LOCAL int lldpMProtocol;
 
 /******************************************************************************/
-void lldp_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUSED (packet))
+LOCAL void lldp_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUSED (packet))
 {
 		// not used, but leaving for now 
     // uint8_t *data = packet->pkt + packet->payloadOffset;
@@ -38,18 +38,18 @@ void lldp_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUSED (pa
     // so not sure it makes sense to try and further tease out sessions from the lldp traffic here.
 }
 /******************************************************************************/
-void lldp_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
+LOCAL void lldp_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
         moloch_session_add_protocol(session, "lldp");
 }
 /******************************************************************************/
-int lldp_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))
+LOCAL int lldp_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))
 {
     return 1;
 }
 /******************************************************************************/
-int lldp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC lldp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     uint8_t sessionId[MOLOCH_SESSIONID_LEN];
 

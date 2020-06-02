@@ -18,7 +18,7 @@
 extern MolochConfig_t        config;
 
 /******************************************************************************/
-LOCAL int pppoe_packet_enqueue(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC pppoe_packet_enqueue(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 8 || data[0] != 0x11 || data[1] != 0) {
 #ifdef DEBUG_PACKET
@@ -47,7 +47,7 @@ LOCAL int pppoe_packet_enqueue(MolochPacketBatch_t * batch, MolochPacket_t * con
     }
 }
 /******************************************************************************/
-LOCAL int ppp_packet_enqueue(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC ppp_packet_enqueue(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 4 || data[2] != 0x00) {
 #ifdef DEBUG_PACKET

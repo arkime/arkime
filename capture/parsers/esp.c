@@ -29,7 +29,7 @@ LOCAL  int                   espMProtocol;
 
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-int esp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *UNUSED(data), int UNUSED(len))
+LOCAL MolochPacketRC esp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *UNUSED(data), int UNUSED(len))
 {
     uint8_t                 sessionId[MOLOCH_SESSIONID_LEN];
 

@@ -23,7 +23,7 @@ LOCAL MolochPQ_t *unkIpProtocolPq;
 LOCAL int unkIpProtocolMProtocol;
 
 /******************************************************************************/
-void unkIpProtocol_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUSED (packet))
+LOCAL void unkIpProtocol_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUSED (packet))
 {
     // uint8_t *data = packet->pkt + packet->payloadOffset;
 
@@ -34,18 +34,18 @@ void unkIpProtocol_create_sessionid(uint8_t *sessionId, MolochPacket_t * const U
     // for now, lump all unkIpProtocol into the same session
 }
 /******************************************************************************/
-void unkIpProtocol_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
+LOCAL void unkIpProtocol_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
         moloch_session_add_protocol(session, "unkIpProtocol");
 }
 /******************************************************************************/
-int unkIpProtocol_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))
+LOCAL int unkIpProtocol_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))
 {
     return 1;
 }
 /******************************************************************************/
-int unkIpProtocol_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC unkIpProtocol_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     uint8_t sessionId[MOLOCH_SESSIONID_LEN];
 

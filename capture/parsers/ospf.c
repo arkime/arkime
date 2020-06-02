@@ -23,7 +23,7 @@ LOCAL MolochPQ_t *ospfPq;
 LOCAL int ospfMProtocol;
 
 /******************************************************************************/
-void ospf_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUSED (packet))
+LOCAL void ospf_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUSED (packet))
 {
     // uint8_t *data = packet->pkt + packet->payloadOffset;
 
@@ -34,18 +34,18 @@ void ospf_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUSED (pa
     // for now, lump all ospf into the same session
 }
 /******************************************************************************/
-void ospf_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
+LOCAL void ospf_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
         moloch_session_add_protocol(session, "ospf");
 }
 /******************************************************************************/
-int ospf_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))
+LOCAL int ospf_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))
 {
     return 1;
 }
 /******************************************************************************/
-int ospf_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC ospf_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     uint8_t sessionId[MOLOCH_SESSIONID_LEN];
 

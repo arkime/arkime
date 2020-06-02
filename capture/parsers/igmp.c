@@ -23,7 +23,7 @@ LOCAL MolochPQ_t *igmpPq;
 LOCAL int igmpMProtocol;
 
 /******************************************************************************/
-void igmp_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUSED (packet))
+LOCAL void igmp_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUSED (packet))
 {
     sessionId[0] = 2;
     sessionId[1] = IPPROTO_IGMP;
@@ -32,7 +32,7 @@ void igmp_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUSED (pa
     // for now, lump all igmp into the same session
 }
 /******************************************************************************/
-void igmp_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
+LOCAL void igmp_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
         moloch_session_add_protocol(session, "igmp");
@@ -43,7 +43,7 @@ int igmp_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED
     return 1;
 }
 /******************************************************************************/
-int igmp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC igmp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     uint8_t sessionId[MOLOCH_SESSIONID_LEN];
 

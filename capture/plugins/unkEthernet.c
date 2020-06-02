@@ -23,7 +23,7 @@ LOCAL MolochPQ_t *unkEthernetPq;
 LOCAL int unkEthernetMProtocol;
 
 /******************************************************************************/
-void unkEthernet_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUSED (packet))
+LOCAL void unkEthernet_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUSED (packet))
 {
     // uint8_t *data = packet->pkt + packet->payloadOffset;
 
@@ -34,18 +34,18 @@ void unkEthernet_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNU
     // for now, lump all unkEthernet into the same session
 }
 /******************************************************************************/
-void unkEthernet_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
+LOCAL void unkEthernet_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
         moloch_session_add_protocol(session, "unkEthernet");
 }
 /******************************************************************************/
-int unkEthernet_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))
+LOCAL int unkEthernet_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))
 {
     return 1;
 }
 /******************************************************************************/
-int unkEthernet_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC unkEthernet_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     uint8_t sessionId[MOLOCH_SESSIONID_LEN];
 

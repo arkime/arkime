@@ -56,7 +56,7 @@
 #define SUPPRESS_INT_CONVERSION
 #endif
 
-#define MOLOCH_API_VERSION 210
+#define MOLOCH_API_VERSION 230
 
 #define MOLOCH_SESSIONID_LEN 37
 
@@ -1003,17 +1003,19 @@ void moloch_session_add_cmd_thread(int thread, gpointer uw1, gpointer uw2, Moloc
 /*
  * packet.c
  */
-#define MOLOCH_PACKET_DO_PROCESS               0
-#define MOLOCH_PACKET_IP_DROPPED               1
-#define MOLOCH_PACKET_OVERLOAD_DROPPED         2
-#define MOLOCH_PACKET_CORRUPT                  3
-#define MOLOCH_PACKET_UNKNOWN                  4
-#define MOLOCH_PACKET_IPPORT_DROPPED           5
-#define MOLOCH_PACKET_DONT_PROCESS             6
-#define MOLOCH_PACKET_DONT_PROCESS_OR_FREE     7
-#define MOLOCH_PACKET_MAX                      8
+typedef enum {
+  MOLOCH_PACKET_DO_PROCESS,
+  MOLOCH_PACKET_IP_DROPPED,
+  MOLOCH_PACKET_OVERLOAD_DROPPED,
+  MOLOCH_PACKET_CORRUPT,
+  MOLOCH_PACKET_UNKNOWN,
+  MOLOCH_PACKET_IPPORT_DROPPED,
+  MOLOCH_PACKET_DONT_PROCESS,
+  MOLOCH_PACKET_DONT_PROCESS_OR_FREE,
+  MOLOCH_PACKET_MAX
+} MolochPacketRC;
 
-typedef int (*MolochPacketEnqueue_cb)(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
+typedef MolochPacketRC (*MolochPacketEnqueue_cb)(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
 
 typedef int (*MolochPacketSessionId_cb)(uint8_t *sessionId, MolochPacket_t * const packet, const uint8_t *data, int len);
 

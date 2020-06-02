@@ -23,7 +23,7 @@ LOCAL MolochPQ_t *arpPq;
 LOCAL int arpMProtocol;
 
 /******************************************************************************/
-void arp_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
+LOCAL void arp_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
 {
     uint8_t *data = packet->pkt + packet->payloadOffset;
 
@@ -38,18 +38,18 @@ void arp_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
         memcpy(sessionId+5, data+14, 4);
 }
 /******************************************************************************/
-void arp_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
+LOCAL void arp_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
         moloch_session_add_protocol(session, "arp");
 }
 /******************************************************************************/
-int arp_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))
+LOCAL int arp_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))
 {
     return 1;
 }
 /******************************************************************************/
-int arp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC arp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     uint8_t sessionId[MOLOCH_SESSIONID_LEN];
 

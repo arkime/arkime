@@ -78,10 +78,10 @@ LOCAL  uint32_t              overloadDrops[MOLOCH_MAX_PACKET_THREADS];
 
 LOCAL  MOLOCH_LOCK_DEFINE(frags);
 
-LOCAL int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
-LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
-LOCAL int moloch_packet_frame_relay(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
-LOCAL int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
+LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
+LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
+LOCAL MolochPacketRC moloch_packet_frame_relay(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
+LOCAL MolochPacketRC moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
 
 typedef struct molochfrags_t {
     struct molochfrags_t  *fragh_next, *fragh_prev;
@@ -649,7 +649,7 @@ LOCAL void moloch_packet_log(SessionTypes ses)
       }
 }
 /******************************************************************************/
-LOCAL int moloch_packet_ip_gtp(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC moloch_packet_ip_gtp(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 12) {
         return MOLOCH_PACKET_CORRUPT;
@@ -695,7 +695,7 @@ LOCAL int moloch_packet_ip_gtp(MolochPacketBatch_t *batch, MolochPacket_t * cons
     return moloch_packet_ip4(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
 }
 /******************************************************************************/
-LOCAL int moloch_packet_ip4_vxlan(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC moloch_packet_ip4_vxlan(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 8) {
         return MOLOCH_PACKET_CORRUPT;
@@ -707,7 +707,7 @@ LOCAL int moloch_packet_ip4_vxlan(MolochPacketBatch_t *batch, MolochPacket_t * c
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     struct ip           *ip4 = (struct ip*)data;
     struct tcphdr       *tcphdr = 0;
@@ -849,7 +849,7 @@ LOCAL int moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const p
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     struct ip6_hdr      *ip6 = (struct ip6_hdr *)data;
     struct tcphdr       *tcphdr = 0;
@@ -1013,7 +1013,7 @@ LOCAL int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const 
     return MOLOCH_PACKET_DO_PROCESS;
 }
 /******************************************************************************/
-LOCAL int moloch_packet_frame_relay(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC moloch_packet_frame_relay(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 4)
         return MOLOCH_PACKET_CORRUPT;
@@ -1026,7 +1026,7 @@ LOCAL int moloch_packet_frame_relay(MolochPacketBatch_t *batch, MolochPacket_t *
     return moloch_packet_run_ethernet_cb(batch, packet, data+4, len-4, type, "FrameRelay");
 }
 /******************************************************************************/
-LOCAL int moloch_packet_ieee802(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC moloch_packet_ieee802(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
 #ifdef DEBUG_PACKET
     LOG("enter %p %p %d", packet, data, len);
@@ -1044,7 +1044,7 @@ LOCAL int moloch_packet_ieee802(MolochPacketBatch_t *batch, MolochPacket_t * con
     return moloch_packet_run_ethernet_cb(batch, packet, data+6, len-6, ethertype, "ieee802");
 }
 /******************************************************************************/
-LOCAL int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 14) {
 #ifdef DEBUG_PACKET
@@ -1073,7 +1073,7 @@ LOCAL int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * cons
     return MOLOCH_PACKET_CORRUPT;
 }
 /******************************************************************************/
-LOCAL int moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 16) {
 #ifdef DEBUG_PACKET
@@ -1095,7 +1095,7 @@ LOCAL int moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket_t * const 
     return MOLOCH_PACKET_CORRUPT;
 }
 /******************************************************************************/
-LOCAL int moloch_packet_nflog(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC moloch_packet_nflog(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 14 ||
         (data[0] != AF_INET && data[0] != AF_INET6) ||
@@ -1133,7 +1133,7 @@ LOCAL int moloch_packet_nflog(MolochPacketBatch_t * batch, MolochPacket_t * cons
     return MOLOCH_PACKET_CORRUPT;
 }
 /******************************************************************************/
-LOCAL int moloch_packet_radiotap(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC moloch_packet_radiotap(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (data[0] != 0 || len < 36)
         return MOLOCH_PACKET_UNKNOWN;
@@ -1185,7 +1185,7 @@ void moloch_packet_batch_flush(MolochPacketBatch_t *batch)
 /******************************************************************************/
 void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const packet)
 {
-    int rc;
+    MolochPacketRC rc;
 
 #ifdef DEBUG_PACKET
     LOG("enter %p %u %d", packet, pcapFileHeader.linktype, packet->pktlen);
