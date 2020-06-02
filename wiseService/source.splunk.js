@@ -58,7 +58,7 @@ function SplunkSource (api, section) {
 
   this.service.login((err, success) => {
     if (err) {
-      console.log("ERROR - Couldn't login to splunk - ", err);
+      console.log("ERROR - Couldn't login to splunk - ", util.inspect(err, false, 50));
       return;
     }
     if (this.periodic) {
