@@ -93,7 +93,7 @@ function getFieldInfo(yy, field)
 {
   var info = null;
 
-  if (/^db:/.test(field)) {
+  if (field.startsWith('db:')) {
     var dbField = field.substring(3);
     if (yy.dbFieldsMap[dbField]) {
       info = yy.dbFieldsMap[dbField];
