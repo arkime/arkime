@@ -3026,6 +3026,7 @@ function buildSessionQuery (req, buildCb, queryOverride = null) {
   molochparser.parser.yy = {
     views: req.user.views,
     fieldsMap: Config.getFieldsMap(),
+    dbFieldsMap: Config.getDBFieldsMap(),
     prefix: internals.prefix,
     emailSearch: req.user.emailSearch === true,
     lookups: req.lookups,
@@ -9212,6 +9213,7 @@ function processCronQueries () {
             molochparser.parser.yy = {
               emailSearch: user.emailSearch === true,
               fieldsMap: Config.getFieldsMap(),
+              dbFieldsMap: Config.getDBFieldsMap(),
               prefix: internals.prefix,
               lookups: lookups,
               lookupTypeMap: internals.lookupTypeMap
