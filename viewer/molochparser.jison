@@ -102,7 +102,7 @@ function getFieldInfo(yy, field)
     info = yy.fieldsMap[field];
   }
 
-  console.log('getFieldInfo', field, info);
+  // console.log('getFieldInfo', field, info);
   return info;
 }
 

@@ -84,7 +84,7 @@ performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* actio
 var $0 = $$.length - 1;
 switch (yystate) {
 case 1:
- return $$[$0-1]; 
+ return $$[$0-1];
 break;
 case 2:
 this.$ = 'lt'
@@ -128,7 +128,7 @@ break;
 case 19:
  this.$ = formatQuery(yy, $$[$0-2], $$[$0-1], $$[$0]);
           //console.log(util.inspect(this.$, false, 50));
-        
+
 break;
 }
 },
@@ -301,7 +301,7 @@ function getFieldInfo(yy, field)
     info = yy.fieldsMap[field];
   }
 
-  console.log('getFieldInfo', field, info);
+  // console.log('getFieldInfo', field, info);
   return info;
 }
 
