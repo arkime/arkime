@@ -1,4 +1,4 @@
-use Test::More tests => 649;
+use Test::More tests => 659;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -421,3 +421,11 @@ if (0) {
 
 # communityId
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&communityId=\"1:eMRxQSkNuVRbgi0elxmjkFvRujg=\""));
+
+# query DB field names by using db: prefix (#1461)
+    errTest("date=-1&expression=" . uri_escape("db:noSuchField=10.0.0.2"));
+    errTest("date=-1&expression=" . uri_escape("srcIp=10.0.0.2"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&db:srcIp=10.0.0.2"));
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&db:srcIp>=10.0.0.2"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&db:dstOui=Juniper*"));
+    countTest(24, "date=-1&expression=" . uri_escape("file=$pwd/wireshark-esp.pcap&&db:protocol=esp"));

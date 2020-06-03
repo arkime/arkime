@@ -86,6 +86,26 @@ e
 var    util           = require('util');
 var    moment         = require('moment');
 
+/* Given a field name, if prefixed with 'db:' return dbFieldsMap entry (i.e., looked up according to
+ * the Elasticsearch field name); otherwise return fieldsMap entry (see #1461)
+ */
+function getFieldInfo(yy, field)
+{
+  var info = null;
+
+  if (field.startsWith('db:')) {
+    var dbField = field.substring(3);
+    if (yy.dbFieldsMap[dbField]) {
+      info = yy.dbFieldsMap[dbField];
+    }
+  } else if (yy.fieldsMap[field]) {
+    info = yy.fieldsMap[field];
+  }
+
+  // console.log('getFieldInfo', field, info);
+  return info;
+}
+
 /* Build a list of all the field infos for ip field types.
  * Can specify if a port field needs to be available for the type or not
  */
@@ -132,7 +152,7 @@ function getIpInfoList(yy, needPort)
  * Arrays of all of the above
  */
 function parseIpPort(yy, field, ipPortStr) {
-  var dbField = yy.fieldsMap[field].dbField;
+  var dbField = getFieldInfo(yy, field).dbField;
 
   // Have just a single Ip, create obj for it
   function singleIp(exp, dbField, ip, port) {
@@ -155,9 +175,10 @@ function parseIpPort(yy, field, ipPortStr) {
     }
 
     if (port !== -1) {
-      if (yy.fieldsMap[exp].portField) {
+      var expInfo = getFieldInfo(yy, exp);
+      if (expInfo.portField) {
         obj = {bool: {must: [obj, {term: {}}]}};
-        obj.bool.must[1].term[yy.fieldsMap[exp].portField] = port;
+        obj.bool.must[1].term[expInfo.portField] = port;
       } else {
         throw exp + " doesn't support port";
       }
@@ -280,10 +301,9 @@ function stripQuotes (str) {
 
 function formatExists(yy, field, op)
 {
-  if (!yy.fieldsMap[field])
+  var info = getFieldInfo(yy, field);
+  if (!info)
     throw "Unknown field " + field;
-
-  var info = yy.fieldsMap[field];
 
   if (info.requiredRight && yy[info.requiredRight] !== true) {
     throw field + " - permission denied";
@@ -325,10 +345,9 @@ function formatQuery(yy, field, op, value)
     checkRegex(value);
   }
 
-  if (!yy.fieldsMap[field])
+  var info = getFieldInfo(yy, field);
+  if (!info)
     throw "Unknown field " + field;
-
-  var info = yy.fieldsMap[field];
 
   if (info.requiredRight && yy[info.requiredRight] !== true) {
     throw field + " - permission denied";
@@ -573,7 +592,7 @@ function checkRegex(str) {
 }
 
 function field2Raw(yy, field) {
-  var info = yy.fieldsMap[field];
+  var info = getFieldInfo(yy, field);
   var dbField = info.dbField;
   if (info.rawField)
     return info.rawField;
@@ -586,9 +605,8 @@ function field2Raw(yy, field) {
 
 function stringQuery(yy, field, str) {
 
-  var info = yy.fieldsMap[field];
+  var info = getFieldInfo(yy, field);
   var dbField = info.dbField;
-
 
   if (str[0] === "/" && str[str.length -1] === "/") {
     checkRegex(str);
