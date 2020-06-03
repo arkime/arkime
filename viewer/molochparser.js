@@ -313,7 +313,6 @@ function getIpInfoList(yy, needPort)
   let ors = [];
   let completed = {};
 
-  // TODO #1461: do I need to do something with dbFieldsMap?
   for (field in yy.fieldsMap) {
     let info = yy.fieldsMap[field];
 
@@ -513,7 +512,6 @@ function formatExists(yy, field, op)
     var regex = new RegExp(info.regex);
     var obj = [];
     var completed = [];
-    // TODO #1461: do I need to do something with dbFieldsMap?
     for (var f in yy.fieldsMap) {
       if (f.match(regex) && !completed[yy.fieldsMap[f].dbField]) {
         if (yy.fieldsMap[f].requiredRight && yy[yy.fieldsMap[f].requiredRight] !== true) {
@@ -558,7 +556,6 @@ function formatQuery(yy, field, op, value)
     var regex = new RegExp(info.regex);
     var obj = [];
     var completed = [];
-    // TODO #1461: do I need to do something with dbFieldsMap?
     for (var f in yy.fieldsMap) {
       if (f.match(regex) && !completed[yy.fieldsMap[f].dbField]) {
         if (yy.fieldsMap[f].requiredRight && yy[yy.fieldsMap[f].requiredRight] !== true) {
