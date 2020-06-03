@@ -75,6 +75,7 @@ var internals = {
   requiredAuthHeader: Config.get('requiredAuthHeader'),
   requiredAuthHeaderVal: Config.get('requiredAuthHeaderVal'),
   userAutoCreateTmpl: Config.get('userAutoCreateTmpl'),
+  esAdminUsersSet: Config.get('esAdminUsers', false) !== false,
   esAdminUsers: Config.get('multiES', false) ? [] : Config.getArray('esAdminUsers', ',', ''),
   httpAgent: new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 40 }),
   httpsAgent: new https.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 40, rejectUnauthorized: !Config.insecure }),
@@ -1309,7 +1310,13 @@ app.get('/user/current', checkPermissions(['webEnabled']), (req, res) => {
   }
 
   clone.canUpload = app.locals.allowUploads;
-  clone.esAdminUser = internals.esAdminUsers.includes(req.user.userId);
+
+  // If esAdminUser is set use that, other wise use createEnable privilege
+  if (internals.esAdminUsersSet) {
+    clone.esAdminUser = internals.esAdminUsers.includes(req.user.userId);
+  } else {
+    clone.esAdminUser = req.user.createEnabled && Config.get('multiES', false) === false;
+  }
 
   // If no settings, use defaults
   if (clone.settings === undefined) { clone.settings = settingDefaults; }
@@ -3756,8 +3763,14 @@ app.post('/estask/cancelAll', [noCacheJson, logAction(), checkCookieToken, check
 
 // ----------------------------------------------------------------------------
 function checkEsAdminUser (req, res, next) {
-  if (internals.esAdminUsers.includes(req.user.userId)) {
-    return next();
+  if (internals.esAdminUsersSet) {
+    if (internals.esAdminUsers.includes(req.user.userId)) {
+      return next();
+    }
+  } else {
+    if (req.user.createEnabled && Config.get('multiES', false) === false) {
+      return next();
+    }
   }
   return res.molochError(403, 'You do not have permission to access this resource');
 }
