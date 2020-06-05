@@ -4149,6 +4149,7 @@ app.get('/esstats.json', [noCacheJson, recordResponseTime, checkPermissions(['hi
           version = nodesInfo.nodes[nodeKeys[n]].version;
           if (nodesInfo.nodes[nodeKeys[n]].attributes) {
             molochtype = nodesInfo.nodes[nodeKeys[n]].attributes.molochtype;
+            molochzone = nodesInfo.nodes[nodeKeys[n]].attributes.molochzone;
           }
         } else {
           threadpoolInfo = { queue_size: 0 };
@@ -4177,6 +4178,7 @@ app.get('/esstats.json', [noCacheJson, recordResponseTime, checkPermissions(['hi
           load: node.os.load_average !== undefined ? /* ES 2 */ node.os.load_average : /* ES 5 */ node.os.cpu.load_average['5m'],
           version: version,
           molochtype: molochtype,
+          molochzone: molochzone,
           roles: node.roles,
           isMaster: (master.length > 0 && node.name === master[0].node)
         });
