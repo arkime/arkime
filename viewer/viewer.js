@@ -4144,6 +4144,7 @@ app.get('/esstats.json', [noCacheJson, recordResponseTime, checkPermissions(['hi
         let threadpoolInfo;
         let version = '';
         let molochtype;
+        let molochzone;
         if (nodesInfo.nodes[nodeKeys[n]]) {
           threadpoolInfo = nodesInfo.nodes[nodeKeys[n]].thread_pool.bulk || nodesInfo.nodes[nodeKeys[n]].thread_pool.write;
           version = nodesInfo.nodes[nodeKeys[n]].version;

@@ -19,12 +19,13 @@ NOTICE: Restart wiseService before capture when upgrading
 
 2.3.2 2020/06/xx
   - NOTE - 2.3.x will be the last version to support RHEL/Centos 6
-  - release - Upgraded to node 10.210.
+  - release - node 10.21.0
   - capture - minor tcp dns parsing performance improvement
   - capture - refactor some code to be more type safe
   - viewer - warn at starting about missing ./vueapp/dist/index.html
   - viewer - can now use db:<dbFieldName> in expressions (PR #1463)
   - viewer - if esAdminUsers isn't set, ES Admin tab now shows up for admins
+  - viewer - ES Nodes can display molochzone attribute now
 
 2.3.1 2020/05/27
   - all - Lots of changes to support node 12 in the future (thanks rnbwdsh)
