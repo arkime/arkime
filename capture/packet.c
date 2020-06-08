@@ -299,7 +299,8 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         MOLOCH_THREAD_INCR_NUM(unwrittenBytes, packet->pktlen);
     }
 
-    if (session->firstBytesLen[packet->direction] < 8 && session->packets[packet->direction] < 10) {
+    // Check the first 10 packets for vlans, tunnels, and macs
+    if (session->packets[packet->direction] <= 10) {
         const uint8_t *pcapData = packet->pkt;
 
         if (pcapFileHeader.linktype == 1) {
