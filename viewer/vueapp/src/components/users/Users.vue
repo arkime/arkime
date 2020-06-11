@@ -355,9 +355,14 @@
           </transition-group>
         </table> <!-- /user table -->
 
+        <div v-if="createError"
+          class="alert alert-sm alert-danger p-3  mt-4 text-break">
+          <span class="fa fa-exclamation-triangle">
+          </span>&nbsp;
+          {{ createError }}
+        </div>
         <!-- new user form -->
-        <div class="row new-user-form mr-1 ml-1 mt-4">
-
+        <div class="row new-user-form mr-1 ml-1">
           <div class="col-sm-7">
             <div class="row mb-3">
               <div class="col-sm-9 offset-sm-3">
@@ -455,12 +460,6 @@
                   </span>&nbsp;
                   Create
                 </button>
-                <span v-if="createError"
-                  class="pull-right alert alert-sm alert-danger mr-3">
-                  <span class="fa fa-exclamation-triangle">
-                  </span>&nbsp;
-                  {{ createError }}
-                </span>
               </div>
             </form>
           </div>
