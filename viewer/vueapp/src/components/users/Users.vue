@@ -129,49 +129,41 @@
                   <input v-model="listUser.userName"
                     class="form-control form-control-sm"
                     type="text"
-                    @input="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.enabled"
-                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.createEnabled"
-                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.webEnabled"
-                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.headerAuthEnabled"
-                    @change="userChanged(listUser);"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.emailSearch"
-                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.removeEnabled"
-                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.packetSearch"
-                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
@@ -186,7 +178,7 @@
                 </td>
                 <td class="no-wrap">
                   <span class="pull-right">
-                    <button v-if="listUser.changed"
+                    <button v-if="userHasChanged(listUser.userId)"
                       type="button"
                       class="btn btn-sm btn-success"
                       @click="updateUser(listUser)"
@@ -195,7 +187,7 @@
                       <span class="fa fa-save">
                       </span>
                     </button>
-                    <button v-if="listUser.changed"
+                    <button v-if="userHasChanged(listUser.userId)"
                       type="button"
                       class="btn btn-sm btn-warning"
                       @click="loadData"
@@ -253,7 +245,6 @@
                             type="checkbox"
                             :id="listUser.id + 'stats'"
                             v-model="listUser[columns[12].sort]"
-                            @change="userChanged(listUser)"
                           />
                           <label class="form-check-label"
                             :for="listUser.id + 'stats'">
@@ -266,7 +257,6 @@
                             type="checkbox"
                             :id="listUser.id + 'files'"
                             v-model="listUser[columns[13].sort]"
-                            @change="userChanged(listUser)"
                           />
                           <label class="form-check-label"
                             :for="listUser.id + 'files'">
@@ -279,7 +269,6 @@
                             type="checkbox"
                             :id="listUser.id + 'pcap'"
                             v-model="listUser[columns[14].sort]"
-                            @change="userChanged(listUser)"
                           />
                           <label class="form-check-label"
                             :for="listUser.id + 'pcap'">
@@ -292,7 +281,6 @@
                             type="checkbox"
                             :id="listUser.id + 'pcapDownload'"
                             v-model="listUser[columns[15].sort]"
-                            @change="userChanged(listUser)"
                           />
                           <label class="form-check-label"
                             :for="listUser.id + 'pcapDownload'">
@@ -315,7 +303,6 @@
                         <input v-model="listUser[columns[10].sort]"
                           class="form-control form-control-sm"
                           type="text"
-                          @input="userChanged(listUser)"
                         />
                       </div>
                     </div>
@@ -332,7 +319,7 @@
                         </div>
                         <select class="form-control time-limit-select"
                           v-model="listUser[columns[11].sort]"
-                          @change="changeTimeLimit(listUser); userChanged(listUser)">
+                          @change="changeTimeLimit(listUser)">
                           <option value="1">1 hour</option>
                           <option value="6">6 hours</option>
                           <option value="24">24 hours</option>
@@ -640,6 +627,7 @@ export default {
       error: '',
       loading: true,
       users: null,
+      dbUserList: null,
       createError: '',
       newuser: {
         enabled: true,
@@ -742,8 +730,14 @@ export default {
         user.timeLimit = parseInt(user.timeLimit);
       }
     },
-    userChanged: function (user) {
-      this.$set(user, 'changed', true);
+    userHasChanged: function (id) {
+      let newUser = this.users.data.find(u => u.id === id);
+      let oldUser = this.dbUserList.data.find(u => u.id === id);
+      oldUser.timeLimit = oldUser.timeLimit ? oldUser.timeLimit : undefined;
+
+      // Iterate over user keys that come from store.
+      // The newUser is populated with other values like "expanded" that we dont need to check for
+      return !Object.keys(oldUser).every(key => oldUser[key] === newUser[key]);
     },
     updateUser: function (user) {
       this.$set(user, 'expanded', undefined);
@@ -751,6 +745,7 @@ export default {
         .then((response) => {
           this.msg = response.data.text;
           this.msgType = 'success';
+          this.loadData();
           // update the current user if they were changed
           if (this.user.userId === user.userId) {
             // update all the fields
@@ -763,7 +758,6 @@ export default {
             // time limit is special because it can be undefined
             this.user.timeLimit = user.timeLimit || undefined;
           }
-          this.$set(user, 'changed', false);
         }, (error) => {
           this.msg = error.text;
           this.msgType = 'danger';
@@ -845,7 +839,9 @@ export default {
         .then((response) => {
           this.error = '';
           this.loading = false;
-          this.users = response.data;
+          this.users = JSON.parse(JSON.stringify(response.data));
+          // Dont modify original list. Used for comparing
+          this.dbUserList = response.data;
         }, (error) => {
           this.loading = false;
           this.error = error.text;
