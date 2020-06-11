@@ -332,7 +332,7 @@
                         </div>
                         <select class="form-control time-limit-select"
                           v-model="listUser[columns[11].sort]"
-                          @change="changeTimeLimit(listUser)">
+                          @change="changeTimeLimit(listUser); userChanged(listUser)">
                           <option value="1">1 hour</option>
                           <option value="6">6 hours</option>
                           <option value="24">24 hours</option>
@@ -423,7 +423,8 @@
                 <div class="col-sm-9">
                   <select :id="columns[11].sort"
                     class="form-control form-control-sm"
-                    v-model="newuser[columns[11].sort]">
+                    v-model="newuser[columns[11].sort]"
+                    @change="changeTimeLimit(newuser)">
                     <option value="1">1 hour</option>
                     <option value="6">6 hours</option>
                     <option value="24">24 hours</option>
@@ -740,7 +741,6 @@ export default {
       } else {
         user.timeLimit = parseInt(user.timeLimit);
       }
-      this.userChanged(user);
     },
     userChanged: function (user) {
       this.$set(user, 'changed', true);
