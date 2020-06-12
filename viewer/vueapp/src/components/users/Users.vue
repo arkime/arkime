@@ -190,7 +190,7 @@
                     <button v-if="userHasChanged(listUser.userId)"
                       type="button"
                       class="btn btn-sm btn-warning"
-                      @click="loadData"
+                      @click="cancelEdits(listUser.userId)"
                       v-b-tooltip.hover
                       :title="`Cancel changed settings for ${listUser.userId}`">
                       <span class="fa fa-ban">
@@ -716,7 +716,7 @@ export default {
     columnClick (name) {
       this.query.sortField = name;
       this.query.desc = !this.query.desc;
-      this.loadData();
+      this.reloadData();
     },
     /* remove the message when user is done with it or duration ends */
     messageDone: function () {
@@ -730,9 +730,14 @@ export default {
         user.timeLimit = parseInt(user.timeLimit);
       }
     },
-    userHasChanged: function (id) {
-      let newUser = this.users.data.find(u => u.id === id);
-      let oldUser = this.dbUserList.data.find(u => u.id === id);
+    cancelEdits: function (userId) {
+      let canceledUser = this.users.data.find(u => u.userId === userId);
+      let oldUser = this.dbUserList.data.find(u => u.userId === userId);
+      Object.assign(canceledUser, oldUser);
+    },
+    userHasChanged: function (userId) {
+      let newUser = this.users.data.find(u => u.userId === userId);
+      let oldUser = this.dbUserList.data.find(u => u.userId === userId);
       oldUser.timeLimit = oldUser.timeLimit ? oldUser.timeLimit : undefined;
 
       // Iterate over user keys that come from store.
@@ -745,7 +750,7 @@ export default {
         .then((response) => {
           this.msg = response.data.text;
           this.msgType = 'success';
-          this.loadData();
+          this.reloadData();
           // update the current user if they were changed
           if (this.user.userId === user.userId) {
             // update all the fields
@@ -795,7 +800,7 @@ export default {
       this.$http.post('user/create', this.newuser)
         .then((response) => {
           this.newuser = { enabled: true, packetSearch: true };
-          this.loadData();
+          this.reloadData();
 
           this.msg = response.data.text;
           this.msgType = 'success';
@@ -842,6 +847,27 @@ export default {
           this.users = JSON.parse(JSON.stringify(response.data));
           // Dont modify original list. Used for comparing
           this.dbUserList = response.data;
+        }, (error) => {
+          this.loading = false;
+          this.error = error.text;
+        });
+    },
+    reloadData: function () {
+      this.$http.post('user/list', this.query)
+        .then((response) => {
+          this.error = '';
+          this.loading = false;
+          let userData = JSON.parse(JSON.stringify(response.data));
+          // Dont modify original list. Used for comparing
+          this.dbUserList = response.data;
+
+          // Dont update users that have edits. Update dbUserList first to compare against
+          // This will keep returned db sorting order regardless if sorted fields are shown on edited fields
+          this.users.data = userData.data.map(u => {
+            let matchedUser = this.users.data.find(item => item.userId === u.userId);
+            // If user already exists and is still being edited, keep user obj
+            return (matchedUser && this.userHasChanged(u.userId)) ? matchedUser : u;
+          });
         }, (error) => {
           this.loading = false;
           this.error = error.text;
