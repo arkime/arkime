@@ -219,6 +219,9 @@ void moloch_session_add_tag(MolochSession_t *session, const char *tag) {
 /******************************************************************************/
 void moloch_session_mark_for_close (MolochSession_t *session, SessionTypes ses)
 {
+    if (session->closingQ)
+        return;
+
     session->closingQ = 1;
     session->saveTime = session->lastPacket.tv_sec + 5;
     DLL_REMOVE(q_, &sessionsQ[session->thread][ses], session);
