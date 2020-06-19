@@ -627,11 +627,13 @@ gboolean moloch_field_string_add_host(int pos, MolochSession_t *session, char *s
         host = g_hostname_to_unicode(string);
         string[len] = ch;
     }
-
-    // If g_hostname_to_unicode fails, just use the input
-    if (!host) {
-        host = g_strndup(string, len);
-        moloch_session_add_tag(session, "bad-punycode");
+    if (!host || g_utf8_validate(host, -1, NULL) == 0) {
+        if (len > 4 && moloch_memstr((const char *)string, len, "xn--", 4)) {
+            moloch_session_add_tag(session, "bad-punycode");
+        } else {
+            moloch_session_add_tag(session, "bad-hostname");
+        }
+        return FALSE;
     }
 
     if (!moloch_field_string_add(pos, session, host, -1, FALSE)) {
