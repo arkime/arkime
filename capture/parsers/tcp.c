@@ -192,7 +192,7 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
 
     if (tcphdr->th_flags & TH_RST) {
         session->tcpFlagCnt[MOLOCH_TCPFLAG_RST]++;
-        uint64_t diff = tcp_sequence_diff(seq, session->tcpSeq[packet->direction]);
+        int64_t diff = tcp_sequence_diff(seq, session->tcpSeq[packet->direction]);
         if (diff  <= 0) {
             if (diff == 0 && !session->closingQ) {
                 moloch_session_mark_for_close(session, SESSION_TCP);

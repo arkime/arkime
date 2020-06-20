@@ -231,7 +231,6 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
     if(BSB_IS_ERROR(bsb))
         return;
 
-    char str[100];
     int  add12Later = FALSE;
 
     // If ver is 0x303 that means there should be an extended header with actual version
@@ -266,6 +265,7 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
     if (cipherStr)
         moloch_field_string_add(cipherField, session, cipherStr, -1, TRUE);
     else {
+        char str[100];
         snprintf(str, sizeof(str), "0x%04x", cipher);
         moloch_field_string_add(cipherField, session, str, 6, TRUE);
     }

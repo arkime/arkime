@@ -2255,7 +2255,7 @@ int moloch_db_can_quit()
 
             moloch_db_flush_gfunc((gpointer)1);
             if (config.debug)
-                LOG ("Can't quit, sJson[%d] %ld", thread, BSB_LENGTH(dbInfo[thread].bsb));
+                LOG ("Can't quit, sJson[%d] %u", thread, (uint32_t)BSB_LENGTH(dbInfo[thread].bsb));
             return 1;
         }
         MOLOCH_UNLOCK(dbInfo[thread].lock);

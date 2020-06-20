@@ -24,13 +24,14 @@ LOCAL  int                   typeField;
 /******************************************************************************/
 LOCAL int bgp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
 {
-    static const char *types[5] = {NULL, "OPEN", "UPDATE", "NOTIFICATION", "KEEPALIVE"};
-
     if (len < 19 || memcmp("\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff", data, 16) != 0)
         return 0;
 
-    if (data[18] > 0 && data[18] < 5)
+    if (data[18] > 0 && data[18] < 5) {
+        static const char *types[5] = {NULL, "OPEN", "UPDATE", "NOTIFICATION", "KEEPALIVE"};
+
         moloch_field_string_add(typeField, session, types[data[18]], -1, TRUE);
+    }
 
     moloch_pq_upsert(bgpPq, session, 5, NULL);
     return 0;
