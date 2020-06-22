@@ -28,6 +28,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - if esAdminUsers isn't set, ES Admin tab now shows up for admins
   - viewer - ES Nodes can display molochzone attribute now
   - viewer - fixed some Users tab issues
+  - viewer - fix percentage sorting on ES Recovery tab
 
 2.3.1 2020/05/27
   - all - Lots of changes to support node 12 in the future (thanks rnbwdsh)
