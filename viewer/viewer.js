@@ -4065,11 +4065,12 @@ app.get('/esrecovery/list', [noCacheJson, recordResponseTime, checkPermissions([
     }
 
     // Work around for https://github.com/elastic/elasticsearch/issues/48070
-    if (sortField.endsWith('_percent')) {
+    if (req.query.sortField && req.query.sortField.endsWith('_percent')) {
+      let sf = req.query.sortField;
       if (req.query.desc === 'true') {
-        result = result.sort((a, b) => { return parseFloat(b[sortField]) - parseFloat(a[sortField]); });
+        result = result.sort((a, b) => { return parseFloat(b[sf]) - parseFloat(a[sf]); });
       } else {
-        result = result.sort((a, b) => { return parseFloat(a[sortField]) - parseFloat(b[sortField]); });
+        result = result.sort((a, b) => { return parseFloat(a[sf]) - parseFloat(b[sf]); });
       }
     }
 
