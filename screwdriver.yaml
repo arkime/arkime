@@ -159,6 +159,18 @@ jobs:
                   aws s3 cp --quiet moloch*amd64.deb s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
                   aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
                 fi
+
+            - build-sanitize: (cd capture; make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize)
+            - install-sanitize: (cd capture; PATH=/data/moloch/bin:$PATH make install)
+            - build-sanitize-package: |
+                rm -f moloch*amd64.deb
+                export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js`
+                if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
+                  fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://molo.ch" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
+                  aws s3 cp --quiet moloch*amd64.deb s3://files.molo.ch/sanitize/moloch-${MOLOCH_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key sanitize/moloch-${MOLOCH_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
+                fi
+
         secrets:
             - AWS_ACCESS_KEY_ID
             - AWS_SECRET_ACCESS_KEY
