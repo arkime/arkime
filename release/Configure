@@ -142,13 +142,13 @@ for CREATEDIR in $CREATEDIRS; do
 done
 
 ################################################################################
-ARCHR=$(uname -m)
-case $ARCHR in
+ARCHRPM=$(uname -m)
+case $ARCHRPM in
     "x86_64")
-        ARCH="x86_64"
+        ARCHDEB="amd64"
         ;;
     "aarch64")
-        ARCH="arm64"
+        ARCHDEB="arm64"
         ;;
 esac
 
@@ -156,9 +156,9 @@ if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
     echo "Moloch - Downloading and installing demo OSS version of Elasticsearch"
     ES_VERSION=7.7.1
     if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
-        yum install https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-${ES_VERSION}-$ARCHR.rpm
+        yum install https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-${ES_VERSION}-${ARCHRPM}.rpm
     else
-        wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-${ES_VERSION}-$ARCH.deb
+        wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-${ES_VERSION}-${ARCHDEB}.deb
         dpkg -i elasticsearch-oss-${ES_VERSION}-$ARCH.deb
         /bin/rm -f elasticsearch-oss-${ES_VERSION}-$ARCH.deb
     fi
