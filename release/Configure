@@ -154,13 +154,13 @@ esac
 
 if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
     echo "Moloch - Downloading and installing demo OSS version of Elasticsearch"
-    ES_VERSION=7.7.1
+    ES_VERSION=7.8.0
     if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
         yum install https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-${ES_VERSION}-$ARCHR.rpm
     else
-        wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-${ES_VERSION}-$ARCH.deb
-        dpkg -i elasticsearch-oss-${ES_VERSION}-$ARCH.deb
-        /bin/rm -f elasticsearch-oss-${ES_VERSION}-$ARCH.deb
+        wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-${ES_VERSION}-amd64.deb
+        dpkg -i elasticsearch-oss-${ES_VERSION}-amd64.deb
+        /bin/rm -f elasticsearch-oss-${ES_VERSION}-amd64.deb
     fi
 fi
 
