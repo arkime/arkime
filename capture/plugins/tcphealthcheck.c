@@ -22,7 +22,7 @@ LOCAL  int                   tcp_port;
 
 /******************************************************************************/
 void tcp_server(void) {
-    int server_fd, client_fd, err;
+    int server_fd, err;
     struct sockaddr_in server, client;
    
     server.sin_family = AF_INET;
@@ -53,7 +53,7 @@ void tcp_server(void) {
 
     while (1) {
         socklen_t client_len = sizeof(client);
-        client_fd = accept(server_fd, (struct sockaddr *) &client, &client_len);
+        int client_fd = accept(server_fd, (struct sockaddr *) &client, &client_len);
             if (client_fd < 0) {
                 LOG("Error establishing new connection: %d", client_fd);
             }

@@ -103,4 +103,4 @@ distclean realclean clean:
 	rm -f *.o moloch-capture */*.o */*.so
 
 cppcheck:
-	cppcheck --enable=all --std=c99 -I. -Ithirdparty *.c plugins/*.c parsers/*.c
+	cppcheck -q --enable=all --std=c99 -I. -Ithirdparty *.c plugins/*.c parsers/*.c

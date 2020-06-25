@@ -540,7 +540,7 @@ uint64_t moloch_parsers_asn_parse_time(MolochSession_t *session, int tag, unsign
         tm.tm_mon  = str2num(value+4) - 1;
         tm.tm_mday = str2num(value+6);
         tm.tm_hour = str2num(value+8);
-        if (len < 10 || value[10] == 'Z' || value[10] == '+' || value[10] == '-') {
+        if (value[10] == 'Z' || value[10] == '+' || value[10] == '-') {
             pos = 10;
             goto gtdone;
         }

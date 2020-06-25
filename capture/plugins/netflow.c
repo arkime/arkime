@@ -91,7 +91,7 @@ LOCAL void netflow_send(const int thread)
         int rc;
         
         if ((rc = send(dests[i].fd, buf[thread], BSB_LENGTH(bsb[thread])+headerSize, 0)) < BSB_LENGTH(bsb[thread])+headerSize) {
-            LOG("Failed to send rc=%d size=%ld error=%s", rc, BSB_LENGTH(bsb[thread])+headerSize, strerror(errno));
+            LOG("Failed to send rc=%d size=%u error=%s", rc, (uint32_t)BSB_LENGTH(bsb[thread])+headerSize, strerror(errno));
         }
     }
 

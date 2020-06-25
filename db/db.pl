@@ -3515,6 +3515,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $catNodes = esGet("/_cat/nodes?format=json&bytes=b&h=name,diskTotal,role");
     my $status = esGet("/_stats/docs,store", 1);
     my $minMax = esPost("/${PREFIX}sessions2-*/_search?size=0", '{"aggs":{ "min" : { "min" : { "field" : "lastPacket" } }, "max" : { "max" : { "field" : "lastPacket" } } } }', 1);
+    my $ilm = esGet("/_ilm/policy/${PREFIX}molochsessions", 1);
 
     my $sessions = 0;
     my $sessionsBytes = 0;
@@ -3568,6 +3569,10 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         printf "MB per Day:          %17s\n", commify(int($sessionsTotalBytes/($days*1000*1000)));
         printf "Sessions Days:       %17.2f (%s - %s)\n", $days, $minMax->{aggregations}->{min}->{value_as_string}, $minMax->{aggregations}->{max}->{value_as_string};
         printf "Possible Sessions Days:  %13.2f\n", (0.95*$diskTotal)/($sessionsTotalBytes/$days);
+
+        if (exists $ilm->{molochsessions} && exists $ilm->{molochsessions}->{policy}->{phases}->{delete}) {
+            printf "ILM Delete Age:      %17s\n", $ilm->{molochsessions}->{policy}->{phases}->{delete}->{min_age};
+        }
     }
     printf "History Indices:     %17s\n", commify(scalar(@historys));
     printf "Histories:           %17s (%s bytes)\n", commify($historys), commify($historysBytes);

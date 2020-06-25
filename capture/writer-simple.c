@@ -282,10 +282,10 @@ LOCAL char *writer_simple_get_kekId ()
 /******************************************************************************/
 LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPacket_t * const packet)
 {
-    static uint32_t lastError;
-    static uint32_t notSaved;
 
     if (DLL_COUNT(simple_, &simpleQ) > simpleMaxQ) {
+        static uint32_t lastError;
+        static uint32_t notSaved;
         packet->writerFilePos = 0;
         notSaved++;
         if (packet->ts.tv_sec > lastError + 60) {

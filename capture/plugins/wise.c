@@ -150,7 +150,7 @@ LOCAL int wise_item_cmp(const void *keyv, const void *elementv)
 LOCAL void wise_print_stats()
 {
     for (int i = 0; i < numTypes; i++) {
-        LOG("%8s lookups:%7d cache:%7d requests:%7d inprogress:%7d fail:%7d hash:%7d list:%7d",
+        LOG("%8s lookups:%7d cache:%7d requests:%7d inprogress:%7d fail:%7d hash:%7d list:%7u",
             types[i].name,
             stats[i][0],
             stats[i][1],

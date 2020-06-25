@@ -219,6 +219,9 @@ void moloch_session_add_tag(MolochSession_t *session, const char *tag) {
 /******************************************************************************/
 void moloch_session_mark_for_close (MolochSession_t *session, SessionTypes ses)
 {
+    if (session->closingQ)
+        return;
+
     session->closingQ = 1;
     session->saveTime = session->lastPacket.tv_sec + 5;
     DLL_REMOVE(q_, &sessionsQ[session->thread][ses], session);
@@ -447,7 +450,7 @@ MolochSession_t *moloch_session_find_or_create(int mProtocol, uint32_t hash, uin
 
     if (HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash) > 15) {
         char buf[100];
-        LOG("ERROR - Large number of chains: %s %u %u %d %u %u - might want to increase maxStreams see https://molo.ch/settings#maxstreams", moloch_session_id_string(sessionId, buf), hash, hash % sessions[thread][ses].size, thread, HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash), sessions[thread][ses].size);
+        LOG("ERROR - Large number of chains: %s %u %u %d %d %d - might want to increase maxStreams see https://molo.ch/settings#maxstreams", moloch_session_id_string(sessionId, buf), hash, hash % sessions[thread][ses].size, thread, HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash), sessions[thread][ses].size);
     }
 
     session->filePosArray = g_array_sized_new(FALSE, FALSE, sizeof(uint64_t), 100);
