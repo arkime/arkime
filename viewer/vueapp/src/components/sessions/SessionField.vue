@@ -70,10 +70,18 @@
             <b-dropdown-divider></b-dropdown-divider>
             <b-dropdown-item
               v-for="(item, key) in menuItems"
-              :key="key"
+              :key="'sync-item-' + key"
               :title="item.name + ' ' + item.value"
               :href="item.url"
               target="_blank">
+              <strong>{{ item.name }}</strong>
+              {{ item.value }}
+            </b-dropdown-item>
+            <b-dropdown-item
+              v-for="(item, key) in asyncMenuItems"
+              :key="'async-item-' + key"
+              :title="item.name"
+              v-on:click="fetchMenuData(item.url, key)">
               <strong>{{ item.name }}</strong>
               {{ item.value }}
             </b-dropdown-item>
@@ -159,6 +167,7 @@
 </template>
 
 <script>
+import Vue from 'vue';
 import ConfigService from '../utils/ConfigService';
 import MolochSessionInfo from './SessionInfo';
 
@@ -182,6 +191,7 @@ export default {
     return {
       isOpen: false,
       menuItems: {},
+      asyncMenuItems: {},
       molochClickables: undefined
     };
   },
@@ -411,6 +421,26 @@ export default {
         }
       }
     },
+    /* Briefly replaces menu value with fetched api data */
+    fetchMenuData: function (url, key) {
+      let options = {
+        method: 'GET',
+        url: url
+      };
+
+      let oldValue = this.asyncMenuItems[key].value;
+
+      Vue.axios(options)
+        .then((response) => {
+          this.$set(this.asyncMenuItems[key], 'value', response.data);
+          setTimeout(() => this.$set(this.asyncMenuItems[key], 'value', oldValue), 5000);
+        })
+        .catch((error) => {
+          this.$set(this.asyncMenuItems[key], 'value', 'Error fetching data');
+          setTimeout(() => this.$set(this.asyncMenuItems[key], 'value', oldValue), 5000);
+          console.log(error);
+        });
+    },
     /* Builds the dropdown menu items to display */
     buildMenu: function () {
       if (!this.parsed[0].value || !this.molochClickables) { return; }
@@ -431,7 +461,6 @@ export default {
 
       let urlParams = this.$route.query;
       let dateparams, isostart, isostop;
-      this.menuItems = {};
 
       if (urlParams.startTime && urlParams.stopTime) {
         dateparams = `startTime=${urlParams.startTime}&stopTime=${urlParams.stopTime}`;
@@ -458,7 +487,7 @@ export default {
           if (this.molochClickables[key].func !== undefined) {
             let v = this.molochClickables[key].func(key, text);
             if (v !== undefined) {
-              this.menuItems[key] = v;
+              this.$set(this.menuItems, key, v);
             }
             continue;
           }
@@ -506,7 +535,14 @@ export default {
             }
           }
 
-          this.menuItems[key] = { name: name, value: value, url: result };
+          if (this.molochClickables[key].actionType !== undefined) {
+            if (this.molochClickables[key].actionType === 'fetch') {
+              this.$set(this.asyncMenuItems, key, { name: name, value: value, url: result });
+              continue;
+            }
+          }
+
+          this.$set(this.menuItems, key, { name: name, value: value, url: result });
         }
       }
     }
