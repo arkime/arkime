@@ -478,6 +478,7 @@ app.use(function (req, res, next) {
       return {name: "Decoded:", value: atob(value.substring(6))};
     return undefined;
   }` };
+  mrc.reverseDNS = { category: 'ip', name: 'Get Reverse DNS', url: '/moloch/reverseDNS.txt?ip=%TEXT%', actionType: 'fetch' };
   mrc.bodyHashMd5 = { category: 'md5', url: '/%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
   mrc.bodyHashSha256 = { category: 'sha256', url: '/%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
 
