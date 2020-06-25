@@ -5183,13 +5183,13 @@ app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'),
   });
 });
 
-app.get('/dns.json', [noCacheJson, logAction()], function (req, res) {
-  console.log('dns.json', req.query);
+app.get('/reverseDNS.txt', [noCacheJson, logAction()], function (req, res) {
+  console.log('reverseDNS.txt', req.query);
   dns.reverse(req.query.ip, function (err, data) {
     if (err) {
-      return res.send({ hosts: [] });
+      return res.send("[]");
     }
-    return res.send({ hosts: data });
+    return res.send(data.join(', '));
   });
 });
 
