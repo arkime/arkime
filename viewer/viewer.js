@@ -478,9 +478,9 @@ app.use(function (req, res, next) {
       return {name: "Decoded:", value: atob(value.substring(6))};
     return undefined;
   }` };
-  mrc.reverseDNS = { category: 'ip', name: 'Get Reverse DNS', url: '/moloch/reverseDNS.txt?ip=%TEXT%', actionType: 'fetch' };
-  mrc.bodyHashMd5 = { category: 'md5', url: '/%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
-  mrc.bodyHashSha256 = { category: 'sha256', url: '/%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
+  mrc.reverseDNS = { category: 'ip', name: 'Get Reverse DNS', url: 'reverseDNS.txt?ip=%TEXT%', actionType: 'fetch' };
+  mrc.bodyHashMd5 = { category: 'md5', url: '%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
+  mrc.bodyHashSha256 = { category: 'sha256', url: '%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
 
   for (var key in internals.rightClicks) {
     var rc = internals.rightClicks[key];
@@ -5195,10 +5195,10 @@ app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'),
 });
 
 app.get('/reverseDNS.txt', [noCacheJson, logAction()], function (req, res) {
-  console.log('reverseDNS.txt', req.query);
+  // console.log('reverseDNS.txt', req.query);
   dns.reverse(req.query.ip, function (err, data) {
     if (err) {
-      return res.send('[]');
+      return res.send('reverse error');
     }
     return res.send(data.join(', '));
   });
