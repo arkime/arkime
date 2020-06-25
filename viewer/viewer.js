@@ -5198,7 +5198,7 @@ app.get('/reverseDNS.txt', [noCacheJson, logAction()], function (req, res) {
   console.log('reverseDNS.txt', req.query);
   dns.reverse(req.query.ip, function (err, data) {
     if (err) {
-      return res.send("[]");
+      return res.send('[]');
     }
     return res.send(data.join(', '));
   });
