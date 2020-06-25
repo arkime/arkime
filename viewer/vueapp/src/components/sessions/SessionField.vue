@@ -192,7 +192,8 @@ export default {
       isOpen: false,
       menuItems: {},
       asyncMenuItems: {},
-      molochClickables: undefined
+      molochClickables: undefined,
+      menuItemTimeout: null
     };
   },
   watch: {
@@ -423,6 +424,10 @@ export default {
     },
     /* Briefly replaces menu value with fetched api data */
     fetchMenuData: function (url, key) {
+      if (this.menuItemTimeout) {
+        return;
+      }
+
       let options = {
         method: 'GET',
         url: url
@@ -433,11 +438,17 @@ export default {
       Vue.axios(options)
         .then((response) => {
           this.$set(this.asyncMenuItems[key], 'value', response.data);
-          setTimeout(() => this.$set(this.asyncMenuItems[key], 'value', oldValue), 5000);
+          this.menuItemTimeout = setTimeout(() => {
+            this.$set(this.asyncMenuItems[key], 'value', oldValue);
+            this.menuItemTimeout = null;
+          }, 5000);
         })
         .catch((error) => {
           this.$set(this.asyncMenuItems[key], 'value', 'Error fetching data');
-          setTimeout(() => this.$set(this.asyncMenuItems[key], 'value', oldValue), 5000);
+          this.menuItemTimeout = setTimeout(() => {
+            this.$set(this.asyncMenuItems[key], 'value', oldValue);
+            this.menuItemTimeout = null;
+          }, 5000);
           console.log(error);
         });
     },
