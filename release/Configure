@@ -159,8 +159,8 @@ if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
         yum install https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-${ES_VERSION}-${ARCHRPM}.rpm
     else
         wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-${ES_VERSION}-${ARCHDEB}.deb
-        dpkg -i elasticsearch-oss-${ES_VERSION}-$ARCH.deb
-        /bin/rm -f elasticsearch-oss-${ES_VERSION}-$ARCH.deb
+        dpkg -i elasticsearch-oss-${ES_VERSION}-$ARCHDEB.deb
+        /bin/rm -f elasticsearch-oss-${ES_VERSION}-$ARCHDEB.deb
     fi
 fi
 
