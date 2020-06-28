@@ -190,7 +190,7 @@
                 v-model="recoveryShow"
                 v-on:change="recoveryShowChange">
                 <option value="all">All</option>
-                <option value="notdone">Not Done</option>
+                <option value="notdone">Active</option>
               </select>
             </div> <!-- /graph hide select -->
 

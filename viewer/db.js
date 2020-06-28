@@ -460,8 +460,8 @@ exports.shards = function (cb) {
   return internals.elasticSearchClient.cat.shards({ format: 'json', bytes: 'b', h: 'index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm' }, cb);
 };
 
-exports.recovery = function (sortField, cb) {
-  return internals.elasticSearchClient.cat.recovery({ format: 'json', bytes: 'b', s: sortField }, cb);
+exports.recovery = function (sortField, activeOnly, cb) {
+  return internals.elasticSearchClient.cat.recovery({ format: 'json', bytes: 'b', s: sortField, active_only: activeOnly }, cb);
 };
 
 exports.master = function (cb) {

@@ -4036,7 +4036,7 @@ app.post('/esshard/include/:type/:value', [noCacheJson, logAction(), checkCookie
 app.get('/esrecovery/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie], (req, res) => {
   const sortField = (req.query.sortField || 'index') + (req.query.desc === 'true' ? ':desc' : '');
 
-  Promise.all([Db.recovery(sortField)]).then(([recoveries]) => {
+  Promise.all([Db.recovery(sortField, req.query.show !== 'all')]).then(([recoveries]) => {
     let regex;
     if (req.query.filter !== undefined) {
       try {
@@ -4049,12 +4049,6 @@ app.get('/esrecovery/list', [noCacheJson, recordResponseTime, checkPermissions([
     let result = [];
 
     for (const recovery of recoveries) {
-      if (!(req.query.show === 'all' ||
-        recovery.stage === req.query.show || // Show only matching stage
-        (recovery.stage !== 'done' && req.query.show === 'notdone'))) {
-        continue;
-      }
-
       // filtering
       if (regex && !recovery.index.match(regex) &&
         !recovery.target_node.match(regex) &&
