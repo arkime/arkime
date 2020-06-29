@@ -17,7 +17,7 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.3.2 2020/06/xx
+2.3.2 2020/06/29
   - NOTE - 2.3.x will be the last version to support RHEL/Centos 6
   - release - node 10.21.0
   - capture - minor tcp dns parsing performance improvement
@@ -29,6 +29,8 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - ES Nodes can display molochzone attribute now
   - viewer - fixed some Users tab issues
   - viewer - fix percentage sorting on ES Recovery tab
+  - viewer - "right click" actions can how show text in menu with fetch actionType
+  - viewer - "Reverse DNS" menu option on ips
 
 2.3.1 2020/05/27
   - all - Lots of changes to support node 12 in the future (thanks rnbwdsh)
