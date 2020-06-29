@@ -17,6 +17,9 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
+2.4.0 2020/07/xx
+  - NOTE - RHEL/Centos 6 is no longer supported
+
 2.3.2 2020/06/29
   - NOTE - 2.3.x will be the last version to support RHEL/Centos 6
   - release - node 10.21.0
