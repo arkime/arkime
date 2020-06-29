@@ -14,7 +14,7 @@ dnf config-manager --set-enabled PowerTools; \
 dnf config-manager --set-enabled remi; \
 yum -y clean all; \
 yum -y update; \
-yum -y install gcc gcc-c++ pfring python2 python3-pip perl-Test-Harness; \
+yum -y install gcc gcc-c++ pfring python3-pip perl-Test-Harness; \
 git clone https://github.com/aol/moloch; \
 (cd moloch ; ./easybutton-build.sh --daq --pfring); \
 mv moloch/thirdparty /; \

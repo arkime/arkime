@@ -14,8 +14,7 @@ git clone https://github.com/aol/moloch; \
 mv moloch/thirdparty /; \
 rm -rf moloch; \
 gem install --no-ri --no-rdoc fpm; \
-curl https://bootstrap.pypa.io/get-pip.py | python; \
-pip install awscli; \
+scl enable devtoolset-9 rh-python36 'pip3 install awscli'; \
 useradd -u 2000 elasticsearch; \
 (cd / ; \
  wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.5.1-linux-x86_64.tar.gz; \
