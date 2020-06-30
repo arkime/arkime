@@ -18,36 +18,36 @@ shared:
         RELEASE_ITERATION: 1
 
 jobs:
-    centos-6:
-        requires: [~pr, ~commit]
-        image: andywick/moloch-build-6:2.2.0-1
-        steps:
-            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
-            - ln -s /thirdparty .
-            - build: scl enable devtoolset-7 python27 "./easybutton-build.sh --daq --pfring --rminstall"
-            - test-capture: (cd tests ; ./tests.pl)
-            - export PATH=/data/moloch/bin:$PATH
-            - npm -g config set user root; npm -g config set cache-min 9999999
-            - installing: scl enable devtoolset-7 python27 "make install"
-            - cp -r capture/plugins/lua/samples /data/moloch/lua
-            - build-package: |
-                export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
-                if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  scl enable rh-ruby23 "/opt/rh/rh-ruby23/root/usr/local/bin/fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install 'release/afterinstall.sh' --url "https://molo.ch" --description 'Moloch Full Packet System' -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel /data/moloch"
-                  scl enable python27 "aws s3 cp --quiet moloch*.x86_64.rpm s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}.centos6.x86_64.rpm --acl public-read"
-                  scl enable python27 "aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}.centos6.x86_64.rpm --acl public-read"
-                fi
-        secrets:
-            - AWS_ACCESS_KEY_ID
-            - AWS_SECRET_ACCESS_KEY
+#    centos-6:
+#        requires: [~pr, ~commit]
+#        image: andywick/moloch-build-6:2.2.0-1
+#        steps:
+#            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
+#            - ln -s /thirdparty .
+#            - build: scl enable devtoolset-7 python27 "./easybutton-build.sh --daq --pfring --rminstall"
+#            - test-capture: (cd tests ; ./tests.pl)
+#            - export PATH=/data/moloch/bin:$PATH
+#            - npm -g config set user root; npm -g config set cache-min 9999999
+#            - installing: scl enable devtoolset-7 python27 "make install"
+#            - cp -r capture/plugins/lua/samples /data/moloch/lua
+#            - build-package: |
+#                export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
+#                if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
+#                  scl enable rh-ruby23 "/opt/rh/rh-ruby23/root/usr/local/bin/fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install 'release/afterinstall.sh' --url "https://molo.ch" --description 'Moloch Full Packet System' -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel /data/moloch"
+#                  scl enable python27 "aws s3 cp --quiet moloch*.x86_64.rpm s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}.centos6.x86_64.rpm --acl public-read"
+#                  scl enable python27 "aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}.centos6.x86_64.rpm --acl public-read"
+#                fi
+#        secrets:
+#            - AWS_ACCESS_KEY_ID
+#            - AWS_SECRET_ACCESS_KEY
 
     centos-7:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-7:2.2.0-1
+        image: andywick/moloch-build-7:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh --daq --pfring --rminstall
+            - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --rminstall"
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
@@ -66,7 +66,7 @@ jobs:
 
     centos-8:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-8:2.2.0-1
+        image: andywick/moloch-build-8:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -112,7 +112,7 @@ jobs:
 
     ubuntu-16:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-16:2.2.0-1
+        image: andywick/moloch-build-16:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -141,7 +141,7 @@ jobs:
 
     ubuntu-18:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-18:2.2.0-1
+        image: andywick/moloch-build-18:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
@@ -175,15 +175,51 @@ jobs:
             - AWS_ACCESS_KEY_ID
             - AWS_SECRET_ACCESS_KEY
 
+    ubuntu-20:
+        requires: [~pr, ~commit]
+        image: andywick/moloch-build-20:2.4.0-1
+        steps:
+            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
+            - apt-get update
+            - ln -s /thirdparty .
+            - build: ./easybutton-build.sh --daq --pfring --rminstall
+            - test-capture: (cd tests ; ./tests.pl)
+            - export PATH=/data/moloch/bin:$PATH
+            - npm -g config set user root
+            - installing: make install
+            - cp -r capture/plugins/lua/samples /data/moloch/lua
+            - build-package: |
+                export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js`
+                if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
+                  fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://molo.ch" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
+                  aws s3 cp --quiet moloch*amd64.deb s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
+                fi
+
+            - build-sanitize: (cd capture; make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize)
+            - install-sanitize: (cd capture; PATH=/data/moloch/bin:$PATH make install)
+            - build-sanitize-package: |
+                rm -f moloch*amd64.deb
+                export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js`
+                if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
+                  fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://molo.ch" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
+                  aws s3 cp --quiet moloch*amd64.deb s3://files.molo.ch/sanitize/moloch-${MOLOCH_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key sanitize/moloch-${MOLOCH_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
+                fi
+
+        secrets:
+            - AWS_ACCESS_KEY_ID
+            - AWS_SECRET_ACCESS_KEY
+
     centos-7-sanitize:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-7:2.2.0-1
+        image: andywick/moloch-build-7:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
-            - build: scl enable devtoolset-7 "./easybutton-build.sh --daq --pfring --rminstall"
-            - yum -y install libasan-static devtoolset-7-libasan-devel libasan4 devtoolset-7-libubsan-devel libubsan which
-            - build-sanitize: (cd capture; scl enable devtoolset-7 "make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize")
+            - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --rminstall"
+            - yum -y install libasan-static devtoolset-9-libasan-devel libasan4 devtoolset-9-libubsan-devel libubsan which
+            - build-sanitize: (cd capture; scl enable devtoolset-9 "make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize")
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
@@ -208,7 +244,7 @@ jobs:
 
     ubuntu-16-sanitize:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-16:2.2.0-1
+        image: andywick/moloch-build-16:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -237,7 +273,7 @@ jobs:
             - AWS_SECRET_ACCESS_KEY
 
     slack:
-        requires: [centos-6, centos-7, centos-8, ubuntu-16, ubuntu-18]
+        requires: [centos-7, centos-8, ubuntu-16, ubuntu-18]
         image: andywick/moloch-build-7:6
         annotations:
             beta.screwdriver.cd/cpu: LOW
@@ -255,7 +291,7 @@ jobs:
             - SLACK
 
     release-build:
-        image: andywick/moloch-build-6:2.2.0-1
+        image: andywick/moloch-build-6:2.4.0-1
         requires: []
         annotations:
             beta.screwdriver.cd/cpu: LOW
@@ -263,30 +299,30 @@ jobs:
         steps:
             - echo "Hi!"
 
-    release-centos-6:
-        requires: [release-build]
-        image: andywick/moloch-build-6:2.2.0-1
-        steps:
-            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
-            - ln -s /thirdparty .
-            - build: scl enable devtoolset-7 python27 "./easybutton-build.sh --daq --pfring --rminstall"
-            - export PATH=/data/moloch/bin:$PWD/node_modules/.bin:$PATH
-            - npm -g config set user root; npm -g config set cache-min 9999999
-            - installing: scl enable devtoolset-7 python27 "make install"
-            - cp -r capture/plugins/lua/samples /data/moloch/lua
-            - npm install license-checker; release/notice.txt.pl /data/moloch NOTICE release/CAPTURENOTICE > /data/moloch/NOTICE.txt
-            - build-package: |
-                export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
-                scl enable rh-ruby23 "/opt/rh/rh-ruby23/root/usr/local/bin/fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install 'release/afterinstall.sh' --url "https://molo.ch" --description 'Moloch Full Packet System' -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel /data/moloch"
-                scl enable python27 "aws s3 cp moloch-${MOLOCH_VERSION}-${RELEASE_ITERATION}.x86_64.rpm s3://files.molo.ch/builds/centos-6/ --acl public-read"
-                ls -l *.rpm
-        secrets:
-            - AWS_ACCESS_KEY_ID
-            - AWS_SECRET_ACCESS_KEY
+#    release-centos-6:
+#        requires: [release-build]
+#        image: andywick/moloch-build-6:2.2.0-1
+#        steps:
+#            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
+#            - ln -s /thirdparty .
+#            - build: scl enable devtoolset-7 python27 "./easybutton-build.sh --daq --pfring --rminstall"
+#            - export PATH=/data/moloch/bin:$PWD/node_modules/.bin:$PATH
+#            - npm -g config set user root; npm -g config set cache-min 9999999
+#            - installing: scl enable devtoolset-7 python27 "make install"
+#            - cp -r capture/plugins/lua/samples /data/moloch/lua
+#            - npm install license-checker; release/notice.txt.pl /data/moloch NOTICE release/CAPTURENOTICE > /data/moloch/NOTICE.txt
+#            - build-package: |
+#                export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
+#                scl enable rh-ruby23 "/opt/rh/rh-ruby23/root/usr/local/bin/fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install 'release/afterinstall.sh' --url "https://molo.ch" --description 'Moloch Full Packet System' -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel /data/moloch"
+#                scl enable python27 "aws s3 cp moloch-${MOLOCH_VERSION}-${RELEASE_ITERATION}.x86_64.rpm s3://files.molo.ch/builds/centos-6/ --acl public-read"
+#                ls -l *.rpm
+#        secrets:
+#            - AWS_ACCESS_KEY_ID
+#            - AWS_SECRET_ACCESS_KEY
 
     release-centos-7:
         requires: [release-build]
-        image: andywick/moloch-build-7:2.2.0-1
+        image: andywick/moloch-build-7:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -307,7 +343,7 @@ jobs:
 
     release-centos-8:
         requires: [release-build]
-        image: andywick/moloch-build-8:2.2.0-1
+        image: andywick/moloch-build-8:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -350,7 +386,7 @@ jobs:
 
     release-ubuntu-16:
         requires: [release-build]
-        image: andywick/moloch-build-16:2.2.0-1
+        image: andywick/moloch-build-16:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -371,7 +407,7 @@ jobs:
 
     release-ubuntu-18:
         requires: [release-build]
-        image: andywick/moloch-build-18:2.2.0-1
+        image: andywick/moloch-build-18:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -385,6 +421,27 @@ jobs:
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js`
                 fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://molo.ch" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
                 aws s3 cp moloch_${MOLOCH_VERSION}-${RELEASE_ITERATION}_amd64.deb s3://files.molo.ch/builds/ubuntu-18.04/ --acl public-read
+                ls -l *.deb
+        secrets:
+            - AWS_ACCESS_KEY_ID
+            - AWS_SECRET_ACCESS_KEY
+
+    release-ubuntu-20:
+        requires: [release-build]
+        image: andywick/moloch-build-20:2.4.0-1
+        steps:
+            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
+            - ln -s /thirdparty .
+            - build: ./easybutton-build.sh --daq --pfring --rminstall
+            - export PATH=/data/moloch/bin:$PWD/node_modules/.bin:$PATH
+            - npm -g config set user root
+            - installing: make install
+            - cp -r capture/plugins/lua/samples /data/moloch/lua
+            - npm install license-checker; release/notice.txt.pl /data/moloch NOTICE release/CAPTURENOTICE > /data/moloch/NOTICE.txt
+            - build-package: |
+                export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js`
+                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $MOLOCH_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://molo.ch" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
+                aws s3 cp moloch_${MOLOCH_VERSION}-${RELEASE_ITERATION}_amd64.deb s3://files.molo.ch/builds/ubuntu-20.04/ --acl public-read
                 ls -l *.deb
         secrets:
             - AWS_ACCESS_KEY_ID

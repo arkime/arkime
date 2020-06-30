@@ -1,12 +1,13 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 MAINTAINER Andy Wick <andy.wick@oath.com>
 
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
-apt-get install -y lsb-release ruby-dev make python3-pip git libtest-differences-perl sudo wget && \
-(cd /tmp && wget https://packages.ntop.org/apt-stable/18.04/all/apt-ntop-stable.deb && dpkg -i apt-ntop-stable.deb) && \
+apt-get install -y lsb-release ruby-dev make python3-pip git libtest-differences-perl sudo wget apt-utils tzdata && \
+(cd /tmp && wget https://packages.ntop.org/apt-stable/20.04/all/apt-ntop-stable.deb && dpkg -i apt-ntop-stable.deb) && \
 apt-get update && \
 apt-get install -y pfring && \
-gem install --no-ri --no-rdoc fpm && \
+gem install --no-document fpm && \
 pip3 install awscli && \
 git clone https://github.com/aol/moloch && \
 (cd moloch; git checkout start240; ./easybutton-build.sh --daq --pfring) && \

@@ -1,4 +1,4 @@
-FROM centos:7.6.1810
+FROM centos:7.7.1908
 MAINTAINER Andy Wick <andy.wick@oath.com>
 
 RUN \
@@ -8,14 +8,14 @@ yum -y update; \
 yum -y install git sudo perl-Test-Base perl-Test-Differences perl-Test-Simple bzip2 wget ruby-devel rubygems rpm-build python-devel pango which; \
 (cd /etc/yum.repos.d/; wget https://packages.ntop.org/centos-stable/ntop.repo); \
 yum -y update; \
-yum -y install devtoolset-7-gcc-c++ pfring; \
+yum -y install devtoolset-9-gcc-c++ pfring rh-python36; \
 git clone https://github.com/aol/moloch; \
-(cd moloch ; scl enable devtoolset-7 './easybutton-build.sh --daq --pfring'); \
+(cd moloch; git checkout start240; scl enable devtoolset-9 rh-python36 './easybutton-build.sh --daq --pfring'); \
 mv moloch/thirdparty /; \
+rm -rf /thirdparty/glib*/*/tests /thirdparty/glib*/*/*/tests && \
 rm -rf moloch; \
 gem install --no-ri --no-rdoc fpm; \
-curl https://bootstrap.pypa.io/get-pip.py | python; \
-pip install awscli; \
+scl enable devtoolset-9 rh-python36 'pip3 install awscli'; \
 useradd -u 2000 elasticsearch; \
 (cd / ; \
  wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.5.1-linux-x86_64.tar.gz; \

@@ -11,7 +11,7 @@
 # * install moloch if --install
 
 
-GLIB=2.56.2
+GLIB=2.64.3
 YARA=3.11.0
 MAXMIND=1.3.2
 PCAP=1.9.1
@@ -105,7 +105,7 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
 fi
 
 if [ -f "/etc/debian_version" ]; then
-  sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf python libsocket6-perl libtest-differences-perl
+  sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
   if [ $? -ne 0 ]; then
     echo "MOLOCH: apt-get failed"
     exit 1
@@ -158,9 +158,12 @@ else
       wget "https://ftp.gnome.org/pub/gnome/sources/glib/$GLIBDIR/glib-$GLIB.tar.xz"
     fi
 
-    if [ ! -f "glib-$GLIB/gio/.libs/libgio-2.0.a" ] || [ ! -f "glib-$GLIB/glib/.libs/libglib-2.0.a" ]; then
+    if [ ! -f "glib-$GLIB/_build/gio/libgio-2.0.a" ] || [ ! -f "glib-$GLIB/_build/glib/libglib-2.0.a" ]; then
+      pip3 install meson
+      git clone git://github.com/ninja-build/ninja.git
+      (echo $PATH; cd ninja; git checkout release; python3 configure.py --bootstrap)
       xzcat glib-$GLIB.tar.xz | tar xf -
-      (cd glib-$GLIB ; ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux --disable-libmount --with-pcre=internal; $MAKE)
+      (export PATH=$TPWD/ninja:$PATH; cd glib-$GLIB ; meson _build -Ddefault_library=static -Dselinux=disabled -Dxattr=false -Dlibmount=disabled -Dinternal_pcre=true; ninja -C _build)
       if [ $? -ne 0 ]; then
         echo "MOLOCH: $MAKE failed"
         exit 1
