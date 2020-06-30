@@ -1,4 +1,4 @@
-FROM centos:7.6.1810
+FROM centos:7.7.1908
 MAINTAINER Andy Wick <andy.wick@oath.com>
 
 RUN \
@@ -10,8 +10,9 @@ yum -y install git sudo perl-Test-Base perl-Test-Differences perl-Test-Simple bz
 yum -y update; \
 yum -y install devtoolset-9-gcc-c++ pfring rh-python36; \
 git clone https://github.com/aol/moloch; \
-(cd moloch ; scl enable devtoolset-9 rh-python36 './easybutton-build.sh --daq --pfring'); \
+(cd moloch; git checkout start240; scl enable devtoolset-9 rh-python36 './easybutton-build.sh --daq --pfring'); \
 mv moloch/thirdparty /; \
+rm -rf /thirdparty/glib*/*/tests /thirdparty/glib*/*/*/tests && \
 rm -rf moloch; \
 gem install --no-ri --no-rdoc fpm; \
 scl enable devtoolset-9 rh-python36 'pip3 install awscli'; \

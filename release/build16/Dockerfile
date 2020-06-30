@@ -15,6 +15,10 @@ useradd -u 2000 elasticsearch; \
  tar xf elasticsearch-7.5.1-linux-x86_64.tar.gz; \
  chown -R elasticsearch elasticsearch-7.5.1; \
  rm -f elasticsearch-7.5.1-linux-x86_64.tar.gz \
-); \
-git clone https://github.com/aol/moloch; (cd moloch ; ./easybutton-build.sh --daq --pfring); mv moloch/thirdparty /; rm -rf moloch; \
+) && \
+git clone https://github.com/aol/moloch && \
+(cd moloch; git checkout start240; ./easybutton-build.sh --daq --pfring) && \
+mv moloch/thirdparty / && \
+rm -rf /thirdparty/glib*/*/tests /thirdparty/glib*/*/*/tests && \
+rm -rf moloch && \
 rm -rf /var/lib/apt/lists/*

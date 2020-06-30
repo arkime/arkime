@@ -43,7 +43,7 @@ jobs:
 
     centos-7:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-7:2.2.0-1
+        image: andywick/moloch-build-7:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -66,7 +66,7 @@ jobs:
 
     centos-8:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-8:2.2.0-1
+        image: andywick/moloch-build-8:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -112,7 +112,7 @@ jobs:
 
     ubuntu-16:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-16:2.2.0-1
+        image: andywick/moloch-build-16:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -141,7 +141,7 @@ jobs:
 
     ubuntu-18:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-18:2.2.0-1
+        image: andywick/moloch-build-18:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
@@ -177,7 +177,7 @@ jobs:
 
     ubuntu-20:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-20:2.2.0-1
+        image: andywick/moloch-build-20:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
@@ -213,7 +213,7 @@ jobs:
 
     centos-7-sanitize:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-7:2.2.0-1
+        image: andywick/moloch-build-7:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -244,7 +244,7 @@ jobs:
 
     ubuntu-16-sanitize:
         requires: [~pr, ~commit]
-        image: andywick/moloch-build-16:2.2.0-1
+        image: andywick/moloch-build-16:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -291,7 +291,7 @@ jobs:
             - SLACK
 
     release-build:
-        image: andywick/moloch-build-6:2.2.0-1
+        image: andywick/moloch-build-6:2.4.0-1
         requires: []
         annotations:
             beta.screwdriver.cd/cpu: LOW
@@ -322,7 +322,7 @@ jobs:
 
     release-centos-7:
         requires: [release-build]
-        image: andywick/moloch-build-7:2.2.0-1
+        image: andywick/moloch-build-7:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -343,7 +343,7 @@ jobs:
 
     release-centos-8:
         requires: [release-build]
-        image: andywick/moloch-build-8:2.2.0-1
+        image: andywick/moloch-build-8:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -386,7 +386,7 @@ jobs:
 
     release-ubuntu-16:
         requires: [release-build]
-        image: andywick/moloch-build-16:2.2.0-1
+        image: andywick/moloch-build-16:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -407,7 +407,7 @@ jobs:
 
     release-ubuntu-18:
         requires: [release-build]
-        image: andywick/moloch-build-18:2.2.0-1
+        image: andywick/moloch-build-18:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -428,7 +428,7 @@ jobs:
 
     release-ubuntu-20:
         requires: [release-build]
-        image: andywick/moloch-build-20:2.2.0-1
+        image: andywick/moloch-build-20:2.4.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .

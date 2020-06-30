@@ -12,6 +12,6 @@ exit 0
 
 docker push andywick/moloch-build-8:$VER
 docker push andywick/moloch-build-7:$VER
-docker push andywick/moloch-build-6:$VER
 docker push andywick/moloch-build-16:$VER
 docker push andywick/moloch-build-18:$VER
+docker push andywick/moloch-build-20:$VER
