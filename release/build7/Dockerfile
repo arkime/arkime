@@ -5,16 +5,16 @@ RUN \
 yum -y update; \
 yum -y install centos-release-scl scl-utils centos-release-scl-rh wget; \
 yum -y update; \
-yum -y install git sudo perl-Test-Base perl-Test-Differences perl-Test-Simple bzip2 wget ruby-devel rubygems rpm-build python-devel pango which; \
+yum -y install git sudo perl-Test-Base perl-Test-Differences perl-Test-Simple bzip2 wget rh-ruby23-ruby-devel rh-ruby23-ruby rpm-build pango which; \
 (cd /etc/yum.repos.d/; wget https://packages.ntop.org/centos-stable/ntop.repo); \
 yum -y update; \
 yum -y install devtoolset-9-gcc-c++ pfring rh-python36; \
 git clone https://github.com/aol/moloch; \
-(cd moloch; git checkout start240; scl enable devtoolset-9 rh-python36 './easybutton-build.sh --daq --pfring'); \
+(cd moloch; git checkout master; scl enable devtoolset-9 rh-python36 './easybutton-build.sh --daq --pfring'); \
 mv moloch/thirdparty /; \
 rm -rf /thirdparty/glib*/*/tests /thirdparty/glib*/*/*/tests && \
 rm -rf moloch; \
-gem install --no-ri --no-rdoc fpm; \
+scl enable rh-ruby23 'gem install --no-ri --no-rdoc fpm'; \
 scl enable devtoolset-9 rh-python36 'pip3 install awscli'; \
 useradd -u 2000 elasticsearch; \
 (cd / ; \

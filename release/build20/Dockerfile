@@ -10,7 +10,7 @@ apt-get install -y pfring && \
 gem install --no-document fpm && \
 pip3 install awscli && \
 git clone https://github.com/aol/moloch && \
-(cd moloch; git checkout start240; ./easybutton-build.sh --daq --pfring) && \
+(cd moloch; git checkout master; ./easybutton-build.sh --daq --pfring) && \
 mv moloch/thirdparty / && \
 rm -rf /thirdparty/glib*/*/tests /thirdparty/glib*/*/*/tests && \
 rm -rf moloch && \
