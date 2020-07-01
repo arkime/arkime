@@ -556,7 +556,7 @@ exports.loadFields = function (data) {
 // Globals
 /// ///////////////////////////////////////////////////////////////////////////////
 internals.s2sSignedAuth = exports.getFull('default', 's2sSignedAuth', true);
-internals.aes256Encryption = exports.getFull('default', 'aes256Encryption', false);
+internals.aes256Encryption = exports.getFull('default', 'aes256Encryption', true);
 
 // If passwordSecret isn't set, viewer will treat accounts as anonymous
 internals.passwordSecret = exports.getFull('default', 'passwordSecret', 'password');

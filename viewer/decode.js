@@ -23,7 +23,7 @@ var Stream = require('stream');
 var Readable = Stream.Readable;
 var Transform = Stream.Transform;
 var Writable = Stream.Writable;
-var HTTPParser = process.binding('http_parser').HTTPParser;
+var HTTPParser = process.binding('http_parser_llhttp').HTTPParser;
 var zlib = require('zlib');
 var through = require('through2');
 var peek = require('peek-stream');
@@ -553,8 +553,12 @@ ItemHTTPStream.prototype._process = function (item, callback) {
   if (this.parsers === undefined) {
     if (item.data.slice(0, 4).toString() === 'HTTP') {
       this.parsers = [new HTTPParser(HTTPParser.RESPONSE), new HTTPParser(HTTPParser.REQUEST)];
+      this.parsers[0].initialize(HTTPParser.RESPONSE, {});
+      this.parsers[1].initialize(HTTPParser.REQUEST, {});
     } else {
       this.parsers = [new HTTPParser(HTTPParser.REQUEST), new HTTPParser(HTTPParser.RESPONSE)];
+      this.parsers[0].initialize(HTTPParser.REQUEST, {});
+      this.parsers[1].initialize(HTTPParser.RESPONSE, {});
     }
     this.parsers[0].httpstream = this.parsers[1].httpstream = this;
     this.parsers[0][HTTPParser.kOnBody] = this.parsers[1][HTTPParser.kOnBody] = ItemHTTPStream.onBody;
