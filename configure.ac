@@ -496,8 +496,8 @@ AC_ARG_WITH(nghttp2,
         withval=`pwd`;
         cd $owd;
       fi
-      MAGIC_CFLAGS="-I$withval/lib/includes"
-      MAGIC_LIBS="$withval/lib/.libs/libnghttp2.a"
+      NGHTTP2_CFLAGS="-I$withval/lib/includes"
+      NGHTTP2_LIBS="$withval/lib/.libs/libnghttp2.a"
     else
       AC_ERROR(nghttp2.h or libnghttp2.a not found in $withval)
     fi
@@ -505,7 +505,7 @@ AC_ARG_WITH(nghttp2,
 esac ], [
   AC_CHECK_LIB(nghttp2, main,NGHTTP2_LIBS=-lnghttp2,AC_MSG_ERROR(please install nghttp2 library))
 AC_MSG_RESULT(yes) ])
-AC_SUBST(MAGIC_CFLAGS)
-AC_SUBST(MAGIC_LIBS)
+AC_SUBST(NGHTTP2_CFLAGS)
+AC_SUBST(NGHTTP2_LIBS)
 
 AC_OUTPUT
