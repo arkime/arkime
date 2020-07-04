@@ -472,7 +472,38 @@ AC_ARG_WITH(magic,
     fi
     ;;
 esac ], [
-  AC_CHECK_LIB(magic, main,MAGIC_LIBS=-lmagic,AC_MSG_ERROR(please install magic library))
+  AC_CHECK_LIB(magic,main,MAGIC_LIBS=-lmagic,AC_MSG_ERROR(please install magic library))
+AC_MSG_RESULT(yes) ])
+AC_SUBST(MAGIC_CFLAGS)
+AC_SUBST(MAGIC_LIBS)
+
+dnl Checks for nghttp2
+AC_MSG_CHECKING(for nghttp2)
+AC_ARG_WITH(nghttp2,
+[  --with-nghttp2=DIR use nghttp2 build directory],
+[ case "$withval" in
+  yes)
+    AC_CHECK_LIB(nghttp2,main,NGHTTP2_LIBS=-lnghttp2,AC_MSG_ERROR(please install nghttp2 library))
+     ;;
+  no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+  AC_MSG_RESULT($withval)
+    if test -f $withval/lib/includes/nghttp2/nghttp2.h -a -f $withval/lib/.libs/libnghttp2.; then
+      owd=`pwd`
+      if cd $withval; then
+        withval=`pwd`;
+        cd $owd;
+      fi
+      MAGIC_CFLAGS="-I$withval/lib/includes"
+      MAGIC_LIBS="$withval/lib/.libs/libnghttp2.a"
+    else
+      AC_ERROR(nghttp2.h or libnghttp2.a not found in $withval)
+    fi
+    ;;
+esac ], [
+  AC_CHECK_LIB(nghttp2, main,NGHTTP2_LIBS=-lnghttp2,AC_MSG_ERROR(please install nghttp2 library))
 AC_MSG_RESULT(yes) ])
 AC_SUBST(MAGIC_CFLAGS)
 AC_SUBST(MAGIC_LIBS)
