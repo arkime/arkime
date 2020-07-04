@@ -490,7 +490,7 @@ AC_ARG_WITH(nghttp2,
      ;;
   *)
   AC_MSG_RESULT($withval)
-    if test -f $withval/lib/includes/nghttp2/nghttp2.h -a -f $withval/lib/.libs/libnghttp2.; then
+    if test -f $withval/lib/includes/nghttp2/nghttp2.h -a -f $withval/lib/.libs/libnghttp2.a; then
       owd=`pwd`
       if cd $withval; then
         withval=`pwd`;
