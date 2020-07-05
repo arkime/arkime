@@ -311,6 +311,12 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
                 }
             }
 
+            if (etype == 0x10) { // etype 0x10 is alpn
+                if (elen == 5 && BSB_REMAINING(ebsb) >= 5 && memcmp(BSB_WORK_PTR(ebsb), "\x00\x03\x02\x68\x32", 5) == 0) {
+                    moloch_session_add_protocol(session, "http2");
+                }
+            }
+
             BSB_IMPORT_skip (ebsb, elen);
         }
         BSB_EXPORT_rewind(eja3bsb, 1); // Remove last -

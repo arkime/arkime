@@ -26,30 +26,30 @@
 #define MAX_STREAMS 16
 
 typedef struct {
+    uint32_t                 id;
+    nghttp2_hd_inflater     *hd_inflater[2];
+    uint8_t                  ended;
+    const char              *magicString[2];
+} HTTP2Stream_t;
+
+typedef enum {
+    HTTP2_STATE_NORMAL,
+    HTTP2_STATE_IN_DATA
+} HTTP2InfoState_t;
+
+typedef struct {
     unsigned char            data[2][MAX_HTTP2_SIZE];
-    uint16_t                 used[2];
-    int                      state[2];
+    int                      used[2];
+    int                      dataNeeded[2];
     int                      which;
 
     int                      numStreams;
-    uint32_t                 streamIds[MAX_STREAMS];
-    nghttp2_hd_inflater     *hd_inflater[MAX_STREAMS][2];
+    HTTP2Stream_t            streams[MAX_STREAMS];
 } HTTP2Info_t;
 
-typedef enum {
-    HTTP2_DATA,
-    HTTP2_HEADERS,
-    HTTP2_PRIORITY,
-    HTTP2_RST_STREAM,
-    HTTP2_SETTINGS,
-    HTTP2_PUSH_PROMISE,
-    HTTP2_PING,
-    HTTP2_GOAWAY,
-    HTTP2_WINDOW_UPDATE,
-    HTTP2_CONTINUATION
-} HTTP2FrameType;
-
-LOCAL const char *http2_frameNames[] = {"data", "headers", "priority", "rstStream", "settings", "pushPromise", "ping", "goaway", "windowUpdate", "continuation"};
+#ifdef HTTPDEBUG
+LOCAL const char *http2_frameNames[] = {"DATA", "HEADERS", "PRIORITY", "RST_STREAM", "SETTINGS", "PUSH_PROMISE", "PING", "GOAWAY", "WINDOW_UPDATE", "CONTINUATION", "ALTSVC", "ORIGIN"};
+#endif
 
 
 extern MolochConfig_t        config;
@@ -57,42 +57,87 @@ extern MolochConfig_t        config;
 LOCAL  int statuscodeField;
 LOCAL  int methodField;
 LOCAL  int hostField;
-LOCAL  int pathField;
+LOCAL  int magicField;
+
+
+void http_common_parse_cookie(MolochSession_t *session, char *cookie, int len);
+void http_common_add_header(MolochSession_t *session, int pos, int isReq, const char *name, int namelen, const char *value, int valuelen);
+void http_common_parse_url(MolochSession_t *session, char *url, int len);
+
 /******************************************************************************/
-LOCAL int http2_stream_id_to_pos(HTTP2Info_t *http2, uint32_t streamId, int create)
+LOCAL int http2_spos_get(HTTP2Info_t *http2, uint32_t streamId, int create)
 {
     streamId &= 0x7fffffff;
+    streamId++;
 
     for (int i = 0; i < http2->numStreams; i++) {
-        if (streamId == http2->streamIds[i])
+        if (streamId == http2->streams[i].id)
             return i;
     }
+
+    // Not found, if we aren't creating then return error
     if (!create)
         return -1;
+
+    // See if any slots are free and use that
+    for (int i = 0; i < http2->numStreams; i++) {
+        if (http2->streams[i].id == 0) {
+            http2->streams[http2->numStreams].id = streamId;
+            return i;
+        }
+    }
+
+    // See if we can add to the end
     if (http2->numStreams == MAX_STREAMS)
         return -1;
-    http2->streamIds[http2->numStreams] = streamId;
+    http2->streams[http2->numStreams].id = streamId;
     http2->numStreams++;
     return http2->numStreams-1;
 }
 /******************************************************************************/
+LOCAL void http2_spos_free(HTTP2Info_t *http2, uint32_t streamId)
+{
+    streamId &= 0x7fffffff;
+    streamId++;
+
+    for (int i = 0; i < http2->numStreams; i++) {
+        if (streamId == http2->streams[i].id) {
+            http2->streams[i].id = 0;
+            http2->streams[i].ended = 0;
+            if (http2->streams[i].hd_inflater[0]) {
+                nghttp2_hd_inflate_del(http2->streams[i].hd_inflater[0]);
+                http2->streams[i].hd_inflater[0] = NULL;
+            }
+            if (http2->streams[i].hd_inflater[1]) {
+                nghttp2_hd_inflate_del(http2->streams[i].hd_inflater[1]);
+                http2->streams[i].hd_inflater[1] = NULL;
+            }
+            return;
+        }
+    }
+}
+/******************************************************************************/
 LOCAL void http2_parse_frame_headers(MolochSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, unsigned char *in, uint32_t inlen)
 {
-    int spos = http2_stream_id_to_pos(http2, streamId, 1);
+    int spos = http2_spos_get(http2, streamId, TRUE);
     if (spos == -1)
         return;
 
-    if (!http2->hd_inflater[spos][which])
-        nghttp2_hd_inflate_new(&http2->hd_inflater[spos][which]);
+    if (!http2->streams[spos].hd_inflater[which])
+        nghttp2_hd_inflate_new(&http2->streams[spos].hd_inflater[which]);
 
     int final = flags & NGHTTP2_FLAG_END_HEADERS;
+
+#ifdef HTTPDEBUG
+    LOG("%d,%d: %d final:%d %.*s", streamId, spos, inlen, final, inlen, in);
+#endif
 
     // https://nghttp2.org/documentation/nghttp2_hd_inflate_hd2.html
     for(;;) {
         nghttp2_nv nv;
         int inflate_flags = 0;
 
-        ssize_t rv = nghttp2_hd_inflate_hd2(http2->hd_inflater[spos][which], &nv, &inflate_flags,
+        ssize_t rv = nghttp2_hd_inflate_hd2(http2->streams[spos].hd_inflater[which], &nv, &inflate_flags,
                                     in, inlen, final);
 
         if(rv < 0) {
@@ -115,18 +160,26 @@ LOCAL void http2_parse_frame_headers(MolochSession_t *session, HTTP2Info_t *http
                         moloch_field_string_add(hostField, session, (char *)nv.value, nv.valuelen, TRUE);
                     }
                 } else if (memcmp(nv.name, ":path", 5) == 0) {
-                    moloch_field_string_add(pathField, session, (char *)nv.value, nv.valuelen, TRUE);
+                    http_common_parse_url(session, (char *)nv.value, nv.valuelen);
                 } else if (memcmp(nv.name, ":status", 7) == 0) {
                     moloch_field_int_add(statuscodeField, session, atoi((const char *)nv.value));
                 }
+            } else {
+                http_common_add_header(session, 0, which == http2->which, (const char *)nv.name, nv.namelen, (const char *)nv.value, nv.valuelen);
+
+                if (memcmp(nv.name, "cookie", 6) == 0) {
+                    http_common_parse_cookie(session, (char *)nv.value, nv.valuelen);
+                }
             }
+#ifdef HTTPDEBUG
             fwrite(nv.name, nv.namelen, 1, stderr);
             fprintf(stderr, ": ");
             fwrite(nv.value, nv.valuelen, 1, stderr);
             fprintf(stderr, "\n");
+#endif
         }
         if(inflate_flags & NGHTTP2_HD_INFLATE_FINAL) {
-            nghttp2_hd_inflate_end_headers(http2->hd_inflater[spos][which]);
+            nghttp2_hd_inflate_end_headers(http2->streams[spos].hd_inflater[which]);
             break;
         }
         if((inflate_flags & NGHTTP2_HD_INFLATE_EMIT) == 0 &&
@@ -142,19 +195,22 @@ LOCAL int http2_parse_frame(MolochSession_t *session, HTTP2Info_t *http2, int wh
     BSB bsb;
     BSB_INIT(bsb, http2->data[which], http2->used[which]);
 
-    uint32_t        len = 0;
-    HTTP2FrameType  type = 0;
-    uint8_t         flags = 0;
-    uint32_t         streamId = 0;
+    uint32_t            len = 0;
+    nghttp2_frame_type  type = 0;
+    uint8_t             flags = 0;
+    uint32_t            streamId = 0;
 
     BSB_IMPORT_u24(bsb, len);
-    if (len > BSB_REMAINING(bsb)) {
-        return 1;
-    }
-
+    uint32_t olen = len;
     BSB_IMPORT_u08(bsb, type);
     BSB_IMPORT_u08(bsb, flags);
     BSB_IMPORT_u32(bsb, streamId);
+
+    if (flags & NGHTTP2_FLAG_PADDED) {
+        uint8_t padding = 0;
+        BSB_IMPORT_u08(bsb, padding);
+        BSB_IMPORT_skip(bsb, padding);
+    }
 
     if (flags & NGHTTP2_FLAG_PRIORITY) {
         BSB_IMPORT_skip(bsb, 5); // weight
@@ -164,18 +220,50 @@ LOCAL int http2_parse_frame(MolochSession_t *session, HTTP2Info_t *http2, int wh
     if (BSB_IS_ERROR(bsb))
         goto cleanup;
 
+    // type will only be DATA if this is the first part of a data frame, anything else will be shortcutted in http_parse
+    if (type == NGHTTP2_DATA) {
+        int spos = http2_spos_get(http2, streamId, FALSE);
+        http2->streams[spos].magicString[which] = moloch_parsers_magic(session, magicField, (char *)BSB_WORK_PTR(bsb), MIN(len, BSB_REMAINING(bsb)));
+    }
+
+    if (len > BSB_REMAINING(bsb)) {
+        if (type != NGHTTP2_DATA) {
+            return 1;
+        } else {
+            //TODO: Call data callback with (data, BSB_REMAINING(bsb));
+            http2->dataNeeded[which] = len - BSB_REMAINING(bsb);
+            http2->used[which] = 0;
+            return 0;
+        }
+    }
+
+#ifdef HTTPDEBUG
     LOG("which: %d len: %u, type: %u (%s), flags: 0x%x, streamId: %u", which, len, type, http2_frameNames[type], flags, streamId);
+#endif
     switch(type) {
-    case HTTP2_HEADERS:
+    case NGHTTP2_HEADERS:
         http2_parse_frame_headers(session, http2, which, flags, streamId, BSB_WORK_PTR(bsb), len);
+        break;
+    case NGHTTP2_RST_STREAM:
+        http2_spos_free(http2, streamId);
         break;
     default:
         break;
     }
 
+    if (flags & NGHTTP2_FLAG_END_STREAM) {
+        int spos = http2_spos_get(http2, streamId, FALSE);
+        if (spos != -1) {
+            http2->streams[spos].ended |= (1 << which);
+            if (http2->streams[spos].ended == 0x3) {
+                http2_spos_free(http2, streamId);
+            }
+        }
+    }
+
 cleanup:
-    http2->used[which] -= 9 + len;
-    memmove(http2->data[which], http2->data[which] + 9 + len, http2->used[which]);
+    http2->used[which] -= 9 + olen;
+    memmove(http2->data[which], http2->data[which] + 9 + olen, http2->used[which]);
 
     return 0;
 }
@@ -185,11 +273,27 @@ LOCAL int http2_parse(MolochSession_t *session, void *uw, const unsigned char *d
     HTTP2Info_t            *http2          = uw;
 
 #ifdef HTTPDEBUG
-    LOG("HTTPDEBUG: enter %d - %d %.*s", which, len, len, data);
+    LOG("HTTPDEBUG which: %d used: %d len: %d", which, http2->used[which], len);
 #endif
 
+
+    if (http2->dataNeeded[which] > 0) {
+        int used = MIN(http2->dataNeeded[which], len);
+        //TODO: Call data callback with (data, used);
+
+        http2->dataNeeded[which] -= used;
+        if (used == len)
+            return 0;
+
+        data += used;
+        len -= used;
+    }
+
     if (len > MAX_HTTP2_SIZE - http2->used[which]) {
+#ifdef HTTPDEBUG
+        moloch_print_hex_string(http2->data[which], http2->used[which]);
         LOG("TOO MUCH DATA");
+#endif
         return MOLOCH_PARSER_UNREGISTER;
     }
     memcpy(http2->data[which] + http2->used[which], data, len);
@@ -200,7 +304,7 @@ LOCAL int http2_parse(MolochSession_t *session, void *uw, const unsigned char *d
         memmove(http2->data[which], http2->data[which] + 24, http2->used[which]);
     }
 
-    while (http2->used[which] > 9) {
+    while (http2->used[which] >= 9) {
         if (http2_parse_frame(session, http2, which))
             break;
     }
@@ -208,7 +312,7 @@ LOCAL int http2_parse(MolochSession_t *session, void *uw, const unsigned char *d
     return 0;
 }
 /******************************************************************************/
-void http2_save(MolochSession_t UNUSED(*session), void *uw, int final)
+void http2_save(MolochSession_t UNUSED(*session), void *UNUSED(uw), int final)
 {
     if (!final)
         return;
@@ -225,10 +329,10 @@ LOCAL void http2_free(MolochSession_t UNUSED(*session), void *uw)
     HTTP2Info_t            *http2          = uw;
 
     for (int i = 0; i < http2->numStreams; i++) {
-        if (http2->hd_inflater[i][0])
-            nghttp2_hd_inflate_del(http2->hd_inflater[i][0]);
-        if (http2->hd_inflater[i][1])
-            nghttp2_hd_inflate_del(http2->hd_inflater[i][1]);
+        if (http2->streams[i].hd_inflater[0])
+            nghttp2_hd_inflate_del(http2->streams[i].hd_inflater[0]);
+        if (http2->streams[i].hd_inflater[1])
+            nghttp2_hd_inflate_del(http2->streams[i].hd_inflater[1]);
     }
     MOLOCH_TYPE_FREE(HTTP2Info_t, http2);
 }
@@ -266,9 +370,9 @@ void moloch_parser_init()
         "aliases", "[\"http.host\"]",
         "category", "host",
         (char *)NULL);
-    pathField = moloch_field_define("http", "termfield",
-        "http.uri.path", "URI Path", "http.path",
-        "Path portion of URI",
+    magicField = moloch_field_define("http", "termfield",
+        "http.bodymagic", "Body Magic", "http.bodyMagic",
+        "The content type of body determined by libfile/magic",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 }

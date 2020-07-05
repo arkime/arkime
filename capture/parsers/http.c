@@ -28,7 +28,6 @@ typedef struct {
     GString         *authString;
 
     GString         *valueString[2];
-    gboolean        isValueStringLowerCase[2];
 
     char             header[2][40];
     short            pos[2];
@@ -79,6 +78,167 @@ LOCAL  int headerReqValue;
 LOCAL  int headerResField;
 LOCAL  int headerResValue;
 
+/******************************************************************************/
+void http_common_parse_cookie(MolochSession_t *session, char *cookie, int len)
+{
+    char *start = cookie;
+    char *end = cookie + len;
+    while (1) {
+        while (isspace(*start) && start < end) start++;
+        char *equal = memchr(start, '=', end - start);
+        if (!equal)
+            break;
+        moloch_field_string_add(cookieKeyField, session, start, equal-start, TRUE);
+        start = memchr(equal+1, ';', end - (equal+1));
+        if (config.parseCookieValue) {
+            equal++;
+            while (isspace(*equal) && equal < end) equal++;
+            if (equal < end && equal != start)
+                moloch_field_string_add(cookieValueField, session, equal, start?start-equal:end-equal, TRUE);
+        }
+
+        if(!start)
+            break;
+        start++;
+    }
+}
+/******************************************************************************/
+void http_common_add_header_value(MolochSession_t *session, int pos, const char *s, int l)
+{
+    while (isspace(*s)) {
+        s++;
+        l--;
+    }
+
+    switch (config.fields[pos]->type) {
+    case MOLOCH_FIELD_TYPE_INT:
+    case MOLOCH_FIELD_TYPE_INT_ARRAY:
+    case MOLOCH_FIELD_TYPE_INT_HASH:
+    case MOLOCH_FIELD_TYPE_INT_GHASH:
+        moloch_field_int_add(pos, session, atoi(s));
+        break;
+    case MOLOCH_FIELD_TYPE_STR:
+    case MOLOCH_FIELD_TYPE_STR_ARRAY:
+    case MOLOCH_FIELD_TYPE_STR_HASH:
+    case MOLOCH_FIELD_TYPE_STR_GHASH:
+        if (pos == headerReqValue || pos == headerResValue)
+            moloch_field_string_add_lower(pos, session, s, l);
+        else
+            moloch_field_string_add(pos, session, s, l, TRUE);
+        break;
+    case MOLOCH_FIELD_TYPE_IP:
+    case MOLOCH_FIELD_TYPE_IP_GHASH:
+    {
+        int i;
+        gchar **parts = g_strsplit(s, ",", 0);
+
+        for (i = 0; parts[i]; i++) {
+            moloch_field_ip_add_str(pos, session, parts[i]);
+
+            /* Add back maybe
+            if (ia == 0 || ia == 0xffffffff) {
+                moloch_session_add_tag(session, "http:bad-xff");
+                if (config.debug)
+                    LOG("INFO - Didn't understand ip: %s %s %d", s, ip, ia);
+                continue;
+            }
+            */
+        }
+
+        g_strfreev(parts);
+        break;
+    }
+    case MOLOCH_FIELD_TYPE_CERTSINFO:
+        // Unsupported
+        break;
+    } /* SWITCH */
+}
+/******************************************************************************/
+void http_common_add_header(MolochSession_t *session, int pos, int isReq, const char *name, int namelen, const char *value, int valuelen)
+{
+    MolochString_t        *hstring;
+
+    char *lower = g_ascii_strdown(name, namelen);
+
+    if (isReq)
+        moloch_field_string_add(tagsReqField, session, (const char *)lower, namelen, TRUE);
+    else
+        moloch_field_string_add(tagsResField, session, (const char *)lower, namelen, TRUE);
+
+    if (pos == 0) {
+        if (isReq)
+            HASH_FIND(s_, httpReqHeaders, lower, hstring);
+        else
+            HASH_FIND(s_, httpResHeaders, lower, hstring);
+    }
+
+    if (pos == 0) {
+        if (isReq && config.parseHTTPHeaderRequestAll) { // Header in request
+            moloch_field_string_add(headerReqField, session, lower, -1, TRUE);
+            pos = headerReqValue;
+        }
+        else if (!isReq && config.parseHTTPHeaderResponseAll) { // Header in response
+            moloch_field_string_add(headerResField, session, lower, -1, TRUE);
+            pos = headerResValue;
+        }
+    }
+
+    g_free(lower);
+
+    if (pos == 0)
+        return;
+
+    http_common_add_header_value(session, pos, (char *)value, valuelen);
+}
+/******************************************************************************/
+void http_common_parse_url(MolochSession_t *session, char *url, int len)
+{
+    char *end = url + len;
+    char *question = memchr(url, '?', len);
+
+    if (question) {
+        moloch_field_string_add(pathField, session, url, question - url, TRUE);
+        char *start = question+1;
+        char *ch;
+        int   field = keyField;
+        for (ch = start; ch < end; ch++) {
+            if (*ch == '&') {
+                if (ch != start && (config.parseQSValue || field == keyField)) {
+                    char *str = g_uri_unescape_segment(start, ch, NULL);
+                    if (!str) {
+                        moloch_field_string_add(field, session, start, ch-start, TRUE);
+                    } else if (!moloch_field_string_add(field, session, str, -1, FALSE)) {
+                        g_free(str);
+                    }
+                }
+                start = ch+1;
+                field = keyField;
+                continue;
+            } else if (*ch == '=') {
+                if (ch != start && (config.parseQSValue || field == keyField)) {
+                    char *str = g_uri_unescape_segment(start, ch, NULL);
+                    if (!str) {
+                        moloch_field_string_add(field, session, start, ch-start, TRUE);
+                    } else if (!moloch_field_string_add(field, session, str, -1, FALSE)) {
+                        g_free(str);
+                    }
+                }
+                start = ch+1;
+                field = valueField;
+            }
+        }
+        if (config.parseQSValue && field == valueField && ch > start) {
+            char *str = g_uri_unescape_segment(start, ch, NULL);
+            if (!str) {
+                moloch_field_string_add(field, session, start, ch-start, TRUE);
+            } else if (!moloch_field_string_add(field, session, str, -1, FALSE)) {
+                g_free(str);
+            }
+        }
+    } else {
+        moloch_field_string_add(pathField, session, url, len, TRUE);
+    }
+}
 /******************************************************************************/
 LOCAL int moloch_hp_cb_on_message_begin (http_parser *parser)
 {
@@ -238,65 +398,16 @@ LOCAL int moloch_hp_cb_on_message_complete (http_parser *parser)
 }
 
 /******************************************************************************/
-/******************************************************************************/
 LOCAL void http_add_value(MolochSession_t *session, HTTPInfo_t *http)
 {
     int                     pos  = http->pos[http->which];
     char                    *s   = http->valueString[http->which]->str;
     int                     l    = http->valueString[http->which]->len;
-    gboolean                c    = http->isValueStringLowerCase[http->which];
 
-    while (isspace(*s)) {
-        s++;
-        l--;
-    }
-
-    switch (config.fields[pos]->type) {
-    case MOLOCH_FIELD_TYPE_INT:
-    case MOLOCH_FIELD_TYPE_INT_ARRAY:
-    case MOLOCH_FIELD_TYPE_INT_HASH:
-    case MOLOCH_FIELD_TYPE_INT_GHASH:
-        moloch_field_int_add(pos, session, atoi(s));
-        break;
-    case MOLOCH_FIELD_TYPE_STR:
-    case MOLOCH_FIELD_TYPE_STR_ARRAY:
-    case MOLOCH_FIELD_TYPE_STR_HASH:
-    case MOLOCH_FIELD_TYPE_STR_GHASH:
-        if (c == TRUE)
-            moloch_field_string_add_lower(pos, session, s, l);
-        else
-            moloch_field_string_add(pos, session, s, l, TRUE);
-        break;
-    case MOLOCH_FIELD_TYPE_IP:
-    case MOLOCH_FIELD_TYPE_IP_GHASH:
-    {
-        int i;
-        gchar **parts = g_strsplit(http->valueString[http->which]->str, ",", 0);
-
-        for (i = 0; parts[i]; i++) {
-            moloch_field_ip_add_str(pos, session, parts[i]);
-
-            /* Add back maybe
-            if (ia == 0 || ia == 0xffffffff) {
-                moloch_session_add_tag(session, "http:bad-xff");
-                if (config.debug)
-                    LOG("INFO - Didn't understand ip: %s %s %d", http->valueString[http->which]->str, ip, ia);
-                continue;
-            }
-            */
-        }
-
-        g_strfreev(parts);
-        break;
-    }
-    case MOLOCH_FIELD_TYPE_CERTSINFO:
-        // Unsupported
-        break;
-    } /* SWITCH */
+    http_common_add_header_value(session, pos, s, l);
 
     g_string_truncate(http->valueString[http->which], 0);
     http->pos[http->which] = 0;
-    http->isValueStringLowerCase[http->which] = FALSE;
 }
 /******************************************************************************/
 LOCAL int moloch_hp_cb_on_header_field (http_parser *parser, const char *at, size_t length)
@@ -366,12 +477,10 @@ LOCAL int moloch_hp_cb_on_header_value (http_parser *parser, const char *at, siz
             if ((http->which == 0) && config.parseHTTPHeaderRequestAll) { // Header in request
                 moloch_field_string_add(headerReqField, session, lower, -1, TRUE);
                 http->pos[http->which] = (long) headerReqValue;
-                http->isValueStringLowerCase[http->which] = TRUE;
             }
             else if ((http->which == 1) && config.parseHTTPHeaderResponseAll) { // Header in response
                 moloch_field_string_add(headerResField, session, lower, -1, TRUE);
                 http->pos[http->which] = (long) headerResValue;
-                http->isValueStringLowerCase[http->which] = TRUE;
             }
         }
 
@@ -421,7 +530,7 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
     char                   version[20];
 
 #ifdef HTTPDEBUG
-    LOG("HTTPDEBUG: which: %d code: %d method: %d", http->which, parser->status_code, parser->method);
+    LOG("HTTPDEBUG: which: %d code: %d method: %d upgrade: %d", http->which, parser->status_code, parser->method, parser->upgrade);
 #endif
 
     if (parser->method == HTTP_CONNECT) {
@@ -457,25 +566,7 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
     }
 
     if (http->cookieString && http->cookieString->str[0]) {
-        char *start = http->cookieString->str;
-        while (1) {
-            while (isspace(*start)) start++;
-            char *equal = strchr(start, '=');
-            if (!equal)
-                break;
-            moloch_field_string_add(cookieKeyField, session, start, equal-start, TRUE);
-            start = strchr(equal+1, ';');
-            if (config.parseCookieValue) {
-                equal++;
-                while (isspace(*equal)) equal++;
-                if (*equal && equal != start)
-                    moloch_field_string_add(cookieValueField, session, equal, start?start-equal:-1, TRUE);
-            }
-
-            if(!start)
-                break;
-            start++;
-        }
+        http_common_parse_cookie(session, http->cookieString->str, http->cookieString->len);
         g_string_truncate(http->cookieString, 0);
     }
 
@@ -497,49 +588,7 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
             moloch_field_string_add(hostField, session, http->hostString->str, http->hostString->len, TRUE);
         }
 
-        char *question = strchr(http->urlString->str, '?');
-        if (question) {
-            moloch_field_string_add(pathField, session, http->urlString->str, question - http->urlString->str, TRUE);
-            char *start = question+1;
-            char *ch;
-            int   field = keyField;
-            for (ch = start; *ch; ch++) {
-                if (*ch == '&') {
-                    if (ch != start && (config.parseQSValue || field == keyField)) {
-                        char *str = g_uri_unescape_segment(start, ch, NULL);
-                        if (!str) {
-                            moloch_field_string_add(field, session, start, ch-start, TRUE);
-                        } else if (!moloch_field_string_add(field, session, str, -1, FALSE)) {
-                            g_free(str);
-                        }
-                    }
-                    start = ch+1;
-                    field = keyField;
-                    continue;
-                } else if (*ch == '=') {
-                    if (ch != start && (config.parseQSValue || field == keyField)) {
-                        char *str = g_uri_unescape_segment(start, ch, NULL);
-                        if (!str) {
-                            moloch_field_string_add(field, session, start, ch-start, TRUE);
-                        } else if (!moloch_field_string_add(field, session, str, -1, FALSE)) {
-                            g_free(str);
-                        }
-                    }
-                    start = ch+1;
-                    field = valueField;
-                }
-            }
-            if (config.parseQSValue && field == valueField && ch > start) {
-                char *str = g_uri_unescape_segment(start, ch, NULL);
-                if (!str) {
-                    moloch_field_string_add(field, session, start, ch-start, TRUE);
-                } else if (!moloch_field_string_add(field, session, str, -1, FALSE)) {
-                    g_free(str);
-                }
-            }
-        } else {
-            moloch_field_string_add(pathField, session, http->urlString->str, http->urlString->len, TRUE);
-        }
+        http_common_parse_url(session, http->urlString->str, http->urlString->len);
 
         if (http->urlString->str[0] != '/') {
             char *result = strstr(http->urlString->str, http->hostString->str);
