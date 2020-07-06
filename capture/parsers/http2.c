@@ -29,6 +29,7 @@ typedef struct {
     uint32_t                 id;
     uint8_t                  ended;
     const char              *magicString[2];
+    GChecksum               *checksum[4];
 } HTTP2Stream_t;
 
 typedef enum {
@@ -41,7 +42,10 @@ typedef struct {
     unsigned char            data[2][MAX_HTTP2_SIZE];
     int                      used[2];
     uint8_t                  lastType[2];
+    uint8_t                  dataPadding[2];
+    uint8_t                  isEnd[2];
     int                      dataNeeded[2];
+    uint32_t                 dataStreamId[2];
     int                      which;
 
     int                      numStreams;
@@ -59,6 +63,8 @@ LOCAL  int statuscodeField;
 LOCAL  int methodField;
 LOCAL  int hostField;
 LOCAL  int magicField;
+LOCAL  int md5Field;
+LOCAL  int sha256Field;
 
 
 void http_common_parse_cookie(MolochSession_t *session, char *cookie, int len);
@@ -103,14 +109,19 @@ LOCAL void http2_spos_free(HTTP2Info_t *http2, uint32_t streamId)
 
     for (int i = 0; i < http2->numStreams; i++) {
         if (streamId == http2->streams[i].id) {
-            http2->streams[i].id = 0;
-            http2->streams[i].ended = 0;
+            g_checksum_free(http2->streams[i].checksum[0]);
+            g_checksum_free(http2->streams[i].checksum[1]);
+            if (config.supportSha256) {
+                g_checksum_free(http2->streams[i].checksum[2]);
+                g_checksum_free(http2->streams[i].checksum[3]);
+            }
+            memset(&http2->streams[i], 0, sizeof(http2->streams[i]));
             return;
         }
     }
 }
 /******************************************************************************/
-LOCAL void http2_parse_frame_headers(MolochSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, unsigned char *in, uint32_t inlen)
+LOCAL void http2_parse_header_block(MolochSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, unsigned char *in, int inlen)
 {
     int spos = http2_spos_get(http2, streamId, TRUE);
     if (spos == -1)
@@ -132,7 +143,7 @@ LOCAL void http2_parse_frame_headers(MolochSession_t *session, HTTP2Info_t *http
         int inflate_flags = 0;
 
         ssize_t rv = nghttp2_hd_inflate_hd2(http2->hd_inflater[which], &nv, &inflate_flags,
-                                    in, inlen, final);
+                                            in, inlen, final);
 
         if(rv < 0) {
             LOG("inflate failed with error code %zd", rv);
@@ -183,6 +194,131 @@ LOCAL void http2_parse_frame_headers(MolochSession_t *session, HTTP2Info_t *http
     }
 }
 /******************************************************************************/
+/*
+ * https://http2.github.io/http2-spec/#HEADERS
+ * +---------------+
+ * |Pad Length? (8)|
+ * +-+-------------+-----------------------------------------------+
+ * |E|                 Stream Dependency? (31)                     |
+ * +-+-------------+-----------------------------------------------+
+ * |  Weight? (8)  |
+ * +-+-------------+-----------------------------------------------+
+ * |                   Header Block Fragment (*)                 ...
+ * +---------------------------------------------------------------+
+ * |                           Padding (*)                       ...
+ * +---------------------------------------------------------------+
+ */
+LOCAL void http2_parse_frame_headers(MolochSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, unsigned char *in, int inlen)
+{
+    if (flags & NGHTTP2_FLAG_PADDED) {
+        uint8_t padding = in[0];
+        in++;
+        inlen -= (1 + padding);
+    }
+
+    if (flags & NGHTTP2_FLAG_PRIORITY) {
+        in +=5;
+        inlen -= 5;
+    }
+
+    if (inlen < 0)
+        return;
+    http2_parse_header_block(session, http2, which, flags, streamId, in, inlen);
+}
+/******************************************************************************/
+/* https://http2.github.io/http2-spec/#PUSH_PROMISE
+ * +---------------+
+ * |Pad Length? (8)|
+ * +-+-------------+-----------------------------------------------+
+ * |R|                  Promised Stream ID (31)                    |
+ * +-+-----------------------------+-------------------------------+
+ * |                   Header Block Fragment (*)                 ...
+ * +---------------------------------------------------------------+
+ * |                           Padding (*)                       ...
+ * +---------------------------------------------------------------+
+ */
+LOCAL void http2_parse_frame_push_promise(MolochSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, unsigned char *in, int inlen)
+{
+    if (flags & NGHTTP2_FLAG_PADDED) {
+        uint8_t padding = in[0];
+        in++;
+        inlen -= (1 + padding);
+    }
+
+    // Promised Stream ID
+    in += 4;
+    inlen -= 4;
+
+    if (inlen < 0)
+        return;
+
+    http2_parse_header_block(session, http2, which, flags, streamId, in, inlen);
+}
+/******************************************************************************/
+/* https://http2.github.io/http2-spec/#DATA
+ * +---------------+
+ * |Pad Length? (8)|
+ * +---------------+-----------------------------------------------+
+ * |                            Data (*)                         ...
+ * +---------------------------------------------------------------+
+ * |                           Padding (*)                       ...
+ * +---------------------------------------------------------------+
+ */
+LOCAL void http2_parse_frame_data(MolochSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, const unsigned char *in, int inlen, int initial)
+{
+    // If first packet check for padding/end and save it for when dataneeded is 0
+    if (initial) {
+        if (flags & NGHTTP2_FLAG_PADDED) {
+            http2->dataPadding[which] = in[0];
+            in++;
+            inlen--;
+        } else {
+            http2->dataPadding[which] = 0;
+        }
+        http2->isEnd[which] = (flags & NGHTTP2_FLAG_END_STREAM) != 0;
+    }
+
+    // If last packet in frame subtract saved padding
+    if (http2->dataNeeded[which] == 0) {
+        inlen -= http2->dataPadding[which];
+    }
+
+    if (inlen < 0)
+        return;
+
+    int spos = http2_spos_get(http2, streamId, FALSE);
+
+    // Only get magic string on first frame
+    if (initial) {
+        http2->streams[spos].magicString[which] = moloch_parsers_magic(session, magicField, (char *)in, inlen);
+    }
+
+    // Check if checksums are allocated and update with new data
+    if (!http2->streams[spos].checksum[which]) {
+        http2->streams[spos].checksum[which] = g_checksum_new(G_CHECKSUM_MD5);
+        if (config.supportSha256) {
+            http2->streams[spos].checksum[which+2] = g_checksum_new(G_CHECKSUM_SHA256);
+        }
+    }
+
+    g_checksum_update(http2->streams[spos].checksum[which], (guchar *)in, inlen);
+    if (config.supportSha256) {
+        g_checksum_update(http2->streams[spos].checksum[which+2], (guchar *)in, inlen);
+    }
+
+    // If the first packet in the frame said this is end and we've read them all, set the md5/sha fields
+    if (http2->isEnd[which] && http2->dataNeeded[which] == 0) {
+        const char *md5 = g_checksum_get_string(http2->streams[spos].checksum[which]);
+        moloch_field_string_uw_add(md5Field, session, (char*)md5, 32, (gpointer)http2->streams[spos].magicString[which], TRUE);
+        g_checksum_reset(http2->streams[spos].checksum[which]);
+        if (config.supportSha256) {
+            const char *sha256 = g_checksum_get_string(http2->streams[spos].checksum[which+2]);
+            moloch_field_string_uw_add(sha256Field, session, (char*)sha256, 64, (gpointer)http2->streams[spos].magicString[which], TRUE);
+            g_checksum_reset(http2->streams[spos].checksum[which+2]);
+        }
+    }
+}
+/******************************************************************************/
 LOCAL int http2_parse_frame(MolochSession_t *session, HTTP2Info_t *http2, int which)
 {
     BSB bsb;
@@ -194,41 +330,33 @@ LOCAL int http2_parse_frame(MolochSession_t *session, HTTP2Info_t *http2, int wh
     uint32_t            streamId = 0;
 
     BSB_IMPORT_u24(bsb, len);
-    uint32_t olen = len;
     BSB_IMPORT_u08(bsb, type);
     BSB_IMPORT_u08(bsb, flags);
     BSB_IMPORT_u32(bsb, streamId);
-
-    if (flags & NGHTTP2_FLAG_PADDED) {
-        uint8_t padding = 0;
-        BSB_IMPORT_u08(bsb, padding);
-        len -= (1 + padding);
-    }
-
-    if (flags & NGHTTP2_FLAG_PRIORITY) {
-        BSB_IMPORT_skip(bsb, 5); // weight
-        len -= 5;
-    }
 
     if (BSB_IS_ERROR(bsb))
         goto cleanup;
 
     // type will only be DATA if this is the first part of a data frame, anything else will be shortcutted in http_parse
     if (type == NGHTTP2_DATA) {
-        int spos = http2_spos_get(http2, streamId, FALSE);
-        http2->streams[spos].magicString[which] = moloch_parsers_magic(session, magicField, (char *)BSB_WORK_PTR(bsb), MIN(len, BSB_REMAINING(bsb)));
+        http2->dataStreamId[which] = streamId;
+        if (len > BSB_REMAINING(bsb)) {
+            http2->used[which] = 0;
+            http2->dataNeeded[which] = len - BSB_REMAINING(bsb);
+        } else {
+            http2->dataNeeded[which] = 0;
+        }
+        http2_parse_frame_data(session, http2, which, flags, streamId, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), TRUE);
+
+        // Don't need to memmove below
+        if (http2->dataNeeded[which] != 0)
+            return 0;
     }
 
-    if (len > BSB_REMAINING(bsb)) {
-        if (type != NGHTTP2_DATA) {
-            return 1;
-        } else {
-            //TODO: Call data callback with (data, BSB_REMAINING(bsb));
-            http2->dataNeeded[which] = len - BSB_REMAINING(bsb);
-            http2->used[which] = 0;
-            return 0;
-        }
+    if (len > BSB_REMAINING(bsb) && type != NGHTTP2_DATA) {
+        return 1;
     }
+
     if (type == NGHTTP2_CONTINUATION) {
         type = http2->lastType[which];
     }
@@ -238,8 +366,10 @@ LOCAL int http2_parse_frame(MolochSession_t *session, HTTP2Info_t *http2, int wh
 #endif
     switch(type) {
     case NGHTTP2_HEADERS:
-    case NGHTTP2_PUSH_PROMISE:
         http2_parse_frame_headers(session, http2, which, flags, streamId, BSB_WORK_PTR(bsb), len);
+        break;
+    case NGHTTP2_PUSH_PROMISE:
+        http2_parse_frame_push_promise(session, http2, which, flags, streamId, BSB_WORK_PTR(bsb), len);
         break;
     case NGHTTP2_RST_STREAM:
         http2_spos_free(http2, streamId);
@@ -260,8 +390,8 @@ LOCAL int http2_parse_frame(MolochSession_t *session, HTTP2Info_t *http2, int wh
     }
 
 cleanup:
-    http2->used[which] -= (9 + olen);
-    memmove(http2->data[which], http2->data[which] + 9 + olen, http2->used[which]);
+    http2->used[which] -= (9 + len);
+    memmove(http2->data[which], http2->data[which] + 9 + len, http2->used[which]);
 
     return 0;
 }
@@ -277,9 +407,8 @@ LOCAL int http2_parse(MolochSession_t *session, void *uw, const unsigned char *d
 
     if (http2->dataNeeded[which] > 0) {
         int used = MIN(http2->dataNeeded[which], len);
-        //TODO: Call data callback with (data, used);
-
         http2->dataNeeded[which] -= used;
+        http2_parse_frame_data(session, http2, which, 0, http2->dataStreamId[which], data, used, FALSE);
         if (used == len)
             return 0;
 
@@ -332,6 +461,14 @@ LOCAL void http2_free(MolochSession_t UNUSED(*session), void *uw)
     if (http2->hd_inflater[1]) {
         nghttp2_hd_inflate_del(http2->hd_inflater[1]);
     }
+    for (int i = 0; i < http2->numStreams; i++) {
+        g_checksum_free(http2->streams[i].checksum[0]);
+        g_checksum_free(http2->streams[i].checksum[1]);
+        if (config.supportSha256) {
+            g_checksum_free(http2->streams[i].checksum[2]);
+            g_checksum_free(http2->streams[i].checksum[3]);
+        }
+    }
     MOLOCH_TYPE_FREE(HTTP2Info_t, http2);
 }
 /******************************************************************************/
@@ -373,4 +510,19 @@ void moloch_parser_init()
         "The content type of body determined by libfile/magic",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
+    md5Field = moloch_field_define("http", "lotermfield",
+        "http.md5", "Body MD5", "http.md5",
+        "MD5 of http body response",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        "category", "md5",
+        (char *)NULL);
+
+    if (config.supportSha256) {
+        sha256Field = moloch_field_define("http", "lotermfield",
+            "http.sha256", "Body SHA256", "http.sha256",
+            "SHA256 of http body response",
+            MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+            "category", "sha256",
+            (char *)NULL);
+    }
 }

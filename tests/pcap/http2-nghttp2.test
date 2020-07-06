@@ -19,14 +19,20 @@
                   "nghttp2.org"
                ],
                "hostCnt" : 1,
+               "md5" : [
+                  "4b806c16dac801940f7075fd9d9b7bae",
+                  "4bf2f259ee1245e1b0cbe6f0127228b5"
+               ],
+               "md5Cnt" : 2,
                "method" : [
                   "GET"
                ],
                "methodCnt" : 1,
                "path" : [
-                  "/"
+                  "/",
+                  "/stylesheets/screen.css"
                ],
-               "pathCnt" : 1,
+               "pathCnt" : 2,
                "requestHeader" : [
                   "accept",
                   "accept-encoding",
@@ -63,16 +69,96 @@
                ],
                "requestHeaderValueCnt" : 9,
                "responseHeader" : [
-                  ""
+                  "accept-encoding",
+                  "accept-ranges",
+                  "alt-svc",
+                  "content-length",
+                  "content-type",
+                  "date",
+                  "etag",
+                  "last-modified",
+                  "server",
+                  "user-agent",
+                  "via",
+                  "x-backend-header-rtt",
+                  "x-content-type-options",
+                  "x-frame-options",
+                  "x-http2-push",
+                  "x-xss-protection"
                ],
-               "responseHeaderCnt" : 1,
+               "responseHeaderCnt" : 16,
                "responseHeaderField" : [
-                  ""
+                  "accept-encoding",
+                  "accept-ranges",
+                  "accept-ranges",
+                  "alt-svc",
+                  "alt-svc",
+                  "content-length",
+                  "content-length",
+                  "content-type",
+                  "content-type",
+                  "date",
+                  "date",
+                  "etag",
+                  "etag",
+                  "last-modified",
+                  "last-modified",
+                  "server",
+                  "server",
+                  "user-agent",
+                  "via",
+                  "via",
+                  "x-backend-header-rtt",
+                  "x-backend-header-rtt",
+                  "x-content-type-options",
+                  "x-content-type-options",
+                  "x-frame-options",
+                  "x-frame-options",
+                  "x-http2-push",
+                  "x-xss-protection",
+                  "x-xss-protection"
                ],
                "responseHeaderValue" : [
-                  ""
+                  "\"5ed644c7-19d8\"",
+                  "\"5ed644c7-98aa\"",
+                  "0.001873",
+                  "0.001992",
+                  "1",
+                  "1; mode=block",
+                  "1; mode=block",
+                  "2 nghttpx",
+                  "2 nghttpx",
+                  "39082",
+                  "6616",
+                  "bytes",
+                  "bytes",
+                  "gzip, deflate",
+                  "h3-28=\":4433\"; ma=3600",
+                  "h3-28=\":4433\"; ma=3600",
+                  "mon, 06 jul 2020 00:34:42 gmt",
+                  "mon, 06 jul 2020 00:34:42 gmt",
+                  "nghttp2/1.41.0",
+                  "nghttpx",
+                  "nghttpx",
+                  "nosniff",
+                  "nosniff",
+                  "sameorigin",
+                  "sameorigin",
+                  "text/css",
+                  "text/html",
+                  "tue, 02 jun 2020 12:23:35 gmt",
+                  "tue, 02 jun 2020 12:23:35 gmt"
                ],
-               "responseHeaderValueCnt" : 1
+               "responseHeaderValueCnt" : 29,
+               "sha256" : [
+                  "80d4404b834c034238ac2e3caeb3a6f24dd093432fd13c5f0e64da9b0d9334bb",
+                  "cfd844f4f94b56e0d93d6ad47530ba9030cc8d8e41ad6ae53b30fe930efa774f"
+               ],
+               "sha256Cnt" : 2,
+               "statuscode" : [
+                  200
+               ],
+               "statuscodeCnt" : 1
             },
             "initRTT" : 105,
             "ipProtocol" : 6,
