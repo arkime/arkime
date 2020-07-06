@@ -22,12 +22,11 @@
 //#define HTTPDEBUG 1
 
 #define MAX_URL_LENGTH 4096
-#define MAX_HTTP2_SIZE 8192
+#define MAX_HTTP2_SIZE 20000
 #define MAX_STREAMS 16
 
 typedef struct {
     uint32_t                 id;
-    nghttp2_hd_inflater     *hd_inflater[2];
     uint8_t                  ended;
     const char              *magicString[2];
 } HTTP2Stream_t;
@@ -38,8 +37,10 @@ typedef enum {
 } HTTP2InfoState_t;
 
 typedef struct {
+    nghttp2_hd_inflater     *hd_inflater[2];
     unsigned char            data[2][MAX_HTTP2_SIZE];
     int                      used[2];
+    uint8_t                  lastType[2];
     int                      dataNeeded[2];
     int                      which;
 
@@ -104,14 +105,6 @@ LOCAL void http2_spos_free(HTTP2Info_t *http2, uint32_t streamId)
         if (streamId == http2->streams[i].id) {
             http2->streams[i].id = 0;
             http2->streams[i].ended = 0;
-            if (http2->streams[i].hd_inflater[0]) {
-                nghttp2_hd_inflate_del(http2->streams[i].hd_inflater[0]);
-                http2->streams[i].hd_inflater[0] = NULL;
-            }
-            if (http2->streams[i].hd_inflater[1]) {
-                nghttp2_hd_inflate_del(http2->streams[i].hd_inflater[1]);
-                http2->streams[i].hd_inflater[1] = NULL;
-            }
             return;
         }
     }
@@ -123,13 +116,14 @@ LOCAL void http2_parse_frame_headers(MolochSession_t *session, HTTP2Info_t *http
     if (spos == -1)
         return;
 
-    if (!http2->streams[spos].hd_inflater[which])
-        nghttp2_hd_inflate_new(&http2->streams[spos].hd_inflater[which]);
+    if (!http2->hd_inflater[which])
+        nghttp2_hd_inflate_new(&http2->hd_inflater[which]);
 
     int final = flags & NGHTTP2_FLAG_END_HEADERS;
 
 #ifdef HTTPDEBUG
-    LOG("%d,%d: %d final:%d %.*s", streamId, spos, inlen, final, inlen, in);
+    LOG("%d,%d: which:%d inlen:%d final:%d %.*s", streamId, spos, which, inlen, final, inlen, in);
+    //moloch_print_hex_string(in, inlen);
 #endif
 
     // https://nghttp2.org/documentation/nghttp2_hd_inflate_hd2.html
@@ -137,7 +131,7 @@ LOCAL void http2_parse_frame_headers(MolochSession_t *session, HTTP2Info_t *http
         nghttp2_nv nv;
         int inflate_flags = 0;
 
-        ssize_t rv = nghttp2_hd_inflate_hd2(http2->streams[spos].hd_inflater[which], &nv, &inflate_flags,
+        ssize_t rv = nghttp2_hd_inflate_hd2(http2->hd_inflater[which], &nv, &inflate_flags,
                                     in, inlen, final);
 
         if(rv < 0) {
@@ -179,7 +173,7 @@ LOCAL void http2_parse_frame_headers(MolochSession_t *session, HTTP2Info_t *http
 #endif
         }
         if(inflate_flags & NGHTTP2_HD_INFLATE_FINAL) {
-            nghttp2_hd_inflate_end_headers(http2->streams[spos].hd_inflater[which]);
+            nghttp2_hd_inflate_end_headers(http2->hd_inflater[which]);
             break;
         }
         if((inflate_flags & NGHTTP2_HD_INFLATE_EMIT) == 0 &&
@@ -187,7 +181,6 @@ LOCAL void http2_parse_frame_headers(MolochSession_t *session, HTTP2Info_t *http
            break;
         }
     }
-
 }
 /******************************************************************************/
 LOCAL int http2_parse_frame(MolochSession_t *session, HTTP2Info_t *http2, int which)
@@ -209,7 +202,7 @@ LOCAL int http2_parse_frame(MolochSession_t *session, HTTP2Info_t *http2, int wh
     if (flags & NGHTTP2_FLAG_PADDED) {
         uint8_t padding = 0;
         BSB_IMPORT_u08(bsb, padding);
-        BSB_IMPORT_skip(bsb, padding);
+        len -= (1 + padding);
     }
 
     if (flags & NGHTTP2_FLAG_PRIORITY) {
@@ -236,12 +229,16 @@ LOCAL int http2_parse_frame(MolochSession_t *session, HTTP2Info_t *http2, int wh
             return 0;
         }
     }
+    if (type == NGHTTP2_CONTINUATION) {
+        type = http2->lastType[which];
+    }
 
 #ifdef HTTPDEBUG
     LOG("which: %d len: %u, type: %u (%s), flags: 0x%x, streamId: %u", which, len, type, http2_frameNames[type], flags, streamId);
 #endif
     switch(type) {
     case NGHTTP2_HEADERS:
+    case NGHTTP2_PUSH_PROMISE:
         http2_parse_frame_headers(session, http2, which, flags, streamId, BSB_WORK_PTR(bsb), len);
         break;
     case NGHTTP2_RST_STREAM:
@@ -250,6 +247,7 @@ LOCAL int http2_parse_frame(MolochSession_t *session, HTTP2Info_t *http2, int wh
     default:
         break;
     }
+    http2->lastType[which] = type;
 
     if (flags & NGHTTP2_FLAG_END_STREAM) {
         int spos = http2_spos_get(http2, streamId, FALSE);
@@ -262,7 +260,7 @@ LOCAL int http2_parse_frame(MolochSession_t *session, HTTP2Info_t *http2, int wh
     }
 
 cleanup:
-    http2->used[which] -= 9 + olen;
+    http2->used[which] -= (9 + olen);
     memmove(http2->data[which], http2->data[which] + 9 + olen, http2->used[which]);
 
     return 0;
@@ -328,11 +326,11 @@ LOCAL void http2_free(MolochSession_t UNUSED(*session), void *uw)
 {
     HTTP2Info_t            *http2          = uw;
 
-    for (int i = 0; i < http2->numStreams; i++) {
-        if (http2->streams[i].hd_inflater[0])
-            nghttp2_hd_inflate_del(http2->streams[i].hd_inflater[0]);
-        if (http2->streams[i].hd_inflater[1])
-            nghttp2_hd_inflate_del(http2->streams[i].hd_inflater[1]);
+    if (http2->hd_inflater[0]) {
+        nghttp2_hd_inflate_del(http2->hd_inflater[0]);
+    }
+    if (http2->hd_inflater[1]) {
+        nghttp2_hd_inflate_del(http2->hd_inflater[1]);
     }
     MOLOCH_TYPE_FREE(HTTP2Info_t, http2);
 }

@@ -122,7 +122,7 @@ void http_common_add_header_value(MolochSession_t *session, int pos, const char 
     case MOLOCH_FIELD_TYPE_STR_HASH:
     case MOLOCH_FIELD_TYPE_STR_GHASH:
         if (pos == headerReqValue || pos == headerResValue)
-            moloch_field_string_add_lower(pos, session, s, l);
+            moloch_field_string_add_lower(pos, session, s, MIN(l, 1024));
         else
             moloch_field_string_add(pos, session, s, l, TRUE);
         break;
