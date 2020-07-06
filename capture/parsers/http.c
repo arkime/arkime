@@ -44,6 +44,7 @@ typedef struct {
     uint16_t         which:1;
     uint16_t         isConnect:1;
     uint16_t         reclassify:2;
+    uint16_t         http2Upgrade;
 } HTTPInfo_t;
 
 extern MolochConfig_t        config;
@@ -486,8 +487,12 @@ LOCAL int moloch_hp_cb_on_header_value (http_parser *parser, const char *at, siz
 
         if (http->which == http->urlWhich)
             moloch_field_string_add(tagsReqField, session, lower, -1, TRUE);
-        else
+        else {
             moloch_field_string_add(tagsResField, session, lower, -1, TRUE);
+            if (strcmp(lower, "upgrade") == 0 && length >= 3 && memcmp(at, "h2c", 3) == 0) {
+                http->http2Upgrade = 1;
+            }
+        }
         g_free(lower);
     }
 
@@ -673,6 +678,11 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
 LOCAL int http_parse(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     HTTPInfo_t            *http          = uw;
+
+    if (http->http2Upgrade) {
+        moloch_parsers_classify_tcp(session, data, remaining, which);
+        return MOLOCH_PARSER_UNREGISTER;
+    }
 
     http->which = which;
 #ifdef HTTPDEBUG
