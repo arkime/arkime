@@ -787,7 +787,7 @@ if (nodes.length === 0 || nodes[0] === '') {
 
 // First connect
 nodes.forEach((node) => {
-  if (node.toLowerCase().includes(",http")) {
+  if (node.toLowerCase().includes(',http')) {
     console.log('WARNING - multiESNodes may be using a comma as a host delimiter, change to semicolon');
   }
   clients[node] = new ESC.Client({
