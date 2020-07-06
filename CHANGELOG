@@ -9,6 +9,7 @@ ES Versions:
   * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x or later
 
 Node Versions:
+  * Moloch >= 2.4.0 requires NodeJS 12.x
   * Moloch >= 2.0.0 requires NodeJS 10.x
   * Moloch >= 1.6.0 requires NodeJS 8.x, 8.12 or later
   * Moloch >= 1.0.0 requires NodeJS 8.x
@@ -18,7 +19,9 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 2.4.0 2020/07/xx
-  - NOTE - RHEL/Centos 6 is no longer supported
+  - NOTE - RHEL/Centos 6 is no longer supported, Node 12 required
+  - release - node 12.18.2, glib 2.64.3
+  - viewer - aes256Encryption now defaults to true
 
 2.3.2 2020/06/29
   - NOTE - 2.3.x will be the last version to support RHEL/Centos 6

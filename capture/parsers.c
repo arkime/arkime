@@ -735,6 +735,7 @@ void moloch_parsers_init()
 
             if (!parser) {
                 LOG("ERROR - Couldn't load parser %s from '%s'\n%s", filenames[i], path, g_module_error());
+                g_free(filenames[i]);
                 g_free (path);
                 continue;
             }
@@ -744,6 +745,7 @@ void moloch_parsers_init()
             if (!g_module_symbol(parser, "moloch_parser_init", (gpointer *)(char*)&parser_init) || parser_init == NULL) {
                 LOG("ERROR - Module %s doesn't have a moloch_parser_init", filenames[i]);
                 g_free(filenames[i]);
+                g_free (path);
                 continue;
             }
 
