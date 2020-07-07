@@ -3903,7 +3903,7 @@ app.post('/esadmin/clearCache', [noCacheJson, recordResponseTime, checkEsAdminUs
     if (err) {
       return res.send(JSON.stringify({ success: false, text: 'Cache clear failed' }));
     } else {
-      return res.send(JSON.stringify({ success: true, text: `Cache cleared: ${data._shards.successful} of ${data._shards.total} shards successful, with ${data._shards.failed} failing`}));
+      return res.send(JSON.stringify({ success: true, text: `Cache cleared: ${data._shards.successful} of ${data._shards.total} shards successful, with ${data._shards.failed} failing` }));
     }
   });
 });

@@ -456,9 +456,9 @@ exports.setIndexSettings = (index, options, cb) => {
   );
 };
 
-exports.clearCache = (cb) => {
+exports.clearCache = function (cb) {
   return internals.elasticSearchClient.indices.clearCache({}, cb);
-}
+};
 
 exports.shards = function (cb) {
   return internals.elasticSearchClient.cat.shards({ format: 'json', bytes: 'b', h: 'index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm' }, cb);
