@@ -22,6 +22,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - NOTE - RHEL/Centos 6 is no longer supported, Node 12 required
   - release - node 12.18.2, glib 2.64.3
   - viewer - aes256Encryption now defaults to true
+  - viewer - added a clear cache button to ES Admin tab
   - capture - http2 decoding for PRI * h2 sessions
   - capture - set http2 protocol when alpn is h2
   - capture - upgrade h2c http2 decoding
