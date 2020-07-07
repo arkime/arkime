@@ -4,7 +4,7 @@
   "private": true,
   "license": "Apache-2.0",
   "dependencies": {
-    "iptrie": "http://github.com/awick/node-iptrie/tarball/master"
+    "iptrie": "http://github.com/awick/node-iptrie/tarball/nodev12"
   },
   "scripts": {
     "lint": "jshint *.js"
