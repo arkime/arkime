@@ -1232,7 +1232,7 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
     case DLT_IPV4: //RAW IPv4
         rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
         break;
-    case DLT_IPV6: //RAW IPv4
+    case DLT_IPV6: //RAW IPv6
         rc = moloch_packet_ip6(batch, packet, packet->pkt, packet->pktlen);
         break;
     case DLT_NFLOG: // NFLOG
