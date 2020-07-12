@@ -266,7 +266,7 @@ LOCAL char *writer_simple_get_kekId ()
         {
             int namelen = strlen(config.nodeName);
             int bufboundary = j + namelen;
-            
+
             if(bufboundary >= (int) sizeof(okek)) {
                 LOGEXIT("ERROR - node name '%s' is too long", config.nodeName);
             }
@@ -351,7 +351,10 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
             LOGEXIT("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d) -- You may need to check directory permissions or set pcapWriteMethod=simple-nodirect in config.ini file.  See https://molo.ch/settings#pcapwritemethod", name, strerror(errno), errno);
         }
         info->file->pos = currentInfo[thread]->bufpos = 24;
-        memcpy(info->buf, &pcapFileHeader, 24);
+
+        memcpy(info->buf, &pcapFileHeader, 20);
+        uint32_t linktype = moloch_packet_dlt_to_linktype(pcapFileHeader.dlt);
+        memcpy(info->buf+20, &linktype, 4);
         if (config.debug)
             LOG("opened %d %s %d", thread, name, info->file->fd);
         g_free(name);

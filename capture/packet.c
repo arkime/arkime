@@ -21,6 +21,7 @@
 #include <arpa/inet.h>
 #include <net/ethernet.h>
 #include <errno.h>
+#include "pcap.h"
 
 //#define DEBUG_PACKET
 
@@ -303,7 +304,7 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
     if (session->packets[packet->direction] <= 10) {
         const uint8_t *pcapData = packet->pkt;
 
-        if (pcapFileHeader.linktype == 1) {
+        if (pcapFileHeader.dlt == DLT_EN10MB) {
             if (packet->direction == 1) {
                 moloch_field_macoui_add(session, mac1Field, oui1Field, pcapData+0);
                 moloch_field_macoui_add(session, mac2Field, oui2Field, pcapData+6);
@@ -1189,12 +1190,12 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
     MolochPacketRC rc;
 
 #ifdef DEBUG_PACKET
-    LOG("enter %p %u %d", packet, pcapFileHeader.linktype, packet->pktlen);
+    LOG("enter %p %u %d", packet, pcapFileHeader.dlt, packet->pktlen);
     moloch_print_hex_string(packet->pkt, packet->pktlen);
 #endif
 
-    switch(pcapFileHeader.linktype) {
-    case 0: // NULL
+    switch(pcapFileHeader.dlt) {
+    case DLT_NULL: // NULL
         if (packet->pktlen > 4) {
             if (packet->pkt[0] == 30)
                 rc = moloch_packet_ip6(batch, packet, packet->pkt+4, packet->pktlen-4);
@@ -1207,36 +1208,41 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
             rc = MOLOCH_PACKET_CORRUPT;
         }
         break;
-    case 1: // Ether
+    case DLT_EN10MB: // Ether
         rc = moloch_packet_ether(batch, packet, packet->pkt, packet->pktlen);
         break;
-    case 12: // LOOP
-    case 101: // RAW
-        rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
+    case DLT_RAW: // RAW
+        if ((packet->pkt[0] & 0xF0) == 0x60)
+            rc = moloch_packet_ip6(batch, packet, packet->pkt, packet->pktlen);
+        else
+            rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
         break;
-    case 107: // Frame Relay
+    case DLT_FRELAY: // Frame Relay
         rc = moloch_packet_frame_relay(batch, packet, packet->pkt, packet->pktlen);
         break;
-    case 113: // SLL
+    case DLT_LINUX_SLL: // SLL
         if (packet->pkt[0] == 0 && packet->pkt[1] <= 4)
             rc = moloch_packet_sll(batch, packet, packet->pkt, packet->pktlen);
         else
             rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
         break;
-    case 127: // radiotap
+    case DLT_IEEE802_11_RADIO: // radiotap
         rc = moloch_packet_radiotap(batch, packet, packet->pkt, packet->pktlen);
         break;
-    case 228: //RAW IPv4
+    case DLT_IPV4: //RAW IPv4
         rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
         break;
-    case 239: // NFLOG
+    case DLT_IPV6: //RAW IPv4
+        rc = moloch_packet_ip6(batch, packet, packet->pkt, packet->pktlen);
+        break;
+    case DLT_NFLOG: // NFLOG
         rc = moloch_packet_nflog(batch, packet, packet->pkt, packet->pktlen);
         break;
     default:
         if (config.ignoreErrors)
             rc = MOLOCH_PACKET_CORRUPT;
         else
-            LOGEXIT("ERROR - Unsupported pcap link type %u", pcapFileHeader.linktype);
+            LOGEXIT("ERROR - Unsupported pcap link type %u", pcapFileHeader.dlt);
     }
 
     if (likely(rc == MOLOCH_PACKET_DO_PROCESS) && unlikely(packet->mProtocol == 0)) {
@@ -1631,11 +1637,44 @@ void moloch_packet_add_packet_ip(char *ipstr, int mode)
     node->data = (void *)(long)mode;
 }
 /******************************************************************************/
-void moloch_packet_set_linksnap(int linktype, int snaplen)
+void moloch_packet_set_dltsnap(int dlt, int snaplen)
 {
-    pcapFileHeader.linktype = linktype;
+    pcapFileHeader.dlt = dlt;
     pcapFileHeader.snaplen = snaplen;
     moloch_rules_recompile();
+}
+/******************************************************************************/
+void moloch_packet_set_linksnap(int linktype, int snaplen)
+{
+    // In theory you might need to do some mapping here, but we don't
+    moloch_packet_set_dltsnap(linktype, snaplen);
+}
+/******************************************************************************/
+// PCAP Header needs linktype when written
+// Code based on https://github.com/aol/moloch/issues/1303#issuecomment-554684749
+// Values from libpcap pcap-common.c
+uint32_t moloch_packet_dlt_to_linktype(int dlt)
+{
+    if (dlt <= 10 || dlt >= 104)
+        return dlt;
+
+    switch (dlt)
+    {
+#ifdef DLT_FR
+    case DLT_FR: return 107; // LINKTYPE_FRELAY;
+#endif
+    case DLT_ATM_RFC1483: return 100; // LINKTYPE_ATM_RFC1483;
+    case DLT_RAW: return 101; // LINKTYPE_RAW;
+    case DLT_SLIP_BSDOS: return 102; // LINKTYPE_SLIP_BSDOS;
+    case DLT_PPP_BSDOS: return 103; // LINKTYPE_PPP_BSDOS;
+    case DLT_C_HDLC: return 104; // LINKTYPE_C_HDLC;
+    case DLT_ATM_CLIP: return 106; // LINKTYPE_ATM_CLIP;
+    case DLT_PPP_SERIAL: return 50; // LINKTYPE_PPP_HDLC
+    case DLT_PPP_ETHER: return 51; // LINKTYPE_PPP_ETHER;
+    case DLT_PFSYNC: return 246; // LINKTYPE_PFSYNC;
+    case DLT_PKTAP: return 258; // LINKTYPE_PKTAP
+    }
+    return dlt;
 }
 /******************************************************************************/
 void moloch_packet_drophash_add(MolochSession_t *session, int which, int min)

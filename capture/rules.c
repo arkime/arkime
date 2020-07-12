@@ -713,7 +713,7 @@ void moloch_rules_recompile()
     if (deadPcap)
         pcap_close(deadPcap);
 
-    deadPcap = pcap_open_dead(pcapFileHeader.linktype, pcapFileHeader.snaplen);
+    deadPcap = pcap_open_dead(pcapFileHeader.dlt, pcapFileHeader.snaplen);
     MolochRule_t *rule;
     for (t = 0; t < MOLOCH_RULE_TYPE_NUM; t++) {
         for (r = 0; (rule = current.rules[t][r]); r++) {
@@ -721,7 +721,7 @@ void moloch_rules_recompile()
                 continue;
 
             pcap_freecode(&rule->bpfp);
-            if (pcapFileHeader.linktype != 239) {
+            if (pcapFileHeader.dlt != DLT_NFLOG) {
                 if (pcap_compile(deadPcap, &rule->bpfp, rule->bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
                     LOGEXIT("ERROR - Couldn't compile filter %s: '%s' with %s", rule->filename, rule->bpf, pcap_geterr(deadPcap));
                 }

@@ -340,7 +340,9 @@ LOCAL void writer_disk_create(MolochPacket_t * const packet)
     clock_gettime(CLOCK_REALTIME_COARSE, &outputFileTime);
 
     output->fileId = outputId;
-    memcpy(output->buf, &pcapFileHeader, 24);
+    memcpy(output->buf, &pcapFileHeader, 20);
+    uint32_t linktype = moloch_packet_dlt_to_linktype(pcapFileHeader.dlt);
+    memcpy(output->buf+20, &linktype, 4);
 }
 /******************************************************************************/
 struct pcap_timeval {

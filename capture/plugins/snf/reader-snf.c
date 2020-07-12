@@ -121,7 +121,7 @@ LOCAL void *reader_snf_thread(gpointer posv)
 }
 /******************************************************************************/
 void reader_snf_start() {
-    moloch_packet_set_linksnap(DLT_EN10MB, config.snapLen);
+    moloch_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 
     int ringStartOffset = (snfProcNum-1)*snfNumRings;
     int i, r;
