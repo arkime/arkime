@@ -557,7 +557,6 @@ LOCAL gboolean reader_libpcapfile_read()
 /******************************************************************************/
 LOCAL void reader_libpcapfile_opened()
 {
-    int dlt_to_linktype(int dlt);
     int moloch_db_can_quit();
 
     if (config.flushBetween) {

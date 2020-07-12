@@ -205,7 +205,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
 
     moloch_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 
-    pcap_t *dpcap = pcap_open_dead(pcapFileHeader.linktype, pcapFileHeader.snaplen);
+    pcap_t *dpcap = pcap_open_dead(pcapFileHeader.dlt, pcapFileHeader.snaplen);
 
     if (config.bpf) {
         if (pcap_compile(dpcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
