@@ -4102,9 +4102,19 @@ app.get('/esstats.json', [noCacheJson, recordResponseTime, checkPermissions(['hi
     Db.nodesInfoCache(),
     Db.masterCache(),
     Db.healthCachePromise(),
+    Db.shards(),
     Db.getClusterSettings({ flatSettings: true })
   ])
-    .then(([nodesStats, nodesInfo, master, health, settings]) => {
+    .then(([nodesStats, nodesInfo, master, health, shards, settings]) => {
+      let sCount = {};
+      for (let s = 0, slen = shards.length; s < slen; s++) {
+        if (sCount[shards[s].node] === undefined) {
+          sCount[shards[s].node] = 1;
+        } else {
+          sCount[shards[s].node]++
+        }
+      }
+
       let ipExcludes = [];
       if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
         ipExcludes = settings.persistent['cluster.routing.allocation.exclude._ip'].split(',');
@@ -4196,7 +4206,9 @@ app.get('/esstats.json', [noCacheJson, recordResponseTime, checkPermissions(['hi
           molochtype: molochtype,
           molochzone: molochzone,
           roles: node.roles,
-          isMaster: (master.length > 0 && node.name === master[0].node)
+          isMaster: (master.length > 0 && node.name === master[0].node),
+          shards: sCount[node.name] || 0,
+          segments: node.indices.segments.count || 0
         });
       }
 

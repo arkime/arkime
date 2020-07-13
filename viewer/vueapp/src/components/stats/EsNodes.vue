@@ -143,6 +143,8 @@ export default {
         { id: 'writesQueueSize', name: 'Write Tasks Q Limit', sort: 'writesQueueSize', doStats: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.writesQueueSize); } },
         { id: 'molochtype', name: 'Hot/Warm', sort: 'molochtype', doStats: false, width: 100 },
         { id: 'molochzone', name: 'Zone', sort: 'molochzone', doStats: false, width: 100 },
+        { id: 'shards', name: 'Shards', sort: 'shards', doStats: true, default: false, width: 80, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.shards); } },
+        { id: 'segments', name: 'Segments', sort: 'segments', doStats: true, default: false, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.segments); } },
         { id: 'version', name: 'Version', sort: 'version', doStats: false, width: 100 }
       ]
     };
