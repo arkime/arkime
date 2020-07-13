@@ -306,6 +306,19 @@ app.get('/_cat/master', (req, res) => {
   });
 });
 
+app.get('/_cat/shards', (req, res) => {
+  simpleGather(req, res, null, (err, results) => {
+    var obj = results[0];
+    for (var i = 1; i < results.length; i++) {
+      if (results[i].error) {
+        console.log('ERROR - GET _cat/shards', req.query.index, req.query.type, results[i].error);
+      }
+      obj = obj.concat(results[i]);
+    }
+    res.send(obj);
+  });
+});
+
 app.get(['/:index/:type/_search', '/:index/_search'], (req, res) => {
   simpleGather(req, res, null, (err, results) => {
     var obj = results[0];
