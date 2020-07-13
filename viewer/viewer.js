@@ -4111,7 +4111,7 @@ app.get('/esstats.json', [noCacheJson, recordResponseTime, checkPermissions(['hi
         if (sCount[shards[s].node] === undefined) {
           sCount[shards[s].node] = 1;
         } else {
-          sCount[shards[s].node]++
+          sCount[shards[s].node]++;
         }
       }
 
