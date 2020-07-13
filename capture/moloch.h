@@ -706,7 +706,7 @@ typedef struct {
 	int32_t  thiszone;	/* gmt to local correction */
 	uint32_t sigfigs;	/* accuracy of timestamps */
 	uint32_t snaplen;	/* max length saved portion of each pkt */
-	uint32_t linktype;	/* data link type (LINKTYPE_*) */
+	uint32_t dlt;	        /* data link type - see https://github.com/aol/moloch/issues/1303#issuecomment-554684749 */
 } MolochPcapFileHdr_t;
 
 #ifndef likely
@@ -1039,7 +1039,9 @@ void     moloch_packet_batch_flush(MolochPacketBatch_t *batch);
 void     moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const packet);
 void     moloch_packet_batch_process(MolochPacketBatch_t * batch, MolochPacket_t * const packet, int thread);
 
-void     moloch_packet_set_linksnap(int linktype, int snaplen);
+void     moloch_packet_set_dltsnap(int dlt, int snaplen);
+void     moloch_packet_set_linksnap(int linktype, int snaplen); // Don't use, backwards compat
+uint32_t moloch_packet_dlt_to_linktype(int dlt);
 void     moloch_packet_drophash_add(MolochSession_t *session, int which, int min);
 
 void     moloch_packet_save_ethernet(MolochPacket_t * const packet, uint16_t type);
