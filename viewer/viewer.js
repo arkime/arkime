@@ -3898,6 +3898,16 @@ app.post('/esadmin/unflood', [noCacheJson, recordResponseTime, checkEsAdminUser,
   return res.send(JSON.stringify({ success: true, text: 'Unflood' }));
 });
 
+app.post('/esadmin/clearCache', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], (req, res) => {
+  Db.clearCache((err, data) => {
+    if (err) {
+      return res.send(JSON.stringify({ success: false, text: 'Cache clear failed' }));
+    } else {
+      return res.send(JSON.stringify({ success: true, text: `Cache cleared: ${data._shards.successful} of ${data._shards.total} shards successful, with ${data._shards.failed} failing` }));
+    }
+  });
+});
+
 app.get('/esshard/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie], (req, res) => {
   Promise.all([
     Db.shards(),
@@ -4092,9 +4102,12 @@ app.get('/esstats.json', [noCacheJson, recordResponseTime, checkPermissions(['hi
     Db.nodesInfoCache(),
     Db.masterCache(),
     Db.healthCachePromise(),
+    Db.allocation(),
     Db.getClusterSettings({ flatSettings: true })
   ])
-    .then(([nodesStats, nodesInfo, master, health, settings]) => {
+    .then(([nodesStats, nodesInfo, master, health, allocation, settings]) => {
+      const shards = new Map(allocation.map(i => [i.node, i.shards]));
+
       let ipExcludes = [];
       if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
         ipExcludes = settings.persistent['cluster.routing.allocation.exclude._ip'].split(',');
@@ -4186,7 +4199,9 @@ app.get('/esstats.json', [noCacheJson, recordResponseTime, checkPermissions(['hi
           molochtype: molochtype,
           molochzone: molochzone,
           roles: node.roles,
-          isMaster: (master.length > 0 && node.name === master[0].node)
+          isMaster: (master.length > 0 && node.name === master[0].node),
+          shards: shards.get(node.name) || 0,
+          segments: node.indices.segments.count || 0
         });
       }
 

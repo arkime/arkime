@@ -91,10 +91,8 @@ LOCAL void *reader_libpcap_thread(gpointer posv)
 }
 /******************************************************************************/
 void reader_libpcap_start() {
-    int dlt_to_linktype(int dlt);
-
     //ALW - Bug: assumes all linktypes are the same
-    moloch_packet_set_linksnap(dlt_to_linktype(pcap_datalink(pcaps[0])) | pcap_datalink_ext(pcaps[0]), pcap_snapshot(pcaps[0]));
+    moloch_packet_set_dltsnap(pcap_datalink(pcaps[0]), pcap_snapshot(pcaps[0]));
 
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {

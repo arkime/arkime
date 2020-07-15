@@ -306,6 +306,19 @@ app.get('/_cat/master', (req, res) => {
   });
 });
 
+app.get('/_cat/*', (req, res) => {
+  simpleGather(req, res, null, (err, results) => {
+    var obj = results[0];
+    for (var i = 1; i < results.length; i++) {
+      if (results[i].error) {
+        console.log('ERROR - GET', req.url, req.query.index, req.query.type, results[i].error);
+      }
+      obj = obj.concat(results[i]);
+    }
+    res.send(obj);
+  });
+});
+
 app.get(['/:index/:type/_search', '/:index/_search'], (req, res) => {
   simpleGather(req, res, null, (err, results) => {
     var obj = results[0];
@@ -787,6 +800,9 @@ if (nodes.length === 0 || nodes[0] === '') {
 
 // First connect
 nodes.forEach((node) => {
+  if (node.toLowerCase().includes(',http')) {
+    console.log('WARNING - multiESNodes may be using a comma as a host delimiter, change to semicolon');
+  }
   clients[node] = new ESC.Client({
     host: node.split(',')[0],
     apiVersion: '6.8',

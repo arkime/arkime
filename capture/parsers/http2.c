@@ -287,6 +287,10 @@ LOCAL void http2_parse_frame_data(MolochSession_t *session, HTTP2Info_t *http2, 
         return;
 
     int spos = http2_spos_get(http2, streamId, FALSE);
+    if (spos == -1) {
+        moloch_session_add_tag(session, "http2:data-frame-after-close");
+        return;
+    }
 
     // Only get magic string on first frame
     if (initial) {

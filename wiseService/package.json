@@ -6,7 +6,7 @@
   "dependencies": {
     "axios": "^0.19.2",
     "core-js": "^3.6.5",
-    "iptrie": "http://github.com/awick/node-iptrie/tarball/master",
+    "iptrie": "http://github.com/awick/node-iptrie/tarball/nodev12",
     "serve-favicon": "^2.5.0",
     "vue": "^2.6.11",
     "vue-axios": "^2.1.5",

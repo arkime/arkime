@@ -627,7 +627,9 @@ void writer_s3_create(const MolochPacket_t *packet)
 
     outputBuffer = moloch_http_get_buffer(config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN);
     outputPos = 0;
-    append_to_output(&pcapFileHeader, 24, FALSE, 0);
+    uint32_t linktype = moloch_packet_dlt_to_linktype(pcapFileHeader.dlt);
+    append_to_output(&pcapFileHeader, 20, FALSE, 0);
+    append_to_output(&linktype, 4, FALSE, 0);
     make_new_block();                   // So we can read the header in a small amount of data fetched
 
     if (config.debug)
