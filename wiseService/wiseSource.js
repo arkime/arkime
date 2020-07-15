@@ -283,20 +283,17 @@ WISESource.result2Str = function(result, indent) {
     indent = "";
   }
 
-  var str = "[";
+  let collection = [];
   var offset = 1;
   for (var i = 0; i < result[0]; i++) {
     var pos   = result[offset];
     var len   = result[offset+1];
     var value = result.toString('utf8', offset+2, offset+2+len-1);
     offset += 2 + len;
-    if (i > 0) {
-      str += ",\n";
-    }
-    str += indent + "{field: \"" + WISESource.pos2Field[pos] + "\", len: " + len + ", value: \"" + value + "\"}";
+    collection.push({field: WISESource.pos2Field[pos], len: len, value: value});
   }
 
-  return str + "]\n";
+  return JSON.stringify(collection, null, 2);
 };
 //////////////////////////////////////////////////////////////////////////////////
 WISESource.encode = function ()

@@ -97,12 +97,33 @@ if (internals.workers > 1) {
 /// ///////////////////////////////////////////////////////////////////////////////
 internals.config = ini.parseSync(internals.configFile);
 var app = express();
-
 var logger = require('morgan');
 var timeout = require('connect-timeout');
 
-app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'));
-app.use(timeout(5 * 1000));
+// super secret
+app.use(helmet.hidePoweredBy());
+app.use(helmet.xssFilter());
+app.use(helmet.hsts({
+  maxAge: 31536000,
+  includeSubDomains: true
+}));
+// calculate nonce
+app.use((req, res, next) => {
+  res.locals.nonce = Buffer.from(uuid()).toString('base64');
+  next();
+});
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    /* can remove unsafe-inline for css when this is fixed
+    https://github.com/vuejs/vue-style-loader/issues/33 */
+    styleSrc: ["'self'", "'unsafe-inline'"],
+    scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
+    objectSrc: ["'none'"],
+    imgSrc: ["'self'", 'data:'],
+    frameSrc: ["'none'"]
+  }
+}));
 
 function getConfig (section, name, d) {
   if (!internals.config[section]) {
@@ -287,6 +308,19 @@ function loadSources () {
 }
 /// ///////////////////////////////////////////////////////////////////////////////
 /// / APIs
+/// ///////////////////////////////////////////////////////////////////////////////
+// Serve vue app
+app.get('/', (req, res, next) => {
+  res.sendFile(`${__dirname}/vueapp/dist/index.html`);
+});
+app.use(favicon(`${__dirname}/favicon.ico`));
+// expose vue bundles (prod)
+app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
+// expose vue bundle (dev)
+app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
+app.use('/font-awesome', express.static(`${__dirname}/../node_modules/font-awesome`, { maxAge: 600 * 1000 }));
+app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'));
+app.use(timeout(5 * 1000));
 /// ///////////////////////////////////////////////////////////////////////////////
 app.get('/_ns_/nstest.html', [noCacheJson], function (req, res) {
   res.end();
@@ -647,6 +681,22 @@ app.get('/:source/:typeName/:value', [noCacheJson], function (req, res) {
   });
 });
 /// ///////////////////////////////////////////////////////////////////////////////
+app.get('/sources', [noCacheJson], (req, res) => {
+  return res.send(Object.keys(internals.sources));
+});
+/// ///////////////////////////////////////////////////////////////////////////////
+app.get('/types/:source?', [noCacheJson], (req, res) => {
+  //console.log(internals.types);
+  if (req.params.source) {
+    return res.send([internals.sources[req.params.source].type]);
+  } else {
+    // let items = Object.keys(internals.sources).map(o => internals.sources[o].type);
+    // return res.send(Array.from(new Set(items)));
+    return res.send(internals.type2Name)
+  }
+  //return res.send(Object.keys(internals.types));
+});
+/// ///////////////////////////////////////////////////////////////////////////////
 app.get('/dump/:source', [noCacheJson], function (req, res) {
   var source = internals.sources[req.params.source];
   if (!source) {
@@ -732,43 +782,6 @@ app.get('/:typeName/:value', [noCacheJson], function (req, res) {
   });
 });
 /// ///////////////////////////////////////////////////////////////////////////////
-// super secret
-app.use(helmet.hidePoweredBy());
-app.use(helmet.xssFilter());
-app.use(helmet.hsts({
-  maxAge: 31536000,
-  includeSubDomains: true
-}));
-// calculate nonce
-app.use((req, res, next) => {
-  res.locals.nonce = Buffer.from(uuid()).toString('base64');
-  next();
-});
-app.use(helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
-    /* can remove unsafe-inline for css when this is fixed
-    https://github.com/vuejs/vue-style-loader/issues/33 */
-    styleSrc: ["'self'", "'unsafe-inline'"],
-    scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
-    objectSrc: ["'none'"],
-    imgSrc: ["'self'", 'data:'],
-    frameSrc: ["'none'"]
-  }
-}));
-app.use(favicon(`${__dirname}/favicon.ico`));
-// expose vue bundles (prod)
-app.use('/wise/static', express.static(`${__dirname}/vueapp/dist/static`));
-// expose vue bundle (dev)
-app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
-app.use('/wise/font-awesome', express.static(`${__dirname}/../node_modules/font-awesome`, { maxAge: 600 * 1000 }));
-app.use('/', (req, res, next) => {
-  res.sendFile(`${__dirname}/vueapp/dist/index.html`);
-});
-app.use((req, res, next) => {
-  res.status(404).sendFile(`${__dirname}/vueapp/dist/index.html`);
-});
-/// ///////////////////////////////////////////////////////////////////////////////
 if (getConfig('wiseService', 'regressionTests')) {
   app.post('/shutdown', (req, res) => {
     process.exit(0);
@@ -831,6 +844,12 @@ function printStats () {
       section, src.cacheHitStat, src.cacheMissStat, src.cacheRefreshStat, src.cacheDroppedStat, src.average100MS));
   }
 }
+
+// Error handling
+app.use((req, res, next) => {
+  res.status(404).sendFile(`${__dirname}/vueapp/dist/index.html`);
+});
+
 /// ///////////////////////////////////////////////////////////////////////////////
 /// / jPaq
 /// ///////////////////////////////////////////////////////////////////////////////
