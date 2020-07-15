@@ -116,7 +116,7 @@
         <b-table striped hover :items="searchResult" :fields="tableFields"></b-table>
       </div>
       <div v-if="chosenView === 'json-view'">
-        <pre>{{searchResult}}</pre>
+        <pre>{{JSON.stringify(searchResult, null, 2)}}</pre>
       </div>
       <div v-if="chosenView === 'csv-view'">
         <pre>{{calcCSV()}}</pre>
