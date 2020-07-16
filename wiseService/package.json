@@ -4,13 +4,70 @@
   "private": true,
   "license": "Apache-2.0",
   "dependencies": {
-    "iptrie": "http://github.com/awick/node-iptrie/tarball/nodev12"
+    "axios": "^0.19.2",
+    "core-js": "^3.6.5",
+    "iptrie": "http://github.com/awick/node-iptrie/tarball/nodev12",
+    "serve-favicon": "^2.5.0",
+    "vue": "^2.6.11",
+    "vue-axios": "^2.1.5",
+    "vue-router": "^3.2.0",
+    "vuex": "^3.4.0"
   },
   "scripts": {
+    "build": "npm run bundle:min",
+    "start": "node wiseService.js -c ../tests/config.test.ini",
+    "prestart": "npm run bundle:min",
+    "dev": "nodemon wiseService.js -c ../tests/config.test.ini & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
+    "bundle": "webpack -d --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
+    "bundle:min": "node vueapp/build/build.js",
     "lint": "jshint *.js"
   },
   "devDependencies": {
+    "@babel/core": "^7.10.4",
+    "@babel/preset-env": "^7.10.4",
+    "autoprefixer": "^9.8.4",
+    "babel-loader": "^8.1.0",
+    "babel-plugin-syntax-jsx": "^6.18.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-plugin-transform-vue-jsx": "^3.7.0",
+    "bootstrap": "^4.5.0",
+    "bootstrap-vue": "^2.15.0",
+    "chalk": "^4.1.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^6.0.3",
+    "css-loader": "^3.6.0",
+    "extract-text-webpack-plugin": "^4.0.0-beta.0",
+    "friendly-errors-webpack-plugin": "^1.7.0",
+    "html-webpack-plugin": "^4.3.0",
     "jshint": "^2.9.5",
-    "lodash": "^4.17.13"
-  }
+    "node-notifier": "^7.0.1",
+    "nodemon": "^2.0.4",
+    "optimize-css-assets-webpack-plugin": "^5.0.3",
+    "ora": "^4.0.4",
+    "portfinder": "^1.0.26",
+    "postcss-import": "^12.0.1",
+    "postcss-loader": "^3.0.0",
+    "postcss-url": "^8.0.0",
+    "rimraf": "^3.0.2",
+    "semver": "^7.3.2",
+    "shelljs": "^0.8.4",
+    "terser-webpack-plugin": "^3.0.6",
+    "url-loader": "^1.0.1",
+    "vue-loader": "^15.9.3",
+    "vue-style-loader": "^4.1.2",
+    "vue-template-compiler": "^2.6.11",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0",
+    "webpack-merge": "^5.0.8"
+  },
+  "engines": {
+    "node": ">= 6.0.0",
+    "npm": ">= 3.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
 }
