@@ -18,12 +18,11 @@
 'use strict';
 
 var wiseSource = require('./wiseSource.js');
-   var util = require('util');
-   var splunkjs = require('splunk-sdk');
-   var iptrie = require('iptrie')
-  ;
+var util = require('util');
+var splunkjs = require('splunk-sdk');
+var iptrie = require('iptrie');
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function SplunkSource (api, section) {
   SplunkSource.super_.call(this, api, section);
 
@@ -78,7 +77,7 @@ function SplunkSource (api, section) {
 }
 util.inherits(SplunkSource, wiseSource);
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 SplunkSource.prototype.periodicRefresh = function () {
   this.service.oneshotSearch(this.query, { output_mode: 'json', count: 0 }, (err, results) => {
     if (err) {
@@ -123,7 +122,7 @@ SplunkSource.prototype.periodicRefresh = function () {
   });
 };
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 SplunkSource.prototype.dump = function (res) {
   if (this.cache === undefined) {
     return res.end();
@@ -137,7 +136,7 @@ SplunkSource.prototype.dump = function (res) {
   });
   res.end();
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 SplunkSource.prototype.sendResultPeriodic = function (key, cb) {
   if (!this.cache) {
     return cb(null, undefined);
@@ -158,7 +157,7 @@ SplunkSource.prototype.sendResultPeriodic = function (key, cb) {
   return cb(null, newresult);
 };
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 SplunkSource.prototype.sendResult = function (key, cb) {
   var query = this.query.replace('%%SEARCHTERM%%', key);
 
@@ -189,7 +188,7 @@ SplunkSource.prototype.sendResult = function (key, cb) {
     return cb(null, newresult);
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   var sections = api.getConfigSections().filter((e) => { return e.match(/^splunk:/); });
   sections.forEach((section) => {

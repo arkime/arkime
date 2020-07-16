@@ -18,10 +18,10 @@
 'use strict';
 
 var wiseSource = require('./wiseSource.js');
-   var util = require('util');
-   var redis = require('ioredis')
-  ;
-/// ///////////////////////////////////////////////////////////////////////////////
+var util = require('util');
+var redis = require('ioredis');
+
+// ----------------------------------------------------------------------------
 function HODIRedisSource (api, section) {
   HODIRedisSource.super_.call(this, api, section);
 
@@ -49,7 +49,7 @@ function HODIRedisSource (api, section) {
 }
 util.inherits(HODIRedisSource, wiseSource);
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 HODIRedisSource.prototype.process = function (key, tag, cb) {
   var date = new Date();
 
@@ -64,11 +64,11 @@ HODIRedisSource.prototype.process = function (key, tag, cb) {
   this.client.hincrby(key, 'count', 1);
   this.client.hincrby(key, `count:${date.getFullYear()}:${date.getMonth() + 1}`, 1);
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 HODIRedisSource.prototype.getDomain = function (query, cb) {
   return this.process(`d:${query.value}`, this.tagsDomain, cb);
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 HODIRedisSource.prototype.getMd5 = function (query, cb) {
   if (query.contentType === undefined || this.contentTypes[query.contentType] !== 1) {
     return cb(null, undefined);
@@ -76,15 +76,15 @@ HODIRedisSource.prototype.getMd5 = function (query, cb) {
 
   return this.process(`h:${query.value}`, this.tagsMd5, cb);
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 HODIRedisSource.prototype.getEmail = function (query, cb) {
   return this.process(`e:${query.value}`, this.tagsEmail, cb);
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 HODIRedisSource.prototype.getIp = function (query, cb) {
   return this.process(`a:${query.value}`, this.tagsIp, cb);
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   return new HODIRedisSource(api, 'hodiredis');
 };

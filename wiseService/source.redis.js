@@ -18,10 +18,9 @@
 'use strict';
 
 var util = require('util');
-   var wiseSource = require('./wiseSource.js')
-  ;
+var wiseSource = require('./wiseSource.js');
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function RedisSource (api, section) {
   RedisSource.super_.call(this, api, section);
   this.url = api.getConfig(section, 'url');
@@ -52,7 +51,7 @@ function RedisSource (api, section) {
 }
 util.inherits(RedisSource, wiseSource);
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 RedisSource.prototype.fetch = function (key, cb) {
   if (this.template !== undefined) {
     key = this.template.replace('%key%', key).replace('%type%', this.type);
@@ -69,7 +68,7 @@ RedisSource.prototype.fetch = function (key, cb) {
     }, () => {});
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 RedisSource.prototype.fetchDomain = function (key, cb) {
   this.fetch(key, (err, result) => {
     if (result === undefined) {
@@ -78,11 +77,11 @@ RedisSource.prototype.fetchDomain = function (key, cb) {
     return cb(err, result);
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   var sections = api.getConfigSections().filter((e) => { return e.match(/^redis:/); });
   sections.forEach((section) => {
     return new RedisSource(api, section);
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------

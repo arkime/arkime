@@ -19,9 +19,8 @@
 'use strict';
 
 var util = require('util');
-   var wiseSource = require('./wiseSource.js');
-   var iptrie = require('iptrie')
-  ;
+var wiseSource = require('./wiseSource.js');
+var iptrie = require('iptrie');
 
 function SimpleSource (api, section) {
   SimpleSource.super_.call(this, api, section);
@@ -38,7 +37,7 @@ function SimpleSource (api, section) {
 }
 util.inherits(SimpleSource, wiseSource);
 module.exports = SimpleSource;
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 SimpleSource.prototype.dump = function (res) {
   var cache = this.type === 'ip' ? this.cache.items : this.cache;
   cache.forEach((value, key) => {
@@ -48,7 +47,7 @@ SimpleSource.prototype.dump = function (res) {
   });
   res.end();
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 SimpleSource.prototype.sendResult = function (key, cb) {
   var result = this.type === 'ip' ? this.cache.trie.find(key) : this.cache.get(key);
 
@@ -64,7 +63,7 @@ SimpleSource.prototype.sendResult = function (key, cb) {
   var newresult = { num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer]) };
   return cb(null, newresult);
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 SimpleSource.prototype.initSimple = function () {
   if (!this.type) {
     console.log(this.section, '- ERROR not loading since no type specified in config file');
@@ -91,7 +90,7 @@ SimpleSource.prototype.initSimple = function () {
   this.api.addSource(this.section, this);
   return true;
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 SimpleSource.prototype.load = function () {
   var setFunc;
   var newCache;

@@ -18,10 +18,9 @@
 'use strict';
 
 var csv = require('csv');
-   var request = require('request');
-   var fs = require('fs');
-   var iptrie = require('iptrie')
-  ;
+var request = require('request');
+var fs = require('fs');
+var iptrie = require('iptrie');
 
 function WISESource (api, section) {
   this.api = api;
@@ -109,7 +108,7 @@ WISESource.field2Pos = {};
 WISESource.field2Info = {};
 WISESource.pos2Field = {};
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 // https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
 function splitRemain (str, separator, limit) {
     str = str.split(separator);
@@ -120,7 +119,7 @@ function splitRemain (str, separator, limit) {
 
     return ret;
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 WISESource.prototype.parseCSV = function (body, setCb, endCb) {
   csv.parse(body, { skip_empty_lines: true, comment: '#', relax_column_count: true }, (err, data) => {
     if (err) {
@@ -145,7 +144,7 @@ WISESource.prototype.parseCSV = function (body, setCb, endCb) {
     endCb(err);
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 WISESource.prototype.parseFieldDef = function (line) {
   if (line[0] === '#') {
     line = line.substring(1);
@@ -161,7 +160,7 @@ WISESource.prototype.parseFieldDef = function (line) {
       this.view += line.substring(5) + '\n';
   }
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 WISESource.prototype.parseTagger = function (body, setCb, endCb) {
   var lines = body.toString().split(/\r?\n/);
   this.view = '';
@@ -199,7 +198,7 @@ WISESource.prototype.parseTagger = function (body, setCb, endCb) {
   }
   endCb(null);
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 WISESource.prototype.parseJSON = function (body, setCb, endCb) {
   var json = JSON.parse(body);
 
@@ -252,7 +251,7 @@ WISESource.prototype.parseJSON = function (body, setCb, endCb) {
   }
   endCb(null);
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 WISESource.combineResults = function (results) {
   var a; var num = 0; var len = 1;
   for (a = 0; a < results.length; a++) {
@@ -276,7 +275,7 @@ WISESource.combineResults = function (results) {
   buf[0] = num;
   return buf;
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 WISESource.result2Str = function (result, indent) {
   if (!indent) {
     indent = '';
@@ -294,7 +293,7 @@ WISESource.result2Str = function (result, indent) {
 
   return JSON.stringify(collection);
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 WISESource.encode = function () {
   var a; var l; var len = 0;
   for (a = 1; a < arguments.length; a += 2) {
@@ -317,7 +316,7 @@ WISESource.encode = function () {
   }
   return buf;
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 WISESource.request = function (url, file, cb) {
   var headers = {};
   if (file) {
@@ -348,7 +347,7 @@ WISESource.request = function (url, file, cb) {
   })
   ;
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 WISESource.prototype.tagsSetting = function () {
   var tagsField = this.api.addField('field:tags');
   var tags = this.api.getConfig(this.section, 'tags');
@@ -362,7 +361,7 @@ WISESource.prototype.tagsSetting = function () {
     this.tagsResult = WISESource.emptyResult;
   }
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 WISESource.prototype.formatSetting = function () {
   this.format = this.api.getConfig(this.section, 'format', 'csv');
   if (this.format === 'csv') {
@@ -377,10 +376,10 @@ WISESource.prototype.formatSetting = function () {
   }
   return true;
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 WISESource.prototype.typeSetting = function () {
   this.type = this.api.getConfig(this.section, 'type');
   this.typeFunc = this.api.funcName(this.type);
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 WISESource.emptyCombinedResult = WISESource.combineResults([]);

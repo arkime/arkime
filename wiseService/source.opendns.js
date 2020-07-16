@@ -18,11 +18,10 @@
 'use strict';
 
 var https = require('https');
-   var wiseSource = require('./wiseSource.js');
-   var util = require('util')
-  ;
+var wiseSource = require('./wiseSource.js');
+var util = require('util');
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function OpenDNSSource (api, section) {
   OpenDNSSource.super_.call(this, api, section);
   this.key = this.api.getConfig('opendns', 'key');
@@ -59,7 +58,7 @@ function OpenDNSSource (api, section) {
 }
 util.inherits(OpenDNSSource, wiseSource);
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 OpenDNSSource.prototype.getCategories = function () {
   var options = {
       host: 'sgraph.api.opendns.com',
@@ -86,7 +85,7 @@ OpenDNSSource.prototype.getCategories = function () {
 
   request.end();
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 OpenDNSSource.prototype.performQuery = function () {
   if (this.waiting.length === 0) {
     return;
@@ -173,7 +172,7 @@ OpenDNSSource.prototype.performQuery = function () {
   request.write(postData);
   request.end();
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 OpenDNSSource.prototype.getDomain = function (domain, cb) {
   if (domain in this.processing) {
     this.processing[domain].push(cb);
@@ -186,8 +185,8 @@ OpenDNSSource.prototype.getDomain = function (domain, cb) {
     this.performQuery();
   }
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   return new OpenDNSSource(api, 'opendns');
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------

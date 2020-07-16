@@ -17,11 +17,11 @@
 'use strict';
 
 var fs = require('fs');
-   var csv = require('csv');
-   var wiseSource = require('./wiseSource.js');
-   var util = require('util')
-  ;
-/// ///////////////////////////////////////////////////////////////////////////////
+var csv = require('csv');
+var wiseSource = require('./wiseSource.js');
+var util = require('util');
+
+// ----------------------------------------------------------------------------
 function AlienVaultSource (api, section) {
   AlienVaultSource.super_.call(this, api, section);
   this.key = api.getConfig('alienvault', 'key');
@@ -54,7 +54,7 @@ function AlienVaultSource (api, section) {
   setInterval(this.loadFile.bind(this), 2 * 60 * 60 * 1000); // Reload file every 2 hours
 }
 util.inherits(AlienVaultSource, wiseSource);
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 AlienVaultSource.prototype.parseFile = function () {
   var parser = csv.parse({ delimiter: '#', skip_empty_lines: true }, (err, data) => {
     if (err) {
@@ -79,7 +79,7 @@ AlienVaultSource.prototype.parseFile = function () {
   });
   fs.createReadStream('/tmp/alienvault.data').pipe(parser);
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 AlienVaultSource.prototype.loadFile = function () {
   console.log(this.section, '- Downloading files');
 
@@ -130,11 +130,11 @@ AlienVaultSource.prototype.loadFile = function () {
     }
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 AlienVaultSource.prototype.getIp = function (ip, cb) {
   cb(null, this.ips.get(ip));
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 AlienVaultSource.prototype.dump = function (res) {
   this.ips.forEach((value, key) => {
     var str = '{key: "' + key + '", ops:\n' +
@@ -143,7 +143,7 @@ AlienVaultSource.prototype.dump = function (res) {
   });
   res.end();
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   return new AlienVaultSource(api, 'alienvault');
 };

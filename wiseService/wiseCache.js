@@ -18,9 +18,8 @@
 'use strict';
 
 var LRU = require('lru-cache');
-   var Bson = require('bson');
-   var BSON = new Bson()
-  ;
+var Bson = require('bson');
+var BSON = new Bson();
 
 /******************************************************************************/
 // Memory Cache
@@ -31,13 +30,13 @@ function WISEMemoryCache (options) {
   this.cache = {};
 }
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 WISEMemoryCache.prototype.get = function (query, cb) {
   var cache = this.cache[query.typeName];
   cb(null, cache ? cache.get(query.value) : undefined);
 };
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 WISEMemoryCache.prototype.set = function (query, value) {
   var cache = this.cache[query.typeName];
   if (!cache) {
@@ -61,7 +60,7 @@ function WISERedisCache (redisType, options) {
   this.client = options.createRedisClient(redisType, 'cache');
 }
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 WISERedisCache.prototype.get = function (query, cb) {
   var value;
 
@@ -89,7 +88,7 @@ WISERedisCache.prototype.get = function (query, cb) {
   });
 };
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 WISERedisCache.prototype.set = function (query, value) {
   var cache = this.cache[query.typeName];
 

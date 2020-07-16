@@ -6,6 +6,7 @@
 /wiseService/vueapp/config/
 /wiseService/vueapp/dist/
 /wiseService/node_modules
+/wiseService/sprintf.js
 /viewer/vueapp/build/
 /viewer/vueapp/config/
 /viewer/vueapp/dist/

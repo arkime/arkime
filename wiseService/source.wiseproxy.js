@@ -18,11 +18,10 @@
 'use strict';
 
 var request = require('request');
-   var wiseSource = require('./wiseSource.js');
-   var util = require('util')
-  ;
+var wiseSource = require('./wiseSource.js');
+var util = require('util');
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function WiseProxySource (api, section) {
   WiseProxySource.super_.call(this, api, section);
 
@@ -72,7 +71,7 @@ function WiseProxySource (api, section) {
   setInterval(this.performQuery.bind(this), 500);
 }
 util.inherits(WiseProxySource, wiseSource);
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 WiseProxySource.prototype.performQuery = function () {
   if (this.bufferInfo.length === 0) {
     return;
@@ -126,7 +125,7 @@ WiseProxySource.prototype.performQuery = function () {
     }
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 WiseProxySource.prototype.fetch = function (type, item, cb) {
   this.buffer[this.offset] = type; this.offset++;
   this.buffer.writeUInt16BE(item.length, this.offset); this.offset += 2;
@@ -137,7 +136,7 @@ WiseProxySource.prototype.fetch = function (type, item, cb) {
     this.performQuery();
   }
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 WiseProxySource.prototype.updateInfo = function () {
   var options = {
       url: this.url + '/fields',
@@ -194,31 +193,31 @@ WiseProxySource.prototype.updateInfo = function () {
      }
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function getIp (item, cb) {
   this.fetch(0, item, cb);
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function getDomain (item, cb) {
   this.fetch(1, item, cb);
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function getMd5 (item, cb) {
   this.fetch(2, item, cb);
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function getEmail (item, cb) {
   this.fetch(3, item, cb);
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function getURL (item, cb) {
   this.fetch(4, item, cb);
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   var sections = api.getConfigSections().filter((e) => { return e.match(/^wiseproxy:/); });
   sections.forEach((section) => {
     return new WiseProxySource(api, section);
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------

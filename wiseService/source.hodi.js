@@ -18,11 +18,11 @@
 'use strict';
 
 var wiseSource = require('./wiseSource.js');
-   var elasticsearch = require('elasticsearch');
-   var util = require('util');
-   var LRU = require('lru-cache')
-  ;
-/// ///////////////////////////////////////////////////////////////////////////////
+var elasticsearch = require('elasticsearch');
+var util = require('util');
+var LRU = require('lru-cache');
+
+// ----------------------------------------------------------------------------
 function HODISource (api, section) {
   HODISource.super_.call(this, api, section);
   this.esHost = api.getConfig('hodi', 'esHost');
@@ -82,7 +82,7 @@ body: {
 }
 util.inherits(HODISource, wiseSource);
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 HODISource.prototype.sendBulk = function () {
   if (this.bulk.length === 0) {
     return;
@@ -93,7 +93,7 @@ HODISource.prototype.sendBulk = function () {
   this.client.bulk({ body: this.bulk });
   this.bulk = [];
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 HODISource.prototype.process = function (index, id, cb) {
   cb(null, undefined);
 
@@ -111,23 +111,23 @@ HODISource.prototype.process = function (index, id, cb) {
     this.sendBulk();
   }
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 HODISource.prototype.getDomain = function (domain, cb) {
   this.process('domain', domain, cb);
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 HODISource.prototype.getIp = function (ip, cb) {
   this.process('ip', ip, cb);
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 HODISource.prototype.getMd5 = function (md5, cb) {
   this.process('md5', md5, cb);
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 HODISource.prototype.getEmail = function (email, cb) {
   this.process('email', email, cb);
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   return new HODISource(api, 'hodi');
 };

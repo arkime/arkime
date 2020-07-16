@@ -18,12 +18,11 @@
 'use strict';
 
 var fs = require('fs');
-   var util = require('util');
-   var wiseSource = require('./wiseSource.js');
-   var ini = require('iniparser')
-  ;
+var util = require('util');
+var wiseSource = require('./wiseSource.js');
+var ini = require('iniparser');
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function RightClickSource (api, section) {
   RightClickSource.super_.call(this, api, section);
 
@@ -66,7 +65,7 @@ function RightClickSource (api, section) {
   this.watch = fs.watch(this.file, watchCb);
 }
 util.inherits(RightClickSource, wiseSource);
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 RightClickSource.prototype.load = function () {
   if (!fs.existsSync(this.file)) {
     console.log(this.section, '- ERROR not loading', this.section, 'since', this.file, "doesn't exist");
@@ -78,7 +77,7 @@ RightClickSource.prototype.load = function () {
 
   this.process(data);
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 RightClickSource.prototype.process = function (data) {
   var keys = Object.keys(data);
   if (!keys) { return; }
@@ -113,11 +112,11 @@ RightClickSource.prototype.process = function (data) {
   });
 };
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   var sections = api.getConfigSections().filter((e) => { return e.match(/(^right-click$|^right-click:)/); });
   sections.forEach((section) => {
     return new RightClickSource(api, section);
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------

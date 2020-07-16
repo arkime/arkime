@@ -53,9 +53,9 @@ var internals = {
   workers: 1
 };
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 /// / Command Line Parsing
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function processArgs (argv) {
   for (var i = 0, ilen = argv.length; i < ilen; i++) {
     if (argv[i] === '-c') {
@@ -92,9 +92,9 @@ if (internals.workers > 1) {
     });
   }
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 /// / Config
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 internals.config = ini.parseSync(internals.configFile);
 var app = express();
 var logger = require('morgan');
@@ -146,9 +146,9 @@ process.on('SIGINT', function () {
     process.exit();
 });
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 /// / Util
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function noCacheJson (req, res, next) {
   res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
   res.header('Content-Type', 'application/json');
@@ -156,9 +156,9 @@ function noCacheJson (req, res, next) {
   return next();
 }
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 /// / Sources
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function newFieldsTS () {
   var now = Math.floor(Date.now() / 1000);
   if (now <= internals.fieldsTS) {
@@ -167,7 +167,7 @@ function newFieldsTS () {
     internals.fieldsTS = now;
   }
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function addField (field) {
   var match = field.match(/field:([^;]+)/);
   var name = match[1];
@@ -228,7 +228,7 @@ function addField (field) {
   wiseSource.field2Info[name] = { pos: pos, friendly: friendly, db: db };
   return pos;
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 // https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
 function splitRemain (str, separator, limit) {
     str = str.split(separator);
@@ -239,7 +239,7 @@ function splitRemain (str, separator, limit) {
 
     return ret;
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 internals.sourceApi = {
   getConfig: getConfig,
   getConfigSections: getConfigSections,
@@ -297,7 +297,7 @@ internals.sourceApi = {
   funcName: funcName,
   app: app
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function loadSources () {
   glob(getConfig('wiseService', 'sourcePath', './') + 'source.*.js', (err, files) => {
     files.forEach((file) => {
@@ -306,9 +306,9 @@ function loadSources () {
     });
   });
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 /// / APIs
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 // Serve vue app
 app.get('/', (req, res, next) => {
   res.sendFile(`${__dirname}/vueapp/dist/index.html`);
@@ -321,11 +321,11 @@ app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/
 app.use('/font-awesome', express.static(`${__dirname}/../node_modules/font-awesome`, { maxAge: 600 * 1000 }));
 app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'));
 app.use(timeout(5 * 1000));
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 app.get('/_ns_/nstest.html', [noCacheJson], function (req, res) {
   res.end();
 });
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 app.get('/fields', [noCacheJson], function (req, res) {
   if (req.query.ver === undefined || req.query.ver === '0') {
     if (internals.fields.length < 256) {
@@ -338,18 +338,18 @@ app.get('/fields', [noCacheJson], function (req, res) {
     res.send(internals.fieldsBuf1);
   }
 });
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 app.get('/views', [noCacheJson], function (req, res) {
   res.send(internals.views);
 });
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 app.get('/rightClicks', [noCacheJson], function (req, res) {
   res.send(internals.rightClicks);
 });
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 'sha256'];
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function globalAllowed (value) {
   for (var i = 0; i < this.excludes.length; i++) {
     if (value.match(this.excludes[i])) {
@@ -361,7 +361,7 @@ function globalAllowed (value) {
   }
   return true;
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function globalIPAllowed (value) {
   if (this.excludes.find(value)) {
     if (internals.debug > 0) {
@@ -371,7 +371,7 @@ function globalIPAllowed (value) {
   }
   return true;
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function sourceAllowed (src, value) {
   var excludes = src[this.excludeName] || [];
   for (var i = 0; i < excludes.length; i++) {
@@ -384,7 +384,7 @@ function sourceAllowed (src, value) {
   }
   return true;
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function sourceIPAllowed (src, value) {
   if (src.excludeIPs.find(value)) {
     if (internals.debug > 0) {
@@ -397,7 +397,7 @@ function sourceIPAllowed (src, value) {
   }
   return true;
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function funcName (typeName) {
   if (typeName === 'url') {
     return 'getURL';
@@ -405,7 +405,7 @@ function funcName (typeName) {
 
   return 'get' + typeName[0].toUpperCase() + typeName.slice(1);
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function processQuery (req, query, cb) {
   var typeInfo = internals.types[query.typeName];
 
@@ -565,7 +565,7 @@ function processQuery (req, query, cb) {
     });
   });
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function processQueryResponse0 (req, res, queries, results) {
   var buf = Buffer.allocUnsafe(8);
   buf.writeUInt32BE(internals.fieldsTS, 0);
@@ -579,7 +579,7 @@ function processQueryResponse0 (req, res, queries, results) {
   }
   res.end();
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 //
 function processQueryResponse2 (req, res, queries, results) {
   var hashes = (req.query.hashes || '').split(',');
@@ -610,7 +610,7 @@ function processQueryResponse2 (req, res, queries, results) {
   }
   res.end();
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 app.post('/get', function (req, res) {
   var offset = 0;
 
@@ -662,7 +662,7 @@ app.post('/get', function (req, res) {
     });
   });
 });
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 app.get('/:source/:typeName/:value', [noCacheJson], function (req, res) {
   var source = internals.sources[req.params.source];
   if (!source) {
@@ -680,11 +680,11 @@ app.get('/:source/:typeName/:value', [noCacheJson], function (req, res) {
     res.end(wiseSource.result2Str(result));
   });
 });
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 app.get('/sources', [noCacheJson], (req, res) => {
   return res.send(Object.keys(internals.sources));
 });
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 app.get('/types/:source?', [noCacheJson], (req, res) => {
   // console.log(internals.types);
   if (req.params.source) {
@@ -696,7 +696,7 @@ app.get('/types/:source?', [noCacheJson], (req, res) => {
   }
   // return res.send(Object.keys(internals.types));
 });
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 app.get('/dump/:source', [noCacheJson], function (req, res) {
   var source = internals.sources[req.params.source];
   if (!source) {
@@ -709,7 +709,7 @@ app.get('/dump/:source', [noCacheJson], function (req, res) {
 
   source.dump(res);
 });
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 // ALW - Need to rewrite to use performQuery
 /*
 app.get("/bro/:type", [noCacheJson], function(req, res) {
@@ -769,7 +769,7 @@ app.get("/bro/:type", [noCacheJson], function(req, res) {
   });
 });
 */
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 app.get('/:typeName/:value', [noCacheJson], function (req, res) {
   var query = { typeName: req.params.typeName,
                value: req.params.value };
@@ -781,14 +781,14 @@ app.get('/:typeName/:value', [noCacheJson], function (req, res) {
     res.end(wiseSource.result2Str(result));
   });
 });
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 if (getConfig('wiseService', 'regressionTests')) {
   app.post('/shutdown', (req, res) => {
     process.exit(0);
     throw new Error('Exiting');
   });
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function createRedisClient (redisType, section) {
   if (redisType === 'redis') {
     return new Redis(getConfig(section, 'url'));
@@ -813,7 +813,7 @@ function createRedisClient (redisType, section) {
       process.exit();
   }
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function printStats () {
   var keys = Object.keys(internals.types).sort();
   var lines = [];
@@ -850,9 +850,9 @@ app.use((req, res, next) => {
   res.status(404).sendFile(`${__dirname}/vueapp/dist/index.html`);
 });
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 /// / jPaq
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 /*
  jPaq - A fully customizable JavaScript/JScript library
  http://jpaq.org/
@@ -872,9 +872,9 @@ RegExp.fromWildExp = function (c, a) {
 }e += c; a && (/[ab]/.test(a) && (e = '^' + e), /[ae]/.test(a) && (e += '$')); return RegExp(e, a ? a.replace(/[^gim]/g, '') : '');
 };
 /* eslint-enable */
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 /// / Main
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function main () {
   internals.cache = wiseCache.createCache({ getConfig: getConfig, createRedisClient: createRedisClient });
 

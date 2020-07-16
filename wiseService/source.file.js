@@ -18,11 +18,10 @@
 'use strict';
 
 var fs = require('fs');
-   var util = require('util');
-   var simpleSource = require('./simpleSource.js')
-  ;
+var util = require('util');
+var simpleSource = require('./simpleSource.js');
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function FileSource (api, section) {
   FileSource.super_.call(this, api, section);
 
@@ -66,7 +65,7 @@ function FileSource (api, section) {
   this.watch = fs.watch(this.file, watchCb);
 }
 util.inherits(FileSource, simpleSource);
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 FileSource.prototype.simpleSourceLoad = function (setFunc, cb) {
   fs.readFile(this.file, (err, body) => {
     if (err) {
@@ -75,11 +74,11 @@ FileSource.prototype.simpleSourceLoad = function (setFunc, cb) {
     this.parse(body, setFunc, cb);
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   var sections = api.getConfigSections().filter((e) => { return e.match(/^file:/); });
   sections.forEach((section) => {
     return new FileSource(api, section);
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------

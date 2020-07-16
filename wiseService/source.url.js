@@ -18,11 +18,10 @@
 'use strict';
 
 var util = require('util');
-   var simpleSource = require('./simpleSource.js');
-   var request = require('request')
-  ;
+var simpleSource = require('./simpleSource.js');
+var request = require('request');
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function URLSource (api, section) {
   URLSource.super_.call(this, api, section);
   this.url = api.getConfig(section, 'url');
@@ -57,7 +56,7 @@ function URLSource (api, section) {
   }
 }
 util.inherits(URLSource, simpleSource);
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 URLSource.prototype.simpleSourceLoad = function (setFunc, cb) {
   request(this.url, { headers: this.headers }, (error, response, body) => {
     if (!error && response.statusCode === 200) {
@@ -67,11 +66,11 @@ URLSource.prototype.simpleSourceLoad = function (setFunc, cb) {
     }
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   var sections = api.getConfigSections().filter((e) => { return e.match(/^url:/); });
   sections.forEach((section) => {
     return new URLSource(api, section);
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------

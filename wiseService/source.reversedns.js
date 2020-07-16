@@ -18,12 +18,12 @@
 'use strict';
 
 var Dns = require('dns');
-   var iptrie = require('iptrie');
-   var wiseSource = require('./wiseSource.js');
-   var util = require('util')
-  ;
+var iptrie = require('iptrie');
+var wiseSource = require('./wiseSource.js');
+var util = require('util');
 var resolver = Dns;
-/// ///////////////////////////////////////////////////////////////////////////////
+
+// ----------------------------------------------------------------------------
 function removeArray (arr, value) {
   var pos = 0;
   while ((pos = arr.indexOf(value, pos)) !== -1) {
@@ -31,7 +31,7 @@ function removeArray (arr, value) {
   }
   return arr;
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function ReverseDNSSource (api, section) {
   ReverseDNSSource.super_.call(this, api, section);
   this.field = api.getConfig('reversedns', 'field');
@@ -66,7 +66,7 @@ function ReverseDNSSource (api, section) {
   this.api.addSource('reversedns', this);
 }
 util.inherits(ReverseDNSSource, wiseSource);
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 ReverseDNSSource.prototype.getIp = function (ip, cb) {
   if (!this.trie.find(ip)) {
     return cb(null, undefined);
@@ -96,8 +96,8 @@ ReverseDNSSource.prototype.getIp = function (ip, cb) {
     cb(null, wiseResult);
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   return new ReverseDNSSource(api, 'reversedns');
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------

@@ -18,11 +18,11 @@
 'use strict';
 
 var fs = require('fs');
-   var unzipper = require('unzipper');
-   var wiseSource = require('./wiseSource.js');
-   var util = require('util')
-  ;
-/// ///////////////////////////////////////////////////////////////////////////////
+var unzipper = require('unzipper');
+var wiseSource = require('./wiseSource.js');
+var util = require('util');
+
+// ----------------------------------------------------------------------------
 function ThreatQSource (api, section) {
   ThreatQSource.super_.call(this, api, section);
   this.key = api.getConfig('threatq', 'key');
@@ -70,7 +70,7 @@ function ThreatQSource (api, section) {
   this.api.addSource('threatq', this);
 }
 util.inherits(ThreatQSource, wiseSource);
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 ThreatQSource.prototype.parseFile = function () {
   this.ips.clear();
   this.domains.clear();
@@ -120,7 +120,7 @@ ThreatQSource.prototype.parseFile = function () {
       console.log(this.section, '- Done Loading', count, 'elements');
     });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 ThreatQSource.prototype.loadFile = function () {
   console.log(this.section, '- Downloading files');
   wiseSource.request('https://' + this.host + '/export/moloch/?export_key=' + this.key, '/tmp/threatquotient.zip', (statusCode) => {
@@ -130,24 +130,24 @@ ThreatQSource.prototype.loadFile = function () {
     }
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 ThreatQSource.prototype.getDomain = function (domain, cb) {
   var domains = this.domains;
   cb(null, domains.get(domain) || domains.get(domain.substring(domain.indexOf('.') + 1)));
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 ThreatQSource.prototype.getIp = function (ip, cb) {
   cb(null, this.ips.get(ip));
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 ThreatQSource.prototype.getMd5 = function (md5, cb) {
   cb(null, this.md5s.get(md5));
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 ThreatQSource.prototype.getEmail = function (email, cb) {
   cb(null, this.emails.get(email));
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 ThreatQSource.prototype.dump = function (res) {
   ['ips', 'domains', 'emails', 'md5s'].forEach((ckey) => {
     res.write(`${ckey}:\n`);
@@ -159,7 +159,7 @@ ThreatQSource.prototype.dump = function (res) {
   });
   res.end();
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   return new ThreatQSource(api, 'threatq');
 };

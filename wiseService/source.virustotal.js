@@ -18,13 +18,12 @@
 'use strict';
 
 var request = require('request');
-   var wiseSource = require('./wiseSource.js');
-   var util = require('util')
-  ;
+var wiseSource = require('./wiseSource.js');
+var util = require('util');
 
 var source;
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function VirusTotalSource (api, section) {
   VirusTotalSource.super_.call(this, api, section);
   this.waiting = [];
@@ -74,7 +73,7 @@ function VirusTotalSource (api, section) {
 }
 util.inherits(VirusTotalSource, wiseSource);
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 VirusTotalSource.prototype.performQuery = function () {
   if (this.waiting.length === 0) {
     return;
@@ -143,7 +142,7 @@ VirusTotalSource.prototype.performQuery = function () {
     console.log(this.section, err);
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 VirusTotalSource.prototype.getMd5 = function (query, cb) {
   if (query.contentType === undefined || this.contentTypes[query.contentType] !== 1) {
     return cb(null, undefined);
@@ -156,7 +155,7 @@ VirusTotalSource.prototype.getMd5 = function (query, cb) {
     return cb('dropped');
   }
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 var reportApi = function (req, res) {
   source.getMd5(req.query.resource, (err, result) => {
     // console.log(err, result);
@@ -190,9 +189,9 @@ var reportApi = function (req, res) {
     }
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   api.app.get('/vtapi/v2/file/report', reportApi);
   source = new VirusTotalSource(api, 'virustotal');
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------

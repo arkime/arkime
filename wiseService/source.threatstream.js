@@ -18,15 +18,14 @@
 'use strict';
 
 var fs = require('fs');
-   var unzipper = require('unzipper');
-   var wiseSource = require('./wiseSource.js');
-   var util = require('util');
-   var request = require('request');
-   var exec = require('child_process').exec
-  ;
-
+var unzipper = require('unzipper');
+var wiseSource = require('./wiseSource.js');
+var util = require('util');
+var request = require('request');
+var exec = require('child_process').exec;
 var sqlite3;
-/// ///////////////////////////////////////////////////////////////////////////////
+
+// ----------------------------------------------------------------------------
 function ThreatStreamSource (api, section) {
   ThreatStreamSource.super_.call(this, api, section);
   this.user = api.getConfig('threatstream', 'user');
@@ -119,7 +118,7 @@ function ThreatStreamSource (api, section) {
   this.api.addRightClick('threatstreamid', { name: 'Threatstream Id Lookup', url: 'https://api.threatstream.com/api/v1/intelligence/%TEXT%/', fields: 'threatstream.id' });
 }
 util.inherits(ThreatStreamSource, wiseSource);
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 ThreatStreamSource.prototype.parseFile = function () {
   this.ips.clear();
   this.ips.reserve(2000000);
@@ -191,7 +190,7 @@ ThreatStreamSource.prototype.parseFile = function () {
       console.log(this.section, '- Done Loading');
     });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 ThreatStreamSource.prototype.loadFile = function () {
   console.log(this.section, '- Downloading files');
   wiseSource.request('https://api.threatstream.com/api/v1/intelligence/snapshot/download/?username=' + this.user + '&api_key=' + this.key, '/tmp/threatstream.zip', (statusCode) => {
@@ -202,29 +201,29 @@ ThreatStreamSource.prototype.loadFile = function () {
     }
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function getDomainZip (domain, cb) {
   var domains = this.domains;
   cb(null, domains.get(domain) || domains.get(domain.substring(domain.indexOf('.') + 1)));
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function getIpZip (ip, cb) {
   cb(null, this.ips.get(ip));
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function getMd5Zip (md5, cb) {
   cb(null, this.md5s.get(md5));
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function getEmailZip (email, cb) {
   cb(null, this.emails.get(email));
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function getURLZip (url, cb) {
   url = `http://${url}`;
   cb(null, this.urls.get(url));
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function dumpZip (res) {
   res.write('{');
   ['ips', 'domains', 'emails', 'md5s', 'urls'].forEach((ckey) => {
@@ -239,7 +238,7 @@ function dumpZip (res) {
   res.write('}');
   res.end();
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 ThreatStreamSource.prototype.getApi = function (type, value, cb) {
   var options = {
       url: `https://api.threatstream.com/api/v2/intelligence/?username=${this.user}&api_key=${this.key}&status=active&${type}=${value}&itype=${this.types[type]}`,
@@ -288,23 +287,23 @@ ThreatStreamSource.prototype.getApi = function (type, value, cb) {
     return cb(null, result);
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function getDomainApi (domain, cb) {
   return this.getApi('domain', domain, cb);
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function getIpApi (ip, cb) {
   return this.getApi('ip', ip, cb);
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function getMd5Api (md5, cb) {
   return this.getApi('md5', md5, cb);
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function getEmailApi (email, cb) {
   return this.getApi('email', email, cb);
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 ThreatStreamSource.prototype.getSqlite3 = function (type, field, value, cb) {
   if (!this.db) {
     return cb('dropped');
@@ -340,7 +339,7 @@ ThreatStreamSource.prototype.getSqlite3 = function (type, field, value, cb) {
     return cb(null, result);
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function getDomainSqlite3 (domain, cb) {
   this.getSqlite3('domain', 'domain', domain, (err, result) => {
     if (err || result !== wiseSource.emptyResult) {
@@ -349,24 +348,24 @@ function getDomainSqlite3 (domain, cb) {
     this.getSqlite3('domain', 'domain', domain.substring(domain.indexOf('.') + 1), cb);
   });
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function getIpSqlite3 (ip, cb) {
   return this.getSqlite3('ip', 'srcip', ip, cb);
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function getMd5Sqlite3 (md5, cb) {
   return this.getSqlite3('md5', 'md5', md5, cb);
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function getEmailSqlite3 (email, cb) {
   return this.getSqlite3('email', 'email', email, cb);
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function getURLSqlite3 (url, cb) {
   url = `http://${url}`;
   return this.getSqlite3('url', 'url', url, cb);
 }
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 ThreatStreamSource.prototype.loadTypes = function () {
   // Threatstream doesn't have a way to just ask for type matches, so we need to figure out which itypes are various types.
   this.types = {};
@@ -394,7 +393,7 @@ ThreatStreamSource.prototype.loadTypes = function () {
     this.api.addSource('threatstream', this);
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 ThreatStreamSource.prototype.openDb = function () {
   var dbFile = this.api.getConfig('threatstream', 'dbFile', 'ts.db');
 
@@ -460,8 +459,8 @@ ThreatStreamSource.prototype.openDb = function () {
     this.db = new sqlite3.Database(dbFile + '.moloch', sqlite3.OPEN_READONLY);
   }
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   return new ThreatStreamSource(api, 'threatstream');
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------

@@ -18,11 +18,10 @@
 'use strict';
 
 var request = require('request');
-   var wiseSource = require('./wiseSource.js');
-   var util = require('util')
-  ;
+var wiseSource = require('./wiseSource.js');
+var util = require('util');
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function PassiveTotalSource (api, section) {
   PassiveTotalSource.super_.call(this, api, section);
 
@@ -56,7 +55,7 @@ function PassiveTotalSource (api, section) {
 }
 util.inherits(PassiveTotalSource, wiseSource);
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 PassiveTotalSource.prototype.performQuery = function () {
   if (this.waiting.length === 0) {
     return;
@@ -118,7 +117,7 @@ PassiveTotalSource.prototype.performQuery = function () {
 
   this.waiting.length = 0;
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 PassiveTotalSource.prototype.fetch = function (key, cb) {
   if (key in this.processing) {
     this.processing[key].push(cb);
@@ -131,11 +130,11 @@ PassiveTotalSource.prototype.fetch = function (key, cb) {
     this.performQuery();
   }
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 PassiveTotalSource.prototype.getIp = PassiveTotalSource.prototype.fetch;
 PassiveTotalSource.prototype.getDomain = PassiveTotalSource.prototype.fetch;
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   return new PassiveTotalSource(api, 'passivetotal');
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------

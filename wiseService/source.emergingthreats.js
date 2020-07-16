@@ -18,12 +18,11 @@
 'use strict';
 
 var fs = require('fs');
-   var csv = require('csv');
-   var wiseSource = require('./wiseSource.js');
-   var util = require('util')
-  ;
+var csv = require('csv');
+var wiseSource = require('./wiseSource.js');
+var util = require('util');
 
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function EmergingThreatsSource (api, section) {
   EmergingThreatsSource.super_.call(this, api, section);
   this.key = api.getConfig('emergingthreats', 'key');
@@ -55,7 +54,7 @@ function EmergingThreatsSource (api, section) {
   setInterval(this.loadFiles.bind(this), 60 * 60 * 1000); // Reload files every hour
 }
 util.inherits(EmergingThreatsSource, wiseSource);
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 EmergingThreatsSource.prototype.parseCategories = function (fn) {
   var parser = csv.parse({ skip_empty_lines: true }, (err, data) => {
     if (err) {
@@ -70,7 +69,7 @@ EmergingThreatsSource.prototype.parseCategories = function (fn) {
   });
   fs.createReadStream('/tmp/categories.txt').pipe(parser);
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 EmergingThreatsSource.prototype.parse = function (fn, hash) {
   var parser = csv.parse({ skip_empty_lines: true }, (err, data) => {
     if (err) {
@@ -97,7 +96,7 @@ EmergingThreatsSource.prototype.parse = function (fn, hash) {
   });
   fs.createReadStream(fn).pipe(parser);
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 EmergingThreatsSource.prototype.loadFiles = function () {
   console.log(this.section, '- Downloading Files');
   wiseSource.request('https://rules.emergingthreatspro.com/' + this.key + '/reputation/categories.txt', '/tmp/categories.txt', (statusCode) => {
@@ -120,15 +119,15 @@ EmergingThreatsSource.prototype.loadFiles = function () {
     }
   });
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 EmergingThreatsSource.prototype.getDomain = function (domain, cb) {
   cb(null, this.domains.get(domain) || this.domains.get(domain.substring(domain.indexOf('.') + 1)));
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 EmergingThreatsSource.prototype.getIp = function (ip, cb) {
   cb(null, this.ips.get(ip));
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 EmergingThreatsSource.prototype.dump = function (res) {
   ['ips', 'domains'].forEach((ckey) => {
     res.write(`${ckey}:\n`);
@@ -140,7 +139,7 @@ EmergingThreatsSource.prototype.dump = function (res) {
   });
   res.end();
 };
-/// ///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   return new EmergingThreatsSource(api, 'emergingthreats');
 };
