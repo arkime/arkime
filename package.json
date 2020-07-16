@@ -26,7 +26,7 @@
     "hoek": "^4.2.1",
     "iniparser": "http://github.com/awick/node-iniparser/tarball/master",
     "ioredis": "^4.14.1",
-    "lodash": "^4.17.13",
+    "lodash": "^4.17.19",
     "lodash.template": "^4.5.0",
     "lru-cache": "^4.0.1",
     "moment": "^2.19.1",
