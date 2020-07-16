@@ -1,6 +1,6 @@
 'use strict';
 
-exports.sprintf = function() {
+exports.sprintf = function () {
   // http://kevin.vanzonneveld.net
   // +   original by: Ash Searle (http://hexmen.com/blog/)
   // + namespaced by: Michael White (http://getsprink.com)
@@ -20,10 +20,11 @@ exports.sprintf = function() {
   // *     returns 3: '[####monkey]'
   // *     example 4: sprintf("%d", 123456789012345);
   // *     returns 4: '123456789012345'
+  // eslint-disable-next-line
   var regex = /%%|%(\d+\$)?([-+\'#0 ]*)(\*\d+\$|\*|\d+)?(\.(\*\d+\$|\*|\d+))?([scboxXuideEfFgG])/g;
-  var a = arguments,
-    i = 0,
-    format = a[i++];
+  var a = arguments;
+    var i = 0;
+    var format = a[i++];
 
   // pad()
   var pad = function (str, len, chr, leftJustify) {
@@ -51,11 +52,11 @@ exports.sprintf = function() {
   var formatBaseX = function (value, base, prefix, leftJustify, minWidth, precision, zeroPad) {
     // Note: casts negative numbers to positive ones
     var number = value >>> 0;
-    prefix = prefix && number && {
+    prefix = (prefix && number) ? {
       '2': '0b',
       '8': '0',
       '16': '0x'
-    }[base] || '';
+    }[base] : '';
     value = prefix + pad(number.toString(base), precision || 0, '0', false);
     return justify(value, prefix, leftJustify, minWidth, zeroPad);
   };
@@ -81,13 +82,13 @@ exports.sprintf = function() {
     }
 
     // parse flags
-    var leftJustify = false,
-      positivePrefix = '',
-      zeroPad = false,
-      prefixBaseX = false,
-      customPadChar = ' ';
+    var leftJustify = false;
+      var positivePrefix = '';
+      var zeroPad = false;
+      var prefixBaseX = false;
+      var customPadChar = ' ';
     var flagsl = flags.length;
-    for (var j = 0; flags && j < flagsl; j++) {
+    for (var j = 0; j < flagsl; j++) {
       switch (flags.charAt(j)) {
       case ' ':
         positivePrefix = ' ';

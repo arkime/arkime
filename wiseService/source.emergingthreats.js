@@ -17,50 +17,49 @@
  */
 'use strict';
 
-var fs             = require('fs')
-  , csv            = require('csv')
-  , wiseSource     = require('./wiseSource.js')
-  , util           = require('util')
+var fs = require('fs');
+   var csv = require('csv');
+   var wiseSource = require('./wiseSource.js');
+   var util = require('util')
   ;
 
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
 function EmergingThreatsSource (api, section) {
   EmergingThreatsSource.super_.call(this, api, section);
-  this.key          = api.getConfig("emergingthreats", "key");
+  this.key = api.getConfig('emergingthreats', 'key');
 
   if (this.key === undefined) {
-    console.log(this.section, "- No key defined");
+    console.log(this.section, '- No key defined');
     return;
   }
 
-  this.ips          = new Map();
-  this.domains      = new Map();
-  this.categories   = {};
+  this.ips = new Map();
+  this.domains = new Map();
+  this.categories = {};
   this.cacheTimeout = -1;
 
-  this.api.addSource("emergingthreats", this);
+  this.api.addSource('emergingthreats', this);
 
-  this.scoreField = this.api.addField("field:emergingthreats.score;db:et.score;kind:integer;friendly:Score;help:Emerging Threats Score;count:true");
-  this.categoryField = this.api.addField("field:emergingthreats.category;db:et.category;kind:termfield;friendly:Category;help:Emerging Threats Category;count:true");
+  this.scoreField = this.api.addField('field:emergingthreats.score;db:et.score;kind:integer;friendly:Score;help:Emerging Threats Score;count:true');
+  this.categoryField = this.api.addField('field:emergingthreats.category;db:et.category;kind:termfield;friendly:Category;help:Emerging Threats Category;count:true');
 
-  this.api.addView("emergingthreats",
-    "if (session.et)\n" +
-    "  div.sessionDetailMeta.bold Emerging Threats\n" +
-    "  dl.sessionDetailMeta\n" +
+  this.api.addView('emergingthreats',
+    'if (session.et)\n' +
+    '  div.sessionDetailMeta.bold Emerging Threats\n' +
+    '  dl.sessionDetailMeta\n' +
     "    +arrayList(session.et, 'category', 'Category', 'emergingthreats.category')\n" +
     "    +arrayList(session.et, 'score', 'Score', 'emergingthreats.score')\n"
   );
 
   setImmediate(this.loadFiles.bind(this));
-  setInterval(this.loadFiles.bind(this), 60*60*1000); // Reload files every hour
+  setInterval(this.loadFiles.bind(this), 60 * 60 * 1000); // Reload files every hour
 }
 util.inherits(EmergingThreatsSource, wiseSource);
-//////////////////////////////////////////////////////////////////////////////////
-EmergingThreatsSource.prototype.parseCategories = function(fn)
-{
-  var parser = csv.parse({skip_empty_lines:true}, (err, data) => {
+/// ///////////////////////////////////////////////////////////////////////////////
+EmergingThreatsSource.prototype.parseCategories = function (fn) {
+  var parser = csv.parse({ skip_empty_lines: true }, (err, data) => {
     if (err) {
-      console.log(this.section, "- Couldn't parse", fn, "csv", err);
+      console.log(this.section, "- Couldn't parse", fn, 'csv', err);
       return;
     }
 
@@ -71,12 +70,11 @@ EmergingThreatsSource.prototype.parseCategories = function(fn)
   });
   fs.createReadStream('/tmp/categories.txt').pipe(parser);
 };
-//////////////////////////////////////////////////////////////////////////////////
-EmergingThreatsSource.prototype.parse = function (fn, hash)
-{
-  var parser = csv.parse({skip_empty_lines:true}, (err, data) => {
+/// ///////////////////////////////////////////////////////////////////////////////
+EmergingThreatsSource.prototype.parse = function (fn, hash) {
+  var parser = csv.parse({ skip_empty_lines: true }, (err, data) => {
     if (err) {
-      console.log(this.section, "- Couldn't parse", fn, "csv", err);
+      console.log(this.section, "- Couldn't parse", fn, 'csv', err);
       return;
     }
 
@@ -86,33 +84,31 @@ EmergingThreatsSource.prototype.parse = function (fn, hash)
       }
 
       var encoded = wiseSource.encode(this.categoryField, this.categories[data[i][1]] || ('Unknown - ' + data[i][1]),
-                                      this.scoreField, "" + data[i][2]);
+                                      this.scoreField, '' + data[i][2]);
       var value = hash.get(data[i][0]);
       if (value) {
         value.num += 2;
         value.buffer = Buffer.concat([value.buffer, encoded]);
       } else {
-        hash.set(data[i][0], {num: 2, buffer: encoded});
+        hash.set(data[i][0], { num: 2, buffer: encoded });
       }
     }
-    console.log(this.section, "- Done Loading", fn);
+    console.log(this.section, '- Done Loading', fn);
   });
   fs.createReadStream(fn).pipe(parser);
 };
-//////////////////////////////////////////////////////////////////////////////////
-EmergingThreatsSource.prototype.loadFiles = function ()
-{
-  console.log(this.section, "- Downloading Files");
+/// ///////////////////////////////////////////////////////////////////////////////
+EmergingThreatsSource.prototype.loadFiles = function () {
+  console.log(this.section, '- Downloading Files');
   wiseSource.request('https://rules.emergingthreatspro.com/' + this.key + '/reputation/categories.txt', '/tmp/categories.txt', (statusCode) => {
-
-    this.parseCategories("/tmp/categories.txt");
+    this.parseCategories('/tmp/categories.txt');
   });
 
   wiseSource.request('https://rules.emergingthreatspro.com/' + this.key + '/reputation/iprepdata.csv', '/tmp/iprepdata.csv', (statusCode) => {
     if (statusCode === 200 || !this.ipsLoaded) {
       this.ipsLoaded = true;
       this.ips.clear();
-      this.parse("/tmp/iprepdata.csv", this.ips);
+      this.parse('/tmp/iprepdata.csv', this.ips);
     }
   });
 
@@ -120,31 +116,31 @@ EmergingThreatsSource.prototype.loadFiles = function ()
     if (statusCode === 200 || !this.domainsLoaded) {
       this.domainsLoaded = true;
       this.domains.clear();
-      this.parse("/tmp/domainrepdata.csv", this.domains);
+      this.parse('/tmp/domainrepdata.csv', this.domains);
     }
   });
 };
-//////////////////////////////////////////////////////////////////////////////////
-EmergingThreatsSource.prototype.getDomain = function(domain, cb) {
-  cb(null, this.domains.get(domain) || this.domains.get(domain.substring(domain.indexOf(".")+1)));
+/// ///////////////////////////////////////////////////////////////////////////////
+EmergingThreatsSource.prototype.getDomain = function (domain, cb) {
+  cb(null, this.domains.get(domain) || this.domains.get(domain.substring(domain.indexOf('.') + 1)));
 };
-//////////////////////////////////////////////////////////////////////////////////
-EmergingThreatsSource.prototype.getIp = function(ip, cb) {
+/// ///////////////////////////////////////////////////////////////////////////////
+EmergingThreatsSource.prototype.getIp = function (ip, cb) {
   cb(null, this.ips.get(ip));
 };
-//////////////////////////////////////////////////////////////////////////////////
-EmergingThreatsSource.prototype.dump = function(res) {
-  ["ips", "domains"].forEach((ckey) => {
+/// ///////////////////////////////////////////////////////////////////////////////
+EmergingThreatsSource.prototype.dump = function (res) {
+  ['ips', 'domains'].forEach((ckey) => {
     res.write(`${ckey}:\n`);
     this[ckey].forEach((value, key) => {
       var str = `{key: "${key}", ops:\n` +
-        wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
+        wiseSource.result2Str(wiseSource.combineResults([value])) + '},\n';
       res.write(str);
     });
   });
   res.end();
 };
-//////////////////////////////////////////////////////////////////////////////////
-exports.initSource = function(api) {
-  return new EmergingThreatsSource(api, "emergingthreats");
+/// ///////////////////////////////////////////////////////////////////////////////
+exports.initSource = function (api) {
+  return new EmergingThreatsSource(api, 'emergingthreats');
 };

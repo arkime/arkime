@@ -17,59 +17,59 @@
  */
 'use strict';
 
-var request        = require('request')
-  , wiseSource     = require('./wiseSource.js')
-  , util           = require('util')
+var request = require('request');
+   var wiseSource = require('./wiseSource.js');
+   var util = require('util')
   ;
 
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
 function PassiveTotalSource (api, section) {
   PassiveTotalSource.super_.call(this, api, section);
 
-  this.key = this.api.getConfig("passivetotal", "key");
-  this.user = this.api.getConfig("passivetotal", "user");
+  this.key = this.api.getConfig('passivetotal', 'key');
+  this.user = this.api.getConfig('passivetotal', 'user');
   if (this.key === undefined) {
-    console.log(this.section, "- No key defined");
+    console.log(this.section, '- No key defined');
     return;
   }
   if (this.user === undefined) {
-    console.log(this.section, "- No user defined");
+    console.log(this.section, '- No user defined');
     return;
   }
 
-  this.waiting      = [];
-  this.processing   = {};
+  this.waiting = [];
+  this.processing = {};
 
-  this.api.addSource("passivetotal", this);
+  this.api.addSource('passivetotal', this);
 
   setInterval(this.performQuery.bind(this), 500);
 
   var str =
-    "if (session.passivetotal)\n" +
-    "  div.sessionDetailMeta.bold PassiveTotal\n" +
-    "  dl.sessionDetailMeta\n" +
+    'if (session.passivetotal)\n' +
+    '  div.sessionDetailMeta.bold PassiveTotal\n' +
+    '  dl.sessionDetailMeta\n' +
     "    +arrayList(session.passivetotal, 'tags', 'Tags', 'passivetotal.tags')\n";
 
-  this.tagsField = this.api.addField("field:passivetotal.tags;db:passivetotal.tags;kind:termfield;friendly:Tags;help:PassiveTotal Tags;count:true");
+  this.tagsField = this.api.addField('field:passivetotal.tags;db:passivetotal.tags;kind:termfield;friendly:Tags;help:PassiveTotal Tags;count:true');
 
-  this.api.addView("passivetotal", str);
+  this.api.addView('passivetotal', str);
 }
 util.inherits(PassiveTotalSource, wiseSource);
 
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
 PassiveTotalSource.prototype.performQuery = function () {
   if (this.waiting.length === 0) {
     return;
   }
 
   if (this.api.debug > 0) {
-    console.log(this.section, "- Fetching %d", this.waiting.length);
+    console.log(this.section, '- Fetching %d', this.waiting.length);
   }
 
   var options = {
       url: 'https://api.passivetotal.org/v2/enrichment/bulk',
-      body: {additional: ["osint", "malware"],
-             query: this.waiting},
+      body: { additional: ['osint', 'malware'],
+             query: this.waiting },
       auth: {
         user: this.user,
         pass: this.key
@@ -78,10 +78,11 @@ PassiveTotalSource.prototype.performQuery = function () {
       json: true
   };
 
+  // eslint-disable-next-line
   var req = request(options, (err, im, results) => {
     if (err) {
-      console.log(this.section, "- Error parsing for request:\n", options, "\nresults:\n", results);
-      results = {results:{}};
+      console.log(this.section, '- Error parsing for request:\n', options, '\nresults:\n', results);
+      results = { results: {} };
     }
 
     for (var resultname in results.results) {
@@ -98,12 +99,12 @@ PassiveTotalSource.prototype.performQuery = function () {
       } else {
         var args = [];
         for (var i = 0; i < result.tags.length; i++) {
-          if (typeof(result.tags[i]) === "string") {
+          if (typeof (result.tags[i]) === 'string') {
             args.push(this.tagsField, result.tags[i]);
           }
         }
 
-        wiseResult = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
+        wiseResult = { num: args.length / 2, buffer: wiseSource.encode.apply(null, args) };
       }
 
       var cb;
@@ -117,8 +118,8 @@ PassiveTotalSource.prototype.performQuery = function () {
 
   this.waiting.length = 0;
 };
-//////////////////////////////////////////////////////////////////////////////////
-PassiveTotalSource.prototype.fetch = function(key, cb) {
+/// ///////////////////////////////////////////////////////////////////////////////
+PassiveTotalSource.prototype.fetch = function (key, cb) {
   if (key in this.processing) {
     this.processing[key].push(cb);
     return;
@@ -130,11 +131,11 @@ PassiveTotalSource.prototype.fetch = function(key, cb) {
     this.performQuery();
   }
 };
-//////////////////////////////////////////////////////////////////////////////////
-PassiveTotalSource.prototype.getIp     = PassiveTotalSource.prototype.fetch;
+/// ///////////////////////////////////////////////////////////////////////////////
+PassiveTotalSource.prototype.getIp = PassiveTotalSource.prototype.fetch;
 PassiveTotalSource.prototype.getDomain = PassiveTotalSource.prototype.fetch;
-//////////////////////////////////////////////////////////////////////////////////
-exports.initSource = function(api) {
-  return new PassiveTotalSource(api, "passivetotal");
+/// ///////////////////////////////////////////////////////////////////////////////
+exports.initSource = function (api) {
+  return new PassiveTotalSource(api, 'passivetotal');
 };
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////

@@ -17,18 +17,18 @@
  */
 'use strict';
 
-var csv            = require('csv')
-  , request        = require('request')
-  , fs             = require('fs')
-  , iptrie         = require('iptrie')
+var csv = require('csv');
+   var request = require('request');
+   var fs = require('fs');
+   var iptrie = require('iptrie')
   ;
 
 function WISESource (api, section) {
   this.api = api;
   this.section = section;
-  this.view = "";
+  this.view = '';
   this.shortcuts = {};
-  this.cacheTimeout = 60 * +this.api.getConfig(section, "cacheAgeMin", "60"); // Default an hour
+  this.cacheTimeout = 60 * +this.api.getConfig(section, 'cacheAgeMin', '60'); // Default an hour
   this.cacheHitStat = 0;
   this.cacheMissStat = 0;
   this.cacheRefreshStat = 0;
@@ -37,44 +37,44 @@ function WISESource (api, section) {
   this.srcInProgress = {};
 
   // Domain and Email wildcards to exclude from source
-  ["excludeDomains", "excludeEmails", "excludeURLs"].forEach((type) => {
+  ['excludeDomains', 'excludeEmails', 'excludeURLs'].forEach((type) => {
     var items = api.getConfig(section, type);
     this[type] = [];
-    if (!items) {return;}
-    items.split(";").map(item => item.trim()).forEach((item) => {
-      if (item === "") {
+    if (!items) { return; }
+    items.split(';').map(item => item.trim()).forEach((item) => {
+      if (item === '') {
         return;
       }
-      this[type].push(RegExp.fromWildExp(item, "ailop"));
+      this[type].push(RegExp.fromWildExp(item, 'ailop'));
     });
   });
 
   // IP CIDRs to exclude from source
   this.excludeIPs = new iptrie.IPTrie();
-  var items = api.getConfig(section, "excludeIPs", "");
-  items.split(";").map(item => item.trim()).forEach((item) => {
-    if (item === "") {
+  var items = api.getConfig(section, 'excludeIPs', '');
+  items.split(';').map(item => item.trim()).forEach((item) => {
+    if (item === '') {
       return;
     }
-    var parts = item.split("/");
+    var parts = item.split('/');
     try {
-      this.excludeIPs.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), true);
+      this.excludeIPs.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), true);
     } catch (e) {
       console.log(`${section} - ERROR - excludeIPs for '${item}'`, e);
       process.exit();
     }
   });
 
-  items = api.getConfig(section, "onlyIPs", undefined);
+  items = api.getConfig(section, 'onlyIPs', undefined);
   if (items) {
     this.onlyIPs = new iptrie.IPTrie();
-    items.split(";").map(item => item.trim()).forEach((item) => {
-      if (item === "") {
+    items.split(';').map(item => item.trim()).forEach((item) => {
+      if (item === '') {
         return;
       }
-      let parts = item.split("/");
+      let parts = item.split('/');
       try {
-        this.onlyIPs.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), true);
+        this.onlyIPs.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), true);
       } catch (e) {
         console.log(`${section} - ERROR - onlyIPs for '${item}'`, e);
         process.exit();
@@ -83,46 +83,46 @@ function WISESource (api, section) {
   }
 
   // fields defined for source
-  var fields = api.getConfig(section, "fields");
+  var fields = api.getConfig(section, 'fields');
   if (fields !== undefined) {
-    fields = fields.split("\\n");
+    fields = fields.split('\\n');
     for (var i = 0; i < fields.length; i++) {
       this.parseFieldDef(fields[i]);
     }
   }
 
   // views defined for source
-  var view = api.getConfig(section, "view");
+  var view = api.getConfig(section, 'view');
   if (view !== undefined) {
-    this.view = view.replace(/\\n/g, "\n");
+    this.view = view.replace(/\\n/g, '\n');
   }
 
-  if (this.view !== "") {
+  if (this.view !== '') {
     this.api.addView(this.section, this.view);
   }
 }
 
 module.exports = WISESource;
 
-WISESource.emptyResult = {num: 0, buffer: Buffer.alloc(0)};
+WISESource.emptyResult = { num: 0, buffer: Buffer.alloc(0) };
 WISESource.field2Pos = {};
 WISESource.field2Info = {};
 WISESource.pos2Field = {};
 
-//////////////////////////////////////////////////////////////////////////////////
-//https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
-function splitRemain(str, separator, limit) {
+/// ///////////////////////////////////////////////////////////////////////////////
+// https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
+function splitRemain (str, separator, limit) {
     str = str.split(separator);
-    if(str.length <= limit) {return str;}
+    if (str.length <= limit) { return str; }
 
     var ret = str.splice(0, limit);
     ret.push(str.join(separator));
 
     return ret;
 }
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
 WISESource.prototype.parseCSV = function (body, setCb, endCb) {
-  csv.parse(body, {skip_empty_lines: true, comment: '#', relax_column_count: true}, (err, data) => {
+  csv.parse(body, { skip_empty_lines: true, comment: '#', relax_column_count: true }, (err, data) => {
     if (err) {
       return endCb(err);
     }
@@ -139,34 +139,34 @@ WISESource.prototype.parseCSV = function (body, setCb, endCb) {
       if (args.length === 0) {
         setCb(data[i][this.column], WISESource.emptyResult);
       } else {
-        setCb(data[i][this.column], {num: args.length/2, buffer: WISESource.encode.apply(null, args)});
+        setCb(data[i][this.column], { num: args.length / 2, buffer: WISESource.encode.apply(null, args) });
       }
     }
     endCb(err);
   });
 };
-//////////////////////////////////////////////////////////////////////////////////
-WISESource.prototype.parseFieldDef = function(line) {
-  if (line[0] === "#") {
+/// ///////////////////////////////////////////////////////////////////////////////
+WISESource.prototype.parseFieldDef = function (line) {
+  if (line[0] === '#') {
     line = line.substring(1);
   }
 
-  if (line.lastIndexOf('field:',0) === 0) {
+  if (line.lastIndexOf('field:', 0) === 0) {
     var pos = this.api.addField(line);
     var match = line.match(/shortcut:([^;]+)/);
     if (match) {
       this.shortcuts[match[1]] = pos;
     }
-  } else if (line.lastIndexOf('view:',0) === 0) {
-      this.view += line.substring(5) + "\n";
+  } else if (line.lastIndexOf('view:', 0) === 0) {
+      this.view += line.substring(5) + '\n';
   }
 };
-//////////////////////////////////////////////////////////////////////////////////
-WISESource.prototype.parseTagger = function(body, setCb, endCb) {
+/// ///////////////////////////////////////////////////////////////////////////////
+WISESource.prototype.parseTagger = function (body, setCb, endCb) {
   var lines = body.toString().split(/\r?\n/);
-  this.view = "";
+  this.view = '';
   for (var l = 0, llen = lines.length; l < llen; l++) {
-    if (lines[l][0] === "#") {
+    if (lines[l][0] === '#') {
       this.parseFieldDef(lines[l]);
       continue;
     }
@@ -176,11 +176,11 @@ WISESource.prototype.parseTagger = function(body, setCb, endCb) {
     }
 
     var args = [];
-    var parts = lines[l].split(";");
+    var parts = lines[l].split(';');
     for (var p = 1; p < parts.length; p++) {
       var kv = splitRemain(parts[p], '=', 1);
       if (kv.length !== 2) {
-        console.log("WARNING -", this.section, "- ignored extra piece '" + parts[p] + "' from line '" + lines[l] + "'");
+        console.log('WARNING -', this.section, "- ignored extra piece '" + parts[p] + "' from line '" + lines[l] + "'");
         continue;
       }
       if (this.shortcuts[kv[0]] !== undefined) {
@@ -188,23 +188,23 @@ WISESource.prototype.parseTagger = function(body, setCb, endCb) {
       } else if (WISESource.field2Pos[kv[0]]) {
         args.push(WISESource.field2Pos[kv[0]]);
       } else {
-        args.push(this.api.addField("field:" + kv[0]));
+        args.push(this.api.addField('field:' + kv[0]));
       }
       args.push(kv[1]);
     }
-    setCb(parts[0], {num: args.length/2, buffer: WISESource.encode.apply(null, args)});
+    setCb(parts[0], { num: args.length / 2, buffer: WISESource.encode.apply(null, args) });
   }
-  if (this.view !== "") {
+  if (this.view !== '') {
     this.api.addView(this.section, this.view);
   }
   endCb(null);
 };
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
 WISESource.prototype.parseJSON = function (body, setCb, endCb) {
   var json = JSON.parse(body);
 
   if (this.keyColumn === undefined) {
-    return endCb("No keyColumn set");
+    return endCb('No keyColumn set');
   }
 
   let keyColumn = this.keyColumn.split('.');
@@ -217,7 +217,7 @@ WISESource.prototype.parseJSON = function (body, setCb, endCb) {
     shortcutsValue.push(this.shortcuts[k]);
   }
 
-  for(var i = 0; i < json.length; i++) {
+  for (var i = 0; i < json.length; i++) {
     // Walk the key path
     let key = json[i];
     for (let j = 0; key && j < keyColumn.length; j++) {
@@ -244,18 +244,17 @@ WISESource.prototype.parseJSON = function (body, setCb, endCb) {
 
     if (Array.isArray(key)) {
       key.forEach((part) => {
-        setCb(part, {num: args.length/2, buffer: WISESource.encode.apply(null, args)});
+        setCb(part, { num: args.length / 2, buffer: WISESource.encode.apply(null, args) });
       });
     } else {
-      setCb(key, {num: args.length/2, buffer: WISESource.encode.apply(null, args)});
+      setCb(key, { num: args.length / 2, buffer: WISESource.encode.apply(null, args) });
     }
   }
   endCb(null);
 };
-//////////////////////////////////////////////////////////////////////////////////
-WISESource.combineResults = function(results)
-{
-  var a, num = 0, len = 1;
+/// ///////////////////////////////////////////////////////////////////////////////
+WISESource.combineResults = function (results) {
+  var a; var num = 0; var len = 1;
   for (a = 0; a < results.length; a++) {
     if (!results[a]) {
       continue;
@@ -277,28 +276,27 @@ WISESource.combineResults = function(results)
   buf[0] = num;
   return buf;
 };
-//////////////////////////////////////////////////////////////////////////////////
-WISESource.result2Str = function(result, indent) {
+/// ///////////////////////////////////////////////////////////////////////////////
+WISESource.result2Str = function (result, indent) {
   if (!indent) {
-    indent = "";
+    indent = '';
   }
 
   let collection = [];
   var offset = 1;
   for (var i = 0; i < result[0]; i++) {
-    var pos   = result[offset];
-    var len   = result[offset+1];
-    var value = result.toString('utf8', offset+2, offset+2+len-1);
+    var pos = result[offset];
+    var len = result[offset + 1];
+    var value = result.toString('utf8', offset + 2, offset + 2 + len - 1);
     offset += 2 + len;
-    collection.push({field: WISESource.pos2Field[pos], len: len, value: value});
+    collection.push({ field: WISESource.pos2Field[pos], len: len, value: value });
   }
 
   return JSON.stringify(collection);
 };
-//////////////////////////////////////////////////////////////////////////////////
-WISESource.encode = function ()
-{
-  var a, l, len = 0;
+/// ///////////////////////////////////////////////////////////////////////////////
+WISESource.encode = function () {
+  var a; var l; var len = 0;
   for (a = 1; a < arguments.length; a += 2) {
     l = Buffer.byteLength(arguments[a]);
     if (l > 250) {
@@ -310,16 +308,16 @@ WISESource.encode = function ()
   var buf = Buffer.allocUnsafe(len);
   var offset = 0;
   for (a = 1; a < arguments.length; a += 2) {
-      buf.writeUInt8(arguments[a-1], offset);
+      buf.writeUInt8(arguments[a - 1], offset);
       len = Buffer.byteLength(arguments[a]);
-      buf.writeUInt8(len+1, offset+1);
-      l = buf.write(arguments[a], offset+2);
-      buf.writeUInt8(0, offset+l+2);
+      buf.writeUInt8(len + 1, offset + 1);
+      l = buf.write(arguments[a], offset + 2);
+      buf.writeUInt8(0, offset + l + 2);
       offset += 3 + l;
   }
   return buf;
 };
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
 WISESource.request = function (url, file, cb) {
   var headers = {};
   if (file) {
@@ -335,7 +333,7 @@ WISESource.request = function (url, file, cb) {
   }
   var statusCode;
   console.log(url);
-  request({url: url, headers: headers})
+  request({ url: url, headers: headers })
   .on('response', function (response) {
     statusCode = response.statusCode;
     if (response.statusCode === 200) {
@@ -350,40 +348,39 @@ WISESource.request = function (url, file, cb) {
   })
   ;
 };
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
 WISESource.prototype.tagsSetting = function () {
-  var tagsField = this.api.addField("field:tags");
-  var tags = this.api.getConfig(this.section, "tags");
+  var tagsField = this.api.addField('field:tags');
+  var tags = this.api.getConfig(this.section, 'tags');
   if (tags) {
     var args = [];
-    tags.split(",").map(item => item.trim()).forEach((part) => {
+    tags.split(',').map(item => item.trim()).forEach((part) => {
       args.push(tagsField, part);
     });
-    this.tagsResult = {num: args.length/2, buffer: WISESource.encode.apply(null, args)};
+    this.tagsResult = { num: args.length / 2, buffer: WISESource.encode.apply(null, args) };
   } else {
     this.tagsResult = WISESource.emptyResult;
   }
 };
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
 WISESource.prototype.formatSetting = function () {
-  this.format  = this.api.getConfig(this.section, "format", "csv");
-  if (this.format === "csv") {
+  this.format = this.api.getConfig(this.section, 'format', 'csv');
+  if (this.format === 'csv') {
     this.parse = this.parseCSV;
-  } else if (this.format === "tagger") {
+  } else if (this.format === 'tagger') {
     this.parse = this.parseTagger;
-  } else if (this.format === "json") {
+  } else if (this.format === 'json') {
     this.parse = this.parseJSON;
   } else {
-    console.log(this.section, "- ERROR not loading unknown data format", this.format);
+    console.log(this.section, '- ERROR not loading unknown data format', this.format);
     return false;
   }
   return true;
 };
-//////////////////////////////////////////////////////////////////////////////////
-WISESource.prototype.typeSetting = function ()
-{
-  this.type     = this.api.getConfig(this.section, "type");
+/// ///////////////////////////////////////////////////////////////////////////////
+WISESource.prototype.typeSetting = function () {
+  this.type = this.api.getConfig(this.section, 'type');
   this.typeFunc = this.api.funcName(this.type);
 };
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
 WISESource.emptyCombinedResult = WISESource.combineResults([]);

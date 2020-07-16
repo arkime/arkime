@@ -31,7 +31,7 @@ const wiseSource = require('./wiseSource.js');
 const wiseCache = require('./wiseCache.js');
 const cluster = require('cluster');
 const crypto = require('crypto');
-const redis = require('ioredis');
+const Redis = require('ioredis');
 const favicon = require('serve-favicon');
 const uuid = require('uuidv4').default;
 const helmet = require('helmet');
@@ -686,15 +686,15 @@ app.get('/sources', [noCacheJson], (req, res) => {
 });
 /// ///////////////////////////////////////////////////////////////////////////////
 app.get('/types/:source?', [noCacheJson], (req, res) => {
-  //console.log(internals.types);
+  // console.log(internals.types);
   if (req.params.source) {
     return res.send([internals.sources[req.params.source].type]);
   } else {
     // let items = Object.keys(internals.sources).map(o => internals.sources[o].type);
     // return res.send(Array.from(new Set(items)));
-    return res.send(internals.type2Name)
+    return res.send(internals.type2Name);
   }
-  //return res.send(Object.keys(internals.types));
+  // return res.send(Object.keys(internals.types));
 });
 /// ///////////////////////////////////////////////////////////////////////////////
 app.get('/dump/:source', [noCacheJson], function (req, res) {
@@ -791,7 +791,7 @@ if (getConfig('wiseService', 'regressionTests')) {
 /// ///////////////////////////////////////////////////////////////////////////////
 function createRedisClient (redisType, section) {
   if (redisType === 'redis') {
-    return new redis(getConfig(section, 'url'));
+    return new Redis(getConfig(section, 'url'));
   } else if (redisType === 'redis-sentinel') {
     let options = { sentinels: [], name: getConfig(section, 'redisName') };
     getConfig(section, 'redisSentinels', 'localhost').split(';').forEach((key) => {
@@ -800,14 +800,14 @@ function createRedisClient (redisType, section) {
     });
     options.sentinelPassword = getConfig(section, 'sentinelPassword');
     options.password = getConfig(section, 'redisPassword');
-    return new redis(options);
+    return new Redis(options);
   } else if (redisType === 'redis-cluster') {
     let options = [];
     getConfig(section, 'redisClusters').split(';').forEach((key) => {
       let parts = key.split(':');
       options.push({ host: parts[0], port: parts[1] || 26379 });
     });
-    return new redis.Cluster(options);
+    return new Redis.Cluster(options);
   } else {
       console.log(`${section} - ERROR - unknown redisType '${redisType}'`);
       process.exit();
@@ -864,10 +864,14 @@ app.use((req, res, next) => {
  Version: 1.0.6.000m
  Revised: April 6, 2011
 */
-/* eslint-disable no-alert, no-console */
-RegExp.fromWildExp=function(c,a){for(var d=a&&a.indexOf("o")>-1,f,b,e="",g=a&&a.indexOf("l")>-1?"":"?",h=RegExp("~.|\\[!|"+(d?"{\\d+,?\\d*\\}|[":"[")+(a&&a.indexOf("p")>-1?"":"\\(\\)")+"\\{\\}\\\\\\.\\*\\+\\?\\:\\|\\^\\$%_#<>]");(f=c.search(h))>-1&&f<c.length;)e+=c.substring(0,f),e+=(b=c.match(h)[0])=="[!"?"[^":b.charAt(0)=="~"?"\\"+b.charAt(1):b=="*"||b=="%"?".*"+g:
-b=="?"||b=="_"?".":b=="#"?"\\d":d&&b.charAt(0)=="{"?b+g:b=="<"?"\\b(?=\\w)":b==">"?"(?:\\b$|(?=\\W)\\b)":"\\"+b,c=c.substring(f+b.length);e+=c;a&&(/[ab]/.test(a)&&(e="^"+e),/[ae]/.test(a)&&(e+="$"));return RegExp(e,a?a.replace(/[^gim]/g,""):"")};
-/* eslint-enable no-alert, no-console */
+/* eslint-disable */
+RegExp.fromWildExp = function (c, a) {
+ for (var d = a && a.indexOf('o') > -1, f, b, e = '', g = a && a.indexOf('l') > -1 ? '' : '?', h = RegExp('~.|\\[!|' + (d ? '{\\d+,?\\d*\\}|[' : '[') + (a && a.indexOf('p') > -1 ? '' : '\\(\\)') + '\\{\\}\\\\\\.\\*\\+\\?\\:\\|\\^\\$%_#<>]'); (f = c.search(h)) > -1 && f < c.length;) {
+ e += c.substring(0, f), e += (b = c.match(h)[0]) == '[!' ? '[^' : b.charAt(0) == '~' ? '\\' + b.charAt(1) : b == '*' || b == '%' ? '.*' + g
+: b == '?' || b == '_' ? '.' : b == '#' ? '\\d' : d && b.charAt(0) == '{' ? b + g : b == '<' ? '\\b(?=\\w)' : b == '>' ? '(?:\\b$|(?=\\W)\\b)' : '\\' + b, c = c.substring(f + b.length);
+}e += c; a && (/[ab]/.test(a) && (e = '^' + e), /[ae]/.test(a) && (e += '$')); return RegExp(e, a ? a.replace(/[^gim]/g, '') : '');
+};
+/* eslint-enable */
 /// ///////////////////////////////////////////////////////////////////////////////
 /// / Main
 /// ///////////////////////////////////////////////////////////////////////////////
@@ -884,7 +888,7 @@ function main () {
     var keyFileData = fs.readFileSync(getConfig('wiseService', 'keyFile'));
     var certFileData = fs.readFileSync(getConfig('wiseService', 'certFile'));
 
-    server = https.createServer({ key: keyFileData, cert: certFileData, secureOptions: require('constants').SSL_OP_NO_TLSv1 }, app);
+    server = https.createServer({ key: keyFileData, cert: certFileData, secureOptions: crypto.constants.SSL_OP_NO_TLSv1 }, app);
   } else {
     server = http.createServer(app);
   }

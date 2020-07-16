@@ -17,30 +17,30 @@
  */
 'use strict';
 
-var fs             = require('fs')
-  , util           = require('util')
-  , wiseSource     = require('./wiseSource.js')
-  , ini            = require('iniparser')
+var fs = require('fs');
+   var util = require('util');
+   var wiseSource = require('./wiseSource.js');
+   var ini = require('iniparser')
   ;
 
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
 function RightClickSource (api, section) {
   RightClickSource.super_.call(this, api, section);
 
-  if (section === "right-click") {
+  if (section === 'right-click') {
     this.process(api.getConfigSection(section));
     return;
   }
 
-  this.file    = api.getConfig(section, "file");
+  this.file = api.getConfig(section, 'file');
 
   if (this.file === undefined) {
-    console.log(this.section, "- ERROR not loading", this.section, "since no file specified in config file");
+    console.log(this.section, '- ERROR not loading', this.section, 'since no file specified in config file');
     return;
   }
 
   if (!fs.existsSync(this.file)) {
-    console.log(this.section, "- ERROR not loading", this.section, "since", this.file, "doesn't exist");
+    console.log(this.section, '- ERROR not loading', this.section, 'since', this.file, "doesn't exist");
     return;
   }
 
@@ -50,7 +50,7 @@ function RightClickSource (api, section) {
   this.watchTimeout = null;
   let watchCb = (event, filename) => {
     clearTimeout(this.watchTimeout);
-    if (event === "rename") {
+    if (event === 'rename') {
       this.watch.close();
       setTimeout(() => {
         this.load();
@@ -66,22 +66,22 @@ function RightClickSource (api, section) {
   this.watch = fs.watch(this.file, watchCb);
 }
 util.inherits(RightClickSource, wiseSource);
-//////////////////////////////////////////////////////////////////////////////////
-RightClickSource.prototype.load = function() {
+/// ///////////////////////////////////////////////////////////////////////////////
+RightClickSource.prototype.load = function () {
   if (!fs.existsSync(this.file)) {
-    console.log(this.section, "- ERROR not loading", this.section, "since", this.file, "doesn't exist");
+    console.log(this.section, '- ERROR not loading', this.section, 'since', this.file, "doesn't exist");
     return;
   }
 
   var config = ini.parseSync(this.file);
-  var data = config["right-click"] || config;
+  var data = config['right-click'] || config;
 
   this.process(data);
 };
-//////////////////////////////////////////////////////////////////////////////////
-RightClickSource.prototype.process = function(data) {
+/// ///////////////////////////////////////////////////////////////////////////////
+RightClickSource.prototype.process = function (data) {
   var keys = Object.keys(data);
-  if (!keys) {return;}
+  if (!keys) { return; }
 
   keys.forEach((key) => {
     var obj = {};
@@ -91,20 +91,20 @@ RightClickSource.prototype.process = function(data) {
         return;
       }
 
-      var parts = [element.slice(0, i), element.slice(i+1)];
-      if (parts[1] === "true") {
+      var parts = [element.slice(0, i), element.slice(i + 1)];
+      if (parts[1] === 'true') {
         parts[1] = true;
-      } else if (parts[1] === "false") {
+      } else if (parts[1] === 'false') {
         parts[1] = false;
       }
       obj[parts[0]] = parts[1];
     });
     if (obj.fields) {
-      obj.fields = obj.fields.split(",").map(item => item.trim());
+      obj.fields = obj.fields.split(',').map(item => item.trim());
     }
     if (obj.users) {
       var users = {};
-      obj.users.split(",").map(item => item.trim()).forEach((item) => {
+      obj.users.split(',').map(item => item.trim()).forEach((item) => {
         users[item] = 1;
       });
       obj.users = users;
@@ -113,11 +113,11 @@ RightClickSource.prototype.process = function(data) {
   });
 };
 
-//////////////////////////////////////////////////////////////////////////////////
-exports.initSource = function(api) {
-  var sections = api.getConfigSections().filter((e) => {return e.match(/(^right-click$|^right-click:)/);});
+/// ///////////////////////////////////////////////////////////////////////////////
+exports.initSource = function (api) {
+  var sections = api.getConfigSections().filter((e) => { return e.match(/(^right-click$|^right-click:)/); });
   sections.forEach((section) => {
     return new RightClickSource(api, section);
   });
 };
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
