@@ -58,7 +58,7 @@
     "jquery": "^3.5.0",
     "js-yaml": "^3.13.1",
     "json-loader": "^0.5.7",
-    "lodash": "^4.17.13",
+    "lodash": "^4.17.19",
     "lodash.mergewith": "^4.6.2",
     "moment-timezone": "^0.5.14",
     "node-notifier": "^5.1.2",
