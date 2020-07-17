@@ -6,7 +6,7 @@ import Help from '../components/Help.vue';
 
 Vue.use(VueRouter);
 
-  const routes = [
+const routes = [
   {
     path: '/',
     name: 'Wise',
@@ -26,7 +26,9 @@ Vue.use(VueRouter);
 
 const router = new VueRouter({
   mode: 'history',
-  base: process.env.BASE_URL,
+  base: window.location.pathname,
+  // relative: true,
+  // base: process.env.BASE_URL,
   routes
 });
 
