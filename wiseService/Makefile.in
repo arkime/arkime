@@ -12,8 +12,12 @@ check:
 	npm ci --production
 
 install:
-	@mkdir -p "$(WISEDIR)"
+	@mkdir -p "$(WISEDIR)" "$(WISEDIR)/vueapp"
 	$(INSTALL) *.js wiseService.ini.sample package.json package-lock.json $(WISEDIR)
+	npm ci
+	npm run build
+	$(CP) -pr favicon.ico $(WISEDIR)
+	$(CP) -pr vueapp/dist "$(WISEDIR)/vueapp"
 	(cd $(WISEDIR) ; npm ci --production)
 	rm -f $(VIEWERDIR)/package-lock.json
 

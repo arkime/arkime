@@ -18,14 +18,18 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.4.0 2020/07/xx
+2.4.0 2020/08/xx
   - NOTE - RHEL/Centos 6 is no longer supported, Node 12 required
-  - release - node 12.18.2, glib 2.64.3
+  - release - node 12.18.2, glib 2.64.3, curl 7.71.1
   - viewer - aes256Encryption now defaults to true
   - viewer - added a clear cache button to ES Admin tab
+  - viewer - quote expressions with [ or ] in them
   - capture - http2 decoding for PRI * h2 sessions
   - capture - set http2 protocol when alpn is h2
   - capture - upgrade h2c http2 decoding
+  - capture - ES Nodes can now show shards/segments per node
+  - capture - no longer use internal libpcap function
+  - wise - simple UI
 
 2.3.2 2020/06/29
   - NOTE - 2.3.x will be the last version to support RHEL/Centos 6
