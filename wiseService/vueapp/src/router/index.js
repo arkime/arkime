@@ -26,9 +26,7 @@ const routes = [
 
 const router = new VueRouter({
   mode: 'history',
-  base: window.location.pathname,
-  // relative: true,
-  // base: process.env.BASE_URL,
+  base: window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1),
   routes
 });
 
