@@ -17,28 +17,27 @@
  */
 'use strict';
 
-var util           = require('util')
-  , simpleSource   = require('./simpleSource.js')
-  , request        = require('request')
-  ;
+var util = require('util');
+var simpleSource = require('./simpleSource.js');
+var request = require('request');
 
-//////////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function URLSource (api, section) {
   URLSource.super_.call(this, api, section);
-  this.url          = api.getConfig(section, "url");
-  this.reload       = +api.getConfig(section, "reload", -1);
-  this.headers      = {};
-  var headers       = api.getConfig(section, "headers");
+  this.url = api.getConfig(section, 'url');
+  this.reload = +api.getConfig(section, 'reload', -1);
+  this.headers = {};
+  var headers = api.getConfig(section, 'headers');
   this.cacheTimeout = -1;
 
   if (this.url === undefined) {
-    console.log(this.section, "- ERROR not loading since no url specified in config file");
+    console.log(this.section, '- ERROR not loading since no url specified in config file');
     return;
   }
 
   if (headers) {
-    headers.split(";").forEach((header) => {
-      var parts = header.split(":").map(item => item.trim());
+    headers.split(';').forEach((header) => {
+      var parts = header.split(':').map(item => item.trim());
       if (parts.length === 2) {
         this.headers[parts[0]] = parts[1];
       }
@@ -53,13 +52,13 @@ function URLSource (api, section) {
 
   // Reload url every so often
   if (this.reload > 0) {
-    setInterval(this.load.bind(this), this.reload*1000*60);
+    setInterval(this.load.bind(this), this.reload * 1000 * 60);
   }
 }
 util.inherits(URLSource, simpleSource);
-//////////////////////////////////////////////////////////////////////////////////
-URLSource.prototype.simpleSourceLoad = function(setFunc, cb) {
-  request(this.url, {headers: this.headers}, (error, response, body) => {
+// ----------------------------------------------------------------------------
+URLSource.prototype.simpleSourceLoad = function (setFunc, cb) {
+  request(this.url, { headers: this.headers }, (error, response, body) => {
     if (!error && response.statusCode === 200) {
       this.parse(body, setFunc, cb);
     } else {
@@ -67,11 +66,11 @@ URLSource.prototype.simpleSourceLoad = function(setFunc, cb) {
     }
   });
 };
-//////////////////////////////////////////////////////////////////////////////////
-exports.initSource = function(api) {
-  var sections = api.getConfigSections().filter((e) => {return e.match(/^url:/);});
+// ----------------------------------------------------------------------------
+exports.initSource = function (api) {
+  var sections = api.getConfigSections().filter((e) => { return e.match(/^url:/); });
   sections.forEach((section) => {
     return new URLSource(api, section);
   });
 };
-//////////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
