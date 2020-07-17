@@ -17,25 +17,24 @@
  */
 'use strict';
 
-var fs             = require('fs')
-  , util           = require('util')
-  , simpleSource   = require('./simpleSource.js')
-  ;
+var fs = require('fs');
+var util = require('util');
+var simpleSource = require('./simpleSource.js');
 
-//////////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function FileSource (api, section) {
   FileSource.super_.call(this, api, section);
 
-  this.file    = api.getConfig(section, "file");
+  this.file = api.getConfig(section, 'file');
   this.cacheTimeout = -1;
 
   if (this.file === undefined) {
-    console.log(this.section, "- ERROR not loading since no file specified in config file");
+    console.log(this.section, '- ERROR not loading since no file specified in config file');
     return;
   }
 
   if (!fs.existsSync(this.file)) {
-    console.log(this.section, "- ERROR not loading since", this.file, "doesn't exist");
+    console.log(this.section, '- ERROR not loading since', this.file, "doesn't exist");
     return;
   }
 
@@ -43,14 +42,13 @@ function FileSource (api, section) {
     return;
   }
 
-
   setImmediate(this.load.bind(this));
 
   // Watch file for changes, combine multiple changes into one, on move restart watch after a pause
   this.watchTimeout = null;
   let watchCb = (event, filename) => {
     clearTimeout(this.watchTimeout);
-    if (event === "rename") {
+    if (event === 'rename') {
       this.watch.close();
       setTimeout(() => {
         this.load();
@@ -67,8 +65,8 @@ function FileSource (api, section) {
   this.watch = fs.watch(this.file, watchCb);
 }
 util.inherits(FileSource, simpleSource);
-//////////////////////////////////////////////////////////////////////////////////
-FileSource.prototype.simpleSourceLoad = function(setFunc, cb) {
+// ----------------------------------------------------------------------------
+FileSource.prototype.simpleSourceLoad = function (setFunc, cb) {
   fs.readFile(this.file, (err, body) => {
     if (err) {
       return cb(err);
@@ -76,11 +74,11 @@ FileSource.prototype.simpleSourceLoad = function(setFunc, cb) {
     this.parse(body, setFunc, cb);
   });
 };
-//////////////////////////////////////////////////////////////////////////////////
-exports.initSource = function(api) {
-  var sections = api.getConfigSections().filter((e) => {return e.match(/^file:/);});
+// ----------------------------------------------------------------------------
+exports.initSource = function (api) {
+  var sections = api.getConfigSections().filter((e) => { return e.match(/^file:/); });
   sections.forEach((section) => {
     return new FileSource(api, section);
   });
 };
-//////////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
