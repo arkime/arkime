@@ -3,7 +3,7 @@ import Vue from 'vue';
 export default {
   getSources: function () {
     return new Promise((resolve, reject) => {
-      Vue.axios.get('/sources')
+      Vue.axios.get('sources')
         .then((response) => {
           resolve(response.data);
         })
@@ -15,7 +15,7 @@ export default {
   },
   getTypes: function (source) {
     return new Promise((resolve, reject) => {
-      let url = source ? '/types/' + source : '/types';
+      let url = source ? 'types/' + source : 'types';
       Vue.axios.get(url)
         .then((response) => {
           resolve(response.data);
@@ -28,7 +28,7 @@ export default {
   },
   search: function (source, type, value) {
     return new Promise((resolve, reject) => {
-      let url = '/' + ((source ? source + '/' : '') + type + '/' + value);
+      let url = ((source ? source + '/' : '') + type + '/' + value);
       Vue.axios.get(url)
         .then((response) => {
           resolve(response.data);
