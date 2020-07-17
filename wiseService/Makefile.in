@@ -4,6 +4,7 @@ INSTALL = @INSTALL@
 PLUGINDIR = @prefix@/plugins
 WISEDIR = @prefix@/wiseService
 BINDIR = @prefix@/bin
+CP = /bin/cp
 
 all:
 	echo "WISE!"
