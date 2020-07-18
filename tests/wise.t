@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 83;
+use Test::More tests => 84;
 use MolochTest;
 use Cwd;
 use URI::Escape;
@@ -179,7 +179,7 @@ eq_or_diff($wise, '[{"field":"tags","len":11,"value":"wisebymac1"},{"field":"tag
 
 # Sources
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/sources")->content;
-eq_or_diff($wise, '["file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ja3","file:mac","file:md5","file:sha256","file:url"]',"file:mac query");
+eq_or_diff($wise, '["file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ja3","file:mac","file:md5","file:sha256","file:url","reversedns"]',"file:mac query");
 
 # Types
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/types")->content;
@@ -190,3 +190,6 @@ eq_or_diff($wise, '["ip"]',"types file:ip");
 
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/types/unknown")->content;
 eq_or_diff($wise, '[]',"types unknown");
+
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/types/reversedns")->content;
+eq_or_diff($wise, '["ip"]',"types reversedns");

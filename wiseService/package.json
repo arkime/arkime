@@ -19,7 +19,8 @@
     "prestart": "npm run bundle:min",
     "dev": "nodemon wiseService.js -c ../tests/config.test.ini & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
     "bundle": "webpack -d --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "bundle:min": "node vueapp/build/build.js"
+    "bundle:min": "node vueapp/build/build.js",
+    "lint": "cd .. ; npm run lint-wise"
   },
   "devDependencies": {
     "@babel/core": "^7.10.4",

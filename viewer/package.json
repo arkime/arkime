@@ -34,7 +34,8 @@
     "start:testmultiviewer": "node viewer.js -c ../tests/config.test.ini -n testmulties & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
     "bundle": "webpack --progress --hide-modules -d --display-error-details --bail --config vueapp/build/webpack.dev.conf.js",
     "bundle:min": "node vueapp/build/build.js",
-    "prestart": "npm run bundle:min"
+    "prestart": "npm run bundle:min",
+    "lint": "cd .. ; npm run lint-viewer"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",

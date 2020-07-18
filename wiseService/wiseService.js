@@ -294,16 +294,16 @@ internals.sourceApi = {
       types = src.getTypes();
     } else {
       // No getTypes function, go thru all the default types and any types we already know and guess
-      let types = [];
+      types = [];
       for (let i = 0; i < internals.type2Name.length; i++) {
-        if (src[funcName(internals.type2Name)]) {
-          types.push(internals.type2Name);
+        if (src[funcName(internals.type2Name[i])]) {
+          types.push(internals.type2Name[i]);
         }
       }
       for (let type in internals.types) {
         let typeInfo = internals.types[type];
         if (src[typeInfo.funcName] && !types.includes(type)) {
-          types.push(internals.type2Name);
+          types.push(type);
         }
       }
       src.getTypes = function () {
