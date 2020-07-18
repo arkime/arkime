@@ -53,7 +53,7 @@
     "vuex": "^3.0.1"
   },
   "scripts": {
-    "lint": "eslint --ext .js,.vue parliament viewer notifiers",
+    "lint": "eslint --ext .js,.vue parliament viewer notifiers wiseService",
     "lint-viewer": "eslint --ext .js,.vue viewer",
     "lint-parliament": "eslint --ext .js,.vue parliament",
     "lint-wise": "eslint --ext .js,.vue wiseService",

@@ -308,7 +308,7 @@ internals.sourceApi = {
       }
       src.getTypes = function () {
         return types;
-      }
+      };
     }
 
     for (let i = 0; i < types.length; i++) {
@@ -426,8 +426,8 @@ function funcName (typeName) {
 }
 // ----------------------------------------------------------------------------
 // This function adds a new type to the internals.types map of types.
-// If src is defined will add it to already defined types as src to query.
-function addType(type, src) {
+// If newSrc is defined will add it to already defined types as src to query.
+function addType (type, newSrc) {
   let typeInfo = internals.types[type];
   if (!typeInfo) {
     typeInfo = internals.types[type] = {
@@ -477,9 +477,9 @@ function addType(type, src) {
     } else {
       typeInfo.excludes = items.split(';').map(item => item.trim()).filter(item => item !== '').map(item => RegExp.fromWildExp(item, 'ailop'));
     }
-  } else if (src !== undefined) {
-      typeInfo.sources.push(src);
-      src.srcInProgress[type] = [];
+  } else if (newSrc !== undefined) {
+      typeInfo.sources.push(newSrc);
+      newSrc.srcInProgress[type] = [];
   }
   return typeInfo;
 }

@@ -382,8 +382,8 @@ WISESource.prototype.typeSetting = function () {
   this.typeFunc = this.api.funcName(this.type);
   if (this.getTypes === undefined) {
     this.getTypes = function () {
-      return [src.type];
-    }
+      return [this.type];
+    };
   }
 };
 // ----------------------------------------------------------------------------

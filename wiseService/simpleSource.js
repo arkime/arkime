@@ -93,7 +93,7 @@ SimpleSource.prototype.initSimple = function () {
 // ----------------------------------------------------------------------------
 SimpleSource.prototype.getTypes = function () {
   return [this.type];
-}
+};
 // ----------------------------------------------------------------------------
 SimpleSource.prototype.load = function () {
   var setFunc;
