@@ -291,7 +291,7 @@ WISESource.result2Str = function (result, indent) {
     collection.push({ field: WISESource.pos2Field[pos], len: len, value: value });
   }
 
-  return JSON.stringify(collection);
+  return JSON.stringify(collection).replace(/},{/g, '},\n{');
 };
 // ----------------------------------------------------------------------------
 WISESource.encode = function () {
