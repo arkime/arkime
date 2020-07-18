@@ -53,6 +53,8 @@ var internals = {
   workers: 1
 };
 
+internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 'sha256'];
+
 // ----------------------------------------------------------------------------
 /// / Command Line Parsing
 // ----------------------------------------------------------------------------
@@ -285,13 +287,32 @@ internals.sourceApi = {
   addSource: function (section, src) {
     internals.sources[section] = src;
 
-    // If a type has already registered add this source if we support it
-    for (let type in internals.types) {
-      let typeInfo = internals.types[type];
-      if (src[typeInfo.funcName]) {
-        typeInfo.sources.push(src);
-        src.srcInProgress[type] = [];
+    let types;
+
+    if (src.getTypes) {
+      // getTypes function defined, we can just use it
+      types = src.getTypes();
+    } else {
+      // No getTypes function, go thru all the default types and any types we already know and guess
+      let types = [];
+      for (let i = 0; i < internals.type2Name.length; i++) {
+        if (src[funcName(internals.type2Name)]) {
+          types.push(internals.type2Name);
+        }
       }
+      for (let type in internals.types) {
+        let typeInfo = internals.types[type];
+        if (src[typeInfo.funcName] && !types.includes(type)) {
+          types.push(internals.type2Name);
+        }
+      }
+      src.getTypes = function () {
+        return types;
+      }
+    }
+
+    for (let i = 0; i < types.length; i++) {
+      addType(types[i], src);
     }
   },
   funcName: funcName,
@@ -346,8 +367,6 @@ app.get('/views', [noCacheJson], function (req, res) {
 app.get('/rightClicks', [noCacheJson], function (req, res) {
   res.send(internals.rightClicks);
 });
-// ----------------------------------------------------------------------------
-internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 'sha256'];
 
 // ----------------------------------------------------------------------------
 function globalAllowed (value) {
@@ -406,15 +425,15 @@ function funcName (typeName) {
   return 'get' + typeName[0].toUpperCase() + typeName.slice(1);
 }
 // ----------------------------------------------------------------------------
-function processQuery (req, query, cb) {
-  var typeInfo = internals.types[query.typeName];
-
-  // First time we've seen this typeName
+// This function adds a new type to the internals.types map of types.
+// If src is defined will add it to already defined types as src to query.
+function addType(type, src) {
+  let typeInfo = internals.types[type];
   if (!typeInfo) {
-    typeInfo = internals.types[query.typeName] = {
-      name: query.typeName,
-      excludeName: 'exclude' + query.typeName[0].toUpperCase() + query.typeName.slice(1) + 's',
-      funcName: funcName(query.typeName),
+    typeInfo = internals.types[type] = {
+      name: type,
+      excludeName: 'exclude' + type[0].toUpperCase() + type.slice(1) + 's',
+      funcName: funcName(type),
       sources: [],
       requestStats: 0,
       foundStats: 0,
@@ -426,11 +445,11 @@ function processQuery (req, query, cb) {
       sourceAllowed: sourceAllowed
     };
 
-    if (query.typeName === 'url') {
+    if (type === 'url') {
       typeInfo.excludeName = 'excludeURLs';
     }
 
-    if (query.typeName === 'ip') {
+    if (type === 'ip') {
       typeInfo.excludeName = 'excludeIPs';
       typeInfo.globalAllowed = globalIPAllowed;
       typeInfo.sourceAllowed = sourceIPAllowed;
@@ -439,12 +458,12 @@ function processQuery (req, query, cb) {
     for (var src in internals.sources) {
       if (internals.sources[src][typeInfo.funcName]) {
         typeInfo.sources.push(internals.sources[src]);
-        internals.sources[src].srcInProgress[query.typeName] = [];
+        internals.sources[src].srcInProgress[type] = [];
       }
     }
 
     var items = getConfig('wiseService', typeInfo.excludeName, '');
-    if (query.typeName === 'ip') {
+    if (type === 'ip') {
       typeInfo.excludes = new iptrie.IPTrie();
       items.split(';').map(item => item.trim()).filter(item => item !== '').forEach((item) => {
         let parts = item.split('/');
@@ -458,6 +477,19 @@ function processQuery (req, query, cb) {
     } else {
       typeInfo.excludes = items.split(';').map(item => item.trim()).filter(item => item !== '').map(item => RegExp.fromWildExp(item, 'ailop'));
     }
+  } else if (src !== undefined) {
+      typeInfo.sources.push(src);
+      src.srcInProgress[type] = [];
+  }
+  return typeInfo;
+}
+// ----------------------------------------------------------------------------
+function processQuery (req, query, cb) {
+  var typeInfo = internals.types[query.typeName];
+
+  // First time we've seen this typeName
+  if (!typeInfo) {
+    typeInfo = addType(query.typeName);
   }
 
   typeInfo.requestStats++;
@@ -682,19 +714,19 @@ app.get('/:source/:typeName/:value', [noCacheJson], function (req, res) {
 });
 // ----------------------------------------------------------------------------
 app.get('/sources', [noCacheJson], (req, res) => {
-  return res.send(Object.keys(internals.sources));
+  return res.send(Object.keys(internals.sources).sort());
 });
 // ----------------------------------------------------------------------------
 app.get('/types/:source?', [noCacheJson], (req, res) => {
-  // console.log(internals.types);
   if (req.params.source) {
-    return res.send([internals.sources[req.params.source].type]);
+    if (internals.sources[req.params.source]) {
+      return res.send(internals.sources[req.params.source].getTypes().sort());
+    } else {
+      return res.send([]);
+    }
   } else {
-    // let items = Object.keys(internals.sources).map(o => internals.sources[o].type);
-    // return res.send(Array.from(new Set(items)));
-    return res.send(internals.type2Name);
+    return res.send(Object.keys(internals.types).sort());
   }
-  // return res.send(Object.keys(internals.types));
 });
 // ----------------------------------------------------------------------------
 app.get('/dump/:source', [noCacheJson], function (req, res) {

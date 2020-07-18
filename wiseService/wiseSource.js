@@ -380,6 +380,11 @@ WISESource.prototype.formatSetting = function () {
 WISESource.prototype.typeSetting = function () {
   this.type = this.api.getConfig(this.section, 'type');
   this.typeFunc = this.api.funcName(this.type);
+  if (this.getTypes === undefined) {
+    this.getTypes = function () {
+      return [src.type];
+    }
+  }
 };
 // ----------------------------------------------------------------------------
 WISESource.emptyCombinedResult = WISESource.combineResults([]);

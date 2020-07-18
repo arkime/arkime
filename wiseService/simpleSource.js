@@ -91,6 +91,10 @@ SimpleSource.prototype.initSimple = function () {
   return true;
 };
 // ----------------------------------------------------------------------------
+SimpleSource.prototype.getTypes = function () {
+  return [this.type];
+}
+// ----------------------------------------------------------------------------
 SimpleSource.prototype.load = function () {
   var setFunc;
   var newCache;

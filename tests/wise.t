@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 79;
+use Test::More tests => 83;
 use MolochTest;
 use Cwd;
 use URI::Escape;
@@ -176,3 +176,17 @@ eq_or_diff($wise, '[{"field":"tags","len":11,"value":"wisebymac1"},{"field":"tag
 
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/file:mac/mac/00:12:1e:f2:61:3d")->content;
 eq_or_diff($wise, '[{"field":"tags","len":11,"value":"wisebymac1"},{"field":"tags","len":8,"value":"macwise"}]',"file:mac query");
+
+# Sources
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/sources")->content;
+eq_or_diff($wise, '["file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ja3","file:mac","file:md5","file:sha256","file:url"]',"file:mac query");
+
+# Types
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/types")->content;
+eq_or_diff($wise, '["domain","email","ip","ja3","mac","md5","sha256","url"]',"sources");
+
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/types/file:ip")->content;
+eq_or_diff($wise, '["ip"]',"types file:ip");
+
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/types/unknown")->content;
+eq_or_diff($wise, '[]',"types unknown");
