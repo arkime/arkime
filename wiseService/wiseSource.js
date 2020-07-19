@@ -288,7 +288,7 @@ WISESource.result2Str = function (result, indent) {
     var len = result[offset + 1];
     var value = result.toString('utf8', offset + 2, offset + 2 + len - 1);
     offset += 2 + len;
-    collection.push({ field: WISESource.pos2Field[pos], len: len, value: value });
+    collection.push({ field: WISESource.pos2Field[pos], len: len - 1, value: value });
   }
 
   return JSON.stringify(collection).replace(/},{/g, '},\n{');

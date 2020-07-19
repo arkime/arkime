@@ -439,6 +439,7 @@ function addType (type, newSrc) {
       foundStats: 0,
       cacheHitStats: 0,
       cacheSrcHitStats: 0,
+      cacheSrcMissStats: 0,
       cacheSrcRefreshStats: 0,
       excludes: [],
       globalAllowed: globalAllowed,
@@ -534,6 +535,7 @@ function processQuery (req, query, cb) {
       if (cacheResult[src.section] === undefined || cacheResult[src.section].ts + src.cacheTimeout < now) {
         if (cacheResult[src.section] === undefined) {
           src.cacheMissStat++;
+          typeInfo.cacheSrcMissStats++;
         } else {
           src.cacheRefreshStat++;
           typeInfo.cacheSrcRefreshStats++;
@@ -709,7 +711,7 @@ app.get('/:source/:typeName/:value', [noCacheJson], function (req, res) {
     if (err || !result) {
       return res.end('Not found');
     }
-    res.end(wiseSource.result2Str(result));
+    res.send(wiseSource.result2Str(result));
   });
 });
 // ----------------------------------------------------------------------------
@@ -810,8 +812,39 @@ app.get('/:typeName/:value', [noCacheJson], function (req, res) {
     if (err || !result) {
       return res.end('Not found');
     }
-    res.end(wiseSource.result2Str(result));
+    res.send(wiseSource.result2Str(result));
   });
+});
+// ----------------------------------------------------------------------------
+app.get('/stats', [noCacheJson], function (req, res) {
+  let types = Object.keys(internals.types).sort();
+  let stats = { types: [], sources: [] };
+
+  for (var type of types) {
+    let typeInfo = internals.types[type];
+    stats.types.push({
+      type: type,
+      request: typeInfo.requestStats,
+      found: typeInfo.foundStats,
+      cacheHit: typeInfo.cacheHitStats,
+      cacheSrcHit: typeInfo.cacheSrcHitStats,
+      cacheSrcMiss: typeInfo.cacheSrcMissStats,
+      cacheSrcRefresh: typeInfo.cacheSrcRefreshStats
+    });
+  }
+
+  for (let section in internals.sources) {
+    let src = internals.sources[section];
+    stats.sources.push({
+      source: section,
+      cacheHit: src.cacheHitStat,
+      cacheMiss: src.cacheMissStat,
+      cacheRefresh: src.cacheRefreshStat,
+      cacheDropped: src.cacheDroppedStat,
+      average100MS: src.average100MS
+    });
+  }
+  res.send(stats);
 });
 // ----------------------------------------------------------------------------
 if (getConfig('wiseService', 'regressionTests')) {
