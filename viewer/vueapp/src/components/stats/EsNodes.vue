@@ -20,7 +20,8 @@
 
       <moloch-table
         id="esNodesTable"
-        :data="stats"
+        v-on:toggle-data-node-only="showOnlyDataNodes = !showOnlyDataNodes"
+        :data="filteredStats"
         :loadData="loadData"
         :columns="columns"
         :no-results="true"
@@ -108,6 +109,7 @@ export default {
   data: function () {
     return {
       error: '',
+      showOnlyDataNodes: false,
       initialLoading: true,
       stats: null,
       recordsTotal: null,
@@ -157,6 +159,12 @@ export default {
       set: function (newValue) {
         this.$store.commit('setLoadingData', newValue);
       }
+    },
+    filteredStats: function () {
+      if (this.showOnlyDataNodes) {
+        return this.stats.filter(s => s.roles.indexOf('data') > -1);
+      }
+      return this.stats;
     }
   },
   watch: {
