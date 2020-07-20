@@ -1,18 +1,7 @@
 <template>
   <!-- container -->
   <div class="container-fluid">
-    <!-- page error -->
-    <div v-if="error"
-      class="alert alert-danger">
-      <span class="fa fa-exclamation-triangle">
-      </span>&nbsp;
-      {{ error }}
-      <button type="button"
-        class="close cursor-pointer"
-        @click="error = false">
-        <span>&times;</span>
-      </button>
-    </div> <!-- /page error -->
+    <Error :initialError="error" v-on:clear-initialError="error = ''"/>
 
     <div class="d-flex flex-row">
       <!-- source select -->
@@ -136,11 +125,15 @@
 
 <script>
 import WiseService from './wise.service';
+import Error from './Error';
 
 let timeout;
 
 export default {
   name: 'Wise',
+  components: {
+    Error
+  },
   data: function () {
     return {
       error: '',
