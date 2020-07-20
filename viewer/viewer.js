@@ -4106,7 +4106,7 @@ app.get('/esstats.json', [noCacheJson, recordResponseTime, checkPermissions(['hi
     Db.getClusterSettings({ flatSettings: true })
   ])
     .then(([nodesStats, nodesInfo, master, health, allocation, settings]) => {
-      const shards = new Map(allocation.map(i => [i.node, i.shards]));
+      const shards = new Map(allocation.map(i => [i.node, parseInt(i.shards, 10)]));
 
       let ipExcludes = [];
       if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
