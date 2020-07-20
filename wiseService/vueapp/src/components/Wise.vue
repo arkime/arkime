@@ -78,39 +78,21 @@
       </div> <!-- /search -->
     </div>
 
-    <!-- view type options -->
-    <div v-if="searchResult.length > 0" class="d-flex flex-row align-items-baseline">
-      <div>
-        View type:
-      </div>
-      <div class="ml-3">
-        <b-form-group>
-          <b-form-radio-group
-            v-model="chosenView"
-            :options="viewOptions"
-            buttons
-            button-variant="outline-secondary"
-            size="md"
-            name="view-options"
-          ></b-form-radio-group>
-        </b-form-group>
-      </div>
-    </div> <!-- /view type options -->
-
-    <hr>
-
-    <!-- show results -->
-    <div v-if="searchResult.length > 0">
-      <div v-if="chosenView === 'table-view'">
+    <!-- tabbed view options -->
+    <b-tabs content-class="mt-3" v-if="searchResult.length > 0">
+      <b-tab title="Table View" active>
         <b-table striped hover :items="searchResult" :fields="tableFields"></b-table>
-      </div>
-      <div v-if="chosenView === 'json-view'">
+      </b-tab>
+
+      <b-tab title="JSON View">
         <pre>{{JSON.stringify(searchResult, null, 2)}}</pre>
-      </div>
-      <div v-if="chosenView === 'csv-view'">
+      </b-tab>
+
+      <b-tab title="CSV View">
         <pre>{{calcCSV()}}</pre>
-      </div>
-    </div> <!-- /show results -->
+      </b-tab>
+    </b-tabs> <!-- /tabbed view options -->
+
     <!-- no results -->
     <div v-else>
       <div class="vertical-center info-area">
@@ -143,13 +125,7 @@ export default {
       chosenSource: '',
       chosenType: '',
       sources: [],
-      types: [],
-      chosenView: 'table-view',
-      viewOptions: [
-        { text: 'TABLE', value: 'table-view' },
-        { text: 'JSON', value: 'json-view' },
-        { text: 'CSV', value: 'csv-view' }
-      ]
+      types: []
     };
   },
   computed: {

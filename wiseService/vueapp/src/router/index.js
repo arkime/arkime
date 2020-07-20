@@ -3,6 +3,7 @@ import VueRouter from 'vue-router';
 import Wise from '../components/Wise.vue';
 import CreateConfig from '../components/CreateConfig.vue';
 import Help from '../components/Help.vue';
+import Stats from '../components/Stats.vue';
 
 Vue.use(VueRouter);
 
@@ -11,6 +12,11 @@ const routes = [
     path: '/',
     name: 'Wise',
     component: Wise
+  },
+  {
+    path: '/statistics',
+    name: 'Stats',
+    component: Stats
   },
   {
     path: '/create-config',

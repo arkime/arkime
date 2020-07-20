@@ -24,6 +24,14 @@
           </router-link>
         </li>
         <li class="nav-item mr-2">
+          <router-link to="/statistics"
+            active-class="active"
+            class="nav-link"
+            exact>
+            Stats
+          </router-link>
+        </li>
+        <li class="nav-item mr-2">
           <router-link to="create-config"
             active-class="active"
             class="nav-link"
