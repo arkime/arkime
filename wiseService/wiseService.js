@@ -97,7 +97,17 @@ if (internals.workers > 1) {
 // ----------------------------------------------------------------------------
 /// / Config
 // ----------------------------------------------------------------------------
-internals.config = ini.parseSync(internals.configFile);
+try {
+  if (internals.configFile.endsWith('.json')) {
+    internals.config = JSON.parse(fs.readFileSync(internals.configFile, 'utf8'))
+  } else if (internals.configFile.endsWith('.ini')) {
+    internals.config = ini.parseSync(internals.configFile);
+  }
+} catch (e) {
+  console.log(`Error reading internals.configFile:\n\n`, e.stack);
+  process.exit(1);
+}
+
 var app = express();
 var logger = require('morgan');
 var timeout = require('connect-timeout');
