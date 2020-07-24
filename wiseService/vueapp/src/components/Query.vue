@@ -217,12 +217,17 @@ export default {
     },
     clear: function () {
       this.searchTerm = '';
-      this.$router.replace({
-        query: {
-          ...this.$route.query,
-          searchTerm: ''
-        }
-      });
+
+      if (this.$route.query.searchTerm !== '') {
+        this.$router.replace({
+          query: {
+            ...this.$route.query,
+            searchTerm: ''
+          }
+        }).catch((err) => {
+          console.log(err);
+        });
+      }
     }
   }
 };
