@@ -78,8 +78,17 @@
       </div> <!-- /search -->
     </div>
 
+    <!-- empty search -->
+    <div v-if="!hasMadeASearch">
+      <div class="vertical-center info-area">
+        <span class="fa fa-3x fa-search">
+        </span>
+        Try adding a search query!
+      </div>
+    </div> <!-- /empty search -->
+
     <!-- tabbed view options -->
-    <b-tabs content-class="mt-3" v-if="searchResult.length > 0">
+    <b-tabs content-class="mt-3" v-else-if="searchResult.length > 0">
       <b-tab title="Table View" active>
         <b-table striped hover :items="searchResult" :fields="tableFields"></b-table>
       </b-tab>
@@ -101,6 +110,7 @@
         No Results
       </div>
     </div> <!-- /no results -->
+
   </div>  <!-- /container -->
 
 </template>
@@ -119,6 +129,7 @@ export default {
   data: function () {
     return {
       error: '',
+      hasMadeASearch: false,
       searchTerm: '',
       searchResult: [],
       tableFields: [],
@@ -198,6 +209,9 @@ export default {
     sendSearchQuery: function () {
       if (!this.searchTerm) {
         this.error = 'Search term is empty';
+        this.searchResult = [];
+        this.tableFields = [];
+        this.hasMadeASearch = false;
         return;
       }
 
@@ -211,6 +225,8 @@ export default {
       }).catch((err) => {
         console.log(err);
       });
+
+      this.hasMadeASearch = true;
 
       this.error = '';
       WiseService.search(this.chosenSource, this.chosenType, this.searchTerm)
