@@ -135,7 +135,6 @@ export default {
   },
   watch: {
     chosenSource: function () {
-      this.chosenType = '';
       this.loadTypeOptions();
     }
   },
@@ -185,7 +184,7 @@ export default {
         .then((data) => {
           this.error = '';
           this.types = data;
-          if (data.length >= 1) {
+          if (data.length >= 1 && !data.includes(this.chosenType)) {
             this.chosenType = data[0];
           }
         })

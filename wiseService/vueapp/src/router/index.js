@@ -10,11 +10,7 @@ Vue.use(VueRouter);
 const routes = [
   {
     path: '/',
-    name: 'Query',
-    component: Query
-  },
-  {
-    path: '/query',
+    alias: '/query',
     name: 'Query',
     component: Query
   },
