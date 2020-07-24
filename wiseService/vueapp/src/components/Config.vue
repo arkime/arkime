@@ -6,6 +6,6 @@
 
 <script>
 export default {
-  name: 'CreateINI'
+  name: 'Config'
 };
 </script>

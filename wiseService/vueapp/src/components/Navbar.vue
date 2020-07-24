@@ -20,7 +20,7 @@
             active-class="active"
             class="nav-link"
             exact>
-            Wise
+            Query
           </router-link>
         </li>
         <li class="nav-item mr-2">
@@ -32,11 +32,11 @@
           </router-link>
         </li>
         <li class="nav-item mr-2">
-          <router-link to="create-config"
+          <router-link to="config"
             active-class="active"
             class="nav-link"
             exact>
-            Build Wise Config
+            Config
           </router-link>
         </li>
         <!-- <li class="nav-item mr-2"

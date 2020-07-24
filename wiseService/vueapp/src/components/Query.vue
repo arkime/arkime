@@ -112,7 +112,7 @@ import Error from './Error';
 let timeout;
 
 export default {
-  name: 'Wise',
+  name: 'Query',
   components: {
     Error
   },
