@@ -143,6 +143,8 @@ export default {
     this.loadTypeOptions();
 
     if (this.$route.query.searchTerm) {
+      this.chosenSource = this.$route.query.searchSource;
+      this.chosenType = this.$route.query.searchType;
       this.searchTerm = this.$route.query.searchTerm;
       this.debounceSearch();
     }
@@ -198,6 +200,17 @@ export default {
         this.error = 'Search term is empty';
         return;
       }
+
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          searchSource: this.chosenSource,
+          searchType: this.chosenType,
+          searchTerm: this.searchTerm
+        }
+      }).catch((err) => {
+        console.log(err);
+      });
 
       this.error = '';
       WiseService.search(this.chosenSource, this.chosenType, this.searchTerm)
