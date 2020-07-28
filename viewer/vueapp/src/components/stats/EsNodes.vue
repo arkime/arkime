@@ -15,7 +15,7 @@
         class="mt-1 ml-2"
         :info-only="true"
         :records-total="recordsTotal"
-        :records-filtered="recordsFiltered">
+        :records-filtered="filteredStats.length">
       </moloch-paging>
 
       <moloch-table
@@ -113,7 +113,6 @@ export default {
       initialLoading: true,
       stats: null,
       recordsTotal: null,
-      recordsFiltered: null,
       query: {
         filter: this.searchTerm || undefined,
         sortField: 'nodeName',
@@ -244,7 +243,6 @@ export default {
           this.initialLoading = false;
           this.stats = response.data.data;
           this.recordsTotal = response.data.recordsTotal;
-          this.recordsFiltered = response.data.recordsFiltered;
         }, (error) => {
           respondedAt = undefined;
           this.loading = false;
