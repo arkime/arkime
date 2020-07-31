@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import Wise from '../components/Wise.vue';
-import CreateConfig from '../components/CreateConfig.vue';
+import Query from '../components/Query.vue';
+import Config from '../components/Config.vue';
 import Help from '../components/Help.vue';
 import Stats from '../components/Stats.vue';
 
@@ -10,8 +10,9 @@ Vue.use(VueRouter);
 const routes = [
   {
     path: '/',
-    name: 'Wise',
-    component: Wise
+    alias: '/query',
+    name: 'Query',
+    component: Query
   },
   {
     path: '/statistics',
@@ -19,9 +20,9 @@ const routes = [
     component: Stats
   },
   {
-    path: '/create-config',
-    name: 'Create config',
-    component: CreateConfig
+    path: '/config',
+    name: 'Config',
+    component: Config
   },
   {
     path: '/help',

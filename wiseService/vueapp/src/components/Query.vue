@@ -78,8 +78,17 @@
       </div> <!-- /search -->
     </div>
 
+    <!-- empty search -->
+    <div v-if="!hasMadeASearch">
+      <div class="vertical-center info-area">
+        <span class="fa fa-3x fa-search">
+        </span>
+        Try adding a search query!
+      </div>
+    </div> <!-- /empty search -->
+
     <!-- tabbed view options -->
-    <b-tabs content-class="mt-3" v-if="searchResult.length > 0">
+    <b-tabs content-class="mt-3" v-else-if="searchResult.length > 0">
       <b-tab title="Table View" active>
         <b-table striped hover :items="searchResult" :fields="tableFields"></b-table>
       </b-tab>
@@ -101,6 +110,7 @@
         No Results
       </div>
     </div> <!-- /no results -->
+
   </div>  <!-- /container -->
 
 </template>
@@ -112,13 +122,14 @@ import Error from './Error';
 let timeout;
 
 export default {
-  name: 'Wise',
+  name: 'Query',
   components: {
     Error
   },
   data: function () {
     return {
       error: '',
+      hasMadeASearch: false,
       searchTerm: '',
       searchResult: [],
       tableFields: [],
@@ -135,7 +146,6 @@ export default {
   },
   watch: {
     chosenSource: function () {
-      this.chosenType = '';
       this.loadTypeOptions();
     }
   },
@@ -144,6 +154,8 @@ export default {
     this.loadTypeOptions();
 
     if (this.$route.query.searchTerm) {
+      this.chosenSource = this.$route.query.searchSource;
+      this.chosenType = this.$route.query.searchType;
       this.searchTerm = this.$route.query.searchTerm;
       this.debounceSearch();
     }
@@ -185,7 +197,7 @@ export default {
         .then((data) => {
           this.error = '';
           this.types = data;
-          if (data.length >= 1) {
+          if (data.length >= 1 && !data.includes(this.chosenType)) {
             this.chosenType = data[0];
           }
         })
@@ -197,8 +209,24 @@ export default {
     sendSearchQuery: function () {
       if (!this.searchTerm) {
         this.error = 'Search term is empty';
+        this.searchResult = [];
+        this.tableFields = [];
+        this.hasMadeASearch = false;
         return;
       }
+
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          searchSource: this.chosenSource,
+          searchType: this.chosenType,
+          searchTerm: this.searchTerm
+        }
+      }).catch((err) => {
+        console.log(err);
+      });
+
+      this.hasMadeASearch = true;
 
       this.error = '';
       WiseService.search(this.chosenSource, this.chosenType, this.searchTerm)
@@ -218,12 +246,17 @@ export default {
     },
     clear: function () {
       this.searchTerm = '';
-      this.$router.replace({
-        query: {
-          ...this.$route.query,
-          searchTerm: ''
-        }
-      });
+
+      if (this.$route.query.searchTerm !== '') {
+        this.$router.replace({
+          query: {
+            ...this.$route.query,
+            searchTerm: ''
+          }
+        }).catch((err) => {
+          console.log(err);
+        });
+      }
     }
   }
 };
