@@ -4227,7 +4227,7 @@ app.get('/esstats.json', [noCacheJson, recordResponseTime, checkPermissions(['hi
 
       r = {
         health: health,
-        recordsTotal: nodeKeys.length,
+        recordsTotal: (nodeKeys.includes('timestamp')) ? nodeKeys.length - 1 : nodeKeys.length,
         recordsFiltered: stats.length,
         data: stats
       };

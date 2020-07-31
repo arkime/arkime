@@ -594,7 +594,7 @@ export default {
     onOffFocus: function () {
       this.focusInput = false;
     },
-    debounceSearchInput () {
+    debounceSearchInput: function () {
       if (searchInputTimeout) { clearTimeout(searchInputTimeout); }
       // debounce the input so it only issues a request after keyups cease for 400ms
       searchInputTimeout = setTimeout(() => {
