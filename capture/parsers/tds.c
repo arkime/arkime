@@ -27,9 +27,10 @@ LOCAL  int userField;
 LOCAL int tds_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     TDSInfo_t *tds = uw;
+    size_t count = remaining;
 
-    remaining = MIN(remaining, TDS_MAX_SIZE - tds->pos[which]);
-    memcpy(tds->data[which] + tds->pos[which], data, remaining);
+    count = MIN(count, TDS_MAX_SIZE - tds->pos[which]);
+    memcpy(tds->data[which] + tds->pos[which], data, count);
     tds->pos[which] += remaining;
 
     // Lots of info from http://www.freetds.org/tds.html
