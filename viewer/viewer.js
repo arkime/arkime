@@ -6156,7 +6156,7 @@ function processSessionId (id, fullSession, headerCb, packetCb, endCb, maxPacket
     options = { _source: 'node,totPackets,packetPos,srcIp,srcPort,ipProtocol,packetLen' };
   }
 
-  Db.getWithOptions(Db.sid2Index(id), 'session', Db.sid2Id(id), options, function (err, session) {
+  Db.getSession(id, options, (err, session) => {
     if (err || !session.found) {
       console.log('session get error', err, session);
       return endCb('Session not found', null);
@@ -6175,6 +6175,8 @@ function processSessionId (id, fullSession, headerCb, packetCb, endCb, maxPacket
 
     function fileReadyCb (fileInfo) {
       outstanding--;
+
+      // All of the replies have been received
       if (i === ilen && outstanding === 0) {
         readyToProcess();
       }
@@ -8336,7 +8338,7 @@ function pcapScrub (req, res, sid, whatToRemove, endCb) {
     });
   }
 
-  Db.getWithOptions(Db.sid2Index(sid), 'session', Db.sid2Id(sid), { _source: 'node,ipProtocol,packetPos' }, function (err, session) {
+  Db.getSession(sid, { _source: 'node,ipProtocol,packetPos' }, function (err, session) {
     let fileNum;
     let itemPos = 0;
     const fields = session._source || session.fields;
@@ -8370,7 +8372,6 @@ function pcapScrub (req, res, sid, whatToRemove, endCb) {
               console.log(`Error - ${errorMsg}`);
               return nextCb(errorMsg);
             }
-
             processFile(ipcap, pos, itemPos++, nextCb);
           });
         } else {

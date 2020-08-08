@@ -305,17 +305,30 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         MolochSimple_t *info = currentInfo[thread] = writer_simple_alloc(thread, NULL);
         switch(simpleMode) {
         case MOLOCH_SIMPLE_NORMAL:
-            name = moloch_db_create_file(packet->ts.tv_sec, NULL, 0, 0, &info->file->id);
+            if (config.gapPacketPos)
+                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
+                                                  "packetPosEncoding", "gap0",
+                                                  (char *)NULL);
+            else
+                name = moloch_db_create_file(packet->ts.tv_sec, NULL, 0, 0, &info->file->id);
             break;
         case MOLOCH_SIMPLE_XOR2048:
             kekId = writer_simple_get_kekId();
             RAND_bytes(info->file->dek, 256);
             writer_simple_encrypt_key(kekId, info->file->dek, 256, dekhex);
-            name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
-                                              "encoding", "xor-2048",
-                                              "dek", dekhex,
-                                              "kekId", kekId,
-                                              (char *)NULL);
+            if (config.gapPacketPos)
+                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
+                                                  "encoding", "xor-2048",
+                                                  "dek", dekhex,
+                                                  "kekId", kekId,
+                                                  "packetPosEncoding", "gap0",
+                                                  (char *)NULL);
+            else
+                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
+                                                  "encoding", "xor-2048",
+                                                  "dek", dekhex,
+                                                  "kekId", kekId,
+                                                  (char *)NULL);
 
             break;
         case MOLOCH_SIMPLE_AES256CTR: {
@@ -329,12 +342,21 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
             writer_simple_encrypt_key(kekId, dek, 32, dekhex);
             moloch_sprint_hex_string(ivhex, iv, 12);
             EVP_EncryptInit(info->file->cipher_ctx, cipher, dek, iv);
-            name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
-                                              "encoding", "aes-256-ctr",
-                                              "iv", ivhex,
-                                              "dek", dekhex,
-                                              "kekId", kekId,
-                                              (char *)NULL);
+            if (config.gapPacketPos)
+                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
+                                                  "encoding", "aes-256-ctr",
+                                                  "iv", ivhex,
+                                                  "dek", dekhex,
+                                                  "kekId", kekId,
+                                                  "packetPosEncoding", "gap0",
+                                                  (char *)NULL);
+            else
+                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
+                                                  "encoding", "aes-256-ctr",
+                                                  "iv", ivhex,
+                                                  "dek", dekhex,
+                                                  "kekId", kekId,
+                                                  (char *)NULL);
             break;
         }
         default:
@@ -548,6 +570,8 @@ void writer_simple_init(char *name)
     } else {
         LOG("Not using O_DIRECT by config");
     }
+
+    config.gapPacketPos = moloch_config_boolean(NULL, "gapPacketPos", FALSE);
 
     DLL_INIT(simple_, &simpleQ);
 
