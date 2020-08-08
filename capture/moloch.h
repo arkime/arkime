@@ -469,6 +469,7 @@ typedef struct moloch_config {
     char      autoGenerateId;
     char      ignoreErrors;
     char      enablePacketLen;
+    char      gapPacketPos;
 } MolochConfig_t;
 
 typedef struct {

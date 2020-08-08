@@ -669,10 +669,38 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         BSB_EXPORT_sprintf(jbsb, "\"rootId\":\"%s\",", session->rootId);
     }
     BSB_EXPORT_cstr(jbsb, "\"packetPos\":[");
-    for(i = 0; i < session->filePosArray->len; i++) {
-        if (i != 0)
-            BSB_EXPORT_u08(jbsb, ',');
-        BSB_EXPORT_sprintf(jbsb, "%" PRId64, (uint64_t)g_array_index(session->filePosArray, uint64_t, i));
+    if (config.gapPacketPos) {
+        /* Very simple gap encoding, with a gap the same as previous gap represented as 0.
+         * Negative numbers, and numbers after the negative number are not encoded.
+         * This should reduce the saved size by over 50%.
+         * Future work of switching to binary varint with base64 might help more.
+         */
+        int64_t last = 0;
+        int64_t lastgap = 0;
+        for(i = 0; i < session->filePosArray->len; i++) {
+            if (i != 0)
+                BSB_EXPORT_u08(jbsb, ',');
+            int64_t pos = (int64_t)g_array_index(session->filePosArray, int64_t, i);
+            if (pos < 0) {
+                last = 0;
+                lastgap = 0;
+                BSB_EXPORT_sprintf(jbsb, "%" PRId64, pos);
+            } else {
+                if (pos - last == lastgap) {
+                    BSB_EXPORT_u08(jbsb, '0');
+                } else {
+                    lastgap = pos - last;
+                    BSB_EXPORT_sprintf(jbsb, "%" PRId64, lastgap);
+                }
+                last = pos;
+            }
+        }
+    } else {
+        for(i = 0; i < session->filePosArray->len; i++) {
+            if (i != 0)
+                BSB_EXPORT_u08(jbsb, ',');
+            BSB_EXPORT_sprintf(jbsb, "%" PRId64, (int64_t)g_array_index(session->filePosArray, int64_t, i));
+        }
     }
     BSB_EXPORT_cstr(jbsb, "],");
 
@@ -1303,46 +1331,46 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
 
     int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE,
         "{"
-        "\"ver\": \"%s\", "
-        "\"nodeName\": \"%s\", "
-        "\"hostname\": \"%s\", "
-        "\"interval\": %d, "
-        "\"currentTime\": %" PRIu64 ", "
-        "\"usedSpaceM\": %" PRIu64 ", "
-        "\"freeSpaceM\": %" PRIu64 ", "
-        "\"freeSpaceP\": %.2f, "
-        "\"monitoring\": %u, "
-        "\"memory\": %" PRIu64 ", "
-        "\"memoryP\": %.2f, "
-        "\"cpu\": %" PRIu64 ", "
-        "\"diskQueue\": %u, "
-        "\"esQueue\": %u, "
-        "\"packetQueue\": %u, "
-        "\"fragsQueue\": %u, "
-        "\"frags\": %u, "
-        "\"needSave\": %u, "
-        "\"closeQueue\": %u, "
-        "\"totalPackets\": %" PRIu64 ", "
-        "\"totalK\": %" PRIu64 ", "
-        "\"totalSessions\": %" PRIu64 ", "
-        "\"totalDropped\": %" PRIu64 ", "
-        "\"tcpSessions\": %u, "
-        "\"udpSessions\": %u, "
-        "\"icmpSessions\": %u, "
-        "\"sctpSessions\": %u, "
-        "\"espSessions\": %u, "
-        "\"otherSessions\": %u, "
-        "\"deltaPackets\": %" PRIu64 ", "
-        "\"deltaBytes\": %" PRIu64 ", "
-        "\"deltaWrittenBytes\": %" PRIu64 ", "
-        "\"deltaUnwrittenBytes\": %" PRIu64 ", "
-        "\"deltaSessions\": %" PRIu64 ", "
-        "\"deltaSessionBytes\": %" PRIu64 ", "
-        "\"deltaDropped\": %" PRIu64 ", "
-        "\"deltaFragsDropped\": %" PRIu64 ", "
-        "\"deltaOverloadDropped\": %" PRIu64 ", "
-        "\"deltaESDropped\": %" PRIu64 ", "
-        "\"esHealthMS\": %" PRIu64 ", "
+        "\"ver\": \"%s\","
+        "\"nodeName\": \"%s\","
+        "\"hostname\": \"%s\","
+        "\"interval\": %d,"
+        "\"currentTime\": %" PRIu64 ","
+        "\"usedSpaceM\": %" PRIu64 ","
+        "\"freeSpaceM\": %" PRIu64 ","
+        "\"freeSpaceP\": %.2f,"
+        "\"monitoring\": %u,"
+        "\"memory\": %" PRIu64 ","
+        "\"memoryP\": %.2f,"
+        "\"cpu\": %" PRIu64 ","
+        "\"diskQueue\": %u,"
+        "\"esQueue\": %u,"
+        "\"packetQueue\": %u,"
+        "\"fragsQueue\": %u,"
+        "\"frags\": %u,"
+        "\"needSave\": %u,"
+        "\"closeQueue\": %u,"
+        "\"totalPackets\": %" PRIu64 ","
+        "\"totalK\": %" PRIu64 ","
+        "\"totalSessions\": %" PRIu64 ","
+        "\"totalDropped\": %" PRIu64 ","
+        "\"tcpSessions\": %u,"
+        "\"udpSessions\": %u,"
+        "\"icmpSessions\": %u,"
+        "\"sctpSessions\": %u,"
+        "\"espSessions\": %u,"
+        "\"otherSessions\": %u,"
+        "\"deltaPackets\": %" PRIu64 ","
+        "\"deltaBytes\": %" PRIu64 ","
+        "\"deltaWrittenBytes\": %" PRIu64 ","
+        "\"deltaUnwrittenBytes\": %" PRIu64 ","
+        "\"deltaSessions\": %" PRIu64 ","
+        "\"deltaSessionBytes\": %" PRIu64 ","
+        "\"deltaDropped\": %" PRIu64 ","
+        "\"deltaFragsDropped\": %" PRIu64 ","
+        "\"deltaOverloadDropped\": %" PRIu64 ","
+        "\"deltaESDropped\": %" PRIu64 ","
+        "\"esHealthMS\": %" PRIu64 ","
         "\"deltaMS\": %" PRIu64
         "}",
         VERSION,

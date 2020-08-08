@@ -168,6 +168,40 @@ exports.getWithOptions = function (index, type, id, options, cb) {
   return internals.elasticSearchClient.get(params, cb);
 };
 
+// Get a session from ES and decode packetPos if requested
+exports.getSession = function (id, options, cb) {
+    exports.getWithOptions(exports.sid2Index(id), 'session', exports.sid2Id(id), options, (err, session) => {
+      if (err || (options && options._source && !options._source.includes('packetPos'))) {
+        return cb(err, session);
+      }
+      let fields = session._source || session.fields;
+      if (!fields.packetPos || fields.packetPos.length === 0) {
+        return cb(err, session);
+      }
+      exports.fileIdToFile(fields.node, -1 * fields.packetPos[0], (fileInfo) => {
+        // Neg numbers aren't encoded, if pos is 0 same gap as last gap, otherwise last + pos
+        if (fileInfo.packetPosEncoding === 'gap0') {
+          let last = 0;
+          let lastgap = 0;
+          for (let i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
+            if (fields.packetPos[i] < 0) {
+              last = 0;
+            } else {
+              if (fields.packetPos[i] === 0) {
+                fields.packetPos[i] = last + lastgap;
+              } else {
+                lastgap = fields.packetPos[i];
+                fields.packetPos[i] += last;
+              }
+              last = fields.packetPos[i];
+            }
+          }
+        }
+        return cb(err, session);
+      });
+    });
+};
+
 exports.index = function (index, type, id, document, cb) {
   return internals.elasticSearchClient.index({ index: fixIndex(index), type: '_doc', body: document, id: id }, cb);
 };
