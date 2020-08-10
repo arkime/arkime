@@ -3387,7 +3387,7 @@ app.get('/fields', function (req, res) {
 });
 
 app.get('/file/list', [noCacheJson, recordResponseTime, logAction('files'), checkPermissions(['hideFiles']), setCookie], (req, res) => {
-  const columns = ['num', 'node', 'name', 'locked', 'first', 'filesize', 'encoding'];
+  const columns = ['num', 'node', 'name', 'locked', 'first', 'filesize', 'encoding', 'packetPosEncoding'];
 
   let query = {
     _source: columns,
@@ -3508,6 +3508,7 @@ app.get('/esindices/list', [noCacheJson, recordResponseTime, checkPermissions(['
 
       index.creationDate = parseInt(indicesSettings[index.index].settings['index.creation_date']);
       index.versionCreated = parseInt(indicesSettings[index.index].settings['index.version.created']);
+      index.docSize = index['docs.count'] === '0' ? 0 : Math.ceil(parseInt(index['store.size']) / parseInt(index['docs.count']));
     }
 
     // sorting
