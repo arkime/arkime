@@ -52,6 +52,7 @@ jobs:
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
+            - linting: npm run lint
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
@@ -75,6 +76,7 @@ jobs:
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
+            - linting: npm run lint
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | tr "-" "_"`
@@ -120,8 +122,8 @@ jobs:
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
-            - cp -r capture/plugins/lua/samples /data/moloch/lua
             - linting: npm run lint
+            - cp -r capture/plugins/lua/samples /data/moloch/lua
             - run-es: (chown -R elasticsearch /elasticsearch-7.5.1; cd /elasticsearch-7.5.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - test-capture: (cd tests ; ./tests.pl)
             - sleep 30
@@ -150,6 +152,7 @@ jobs:
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root
             - installing: make install
+            - linting: npm run lint
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js`
@@ -186,6 +189,7 @@ jobs:
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root
             - installing: make install
+            - linting: npm run lint
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - build-package: |
                 export MOLOCH_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js`
@@ -223,8 +227,8 @@ jobs:
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
-            - cp -r capture/plugins/lua/samples /data/moloch/lua
             - linting: npm run lint
+            - cp -r capture/plugins/lua/samples /data/moloch/lua
             - run-es: (chown -R elasticsearch /elasticsearch-7.5.1; cd /elasticsearch-7.5.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - sleep 30
             - cat /tmp/es
@@ -251,8 +255,8 @@ jobs:
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
-            - cp -r capture/plugins/lua/samples /data/moloch/lua
             - linting: npm run lint
+            - cp -r capture/plugins/lua/samples /data/moloch/lua
             - run-es: (chown -R elasticsearch /elasticsearch-7.5.1; cd /elasticsearch-7.5.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - test-capture: (cd tests ; ./tests.pl)
             - sleep 30
