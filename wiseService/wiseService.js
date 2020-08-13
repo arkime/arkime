@@ -845,13 +845,7 @@ app.get('/stats', [noCacheJson], function (req, res) {
   }
   res.send(stats);
 });
-// ----------------------------------------------------------------------------
-app.post('/shutdown', (req, res) => {
-  if (getConfig('wiseService', 'regressionTests')) {
-    process.exit(0);
-    throw new Error('Exiting');
-  }
-});
+
 // ----------------------------------------------------------------------------
 function createRedisClient (redisType, section) {
   if (redisType === 'redis') {
@@ -941,6 +935,13 @@ RegExp.fromWildExp = function (c, a) {
 // ----------------------------------------------------------------------------
 function main () {
   internals.cache = wiseCache.createCache({ getConfig: getConfig, createRedisClient: createRedisClient });
+
+  if (getConfig('wiseService', 'regressionTests')) {
+    app.post('/shutdown', (req, res) => {
+      process.exit(0);
+      throw new Error('Exiting');
+    });
+  }
 
   addField('field:tags'); // Always add tags field so we have at least 1 field
   buildSourceApi();
