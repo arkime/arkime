@@ -968,21 +968,21 @@ function main () {
     .listen(getConfig('wiseService', 'port', 8081));
 }
 
-async function redisPubSub (host, dbNum, configKey) {
-  let redis = new Redis(internals.configFile + '/' + dbNum);
-
-  redis.on('message', (channel, message) => {
-    const [type, key] = channel.split(":");
-    if (key === configKey) {
-      redisConfigGet(host, dbNum, configKey);
-    }
-  });
-  redis.subscribe('__keyspace@' + dbNum + '__:' + 'jackson', (error) => {
-    if (error) {
-      throw new Error('Redis can not subscribe to changes in config', error);
-    }
-  });
-}
+// async function redisPubSub (host, dbNum, configKey) {
+//   let redis = new Redis(internals.configFile + '/' + dbNum);
+//
+//   redis.on('message', (channel, message) => {
+//     const [type, key] = channel.split(":");
+//     if (key === configKey) {
+//       redisConfigGet(host, dbNum, configKey);
+//     }
+//   });
+//   redis.subscribe('__keyspace@' + dbNum + '__:' + 'jackson', (error) => {
+//     if (error) {
+//       throw new Error('Redis can not subscribe to changes in config', error);
+//     }
+//   });
+// }
 
 function redisConfigGet (host, dbNum, configKey) {
   let redis = new Redis(host + '/' + dbNum);
@@ -1000,12 +1000,12 @@ function redisConfigGet (host, dbNum, configKey) {
   });
 }
 
-async function buildConfigAndStart() {
+async function buildConfigAndStart () {
   try {
     if (internals.configFile.startsWith('redis')) {
       let redisParts = internals.configFile.split(/(\d)/);
       if (redisParts.length !== 3 || redisParts.some(p => p === '')) {
-        throw 'Invalid redis url';
+        throw new Error('Invalid redis url');
       }
       let host = redisParts[0].slice(0, redisParts[0].length - 1);
       let dbNum = redisParts[1];
@@ -1016,7 +1016,7 @@ async function buildConfigAndStart() {
       // Subscribe to changes in config file. TODO: update sources to work with config updates
       // redisPubSub(host, dbNum, configKey);
     } else if (internals.configFile.endsWith('.json')) {
-      internals.config = JSON.parse(fs.readFileSync(internals.configFile, 'utf8'))
+      internals.config = JSON.parse(fs.readFileSync(internals.configFile, 'utf8'));
     } else if (internals.configFile.endsWith('.ini')) {
       internals.config = ini.parseSync(internals.configFile);
     }
