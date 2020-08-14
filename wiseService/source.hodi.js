@@ -129,14 +129,14 @@ HODISource.prototype.getEmail = function (email, cb) {
 };
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
-  api.addSourceConfigDef("hodi", {
+  api.addSourceConfigDef('hodi', {
     singleton: true,
-    name: "hodi",
-    description: "Experimental “History of Observed Data Indicators” plugin. This watches all queries to WISE and sends a feed to a configured elasticsearch cluster with firstSeen, lastSeen, and VERY rough count metric.",
+    name: 'hodi',
+    description: 'Experimental “History of Observed Data Indicators” plugin. This watches all queries to WISE and sends a feed to a configured elasticsearch cluster with firstSeen, lastSeen, and VERY rough count metric.',
     fields: [
-      { name: "esHost", required: true, help: "The elasticsearch connection string, usually host:port" },
-      { name: "cacheSize", required: false, help: "Maximum number of results to cache" },
-      { name: "cacheAgeMin", required: false, help: "Number of minutes items in the cache for this source are valid for" }
+      { name: 'esHost', required: true, help: 'The elasticsearch connection string, usually host:port' },
+      { name: 'cacheSize', required: false, help: 'Maximum number of results to cache' },
+      { name: 'cacheAgeMin', required: false, help: 'Number of minutes items in the cache for this source are valid for' }
     ]
   });
 

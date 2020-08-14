@@ -461,17 +461,17 @@ ThreatStreamSource.prototype.openDb = function () {
 };
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
-  api.addSourceConfigDef("threatstream", {
+  api.addSourceConfigDef('threatstream', {
     singleton: true,
-    name: "threatstream",
-    description: "Link to the anomali threatstream data",
+    name: 'threatstream',
+    description: 'Link to the anomali threatstream data',
     fields: [
-      { name: "mode", required: true, help: "Mode to work in zip, api, sqlite3", regex: "^(zip|api|sqlite3)" },
-      { name: "user", required: true, help: "Threatstream user"},
-      { name: "key", required: true, help: "Threatstream key"},
-      { name: "dbFile", required: false, help: "Path to the ts.db file when using sqlite3 mode"}
+      { name: 'mode', required: true, help: 'Mode to work in zip, api, sqlite3', regex: '^(zip|api|sqlite3)' },
+      { name: 'user', required: true, help: 'Threatstream user' },
+      { name: 'key', required: true, help: 'Threatstream key' },
+      { name: 'dbFile', required: false, help: 'Path to the ts.db file when using sqlite3 mode' }
     ]
-  })
+  });
 
   return new ThreatStreamSource(api, 'threatstream');
 };

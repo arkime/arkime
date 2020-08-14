@@ -191,16 +191,16 @@ var reportApi = function (req, res) {
 };
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
-  api.addSourceConfigDef("virustotal", {
+  api.addSourceConfigDef('virustotal', {
     singleton: true,
-    name: "virustotal",
-    description: "Link to the virustotal data",
+    name: 'virustotal',
+    description: 'Link to the virustotal data',
     fields: [
-      { name: "key", required: true, help: "The API key" },
-      { name: "contentTypes", required: false, help: "AW?" },
-      { name: "queriesPerMinute", required: false, help: "The number of queries per minute (defaults to 3)" },
-      { name: "maxOutstanding", required: false, help: "AW? (defaults to 25)" },
-      { name: "dataSources", required: false, help: "The data sources (defaults to McAfee,Symantec,Microsoft,Kaspersky)" },
+      { name: 'key', required: true, help: 'The API key' },
+      { name: 'contentTypes', required: false, help: 'AW?' },
+      { name: 'queriesPerMinute', required: false, help: 'The number of queries per minute (defaults to 3)' },
+      { name: 'maxOutstanding', required: false, help: 'AW? (defaults to 25)' },
+      { name: 'dataSources', required: false, help: 'The data sources (defaults to McAfee,Symantec,Microsoft,Kaspersky)' }
     ]
   });
 

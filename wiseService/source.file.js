@@ -77,12 +77,12 @@ FileSource.prototype.simpleSourceLoad = function (setFunc, cb) {
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   var sections = api.getConfigSections().filter((e) => { return e.match(/^file:/); });
-  api.addSourceConfigDef("file", {
+  api.addSourceConfigDef('file', {
     singleton: false,
-    name: "file",
-    description: "The file source allows you to read in multiple files and do stuff",
+    name: 'file',
+    description: 'The file source allows you to read in multiple files and do stuff',
     fields: [
-      { name: "file", required: true, help: "The file to load" },
+      { name: 'file', required: true, help: 'The file to load' }
       // AW? I am not sure why these tags do not show up in getConfig() calls
       // { name: "name", required: true, help: "A unique name for this file source" },
       // { name: "type", required: true, help: "The type of data in the file, such as ip, domain, md5, ja3, email, or something defined in [wise-types]" },
