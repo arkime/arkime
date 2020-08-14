@@ -114,6 +114,15 @@ RightClickSource.prototype.process = function (data) {
 
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
+  api.addSourceConfigDef("rightclick", {
+    singleton: false,
+    name: "rightclick",
+    description: "This source monitors configured files for right-click actions to send to all the viewer instances that connect to this WISE Server",
+    fields: [
+      { name: "file", required: true, help: "The file to load" }
+    ]
+  });
+
   var sections = api.getConfigSections().filter((e) => { return e.match(/(^right-click$|^right-click:)/); });
   sections.forEach((section) => {
     return new RightClickSource(api, section);

@@ -86,5 +86,15 @@ HODIRedisSource.prototype.getIp = function (query, cb) {
 };
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
+  api.addSourceConfigDef("hodiredis", {
+    singleton: true,
+    name: "hodiredis",
+    description: "AW?",
+    fields: [
+      { name: "contentTypes", required: true, help: "The format of data file, such as csv, tagger, or json" },
+      { name: "url", required: true, help: "The format is [redis:]//[[user][:password@]]host:port[/db-number]" },
+    ]
+  });
+
   return new HODIRedisSource(api, 'hodiredis');
 };

@@ -68,6 +68,17 @@ URLSource.prototype.simpleSourceLoad = function (setFunc, cb) {
 };
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
+  api.addSourceConfigDef("url", {
+    singleton: false,
+    name: "url",
+    description: "Link to the URL data",
+    fields: [
+      { name: "url", required: true, help: "The URL to load" },
+      { name: "reload", required: false, help: "How often in minutes to refresh the file, or -1 (default) to never refresh it" },
+      { name: "headers", required: true, help: "	Semicolon separated list of headers to send in the URL request" },
+    ]
+  });
+
   var sections = api.getConfigSections().filter((e) => { return e.match(/^url:/); });
   sections.forEach((section) => {
     return new URLSource(api, section);

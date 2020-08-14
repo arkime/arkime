@@ -215,6 +215,16 @@ function getURL (item, cb) {
 }
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
+  api.addSourceConfigDef("wiseproxy", {
+    singleton: false,
+    name: "wiseproxy",
+    description: "Link to the wiseproxy data",
+    fields: [
+      { name: "url", required: true, help: "The URl" },
+      { name: "types", required: true, help: "The type of data, such as ip,domain,md5,ja3,email, or something defined in [wise-types]" }
+    ]
+  });
+
   var sections = api.getConfigSections().filter((e) => { return e.match(/^wiseproxy:/); });
   sections.forEach((section) => {
     return new WiseProxySource(api, section);

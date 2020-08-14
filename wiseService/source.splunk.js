@@ -190,6 +190,22 @@ SplunkSource.prototype.sendResult = function (key, cb) {
 };
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
+  api.addSourceConfigDef("splunk", {
+    singleton: false,
+    name: "splunk",
+    description: "This source monitors configured files for right-click actions to send to all the viewer instances that connect to this WISE Server",
+    fields: [
+      { name: "username", required: true, help: "The Splunk username" },
+      { name: "password", required: true, help: "The Splunk password" },
+      { name: "host", required: true, help: "The Splunk hostname" },
+      { name: "keyColumn", required: true, help: "The column to use from the returned data to use as the key" },
+      { name: "periodic", required: false, help: "Should we do periodic queries or individual queries" },
+      { name: "port", required: true, help: "The Splunk port" },
+      { name: "query", required: true, help: "The query to run against Splunk. For non periodic queries the string %%SEARCHTERM%% will be replaced with the key" },
+      { name: "version", required: false, help: "The Splunk api version to use (defaults to 5)" },
+    ]
+  });
+
   var sections = api.getConfigSections().filter((e) => { return e.match(/^splunk:/); });
   sections.forEach((section) => {
     return new SplunkSource(api, section);

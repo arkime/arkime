@@ -68,6 +68,18 @@ RedisFileSource.prototype.simpleSourceLoad = function (setFunc, cb) {
 };
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
+  api.addSourceConfigDef("redisfile", {
+    singleton: false,
+    name: "redisfile",
+    description: "AW?",
+    fields: [
+      { name: "key", required: true, help: "AW?" },
+      { name: "headers", required: true, help: "AW?" },
+      { name: "headers", required: true, help: "AW?" },
+      { name: "redisType", required: true, help: "AW?" }
+    ]
+  });
+
   var sections = api.getConfigSections().filter((e) => { return e.match(/^redisfile:/); });
   sections.forEach((section) => {
     return new RedisFileSource(api, section);

@@ -187,6 +187,14 @@ OpenDNSSource.prototype.getDomain = function (domain, cb) {
 };
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
+  api.addSourceConfigDef("opendns", {
+    singleton: true,
+    name: "opendns",
+    description: "AW?",
+    fields: [
+      { name: "key", required: true, help: "The API key" }    ]
+  });
+
   return new OpenDNSSource(api, 'opendns');
 };
 // ----------------------------------------------------------------------------

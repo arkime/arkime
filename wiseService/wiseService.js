@@ -46,6 +46,20 @@ var internals = {
   fields: [],
   fieldsSize: 0,
   sources: [],
+  configDefs: {
+    global: {
+      fields: [
+        { name: "excludeIPs", required: false, help: "Semicolon separated list of IPs or CIDRs to exclude in lookups" },
+        { name: "excludeDomains", required: false, help: "Semicolon separated list of modified glob patterns to exclude in lookups" },
+        { name: "excludeEmails", required: false, help: "Semicolon separated list of modified glob patterns to exclude in lookups" },
+        { name: "cacheAgeMin", required: false, help: "	Number of minutes items in the cache for this source are valid for. Ignored for sources that use internal data, such as file sources (defaults to 60)" },
+        { name: "onlyIPs", required: false, help: "If set, only ips that match the semicolon separated list of IPs or CIDRs will be looked up" },
+        { name: "fields", required: false, help: "A “\n” separated list of fields that this source will add. Some wise sources automatically set for you. See Tagger Format in the docs for more information on the parts of a field entry." },
+        { name: "view", required: false, help: "The view to show in session detail when opening up a session with unique fields. The value for view can either be written in simplified format or in more powerful jade format. For the jade format see Tagger Format in the docs for more information (except everything has to be on one line, so replace newlines with \n). Simple format looks like require:[toplevel db name];title:[title string];fields:[field1],[field2],[fieldN]" }
+      ]
+    },
+    sources: {}
+  },
   types: {
   },
   views: {},
@@ -313,6 +327,16 @@ internals.sourceApi = {
 
     for (let i = 0; i < types.length; i++) {
       addType(types[i], src);
+    }
+  },
+  addSourceConfigDef: function (sourceName, configDef) {
+    if (!internals.configDefs.sources.hasOwnProperty(sourceName)) {
+      internals.configDefs.sources[sourceName] = configDef;
+    }
+  },
+  addGlobalConfig: function (key, value) {
+    if (!internals.configDefs.global.hasOwnProperty(key)) {
+      internals.configDefs.global[key] = value;
     }
   },
   funcName: funcName,
@@ -742,6 +766,10 @@ app.get('/dump/:source', [noCacheJson], function (req, res) {
   }
 
   source.dump(res);
+});
+// ----------------------------------------------------------------------------
+app.get('/configDefs', [noCacheJson], function (req, res) {
+  return res.send(internals.configDefs);
 });
 // ----------------------------------------------------------------------------
 // ALW - Need to rewrite to use performQuery
