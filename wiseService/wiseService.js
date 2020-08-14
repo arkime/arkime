@@ -95,9 +95,6 @@ if (internals.workers > 1) {
   }
 }
 // ----------------------------------------------------------------------------
-/// / Config
-// ----------------------------------------------------------------------------
-internals.config = ini.parseSync(internals.configFile);
 var app = express();
 var logger = require('morgan');
 var timeout = require('connect-timeout');
@@ -242,82 +239,84 @@ function splitRemain (str, separator, limit) {
     return ret;
 }
 // ----------------------------------------------------------------------------
-internals.sourceApi = {
-  getConfig: getConfig,
-  getConfigSections: getConfigSections,
-  getConfigSection: getConfigSection,
-  addField: addField,
-  createRedisClient: createRedisClient,
-  addView: function (name, input) {
-    if (input.includes('require:')) {
-      var match = input.match(/require:([^;]+)/);
-      var require = match[1];
-      match = input.match(/title:([^;]+)/);
-      var title = match[1];
-      match = input.match(/fields:([^;]+)/);
-      var fields = match[1];
+function buildSourceApi () {
+  internals.sourceApi = {
+    getConfig: getConfig,
+    getConfigSections: getConfigSections,
+    getConfigSection: getConfigSection,
+    addField: addField,
+    createRedisClient: createRedisClient,
+    addView: function (name, input) {
+      if (input.includes('require:')) {
+        var match = input.match(/require:([^;]+)/);
+        var require = match[1];
+        match = input.match(/title:([^;]+)/);
+        var title = match[1];
+        match = input.match(/fields:([^;]+)/);
+        var fields = match[1];
 
-      let output = `if (session.${require})\n  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
-      for (let field of fields.split(',')) {
-        let info = wiseSource.field2Info[field];
-        if (!info) {
-          continue;
+        let output = `if (session.${require})\n  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
+        for (let field of fields.split(',')) {
+          let info = wiseSource.field2Info[field];
+          if (!info) {
+            continue;
+          }
+          if (!info.db) {
+            console.log(`ERROR, missing db information for ${field}`);
+            process.exit(0);
+          }
+          var parts = splitRemain(info.db, '.', 1);
+          if (parts.length === 1) {
+            output += `    +arrayList(session, '${parts[0]}', '${info.friendly}', '${field}')\n`;
+          } else {
+            output += `    +arrayList(session.${parts[0]}, '${parts[1]}', '${info.friendly}', '${field}')\n`;
+          }
         }
-        if (!info.db) {
-          console.log(`ERROR, missing db information for ${field}`);
-          process.exit(0);
-        }
-        var parts = splitRemain(info.db, '.', 1);
-        if (parts.length === 1) {
-          output += `    +arrayList(session, '${parts[0]}', '${info.friendly}', '${field}')\n`;
-        } else {
-          output += `    +arrayList(session.${parts[0]}, '${parts[1]}', '${info.friendly}', '${field}')\n`;
-        }
+        internals.views[name] = output;
+      } else {
+        internals.views[name] = input;
       }
-      internals.views[name] = output;
-    } else {
-      internals.views[name] = input;
-    }
-  },
-  addRightClick: function (name, rightClick) {
-    internals.rightClicks[name] = rightClick;
-  },
-  debug: internals.debug,
-  insecure: internals.insecure,
-  addSource: function (section, src) {
-    internals.sources[section] = src;
+    },
+    addRightClick: function (name, rightClick) {
+      internals.rightClicks[name] = rightClick;
+    },
+    debug: internals.debug,
+    insecure: internals.insecure,
+    addSource: function (section, src) {
+      internals.sources[section] = src;
 
-    let types;
+      let types;
 
-    if (src.getTypes) {
-      // getTypes function defined, we can just use it
-      types = src.getTypes();
-    } else {
-      // No getTypes function, go thru all the default types and any types we already know and guess
-      types = [];
-      for (let i = 0; i < internals.type2Name.length; i++) {
-        if (src[funcName(internals.type2Name[i])]) {
-          types.push(internals.type2Name[i]);
+      if (src.getTypes) {
+        // getTypes function defined, we can just use it
+        types = src.getTypes();
+      } else {
+        // No getTypes function, go thru all the default types and any types we already know and guess
+        types = [];
+        for (let i = 0; i < internals.type2Name.length; i++) {
+          if (src[funcName(internals.type2Name[i])]) {
+            types.push(internals.type2Name[i]);
+          }
         }
-      }
-      for (let type in internals.types) {
-        let typeInfo = internals.types[type];
-        if (src[typeInfo.funcName] && !types.includes(type)) {
-          types.push(type);
+        for (let type in internals.types) {
+          let typeInfo = internals.types[type];
+          if (src[typeInfo.funcName] && !types.includes(type)) {
+            types.push(type);
+          }
         }
+        src.getTypes = function () {
+          return types;
+        };
       }
-      src.getTypes = function () {
-        return types;
-      };
-    }
 
-    for (let i = 0; i < types.length; i++) {
-      addType(types[i], src);
-    }
-  },
-  funcName: funcName,
-  app: app
-};
+      for (let i = 0; i < types.length; i++) {
+        addType(types[i], src);
+      }
+    },
+    funcName: funcName,
+    app: app
+  };
+}
 // ----------------------------------------------------------------------------
 function loadSources () {
   glob(getConfig('wiseService', 'sourcePath', './') + 'source.*.js', (err, files) => {
@@ -846,13 +845,7 @@ app.get('/stats', [noCacheJson], function (req, res) {
   }
   res.send(stats);
 });
-// ----------------------------------------------------------------------------
-if (getConfig('wiseService', 'regressionTests')) {
-  app.post('/shutdown', (req, res) => {
-    process.exit(0);
-    throw new Error('Exiting');
-  });
-}
+
 // ----------------------------------------------------------------------------
 function createRedisClient (redisType, section) {
   if (redisType === 'redis') {
@@ -939,8 +932,15 @@ b=="?"||b=="_"?".":b=="#"?"\\d":d&&b.charAt(0)=="{"?b+g:b=="<"?"\\b(?=\\w)":b=="
 function main () {
   internals.cache = wiseCache.createCache({ getConfig: getConfig, createRedisClient: createRedisClient });
 
-  addField('field:tags'); // Always add tags field so we have at least 1 field
+  if (getConfig('wiseService', 'regressionTests')) {
+    app.post('/shutdown', (req, res) => {
+      process.exit(0);
+      throw new Error('Exiting');
+    });
+  }
 
+  addField('field:tags'); // Always add tags field so we have at least 1 field
+  buildSourceApi();
   loadSources();
   setInterval(printStats, 60 * 1000);
 
@@ -965,6 +965,65 @@ function main () {
     .listen(getConfig('wiseService', 'port', 8081));
 }
 
-if (internals.workers <= 1 || cluster.isWorker) {
-  main();
+// async function redisPubSub (host, dbNum, configKey) {
+//   let redis = new Redis(internals.configFile + '/' + dbNum);
+//
+//   redis.on('message', (channel, message) => {
+//     const [type, key] = channel.split(":");
+//     if (key === configKey) {
+//       redisConfigGet(host, dbNum, configKey);
+//     }
+//   });
+//   redis.subscribe('__keyspace@' + dbNum + '__:' + 'jackson', (error) => {
+//     if (error) {
+//       throw new Error('Redis can not subscribe to changes in config', error);
+//     }
+//   });
+// }
+
+function redisConfigGet (host, dbNum, configKey) {
+  let redis = new Redis(host + '/' + dbNum);
+
+  return new Promise(function (resolve, reject) {
+    redis.get(configKey, function (err, result) {
+      if (err) {
+        console.error('err', err);
+        reject(err);
+      } else {
+        internals.config = JSON.parse(result);
+        resolve(result);
+      }
+    });
+  });
 }
+
+async function buildConfigAndStart () {
+  try {
+    if (internals.configFile.startsWith('redis')) {
+      let redisParts = internals.configFile.split(/(\d)/);
+      if (redisParts.length !== 3 || redisParts.some(p => p === '')) {
+        throw new Error('Invalid redis url');
+      }
+      let host = redisParts[0].slice(0, redisParts[0].length - 1);
+      let dbNum = redisParts[1];
+      let configKey = redisParts[2].slice(1);
+      // console.log(host, dbNum, configKey);
+
+      await redisConfigGet(host, dbNum, configKey);
+      // Subscribe to changes in config file. TODO: update sources to work with config updates
+      // redisPubSub(host, dbNum, configKey);
+    } else if (internals.configFile.endsWith('.json')) {
+      internals.config = JSON.parse(fs.readFileSync(internals.configFile, 'utf8'));
+    } else if (internals.configFile.endsWith('.ini')) {
+      internals.config = ini.parseSync(internals.configFile);
+    }
+
+    if (internals.workers <= 1 || cluster.isWorker) {
+      main();
+    }
+  } catch (e) {
+    console.log(`Error reading internals.configFile:\n\n`, e.stack);
+    process.exit(1);
+  }
+}
+buildConfigAndStart();
