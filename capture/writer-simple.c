@@ -73,6 +73,7 @@ LOCAL int                    simpleMaxQ;
 LOCAL const EVP_CIPHER      *cipher;
 LOCAL int                    openOptions;
 LOCAL struct timeval         lastSave[MOLOCH_MAX_PACKET_THREADS];
+LOCAL struct timeval         fileAge[MOLOCH_MAX_PACKET_THREADS];
 
 /******************************************************************************/
 LOCAL uint32_t writer_simple_queue_length()
@@ -380,6 +381,10 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         if (config.debug)
             LOG("opened %d %s %d", thread, name, info->file->fd);
         g_free(name);
+
+        MOLOCH_LOCK(simpleQ);
+        gettimeofday(&fileAge[thread], NULL);
+        MOLOCH_UNLOCK(simpleQ);
     }
 
     packet->writerFileNum = currentInfo[thread]->file->id;
@@ -499,7 +504,11 @@ LOCAL void writer_simple_check(MolochSession_t *session, void *UNUSED(uw1), void
     if (now.tv_sec - lastSave[session->thread].tv_sec < 10)
         return;
 
-    writer_simple_process_buf(session->thread, 0);
+    if (config.maxFileTimeM > 0 && now.tv_sec - fileAge[session->thread].tv_sec >= config.maxFileTimeM*60) {
+        writer_simple_process_buf(session->thread, 1);
+    } else {
+        writer_simple_process_buf(session->thread, 0);
+    }
 }
 /******************************************************************************/
 /* Called in the main thread.  Check all the timestamps, and if out of date
@@ -581,6 +590,7 @@ void writer_simple_init(char *name)
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
         lastSave[thread] = now;
+        fileAge[thread] = now;
         DLL_INIT(simple_, &freeList[thread]);
         MOLOCH_LOCK_INIT(freeList[thread].lock);
     }
