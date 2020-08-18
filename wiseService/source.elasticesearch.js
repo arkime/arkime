@@ -119,7 +119,9 @@ exports.initSource = function (api) {
     name: 'elasticsearch',
     description: 'Link to the elasticsearch data',
     fields: [
-      { name: 'esQueryField', required: true, help: 'AW?' },
+      { name: 'type', required: true, help: 'The wise type of this source' },
+      { name: 'tag', required: true, help: 'The tags to set on matches' },
+      { name: 'esQueryField', required: true, help: 'The elasticsearch field in each document that is being queried' },
       { name: 'elasticsearch', required: true, help: 'Elasticsearch base url' },
       { name: 'esIndex', required: true, help: 'The index pattern to look at' },
       { name: 'esTimestampField', required: true, help: 'The field to use in queries that has the timestamp in ms' },

@@ -464,7 +464,7 @@ exports.initSource = function (api) {
   api.addSourceConfigDef('threatstream', {
     singleton: true,
     name: 'threatstream',
-    description: 'Link to the anomali threatstream data',
+    description: 'Anomali Threatstream source',
     fields: [
       { name: 'mode', required: true, help: 'Mode to work in zip, api, sqlite3', regex: '^(zip|api|sqlite3)' },
       { name: 'user', required: true, help: 'Threatstream user' },

@@ -190,7 +190,7 @@ exports.initSource = function (api) {
   api.addSourceConfigDef('opendns', {
     singleton: true,
     name: 'opendns',
-    description: 'AW?',
+    description: 'OpenDNS source for domain names',
     fields: [
       { name: 'key', required: true, help: 'The API key' } ]
   });

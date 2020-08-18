@@ -138,7 +138,7 @@ exports.initSource = function (api) {
   api.addSourceConfigDef('passivetotal', {
     singleton: true,
     name: 'passivetotal',
-    description: 'AW?',
+    description: 'Passive Total commercial support',
     fields: [
       { name: 'key', required: true, help: 'The API key' },
       { name: 'user', required: true, help: 'The API user' }

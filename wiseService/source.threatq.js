@@ -164,7 +164,7 @@ exports.initSource = function (api) {
   api.addSourceConfigDef('threatq', {
     singleton: true,
     name: 'threatq',
-    description: 'Link to the ThreatQ data',
+    description: 'ThreatQ source',
     fields: [
       { name: 'key', required: true, help: 'The API key' },
       { name: 'host', required: true, help: 'Server hostname location' }

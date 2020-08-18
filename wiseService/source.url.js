@@ -73,6 +73,11 @@ exports.initSource = function (api) {
     name: 'url',
     description: 'Link to the URL data',
     fields: [
+      { name: 'type', required: true, help: 'The wise query type this source supports' },
+      { name: 'tags', required: true, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
+      { name: 'format', required: true, help: 'The format of data, such as csv, tagger, or json', regex: '^(csv|tagger|json)$' },
+      { name: 'column', required: false, help: 'For CSV formated data, this is the numerical column number to use as the key', regex: '^[0-9]*$' },
+      { name: 'keyColumn', required: false, help: 'For JSON formated data, this is the path of what field to use as the key' },
       { name: 'url', required: true, help: 'The URL to load' },
       { name: 'reload', required: false, help: 'How often in minutes to refresh the file, or -1 (default) to never refresh it' },
       { name: 'headers', required: true, help: 'Semicolon separated list of headers to send in the URL request' }

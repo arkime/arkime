@@ -49,13 +49,10 @@ var internals = {
   configDefs: {
     wiseService: {
       fields: [
-        { name: 'excludeIPs', required: false, help: 'Semicolon separated list of IPs or CIDRs to exclude in lookups' },
-        { name: 'excludeDomains', required: false, help: 'Semicolon separated list of modified glob patterns to exclude in lookups' },
-        { name: 'excludeEmails', required: false, help: 'Semicolon separated list of modified glob patterns to exclude in lookups' },
-        { name: 'cacheAgeMin', required: false, help: 'Number of minutes items in the cache for this source are valid for. Ignored for sources that use internal data, such as file sources (defaults to 60)' },
-        { name: 'onlyIPs', required: false, help: 'If set, only ips that match the semicolon separated list of IPs or CIDRs will be looked up' },
-        { name: 'fields', required: false, help: 'A “\n” separated list of fields that this source will add. Some wise sources automatically set for you. See Tagger Format in the docs for more information on the parts of a field entry.' },
-        { name: 'view', required: false, help: 'The view to show in session detail when opening up a session with unique fields. The value for view can either be written in simplified format or in more powerful jade format. For the jade format see Tagger Format in the docs for more information (except everything has to be on one line, so replace newlines with \n). Simple format looks like require:[toplevel db name];title:[title string];fields:[field1],[field2],[fieldN]' }
+        { name: 'port', required: false, regex: '^[0-9]+$', help: 'Port that the wiseService runs on. Defaults to 8081' },
+        { name: 'keyFile', required: false, help: 'Path to PEM encoded key file' },
+        { name: 'certFile', required: false, help: 'Path to PEM encoded cert file' },
+        { name: 'sourcePath', required: false, help: 'Where to look for the source files. Defaults to "./"' }
       ]
     }
   },
@@ -330,6 +327,16 @@ internals.sourceApi = {
   },
   addSourceConfigDef: function (sourceName, configDef) {
     if (!internals.configDefs.hasOwnProperty(sourceName)) {
+      configDef.fields = configDef.fields.concat(configDef.fields,
+        [{ name: 'excludeIPs', required: false, help: 'Semicolon separated list of IPs or CIDRs to exclude in lookups' },
+        { name: 'excludeDomains', required: false, help: 'Semicolon separated list of modified glob patterns to exclude in lookups' },
+        { name: 'excludeEmails', required: false, help: 'Semicolon separated list of modified glob patterns to exclude in lookups' },
+        { name: 'cacheAgeMin', required: false, help: 'Number of minutes items in the cache for this source are valid for. Ignored for sources that use internal data, such as file sources (defaults to 60)' },
+        { name: 'onlyIPs', required: false, help: 'If set, only ips that match the semicolon separated list of IPs or CIDRs will be looked up' },
+        { name: 'fields', required: false, help: 'A "\\n" separated list of fields that this source will add. Some wise sources automatically set for you. See Tagger Format in the docs for more information on the parts of a field entry.' },
+        { name: 'view', required: false, help: 'The view to show in session detail when opening up a session with unique fields. The value for view can either be written in simplified format or in more powerful jade format. For the jade format see Tagger Format in the docs for more information (except everything has to be on one line, so replace newlines with \\n). Simple format looks like require:[toplevel db name];title:[title string];fields:[field1],[field2],[fieldN]' }]
+      );
+
       internals.configDefs[sourceName] = configDef;
     }
   },
