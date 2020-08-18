@@ -20,16 +20,22 @@ NOTICE: Restart wiseService before capture when upgrading
 
 2.4.0 2020/08/xx
   - NOTE - RHEL/Centos 6 is no longer supported, Node 12 required
+  - NOTE - New encoding of packetPos, set gapPacketPos=false for old encoding
   - release - node 12.18.2, glib 2.64.3, curl 7.71.1
   - viewer - aes256Encryption now defaults to true
   - viewer - added a clear cache button to ES Admin tab
   - viewer - quote expressions with [ or ] in them
+  - viewer - add button to only show data nodes on ES Nodes tab
   - capture - http2 decoding for PRI * h2 sessions
   - capture - set http2 protocol when alpn is h2
   - capture - upgrade h2c http2 decoding
   - capture - ES Nodes can now show shards/segments per node
   - capture - no longer use internal libpcap function
+  - capture - simple writer supports maxFileTimeM (PR #1506)
+  - capture - new packetPos encoding saves 10%-20% overall ES space
+  - capture - remove old disk writer methods, use simple or simple-nodirect now
   - wise - simple UI
+  - wise - support json file format config files
 
 2.3.2 2020/06/29
   - NOTE - 2.3.x will be the last version to support RHEL/Centos 6

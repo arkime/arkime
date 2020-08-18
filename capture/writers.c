@@ -58,10 +58,6 @@ void moloch_writers_init()
     HASH_INIT(s_, writersHash, moloch_string_hash, moloch_string_cmp);
     moloch_writers_add("null", writer_null_init);
     moloch_writers_add("inplace", writer_inplace_init);
-    moloch_writers_add("normal", writer_disk_init);
-    moloch_writers_add("direct", writer_disk_init);
-    moloch_writers_add("thread", writer_disk_init);
-    moloch_writers_add("thread-direct", writer_disk_init);
     moloch_writers_add("simple", writer_simple_init);
     moloch_writers_add("simple-nodirect", writer_simple_init);
 }

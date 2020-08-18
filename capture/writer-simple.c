@@ -579,7 +579,7 @@ void writer_simple_init(char *name)
         LOG("Not using O_DIRECT by config");
     }
 
-    config.gapPacketPos = moloch_config_boolean(NULL, "gapPacketPos", FALSE);
+    config.gapPacketPos = moloch_config_boolean(NULL, "gapPacketPos", TRUE);
 
     DLL_INIT(simple_, &simpleQ);
 
