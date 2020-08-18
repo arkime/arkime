@@ -382,9 +382,7 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
             LOG("opened %d %s %d", thread, name, info->file->fd);
         g_free(name);
 
-        MOLOCH_LOCK(simpleQ);
         gettimeofday(&fileAge[thread], NULL);
-        MOLOCH_UNLOCK(simpleQ);
     }
 
     packet->writerFileNum = currentInfo[thread]->file->id;
@@ -500,15 +498,16 @@ LOCAL void writer_simple_check(MolochSession_t *session, void *UNUSED(uw1), void
         return;
     }
 
+    if (config.maxFileTimeM > 0 && now.tv_sec - fileAge[session->thread].tv_sec >= config.maxFileTimeM*60) {
+        writer_simple_process_buf(session->thread, 1);
+        return;
+    }
+
     // Last add must be 10 seconds ago and have more then pageSize bytes
     if (now.tv_sec - lastSave[session->thread].tv_sec < 10)
         return;
 
-    if (config.maxFileTimeM > 0 && now.tv_sec - fileAge[session->thread].tv_sec >= config.maxFileTimeM*60) {
-        writer_simple_process_buf(session->thread, 1);
-    } else {
-        writer_simple_process_buf(session->thread, 0);
-    }
+    writer_simple_process_buf(session->thread, 0);
 }
 /******************************************************************************/
 /* Called in the main thread.  Check all the timestamps, and if out of date
