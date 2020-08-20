@@ -1714,7 +1714,8 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
 
         strcpy(filename, config.pcapDir[config.pcapDirPos]);
 
-        struct tm *tmp = localtime(&firstPacket);
+        struct tm tmp;
+        localtime_r(&firstPacket, &tmp);
 
         if (config.pcapDirTemplate) {
             int tlen;
@@ -1723,7 +1724,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
             if (filename[flen-1] == '/')
                 flen--;
 
-            if ((tlen = strftime(filename+flen, sizeof(filename)-flen-1, config.pcapDirTemplate, tmp)) == 0) {
+            if ((tlen = strftime(filename+flen, sizeof(filename)-flen-1, config.pcapDirTemplate, &tmp)) == 0) {
                 LOGEXIT("Couldn't form filename: %s %s", config.pcapDir[config.pcapDirPos], config.pcapDirTemplate);
             }
             flen += tlen;
@@ -1782,7 +1783,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
             moloch_db_mkpath(filename);
         }
 
-        snprintf(filename+flen, sizeof(filename) - flen, "/%s-%02d%02d%02d-%08u.pcap", config.nodeName, tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday, num);
+        snprintf(filename+flen, sizeof(filename) - flen, "/%s-%02d%02d%02d-%08u.pcap", config.nodeName, tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, num);
 
         BSB_EXPORT_sprintf(jbsb, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"locked\":%d", num, filename, fp, config.nodeName, locked);
         key_len = snprintf(key, sizeof(key), "/%sfiles/_doc/%s-%u?refresh=true", config.prefix, config.nodeName, num);
