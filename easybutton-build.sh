@@ -11,11 +11,11 @@
 # * install moloch if --install
 
 
-GLIB=2.64.3
+GLIB=2.64.5
 YARA=3.11.0
 MAXMIND=1.3.2
 PCAP=1.9.1
-CURL=7.71.1
+CURL=7.72.0
 LUA=5.3.5
 DAQ=2.0.7
 NODE=12.18.2

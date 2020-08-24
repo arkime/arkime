@@ -21,7 +21,7 @@ NOTICE: Restart wiseService before capture when upgrading
 2.4.0 2020/08/xx
   - NOTE - RHEL/Centos 6 is no longer supported, Node 12 required
   - NOTE - New encoding of packetPos, set gapPacketPos=false for old encoding
-  - release - node 12.18.2, glib 2.64.3, curl 7.71.1
+  - release - node 12.18.2, glib 2.64.5, curl 7.72.0
   - viewer - aes256Encryption now defaults to true
   - viewer - added a clear cache button to ES Admin tab
   - viewer - quote expressions with [ or ] in them
