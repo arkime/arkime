@@ -48,6 +48,7 @@ var internals = {
   sources: [],
   configDefs: {
     wiseService: {
+      singleton: true,
       fields: [
         { name: 'port', required: false, regex: '^[0-9]+$', help: 'Port that the wiseService runs on. Defaults to 8081' },
         { name: 'keyFile', required: false, help: 'Path to PEM encoded key file' },

@@ -90,11 +90,39 @@
       title="New Source"
     >
       <b-container fluid>
-        <!-- <select
-          <option v-for="source in Object.keys(configDefs.sources)" :value="type" :key="source + 'Option'">
-            {{ type }}
-          </option>
-        </select> -->
+        <div class="input-group">
+          <span class="input-group-prepend cursor-help"
+            placement="topright"
+            v-b-tooltip.hover
+            title="Source selection (some are allowed only once)">
+            <span class="input-group-text">
+              Source
+            </span>
+          </span>
+          <select
+            class="form-control"
+            v-model="newSource"
+          >
+            <option value="" disabled>Select Source</option>
+            <option
+              v-for="(source, index) in Object.keys(configDefs)"
+              :value="source"
+              :key="source + 'Option'"
+              :disabled="configDefs[source].singleton && Object.keys(currConfig).map(k => k.split(':')[0]).includes(source)"
+            >
+              {{ source }}
+            </option>
+          </select>
+        </div>
+        <span v-if="newSource && configDefs[newSource] && !configDefs[newSource].singleton">
+          <b-form-input
+            :state="inputState(!!newSourceName, true)"
+            class="input-box mt-2"
+            v-model="newSourceName"
+            placeholder="Unique name for source"
+          >
+          </b-form-input>
+        </span>
       </b-container>
 
       <template v-slot:modal-footer>
@@ -108,9 +136,11 @@
             Close
           </b-button>
           <b-button
+            :disabled="!!!newSource || (configDefs[newSource] && !configDefs[newSource].singleton && !!!newSourceName) || Object.keys(currConfig).includes(newSource + ':' + newSourceName)"
             variant="success"
             size="sm"
             class="float-right mr-2"
+            @click="createNewSource"
           >
             Create
           </b-button>
@@ -141,8 +171,10 @@ export default {
       configDefs: {},
       currConfig: {},
       currConfigBefore: {}, // Used to determine if changes have been made
-      emptyAndRequired: [],
-      filePath: ''
+      emptyAndRequired: [], // TODO will break for creating new sources. Redo logic
+      filePath: '',
+      newSource: '',
+      newSourceName: ''
     };
   },
   computed: {
@@ -166,6 +198,17 @@ export default {
     }
   },
   methods: {
+    createNewSource: function () {
+      let key = (this.configDefs && this.configDefs[this.newSource] && !this.configDefs[this.newSource].singleton) ?
+        this.newSource + ":" + this.newSourceName :
+        this.newSource;
+
+      this.$set(this.currConfig, key, {});
+      this.selectedSourceKey = key;
+      this.showSourceModal = false;
+      this.newSource = "";
+      this.newSourceName = "";
+    },
     inputChanged: function (val, name, isReq) {
       let uniqueKey = this.selectedSourceKey + '::' + name;
 
