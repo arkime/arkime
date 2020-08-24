@@ -111,7 +111,6 @@
             variant="success"
             size="sm"
             class="float-right mr-2"
-            @click=""
           >
             Create
           </b-button>
@@ -141,9 +140,9 @@ export default {
       selectedSourceKey: 'wiseService',
       configDefs: {},
       currConfig: {},
-      currConfigBefore: {}, //Used to determine if changes have been made
+      currConfigBefore: {}, // Used to determine if changes have been made
       emptyAndRequired: [],
-      filePath: ""
+      filePath: ''
     };
   },
   computed: {
@@ -176,20 +175,20 @@ export default {
           this.emptyAndRequired.splice(this.emptyAndRequired.indexOf(uniqueKey), 1);
         }
 
-        this.$set(this.currConfig[this.selectedSourceKey], name, val)
+        this.$set(this.currConfig[this.selectedSourceKey], name, val);
       } else if (this.currConfig[this.selectedSourceKey][name]) {
         if (isReq && !this.emptyAndRequired.includes(uniqueKey)) {
-          this.emptyAndRequired.push(uniqueKey)
+          this.emptyAndRequired.push(uniqueKey);
         }
 
         this.$delete(this.currConfig[this.selectedSourceKey], name);
       }
     },
     deleteSource: function () {
-      this.$delete(this.currConfig, this.selectedSourceKey)
+      this.$delete(this.currConfig, this.selectedSourceKey);
       this.selectedSourceKey = 'wiseService';
     },
-    inputState: function(hasVal, isReq) {
+    inputState: function (hasVal, isReq) {
       if (isReq && hasVal) {
         return true;
       } else if (isReq) {
@@ -200,7 +199,7 @@ export default {
     },
     saveConfig: function () {
       if (this.emptyAndRequired.length > 0) {
-        let missing = this.emptyAndRequired[0].split("::");
+        let missing = this.emptyAndRequired[0].split('::');
         this.error = missing[1] + ' is required for ' + missing[0];
       } else {
         // TODO
@@ -225,12 +224,12 @@ export default {
           this.error = '';
 
           if (data.filePath) {
-            this.filePath = data.filePath
+            this.filePath = data.filePath;
           }
 
           // Add wiseService regardless if its in the ini.
           if (!data.currConfig.hasOwnProperty('wiseService')) {
-            data.currConfig['wiseService'] = {}
+            data.currConfig['wiseService'] = {};
           }
 
           this.currConfig = data.currConfig;
