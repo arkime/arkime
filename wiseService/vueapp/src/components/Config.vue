@@ -7,7 +7,7 @@
       class="ml-auto mr-2"
       style="display: block"
       variant="primary"
-      disabled
+      :disabled="saveEnabled"
       @click="saveConfig()"
     >
       Save Config
@@ -65,8 +65,10 @@
             >
               <b-form-input
                 v-if="currConfig && currConfig[selectedSourceKey]"
+                :state="inputState(!!currConfig[selectedSourceKey][field.name], field.required)"
                 class="input-box"
-                v-model="currConfig[selectedSourceKey][field.name]"
+                :value="currConfig[selectedSourceKey][field.name]"
+                @input="(val) => inputChanged(val, field.name, field.required)"
                 :placeholder="field.help"
                 :required="field.required"
                 v-b-popover.focus.top="field.help"
@@ -138,7 +140,9 @@ export default {
       showSourceModal: false,
       selectedSourceKey: 'wiseService',
       configDefs: {},
-      currConfig: {}
+      currConfig: {},
+      currConfigBefore: {}, //Used to determine if changes have been made
+      emptyAndRequired: []
     };
   },
   computed: {
@@ -156,15 +160,50 @@ export default {
 
       opts.unshift('wiseService');
       return opts;
+    },
+    saveEnabled: function () {
+      return JSON.stringify(this.currConfig) === JSON.stringify(this.currConfigBefore);
     }
   },
   methods: {
+    inputChanged: function (val, name, isReq) {
+      let uniqueKey = this.selectedSourceKey + '::' + name;
+
+      if (val) {
+        // If user inputs required field, clear it from emptyAndRequired if it is there
+        if (this.emptyAndRequired.includes(uniqueKey)) {
+          this.emptyAndRequired.splice(this.emptyAndRequired.indexOf(uniqueKey), 1);
+        }
+
+        this.$set(this.currConfig[this.selectedSourceKey], name, val)
+      } else if (this.currConfig[this.selectedSourceKey][name]) {
+        if (isReq && !this.emptyAndRequired.includes(uniqueKey)) {
+          this.emptyAndRequired.push(uniqueKey)
+        }
+
+        this.$delete(this.currConfig[this.selectedSourceKey], name);
+      }
+    },
     deleteSource: function () {
-      delete this.currConfig[this.selectedSourceKey];
-      this.selectedSourceKey = '';
+      this.$delete(this.currConfig, this.selectedSourceKey)
+      this.selectedSourceKey = 'wiseService';
+    },
+    inputState: function(hasVal, isReq) {
+      if (isReq && hasVal) {
+        return true;
+      } else if (isReq) {
+        return false;
+      } else {
+        return null;
+      }
     },
     saveConfig: function () {
-      // TODO
+      if (this.emptyAndRequired.length > 0) {
+        let missing = this.emptyAndRequired[0].split("::");
+        this.error = missing[1] + ' is required for ' + missing[0];
+      } else {
+        // TODO
+      }
     },
     loadConfigDefs: function () {
       WiseService.getConfigDefs()
@@ -188,6 +227,7 @@ export default {
           }
 
           this.currConfig = data;
+          this.currConfigBefore = JSON.parse(JSON.stringify(data));
         })
         .catch((error) => {
           this.error = error.text ||
