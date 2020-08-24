@@ -840,7 +840,7 @@ app.get('/stats', [noCacheJson], function (req, res) {
       cacheMiss: src.cacheMissStat,
       cacheRefresh: src.cacheRefreshStat,
       cacheDropped: src.cacheDroppedStat,
-      average100MS: src.average100MS
+      average100MS: src.average100MS.toFixed(4)
     });
   }
   res.send(stats);
