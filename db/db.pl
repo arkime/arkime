@@ -4239,9 +4239,9 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 }
 
 if ($DOHOTWARM) {
-    esPut("/${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v7,${PREFIX}queries_v3,${PREFIX}hunts_v2,${PREFIX}history*/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
+    esPut("/${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v7,${PREFIX}queries_v3,${PREFIX}hunts_v2,${PREFIX}history*,${PREFIX}lookups_v1/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
 } else {
-    esPut("/${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v7,${PREFIX}queries_v3,${PREFIX}hunts_v2,${PREFIX}history*/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
+    esPut("/${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v7,${PREFIX}queries_v3,${PREFIX}hunts_v2,${PREFIX}history*,${PREFIX}lookups_v1/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
 }
 
 logmsg "Finished\n";
