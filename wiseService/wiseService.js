@@ -741,13 +741,17 @@ app.get('/:source/:typeName/:value', [noCacheJson], function (req, res) {
 });
 // ----------------------------------------------------------------------------
 app.get('/loadedConfig', [noCacheJson], (req, res) => {
+  const loadedConfig = {};
   // Filter for sources and the global 'wiseService'
-  const loadedConfig = Object.keys(internals.config)
+
+  loadedConfig.currConfig = Object.keys(internals.config)
   .filter(key => internals.configDefs[key.split(':')[0]] || key === 'wiseService')
   .reduce((obj, key) => {
     obj[key] = internals.config[key];
     return obj;
   }, {});
+
+  loadedConfig.filePath = internals.configFile;
 
   return res.send(loadedConfig);
 });

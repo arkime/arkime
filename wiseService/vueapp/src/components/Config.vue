@@ -142,7 +142,8 @@ export default {
       configDefs: {},
       currConfig: {},
       currConfigBefore: {}, //Used to determine if changes have been made
-      emptyAndRequired: []
+      emptyAndRequired: [],
+      filePath: ""
     };
   },
   computed: {
@@ -221,13 +222,17 @@ export default {
         .then((data) => {
           this.error = '';
 
-          // Add wiseService regardless if its in the ini.
-          if (!data.hasOwnProperty('wiseService')) {
-            data['wiseService'] = {}
+          if (data.filePath) {
+            this.filePath = data.filePath
           }
 
-          this.currConfig = data;
-          this.currConfigBefore = JSON.parse(JSON.stringify(data));
+          // Add wiseService regardless if its in the ini.
+          if (!data.currConfig.hasOwnProperty('wiseService')) {
+            data.currConfig['wiseService'] = {}
+          }
+
+          this.currConfig = data.currConfig;
+          this.currConfigBefore = JSON.parse(JSON.stringify(data.currConfig));
         })
         .catch((error) => {
           this.error = error.text ||
