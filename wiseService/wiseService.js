@@ -327,7 +327,7 @@ internals.sourceApi = {
   },
   addSourceConfigDef: function (sourceName, configDef) {
     if (!internals.configDefs.hasOwnProperty(sourceName)) {
-      configDef.fields = configDef.fields.concat(configDef.fields,
+      configDef.fields = configDef.fields.concat(
         [{ name: 'excludeIPs', required: false, help: 'Semicolon separated list of IPs or CIDRs to exclude in lookups' },
         { name: 'excludeDomains', required: false, help: 'Semicolon separated list of modified glob patterns to exclude in lookups' },
         { name: 'excludeEmails', required: false, help: 'Semicolon separated list of modified glob patterns to exclude in lookups' },
