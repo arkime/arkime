@@ -204,6 +204,8 @@ export default {
         this.error = missing[1] + ' is required for ' + missing[0];
       } else {
         // TODO
+        // this.currConfigBefore = JSON.parse(JSON.stringify(this.currConfig));
+        // post this.currConfig
       }
     },
     loadConfigDefs: function () {
