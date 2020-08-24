@@ -92,9 +92,9 @@ const webpackConfig = merge(baseWebpackConfig, {
       patterns: [
         {
           from: path.resolve(__dirname, '../static'),
-          to: config.build.assetsSubDirectory,
+          to: config.dev.assetsSubDirectory,
           globOptions: {
-            ignore: ['.*'],
+            ignore: ['.*']
           },
         }
       ]
