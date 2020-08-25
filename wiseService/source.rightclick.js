@@ -118,6 +118,8 @@ exports.initSource = function (api) {
     singleton: false,
     name: 'rightclick',
     description: 'This source monitors configured files for right-click actions to send to all the viewer instances that connect to this WISE Server',
+    cacheable: false,
+    types: [], // This is a fake source, no types
     fields: [
       { name: 'file', required: true, help: 'The file to load' }
     ]

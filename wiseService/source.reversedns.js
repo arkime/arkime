@@ -106,7 +106,7 @@ exports.initSource = function (api) {
     fields: [
       { name: 'field', required: true, help: 'The field to set with the hostname' },
       { name: 'ips', required: true, help: 'Semicolon separated list of IPs or CIDRs to lookups. IPs that don’t match this list will NOT be reverse lookuped' },
-      { name: 'servers', required: false, help: 'Since 1.6.1, if set the reversedns source will use the semicolon separated list of ip addresses to reverse lookuped' },
+      { name: 'servers', required: false, help: 'If set, the reversedns source will use the semicolon separated list of ip addresses to reverse lookuped' },
       { name: 'stripDomains', required: false, help: 'If EMPTY then all domains are stripped after the FIRST period. When set ONLY domains that match the semicolon separated list of domain names are modified, and only the matching part is removed. Those that don’t match will be saved in full. The list is checked in order. A leading dot is recommended' }
     ]
   });
