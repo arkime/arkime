@@ -18,6 +18,8 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
+2.4.1 2020/09/xx
+
 2.4.0 2020/08/25
   - NOTE - RHEL/Centos 6 is no longer supported, Node 12 required
   - NOTE - New encoding of packetPos, set gapPacketPos=false for old encoding
