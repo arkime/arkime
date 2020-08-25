@@ -81,6 +81,7 @@ exports.initSource = function (api) {
     singleton: false,
     name: 'file',
     description: 'The file source allows you to read in multiple files and do stuff',
+    cacheable: false,
     fields: [
       { name: 'file', required: true, help: 'The path of the file to load' },
       { name: 'type', required: true, help: 'The wise query type this source supports' },

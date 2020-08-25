@@ -149,6 +149,8 @@ exports.initSource = function (api) {
     singleton: true,
     name: 'alienvault',
     description: 'Link to the alienvault data',
+    types: ['ip'],
+    cacheable: false,
     fields: [
       { name: 'key', required: true, help: 'The API key' }
     ]

@@ -77,6 +77,7 @@ exports.initSource = function (api) {
     singleton: false,
     name: 'redisfile',
     description: 'Like the file source, but fetch the file from redis instead of the file system',
+    cacheable: false,
     fields: [
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: true, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },

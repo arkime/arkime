@@ -191,6 +191,7 @@ exports.initSource = function (api) {
     singleton: true,
     name: 'opendns',
     description: 'OpenDNS source for domain names',
+    types: ['domain'],
     fields: [
       { name: 'key', required: true, help: 'The API key' } ]
   });

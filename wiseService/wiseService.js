@@ -328,15 +328,58 @@ internals.sourceApi = {
   },
   addSourceConfigDef: function (sourceName, configDef) {
     if (!internals.configDefs.hasOwnProperty(sourceName)) {
-      configDef.fields = configDef.fields.concat(
-        [{ name: 'excludeIPs', required: false, help: 'Semicolon separated list of IPs or CIDRs to exclude in lookups' },
-        { name: 'excludeDomains', required: false, help: 'Semicolon separated list of modified glob patterns to exclude in lookups' },
-        { name: 'excludeEmails', required: false, help: 'Semicolon separated list of modified glob patterns to exclude in lookups' },
-        { name: 'cacheAgeMin', required: false, help: 'Number of minutes items in the cache for this source are valid for. Ignored for sources that use internal data, such as file sources (defaults to 60)' },
-        { name: 'onlyIPs', required: false, help: 'If set, only ips that match the semicolon separated list of IPs or CIDRs will be looked up' },
-        { name: 'fields', required: false, help: 'A "\\n" separated list of fields that this source will add. Some wise sources automatically set for you. See Tagger Format in the docs for more information on the parts of a field entry.' },
-        { name: 'view', required: false, help: 'The view to show in session detail when opening up a session with unique fields. The value for view can either be written in simplified format or in more powerful jade format. For the jade format see Tagger Format in the docs for more information (except everything has to be on one line, so replace newlines with \\n). Simple format looks like require:[toplevel db name];title:[title string];fields:[field1],[field2],[fieldN]' }]
-      );
+      if (configDef.types) {
+        if (configDef.types.includes('ip')) {
+          configDef.fields = configDef.fields.concat(
+            [{ name: 'excludeIPs', required: false, help: 'Semicolon separated list of IPs or CIDRs to exclude in lookups' },
+              { name: 'onlyIPs', required: false, help: 'If set, only ips that match the semicolon separated list of IPs or CIDRs will be looked up' }]
+          );
+        }
+        if (configDef.types.includes('domain')) {
+          configDef.fields = configDef.fields.concat(
+            [{ name: 'excludeDomains', required: false, help: 'Semicolon separated list of modified glob patterns to exclude in lookups' }]
+          );
+        }
+        if (configDef.types.includes('email')) {
+          configDef.fields = configDef.fields.concat(
+            [{ name: 'excludeEmails', required: false, help: 'Semicolon separated list of modified glob patterns to exclude in lookups' }]
+          );
+        }
+      } else {
+  // ALW - should really merge all the types somehow here
+        for (var i = 0; i < internals.type2Name.length; i++) {
+          let type = internals.type2Name[i];
+          let excludeName;
+          if (type === 'url') {
+            excludeName = 'excludeURLs';
+          } else if (type === 'ip') {
+            configDef.fields = configDef.fields.concat(
+              [{ name: 'excludeIPs', ifField: 'type', ifValue: type, required: false, help: 'Semicolon separated list of IPs or CIDRs to exclude in lookups' },
+               { name: 'onlyIPs', ifField: 'type', ifValue: type, required: false, help: 'If set, only ips that match the semicolon separated list of IPs or CIDRs will be looked up' }]
+            );
+            continue;
+          } else {
+            excludeName = 'exclude' + type[0].toUpperCase() + type.slice(1) + 's';
+          }
+
+          configDef.fields = configDef.fields.concat(
+            [{ name: excludeName, ifField: 'type', ifValue: type, required: false, help: 'Semicolon separated list of modified glob patterns to exclude in lookups' }]
+          );
+        }
+      }
+
+      if (configDef.cacheable !== false) {
+        configDef.fields = configDef.fields.concat(
+          [{ name: 'cacheAgeMin', required: false, help: 'Number of minutes items in the cache for this source are valid for. Ignored for sources that use internal data, such as file sources (defaults to 60)' }]
+        );
+      }
+
+      if (configDef.singleton === false) {
+        configDef.fields = configDef.fields.concat(
+          [{ name: 'fields', required: false, help: 'A "\\n" separated list of fields that this source will add. Some wise sources automatically set for you. See Tagger Format in the docs for more information on the parts of a field entry.' },
+          { name: 'view', required: false, help: 'The view to show in session detail when opening up a session with unique fields. The value for view can either be written in simplified format or in more powerful jade format. For the jade format see Tagger Format in the docs for more information (except everything has to be on one line, so replace newlines with \\n). Simple format looks like require:[toplevel db name];title:[title string];fields:[field1],[field2],[fieldN]' }]
+        );
+      }
 
       internals.configDefs[sourceName] = configDef;
     }
@@ -352,6 +395,26 @@ function loadSources () {
       src.initSource(internals.sourceApi);
     });
   });
+
+  // ALW - should really merge all the types somehow here
+  for (var i = 0; i < internals.type2Name.length; i++) {
+    let type = internals.type2Name[i];
+    let excludeName;
+    if (type === 'url') {
+      excludeName = 'excludeURLs';
+    } else if (type === 'ip') {
+      internals.configDefs.wiseService.fields = internals.configDefs.wiseService.fields.concat(
+        [{ name: 'excludeIPs', required: false, help: 'Semicolon separated list of IPs or CIDRs to exclude in lookups' }]
+      );
+      continue;
+    } else {
+      excludeName = 'exclude' + type[0].toUpperCase() + type.slice(1) + 's';
+    }
+
+    internals.configDefs.wiseService.fields = internals.configDefs.wiseService.fields.concat(
+      [{ name: excludeName, required: false, help: 'Semicolon separated list of modified glob patterns to exclude in lookups' }]
+    );
+  }
 }
 // ----------------------------------------------------------------------------
 /// / APIs

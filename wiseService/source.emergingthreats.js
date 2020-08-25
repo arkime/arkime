@@ -145,6 +145,8 @@ exports.initSource = function (api) {
     singleton: true,
     name: 'emergingthreats',
     description: 'Link to the emergingthreats data',
+    types: ['ip', 'domain'],
+    cacheable: false,
     fields: [
       { name: 'key', required: true, help: 'The API key' }
     ]

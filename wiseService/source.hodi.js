@@ -133,6 +133,7 @@ exports.initSource = function (api) {
     singleton: true,
     name: 'hodi',
     description: 'Experimental “History of Observed Data Indicators” plugin. This watches all queries to WISE and sends a feed to a configured elasticsearch cluster with firstSeen, lastSeen, and VERY rough count metric.',
+    types: ['ip', 'domain', 'md5', 'email'],
     fields: [
       { name: 'esHost', required: true, help: 'The elasticsearch connection string, usually host:port' },
       { name: 'cacheSize', required: false, help: 'Maximum number of results to cache' },

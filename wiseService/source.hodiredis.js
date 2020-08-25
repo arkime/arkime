@@ -90,6 +90,8 @@ exports.initSource = function (api) {
     singleton: true,
     name: 'hodiredis',
     description: 'AW?',
+    types: ['ip', 'domain', 'md5', 'email'],
+    cacheable: false,
     fields: [
       { name: 'contentTypes', required: true, help: 'The format of data file, such as csv, tagger, or json' },
       { name: 'url', required: true, help: 'The format is [redis:]//[[user][:password@]]host:port[/db-number]' }

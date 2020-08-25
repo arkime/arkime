@@ -139,6 +139,7 @@ exports.initSource = function (api) {
     singleton: true,
     name: 'passivetotal',
     description: 'Passive Total commercial support',
+    types: ['ip', 'domain'],
     fields: [
       { name: 'key', required: true, help: 'The API key' },
       { name: 'user', required: true, help: 'The API user' }

@@ -72,6 +72,7 @@ exports.initSource = function (api) {
     singleton: false,
     name: 'url',
     description: 'Link to the URL data',
+    cacheable: false,
     fields: [
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: true, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },

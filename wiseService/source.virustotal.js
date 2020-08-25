@@ -195,6 +195,7 @@ exports.initSource = function (api) {
     singleton: true,
     name: 'virustotal',
     description: 'Link to the virustotal data',
+    types: ['md5'],
     fields: [
       { name: 'key', required: true, help: 'The API key' },
       { name: 'contentTypes', required: false, help: 'Which content types to look up' },
