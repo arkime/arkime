@@ -292,7 +292,7 @@ jobs:
             - SLACK
 
     release-build:
-        image: andywick/moloch-build-6:2.4.0-3
+        image: andywick/moloch-build-7:2.4.0-3
         requires: []
         annotations:
             beta.screwdriver.cd/cpu: LOW
