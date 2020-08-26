@@ -328,7 +328,6 @@ internals.sourceApi = {
   },
   addSourceConfigDef: function (sourceName, configDef) {
     if (!internals.configDefs.hasOwnProperty(sourceName)) {
-
   // ALW - should really merge all the types somehow here instead of type2Name
       let types = configDef.types || internals.type2Name;
       for (var i = 0; i < types.length; i++) {
@@ -341,6 +340,10 @@ internals.sourceApi = {
             [{ name: 'excludeIPs', required: false, help: 'Semicolon separated list of IPs or CIDRs to exclude in lookups' },
              { name: 'onlyIPs', required: false, help: 'If set, only ips that match the semicolon separated list of IPs or CIDRs will be looked up' }]
           );
+          if (configDef.singleton === false && types.length > 0) {
+            Object.assign(configDef.fields[configDef.fields.length - 2], { ifField: 'type', ifValue: type });
+            Object.assign(configDef.fields[configDef.fields.length - 1], { ifField: 'type', ifValue: type });
+          }
           continue;
         } else {
           excludeName = 'exclude' + type[0].toUpperCase() + type.slice(1) + 's';
@@ -349,6 +352,10 @@ internals.sourceApi = {
         configDef.fields = configDef.fields.concat(
           [{ name: excludeName, required: false, help: 'Semicolon separated list of modified glob patterns to exclude in lookups' }]
         );
+
+        if (configDef.singleton === false && types.length > 0) {
+          Object.assign(configDef.fields[configDef.fields.length - 1], { ifField: 'type', ifValue: type });
+        }
       }
 
       if (configDef.cacheable !== false) {

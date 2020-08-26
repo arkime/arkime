@@ -49,7 +49,7 @@
         <div class="d-flex flex-row" v-if="configDefs && configDefs[selectedSourceSplit] && configDefs[selectedSourceSplit].fields">
           <div class="d-flex flex-column">
             <div
-              v-for="field in configDefs[selectedSourceSplit].fields"
+              v-for="field in activeFields"
               :key="field.name + '-label'"
               class="d-flex flex-column text-nowrap py-2 align-items-left mr-2 input-label"
             >
@@ -59,7 +59,7 @@
 
           <div class="d-flex flex-column w-100">
             <div
-              v-for="field in configDefs[selectedSourceSplit].fields"
+              v-for="field in activeFields"
               :key="field.name + '-input'"
               class="d-flex flex-column py-2"
             >
@@ -105,7 +105,7 @@
           >
             <option value="" disabled>Select Source</option>
             <option
-              v-for="(source, index) in Object.keys(configDefs)"
+              v-for="(source) in Object.keys(configDefs)"
               :value="source"
               :key="source + 'Option'"
               :disabled="configDefs[source].singleton && Object.keys(currConfig).map(k => k.split(':')[0]).includes(source)"
@@ -193,21 +193,24 @@ export default {
       opts.unshift('wiseService');
       return opts;
     },
+    activeFields: function () {
+      return this.configDefs[this.selectedSourceKey.split(':')[0]].fields.filter((field) => { return field.ifField === undefined || this.currConfig[this.selectedSourceKey][field.ifField] === field.ifValue; });
+    },
     saveEnabled: function () {
       return JSON.stringify(this.currConfig) === JSON.stringify(this.currConfigBefore);
     }
   },
   methods: {
     createNewSource: function () {
-      let key = (this.configDefs && this.configDefs[this.newSource] && !this.configDefs[this.newSource].singleton) ?
-        this.newSource + ":" + this.newSourceName :
-        this.newSource;
+      let key = (this.configDefs && this.configDefs[this.newSource] && !this.configDefs[this.newSource].singleton)
+        ? this.newSource + ':' + this.newSourceName
+        : this.newSource;
 
       this.$set(this.currConfig, key, {});
       this.selectedSourceKey = key;
       this.showSourceModal = false;
-      this.newSource = "";
-      this.newSourceName = "";
+      this.newSource = '';
+      this.newSourceName = '';
     },
     inputChanged: function (val, name, isReq) {
       let uniqueKey = this.selectedSourceKey + '::' + name;
