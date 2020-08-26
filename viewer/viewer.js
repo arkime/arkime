@@ -6139,7 +6139,7 @@ function processSessionIdDisk (session, headerCb, packetCb, endCb, limit) {
 
             // Check them in reverse order, smallest to largest
             let i;
-            for (i = checks.length-1; i >= 0; i--) {
+            for (i = checks.length - 1; i >= 0; i--) {
               try {
                 fs.accessSync(checks[i], fs.constants.X_OK);
               } catch (e) {
