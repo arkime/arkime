@@ -6129,6 +6129,34 @@ function processSessionIdDisk (session, headerCb, packetCb, endCb, limit) {
           ipcap.open(file.name, file);
         } catch (err) {
           console.log("ERROR - Couldn't open file ", err);
+          if (err.code === 'EACCES') {
+            // Find all the directories to check
+            let checks = [];
+            let dir = path.resolve(file.name);
+            while ((dir = path.dirname(dir)) !== '/') {
+              checks.push(dir);
+            }
+
+            // Check them in reverse order, smallest to largest
+            let i;
+            for (i = checks.length-1; i >= 0; i--) {
+              try {
+                fs.accessSync(checks[i], fs.constants.X_OK);
+              } catch (e) {
+                console.log(`NOTE - Directory permissions issue, possible fix "chmod a+x '${checks[i]}'"`);
+                break;
+              }
+            }
+
+            // No directory issue, check the file itself
+            if (i === -1) {
+              try {
+                fs.accessSync(file.name, fs.constants.R_OK);
+              } catch (e) {
+                console.log(`NOTE - File permissions issue, possible fix "chmod a+r '${file.name}'"`);
+              }
+            }
+          }
           return nextCb("Couldn't open file " + err);
         }
 
