@@ -446,10 +446,10 @@
                           @change="cluster.hideDeltaBPS = !cluster.hideDeltaBPS"
                         />
                         <strong class="d-inline-block">
-                          {{ cluster.deltaBPS | commaString }}
+                          {{ cluster.deltaBPS | humanReadableBits }}
                         </strong>
                         <small class="d-inline-block">
-                          Bytes/Sec
+                          Bits/Sec
                         </small>
                       </label>
                     </div>

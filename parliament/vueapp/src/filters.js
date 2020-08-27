@@ -16,6 +16,34 @@ Vue.filter('commaString', (input) => {
 });
 
 /**
+ * Modifies a number to display the <=4 char human readable version of bits
+ * Modified http://stackoverflow.com/questions/10420352/converting-file-size-in-bytes-to-human-readable
+ *
+ * @example
+ * '{{ 1524680821 | humanReadableBits }}'
+ * this.$options.filters.humanReadableBytes(1524680821);
+ *
+ * @param {int} fileSizeInBytes The number to make human readable
+ * @returns {string}            The <=4 char human readable number
+ */
+Vue.filter('humanReadableBits', (fileSizeInBytes) => {
+  fileSizeInBytes = parseInt(fileSizeInBytes);
+  let i = 0;
+  let bitUnits = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+  fileSizeInBytes *= 8;
+  while (fileSizeInBytes >= 1024) {
+    fileSizeInBytes = fileSizeInBytes / 1024;
+    i++;
+  }
+
+  if (i === 0 || fileSizeInBytes >= 10) {
+    return fileSizeInBytes.toFixed(0) + bitUnits[i];
+  } else {
+    return fileSizeInBytes.toFixed(1) + bitUnits[i];
+  }
+});
+
+/**
  * Displays the proper human readable value for an issue
  *
  * @example
