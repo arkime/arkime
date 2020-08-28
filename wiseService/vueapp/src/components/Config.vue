@@ -251,6 +251,7 @@ export default {
         // TODO
         // this.currConfigBefore = JSON.parse(JSON.stringify(this.currConfig));
         // post this.currConfig
+        WiseService.saveCurrConfig(this.currConfig);
       }
     },
     loadConfigDefs: function () {

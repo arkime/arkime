@@ -52,13 +52,24 @@ export default {
   },
   getCurrConfig: function () {
     return new Promise((resolve, reject) => {
-      Vue.axios.get('loadedConfig')
+      Vue.axios.get('config/get')
         .then((response) => {
           resolve(response.data);
         })
         .catch((error) => {
           console.log('service error', error);
           reject(error);
+        });
+    });
+  },
+  saveCurrConfig: function (config) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.put('config/save', { config: config })
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error.response.data);
         });
     });
   },

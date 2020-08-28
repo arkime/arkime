@@ -35,6 +35,8 @@ const Redis = require('ioredis');
 const favicon = require('serve-favicon');
 const uuid = require('uuidv4').default;
 const helmet = require('helmet');
+const bp = require('body-parser');
+const jsonParser = bp.json()
 
 require('console-stamp')(console, '[HH:MM:ss.l]');
 
@@ -166,6 +168,11 @@ function noCacheJson (req, res, next) {
   res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
   res.header('Content-Type', 'application/json');
   res.header('X-Content-Type-Options', 'nosniff');
+  return next();
+}
+
+function checkToken (req, res, next) {
+  console.log('checkToken needs to be implemented :) ');
   return next();
 }
 
@@ -794,7 +801,7 @@ app.get('/:source/:typeName/:value', [noCacheJson], function (req, res) {
   });
 });
 // ----------------------------------------------------------------------------
-app.get('/loadedConfig', [noCacheJson], (req, res) => {
+app.get('/config/get', [noCacheJson], (req, res) => {
   const loadedConfig = {};
   // Filter for sources and the global 'wiseService'
 
@@ -808,6 +815,36 @@ app.get('/loadedConfig', [noCacheJson], (req, res) => {
   loadedConfig.filePath = internals.configFile;
 
   return res.send(loadedConfig);
+});
+// ----------------------------------------------------------------------------
+app.put('/config/save', [noCacheJson, checkToken, jsonParser], (req, res) => {
+  if (req.body.config === undefined) {
+    return res.send({ success: false, text: 'Missing config' });
+  }
+  let config = req.body.config
+  console.log(config);
+
+  // ALW - Need to validate config here
+
+  let output = '';
+  if (internals.configFile.endsWith('.ini')) {
+    Object.keys(config).forEach((section) => {
+      output += `[${section}]\n`; // ALW - should do some safety encoding here
+      Object.keys(config[section]).forEach((key) => {
+        output += `${key}=${config[section][key]}\n`; // ALW - should do some safety encoding here
+      });
+    });
+
+    fs.writeFileSync('/tmp/config.testing.ini', output);
+  } else if (internals.configFile.endsWith('.json')) {
+    output = JSON.stringify(req.body.config, null, 1);
+
+    fs.writeFileSync('/tmp/config.testing.json', output);
+  } else {
+    return res.send({ success: false, text: `Don't understand config format` });
+  }
+
+  return res.send({ success: true, text: 'Saved' });
 });
 // ----------------------------------------------------------------------------
 app.get('/sources', [noCacheJson], (req, res) => {
