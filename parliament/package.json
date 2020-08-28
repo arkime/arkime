@@ -19,7 +19,7 @@
     "lint": "cd .. ; npm run lint-parliament"
   },
   "dependencies": {
-    "bcrypt": "^3.0.1",
+    "bcrypt": "^5.0.0",
     "jsonwebtoken": "^8.3.0",
     "serve-favicon": "^2.5.0"
   },
@@ -36,7 +36,7 @@
     "bootstrap": "^4.3.1",
     "bootstrap-vue": "^2.0.0-rc.22",
     "chalk": "^2.0.1",
-    "copy-webpack-plugin": "^5.1.1",
+    "copy-webpack-plugin": "^6.0.3",
     "css-loader": "^2.1.1",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "file-loader": "^1.1.4",
@@ -55,7 +55,7 @@
     "semver": "^5.3.0",
     "shelljs": "^0.7.6",
     "style-loader": "^0.19.0",
-    "terser-webpack-plugin": "^2.3.5",
+    "terser-webpack-plugin": "^2.3.8",
     "url-loader": "^1.0.1",
     "vue-loader": "^15.7.0",
     "vue-style-loader": "^3.0.1",

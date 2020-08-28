@@ -89,7 +89,7 @@ LOCAL void writer_inplace_write_dryrun(const MolochSession_t * const UNUSED(sess
 /******************************************************************************/
 void writer_inplace_init(char *UNUSED(name))
 {
-    config.gapPacketPos        = moloch_config_boolean(NULL, "gapPacketPos", FALSE);
+    config.gapPacketPos        = moloch_config_boolean(NULL, "gapPacketPos", TRUE);
     moloch_writer_queue_length = writer_inplace_queue_length;
     moloch_writer_exit         = writer_inplace_exit;
     if (config.dryRun)
