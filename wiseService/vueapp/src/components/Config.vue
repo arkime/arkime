@@ -255,10 +255,18 @@ export default {
         let missing = this.emptyAndRequired[0].split('::');
         this.error = missing[1] + ' is required for ' + missing[0];
       } else {
-        // TODO
-        // this.currConfigBefore = JSON.parse(JSON.stringify(this.currConfig));
-        // post this.currConfig
-        WiseService.saveCurrConfig(this.currConfig);
+        WiseService.saveCurrConfig(this.currConfig)
+          .then((data) => {
+            if (!data.success) {
+              throw data;
+            } else {
+              // Resync object that tests for changes
+              this.currConfigBefore = JSON.parse(JSON.stringify(this.currConfig));
+            }
+          })
+          .catch((err) => {
+            this.error = err.text || `Error saving config for wise.`;
+          });
       }
     },
     loadConfigDefs: function () {
