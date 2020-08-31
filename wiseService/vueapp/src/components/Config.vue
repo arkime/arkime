@@ -57,47 +57,38 @@
         </span>
       </div> <!-- /Sources sidebar -->
 
-      <!-- Selected Source Inputs -->
+      <!-- Selected Source Input Fields -->
       <div class="d-flex flex-column px-5 pt-2 w-100">
         <h2 class="text-center">{{selectedSourceKey}}</h2>
 
-        <div class="d-flex flex-row" v-if="activeFields.length">
-          <div class="d-flex flex-column">
-            <div
-              v-for="field in activeFields"
-              :key="field.name + '-label'"
-              class="d-flex flex-column text-nowrap py-2 align-items-left mr-2 input-label"
-            >
-              {{ field.name }}
-            </div>
+        <div
+          class="input-group mb-3"
+          v-if="activeFields.length"
+          v-for="field in activeFields"
+          :key="field.name + '-field'"
+        >
+          <div class="input-group-prepend">
+            <span class="input-group-text">{{ field.name }}</span>
           </div>
 
-          <div class="d-flex flex-column w-100">
-            <div
-              v-for="field in activeFields"
-              :key="field.name + '-input'"
-              class="d-flex flex-column py-2"
-            >
-              <b-form-input
-                v-if="currConfig && currConfig[selectedSourceKey]"
-                :state="inputState(!!currConfig[selectedSourceKey][field.name], field.required)"
-                class="input-box"
-                :value="currConfig[selectedSourceKey][field.name]"
-                @input="(val) => inputChanged(val, field.name, field.required)"
-                :placeholder="field.help"
-                :required="field.required"
-                v-b-popover.focus.top="field.help"
-              >
-              </b-form-input>
-            </div>
-          </div>
+          <b-form-input
+            v-if="currConfig && currConfig[selectedSourceKey]"
+            :state="inputState(!!currConfig[selectedSourceKey][field.name], field.required)"
+            class="input-box"
+            :value="currConfig[selectedSourceKey][field.name]"
+            @input="(val) => inputChanged(val, field.name, field.required)"
+            :placeholder="field.help"
+            :required="field.required"
+            v-b-popover.focus.top="field.help"
+          >
+          </b-form-input>
         </div>
 
         <b-button v-if="configDefs && configDefs[selectedSourceSplit] && !configDefs[selectedSourceSplit].service" variant="danger" class="mx-auto mt-4" style="display:block" @click="deleteSource()">
           <b-icon icon="trash" scale="1"></b-icon>
           Delete Source
         </b-button>
-      </div><!-- /Selected Source Inputs -->
+      </div><!-- /Selected Source Inputs Fields-->
     </div>
 
     <b-modal
