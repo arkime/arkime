@@ -17,7 +17,7 @@
       <!-- Sources sidebar -->
       <div class="d-flex flex-column">
         <div
-          v-for="sourceKey in sidebarOptions"
+          v-for="sourceKey in sidebarOptions.services"
           :key="sourceKey + '-tab'"
         >
           <button
@@ -29,8 +29,23 @@
               {{ sourceKey }}
             </h5>
           </button>
+        </div>
 
-          <hr class="mx-3" v-if="sourceKey === 'wiseService'"/>
+        <hr class="mx-3"/>
+
+        <div
+          v-for="sourceKey in sidebarOptions.sources"
+          :key="sourceKey + '-tab'"
+        >
+          <button
+            @click="selectedSourceKey = sourceKey"
+            type="button"
+            class="btn btn-light source-btn btn-outline-dark"
+          >
+            <h5>
+              {{ sourceKey }}
+            </h5>
+          </button>
         </div>
 
         <span class="px-3">
@@ -78,7 +93,7 @@
           </div>
         </div>
 
-        <b-button v-if="selectedSourceKey !== 'wiseService'" variant="danger" class="mx-auto mt-4" style="display:block" @click="deleteSource()">
+        <b-button v-if="configDefs && configDefs[selectedSourceSplit] && !configDefs[selectedSourceSplit].service" variant="danger" class="mx-auto mt-4" style="display:block" @click="deleteSource()">
           <b-icon icon="trash" scale="1"></b-icon>
           Delete Source
         </b-button>
@@ -182,20 +197,17 @@ export default {
       return this.selectedSourceKey.split(':')[0];
     },
     sidebarOptions: function () {
-      // Sort wiseService to first option in sidebar
-      let opts = Object.keys(this.currConfig);
-      let wiseIndex = opts.indexOf('wiseService');
-
-      if (wiseIndex >= 0) {
-        opts.splice(wiseIndex, 1);
-      }
-
-      opts.unshift('wiseService');
-      return opts;
+      let options = {};
+      // Note: Services are alredy added to currConfig. This assists rendering them first
+      options.services = Object.keys(this.configDefs).filter(key => this.configDefs[key].service);
+      options.sources = Object.keys(this.currConfig).filter(key => !options.services.includes(key));
+      return options;
     },
     activeFields: function () {
       if (this.configDefs && this.configDefs[this.selectedSourceSplit] && this.configDefs[this.selectedSourceSplit].fields) {
-        return this.configDefs[this.selectedSourceSplit].fields.filter((field) => { return field.ifField === undefined || this.currConfig[this.selectedSourceKey][field.ifField] === field.ifValue; });
+        return this.configDefs[this.selectedSourceSplit].fields.filter((field) => {
+          return field.ifField === undefined || this.currConfig[this.selectedSourceKey][field.ifField] === field.ifValue;
+        });
       } else {
         return [];
       }
@@ -278,10 +290,12 @@ export default {
             this.filePath = data.filePath;
           }
 
-          // Add wiseService regardless if its in the ini.
-          if (!data.currConfig.hasOwnProperty('wiseService')) {
-            data.currConfig['wiseService'] = {};
-          }
+          // Always include services even if omitted from config file
+          Object.keys(this.configDefs).filter(key => this.configDefs[key].service).forEach((serviceKey) => {
+            if (!data.currConfig.hasOwnProperty(serviceKey)) {
+              data.currConfig[serviceKey] = {};
+            }
+          });
 
           this.currConfig = data.currConfig;
           this.currConfigBefore = JSON.parse(JSON.stringify(data.currConfig));
