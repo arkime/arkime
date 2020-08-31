@@ -111,7 +111,7 @@
           >
             <option value="" disabled>Select Source</option>
             <option
-              v-for="(source) in Object.keys(configDefs)"
+              v-for="(source) in Object.keys(configDefs).filter(k => !configDefs[k].service)"
               :value="source"
               :key="source + 'Option'"
               :disabled="configDefs[source].singleton && Object.keys(currConfig).map(k => k.split(':')[0]).includes(source)"
