@@ -46,14 +46,14 @@
       <div class="d-flex flex-column px-5 pt-2 w-100">
         <h2 class="text-center">{{selectedSourceKey}}</h2>
 
-        <div class="d-flex flex-row" v-if="configDefs && configDefs[selectedSourceSplit] && configDefs[selectedSourceSplit].fields">
+        <div class="d-flex flex-row" v-if="activeFields.length">
           <div class="d-flex flex-column">
             <div
               v-for="field in activeFields"
               :key="field.name + '-label'"
               class="d-flex flex-column text-nowrap py-2 align-items-left mr-2 input-label"
             >
-              {{ field.name }} :
+              {{ field.name }}
             </div>
           </div>
 
@@ -194,7 +194,11 @@ export default {
       return opts;
     },
     activeFields: function () {
-      return this.configDefs[this.selectedSourceKey.split(':')[0]].fields.filter((field) => { return field.ifField === undefined || this.currConfig[this.selectedSourceKey][field.ifField] === field.ifValue; });
+      if (this.configDefs && this.configDefs[this.selectedSourceSplit] && this.configDefs[this.selectedSourceSplit].fields) {
+        return this.configDefs[this.selectedSourceSplit].fields.filter((field) => { return field.ifField === undefined || this.currConfig[this.selectedSourceKey][field.ifField] === field.ifValue; });
+      } else {
+        return [];
+      }
     },
     saveEnabled: function () {
       return JSON.stringify(this.currConfig) === JSON.stringify(this.currConfigBefore);
