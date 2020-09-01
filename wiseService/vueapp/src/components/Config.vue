@@ -73,7 +73,7 @@
 
           <b-form-input
             v-if="currConfig && currConfig[selectedSourceKey]"
-            :state="inputState(!!currConfig[selectedSourceKey][field.name], field.required)"
+            :state="inputState(currConfig[selectedSourceKey][field.name], field.required, field.regex)"
             class="input-box"
             :value="currConfig[selectedSourceKey][field.name]"
             @input="(val) => inputChanged(val, field.name, field.required)"
@@ -122,7 +122,7 @@
         </div>
         <span v-if="newSource && configDefs[newSource] && !configDefs[newSource].singleton">
           <b-form-input
-            :state="inputState(!!newSourceName, true)"
+            :state="inputState(newSourceName, true, null)"
             class="input-box mt-2"
             v-model="newSourceName"
             placeholder="Unique name for source"
@@ -241,8 +241,12 @@ export default {
       this.$delete(this.currConfig, this.selectedSourceKey);
       this.selectedSourceKey = 'wiseService';
     },
-    inputState: function (hasVal, isReq) {
-      if (isReq && hasVal) {
+    inputState: function (inputVal, isReq, regex) {
+      if (inputVal && regex && !RegExp(regex).test(inputVal)) {
+        return false
+      }
+
+      if (isReq && inputVal) {
         return true;
       } else if (isReq) {
         return false;
