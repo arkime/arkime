@@ -155,7 +155,6 @@
     "mac": "db:srcMac;mac.dst"
   },
   "wiseService": {
-    "regressionTests": "true"
   },
   "file:email": {
     "file": "../tests/email.wise",

@@ -81,7 +81,8 @@ var internals = {
   },
   views: {},
   rightClicks: {},
-  workers: 1
+  workers: 1,
+  regressionTests: false
 };
 
 internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 'sha256'];
@@ -98,6 +99,8 @@ function processArgs (argv) {
       internals.insecure = true;
     } else if (argv[i] === '--debug') {
       internals.debug++;
+    } else if (argv[i] === '--regressionTests') {
+      internals.regressionTests = true;
     } else if (argv[i] === '--workers') {
       i++;
       internals.workers = +argv[i];
@@ -1270,7 +1273,7 @@ internals.configSchemes['ini'] = {
 function main () {
   internals.cache = wiseCache.createCache({ getConfig: getConfig, createRedisClient: createRedisClient });
 
-  if (getConfig('wiseService', 'regressionTests')) {
+  if (internals.regressionTests) {
     app.post('/shutdown', (req, res) => {
       process.exit(0);
       throw new Error('Exiting');
