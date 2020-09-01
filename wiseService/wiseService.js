@@ -436,6 +436,9 @@ function loadSources () {
 // ----------------------------------------------------------------------------
 // APIs
 // ----------------------------------------------------------------------------
+app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'));
+app.use(timeout(5 * 1000));
+
 // Serve vue app
 app.get('/', (req, res, next) => {
   res.sendFile(`${__dirname}/vueapp/dist/index.html`);
@@ -446,8 +449,14 @@ app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
 // expose vue bundle (dev)
 app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
 app.use('/font-awesome', express.static(`${__dirname}/../node_modules/font-awesome`, { maxAge: 600 * 1000 }));
-app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'));
-app.use(timeout(5 * 1000));
+
+// ----------------------------------------------------------------------------
+if (internals.regressionTests) {
+  app.post('/shutdown', (req, res) => {
+    process.exit(0);
+    throw new Error('Exiting');
+  });
+}
 // ----------------------------------------------------------------------------
 app.get('/_ns_/nstest.html', [noCacheJson], function (req, res) {
   res.end();
@@ -1272,13 +1281,6 @@ internals.configSchemes['ini'] = {
 // ----------------------------------------------------------------------------
 function main () {
   internals.cache = wiseCache.createCache({ getConfig: getConfig, createRedisClient: createRedisClient });
-
-  if (internals.regressionTests) {
-    app.post('/shutdown', (req, res) => {
-      process.exit(0);
-      throw new Error('Exiting');
-    });
-  }
 
   addField('field:tags'); // Always add tags field so we have at least 1 field
   buildSourceApi();
