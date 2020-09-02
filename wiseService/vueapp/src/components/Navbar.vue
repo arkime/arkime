@@ -2,7 +2,7 @@
   <div>
     <!-- wise navbar -->
     <nav class="navbar navbar-expand navbar-dark bg-dark justify-content-between fixed-top">
-      <router-link to="help"
+      <!-- <router-link to="help"
         active-class="active"
         class="navbar-brand"
         exact>
@@ -11,7 +11,10 @@
           v-b-tooltip.hover
           title="HOOT! Can I help you? Click me to see the help page"
         />
-      </router-link>
+      </router-link> -->
+      <img src="../assets/header_logo.png"
+        alt="owl image"
+      />
 
       <!-- page links -->
       <ul class="navbar-nav mr-auto ml-5">
@@ -213,7 +216,7 @@ export default {
 </script>
 
 <style scoped>
-nav.navbar > .navbar-brand > img {
+nav.navbar img {
   position: absolute;
   height: 52px;
   top: 7px;
