@@ -1,18 +1,18 @@
 <template>
-  <div>
+  <div class="container-fluid">
     <Error :initialError="error" v-on:clear-initialError="error = ''"/>
 
     <div>
       <b-tabs content-class="mt-3">
         <b-tab title="Sources" active>
           <div v-if="sourceStats.length > 0">
-            <b-table striped hover :items="sourceStats" :fields="sourceTableFields"></b-table>
+            <b-table striped hover small borderless :items="sourceStats" :fields="sourceTableFields"></b-table>
           </div>
         </b-tab>
 
         <b-tab title="Types">
           <div v-if="typeStats.length > 0">
-            <b-table striped hover :items="typeStats" :fields="typeTableFields"></b-table>
+            <b-table striped hover small borderless :items="typeStats" :fields="typeTableFields"></b-table>
           </div>
         </b-tab>
       </b-tabs>
