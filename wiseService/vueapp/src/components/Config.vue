@@ -60,6 +60,9 @@
       <!-- Selected Source Input Fields -->
       <div class="d-flex flex-column px-5 pt-2 w-100">
         <h2 class="text-center">{{selectedSourceKey}}</h2>
+        <div v-if="configDefs[selectedSourceSplit] && configDefs[selectedSourceSplit].description" class="subtext text-center mt-1 mb-4 mx-5">
+          {{ configDefs[selectedSourceSplit].description }}
+        </div>
 
         <div
           class="input-group mb-3"

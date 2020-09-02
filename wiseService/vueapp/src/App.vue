@@ -224,6 +224,14 @@ body.dark .table-hover .table-secondary:hover > td {
   background-color: #4F4F4F;
 }
 
+.subtext {
+  color: #777777;
+}
+
+body.dark .subtext {
+  color: #bfbfbf;
+}
+
 /* darken info aread */
 body.dark .info-area > div {
   background-color: #444;
