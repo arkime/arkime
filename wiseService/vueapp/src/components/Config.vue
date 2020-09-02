@@ -63,7 +63,6 @@
 
         <div
           class="input-group mb-3"
-          v-if="activeFields.length"
           v-for="field in activeFields"
           :key="field.name + '-field'"
         >
@@ -233,7 +232,7 @@ export default {
     },
     inputState: function (inputVal, isReq, regex) {
       if (inputVal && regex && !RegExp(regex).test(inputVal)) {
-        return false
+        return false;
       }
 
       if (isReq && inputVal) {
