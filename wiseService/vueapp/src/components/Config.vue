@@ -177,7 +177,6 @@ export default {
       configDefs: {},
       currConfig: {},
       currConfigBefore: {}, // Used to determine if changes have been made
-      emptyAndRequired: [], // TODO will break for creating new sources. Redo logic
       filePath: '',
       newSource: '',
       newSourceName: ''
@@ -223,17 +222,8 @@ export default {
       let uniqueKey = this.selectedSourceKey + '::' + name;
 
       if (val) {
-        // If user inputs required field, clear it from emptyAndRequired if it is there
-        if (this.emptyAndRequired.includes(uniqueKey)) {
-          this.emptyAndRequired.splice(this.emptyAndRequired.indexOf(uniqueKey), 1);
-        }
-
         this.$set(this.currConfig[this.selectedSourceKey], name, val);
       } else if (this.currConfig[this.selectedSourceKey][name]) {
-        if (isReq && !this.emptyAndRequired.includes(uniqueKey)) {
-          this.emptyAndRequired.push(uniqueKey);
-        }
-
         this.$delete(this.currConfig[this.selectedSourceKey], name);
       }
     },
@@ -255,23 +245,33 @@ export default {
       }
     },
     saveConfig: function () {
-      if (this.emptyAndRequired.length > 0) {
-        let missing = this.emptyAndRequired[0].split('::');
-        this.error = missing[1] + ' is required for ' + missing[0];
-      } else {
-        WiseService.saveCurrConfig(this.currConfig)
-          .then((data) => {
-            if (!data.success) {
-              throw data;
-            } else {
-              // Resync object that tests for changes
-              this.currConfigBefore = JSON.parse(JSON.stringify(this.currConfig));
-            }
-          })
-          .catch((err) => {
-            this.error = err.text || `Error saving config for wise.`;
-          });
+      // Iterate through user config before saving and test for missing required fields and improper regex
+      for (const sourceName in this.currConfig) {
+        let defSource = this.configDefs[sourceName.split(':')[0]];
+
+        for (const item of defSource.fields) {
+          if (this.currConfig[sourceName][item.name] && item.regex && !RegExp(item.regex).test(this.currConfig[sourceName][item.name])) {
+            this.error = "Regex error: '" + item.name + "' for '" + sourceName + "' must match " + item.regex;
+            return;
+          } else if (!this.currConfig[sourceName][item.name] && item.required) {
+            this.error = "Required error: '" + sourceName + "' requires '" + item.name +"'";
+            return;
+          }
+        }
       }
+
+      WiseService.saveCurrConfig(this.currConfig)
+        .then((data) => {
+          if (!data.success) {
+            throw data;
+          } else {
+            // Resync object that tests for changes
+            this.currConfigBefore = JSON.parse(JSON.stringify(this.currConfig));
+          }
+        })
+        .catch((err) => {
+          this.error = err.text || `Error saving config for wise.`;
+        });
     },
     loadConfigDefs: function () {
       WiseService.getConfigDefs()
