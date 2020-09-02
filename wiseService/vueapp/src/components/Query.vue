@@ -40,6 +40,7 @@
             </span>
           </span>
           <select class="form-control"
+            @change="sendSearchQuery"
             v-model="chosenType"
             tabindex="2">
             <option v-for="type in types" :value="type" :key="type">
