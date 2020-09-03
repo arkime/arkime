@@ -1,7 +1,7 @@
 <template>
   <!-- container -->
   <div>
-    <Error :initialError="error" v-on:clear-initialError="error = ''"/>
+    <Alert :initialAlert="alertState.text" :variant="alertState.variant" v-on:clear-initialAlert="alertState = {text: '', variant: ''}"/>
 
     <b-button
       class="ml-auto mr-2"
@@ -160,12 +160,12 @@
 
 <script>
 import WiseService from './wise.service';
-import Error from './Error';
+import Alert from './Alert';
 
 export default {
   name: 'Config',
   components: {
-    Error
+    Alert
   },
   mounted: function () {
     this.loadConfigDefs();
@@ -173,7 +173,7 @@ export default {
   },
   data: function () {
     return {
-      error: '',
+      alertState: {text: '', variant: ''},
       showSourceModal: false,
       selectedSourceKey: 'wiseService',
       configDefs: {},
@@ -253,10 +253,16 @@ export default {
 
         for (const item of defSource.fields) {
           if (this.currConfig[sourceName][item.name] && item.regex && !RegExp(item.regex).test(this.currConfig[sourceName][item.name])) {
-            this.error = "Regex error: '" + item.name + "' for '" + sourceName + "' must match " + item.regex;
+            this.alertState = {
+              text: "Regex error: '" + item.name + "' for '" + sourceName + "' must match " + item.regex,
+              variant: "alert-danger"
+            };
             return;
           } else if (!this.currConfig[sourceName][item.name] && item.required) {
-            this.error = "Required error: '" + sourceName + "' requires '" + item.name +"'";
+            this.alertState = {
+              text: "Required error: '" + sourceName + "' requires '" + item.name +"'",
+              variant: "alert-danger"
+            };
             return;
           }
         }
@@ -267,29 +273,38 @@ export default {
           if (!data.success) {
             throw data;
           } else {
+            this.alertState = {
+              text: `Config saved`,
+              variant: 'alert-success'
+            };
             // Resync object that tests for changes
             this.currConfigBefore = JSON.parse(JSON.stringify(this.currConfig));
           }
         })
         .catch((err) => {
-          this.error = err.text || `Error saving config for wise.`;
+          this.alertState = {
+            text: err.text || `Error saving config for wise.`,
+            variant: 'alert-danger'
+          };
         });
     },
     loadConfigDefs: function () {
       WiseService.getConfigDefs()
         .then((data) => {
-          this.error = '';
+          this.alertState = {text: '', variant: ''};
           this.configDefs = data;
         })
         .catch((error) => {
-          this.error = error.text ||
-            `Error fetching config definitions from wise.`;
+          this.alertState = {
+            text: `Error fetching config definitions from wise.`,
+            variant: 'alert-danger'
+          };
         });
     },
     loadCurrConfig: function () {
       WiseService.getCurrConfig()
         .then((data) => {
-          this.error = '';
+          this.alertState = {text: '', variant: ''};
 
           if (data.filePath) {
             this.filePath = data.filePath;
@@ -306,8 +321,10 @@ export default {
           this.currConfigBefore = JSON.parse(JSON.stringify(data.currConfig));
         })
         .catch((error) => {
-          this.error = error.text ||
-            `Error fetching current config for wise.`;
+          this.alertState = {
+            text: error.text || `Error fetching current config for wise.`,
+            variant: 'alert-danger'
+          };
         });
     }
   }

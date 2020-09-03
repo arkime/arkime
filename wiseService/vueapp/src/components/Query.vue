@@ -1,7 +1,7 @@
 <template>
   <!-- container -->
   <div class="container-fluid">
-    <Error :initialError="error" v-on:clear-initialError="error = ''"/>
+    <Alert :initialAlert="alertMessage" variant="alert-danger" v-on:clear-initialAlert="alertMessage = ''"/>
 
     <div class="d-flex flex-row">
       <!-- source select -->
@@ -117,18 +117,18 @@
 
 <script>
 import WiseService from './wise.service';
-import Error from './Error';
+import Alert from './Alert';
 
 let timeout;
 
 export default {
   name: 'Query',
   components: {
-    Error
+    Alert
   },
   data: function () {
     return {
-      error: '',
+      alertMessage: '',
       hasMadeASearch: false,
       searchTerm: '',
       searchResult: [],
@@ -184,31 +184,31 @@ export default {
     loadSourceOptions: function () {
       WiseService.getSources()
         .then((data) => {
-          this.error = '';
+          this.alertMessage = '';
           this.sources = data;
         })
         .catch((error) => {
-          this.error = error.text ||
+          this.alertMessage = error.text ||
             `Error fetching source options for wise.`;
         });
     },
     loadTypeOptions: function () {
       WiseService.getTypes(this.chosenSource)
         .then((data) => {
-          this.error = '';
+          this.alertMessage = '';
           this.types = data;
           if (data.length >= 1 && !data.includes(this.chosenType)) {
             this.chosenType = data[0];
           }
         })
         .catch((error) => {
-          this.error = error.text ||
+          this.alertMessage = error.text ||
             `Error fetching type options for wise.`;
         });
     },
     sendSearchQuery: function () {
       if (!this.searchTerm) {
-        this.error = 'Search term is empty';
+        this.alertMessage = 'Search term is empty';
         this.searchResult = [];
         this.tableFields = [];
         this.hasMadeASearch = false;
@@ -228,10 +228,10 @@ export default {
 
       this.hasMadeASearch = true;
 
-      this.error = '';
+      this.alertMessage = '';
       WiseService.search(this.chosenSource, this.chosenType, this.searchTerm)
         .then((data) => {
-          this.error = '';
+          this.alertMessage = '';
           this.searchResult = data;
           if (data.length >= 1) {
             this.tableFields = Object.keys(data[0]).map(key => {
@@ -240,7 +240,7 @@ export default {
           }
         })
         .catch((error) => {
-          this.error = error.text ||
+          this.alertMessage = error.text ||
             `Error getting search result for wise.`;
         });
     },
