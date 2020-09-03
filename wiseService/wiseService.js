@@ -38,6 +38,9 @@ const helmet = require('helmet');
 const bp = require('body-parser');
 const jsonParser = bp.json();
 const axios = require('axios');
+const passport = require('passport');
+const DigestStrategy = require('passport-http').DigestStrategy;
+const elasticsearch = require('elasticsearch');
 
 require('console-stamp')(console, '[HH:MM:ss.l]');
 
@@ -51,22 +54,29 @@ var internals = {
   sources: [],
   configDefs: {
     wiseService: {
+      description: 'General settings that apply to WISE and all wise sources',
       singleton: true,
       service: true,
       fields: [
         { name: 'port', required: false, regex: '^[0-9]+$', help: 'Port that the wiseService runs on. Defaults to 8081' },
         { name: 'keyFile', required: false, help: 'Path to PEM encoded key file' },
         { name: 'certFile', required: false, help: 'Path to PEM encoded cert file' },
+        { name: 'userNameHeader', required: true, help: 'How should auth be done: anonymous - no auth, digest - digest auth, any other value is the http header to use for username', regex: '.' },
+        { name: 'httpRealm', ifField: 'userNameHeader', ifValue: 'digest', required: false, help: 'The realm to use for digest requests. Must be the same as viewer is using. Default Moloch' },
+        { name: 'passwordSecret', ifField: 'userNameHeader', ifValue: 'digest', required: false, help: 'The secret used to encrypted password hashes. Must be the same as viewer is using. Default password' },
+        { name: 'usersElasticsearch', required: false, help: 'The URL to connect to elasticsearch. Default http://localhost:9200' },
+        { name: 'usersPrefix', required: false, help: 'The prefix used with db.pl --prefix, usually empty' },
         { name: 'sourcePath', required: false, help: 'Where to look for the source files. Defaults to "./"' }
       ]
     },
     wiseCache: {
+      description: 'Specify how WISE should cache results from sources that support it. Using a redis setup is especially useful when there are multiple WISE servers or large amount of results to cache.',
       singleton: true,
       service: true,
       fields: [
-        { name: 'type', required: false, regex: '^(memory|redis|redis-cluster|redis-sentinel)$', help: 'What type of wiseCache. Defaults to memory' },
+        { name: 'type', required: false, regex: '^(memory|redis|redis-cluster|redis-sentinel)$', help: 'Where to cache results: memory (default), redis, redis-cluster, redis-sentinel' },
         { name: 'cacheSize', required: false, help: 'How many elements to cache in memory. Defaults to 100000' },
-        { name: 'url', required: false, ifField: 'type', ifValue: 'redis', help: 'Format is [redis:]//[[user][:password@]]host:port[/db-number]' },
+        { name: 'url', required: false, ifField: 'type', ifValue: 'redis', help: 'Format is redis://[[user]:[password]@]host:port[/db-number]' },
         { name: 'redisName', required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'User name for redis' },
         { name: 'redisPassword', required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Password for redis' },
         { name: 'sentinelPassword', required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Password for sentinel' },
@@ -189,9 +199,123 @@ function noCacheJson (req, res, next) {
   return next();
 }
 
-function checkToken (req, res, next) {
-  console.log('checkToken needs to be implemented :) ');
-  return next();
+// ----------------------------------------------------------------------------
+// Authentication
+// ----------------------------------------------------------------------------
+function getUser (name, cb) {
+  internals.usersElasticSearch.get({ index: internals.usersPrefix + 'users', type: '_doc', id: name }, (err, result) => {
+    console.log(err, result);
+    if (err) { return cb(err); }
+    return cb(null, result._source);
+  });
+}
+// ----------------------------------------------------------------------------
+// Decrypt the encrypted hashed password, it is still hashed
+function store2ha1 (passstore) {
+  try {
+    var parts = passstore.split('.');
+    if (parts.length === 2) {
+      // New style with IV: IV.E
+      let c = crypto.createDecipheriv('aes-256-cbc', internals.passwordSecret256, Buffer.from(parts[0], 'hex'));
+      let d = c.update(parts[1], 'hex', 'binary');
+      d += c.final('binary');
+      return d;
+    } else {
+      // Old style without IV: E
+      var c = crypto.createDecipher('aes192', internals.passwordSecret);
+      var d = c.update(passstore, 'hex', 'binary');
+      d += c.final('binary');
+      return d;
+    }
+  } catch (e) {
+    console.log("passwordSecret set in the [default] section can not decrypt information.  You may need to re-add users if you've changed the secret.", e);
+    process.exit(1);
+  }
+};
+// ----------------------------------------------------------------------------
+function setupAuth () {
+  internals.userNameHeader = getConfig('wiseService', 'userNameHeader', 'anonymous');
+  internals.passwordSecret = getConfig('wiseService', 'passwordSecret', 'password');
+  internals.passwordSecret256 = crypto.createHash('sha256').update(internals.passwordSecret).digest();
+
+  if (internals.userNameHeader === 'anonymous') {
+    return;
+  }
+
+  const es = getConfig('wiseService', 'usersElasticsearch', 'http://localhost:9200');
+  internals.usersPrefix = getConfig('wiseService', 'usersPrefix', '');
+
+  if (internals.usersPrefix && internals.usersPrefix.charAt(internals.usersPrefix.length - 1) !== '_') {
+    internals.usersPrefix += '_';
+  } else {
+    internals.usersPrefix = internals.usersPrefix || '';
+  }
+
+  internals.usersElasticSearch = new elasticsearch.Client({
+    host: es,
+    apiVersion: '7.4',
+    requestTimeout: 300000,
+    keepAlive: true,
+    minSockets: 5,
+    maxSockets: 6
+  });
+
+  if (internals.userNameHeader === 'digest') {
+    passport.use(new DigestStrategy({ qop: 'auth', realm: getConfig('wiseService', 'httpRealm', 'Moloch') },
+      function (userid, done) {
+        getUser(userid, (err, user) => {
+          if (err) { return done(err); }
+          if (!user.enabled) { console.log('User', userid, 'not enabled'); return done('Not enabled'); }
+
+          return done(null, user, { ha1: store2ha1(user.passStore) });
+        });
+      },
+      function (options, done) {
+        // TODO:  Should check nonce here
+        return done(null, true);
+      }
+    ));
+  }
+}
+// ----------------------------------------------------------------------------
+function doAuth (req, res, next) {
+  console.log(`ALW - Auth type: ${internals.userNameHeader} for url ${req.url}`);
+  if (internals.userNameHeader === 'anonymous') {
+    req.user = { userId: 'anonymous', enabled: true, createEnabled: true, webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true };
+    return next();
+  }
+
+  if (internals.userNameHeader !== 'digest') {
+    if (req.headers[internals.userNameHeader] !== undefined) {
+      return getUser(req.headers[internals.userNameHeader], (err, user) => {
+        if (err) { return res.send(JSON.stringify({ success: false, text: 'Username not found' })); }
+        if (!user.enabled) { return res.send(JSON.stringify({ success: false, text: 'Username not enabled' })); }
+        req.user = user;
+        return next();
+      });
+    } else if (internals.debug > 0) {
+      console.log(`AUTH: looking for header ${internals.userNameHeader} in the headers`, req.headers);
+      res.status(status || 403);
+      return res.send(JSON.stringify({ success: false, text: 'Username not found' }));
+    }
+  }
+
+  passport.authenticate('digest', { session: false })(req, res, function (err) {
+    if (err) {
+      res.status(403);
+      return res.send(JSON.stringify({ success: false, text: err }));
+    } else {
+      return next();
+    }
+  });
+}
+
+function checkAdmin (req, res, next) {
+  if (req.user.createEnabled) {
+    return next();
+  } else {
+      return res.send(JSON.stringify({ success: false, text: 'Not admin' }));
+  }
 }
 
 // ----------------------------------------------------------------------------
@@ -830,7 +954,7 @@ app.get('/:source/:typeName/:value', [noCacheJson], function (req, res) {
   });
 });
 // ----------------------------------------------------------------------------
-app.get('/config/get', [noCacheJson], (req, res) => {
+app.get('/config/get', [doAuth, noCacheJson], (req, res) => {
   const loadedConfig = {};
   // Filter for sources and the global 'wiseService'
 
@@ -846,7 +970,7 @@ app.get('/config/get', [noCacheJson], (req, res) => {
   return res.send(loadedConfig);
 });
 // ----------------------------------------------------------------------------
-app.put('/config/save', [noCacheJson, checkToken, jsonParser], (req, res) => {
+app.put('/config/save', [doAuth, noCacheJson, checkAdmin, jsonParser], (req, res) => {
   if (req.body.config === undefined) {
     return res.send({ success: false, text: 'Missing config' });
   }
@@ -878,7 +1002,9 @@ app.put('/config/save', [noCacheJson, checkToken, jsonParser], (req, res) => {
     if (err) {
       return res.send({ success: false, text: err });
     } else {
-      return res.send({ success: true, text: 'Saved' });
+      res.send({ success: true, text: 'Saved & Restarting' });
+      setTimeout(() => { process.kill(process.pid, 'SIGUSR2'); }, 500);
+      setTimeout(() => { process.exit(0); }, 1500);
     }
   });
 });
@@ -1076,6 +1202,7 @@ function printStats () {
   }
 }
 
+// ----------------------------------------------------------------------------
 // Error handling
 app.use((req, res, next) => {
   res.status(404).sendFile(`${__dirname}/vueapp/dist/index.html`);
@@ -1326,6 +1453,7 @@ async function buildConfigAndStart () {
     }
 
     await internals.configScheme.load();
+    setupAuth();
 
     if (internals.workers <= 1 || cluster.isWorker) {
       main();

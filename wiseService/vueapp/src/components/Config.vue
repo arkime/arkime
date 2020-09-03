@@ -10,7 +10,7 @@
       :disabled="saveEnabled"
       @click="saveConfig()"
     >
-      Save Config
+      Save Config & Restart
     </b-button>
 
     <div class="d-flex flex-row">
@@ -198,7 +198,9 @@ export default {
     activeFields: function () {
       if (this.configDefs && this.configDefs[this.selectedSourceSplit] && this.configDefs[this.selectedSourceSplit].fields) {
         return this.configDefs[this.selectedSourceSplit].fields.filter((field) => {
-          return field.ifField === undefined || this.currConfig[this.selectedSourceKey][field.ifField] === field.ifValue;
+          if (field.ifField === undefined) { return true; }
+          if (this.currConfig[this.selectedSourceKey] === undefined) { return false; }
+          return this.currConfig[this.selectedSourceKey][field.ifField] === field.ifValue;
         });
       } else {
         return [];

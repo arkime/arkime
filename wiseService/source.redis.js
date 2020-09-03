@@ -88,7 +88,7 @@ exports.initSource = function (api) {
       { name: 'tags', required: true, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
       { name: 'url', required: true, help: 'The format is [redis:]//[[user][:password@]]host:port[/db-number]' },
       { name: 'redisType', required: true, help: 'The type of redis cluster:redis,redis-sentinel,redis-cluster' },
-      { name: 'format', required: true, help: 'The format of data file, such as csv, tagger, or json' },
+      { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, or json', regex: '^(csv|tagger|json)$' },
       { name: 'column', required: true, help: 'For csv formatted files, which column is the data' },
       { name: 'template', required: true, help: 'The template when forming the key name. %key% = the key being looked up, %type% = the type being looked up' }
     ]

@@ -15,9 +15,9 @@
   },
   "scripts": {
     "build": "npm run bundle:min",
-    "start": "node wiseService.js -c ../tests/config.test.ini",
+    "start": "node wiseService.js -c ../tests/config.test.json",
     "prestart": "npm run bundle:min",
-    "dev": "nodemon wiseService.js -c ../tests/config.test.ini & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
+    "dev": "nodemon wiseService.js -c ../tests/config.test.json & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
     "bundle": "webpack -d --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
     "bundle:min": "node vueapp/build/build.js",
     "lint": "cd .. ; npm run lint-wise"
