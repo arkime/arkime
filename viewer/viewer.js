@@ -6982,7 +6982,7 @@ function sessionsPcapList (req, res, list, pcapWriter, extension) {
     function () {
       // Get from remote DISK
       getViewUrl(fields.node, function (err, viewUrl, client) {
-        var buffer = Buffer.alloc(fields.pa * 20 + fields.by);
+        var buffer = Buffer.alloc(fields.totPackets * 20 + fields.totBytes);
         var bufpos = 0;
         var info = url.parse(viewUrl);
         info.path = Config.basePath(fields.node) + fields.node + '/' + extension + '/' + Db.session2Sid(item) + '.' + extension;
