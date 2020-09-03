@@ -4332,8 +4332,9 @@ app.get('/stats.json', [noCacheJson, recordResponseTime, checkPermissions(['hide
     for (let name of names) {
       name = name.trim();
       if (name !== '') {
+        if (name.endsWith('$')) { name = name.slice(0, -1); } else { name += '.*'; }
         query.query.bool.should.push({
-          wildcard: { nodeName: '*' + name + '*' }
+          regexp: { nodeName: name }
         });
       }
     }

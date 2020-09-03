@@ -19,7 +19,7 @@
       <!-- page links -->
       <ul class="navbar-nav mr-auto ml-5">
         <li class="nav-item mr-2">
-          <router-link to="/"
+          <router-link :to="{ path: '/', query: queryParams }"
             active-class="active"
             class="nav-link"
             exact>
@@ -142,8 +142,14 @@ export default {
       // showLoginInput: false,
       // focusPassInput: false,
       // default theme is light
-      theme: 'light'
+      theme: 'light',
+      queryParams: {}
     };
+  },
+  watch: {
+    '$route.query': function (newVal, oldVal) {
+      this.queryParams = newVal;
+    }
   },
   computed: {
     // auth vars
@@ -164,6 +170,8 @@ export default {
         document.body.classList = [ this.theme ];
       }
     }
+
+    this.queryParams = this.$route.query;
   },
   methods: {
     /* page functions -------------------------------------------------------- */
