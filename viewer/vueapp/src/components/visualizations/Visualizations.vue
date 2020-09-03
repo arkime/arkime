@@ -791,6 +791,8 @@ export default {
       this.map = $(this.mapEl).children('.jvectormap-container').data('mapObject');
     },
     setupMapData: function () {
+      if (!this.map) { return; }
+
       this.map.series.regions[0].clear();
       delete this.map.series.regions[0].params.min;
       delete this.map.series.regions[0].params.max;
