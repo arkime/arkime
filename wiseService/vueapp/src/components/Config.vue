@@ -173,7 +173,7 @@ export default {
   },
   data: function () {
     return {
-      alertState: {text: '', variant: ''},
+      alertState: { text: '', variant: '' },
       showSourceModal: false,
       selectedSourceKey: 'wiseService',
       configDefs: {},
@@ -221,8 +221,6 @@ export default {
       this.newSourceName = '';
     },
     inputChanged: function (val, name, isReq) {
-      let uniqueKey = this.selectedSourceKey + '::' + name;
-
       if (val) {
         this.$set(this.currConfig[this.selectedSourceKey], name, val);
       } else if (this.currConfig[this.selectedSourceKey][name]) {
@@ -255,13 +253,13 @@ export default {
           if (this.currConfig[sourceName][item.name] && item.regex && !RegExp(item.regex).test(this.currConfig[sourceName][item.name])) {
             this.alertState = {
               text: "Regex error: '" + item.name + "' for '" + sourceName + "' must match " + item.regex,
-              variant: "alert-danger"
+              variant: 'alert-danger'
             };
             return;
           } else if (!this.currConfig[sourceName][item.name] && item.required) {
             this.alertState = {
-              text: "Required error: '" + sourceName + "' requires '" + item.name +"'",
-              variant: "alert-danger"
+              text: "Required error: '" + sourceName + "' requires '" + item.name + "'",
+              variant: 'alert-danger'
             };
             return;
           }
@@ -291,7 +289,7 @@ export default {
     loadConfigDefs: function () {
       WiseService.getConfigDefs()
         .then((data) => {
-          this.alertState = {text: '', variant: ''};
+          this.alertState = { text: '', variant: '' };
           this.configDefs = data;
         })
         .catch((error) => {
@@ -304,7 +302,7 @@ export default {
     loadCurrConfig: function () {
       WiseService.getCurrConfig()
         .then((data) => {
-          this.alertState = {text: '', variant: ''};
+          this.alertState = { text: '', variant: '' };
 
           if (data.filePath) {
             this.filePath = data.filePath;
