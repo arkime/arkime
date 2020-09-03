@@ -40,6 +40,7 @@
             </span>
           </span>
           <select class="form-control"
+            @change="sendSearchQuery"
             v-model="chosenType"
             tabindex="2">
             <option v-for="type in types" :value="type" :key="type">
@@ -54,7 +55,9 @@
         <div class="input-group">
           <span class="input-group-prepend">
             <span class="input-group-text">
-              <span class="fa fa-search">
+              <span v-if="!loading" class="fa fa-search">
+              </span>
+              <span v-else class="spinner-border spinner-border-sm">
               </span>
             </span>
           </span>
@@ -63,7 +66,7 @@
             v-model="searchTerm"
             class="form-control"
             placeholder="Search wise data"
-            @keyup.enter="debounceSearch"
+            @input="debounceSearch"
           />
           <span class="input-group-append">
             <button type="button"
@@ -80,17 +83,19 @@
 
     <!-- empty search -->
     <div v-if="!hasMadeASearch">
-      <div class="vertical-center info-area">
-        <span class="fa fa-3x fa-search">
-        </span>
-        Try adding a search query!
+      <div class="vertical-center info-area mt-5">
+        <div>
+          <span class="fa fa-3x fa-search">
+          </span>
+          Try adding a search query!
+        </div>
       </div>
     </div> <!-- /empty search -->
 
     <!-- tabbed view options -->
     <b-tabs content-class="mt-3" v-else-if="searchResult.length > 0">
       <b-tab title="Table View" active>
-        <b-table striped hover :items="searchResult" :fields="tableFields"></b-table>
+        <b-table striped hover small borderless :items="searchResult" :fields="tableFields"></b-table>
       </b-tab>
 
       <b-tab title="JSON View">
@@ -104,10 +109,12 @@
 
     <!-- no results -->
     <div v-else>
-      <div class="vertical-center info-area">
-        <span class="fa fa-3x fa-search-minus">
-        </span>
-        No Results
+      <div class="vertical-center info-area mt-5">
+        <div>
+          <span class="fa fa-3x fa-search-minus">
+          </span>
+          No Results
+        </div>
       </div>
     </div> <!-- /no results -->
 
@@ -129,6 +136,7 @@ export default {
   data: function () {
     return {
       error: '',
+      loading: false,
       hasMadeASearch: false,
       searchTerm: '',
       searchResult: [],
@@ -208,12 +216,13 @@ export default {
     },
     sendSearchQuery: function () {
       if (!this.searchTerm) {
-        this.error = 'Search term is empty';
         this.searchResult = [];
         this.tableFields = [];
         this.hasMadeASearch = false;
         return;
       }
+
+      this.loading = true;
 
       this.$router.push({
         query: {
@@ -232,6 +241,7 @@ export default {
       WiseService.search(this.chosenSource, this.chosenType, this.searchTerm)
         .then((data) => {
           this.error = '';
+          this.loading = false;
           this.searchResult = data;
           if (data.length >= 1) {
             this.tableFields = Object.keys(data[0]).map(key => {
@@ -240,6 +250,7 @@ export default {
           }
         })
         .catch((error) => {
+          this.loading = false;
           this.error = error.text ||
             `Error getting search result for wise.`;
         });

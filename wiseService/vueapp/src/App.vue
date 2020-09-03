@@ -112,12 +112,15 @@ a.no-href:hover { color: #0056b3 !important; }
 
 .info-area div {
   padding: 2rem;
+  min-width: 33%;
+  text-align: center;
   border-radius: .25rem;
-  background-color: #FFFFFF;
+  background-color: #EEEEEE;
 }
 
 .info-area span.fa {
   display: flex;
+  margin-bottom: 1rem;
   justify-content: center;
 }
 
