@@ -59,7 +59,7 @@
 # 62 - hunt error timestamp and node
 # 63 - Upgrade for ES 7.x: sequence_v3, fields_v3, queries_v3, files_v6, users_v7, dstats_v4, stats_v4, hunts_v2
 # 64 - lock shortcuts
-# 65 - hunt unrunnable
+# 65 - hunt unrunnable and failedSessionIds
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -2475,6 +2475,9 @@ sub huntsUpdate
       },
       "unrunnable": {
         "type": "boolean"
+      },
+      "failedSessionIds": {
+        "type": "keyword"
       }
     }
   }
