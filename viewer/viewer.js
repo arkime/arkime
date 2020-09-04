@@ -7615,7 +7615,10 @@ function buildHuntOptions (huntId, hunt) {
     try {
       options.regex = new RE2(hunt.search);
     } catch (e) {
-      pauseHuntJobWithError(huntId, hunt, { value: `Hunt error with regex: ${e}`, unrunnable: true });
+      pauseHuntJobWithError(huntId, hunt, {
+        value: `Fatal Error: Regex parse error. Fix this issue with your regex and create a new hunt: ${e}`,
+        unrunnable: true
+      });
     }
   }
 
@@ -7772,7 +7775,8 @@ function processHuntJob (huntId, hunt) {
       buildSessionQuery(fakeReq, (err, query, indices) => {
         if (err) {
           pauseHuntJobWithError(huntId, hunt, {
-            value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.'
+            value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.',
+            unrunnable: true
           });
           return;
         }
