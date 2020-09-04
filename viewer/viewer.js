@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 62;
+const MIN_DB_VERSION = 65; // TODO ECR - need to up the version?
 // ----------------------------------------------------------------------------
 // Modules
 // ----------------------------------------------------------------------------
@@ -7533,6 +7533,11 @@ function pauseHuntJobWithError (huntId, hunt, error, node) {
 
   hunt.status = 'paused';
 
+  if (error.unrunnable) {
+    delete error.unrunnable;
+    hunt.unrunnable = true;
+  }
+
   if (!hunt.errors) {
     hunt.errors = [ error ];
   } else {
@@ -7610,7 +7615,7 @@ function buildHuntOptions (huntId, hunt) {
     try {
       options.regex = new RE2(hunt.search);
     } catch (e) {
-      pauseHuntJobWithError(huntId, hunt, { value: `Hunt error with regex: ${e}` });
+      pauseHuntJobWithError(huntId, hunt, { value: `Hunt error with regex: ${e}`, unrunnable: true });
     }
   }
 
