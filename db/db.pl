@@ -187,6 +187,7 @@ sub showHelp($)
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
     print "    --history <num>            - Number of weeks of history to keep, default 13\n";
+    print "  reindex <src> [<dst>]        - Reindex ES indices\n";
     print "\n";
     print "Backup and Restore Commands:\n";
     print "  backup <basename> <opts>     - Backup everything but sessions; filenames created start with <basename>\n";
@@ -3079,8 +3080,8 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|recreate-users|recreate-stats|recreate-dstats)$/);
-showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|recreate-users|recreate-stats|recreate-dstats|reindex)$/);
+showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut|ilm)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
@@ -3882,6 +3883,30 @@ qq/ {
     esPut("/_ilm/policy/${PREFIX}molochsessions?master_timeout=${ESTIMEOUT}s", $policy);
     esPut("/${PREFIX}sessions2-*/_settings?master_timeout=${ESTIMEOUT}s", qq/{"settings": {"index.lifecycle.name": "${PREFIX}molochsessions"}}/, 1);
     print "Policy:\n$policy\n" if ($verbose > 1);
+    exit 0;
+} elsif ($ARGV[1] =~ /^reindex$/) {
+    my ($src, $dst);
+    if (scalar @ARGV == 3) {
+        $src = $ARGV[2];
+        if ($src =~ /\*/) {
+            showHelp("Can not have an * in src index name without supplying a dst index name");
+        }
+
+        if ($src =~ /-shrink/) {
+            $dst = $src =~ s/-shrink//g
+        } elsif ($src =~ /-reindex/) {
+            $dst = $src =~ s/-reindex//g
+        } else {
+            $dst = "$src-reindex";
+        }
+    } elsif (scalar @ARGV == 4) {
+        $src = $ARGV[2];
+        $dst = $ARGV[3];
+    } else {
+        showHelp("Invalid arguments");
+    }
+    my $result = esPost("/_reindex?wait_for_completion=false&slices=auto", to_json({"source" => {"index" => $src}, "dest" => {"index" => $dst}, "conflicts" => "proceed"}));
+    print Dumper($result);
     exit 0;
 }
 

@@ -114,7 +114,7 @@ exports.initialize = function (info, cb) {
     internals.prefix = 'MULTIPREFIX_';
   }
 
-  // Update aliases cache so -shrink works
+  // Update aliases cache so -shrink/-reindex works
   if (internals.nodeName !== undefined) {
     exports.getAliasesCache('sessions2-*', () => {});
     setInterval(() => { exports.getAliasesCache('sessions2-*', () => {}); }, 2 * 60 * 1000);
@@ -147,6 +147,11 @@ function fixIndex (index) {
   // If the index doesn't exist but the shrink version does exist, add -shrink
   if (internals.aliasesCache && !internals.aliasesCache[index] && internals.aliasesCache[index + '-shrink']) {
     index += '-shrink';
+  }
+
+  // If the index doesn't exist but the reindex version does exist, add -reindex
+  if (internals.aliasesCache && !internals.aliasesCache[index] && internals.aliasesCache[index + '-reindex']) {
+    index += '-reindex';
   }
 
   return index;
@@ -1245,6 +1250,9 @@ exports.getIndices = function (startTime, stopTime, bounding, rotateIndex, cb) {
       let index = iname;
       if (index.endsWith('-shrink')) {
         index = index.substring(0, index.length - 7);
+      }
+      if (index.endsWith('-reindex')) {
+        index = index.substring(0, index.length - 8);
       }
       index = index.substring(internals.prefix.length + 10);
       let year; let month; let day = 0; let hour = 0; let length;

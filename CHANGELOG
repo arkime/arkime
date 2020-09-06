@@ -19,6 +19,15 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 2.4.1 2020/09/xx
+  - viewer - fixed export pcap from actions menu not working
+  - viewer - capture stats/graph now uses regex instead of wildcard
+  - viewer - support -reindex indices
+  - viewer - log more info when can't open a file
+  - viewer - lastpass boxes removed
+  - wise - UI improvements
+  - parliament - show bits instead of bytes
+  - db - new reindex command
+
 
 2.4.0 2020/08/25
   - NOTE - RHEL/Centos 6 is no longer supported, Node 12 required
