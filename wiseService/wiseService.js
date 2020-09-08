@@ -92,7 +92,8 @@ var internals = {
   views: {},
   rightClicks: {},
   workers: 1,
-  regressionTests: false
+  regressionTests: false,
+  configweb: false
 };
 
 internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 'sha256'];
@@ -111,6 +112,8 @@ function processArgs (argv) {
       internals.debug++;
     } else if (argv[i] === '--regressionTests') {
       internals.regressionTests = true;
+    } else if (argv[i] === '--configweb') {
+      internals.configweb = true;
     } else if (argv[i] === '--workers') {
       i++;
       internals.workers = +argv[i];
@@ -119,6 +122,7 @@ function processArgs (argv) {
       console.log('');
       console.log('Options:');
       console.log('  --debug               Increase debug level, multiple are supported');
+      console.log('  --configweb           Allow the config to be edited from web page');
       console.log('  --workers <b>         Number of worker processes to create');
 
       process.exit(0);
@@ -309,7 +313,15 @@ function doAuth (req, res, next) {
     }
   });
 }
+// ----------------------------------------------------------------------------
+function isConfigWeb (req, res, next) {
+  if (!internals.configweb) {
+    return res.send({ success: false, text: 'Must start wiseService with --configweb option' });
+  }
+  return next();
+}
 
+// ----------------------------------------------------------------------------
 function checkAdmin (req, res, next) {
   if (req.user.createEnabled) {
     return next();
@@ -936,22 +948,51 @@ app.post('/get', function (req, res) {
   });
 });
 // ----------------------------------------------------------------------------
-app.get('/:source/:typeName/:value', [noCacheJson], function (req, res) {
-  var source = internals.sources[req.params.source];
+app.get('/sources', [noCacheJson], (req, res) => {
+  return res.send(Object.keys(internals.sources).sort());
+});
+// ----------------------------------------------------------------------------
+app.get('/source/:source/get', [doAuth, noCacheJson], (req, res) => {
+  const source = internals.sources[req.params.source];
   if (!source) {
-    return res.end('Unknown source ' + req.params.source);
+    return res.send({ success: false, text: `Source ${req.params.source} not found` });
   }
 
-  var query = { typeName: req.params.typeName,
-               value: req.params.value,
-               sources: [source] };
+  if (!source.getRaw) {
+    return res.send({ success: false, text: 'Source does not support viewing' });
+  }
 
-  processQuery(req, query, (err, result) => {
-    if (err || !result) {
-      return res.end('Not found');
+  source.getRaw((err, raw) => {
+    if (err) {
+      return res.send({ success: false, text: err });
     }
-    res.send(wiseSource.result2Str(result));
+    return res.send({ success: true, raw: raw });
   });
+});
+// ----------------------------------------------------------------------------
+app.put('/source/:source/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser], (req, res) => {
+  const source = internals.sources[req.params.source];
+  if (!source) {
+    return res.send({ success: false, text: `Source ${req.params.source} not found` });
+  }
+
+  if (!source.saveRaw) {
+    return res.send({ success: false, text: 'Source does not support editing' });
+  }
+
+  const raw = req.body.raw;
+  console.log(raw);
+
+  source.saveRaw(raw, (err) => {
+    if (err) {
+      return res.send({ success: false, text: err });
+    }
+    return res.send({ success: true, text: 'Saved' });
+  });
+});
+// ----------------------------------------------------------------------------
+app.get('/configDefs', [noCacheJson], function (req, res) {
+  return res.send(internals.configDefs);
 });
 // ----------------------------------------------------------------------------
 app.get('/config/get', [doAuth, noCacheJson], (req, res) => {
@@ -970,10 +1011,11 @@ app.get('/config/get', [doAuth, noCacheJson], (req, res) => {
   return res.send(loadedConfig);
 });
 // ----------------------------------------------------------------------------
-app.put('/config/save', [doAuth, noCacheJson, checkAdmin, jsonParser], (req, res) => {
+app.put('/config/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser], (req, res) => {
   if (req.body.config === undefined) {
     return res.send({ success: false, text: 'Missing config' });
   }
+
   let config = req.body.config;
   console.log(config);
 
@@ -1009,10 +1051,6 @@ app.put('/config/save', [doAuth, noCacheJson, checkAdmin, jsonParser], (req, res
   });
 });
 // ----------------------------------------------------------------------------
-app.get('/sources', [noCacheJson], (req, res) => {
-  return res.send(Object.keys(internals.sources).sort());
-});
-// ----------------------------------------------------------------------------
 app.get('/types/:source?', [noCacheJson], (req, res) => {
   if (req.params.source) {
     if (internals.sources[req.params.source]) {
@@ -1023,6 +1061,24 @@ app.get('/types/:source?', [noCacheJson], (req, res) => {
   } else {
     return res.send(Object.keys(internals.types).sort());
   }
+});
+// ----------------------------------------------------------------------------
+app.get('/:source/:typeName/:value', [noCacheJson], function (req, res) {
+  var source = internals.sources[req.params.source];
+  if (!source) {
+    return res.end('Unknown source ' + req.params.source);
+  }
+
+  var query = { typeName: req.params.typeName,
+               value: req.params.value,
+               sources: [source] };
+
+  processQuery(req, query, (err, result) => {
+    if (err || !result) {
+      return res.end('Not found');
+    }
+    res.send(wiseSource.result2Str(result));
+  });
 });
 // ----------------------------------------------------------------------------
 app.get('/dump/:source', [noCacheJson], function (req, res) {
@@ -1036,10 +1092,6 @@ app.get('/dump/:source', [noCacheJson], function (req, res) {
   }
 
   source.dump(res);
-});
-// ----------------------------------------------------------------------------
-app.get('/configDefs', [noCacheJson], function (req, res) {
-  return res.send(internals.configDefs);
 });
 // ----------------------------------------------------------------------------
 // ALW - Need to rewrite to use performQuery
@@ -1231,7 +1283,7 @@ b=="?"||b=="_"?".":b=="#"?"\\d":d&&b.charAt(0)=="{"?b+g:b=="<"?"\\b(?=\\w)":b=="
 // Config Schemes - For each scheme supported implement a load/save function
 // ----------------------------------------------------------------------------
 internals.configSchemes['redis'] = {
-  load: function () {
+  load: function (cb) {
     let redisParts = internals.configFile.split(/(\d)/);
     if (redisParts.length !== 3 || redisParts.some(p => p === '')) {
       throw new Error('Invalid redis url');
@@ -1241,16 +1293,12 @@ internals.configSchemes['redis'] = {
     internals.configRedisKey = redisParts[2].slice(1);
     internals.configRedis = new Redis(host + '/' + dbNum);
 
-    return new Promise(function (resolve, reject) {
-      internals.configRedis.get(internals.configRedisKey, function (err, result) {
-        if (err) {
-          console.error('err', err);
-          reject(err);
-        } else {
-          internals.config = JSON.parse(result);
-          resolve(result);
-        }
-      });
+    internals.configRedis.get(internals.configRedisKey, function (err, result) {
+      if (err) {
+        return cb(err);
+      }
+      internals.config = JSON.parse(result);
+      return cb();
     });
   },
   save: function (config, cb) {
@@ -1265,7 +1313,7 @@ internals.configSchemes['rediss'] = internals.configSchemes['redis'];
 
 // ----------------------------------------------------------------------------
 internals.configSchemes['redis-cluster'] = {
-  load: function () {
+  load: function (cb) {
     let redisParts = internals.configFile.split(/(\d)/);
     if (redisParts.length !== 3 || redisParts.some(p => p === '')) {
       throw new Error('Invalid redis url');
@@ -1275,16 +1323,12 @@ internals.configSchemes['redis-cluster'] = {
     internals.configRedisKey = redisParts[2].slice(1);
     internals.configRedis = new Redis.Cluster(host + '/' + dbNum); // ALW - Fix
 
-    return new Promise(function (resolve, reject) {
-      internals.configRedis.get(internals.configRedisKey, function (err, result) {
-        if (err) {
-          console.error('err', err);
-          reject(err);
-        } else {
-          internals.config = JSON.parse(result);
-          resolve(result);
-        }
-      });
+    internals.configRedis.get(internals.configRedisKey, function (err, result) {
+      if (err) {
+        return cb(err);
+      }
+      internals.config = JSON.parse(result);
+      return cb();
     });
   },
   save: function (config, cb) {
@@ -1296,80 +1340,81 @@ internals.configSchemes['redis-cluster'] = {
 
 // ----------------------------------------------------------------------------
 internals.configSchemes['elasticsearch'] = {
-  load: function () {
+  load: function (cb) {
     let url = internals.configFile.replace('elasticsearch', 'http');
     if (!url.includes('/_doc/')) {
       throw new Error(`Missing _doc in url, should be format elasticsearch://user:pass@host:port/INDEX/_doc/DOC`);
     }
-    return new Promise(async function (resolve, reject) {
-      try {
-        const response = await axios.get(url);
-        internals.config = response.data._source;
-        resolve(null);
-      } catch (e) {
-        if (e.response && e.response.status === 404) {
-          internals.config = {};
-          resolve(null);
-        } else {
-          reject(e);
-        }
+
+    axios.get(url)
+    .then((response) => {
+      internals.config = response.data._source;
+      cb(null);
+    })
+    .catch((error) => {
+      if (error.response && error.response.status === 404) {
+        internals.config = {};
+        return cb();
       }
+      return cb(error);
     });
   },
   save: function (config, cb) {
     let url = internals.configFile.replace('elasticsearch', 'http');
+
     axios.post(url, config)
-    .then(function (response) {
+    .then((response) => {
       cb(null);
     })
-    .catch(function (error) {
+    .catch((error) => {
       cb(error);
     });
   }
 };
 // ----------------------------------------------------------------------------
 internals.configSchemes['elasticsearchs'] = {
-  load: function () {
+  load: function (cb) {
     let url = internals.configFile.replace('elasticsearchs', 'https');
     if (!url.includes('/_doc/')) {
       throw new Error(`Missing _doc in url, should be format elasticsearch://user:pass@host:port/INDEX/_doc/DOC`);
     }
-    return new Promise(async function (resolve, reject) {
-      try {
-        const response = await axios.get(url);
-        internals.config = response.data._source;
-        resolve(null);
-      } catch (e) {
-        if (e.response && e.response.status === 404) {
-          internals.config = {};
-          resolve(null);
-        } else {
-          reject(e);
-        }
+
+    axios.get(url)
+    .then((response) => {
+      internals.config = response.data._source;
+      cb(null);
+    })
+    .catch((error) => {
+      if (error.response && error.response.status === 404) {
+        internals.config = {};
+        return cb();
       }
+      return cb(error);
     });
   },
   save: function (config, cb) {
-    let url = internals.configFile.replace('elasticsearchs', 'http');
+    let url = internals.configFile.replace('elasticsearchs', 'https');
+
     axios.post(url, config)
-    .then(function (response) {
-      cb(null);
+    .then((response) => {
+      cb();
     })
-    .catch(function (error) {
+    .catch((error) => {
       cb(error);
     });
   }
+
 };
 // ----------------------------------------------------------------------------
 internals.configSchemes['json'] = {
-  load: function () {
+  load: function (cb) {
     internals.config = JSON.parse(fs.readFileSync(internals.configFile, 'utf8'));
-    return new Promise(function (resolve, reject) { resolve(null); });
+    return cb();
   },
   save: function (config, cb) {
     try {
       fs.writeFileSync(internals.configFile, JSON.stringify(config, null, 1));
-      cb(null);
+      cb();
     } catch (e) {
       cb(e.message);
     }
@@ -1378,9 +1423,9 @@ internals.configSchemes['json'] = {
 
 // ----------------------------------------------------------------------------
 internals.configSchemes['ini'] = {
-  load: function () {
+  load: function (cb) {
     internals.config = ini.parseSync(internals.configFile);
-    return new Promise(function (resolve, reject) { resolve(null); });
+    return cb();
   },
   save: function (config, cb) {
     function encode (str) {
@@ -1435,33 +1480,33 @@ function main () {
     .listen(getConfig('wiseService', 'port', 8081));
 }
 
-async function buildConfigAndStart () {
-  try {
-    let parts = internals.configFile.split('://');
-    if (parts.length === 1) {
-      if (internals.configFile.endsWith('json')) {
-        internals.configScheme = internals.configSchemes.json;
-      } else {
-        internals.configScheme = internals.configSchemes.ini;
-      }
+function buildConfigAndStart () {
+  let parts = internals.configFile.split('://');
+  if (parts.length === 1) {
+    if (internals.configFile.endsWith('json')) {
+      internals.configScheme = internals.configSchemes.json;
     } else {
-      internals.configScheme = internals.configSchemes[parts[0]];
+      internals.configScheme = internals.configSchemes.ini;
+    }
+  } else {
+    internals.configScheme = internals.configSchemes[parts[0]];
+  }
+
+  if (internals.configScheme === undefined) {
+    throw new Error('Unknown scheme');
+  }
+
+  internals.configScheme.load((err) => {
+    if (err) {
+      console.log(`Error reading ${internals.configFile}:\n\n`, err);
+      process.exit(1);
     }
 
-    if (internals.configScheme === undefined) {
-      throw new Error('Unknown scheme');
-    }
-
-    await internals.configScheme.load();
     setupAuth();
-
     if (internals.workers <= 1 || cluster.isWorker) {
       main();
     }
-  } catch (e) {
-    console.log(`Error reading ${internals.configFile}:\n\n`, e.stack);
-    process.exit(1);
-  }
+  });
 }
 
 buildConfigAndStart();
