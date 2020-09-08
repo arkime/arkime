@@ -2,25 +2,27 @@
 
 # Variables
 DEST_DIR="${MOLOCH_DIR:-BUILD_MOLOCH_INSTALL_DIR}/etc"
-TIMEOUT=${WGET_TIMEOUT:-30}
+TIMEOUT="${WGET_TIMEOUT:-30}"
 
-# Work on temp dir to not affect current working files
-cd /tmp
+# Use an appropriately permissions place to download files
+mkdir -p /opt
 
-wget -N -nv --timeout=${TIMEOUT} --no-check-certificate https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
-if (( $? == 0 ))
-then
-  cp ipv4-address-space.csv "${DEST_DIR}"
+
+# Remove /opt/ipv4-address-space.csv if it exists, and then download the latest
+if [ -e /opt/ipv4-address-space.csv ]; then
+    rm -rf /opt/ipv4-address-space.csv
 fi
 
+wget -nv --timeout="${TIMEOUT}" -O /opt/ipv4-address-space.csv --no-check-certificate "https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv" \
+    && mv /opt/ipv4-address-space.csv "${DEST_DIR}/ipv4-address-space.csv"
 
-wget -nv --timeout=${TIMEOUT} -O oui.txt https://raw.githubusercontent.com/wireshark/wireshark/master/manuf
-if (( $? == 0 ))
-then
-  cp oui.txt "${DEST_DIR}/oui.txt"
+# Remove /opt/oui.txt if it exists, and then download the latest
+if [ -e /opt/oui.txt ]; then
+    rm -rf /opt/oui.txt
 fi
 
-
+wget -nv --timeout="${TIMEOUT}" -O /opt/oui.txt --no-check-certificate "https://raw.githubusercontent.com/wireshark/wireshark/master/manuf" \
+    && mv /opt/oui.txt "${DEST_DIR}/oui.txt"
 
 # Call the maxind geoipupdate program if available. See
 # https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases/
