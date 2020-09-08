@@ -3893,20 +3893,50 @@ qq/ {
         }
 
         if ($src =~ /-shrink/) {
-            $dst = $src =~ s/-shrink//g
+            $dst = $src =~ s/-shrink//rg
         } elsif ($src =~ /-reindex/) {
-            $dst = $src =~ s/-reindex//g
+            $dst = $src =~ s/-reindex//rg
         } else {
             $dst = "$src-reindex";
         }
+        print "src: $src dst: $dst\n";
     } elsif (scalar @ARGV == 4) {
         $src = $ARGV[2];
         $dst = $ARGV[3];
     } else {
         showHelp("Invalid arguments");
     }
+
     my $result = esPost("/_reindex?wait_for_completion=false&slices=auto", to_json({"source" => {"index" => $src}, "dest" => {"index" => $dst}, "conflicts" => "proceed"}));
-    print Dumper($result);
+    die Dumper($result) if (! exists $result->{task});
+    my $task = $result->{task};
+    print "task: $task\n";
+    sleep 10;
+
+    my $srcCount = esGet("/$src/_count")->{count};
+    my $dstCount = esGet("/$dst/_count")->{count};
+
+    my $lastp = -1;
+    while (1) {
+        $result = esGet("/_tasks/$task");
+        $dstCount = esGet("/$dst/_count")->{count};
+        die Dumper($result->{error}) if (exists $result->{error});
+        my $p = int($dstCount * 100 / $srcCount);
+        if ($lastp != $p) {
+            print (scalar localtime() . " $p% ($dstCount/$srcCount)\n");
+            $lastp = $p;
+        }
+        last if ($result->{completed});
+        sleep 30;
+    }
+    esGet("/${dst}/_flush", 1);
+    esGet("/${dst}/_refresh", 1);
+    $srcCount = esGet("/$src/_count")->{count};
+    $dstCount = esGet("/$dst/_count")->{count};
+    die "Mismatch counts $srcCount != $dstCount" if ($srcCount != $dstCount);
+    die "Not deleting src since would delete dst too" if ("${dst}*" eq "$src");
+    esDelete("/$src", 1);
+    print "Deleted $src\n";
     exit 0;
 }
 
