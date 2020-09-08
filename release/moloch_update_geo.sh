@@ -4,7 +4,7 @@
 DEST_DIR="${MOLOCH_DIR:-BUILD_MOLOCH_INSTALL_DIR}/etc"
 TIMEOUT="${WGET_TIMEOUT:-30}"
 
-cd "{$DEST_DIR}"
+cd "${DEST_DIR}"
 
 # Remove ./ipv4-address-space.csv.tmp if it exists from a failed download, and then download the latest
 if [ -e ./ipv4-address-space.csv.tmp ]; then
