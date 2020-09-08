@@ -976,14 +976,14 @@ app.put('/source/:source/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, j
     return res.send({ success: false, text: `Source ${req.params.source} not found` });
   }
 
-  if (!source.saveRaw) {
+  if (!source.putRaw) {
     return res.send({ success: false, text: 'Source does not support editing' });
   }
 
   const raw = req.body.raw;
   console.log(raw);
 
-  source.saveRaw(raw, (err) => {
+  source.putRaw(raw, (err) => {
     if (err) {
       return res.send({ success: false, text: err });
     }

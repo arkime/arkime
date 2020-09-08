@@ -84,6 +84,12 @@ FileSource.prototype.getRaw = function (cb) {
   });
 };
 // ----------------------------------------------------------------------------
+FileSource.prototype.putRaw = function (body, cb) {
+  fs.writeFile(this.file, body, (err) => {
+    return cb(err);
+  });
+};
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   var sections = api.getConfigSections().filter((e) => { return e.match(/^file:/); });
   api.addSourceConfigDef('file', {
@@ -91,7 +97,7 @@ exports.initSource = function (api) {
     name: 'file',
     description: 'The file source allows you to read in multiple files and do stuff',
     cacheable: false,
-    editing: true,
+    editable: true,
     fields: [
       { name: 'file', required: true, help: 'The path of the file to load' },
       { name: 'type', required: true, help: 'The wise query type this source supports' },

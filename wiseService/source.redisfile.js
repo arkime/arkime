@@ -72,12 +72,21 @@ RedisFileSource.prototype.simpleSourceLoad = function (setFunc, cb) {
   });
 };
 // ----------------------------------------------------------------------------
+RedisFileSource.prototype.getRaw = function (cb) {
+  this.client.get(this.key, cb);
+};
+// ----------------------------------------------------------------------------
+RedisFileSource.prototype.putRaw = function (file, cb) {
+  this.client.set(this.key, file, cb);
+};
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   api.addSourceConfigDef('redisfile', {
     singleton: false,
     name: 'redisfile',
     description: 'Like the file source, but fetch the file from redis instead of the file system',
     cacheable: false,
+    editable: true,
     fields: [
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: true, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
