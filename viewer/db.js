@@ -1339,8 +1339,7 @@ exports.getILMPolicy = function () {
   return new Promise((resolve, reject) => {
     internals.client7.ilm.getLifecycle({ policy: `${internals.prefix}molochsessions,${internals.prefix}molochhistory` }, (err, data) => {
       if (err) {
-        console.log('ERROR', err, 'data', data);
-        reject(err);
+        resolve({});
       } else {
         resolve(data.body);
       }
