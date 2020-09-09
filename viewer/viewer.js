@@ -3895,7 +3895,7 @@ app.post('/esadmin/set', [noCacheJson, recordResponseTime, checkEsAdminUser, che
       const hilm = ilm[`${internals.prefix}molochhistory`];
 
       if (silm === undefined || hilm === undefined) {
-        return res.molochError(500, 'ILM isn't configured');
+        return res.molochError(500, 'ILM isn\'t configured');
       }
 
       switch (req.body.key) {
