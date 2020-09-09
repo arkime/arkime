@@ -7,16 +7,17 @@ TIMEOUT="${WGET_TIMEOUT:-30}"
 # Work on temp dir to not affect current working files
 cd /tmp
 
-mkdir -p "${DEST_DIR}"
-
-wget -N -nv --timeout="${TIMEOUT}" -O "${DEST_DIR}/ipv4-address-space.csv" --no-check-certificate https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
-if ! [ $? = 0 ]; then
-  echo "Failed to download ipv4-address-space.csv"
+wget -N -nv --timeout="${TIMEOUT}" --no-check-certificate https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
+if (( $? == 0 ))
+then
+  cp ipv4-address-space.csv "${DEST_DIR}"
 fi
 
-wget -nv --timeout="${TIMEOUT}" -O "${DEST_DIR}/oui.txt" https://raw.githubusercontent.com/wireshark/wireshark/master/manuf
-if ! [ $? = 0 ]; then
-  echo "Failed to download oui.txt"
+
+wget -nv --timeout="${TIMEOUT}" -O oui.txt https://raw.githubusercontent.com/wireshark/wireshark/master/manuf
+if (( $? == 0 ))
+then
+  cp oui.txt "${DEST_DIR}/oui.txt"
 fi
 
 
