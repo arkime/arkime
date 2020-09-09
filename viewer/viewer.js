@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 62;
+const MIN_DB_VERSION = 65;
 // ----------------------------------------------------------------------------
 // Modules
 // ----------------------------------------------------------------------------
@@ -7533,6 +7533,11 @@ function pauseHuntJobWithError (huntId, hunt, error, node) {
 
   hunt.status = 'paused';
 
+  if (error.unrunnable) {
+    delete error.unrunnable;
+    hunt.unrunnable = true;
+  }
+
   if (!hunt.errors) {
     hunt.errors = [ error ];
   } else {
@@ -7610,7 +7615,10 @@ function buildHuntOptions (huntId, hunt) {
     try {
       options.regex = new RE2(hunt.search);
     } catch (e) {
-      pauseHuntJobWithError(huntId, hunt, { value: `Hunt error with regex: ${e}` });
+      pauseHuntJobWithError(huntId, hunt, {
+        value: `Fatal Error: Regex parse error. Fix this issue with your regex and create a new hunt: ${e}`,
+        unrunnable: true
+      });
     }
   }
 
@@ -7767,7 +7775,8 @@ function processHuntJob (huntId, hunt) {
       buildSessionQuery(fakeReq, (err, query, indices) => {
         if (err) {
           pauseHuntJobWithError(huntId, hunt, {
-            value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.'
+            value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.',
+            unrunnable: true
           });
           return;
         }

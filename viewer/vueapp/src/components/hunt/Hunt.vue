@@ -996,9 +996,15 @@
                 </b-tooltip>
                 <span v-if="job.errors && job.errors.length"
                   class="badge badge-danger cursor-help">
-                  <span class="fa fa-exclamation-triangle"
+                  <span v-if="!job.unrunnable"
+                    class="fa fa-exclamation-triangle"
                     v-b-tooltip.hover
                     title="Errors were encountered while running this hunt job. Open the job to view the error details.">
+                  </span>
+                  <span v-else
+                    class="fa fa-ban"
+                    v-b-tooltip.hover
+                    title="This hunt has encountered a fatal error. Open the job to view the error details.">
                   </span>
                 </span>
               </td>
@@ -1058,7 +1064,8 @@
                     <strong>Note:</strong> ES takes a while to update sessions, so your results
                     might take a minute to show up.
                   </b-tooltip>
-                  <button type="button"
+                  <button v-if="!job.unrunnable"
+                    type="button"
                     @click="rerunJob(job)"
                     v-b-tooltip.hover
                     title="Rerun this hunt job using the current time frame and search criteria."
@@ -1066,7 +1073,8 @@
                     <span class="fa fa-refresh fa-fw">
                     </span>
                   </button>
-                  <button type="button"
+                  <button v-if="!job.unrunnable"
+                    type="button"
                     @click="repeatJob(job)"
                     v-b-tooltip.hover
                     title="Repeat this hunt job using its time frame and search criteria."
@@ -1161,6 +1169,43 @@
                     </div>
                   </div>
                 </template>
+                <div v-if="job.unrunnable"
+                  class="row mt-2">
+                  <div class="col-12">
+                    <div class="alert alert-danger">
+                      <h5 class="alert-heading">
+                        <span class="fa fa-ban">
+                        </span>&nbsp;
+                        Unrunnable Hunt
+                      </h5>
+                      <p class="mb-0">
+                        This hunt has encountered a fatal error.
+                        It cannot be rerun or replayed. References the error(s) above to diagnose the issue.
+                      </p>
+                      <p class="mb-0">
+                        Try again with a new hunt after fixing the error(s) listed above.
+                      </p>
+                      <button
+                        @click="removeJob(job, 'historyResults')"
+                        :disabled="job.loading"
+                        type="button"
+                        v-b-tooltip.hover.right
+                        title="Remove this job from history"
+                        class="mt-2 btn btn-sm btn-danger">
+                        <span v-if="!job.loading">
+                          <span class="fa fa-trash-o fa-fw">
+                          </span>
+                          Delete this hunt
+                        </span>
+                        <span v-else>
+                          <span class="fa fa-spinner fa-spin fa-fw">
+                          </span>
+                          Deleteing this hunt
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </td>
             </tr>
           </template> <!-- /packet search jobs -->
