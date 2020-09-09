@@ -21,6 +21,7 @@
 var ESC = require('elasticsearch');
 var os = require('os');
 var fs = require('fs');
+const { Client } = require('@elastic/elasticsearch');
 
 var internals = { fileId2File: {},
   fileName2File: {},
@@ -90,6 +91,15 @@ exports.initialize = function (info, cb) {
       console.log('ERROR - ES', data.version.number, 'not supported, ES 6.8.x or later required.');
       process.exit();
       throw new Error('Exiting');
+    }
+
+    if (data.version.number.match(/^(7)/)) {
+      internals.client7 = new Client({
+        node: internals.info.host,
+        maxRetries: 2,
+        requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
+        ssl: esSSLOptions
+      });
     }
 
     if (info.usersHost) {
@@ -1316,5 +1326,44 @@ exports.getMinValue = function (index, field, cb) {
   return internals.elasticSearchClient.search(params, (err, data) => {
     if (err) { return cb(err, 0); }
     return cb(null, data.aggregations.min.value);
+  });
+};
+
+exports.getILMPolicy = function () {
+  if (!internals.client7) {
+    return new Promise((resolve, reject) => {
+      console.log('no client 7');
+      resolve({});
+    });
+  }
+  return new Promise((resolve, reject) => {
+    internals.client7.ilm.getLifecycle({ policy: `${internals.prefix}molochsessions,${internals.prefix}molochhistory` }, (err, data) => {
+      if (err) {
+        console.log('ERROR', err, 'data', data);
+        reject(err);
+      } else {
+        resolve(data.body);
+      }
+    });
+  });
+};
+
+exports.setILMPolicy = function (name, policy) {
+  console.log('name', name, 'policy', policy);
+  if (!internals.client7) {
+    return new Promise((resolve, reject) => {
+      console.log('no client 7');
+      resolve({});
+    });
+  }
+  return new Promise((resolve, reject) => {
+    internals.client7.ilm.putLifecycle({ policy: name, body: { policy: policy.policy } }, (err, data) => {
+      if (err) {
+        console.log('ERROR', err, 'data', data);
+        reject(err);
+      } else {
+        resolve(data.body);
+      }
+    });
   });
 };
