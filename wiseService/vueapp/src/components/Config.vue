@@ -10,7 +10,7 @@
       :disabled="saveEnabled"
       @click="saveConfig()"
     >
-      Save Config & Restart
+      Save & Restart
     </b-button>
 
     <div class="d-flex flex-row">
@@ -60,36 +60,60 @@
       <!-- Selected Source Input Fields -->
       <div class="d-flex flex-column px-5 pt-2 w-100">
         <h2 class="text-center">{{selectedSourceKey}}</h2>
-        <div v-if="configDefs[selectedSourceSplit] && configDefs[selectedSourceSplit].description" class="subtext text-center mt-1 mb-4 mx-5">
-          {{ configDefs[selectedSourceSplit].description }}
-        </div>
-
-        <div
-          class="input-group mb-3"
-          v-for="field in activeFields"
-          :key="field.name + '-field'"
-        >
-          <div class="input-group-prepend">
-            <span class="input-group-text">{{ field.name }}</span>
+        <div v-if="configDefs[selectedSourceSplit]" class="subtext text-center mt-1 mb-4 mx-5">
+          <div v-if="configDefs[selectedSourceSplit].description">
+            {{ configDefs[selectedSourceSplit].description }}
           </div>
 
-          <b-form-input
-            v-if="currConfig && currConfig[selectedSourceKey]"
-            :state="inputState(currConfig[selectedSourceKey][field.name], field.required, field.regex)"
-            class="input-box"
-            :value="currConfig[selectedSourceKey][field.name]"
-            @input="(val) => inputChanged(val, field.name, field.required)"
-            :placeholder="field.help"
-            :required="field.required"
-            v-b-popover.focus.top="field.help"
-          >
-          </b-form-input>
+          <div v-if="configDefs[selectedSourceSplit].editable">
+            <b-form-radio-group
+              v-model="configViewSelected"
+              :options="configViews"
+              class="mt-1"
+              buttons
+              button-variant="outline-secondary"
+              size="md"
+              name="radio-btn-outline"
+            >
+            </b-form-radio-group>
+          </div>
         </div>
 
-        <b-button v-if="configDefs && configDefs[selectedSourceSplit] && !configDefs[selectedSourceSplit].service" variant="danger" class="mx-auto mt-4" style="display:block" @click="deleteSource()">
-          <b-icon icon="trash" scale="1"></b-icon>
-          Delete Source
-        </b-button>
+        <div v-if="configViewSelected === 'edit'">
+          <b-form-textarea
+             v-model="currFiles[selectedSourceKey]"
+             rows="18"
+           >
+           </b-form-textarea>
+        </div>
+        <div v-else>
+          <div
+            class="input-group mb-3"
+            v-for="field in activeFields"
+            :key="field.name + '-field'"
+          >
+            <div class="input-group-prepend">
+              <span class="input-group-text">{{ field.name }}</span>
+            </div>
+
+            <b-form-input
+              v-if="currConfig && currConfig[selectedSourceKey]"
+              :state="inputState(currConfig[selectedSourceKey][field.name], field.required, field.regex)"
+              class="input-box"
+              :value="currConfig[selectedSourceKey][field.name]"
+              @input="(val) => inputChanged(val, field.name, field.required)"
+              :placeholder="field.help"
+              :required="field.required"
+              v-b-popover.focus.top="field.help"
+            >
+            </b-form-input>
+          </div>
+
+          <b-button v-if="configDefs && configDefs[selectedSourceSplit] && !configDefs[selectedSourceSplit].service" variant="danger" class="mx-auto mt-4" style="display:block" @click="deleteSource()">
+            <b-icon icon="trash" scale="1"></b-icon>
+            Delete Source
+          </b-button>
+        </div>
       </div><!-- /Selected Source Inputs Fields-->
     </div>
 
@@ -170,6 +194,7 @@ export default {
   mounted: function () {
     this.loadConfigDefs();
     this.loadCurrConfig();
+    this.loadSourceFiles();
   },
   data: function () {
     return {
@@ -179,9 +204,16 @@ export default {
       configDefs: {},
       currConfig: {},
       currConfigBefore: {}, // Used to determine if changes have been made
+      currFiles: {},
+      currFilesBefore: {}, // Used to determine if changes have been made
       filePath: '',
       newSource: '',
-      newSourceName: ''
+      newSourceName: '',
+      configViewSelected: 'config',
+      configViews: [
+        { text: 'Config', value: 'config' },
+        { text: 'Edit', value: 'edit' }
+      ]
     };
   },
   computed: {
@@ -207,7 +239,13 @@ export default {
       }
     },
     saveEnabled: function () {
-      return JSON.stringify(this.currConfig) === JSON.stringify(this.currConfigBefore);
+      return !(JSON.stringify(this.currConfig) !== JSON.stringify(this.currConfigBefore) ||
+        JSON.stringify(this.currFiles) !== JSON.stringify(this.currFilesBefore));
+    }
+  },
+  watch: {
+    selectedSourceKey: function () {
+      this.configViewSelected = 'config';
     }
   },
   methods: {
@@ -268,6 +306,26 @@ export default {
         }
       }
 
+      for (const sourceName in this.currFiles) {
+        // Update files if they had changed
+        if (this.currFiles[sourceName] !== this.currFilesBefore[sourceName]) {
+          WiseService.saveSourceFile(sourceName, this.currFiles[sourceName])
+            .then((data) => {
+              if (!data.success) {
+                throw data;
+              }
+            })
+            .catch((err) => {
+              this.alertState = {
+                text: err.text || `Error saving wise source file for ${sourceName}.`,
+                variant: 'alert-danger'
+              };
+            });
+        }
+      }
+      // Resync object that tests for changes
+      this.currFilesBefore = JSON.parse(JSON.stringify(this.currFiles));
+
       WiseService.saveCurrConfig(this.currConfig)
         .then((data) => {
           if (!data.success) {
@@ -323,6 +381,19 @@ export default {
         .catch((error) => {
           this.alertState = {
             text: error.text || `Error fetching current config for wise.`,
+            variant: 'alert-danger'
+          };
+        });
+    },
+    loadSourceFiles: function () {
+      WiseService.getSourceFiles()
+        .then((data) => {
+          this.currFiles = data;
+          this.currFilesBefore = JSON.parse(JSON.stringify(data));
+        })
+        .catch((error) => {
+          this.alertState = {
+            text: `Error fetching source files from wise.`,
             variant: 'alert-danger'
           };
         });

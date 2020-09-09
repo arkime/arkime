@@ -62,6 +62,30 @@ export default {
         });
     });
   },
+  getSourceFiles: function () {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get('/sources/files/get')
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          console.log('service error', error);
+          reject(error);
+        });
+    });
+  },
+  saveSourceFile: function (sourceName, data) {
+    // TODO: new file saving
+    return new Promise((resolve, reject) => {
+      Vue.axios.put('/source/' + sourceName + '/save', { raw: data })
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
   saveCurrConfig: function (config) {
     return new Promise((resolve, reject) => {
       Vue.axios.put('config/save', { config: config })

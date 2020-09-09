@@ -21,6 +21,7 @@
 const ini = require('iniparser');
 const express = require('express');
 const fs = require('fs');
+const util = require('util');
 const http = require('http');
 const https = require('https');
 const glob = require('glob');
@@ -952,22 +953,29 @@ app.get('/sources', [noCacheJson], (req, res) => {
   return res.send(Object.keys(internals.sources).sort());
 });
 // ----------------------------------------------------------------------------
-app.get('/source/:source/get', [doAuth, noCacheJson], (req, res) => {
-  const source = internals.sources[req.params.source];
-  if (!source) {
-    return res.send({ success: false, text: `Source ${req.params.source} not found` });
-  }
+app.get('/sources/files/get', [doAuth, noCacheJson], (req, res) => {
+  let sourceFiles = {};
+  let readingSourcePromises = [];
 
-  if (!source.getRaw) {
-    return res.send({ success: false, text: 'Source does not support viewing' });
-  }
+  sourceFiles = Object.keys(internals.config)
+  .filter(key => internals.configDefs[key.split(':')[0]])
+  .reduce((obj, key) => {
+    if (internals.sources[key] && internals.sources[key].getRaw) {
+      const getRaw = util.promisify(internals.sources[key].getRaw).bind(internals.sources[key]);
 
-  source.getRaw((err, raw) => {
-    if (err) {
-      return res.send({ success: false, text: err });
+      readingSourcePromises.push(
+        getRaw()
+        .then((val) => {
+          obj[key] = val.toString('utf8')
+        })
+        .catch((err) => console.log(err))
+      );
     }
-    return res.send({ success: true, raw: raw });
-  });
+
+    return obj;
+  }, {});
+
+  Promise.all(readingSourcePromises).then(() => res.send(sourceFiles));
 });
 // ----------------------------------------------------------------------------
 app.put('/source/:source/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser], (req, res) => {
@@ -981,7 +989,6 @@ app.put('/source/:source/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, j
   }
 
   const raw = req.body.raw;
-  console.log(raw);
 
   source.putRaw(raw, (err) => {
     if (err) {
@@ -997,7 +1004,6 @@ app.get('/configDefs', [noCacheJson], function (req, res) {
 // ----------------------------------------------------------------------------
 app.get('/config/get', [doAuth, noCacheJson], (req, res) => {
   const loadedConfig = {};
-  // Filter for sources and the global 'wiseService'
 
   loadedConfig.currConfig = Object.keys(internals.config)
   .filter(key => internals.configDefs[key.split(':')[0]])
@@ -1006,6 +1012,7 @@ app.get('/config/get', [doAuth, noCacheJson], (req, res) => {
     return obj;
   }, {});
 
+  //TODO: change name to configFilePath or remove it
   loadedConfig.filePath = internals.configFile;
 
   return res.send(loadedConfig);
