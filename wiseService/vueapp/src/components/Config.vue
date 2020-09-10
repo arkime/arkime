@@ -10,7 +10,7 @@
       :disabled="saveEnabled"
       @click="saveConfig()"
     >
-      Save & Restart
+      Save Config & Restart
     </b-button>
 
     <div class="d-flex flex-row">
@@ -81,10 +81,27 @@
 
         <div v-if="configViewSelected === 'edit'">
           <b-form-textarea
-             v-model="currFiles[selectedSourceKey]"
+             v-model="currFile"
              rows="18"
            >
            </b-form-textarea>
+
+           <span class="float-right">
+             <b-button
+              variant="warning"
+              class="mx-auto mt-4"
+              :disabled="fileActionsDisabled"
+              @click="loadSourceFile()">
+               Reset File
+             </b-button>
+             <b-button
+              variant="primary"
+              class="mx-auto mt-4"
+              :disabled="fileActionsDisabled"
+              @click="saveSourceFile()">
+               Save File
+             </b-button>
+           </span>
         </div>
         <div v-else>
           <div
@@ -194,7 +211,6 @@ export default {
   mounted: function () {
     this.loadConfigDefs();
     this.loadCurrConfig();
-    this.loadSourceFiles();
   },
   data: function () {
     return {
@@ -204,8 +220,8 @@ export default {
       configDefs: {},
       currConfig: {},
       currConfigBefore: {}, // Used to determine if changes have been made
-      currFiles: {},
-      currFilesBefore: {}, // Used to determine if changes have been made
+      currFile: '',
+      currFileBefore: '', // Used to determine if changes have been made
       filePath: '',
       newSource: '',
       newSourceName: '',
@@ -239,13 +255,22 @@ export default {
       }
     },
     saveEnabled: function () {
-      return !(JSON.stringify(this.currConfig) !== JSON.stringify(this.currConfigBefore) ||
-        JSON.stringify(this.currFiles) !== JSON.stringify(this.currFilesBefore));
+      return !(JSON.stringify(this.currConfig) !== JSON.stringify(this.currConfigBefore));
+    },
+    fileActionsDisabled: function () {
+      return this.currFile === this.currFileBefore;
     }
   },
   watch: {
     selectedSourceKey: function () {
       this.configViewSelected = 'config';
+      this.currFile = '';
+      this.currFileBefore = '';
+    },
+    configViewSelected: function () {
+      if (this.configViewSelected === 'edit') {
+        this.loadSourceFile();
+      }
     }
   },
   methods: {
@@ -306,26 +331,6 @@ export default {
         }
       }
 
-      for (const sourceName in this.currFiles) {
-        // Update files if they had changed
-        if (this.currFiles[sourceName] !== this.currFilesBefore[sourceName]) {
-          WiseService.saveSourceFile(sourceName, this.currFiles[sourceName])
-            .then((data) => {
-              if (!data.success) {
-                throw data;
-              }
-            })
-            .catch((err) => {
-              this.alertState = {
-                text: err.text || `Error saving wise source file for ${sourceName}.`,
-                variant: 'alert-danger'
-              };
-            });
-        }
-      }
-      // Resync object that tests for changes
-      this.currFilesBefore = JSON.parse(JSON.stringify(this.currFiles));
-
       WiseService.saveCurrConfig(this.currConfig)
         .then((data) => {
           if (!data.success) {
@@ -352,9 +357,9 @@ export default {
           this.alertState = { text: '', variant: '' };
           this.configDefs = data;
         })
-        .catch((error) => {
+        .catch((err) => {
           this.alertState = {
-            text: `Error fetching config definitions from wise.`,
+            text: err.text || `Error fetching config definitions from wise.`,
             variant: 'alert-danger'
           };
         });
@@ -378,22 +383,47 @@ export default {
           this.currConfig = data.currConfig;
           this.currConfigBefore = JSON.parse(JSON.stringify(data.currConfig));
         })
-        .catch((error) => {
+        .catch((err) => {
           this.alertState = {
-            text: error.text || `Error fetching current config for wise.`,
+            text: err.text || `Error fetching current config for wise.`,
             variant: 'alert-danger'
           };
         });
     },
-    loadSourceFiles: function () {
-      WiseService.getSourceFiles()
+    loadSourceFile: function () {
+      WiseService.getSourceFile(this.selectedSourceKey)
         .then((data) => {
-          this.currFiles = data;
-          this.currFilesBefore = JSON.parse(JSON.stringify(data));
+          if (!data.success) {
+            throw data;
+          }
+
+          this.currFile = data.raw;
+          this.currFileBefore = data.raw;
         })
-        .catch((error) => {
+        .catch((err) => {
           this.alertState = {
-            text: `Error fetching source files from wise.`,
+            text: err.text || `Error fetching source files from wise.`,
+            variant: 'alert-danger'
+          };
+        });
+    },
+    saveSourceFile: function () {
+      WiseService.saveSourceFile(this.selectedSourceKey, this.currFile)
+        .then((data) => {
+          if (!data.success) {
+            throw data;
+          } else {
+            this.alertState = {
+              text: `${this.selectedSourceKey} file saved`,
+              variant: 'alert-success'
+            };
+            // Resync file that tests for changes
+            this.currFileBefore = this.currFile;
+          }
+        })
+        .catch((err) => {
+          this.alertState = {
+            text: err.text || `Error saving wise source file for ${this.selectedSourceKey}.`,
             variant: 'alert-danger'
           };
         });

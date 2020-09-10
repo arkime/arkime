@@ -953,29 +953,22 @@ app.get('/sources', [noCacheJson], (req, res) => {
   return res.send(Object.keys(internals.sources).sort());
 });
 // ----------------------------------------------------------------------------
-app.get('/sources/files/get', [doAuth, noCacheJson], (req, res) => {
-  let sourceFiles = {};
-  let readingSourcePromises = [];
+app.get('/source/:source/get', [doAuth, noCacheJson], (req, res) => {
+  const source = internals.sources[req.params.source];
+  if (!source) {
+    return res.send({ success: false, text: `Source ${req.params.source} not found` });
+  }
 
-  sourceFiles = Object.keys(internals.config)
-  .filter(key => internals.configDefs[key.split(':')[0]])
-  .reduce((obj, key) => {
-    if (internals.sources[key] && internals.sources[key].getRaw) {
-      const getRaw = util.promisify(internals.sources[key].getRaw).bind(internals.sources[key]);
+  if (!source.getRaw) {
+    return res.send({ success: false, text: 'Source does not support viewing' });
+  }
 
-      readingSourcePromises.push(
-        getRaw()
-        .then((val) => {
-          obj[key] = val.toString('utf8');
-        })
-        .catch((err) => console.log(err))
-      );
+  source.getRaw((err, raw) => {
+    if (err) {
+      return res.send({ success: false, text: err });
     }
-
-    return obj;
-  }, {});
-
-  Promise.all(readingSourcePromises).then(() => res.send(sourceFiles));
+    return res.send({ success: true, raw: raw.toString('utf8') });
+  });
 });
 // ----------------------------------------------------------------------------
 app.put('/source/:source/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser], (req, res) => {

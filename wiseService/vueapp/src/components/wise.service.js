@@ -62,9 +62,9 @@ export default {
         });
     });
   },
-  getSourceFiles: function () {
+  getSourceFile: function (sourceName) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get('/sources/files/get')
+      Vue.axios.get('/source/' + sourceName + '/get')
         .then((response) => {
           resolve(response.data);
         })
