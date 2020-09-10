@@ -966,7 +966,7 @@ app.get('/sources/files/get', [doAuth, noCacheJson], (req, res) => {
       readingSourcePromises.push(
         getRaw()
         .then((val) => {
-          obj[key] = val.toString('utf8')
+          obj[key] = val.toString('utf8');
         })
         .catch((err) => console.log(err))
       );
@@ -1012,7 +1012,7 @@ app.get('/config/get', [doAuth, noCacheJson], (req, res) => {
     return obj;
   }, {});
 
-  //TODO: change name to configFilePath or remove it
+  // TODO: change name to configFilePath or remove it
   loadedConfig.filePath = internals.configFile;
 
   return res.send(loadedConfig);
