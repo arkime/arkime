@@ -25,8 +25,16 @@ var LRU = require('lru-cache');
 // ----------------------------------------------------------------------------
 function HODISource (api, section) {
   HODISource.super_.call(this, api, section);
+
+  this.contentTypes = {};
+  var contentTypes = this.api.getConfig(section, 'contentTypes',
+          'application/x-dosexec,application/vnd.ms-cab-compressed,application/pdf,application/x-shockwave-flash,application/x-java-applet,application/jar').split(',').map(item => item.trim());
+
+  contentTypes.forEach((type) => { this.contentTypes[type] = 1; });
+
   this.esHost = api.getConfig('hodi', 'esHost');
   this.bulk = [];
+  this.fullQuery = true;
 
   if (this.esHost === undefined) {
     console.log(this.section, '- No esHost defined');
@@ -112,32 +120,36 @@ HODISource.prototype.process = function (index, id, cb) {
   }
 };
 // ----------------------------------------------------------------------------
-HODISource.prototype.getDomain = function (domain, cb) {
-  this.process('domain', domain, cb);
+HODISource.prototype.getDomain = function (query, cb) {
+  this.process('domain', query.value, cb);
 };
 // ----------------------------------------------------------------------------
-HODISource.prototype.getIp = function (ip, cb) {
-  this.process('ip', ip, cb);
+HODISource.prototype.getIp = function (query, cb) {
+  this.process('ip', query.value, cb);
 };
 // ----------------------------------------------------------------------------
-HODISource.prototype.getMd5 = function (md5, cb) {
-  this.process('md5', md5, cb);
+HODISource.prototype.getMd5 = function (query, cb) {
+  if (query.contentType === undefined || this.contentTypes[query.contentType] !== 1) {
+    return cb(null, undefined);
+  }
+
+  this.process('md5', query.value, cb);
 };
 // ----------------------------------------------------------------------------
-HODISource.prototype.getEmail = function (email, cb) {
-  this.process('email', email, cb);
+HODISource.prototype.getEmail = function (query, cb) {
+  this.process('email', query.value, cb);
 };
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   api.addSourceConfigDef('hodi', {
     singleton: true,
     name: 'hodi',
-    description: 'Experimental “History of Observed Data Indicators” plugin. This watches all queries to WISE and sends a feed to a configured elasticsearch cluster with firstSeen, lastSeen, and VERY rough count metric.',
+    description: 'Experimental “History of Observed Data Indicators” plugin using Elasticsearch. This watches all queries to WISE and sends a feed to a configured elasticsearch cluster with firstSeen, lastSeen, and VERY rough count metric.',
     types: ['ip', 'domain', 'md5', 'email'],
     fields: [
+      { name: 'contentTypes', required: true, help: 'Comma separated list of contentTypes to store md5 results for' },
       { name: 'esHost', required: true, help: 'The elasticsearch connection string, usually host:port' },
-      { name: 'cacheSize', required: false, help: 'Maximum number of results to cache' },
-      { name: 'cacheAgeMin', required: false, help: 'Number of minutes items in the cache for this source are valid for' }
+      { name: 'cacheSize', required: false, help: 'Maximum number of results to cache' }
     ]
   });
 

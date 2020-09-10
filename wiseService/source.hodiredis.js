@@ -89,11 +89,11 @@ exports.initSource = function (api) {
   api.addSourceConfigDef('hodiredis', {
     singleton: true,
     name: 'hodiredis',
-    description: 'AW?',
+    description: 'Experimental “History of Observed Data Indicators” plugin using Redis. This watches all queries to WISE and sends a feed to a configured elasticsearch cluster with firstSeen, lastSeen, and VERY rough count metric.',
     types: ['ip', 'domain', 'md5', 'email'],
     cacheable: false,
     fields: [
-      { name: 'contentTypes', required: true, help: 'The format of data file, such as csv, tagger, or json' },
+      { name: 'contentTypes', required: true, help: 'Comma separated list of contentTypes to store md5 results for' },
       { name: 'url', required: true, help: 'The format is [redis:]//[[user][:password@]]host:port[/db-number]' }
     ]
   });
