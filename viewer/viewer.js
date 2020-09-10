@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 62;
+const MIN_DB_VERSION = 65;
 // ----------------------------------------------------------------------------
 // Modules
 // ----------------------------------------------------------------------------
@@ -3778,8 +3778,9 @@ function checkEsAdminUser (req, res, next) {
 }
 
 app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser, setCookie], (req, res) => {
-  Promise.all([Db.getClusterSettings({ flatSettings: true, include_defaults: true })
-  ]).then(([settings]) => {
+  Promise.all([Db.getClusterSettings({ flatSettings: true, include_defaults: true }),
+               Db.getILMPolicy()]).then(([settings, ilm
+  ]) => {
     let rsettings = [];
 
     function addSetting (key, type, name, url, regex) {
@@ -3855,6 +3856,28 @@ app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser, set
       'https://www.elastic.co/guide/en/elasticsearch/reference/current/circuit-breaker.html',
       '^(|null|\\d+%)$');
 
+    function addIlm (key, current, name, type, regex) {
+      rsettings.push({ key: key, current: current, name: name, type: type, url: 'https://molo.ch/faq#ilm', regex: regex });
+    }
+
+    if (ilm[`${internals.prefix}molochsessions`]) {
+      const silm = ilm[`${internals.prefix}molochsessions`];
+      addIlm('moloch.ilm.sessions.forceTime', silm.policy.phases.warm.min_age,
+       'ILM - Sessions Force Time', 'Time String', '^\\d+[hd]$');
+      addIlm('moloch.ilm.sessions.replicas', silm.policy.phases.warm.actions.allocate.number_of_replicas,
+       'ILM - Sessions Replicas', 'Integer', '^\\d$');
+      addIlm('moloch.ilm.sessions.segments', silm.policy.phases.warm.actions.forcemerge.max_num_segments,
+       'ILM - Sessions Merge Segments ', 'Integer', '^\\d$');
+      addIlm('moloch.ilm.sessions.deleteTime', silm.policy.phases.delete.min_age,
+       'ILM - Sessions Delete Time', 'Time String', '^\\d+[hd]$');
+    }
+
+    if (ilm[`${internals.prefix}molochhistory`]) {
+      const hilm = ilm[`${internals.prefix}molochhistory`];
+      addIlm('moloch.ilm.history.deleteTime', hilm.policy.phases.delete.min_age,
+       'ILM - History Delete Time', 'Time String', '^\\d+[hd]$');
+    }
+
     return res.send(rsettings);
   });
 });
@@ -3865,6 +3888,44 @@ app.post('/esadmin/set', [noCacheJson, recordResponseTime, checkEsAdminUser, che
 
   // Convert null string to null
   if (req.body.value === 'null') { req.body.value = null; }
+
+  if (req.body.key.startsWith('moloch.ilm')) {
+    Promise.all([Db.getILMPolicy()]).then(([ilm]) => {
+      const silm = ilm[`${internals.prefix}molochsessions`];
+      const hilm = ilm[`${internals.prefix}molochhistory`];
+
+      if (silm === undefined || hilm === undefined) {
+        return res.molochError(500, 'ILM isn\'t configured');
+      }
+
+      switch (req.body.key) {
+      case 'moloch.ilm.sessions.forceTime':
+        silm.policy.phases.warm.min_age = req.body.value;
+        break;
+      case 'moloch.ilm.sessions.replicas':
+        silm.policy.phases.warm.actions.allocate.number_of_replicas = parseInt(req.body.value || 0, 10);
+        break;
+      case 'moloch.ilm.sessions.segments':
+        silm.policy.phases.warm.actions.forcemerge.max_num_segments = parseInt(req.body.value || 0, 10);
+        break;
+      case 'moloch.ilm.sessions.deleteTime':
+        silm.policy.phases.delete.min_age = req.body.value;
+        break;
+      case 'moloch.ilm.history.deleteTime':
+        hilm.policy.phases.delete.min_age = req.body.value;
+        break;
+      default:
+        return res.molochError(500, 'Unknown field');
+      }
+      if (req.body.key.startsWith('moloch.ilm.history')) {
+        Db.setILMPolicy(`${internals.prefix}molochhistory`, hilm);
+      } else {
+        Db.setILMPolicy(`${internals.prefix}molochsessions`, silm);
+      }
+      return res.send(JSON.stringify({ success: true, text: 'Set' }));
+    });
+    return;
+  }
 
   let query = { body: { persistent: {} } };
   query.body.persistent[req.body.key] = req.body.value || null;
@@ -6982,7 +7043,7 @@ function sessionsPcapList (req, res, list, pcapWriter, extension) {
     function () {
       // Get from remote DISK
       getViewUrl(fields.node, function (err, viewUrl, client) {
-        var buffer = Buffer.alloc(fields.pa * 20 + fields.by);
+        var buffer = Buffer.alloc(fields.totPackets * 20 + fields.totBytes);
         var bufpos = 0;
         var info = url.parse(viewUrl);
         info.path = Config.basePath(fields.node) + fields.node + '/' + extension + '/' + Db.session2Sid(item) + '.' + extension;
@@ -7533,6 +7594,11 @@ function pauseHuntJobWithError (huntId, hunt, error, node) {
 
   hunt.status = 'paused';
 
+  if (error.unrunnable) {
+    delete error.unrunnable;
+    hunt.unrunnable = true;
+  }
+
   if (!hunt.errors) {
     hunt.errors = [ error ];
   } else {
@@ -7610,7 +7676,10 @@ function buildHuntOptions (huntId, hunt) {
     try {
       options.regex = new RE2(hunt.search);
     } catch (e) {
-      pauseHuntJobWithError(huntId, hunt, { value: `Hunt error with regex: ${e}` });
+      pauseHuntJobWithError(huntId, hunt, {
+        value: `Fatal Error: Regex parse error. Fix this issue with your regex and create a new hunt: ${e}`,
+        unrunnable: true
+      });
     }
   }
 
@@ -7767,7 +7836,8 @@ function processHuntJob (huntId, hunt) {
       buildSessionQuery(fakeReq, (err, query, indices) => {
         if (err) {
           pauseHuntJobWithError(huntId, hunt, {
-            value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.'
+            value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.',
+            unrunnable: true
           });
           return;
         }

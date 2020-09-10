@@ -1,4 +1,4 @@
-use Test::More tests => 256;
+use Test::More tests => 258;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -163,20 +163,33 @@ my $hToken = getTokenCookie('huntuser');
   is ($json->{success}, 1, "can run a hunt with a view");
   my $id5 = $json->{hunt}->{id};
 
+# hunt bad regex
+  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"badhunt","size":"50","search":"bad[","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $otherToken);
+  my $id6 = $json->{hunt}->{id};
+
   viewerGet("/processHuntJobs");
 
   $hunts = viewerGet("/hunt/list?history=true");
-  my $viewHunt;
+  my ($viewHunt, $badHunt);
   foreach my $item (@{$hunts->{data}}) {
     if ($item->{id} eq $id5) {
       $viewHunt = $item;
-      last;
+    }
+    if ($item->{id} eq $id6) {
+      $badHunt = $item;
     }
   }
-  is($viewHunt->{query}->{view}, "tls", "hunt has a view applied");
 
-  # cleanup
+# verify viewHunt and badHunt
+  is($viewHunt->{query}->{view}, "tls", "hunt has a view applied");
+  is($viewHunt->{unrunnable}, undef, "hunt should be runable");
+
+  is($badHunt->{unrunnable}, 1, "hunt should be unrunable");
+
+
+# cleanup
   viewerDeleteToken("/hunt/$id5?molochRegressionUser=anonymous", $token);
+  viewerDeleteToken("/hunt/$id6?molochRegressionUser=anonymous", $token);
   viewerPostToken("/user/views/delete?molochRegressionUser=user2", '{"expression":"protocols == tls","user":"user2","shared":true,"name":"tls"}', $otherToken);
   viewerPostToken("/user/delete", "userId=_moloch_shared", $token);
 

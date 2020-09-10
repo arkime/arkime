@@ -21,6 +21,7 @@
 var ESC = require('elasticsearch');
 var os = require('os');
 var fs = require('fs');
+const { Client } = require('@elastic/elasticsearch');
 
 var internals = { fileId2File: {},
   fileName2File: {},
@@ -92,6 +93,15 @@ exports.initialize = function (info, cb) {
       throw new Error('Exiting');
     }
 
+    if (data.version.number.match(/^(7)/)) {
+      internals.client7 = new Client({
+        node: internals.info.host,
+        maxRetries: 2,
+        requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
+        ssl: esSSLOptions
+      });
+    }
+
     if (info.usersHost) {
       internals.usersElasticSearchClient = new ESC.Client({
         host: internals.info.usersHost,
@@ -114,7 +124,7 @@ exports.initialize = function (info, cb) {
     internals.prefix = 'MULTIPREFIX_';
   }
 
-  // Update aliases cache so -shrink works
+  // Update aliases cache so -shrink/-reindex works
   if (internals.nodeName !== undefined) {
     exports.getAliasesCache('sessions2-*', () => {});
     setInterval(() => { exports.getAliasesCache('sessions2-*', () => {}); }, 2 * 60 * 1000);
@@ -147,6 +157,11 @@ function fixIndex (index) {
   // If the index doesn't exist but the shrink version does exist, add -shrink
   if (internals.aliasesCache && !internals.aliasesCache[index] && internals.aliasesCache[index + '-shrink']) {
     index += '-shrink';
+  }
+
+  // If the index doesn't exist but the reindex version does exist, add -reindex
+  if (internals.aliasesCache && !internals.aliasesCache[index] && internals.aliasesCache[index + '-reindex']) {
+    index += '-reindex';
   }
 
   return index;
@@ -1246,6 +1261,9 @@ exports.getIndices = function (startTime, stopTime, bounding, rotateIndex, cb) {
       if (index.endsWith('-shrink')) {
         index = index.substring(0, index.length - 7);
       }
+      if (index.endsWith('-reindex')) {
+        index = index.substring(0, index.length - 8);
+      }
       index = index.substring(internals.prefix.length + 10);
       let year; let month; let day = 0; let hour = 0; let length;
 
@@ -1308,5 +1326,43 @@ exports.getMinValue = function (index, field, cb) {
   return internals.elasticSearchClient.search(params, (err, data) => {
     if (err) { return cb(err, 0); }
     return cb(null, data.aggregations.min.value);
+  });
+};
+
+exports.getILMPolicy = function () {
+  if (!internals.client7) {
+    return new Promise((resolve, reject) => {
+      console.log('no client 7');
+      resolve({});
+    });
+  }
+  return new Promise((resolve, reject) => {
+    internals.client7.ilm.getLifecycle({ policy: `${internals.prefix}molochsessions,${internals.prefix}molochhistory` }, (err, data) => {
+      if (err) {
+        resolve({});
+      } else {
+        resolve(data.body);
+      }
+    });
+  });
+};
+
+exports.setILMPolicy = function (name, policy) {
+  console.log('name', name, 'policy', policy);
+  if (!internals.client7) {
+    return new Promise((resolve, reject) => {
+      console.log('no client 7');
+      resolve({});
+    });
+  }
+  return new Promise((resolve, reject) => {
+    internals.client7.ilm.putLifecycle({ policy: name, body: { policy: policy.policy } }, (err, data) => {
+      if (err) {
+        console.log('ERROR', err, 'data', data);
+        reject(err);
+      } else {
+        resolve(data.body);
+      }
+    });
   });
 };
