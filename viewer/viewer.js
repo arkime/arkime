@@ -9011,7 +9011,7 @@ app.post('/upload', [checkCookieToken, multer({ dest: '/tmp', limits: internals.
       res.status(500);
       res.write('<b>Upload command failed:</b><br>');
     }
-    res.write(cmd);
+    res.write(safeStr(cmd));
     res.write('<br>');
     res.write('<pre>');
     res.write(stdout);
