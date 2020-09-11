@@ -37,7 +37,7 @@ LOCAL int irc_parser(MolochSession_t *session, void *uw, const unsigned char *da
 
     while (BSB_REMAINING(bsb)) {
         if (irc->ircState & 0x1) {
-            int pos;
+            int pos = 0;
             BSB_memchr(bsb, '\n', pos);
 
             if (pos) {

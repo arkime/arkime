@@ -680,19 +680,19 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         for(i = 0; i < session->filePosArray->len; i++) {
             if (i != 0)
                 BSB_EXPORT_u08(jbsb, ',');
-            int64_t pos = (int64_t)g_array_index(session->filePosArray, int64_t, i);
-            if (pos < 0) {
+            int64_t fpos = (int64_t)g_array_index(session->filePosArray, int64_t, i);
+            if (fpos < 0) {
                 last = 0;
                 lastgap = 0;
-                BSB_EXPORT_sprintf(jbsb, "%" PRId64, pos);
+                BSB_EXPORT_sprintf(jbsb, "%" PRId64, fpos);
             } else {
-                if (pos - last == lastgap) {
+                if (fpos - last == lastgap) {
                     BSB_EXPORT_u08(jbsb, '0');
                 } else {
-                    lastgap = pos - last;
+                    lastgap = fpos - last;
                     BSB_EXPORT_sprintf(jbsb, "%" PRId64, lastgap);
                 }
-                last = pos;
+                last = fpos;
             }
         }
     } else {

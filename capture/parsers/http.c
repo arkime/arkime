@@ -171,10 +171,10 @@ void http_common_add_header(MolochSession_t *session, int pos, int isReq, const 
             HASH_FIND(s_, httpReqHeaders, lower, hstring);
         else
             HASH_FIND(s_, httpResHeaders, lower, hstring);
-    }
 
-    if (pos == 0) {
-        if (isReq && config.parseHTTPHeaderRequestAll) { // Header in request
+        if (hstring) {
+            pos = (long)hstring->uw;
+        } else if (isReq && config.parseHTTPHeaderRequestAll) { // Header in request
             moloch_field_string_add(headerReqField, session, lower, -1, TRUE);
             pos = headerReqValue;
         }
