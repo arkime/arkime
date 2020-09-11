@@ -600,7 +600,7 @@ export default {
       searchInputTimeout = setTimeout(() => {
         searchInputTimeout = null;
         this.loadData();
-      }, 400);
+      }, 800);
     },
     loadData: function () {
       this.refreshData = true;
