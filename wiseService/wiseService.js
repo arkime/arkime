@@ -21,7 +21,6 @@
 const ini = require('iniparser');
 const express = require('express');
 const fs = require('fs');
-const util = require('util');
 const http = require('http');
 const https = require('https');
 const glob = require('glob');
