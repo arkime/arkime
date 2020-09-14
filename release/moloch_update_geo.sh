@@ -10,19 +10,20 @@ if ! [[ $TIMEOUT =~ ^[0-9]+$ ]] ; then
     exit 1;
 fi
 
-# Work on temp dir to not affect current working files
-cd /tmp
-
 # Try and download ipv4-address-space.csv, only copy if it works
-wget -N -nv --timeout=${TIMEOUT} --no-check-certificate https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
+FILENAME=$(mktemp)
+wget -nv --timeout=${TIMEOUT} --no-check-certificate -O "$FILENAME" https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
 if (( $? == 0 )) ; then
-  cp ipv4-address-space.csv "${DEST_DIR}"
+  chmod a+r "$FILENAME"
+  mv "$FILENAME" "${DEST_DIR}/ipv4-address-space.csv"
 fi
 
 # Try and download manuf, only copy if it works
-wget -N -nv --timeout=${TIMEOUT} https://raw.githubusercontent.com/wireshark/wireshark/master/manuf
+FILENAME=$(mktemp)
+wget -nv --timeout=${TIMEOUT} -O "$FILENAME" https://raw.githubusercontent.com/wireshark/wireshark/master/manuf
 if (( $? == 0 )) ; then
-  cp manuf "${DEST_DIR}/oui.txt"
+  chmod a+r "$FILENAME"
+  mv "$FILENAME" "${DEST_DIR}/oui.txt"
 fi
 
 # Call the maxind geoipupdate program if available. See

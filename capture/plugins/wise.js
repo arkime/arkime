@@ -2,13 +2,13 @@
 /* wise.js -- wiseService viewer plugin
  *
  * Copyright 2012-2014 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,17 +17,16 @@
  */
 'use strict';
 
-var http           = require('http')
-   ;
+const http = require('http');
 
 exports.init = function (Config, emitter) {
-  var port = Config.get("wisePort", 8081);
-  var host = Config.get("wiseHost", "127.0.0.1");
+  var port = Config.get('wisePort', 8081);
+  var host = Config.get('wiseHost', '127.0.0.1');
 
-  emitter.on("makeSessionDetail", function(cb) {
-    var url = "http://" + host + ":" + port + "/views";
+  emitter.on('makeSessionDetail', function (cb) {
+    var url = 'http://' + host + ':' + port + '/views';
     var req = http.request(url, function (res) {
-      var body = "";
+      var body = '';
       res.on('data', function (chunk) {
         body += chunk;
       });
@@ -40,16 +39,16 @@ exports.init = function (Config, emitter) {
       });
     });
     req.on('error', function (err) {
-      console.log("WISE Session Detail ERROR", err);
+      console.log('WISE Session Detail ERROR', err);
       return cb(err, {});
     });
     req.end();
   });
 
-  emitter.on("makeRightClick", function(cb) {
-    var url = "http://" + host + ":" + port + "/rightClicks";
+  emitter.on('makeRightClick', function (cb) {
+    var url = 'http://' + host + ':' + port + '/rightClicks';
     var req = http.request(url, function (res) {
-      var body = "";
+      var body = '';
       res.on('data', function (chunk) {
         body += chunk;
       });
@@ -62,7 +61,7 @@ exports.init = function (Config, emitter) {
       });
     });
     req.on('error', function (err) {
-      console.log("WISE Right Click ERROR", err);
+      console.log('WISE Right Click ERROR', err);
       return cb(err, {});
     });
     req.end();

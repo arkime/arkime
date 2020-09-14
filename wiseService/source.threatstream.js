@@ -79,9 +79,14 @@ function ThreatStreamSource (api, section) {
 
     break;
   case 'sqlite3':
+  case 'sqlite3-copy':
     sqlite3 = require('sqlite3');
     this.cacheTimeout = -1;
-    this.openDb();
+    if (this.mode === 'sqlite3-copy') {
+      this.openDbCopy();
+    } else {
+      this.openDb();
+    }
     setInterval(this.openDb.bind(this), 15 * 60 * 1000);
     ThreatStreamSource.prototype.getDomain = getDomainSqlite3;
     ThreatStreamSource.prototype.getIp = getIpSqlite3;
@@ -394,7 +399,7 @@ ThreatStreamSource.prototype.loadTypes = function () {
   });
 };
 // ----------------------------------------------------------------------------
-ThreatStreamSource.prototype.openDb = function () {
+ThreatStreamSource.prototype.openDbCopy = function () {
   var dbFile = this.api.getConfig('threatstream', 'dbFile', 'ts.db');
 
   var dbStat;
@@ -444,6 +449,50 @@ ThreatStreamSource.prototype.openDb = function () {
             });
           });
         });
+      });
+    });
+  };
+
+  // If the last copy time doesn't match start the copy process.
+  // This will also run on startup.
+  if (this.mtime !== dbStat.mtime.getTime()) {
+    this.mtime = dbStat.mtime.getTime();
+    realDb = new sqlite3.Database(dbFile);
+    realDb.run('BEGIN IMMEDIATE', beginImmediate);
+  } else if (!this.db) {
+    // Open the DB if not already opened.
+    this.db = new sqlite3.Database(dbFile + '.moloch', sqlite3.OPEN_READONLY);
+  }
+};
+
+// ----------------------------------------------------------------------------
+ThreatStreamSource.prototype.openDb = function () {
+  var dbFile = this.api.getConfig('threatstream', 'dbFile', 'ts.db');
+
+  var dbStat;
+  try { dbStat = fs.statSync(dbFile); } catch (e) {}
+
+  var realDb;
+  if (!dbStat || !dbStat.isFile()) {
+    console.log(this.section, "ERROR - file doesn't exist", dbFile);
+    process.exit();
+  }
+
+  let beginImmediate = (err) => {
+    // Repeat until we lock the DB
+    if (err && err.code === 'SQLITE_BUSY') {
+      console.log(this.section, 'Failed to lock sqlite DB', dbFile);
+      return setTimeout(() => {
+        realDb.run('BEGIN IMMEDIATE', beginImmediate);
+      }, 30 * 1000); // Try to lock in 30 seconds
+    }
+
+    realDb.run('CREATE INDEX md5_index ON ts (md5)', (err) => {
+      realDb.run('END', (err) => {
+        if (this.db) {
+          this.db.close();
+        }
+        this.db = realDb;
       });
     });
   };

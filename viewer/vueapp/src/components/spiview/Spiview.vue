@@ -1082,8 +1082,7 @@ export default {
         if (this.categoryObjects.hasOwnProperty(key)) {
           let category = this.categoryObjects[key];
 
-          let fields = category.fields;
-          fields = this.sortFields(category.fields);
+          let fields = this.sortFields(category.fields);
           Vue.set(category, 'filteredFields', fields);
 
           if (localStorage && localStorage['spiview-collapsible']) {

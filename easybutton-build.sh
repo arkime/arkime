@@ -247,7 +247,7 @@ else
     wget https://github.com/nghttp2/nghttp2/releases/download/v$NGHTTP2/nghttp2-$NGHTTP2.tar.gz
   fi
 
-  if [ ! -f "nghttp2-$NGHTTP2/lib/.libs/libcurl.a" ]; then
+  if [ ! -f "nghttp2-$NGHTTP2/lib/.libs/libnghttp2.a" ]; then
     tar zxf nghttp2-$NGHTTP2.tar.gz
     ( cd nghttp2-$NGHTTP2; ./configure --enable-lib-only; $MAKE)
     if [ $? -ne 0 ]; then
