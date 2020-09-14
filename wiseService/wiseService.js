@@ -64,7 +64,7 @@ var internals = {
         { name: 'certFile', required: false, help: 'Path to PEM encoded cert file' },
         { name: 'userNameHeader', required: true, help: 'How should auth be done: anonymous - no auth, digest - digest auth, any other value is the http header to use for username', regex: '.' },
         { name: 'httpRealm', ifField: 'userNameHeader', ifValue: 'digest', required: false, help: 'The realm to use for digest requests. Must be the same as viewer is using. Default Moloch' },
-        { name: 'passwordSecret', ifField: 'userNameHeader', ifValue: 'digest', required: false, help: 'The secret used to encrypted password hashes. Must be the same as viewer is using. Default password' },
+        { name: 'passwordSecret', ifField: 'userNameHeader', ifValue: 'digest', required: false, password: true, help: 'The secret used to encrypted password hashes. Must be the same as viewer is using. Default password' },
         { name: 'usersElasticsearch', required: false, help: 'The URL to connect to elasticsearch. Default http://localhost:9200' },
         { name: 'usersPrefix', required: false, help: 'The prefix used with db.pl --prefix, usually empty' },
         { name: 'sourcePath', required: false, help: 'Where to look for the source files. Defaults to "./"' }
@@ -79,8 +79,8 @@ var internals = {
         { name: 'cacheSize', required: false, help: 'How many elements to cache in memory. Defaults to 100000' },
         { name: 'url', required: false, ifField: 'type', ifValue: 'redis', help: 'Format is redis://[[user]:[password]@]host:port[/db-number]' },
         { name: 'redisName', required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'User name for redis' },
-        { name: 'redisPassword', required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Password for redis' },
-        { name: 'sentinelPassword', required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Password for sentinel' },
+        { name: 'redisPassword', password: true, required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Password for redis' },
+        { name: 'sentinelPassword', password: true, required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Password for sentinel' },
         { name: 'redisSentinels', required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Semicolon separated list of host:port. Defaults to localhost:26379' },
         { name: 'redisClusters', required: false, ifField: 'type', ifValue: 'redis-cluster', help: 'Semicolon separated list of host:port. Defaults to localhost:26379' }
       ]
@@ -1001,7 +1001,15 @@ app.get('/config/get', [doAuth, noCacheJson], (req, res) => {
   loadedConfig.currConfig = Object.keys(internals.config)
   .filter(key => internals.configDefs[key.split(':')[0]])
   .reduce((obj, key) => {
-    obj[key] = internals.config[key];
+    // Deep Copy
+    obj[key] = JSON.parse(JSON.stringify(internals.config[key]));
+
+    // Replace passwords
+    internals.configDefs[key.split(':')[0]].fields.forEach((item) => {
+      if (item.password !== true) { return; }
+      if (obj[key][item.name] === undefined || obj[key][item.name].length === 0) { return; }
+      obj[key][item.name] = '********';
+    });
     return obj;
   }, {});
 
@@ -1020,7 +1028,6 @@ app.put('/config/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParse
   console.log(config);
 
   for (let section in config) {
-    console.log('section', section);
     const sectionType = section.split(':')[0];
     const configDef = internals.configDefs[sectionType];
     if (configDef === undefined) {
@@ -1036,6 +1043,11 @@ app.put('/config/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParse
       const field = configDef.fields.find(element => element.name === key);
       if (field === undefined) {
         return res.send({ success: false, text: `Section ${section} field ${key} unknown` });
+      }
+      if (field.password === true) {
+        if (config[section][key] === '********') {
+          config[section][key] = internals.config[section][key];
+        }
       }
     };
   }

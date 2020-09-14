@@ -193,7 +193,7 @@ exports.initSource = function (api) {
     description: 'OpenDNS source for domain names',
     types: ['domain'],
     fields: [
-      { name: 'key', required: true, help: 'The API key' } ]
+      { name: 'key', password: true, required: true, help: 'The API key' } ]
   });
 
   return new OpenDNSSource(api, 'opendns');
