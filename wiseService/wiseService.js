@@ -93,7 +93,7 @@ var internals = {
   rightClicks: {},
   workers: 1,
   regressionTests: false,
-  configweb: false
+  webconfig: false
 };
 
 internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 'sha256'];
@@ -112,8 +112,8 @@ function processArgs (argv) {
       internals.debug++;
     } else if (argv[i] === '--regressionTests') {
       internals.regressionTests = true;
-    } else if (argv[i] === '--configweb') {
-      internals.configweb = true;
+    } else if (argv[i] === '--webconfig') {
+      internals.webconfig = true;
     } else if (argv[i] === '--workers') {
       i++;
       internals.workers = +argv[i];
@@ -122,7 +122,7 @@ function processArgs (argv) {
       console.log('');
       console.log('Options:');
       console.log('  --debug               Increase debug level, multiple are supported');
-      console.log('  --configweb           Allow the config to be edited from web page');
+      console.log('  --webconfig           Allow the config to be edited from web page');
       console.log('  --workers <b>         Number of worker processes to create');
 
       process.exit(0);
@@ -315,8 +315,8 @@ function doAuth (req, res, next) {
 }
 // ----------------------------------------------------------------------------
 function isConfigWeb (req, res, next) {
-  if (!internals.configweb) {
-    return res.send({ success: false, text: 'Must start wiseService with --configweb option' });
+  if (!internals.webconfig) {
+    return res.send({ success: false, text: 'Must start wiseService with --webconfig option' });
   }
   return next();
 }
@@ -952,7 +952,7 @@ app.get('/sources', [noCacheJson], (req, res) => {
   return res.send(Object.keys(internals.sources).sort());
 });
 // ----------------------------------------------------------------------------
-app.get('/source/:source/get', [doAuth, noCacheJson], (req, res) => {
+app.get('/source/:source/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
   const source = internals.sources[req.params.source];
   if (!source) {
     return res.send({ success: false, text: `Source ${req.params.source} not found` });
@@ -990,14 +990,12 @@ app.put('/source/:source/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, j
   });
 });
 // ----------------------------------------------------------------------------
-app.get('/configDefs', [noCacheJson], function (req, res) {
+app.get('/config/defs', [noCacheJson], function (req, res) {
   return res.send(internals.configDefs);
 });
 // ----------------------------------------------------------------------------
-app.get('/config/get', [doAuth, noCacheJson], (req, res) => {
-  const loadedConfig = {};
-
-  loadedConfig.currConfig = Object.keys(internals.config)
+app.get('/config/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
+  let config = Object.keys(internals.config)
   .filter(key => internals.configDefs[key.split(':')[0]])
   .reduce((obj, key) => {
     // Deep Copy
@@ -1012,10 +1010,9 @@ app.get('/config/get', [doAuth, noCacheJson], (req, res) => {
     return obj;
   }, {});
 
-  // TODO: change name to configFilePath or remove it
-  loadedConfig.filePath = internals.configFile;
-
-  return res.send(loadedConfig);
+  return res.send({success: true,
+                   config: config,
+                   filePath: internals.configFile});
 });
 // ----------------------------------------------------------------------------
 app.put('/config/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser], (req, res) => {
