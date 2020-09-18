@@ -7807,7 +7807,6 @@ function runHuntJob (huntId, hunt, query, user) {
     }
 
     async.forEachLimit(hits, 3, function (hit, cb) {
-      setTimeout(() => {
       searchedSessions++;
       let session = hit._source;
       let sessionId = Db.session2Sid(hit);
@@ -7848,7 +7847,6 @@ function runHuntJob (huntId, hunt, query, user) {
           return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
         });
       });
-      }, 500);
     }, function (err) { // done running this section of hunt job
       // Some kind of error, stop now
       if (err === 'paused' || err === 'undefined') {
