@@ -97,9 +97,10 @@ Feature requests are tracked as [GitHub Issues](https://guides.github.com/featur
 5. Unzip and copy `CyberChef_v*.html` to `viewer/public/CyberChef_v*.html`
 6. Add `<base href="./cyberchef/" />` in the `<head>` of `viewer/public/CyberChef_v*.html`
 7. Add the script section from the previous `viewer/public/cyberchef.html` file before the end `</body></html>` tags at the end of `viewer/public/CyberChef_v*.html`
-8. Delete the old CyberChef zip file
-9. Delete the old CyberChef html file
-10. Rename `viewer/public/CyberChef_v*.html` file to `viewer/public/cyberchef.html`
+8. Add `<meta name="referrer" content="no-referrer">` to `viewer/public/CyberChef_v*.html`
+9. Delete the old CyberChef zip file
+10. Delete the old CyberChef html file
+11. Rename `viewer/public/CyberChef_v*.html` file to `viewer/public/cyberchef.html`
 
 ---
 
