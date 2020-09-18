@@ -7620,21 +7620,6 @@ function pauseHuntJobWithError (huntId, hunt, error, node) {
   issueAlert(hunt.notifier, message, continueProcess);
 }
 
-// if we couldn't retrieve the seession, skip it but add it to failedSessionIds
-// so that we can go back and search for it at the end of the hunt
-function continueHuntSkipSession (hunt, huntId, session, sessionId, searchedSessions, cb) {
-  if (!hunt.failedSessionIds) {
-    hunt.failedSessionIds = [ sessionId ];
-  } else {
-    // make sure the session id is not already in the array
-    if (hunt.failedSessionIds.indexOf(sessionId) < 0) {
-      hunt.failedSessionIds.push(sessionId);
-    }
-  }
-
-  updateHuntStats(hunt, huntId, session, searchedSessions, cb);
-}
-
 function updateHuntStats (hunt, huntId, session, searchedSessions, cb) {
   // update the hunt with number of matchedSessions and searchedSessions
   // and the date of the first packet of the last searched session
@@ -7701,11 +7686,28 @@ function buildHuntOptions (huntId, hunt) {
   return options;
 }
 
+// if we couldn't retrieve the seession, skip it but add it to failedSessionIds
+// so that we can go back and search for it at the end of the hunt
+function continueHuntSkipSession (hunt, huntId, session, sessionId, searchedSessions, cb) {
+  console.log('continue hunt but skip this session:', sessionId); // TODO ECR - remove
+  if (!hunt.failedSessionIds) {
+    hunt.failedSessionIds = [ sessionId ];
+  } else {
+    // make sure the session id is not already in the array
+    if (hunt.failedSessionIds.indexOf(sessionId) < 0) {
+      hunt.failedSessionIds.push(sessionId);
+    }
+  }
+
+  updateHuntStats(hunt, huntId, session, searchedSessions, cb);
+}
+
 // if there are failed sessions, go through them one by one and do a packet search
 // if there are no failed sessions left at the end then the hunt is done
 // if there are still failed sessions, but some sessions were searched during the last pass, try again
 // if there are still failed sessions, but no new sessions coudl be searched, pause the job with an error
 function huntFailedSessions (hunt, huntId, options, searchedSessions, user) {
+  console.log('hunting failed sessions -------------------------------------'); // TODO ECR - remove
   let changesSearchingFailedSessions = false;
   if (hunt.failedSessionIds && hunt.failedSessionIds.length) {
     // copy the failed session ids so we can remove them from the hunt
@@ -7728,6 +7730,7 @@ function huntFailedSessions (hunt, huntId, options, searchedSessions, user) {
               return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
             }
 
+            console.log('succesfully hunted previously failed session', sessionId); // TODO ECR - remove
             // remove from failedSessionIds if it was found
             hunt.failedSessionIds.splice(hunt.failedSessionIds.indexOf(sessionId), 1);
             // there were changes to this hunt; we're making progress
@@ -7738,8 +7741,8 @@ function huntFailedSessions (hunt, huntId, options, searchedSessions, user) {
           });
       });
     }, function (err) { // done running a pass of the failed sessions
-      console.log('done with async failedSessionIds iteration', err);
-      console.log('changes?', changesSearchingFailedSessions);
+      // TODO ECR - do something on error?
+      console.log('done with async failedSessionIds iteration ---------------'); // TODO ECR - remove
 
       function continueProcess () {
         Db.setHunt(huntId, hunt, (err, info) => {
@@ -7749,6 +7752,7 @@ function huntFailedSessions (hunt, huntId, options, searchedSessions, user) {
       }
 
       if (hunt.failedSessionIds && hunt.failedSessionIds.length === 0) {
+        console.log('successfully searched through all failed sessions'); // TODO ECR - remove
         // we had failed sessions but we're done searching through them
         // so we're completely done with this hunt (inital search and failed sessions)
         hunt.status = 'finished';
@@ -7760,10 +7764,12 @@ function huntFailedSessions (hunt, huntId, options, searchedSessions, user) {
           return continueProcess();
         }
       } else if (hunt.failedSessionIds && hunt.failedSessionIds.length > 0 && changesSearchingFailedSessions) {
+        console.log('searching through failed sessions incomplete, but there were changes on the last pass'); // TODO ECR - remove
         // there are still failed sessions, but there were also changes,
         // so keep going
         return continueProcess();
       } else if (!changesSearchingFailedSessions) {
+        console.log('searching through failed sessions incomplete again with no changes'); // TODO ECR - remove
         // there were no changes, we're still struggling to connect to one or
         // more renote nodes, so error out
         return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting previously failed sessions: ${err}` });
@@ -7794,9 +7800,10 @@ function runHuntJob (huntId, hunt, query, user) {
       // if the session query results length is not equal to the total sessions that the hunt
       // job is searching, update the hunt total sessions so that the percent works correctly
       // TODO ECR - this borks rerunning through the failed sessions - the totalSessions gets incremented
-      // if (hunt.totalSessions !== (result.hits.total + searchedSessions)) {
-      //   hunt.totalSessions = result.hits.total + searchedSessions;
-      // }
+      if (hunt.totalSessions !== (result.hits.total + searchedSessions)) {
+        console.log('total sessions getting updated'); // TODO ECR - remove
+        hunt.totalSessions = result.hits.total + searchedSessions;
+      }
     }
 
     async.forEachLimit(hits, 3, function (hit, cb) {
