@@ -34,6 +34,7 @@
     "morgan": "^1.9.1",
     "native-dns": "^0.7.0",
     "natives": "^1.1.6",
+    "node-fetch": "^2.6.1",
     "notifme-sdk": "^1.9.3",
     "on-headers": "^1.0.1",
     "pug": "^2.0.0",
