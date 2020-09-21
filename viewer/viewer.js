@@ -7701,15 +7701,14 @@ function continueHuntSkipSession (hunt, huntId, session, sessionId, searchedSess
   updateHuntStats(hunt, huntId, session, searchedSessions, cb);
 }
 
-let searchingFailedSessions = false; // TODO ECR - a better place to put this? internals?
 // if there are failed sessions, go through them one by one and do a packet search
 // if there are no failed sessions left at the end then the hunt is done
 // if there are still failed sessions, but some sessions were searched during the last pass, try again
 // if there are still failed sessions, but no new sessions coudl be searched, pause the job with an error
 function huntFailedSessions (hunt, huntId, options, searchedSessions, user) {
   let changesSearchingFailedSessions = false;
-  if (!searchingFailedSessions && hunt.failedSessionIds && hunt.failedSessionIds.length) {
-    searchingFailedSessions = true;
+  if (!options.searchingFailedSessions && hunt.failedSessionIds && hunt.failedSessionIds.length) {
+    options.searchingFailedSessions = true;
     // copy the failed session ids so we can remove them from the hunt
     // but still loop through them iteratively
     let failedSessions = JSON.parse(JSON.stringify(hunt.failedSessionIds));
@@ -7748,7 +7747,7 @@ function huntFailedSessions (hunt, huntId, options, searchedSessions, user) {
       }
 
       if (hunt.failedSessionIds && hunt.failedSessionIds.length === 0) {
-        searchingFailedSessions = false; // no longer searching failed sessions
+        options.searchingFailedSessions = false; // no longer searching failed sessions
         // we had failed sessions but we're done searching through them
         // so we're completely done with this hunt (inital search and failed sessions)
         hunt.status = 'finished';
@@ -7764,7 +7763,7 @@ function huntFailedSessions (hunt, huntId, options, searchedSessions, user) {
         // so keep going
         return continueProcess();
       } else if (!changesSearchingFailedSessions) {
-        searchingFailedSessions = false; // no longer searching failed sessions
+        options.searchingFailedSessions = false; // no longer searching failed sessions
         // there were no changes, we're still struggling to connect to one or
         // more renote nodes, so error out
         return pauseHuntJobWithError(huntId, hunt, {
@@ -7782,6 +7781,7 @@ function runHuntJob (huntId, hunt, query, user) {
 
   // look for failed sessions if we're done searching sessions normally
   if (hunt.searchedSessions === hunt.totalSessions && hunt.failedSessionIds && hunt.failedSessionIds.length) {
+    options.searchingFailedSessions = true;
     return huntFailedSessions(hunt, huntId, options, searchedSessions, user);
   }
 
@@ -7796,7 +7796,7 @@ function runHuntJob (huntId, hunt, query, user) {
       searchedSessions = hunt.searchedSessions || 0;
       // if the session query results length is not equal to the total sessions that the hunt
       // job is searching, update the hunt total sessions so that the percent works correctly
-      if (!searchingFailedSessions && hunt.totalSessions !== (result.hits.total + searchedSessions)) {
+      if (!options.searchingFailedSessions && hunt.totalSessions !== (result.hits.total + searchedSessions)) {
         hunt.totalSessions = result.hits.total + searchedSessions;
       }
     }
