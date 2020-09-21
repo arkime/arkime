@@ -538,6 +538,12 @@
                 </hunt-status>
                 &nbsp;
                 <span class="badge badge-secondary cursor-help"
+                  v-if="job.failedSessionIds && job.failedSessionIds.length"
+                  :id="`jobmatches${job.id}`">
+                  {{ (((job.searchedSessions - job.failedSessionIds.length) / job.totalSessions) * 100) | round(1) }}%
+                </span>
+                <span v-else
+                  class="badge badge-secondary cursor-help"
                   :id="`jobmatches${job.id}`">
                   {{ ((job.searchedSessions / job.totalSessions) * 100) | round(1) }}%
                 </span>
@@ -1341,7 +1347,7 @@ export default {
           this.$set(this.runningJob, 'expanded', runningJobExpanded);
           let searchedSessions = this.runningJob.searchedSessions;
           if (this.runningJob.failedSessionIds && this.runningJob.failedSessionIds.length) {
-            searchedSessions = searchedSessions - this.runningJob.failedSessionIds;
+            searchedSessions = searchedSessions - this.runningJob.failedSessionIds.length;
           }
           this.$set(
             this.runningJob,
