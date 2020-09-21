@@ -439,12 +439,22 @@
                       <span v-if="user.userId === runningJob.userId || user.createEnabled">
                         matching <strong>{{ runningJob.search }}</strong> ({{ runningJob.searchType }})
                       </span>
-                      out of <strong>{{ runningJob.searchedSessions | commaString }}</strong>
-                      sessions searched.
-                      (Still need to search
-                      <strong>{{ (runningJob.totalSessions - runningJob.searchedSessions) | commaString }}</strong>
-                      of <strong>{{ runningJob.totalSessions }}</strong>
-                      total sessions.)
+                      <span v-if="runningJob.failedSessionIds && runningJob.failedSessionIds.length">
+                        out of <strong>{{ runningJob.searchedSessions - runningJob.failedSessionIds.length | commaString }}</strong>
+                        sessions searched.
+                        (Still need to search
+                        <strong>{{ (runningJob.totalSessions - runningJob.searchedSessions + runningJob.failedSessionIds.length) | commaString }}</strong>
+                        of <strong>{{ runningJob.totalSessions }}</strong>
+                        total sessions.)
+                      </span>
+                      <span v-else>
+                        out of <strong>{{ runningJob.searchedSessions | commaString }}</strong>
+                        sessions searched.
+                        (Still need to search
+                        <strong>{{ (runningJob.totalSessions - runningJob.searchedSessions) | commaString }}</strong>
+                        of <strong>{{ runningJob.totalSessions }}</strong>
+                        total sessions.)
+                      </span>
                     </div>
                   </b-tooltip>
                 </div>
@@ -547,7 +557,13 @@
                   :id="`jobmatches${job.id}`">
                   {{ ((job.searchedSessions / job.totalSessions) * 100) | round(1) }}%
                 </span>
-                <b-tooltip :target="`jobmatches${job.id}`">
+                <b-tooltip v-if="job.failedSessionIds && job.failedSessionIds.length" :target="`jobmatches${job.id}`">
+                  Found {{ job.matchedSessions | commaString }} out of {{ job.searchedSessions - job.failedSessionIds.length | commaString }} sessions searched.
+                  <div v-if="job.status !== 'finished'">
+                    Still need to search {{ (job.totalSessions - job.searchedSessions + job.failedSessionIds.length) | commaString }} sessions.
+                  </div>
+                </b-tooltip>
+                <b-tooltip v-else :target="`jobmatches${job.id}`">
                   Found {{ job.matchedSessions | commaString }} out of {{ job.searchedSessions | commaString }} sessions searched.
                   <div v-if="job.status !== 'finished'">
                     Still need to search {{ (job.totalSessions - job.searchedSessions) | commaString }} sessions.
@@ -781,10 +797,22 @@
                 </hunt-status>
                 &nbsp;
                 <span class="badge badge-secondary cursor-help"
+                  v-if="job.failedSessionIds && job.failedSessionIds.length"
+                  :id="`jobmatches${job.id}`">
+                  {{ (((job.searchedSessions - job.failedSessionIds.length) / job.totalSessions) * 100) | round(1) }}%
+                </span>
+                <span v-else
+                  class="badge badge-secondary cursor-help"
                   :id="`jobmatches${job.id}`">
                   {{ ((job.searchedSessions / job.totalSessions) * 100) | round(1) }}%
                 </span>
-                <b-tooltip :target="`jobmatches${job.id}`">
+                <b-tooltip v-if="job.failedSessionIds && job.failedSessionIds.length" :target="`jobmatches${job.id}`">
+                  Found {{ job.matchedSessions | commaString }} out of {{ job.searchedSessions - job.failedSessionIds.length | commaString }} sessions searched.
+                  <div v-if="job.status !== 'finished'">
+                    Still need to search {{ (job.totalSessions - job.searchedSessions + job.failedSessionIds.length) | commaString }} sessions.
+                  </div>
+                </b-tooltip>
+                <b-tooltip v-else :target="`jobmatches${job.id}`">
                   Found {{ job.matchedSessions | commaString }} out of {{ job.searchedSessions | commaString }} sessions searched.
                   <div v-if="job.status !== 'finished'">
                     Still need to search {{ (job.totalSessions - job.searchedSessions) | commaString }} sessions.
@@ -1349,10 +1377,12 @@ export default {
           if (this.runningJob.failedSessionIds && this.runningJob.failedSessionIds.length) {
             searchedSessions = searchedSessions - this.runningJob.failedSessionIds.length;
           }
+          let progress = (searchedSessions / this.runningJob.totalSessions) * 100;
+          console.log('running job progress', progress); // TODO ECR remvoe
           this.$set(
             this.runningJob,
             'progress',
-            searchedSessions / this.runningJob.totalSessions * 100
+            progress
           );
         }
         this.calculateQueue();

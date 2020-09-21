@@ -7707,7 +7707,7 @@ function continueHuntSkipSession (hunt, huntId, session, sessionId, searchedSess
 // if there are still failed sessions, but no new sessions coudl be searched, pause the job with an error
 function huntFailedSessions (hunt, huntId, options, searchedSessions, user) {
   let changesSearchingFailedSessions = false;
-  if (!options.searchingFailedSessions && hunt.failedSessionIds && hunt.failedSessionIds.length) {
+  if (hunt.failedSessionIds && hunt.failedSessionIds.length) {
     options.searchingFailedSessions = true;
     // copy the failed session ids so we can remove them from the hunt
     // but still loop through them iteratively
@@ -7761,6 +7761,8 @@ function huntFailedSessions (hunt, huntId, options, searchedSessions, user) {
       } else if (hunt.failedSessionIds && hunt.failedSessionIds.length > 0 && changesSearchingFailedSessions) {
         // there are still failed sessions, but there were also changes,
         // so keep going
+        // uninitialize hunts so that the running job with failed sessions will kick off again
+        internals.proccessHuntJobsInitialized = false;
         return continueProcess();
       } else if (!changesSearchingFailedSessions) {
         options.searchingFailedSessions = false; // no longer searching failed sessions
@@ -7780,7 +7782,7 @@ function runHuntJob (huntId, hunt, query, user) {
   let searchedSessions;
 
   // look for failed sessions if we're done searching sessions normally
-  if (hunt.searchedSessions === hunt.totalSessions && hunt.failedSessionIds && hunt.failedSessionIds.length) {
+  if (!options.searchingFailedSessions && hunt.searchedSessions === hunt.totalSessions && hunt.failedSessionIds && hunt.failedSessionIds.length) {
     options.searchingFailedSessions = true;
     return huntFailedSessions(hunt, huntId, options, searchedSessions, user);
   }
