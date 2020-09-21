@@ -3893,9 +3893,12 @@ qq/ {
 } elsif ($ARGV[1] =~ /^reindex$/) {
     my ($src, $dst);
 
-    my $NOPCAP = 0;
+    my $MODE = 0;
     if ($ARGV[-1] eq "--nopcap") {
-        $NOPCAP = 1;
+        $MODE = 1;
+        pop @ARGV;
+    } elsif ($ARGV[-1] eq "--nopacketlen") {
+        $MODE = 2;
         pop @ARGV;
     }
 
@@ -3921,8 +3924,10 @@ qq/ {
     }
 
     my $query = {"source" => {"index" => $src}, "dest" => {"index" => $dst}, "conflicts" => "proceed"};
-    if ($NOPCAP) {
+    if ($MODE == 1) {
         $query->{script} = {"source" => 'ctx._source.remove("packetPos");ctx._source.remove("packetLen");ctx._source.remove("fileId");'};
+    } elsif ($MODE == 2) {
+        $query->{script} = {"source" => 'ctx._source.remove("packetLen");'};
     }
 
     my $result = esPost("/_reindex?wait_for_completion=false&slices=auto", to_json($query));
