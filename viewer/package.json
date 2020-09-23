@@ -38,7 +38,6 @@
     "lint": "cd .. ; npm run lint-viewer"
   },
   "devDependencies": {
-    "autoprefixer": "^7.1.2",
     "babel-core": "^6.22.1",
     "babel-helper-vue-jsx-merge-props": "^2.0.3",
     "babel-loader": "^7.1.1",
@@ -65,9 +64,6 @@
     "optimize-css-assets-webpack-plugin": "^5.0.3",
     "ora": "^1.2.0",
     "portfinder": "^1.0.13",
-    "postcss-import": "^11.0.0",
-    "postcss-loader": "2.1.4",
-    "postcss-url": "^7.2.1",
     "qs": "^6.5.1",
     "rimraf": "^2.6.0",
     "sanitize-html": "^1.18.2",
