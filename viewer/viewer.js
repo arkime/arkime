@@ -7692,12 +7692,14 @@ function continueHuntSkipSession (hunt, huntId, session, sessionId, searchedSess
   if (!hunt.failedSessionIds) {
     hunt.failedSessionIds = [ sessionId ];
   } else {
-    if (hunt.failedSessionIds.length > 10000) { // TODO ECR - is this a good limit? ES doesn't specifically have an array size limit, but it does get costly to update a document if there is a large field
+    // pause the hunt if there are more than 10k failed sessions
+    if (hunt.failedSessionIds.length > 10000) {
       return pauseHuntJobWithError(huntId, hunt, {
         value: 'Error hunting: Too many sessions are unreachable. Please contact your administrator.'
       });
     }
     // make sure the session id is not already in the array
+    // if it's not the first pass and a node is still down, this could be a duplicate
     if (hunt.failedSessionIds.indexOf(sessionId) < 0) {
       hunt.failedSessionIds.push(sessionId);
     }

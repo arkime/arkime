@@ -1377,12 +1377,10 @@ export default {
           if (this.runningJob.failedSessionIds && this.runningJob.failedSessionIds.length) {
             searchedSessions = searchedSessions - this.runningJob.failedSessionIds.length;
           }
-          let progress = (searchedSessions / this.runningJob.totalSessions) * 100;
-          console.log('running job progress', progress); // TODO ECR remvoe
           this.$set(
             this.runningJob,
             'progress',
-            progress
+            (searchedSessions / this.runningJob.totalSessions) * 100
           );
         }
         this.calculateQueue();
