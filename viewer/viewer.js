@@ -7692,13 +7692,18 @@ function continueHuntSkipSession (hunt, huntId, session, sessionId, searchedSess
   if (!hunt.failedSessionIds) {
     hunt.failedSessionIds = [ sessionId ];
   } else {
+    if (hunt.failedSessionIds.length > 10000) { // TODO ECR - is this a good limit? ES doesn't specifically have an array size limit, but it does get costly to update a document if there is a large field
+      return pauseHuntJobWithError(huntId, hunt, {
+        value: 'Error hunting: Too many sessions are unreachable. Please contact your administrator.'
+      });
+    }
     // make sure the session id is not already in the array
     if (hunt.failedSessionIds.indexOf(sessionId) < 0) {
       hunt.failedSessionIds.push(sessionId);
     }
   }
 
-  updateHuntStats(hunt, huntId, session, searchedSessions, cb);
+  return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
 }
 
 // if there are failed sessions, go through them one by one and do a packet search
@@ -7769,7 +7774,7 @@ function huntFailedSessions (hunt, huntId, options, searchedSessions, user) {
         // there were no changes, we're still struggling to connect to one or
         // more renote nodes, so error out
         return pauseHuntJobWithError(huntId, hunt, {
-          value: `Error hunting previously unreachable sessions. There is likely a node down. Please contact your administrator.`
+          value: 'Error hunting previously unreachable sessions. There is likely a node down. Please contact your administrator.'
         });
       }
     });
