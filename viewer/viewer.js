@@ -285,7 +285,7 @@ app.use(compression());
 app.use(methodOverride());
 
 app.use('/font-awesome', express.static(path.join(__dirname, '/../node_modules/font-awesome'), { maxAge: 600 * 1000 }));
-app.use('/bootstrap', express.static(path.join(__dirname, '/node_modules/bootstrap'), { maxAge: 600 * 1000 }));
+app.use('/bootstrap', express.static(path.join(__dirname, '/../node_modules/bootstrap'), { maxAge: 600 * 1000 }));
 
 app.use('/', express.static(path.join(__dirname, '/public'), { maxAge: 600 * 1000 }));
 
