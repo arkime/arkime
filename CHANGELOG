@@ -35,6 +35,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - parliament - show bits instead of bytes
   - db - new reindex command
   - capture - http2 header fields were not always indexed correctly
+  - capture - fix g_hash_table_contains warning
   - moloch_update_geo.sh - fix possible security issue
 
 

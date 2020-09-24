@@ -957,7 +957,7 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
             good = 0;
             while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
 
-                if (g_hash_table_contains(rule->hash[p], ikey) ||
+                if ((rule->hash[p] && g_hash_table_contains(rule->hash[p], ikey)) ||
                     moloch_rules_check_match(rule->match[p], ikey)) {
 
                     good = 1;
@@ -966,13 +966,13 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
             }
             break;
         case MOLOCH_FIELD_TYPE_STR:
-            good = g_hash_table_contains(rule->hash[p], session->fields[p]->str) ||
+            good = (rule->hash[p] && g_hash_table_contains(rule->hash[p], session->fields[p]->str)) ||
                    moloch_rules_check_match(rule->match[p], session->fields[p]->str);
             break;
         case MOLOCH_FIELD_TYPE_STR_ARRAY:
             good = 0;
             for(i = 0; i < (int)session->fields[p]->sarray->len; i++) {
-                if (g_hash_table_contains(rule->hash[p], g_ptr_array_index(session->fields[p]->sarray, i)) ||
+                if ((rule->hash[p] && g_hash_table_contains(rule->hash[p], g_ptr_array_index(session->fields[p]->sarray, i))) ||
                     moloch_rules_check_match(rule->match[p], g_ptr_array_index(session->fields[p]->sarray, i))) {
 
                     good = 1;
@@ -984,7 +984,7 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
             shash = session->fields[p]->shash;
             good = 0;
             HASH_FORALL(s_, *shash, hstring,
-                if (g_hash_table_contains(rule->hash[p], (gpointer)hstring->str) ||
+                if ((rule->hash[p] && g_hash_table_contains(rule->hash[p], (gpointer)hstring->str)) ||
                     moloch_rules_check_match(rule->match[p], (gpointer)hstring->str)) {
 
                     good = 1;
