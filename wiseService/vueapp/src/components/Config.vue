@@ -1,7 +1,7 @@
 <template>
   <!-- container -->
   <div>
-    <Alert :initialAlert="alertState.text" :variant="alertState.variant" v-on:clear-initialAlert="alertState = {text: '', variant: ''}"/>
+    <Alert :initialAlert="alertState.text" :variant="alertState.variant" v-on:clear-initialAlert="alertState.text = ''"/>
 
     <b-button
       class="ml-auto mr-2"
@@ -408,6 +408,14 @@ export default {
         });
     },
     saveSourceFile: function () {
+      if (!this.currConfigBefore.hasOwnProperty(this.selectedSourceKey)) {
+        this.alertState = {
+          text: `Wise config does not exist. Make sure to save config before the file!`,
+          variant: 'alert-danger'
+        };
+        return;
+      }
+
       WiseService.saveSourceFile(this.selectedSourceKey, this.currFile)
         .then((data) => {
           if (!data.success) {
