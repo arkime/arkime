@@ -189,6 +189,7 @@ sub showHelp($)
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
     print "    --history <num>            - Number of weeks of history to keep, default 13\n";
     print "  reindex <src> [<dst>]        - Reindex ES indices\n";
+    print "    --nopcap                   - Remove fields having to do with pcap files\n";
     print "\n";
     print "Backup and Restore Commands:\n";
     print "  backup <basename> <opts>     - Backup everything but sessions; filenames created start with <basename>\n";
@@ -3095,7 +3096,7 @@ showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
 parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean)$/);
-parseArgs(3) if ($ARGV[1] =~ /^(restore)$/);
+parseArgs(3) if ($ARGV[1] =~ /^(restore|backup)$/);
 
 $ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean|shrink|ilm)$/);
 
@@ -3145,8 +3146,6 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     close($fh);
     exit 0;
 } elsif ($ARGV[1] =~ /^backup$/) {
-    parseArgs(3);
-
     sub bopen {
         my ($index) = @_;
         if ($GZ) {
@@ -3893,6 +3892,16 @@ qq/ {
     exit 0;
 } elsif ($ARGV[1] =~ /^reindex$/) {
     my ($src, $dst);
+
+    my $MODE = 0;
+    if ($ARGV[-1] eq "--nopcap") {
+        $MODE = 1;
+        pop @ARGV;
+    } elsif ($ARGV[-1] eq "--nopacketlen") {
+        $MODE = 2;
+        pop @ARGV;
+    }
+
     if (scalar @ARGV == 3) {
         $src = $ARGV[2];
         if ($src =~ /\*/) {
@@ -3914,7 +3923,14 @@ qq/ {
         showHelp("Invalid arguments");
     }
 
-    my $result = esPost("/_reindex?wait_for_completion=false&slices=auto", to_json({"source" => {"index" => $src}, "dest" => {"index" => $dst}, "conflicts" => "proceed"}));
+    my $query = {"source" => {"index" => $src}, "dest" => {"index" => $dst}, "conflicts" => "proceed"};
+    if ($MODE == 1) {
+        $query->{script} = {"source" => 'ctx._source.remove("packetPos");ctx._source.remove("packetLen");ctx._source.remove("fileId");'};
+    } elsif ($MODE == 2) {
+        $query->{script} = {"source" => 'ctx._source.remove("packetLen");'};
+    }
+
+    my $result = esPost("/_reindex?wait_for_completion=false&slices=auto", to_json($query));
     die Dumper($result) if (! exists $result->{task});
     my $task = $result->{task};
     print "task: $task\n";
