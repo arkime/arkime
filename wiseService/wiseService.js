@@ -46,6 +46,7 @@ require('console-stamp')(console, '[HH:MM:ss.l]');
 
 var internals = {
   configFile: '/data/moloch/etc/wiseService.ini',
+  fileDirs: ['/data/moloch/wisefiles'],
   debug: 0,
   insecure: false,
   fieldsTS: 0,
@@ -117,18 +118,36 @@ function processArgs (argv) {
     } else if (argv[i] === '--workers') {
       i++;
       internals.workers = +argv[i];
+    } else if (argv[i] === '--filedirs') {
+      i++;
+      internals.fileDirs = argv[i].split(',');
     } else if (argv[i] === '--help') {
       console.log('wiseService.js [<options>]');
       console.log('');
       console.log('Options:');
       console.log('  --debug               Increase debug level, multiple are supported');
+      console.log('  --filedirs            A comma separated list of directories where files editable');
+      console.log('                        from web can live, default /data/moloch/wisefiles');
       console.log('  --webconfig           Allow the config to be edited from web page');
       console.log('  --workers <b>         Number of worker processes to create');
 
       process.exit(0);
     }
   }
+
+  // Make sure filedirs directories exist and get the real path
+  if (internals.webconfig) {
+    for (let i = 0; i < internals.fileDirs.length; i++) {
+      try {
+        internals.fileDirs[i] = fs.realpathSync(internals.fileDirs[i]);
+      } catch (e) {
+        console.log(`ERROR - can't access ${internals.fileDirs[i]}, either create the directory or use --filedirs options`);
+        process.exit(0);
+      }
+    }
+  }
 }
+
 processArgs(process.argv);
 
 if (internals.workers > 1) {
@@ -283,7 +302,6 @@ function setupAuth () {
 }
 // ----------------------------------------------------------------------------
 function doAuth (req, res, next) {
-  console.log(`ALW - Auth type: ${internals.userNameHeader} for url ${req.url}`);
   if (internals.userNameHeader === 'anonymous') {
     req.user = { userId: 'anonymous', enabled: true, createEnabled: true, webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true };
     return next();
@@ -414,6 +432,11 @@ function splitRemain (str, separator, limit) {
     return ret;
 }
 // ----------------------------------------------------------------------------
+function isFileDirs (path) {
+  path = fs.realpathSync(path);
+  return internals.fileDirs.some(c => path.startsWith(c));
+}
+// ----------------------------------------------------------------------------
 function buildSourceApi () {
   internals.sourceApi = {
     getConfig: getConfig,
@@ -536,6 +559,8 @@ function buildSourceApi () {
         internals.configDefs[sourceName] = configDef;
       }
     },
+    isFileDirs: isFileDirs,
+    isWebConfig: function () { return internals.webconfig; },
     funcName: funcName,
     app: app
   };
@@ -1010,9 +1035,9 @@ app.get('/config/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
     return obj;
   }, {});
 
-  return res.send({success: true,
+  return res.send({ success: true,
                    config: config,
-                   filePath: internals.configFile});
+                   filePath: internals.configFile });
 });
 // ----------------------------------------------------------------------------
 app.put('/config/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser], (req, res) => {

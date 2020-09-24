@@ -369,7 +369,7 @@ export default {
         .then((data) => {
           if (!data.success) {
             this.alertState = {
-              text: err.text || `Error fetching config from wise.`,
+              text: data.text || `Error fetching config from wise.`,
               variant: 'alert-danger'
             };
             return;
