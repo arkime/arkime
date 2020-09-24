@@ -18,7 +18,7 @@ PCAP=1.9.1
 CURL=7.72.0
 LUA=5.3.5
 DAQ=2.0.7
-NODE=12.18.2
+NODE=12.18.4
 NGHTTP2=1.41.0
 
 TDIR="/data/moloch"
@@ -247,7 +247,7 @@ else
     wget https://github.com/nghttp2/nghttp2/releases/download/v$NGHTTP2/nghttp2-$NGHTTP2.tar.gz
   fi
 
-  if [ ! -f "nghttp2-$NGHTTP2/lib/.libs/libcurl.a" ]; then
+  if [ ! -f "nghttp2-$NGHTTP2/lib/.libs/libnghttp2.a" ]; then
     tar zxf nghttp2-$NGHTTP2.tar.gz
     ( cd nghttp2-$NGHTTP2; ./configure --enable-lib-only; $MAKE)
     if [ $? -ne 0 ]; then

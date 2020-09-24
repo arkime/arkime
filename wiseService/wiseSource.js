@@ -276,11 +276,7 @@ WISESource.combineResults = function (results) {
   return buf;
 };
 // ----------------------------------------------------------------------------
-WISESource.result2Str = function (result, indent) {
-  if (!indent) {
-    indent = '';
-  }
-
+WISESource.result2Str = function (result) {
   let collection = [];
   var offset = 1;
   for (var i = 0; i < result[0]; i++) {

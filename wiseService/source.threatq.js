@@ -168,7 +168,7 @@ exports.initSource = function (api) {
     types: ['ip', 'domain', 'md5', 'email'],
     cacheable: false,
     fields: [
-      { name: 'key', required: true, help: 'The API key' },
+      { name: 'key', password: true, required: true, help: 'The API key' },
       { name: 'host', required: true, help: 'Server hostname location' }
     ]
   });

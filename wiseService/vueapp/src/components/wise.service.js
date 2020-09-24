@@ -40,7 +40,7 @@ export default {
   },
   getConfigDefs: function () {
     return new Promise((resolve, reject) => {
-      Vue.axios.get('configDefs')
+      Vue.axios.get('config/defs')
         .then((response) => {
           resolve(response.data);
         })
@@ -64,7 +64,7 @@ export default {
   },
   getSourceFile: function (sourceName) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get('/source/' + sourceName + '/get')
+      Vue.axios.get('source/' + sourceName + '/get')
         .then((response) => {
           resolve(response.data);
         })
@@ -77,7 +77,7 @@ export default {
   saveSourceFile: function (sourceName, data) {
     // TODO: new file saving
     return new Promise((resolve, reject) => {
-      Vue.axios.put('/source/' + sourceName + '/save', { raw: data })
+      Vue.axios.put('source/' + sourceName + '/save', { raw: data })
         .then((response) => {
           resolve(response.data);
         })

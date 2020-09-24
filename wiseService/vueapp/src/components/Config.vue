@@ -367,6 +367,14 @@ export default {
     loadCurrConfig: function () {
       WiseService.getCurrConfig()
         .then((data) => {
+          if (!data.success) {
+            this.alertState = {
+              text: data.text || `Error fetching config from wise.`,
+              variant: 'alert-danger'
+            };
+            return;
+          }
+
           this.alertState = { text: '', variant: '' };
 
           if (data.filePath) {
@@ -375,13 +383,13 @@ export default {
 
           // Always include services even if omitted from config file
           Object.keys(this.configDefs).filter(key => this.configDefs[key].service).forEach((serviceKey) => {
-            if (!data.currConfig.hasOwnProperty(serviceKey)) {
-              data.currConfig[serviceKey] = {};
+            if (!data.config.hasOwnProperty(serviceKey)) {
+              data.config[serviceKey] = {};
             }
           });
 
-          this.currConfig = data.currConfig;
-          this.currConfigBefore = JSON.parse(JSON.stringify(data.currConfig));
+          this.currConfig = data.config;
+          this.currConfigBefore = JSON.parse(JSON.stringify(data.config));
         })
         .catch((err) => {
           this.alertState = {

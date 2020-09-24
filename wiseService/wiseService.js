@@ -21,7 +21,6 @@
 const ini = require('iniparser');
 const express = require('express');
 const fs = require('fs');
-const util = require('util');
 const http = require('http');
 const https = require('https');
 const glob = require('glob');
@@ -47,6 +46,7 @@ require('console-stamp')(console, '[HH:MM:ss.l]');
 
 var internals = {
   configFile: '/data/moloch/etc/wiseService.ini',
+  fileDirs: ['/data/moloch/wisefiles'],
   debug: 0,
   insecure: false,
   fieldsTS: 0,
@@ -64,7 +64,7 @@ var internals = {
         { name: 'certFile', required: false, help: 'Path to PEM encoded cert file' },
         { name: 'userNameHeader', required: true, help: 'How should auth be done: anonymous - no auth, digest - digest auth, any other value is the http header to use for username', regex: '.' },
         { name: 'httpRealm', ifField: 'userNameHeader', ifValue: 'digest', required: false, help: 'The realm to use for digest requests. Must be the same as viewer is using. Default Moloch' },
-        { name: 'passwordSecret', ifField: 'userNameHeader', ifValue: 'digest', required: false, help: 'The secret used to encrypted password hashes. Must be the same as viewer is using. Default password' },
+        { name: 'passwordSecret', ifField: 'userNameHeader', ifValue: 'digest', required: false, password: true, help: 'The secret used to encrypted password hashes. Must be the same as viewer is using. Default password' },
         { name: 'usersElasticsearch', required: false, help: 'The URL to connect to elasticsearch. Default http://localhost:9200' },
         { name: 'usersPrefix', required: false, help: 'The prefix used with db.pl --prefix, usually empty' },
         { name: 'sourcePath', required: false, help: 'Where to look for the source files. Defaults to "./"' }
@@ -79,8 +79,8 @@ var internals = {
         { name: 'cacheSize', required: false, help: 'How many elements to cache in memory. Defaults to 100000' },
         { name: 'url', required: false, ifField: 'type', ifValue: 'redis', help: 'Format is redis://[[user]:[password]@]host:port[/db-number]' },
         { name: 'redisName', required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'User name for redis' },
-        { name: 'redisPassword', required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Password for redis' },
-        { name: 'sentinelPassword', required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Password for sentinel' },
+        { name: 'redisPassword', password: true, required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Password for redis' },
+        { name: 'sentinelPassword', password: true, required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Password for sentinel' },
         { name: 'redisSentinels', required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Semicolon separated list of host:port. Defaults to localhost:26379' },
         { name: 'redisClusters', required: false, ifField: 'type', ifValue: 'redis-cluster', help: 'Semicolon separated list of host:port. Defaults to localhost:26379' }
       ]
@@ -94,7 +94,7 @@ var internals = {
   rightClicks: {},
   workers: 1,
   regressionTests: false,
-  configweb: false
+  webconfig: false
 };
 
 internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 'sha256'];
@@ -113,23 +113,41 @@ function processArgs (argv) {
       internals.debug++;
     } else if (argv[i] === '--regressionTests') {
       internals.regressionTests = true;
-    } else if (argv[i] === '--configweb') {
-      internals.configweb = true;
+    } else if (argv[i] === '--webconfig') {
+      internals.webconfig = true;
     } else if (argv[i] === '--workers') {
       i++;
       internals.workers = +argv[i];
+    } else if (argv[i] === '--filedirs') {
+      i++;
+      internals.fileDirs = argv[i].split(',');
     } else if (argv[i] === '--help') {
       console.log('wiseService.js [<options>]');
       console.log('');
       console.log('Options:');
       console.log('  --debug               Increase debug level, multiple are supported');
-      console.log('  --configweb           Allow the config to be edited from web page');
+      console.log('  --filedirs            A comma separated list of directories where files editable');
+      console.log('                        from web can live, default /data/moloch/wisefiles');
+      console.log('  --webconfig           Allow the config to be edited from web page');
       console.log('  --workers <b>         Number of worker processes to create');
 
       process.exit(0);
     }
   }
+
+  // Make sure filedirs directories exist and get the real path
+  if (internals.webconfig) {
+    for (let i = 0; i < internals.fileDirs.length; i++) {
+      try {
+        internals.fileDirs[i] = fs.realpathSync(internals.fileDirs[i]);
+      } catch (e) {
+        console.log(`ERROR - can't access ${internals.fileDirs[i]}, either create the directory or use --filedirs options`);
+        process.exit(0);
+      }
+    }
+  }
 }
+
 processArgs(process.argv);
 
 if (internals.workers > 1) {
@@ -284,7 +302,6 @@ function setupAuth () {
 }
 // ----------------------------------------------------------------------------
 function doAuth (req, res, next) {
-  console.log(`ALW - Auth type: ${internals.userNameHeader} for url ${req.url}`);
   if (internals.userNameHeader === 'anonymous') {
     req.user = { userId: 'anonymous', enabled: true, createEnabled: true, webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true };
     return next();
@@ -316,8 +333,8 @@ function doAuth (req, res, next) {
 }
 // ----------------------------------------------------------------------------
 function isConfigWeb (req, res, next) {
-  if (!internals.configweb) {
-    return res.send({ success: false, text: 'Must start wiseService with --configweb option' });
+  if (!internals.webconfig) {
+    return res.send({ success: false, text: 'Must start wiseService with --webconfig option' });
   }
   return next();
 }
@@ -413,6 +430,11 @@ function splitRemain (str, separator, limit) {
     ret.push(str.join(separator));
 
     return ret;
+}
+// ----------------------------------------------------------------------------
+function isFileDirs (path) {
+  path = fs.realpathSync(path);
+  return internals.fileDirs.some(c => path.startsWith(c));
 }
 // ----------------------------------------------------------------------------
 function buildSourceApi () {
@@ -537,6 +559,8 @@ function buildSourceApi () {
         internals.configDefs[sourceName] = configDef;
       }
     },
+    isFileDirs: isFileDirs,
+    isWebConfig: function () { return internals.webconfig; },
     funcName: funcName,
     app: app
   };
@@ -953,7 +977,7 @@ app.get('/sources', [noCacheJson], (req, res) => {
   return res.send(Object.keys(internals.sources).sort());
 });
 // ----------------------------------------------------------------------------
-app.get('/source/:source/get', [doAuth, noCacheJson], (req, res) => {
+app.get('/source/:source/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
   const source = internals.sources[req.params.source];
   if (!source) {
     return res.send({ success: false, text: `Source ${req.params.source} not found` });
@@ -991,24 +1015,29 @@ app.put('/source/:source/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, j
   });
 });
 // ----------------------------------------------------------------------------
-app.get('/configDefs', [noCacheJson], function (req, res) {
+app.get('/config/defs', [noCacheJson], function (req, res) {
   return res.send(internals.configDefs);
 });
 // ----------------------------------------------------------------------------
-app.get('/config/get', [doAuth, noCacheJson], (req, res) => {
-  const loadedConfig = {};
-
-  loadedConfig.currConfig = Object.keys(internals.config)
+app.get('/config/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
+  let config = Object.keys(internals.config)
   .filter(key => internals.configDefs[key.split(':')[0]])
   .reduce((obj, key) => {
-    obj[key] = internals.config[key];
+    // Deep Copy
+    obj[key] = JSON.parse(JSON.stringify(internals.config[key]));
+
+    // Replace passwords
+    internals.configDefs[key.split(':')[0]].fields.forEach((item) => {
+      if (item.password !== true) { return; }
+      if (obj[key][item.name] === undefined || obj[key][item.name].length === 0) { return; }
+      obj[key][item.name] = '********';
+    });
     return obj;
   }, {});
 
-  // TODO: change name to configFilePath or remove it
-  loadedConfig.filePath = internals.configFile;
-
-  return res.send(loadedConfig);
+  return res.send({ success: true,
+                   config: config,
+                   filePath: internals.configFile });
 });
 // ----------------------------------------------------------------------------
 app.put('/config/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser], (req, res) => {
@@ -1020,7 +1049,6 @@ app.put('/config/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParse
   console.log(config);
 
   for (let section in config) {
-    console.log('section', section);
     const sectionType = section.split(':')[0];
     const configDef = internals.configDefs[sectionType];
     if (configDef === undefined) {
@@ -1036,6 +1064,11 @@ app.put('/config/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParse
       const field = configDef.fields.find(element => element.name === key);
       if (field === undefined) {
         return res.send({ success: false, text: `Section ${section} field ${key} unknown` });
+      }
+      if (field.password === true) {
+        if (config[section][key] === '********') {
+          config[section][key] = internals.config[section][key];
+        }
       }
     };
   }

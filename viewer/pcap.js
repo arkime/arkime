@@ -914,7 +914,6 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
       packets2.push(packets[i]);
     }
     packets = packets2;
-    packets2 = [];
 
     if (packets.length === 0) {
       return cb(null, packets);

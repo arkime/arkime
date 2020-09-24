@@ -17,9 +17,9 @@
  */
 'use strict';
 
-var AWS = require('aws-sdk');
-var async = require('async');
-var zlib = require('zlib');
+const AWS = require('aws-sdk');
+const async = require('async');
+const zlib = require('zlib');
 var S3s = {};
 var Config;
 var Db;
@@ -41,14 +41,15 @@ function splitRemain (str, separator, limit) {
 }
 /// ///////////////////////////////////////////////////////////////////////////////
 function makeS3 (node, region) {
+  var key = Config.getFull(node, 's3AccessKeyId');
+
   var s3 = S3s[region + key];
   if (s3) {
     return s3;
   }
 
-  var s3Params = {region: region};
+  var s3Params = { region: region };
 
-  var key = Config.getFull(node, 's3AccessKeyId');
   if (key) {
     var secret = Config.getFull(node, 's3SecretAccessKey');
     if (!secret) {
@@ -60,11 +61,11 @@ function makeS3 (node, region) {
   }
 
   if (Config.getFull(node, 's3Host') !== undefined) {
-    s3Params.endpoint = Config.getFull(node, 's3Host')
+    s3Params.endpoint = Config.getFull(node, 's3Host');
   }
 
-  var bucket = Config.getFull(node, 's3Bucket')
-  var bucketHasDot = bucket.indexOf('.') >= 0
+  var bucket = Config.getFull(node, 's3Bucket');
+  var bucketHasDot = bucket.indexOf('.') >= 0;
   if (Config.getBoolFull(node, 's3PathAccessStyle', bucketHasDot) === true) {
     s3Params.s3ForcePathStyle = true;
   }
@@ -136,7 +137,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
           async.each(data.subPackets, function (sp, nextCb) {
             var block = decompressed[sp.rangeStart];
             var packetData = block.subarray(sp.packetStart, sp.packetEnd);
-            var len = (pcap.bigEndian?packetData.readUInt32BE(8):packetData.readUInt32LE(8));
+            var len = (pcap.bigEndian ? packetData.readUInt32BE(8) : packetData.readUInt32LE(8));
 
             packetCb(pcap, packetData.subarray(0, len + 16), nextCb, sp.itemPos);
           },
@@ -144,7 +145,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         } else {
           async.each(data.subPackets, function (sp, nextCb) {
             var packetData = s3data.Body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart);
-            var len = (pcap.bigEndian?packetData.readUInt32BE(8):packetData.readUInt32LE(8));
+            var len = (pcap.bigEndian ? packetData.readUInt32BE(8) : packetData.readUInt32LE(8));
 
             packetCb(pcap, packetData.subarray(0, len + 16), nextCb, sp.itemPos);
           },
@@ -241,10 +242,10 @@ function s3Expire () {
     size: 1000,
     query: { bool: {
       must: [
-        {range: {first: {lte: Math.floor(Date.now() / 1000 - (+Config.get('s3ExpireDays')) * 60 * 60 * 24)}}},
-        {prefix: {name: 's3://'}}
+        { range: { first: { lte: Math.floor(Date.now() / 1000 - (+Config.get('s3ExpireDays')) * 60 * 60 * 24) } } },
+        { prefix: { name: 's3://' } }
       ]
-    }},
+    } },
     sort: { first: { order: 'asc' } } };
   Db.search('files', 'file', query, function (err, data) {
     if (!data.hits || !data.hits.hits) {
@@ -255,9 +256,9 @@ function s3Expire () {
     data.hits.hits.forEach(function (item) {
       var parts = splitRemain(item._source.name, '/', 4);
       var s3 = makeS3(item._source.node, parts[2]);
-      s3.deleteObject({Bucket: parts[3], Key: parts[4]}, function (err, data) {
+      s3.deleteObject({ Bucket: parts[3], Key: parts[4] }, function (err, data) {
         if (err) {
-          console.log("Couldn't delete from S3", item._id, item._source);
+          console.log(`Couldn't delete from S3`, item._id, item._source);
         } else {
           Db.deleteDocument('files', 'file', item._id, function (err, data) {
             if (err) {
@@ -271,7 +272,7 @@ function s3Expire () {
 }
 /// ///////////////////////////////////////////////////////////////////////////////
 exports.init = function (config, emitter, api) {
-  api.registerWriter('s3', {localNode: false, processSessionId: processSessionIdS3});
+  api.registerWriter('s3', { localNode: false, processSessionId: processSessionIdS3 });
   Config = config;
   Db = api.getDb();
   Pcap = api.getPcap();

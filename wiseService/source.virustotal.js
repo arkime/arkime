@@ -197,7 +197,7 @@ exports.initSource = function (api) {
     description: 'Link to the virustotal data',
     types: ['md5'],
     fields: [
-      { name: 'key', required: true, help: 'The API key' },
+      { name: 'key', password: true, required: true, help: 'The API key' },
       { name: 'contentTypes', required: false, help: 'Which content types to look up' },
       { name: 'queriesPerMinute', required: false, help: 'The number of queries per minute (defaults to 3)' },
       { name: 'maxOutstanding', required: false, help: 'Max number of outstanding queries at one time (defaults to 25)' },

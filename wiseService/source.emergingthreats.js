@@ -148,7 +148,7 @@ exports.initSource = function (api) {
     types: ['ip', 'domain'],
     cacheable: false,
     fields: [
-      { name: 'key', required: true, help: 'The API key' }
+      { name: 'key', password: true, required: true, help: 'The API key' }
     ]
   });
 
