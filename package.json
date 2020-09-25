@@ -95,7 +95,8 @@
     "postcss-import": "^12.0.1",
     "postcss-loader": "^4.0.2",
     "postcss-url": "^8.0.0",
-    "semver": "^7.3.2"
+    "semver": "^7.3.2",
+    "shelljs": "^0.8.4"
   },
   "optionalDependencies": {}
 }
