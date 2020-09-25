@@ -26,7 +26,6 @@
     "html-webpack-plugin": "^4.3.0",
     "nodemon": "^2.0.4",
     "optimize-css-assets-webpack-plugin": "^5.0.3",
-    "ora": "^4.0.4",
     "portfinder": "^1.0.26",
     "rimraf": "^3.0.2",
     "semver": "^7.3.2",
