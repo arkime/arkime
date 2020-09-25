@@ -52,7 +52,6 @@
     "portfinder": "^1.0.13",
     "qs": "^6.5.1",
     "sanitize-html": "^1.18.2",
-    "semver": "^5.3.0",
     "shelljs": "^0.7.6",
     "terser-webpack-plugin": "^2.3.8",
     "vue-bootstrap-datetimepicker": "^5.0.1",
