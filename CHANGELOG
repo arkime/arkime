@@ -30,6 +30,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - can now edit ILM values from ES Admin tab if ./db.pl ilm has been used previously
   - viewer - handle hunts with bad regex better
   - viewer - change capture stats default length to 200
+  - viewer - fix password change with aes256Encryption turned on
   - wise - UI improvements
   - wise - theatstream mode sqlite3 no longer copies the db, use sqlite3-copy for old behaviour
   - parliament - show bits instead of bytes

@@ -2274,8 +2274,8 @@ app.post('/user/password/change', [noCacheJson, checkCookieToken, logAction(), g
     return res.molochError(403, 'New password needs to be at least 3 characters');
   }
 
-  if (!req.user.createEnabled && (req.user.passStore !==
-     Config.pass2store(req.token.userId, req.body.currentPassword) ||
+  if (!req.user.createEnabled && (Config.store2ha1(req.user.passStore) !==
+     Config.store2ha1(Config.pass2store(req.token.userId, req.body.currentPassword)) ||
      req.token.userId !== req.user.userId)) {
     return res.molochError(403, 'Current password mismatch');
   }
