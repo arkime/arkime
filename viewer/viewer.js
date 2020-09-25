@@ -7713,74 +7713,79 @@ function continueHuntSkipSession (hunt, huntId, session, sessionId, searchedSess
 // if there are still failed sessions, but some sessions were searched during the last pass, try again
 // if there are still failed sessions, but no new sessions coudl be searched, pause the job with an error
 function huntFailedSessions (hunt, huntId, options, searchedSessions, user) {
+  if (!hunt.failedSessionIds && !hunt.failedSessionIds.length) { return; }
+
   let changesSearchingFailedSessions = false;
-  if (hunt.failedSessionIds && hunt.failedSessionIds.length) {
-    options.searchingFailedSessions = true;
-    // copy the failed session ids so we can remove them from the hunt
-    // but still loop through them iteratively
-    let failedSessions = JSON.parse(JSON.stringify(hunt.failedSessionIds));
-    // we don't need to search the db for session, we just need to search each session in failedSessionIds
-    async.forEachLimit(failedSessions, 3, function (sessionId, cb) {
-      Db.get(Db.sid2Index(sessionId), 'session', Db.sid2Id(sessionId))
-        .then((session) => {
-          session = session._source;
-          makeRequest(session.node, `${session.node}/hunt/${huntId}/remote/${sessionId}`, user, (err, response) => {
-            if (err) {
-              return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
-            }
 
-            let json = JSON.parse(response);
-
-            if (json.error) {
-              console.log(`Error hunting on remote viewer: ${json.error} - ${path}`);
-              return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
-            }
-
-            // remove from failedSessionIds if it was found
-            hunt.failedSessionIds.splice(hunt.failedSessionIds.indexOf(sessionId), 1);
-            // there were changes to this hunt; we're making progress
-            changesSearchingFailedSessions = true;
-
-            if (json.matched) { hunt.matchedSessions++; }
-            return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
-          });
-      });
-    }, function (err) { // done running a pass of the failed sessions
-      function continueProcess () {
-        Db.setHunt(huntId, hunt, (err, info) => {
-          internals.runningHuntJob = undefined;
-          processHuntJobs(); // Start new hunt
-        });
+  options.searchingFailedSessions = true;
+  // copy the failed session ids so we can remove them from the hunt
+  // but still loop through them iteratively
+  let failedSessions = JSON.parse(JSON.stringify(hunt.failedSessionIds));
+  // we don't need to search the db for session, we just need to search each session in failedSessionIds
+  async.forEachLimit(failedSessions, 3, function (sessionId, cb) {
+    Db.getSession(sessionId, { _source: 'node,huntName,huntId,lastPacket,field' }, (err, session) => {
+      if (err) {
+        return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
       }
 
-      if (hunt.failedSessionIds && hunt.failedSessionIds.length === 0) {
-        options.searchingFailedSessions = false; // no longer searching failed sessions
-        // we had failed sessions but we're done searching through them
-        // so we're completely done with this hunt (inital search and failed sessions)
-        hunt.status = 'finished';
+      session = session._source;
 
-        if (hunt.notifier) {
-          let message = `*${hunt.name}* hunt job finished:\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
-          issueAlert(hunt.notifier, message, continueProcess);
-        } else {
-          return continueProcess();
+      makeRequest(session.node, `${session.node}/hunt/${huntId}/remote/${sessionId}`, user, (err, response) => {
+        if (err) {
+          return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
         }
-      } else if (hunt.failedSessionIds && hunt.failedSessionIds.length > 0 && changesSearchingFailedSessions) {
-        // there are still failed sessions, but there were also changes,
-        // so keep going
-        // uninitialize hunts so that the running job with failed sessions will kick off again
-        internals.proccessHuntJobsInitialized = false;
-        return continueProcess();
-      } else if (!changesSearchingFailedSessions) {
-        options.searchingFailedSessions = false; // no longer searching failed sessions
-        // there were no changes, we're still struggling to connect to one or
-        // more renote nodes, so error out
-        return pauseHuntJobWithError(huntId, hunt, {
-          value: 'Error hunting previously unreachable sessions. There is likely a node down. Please contact your administrator.'
-        });
-      }
+
+        let json = JSON.parse(response);
+
+        if (json.error) {
+          console.log(`Error hunting on remote viewer: ${json.error} - ${path}`);
+          return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
+        }
+
+        // remove from failedSessionIds if it was found
+        hunt.failedSessionIds.splice(hunt.failedSessionIds.indexOf(sessionId), 1);
+        // there were changes to this hunt; we're making progress
+        changesSearchingFailedSessions = true;
+
+        if (json.matched) { hunt.matchedSessions++; }
+        return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
+      });
     });
-  }
+  }, function (err) { // done running a pass of the failed sessions
+    function continueProcess () {
+      Db.setHunt(huntId, hunt, (err, info) => {
+        internals.runningHuntJob = undefined;
+        processHuntJobs(); // Start new hunt
+      });
+    }
+
+    if (hunt.failedSessionIds && hunt.failedSessionIds.length === 0) {
+      options.searchingFailedSessions = false; // no longer searching failed sessions
+      // we had failed sessions but we're done searching through them
+      // so we're completely done with this hunt (inital search and failed sessions)
+      hunt.status = 'finished';
+
+      if (hunt.notifier) {
+        let message = `*${hunt.name}* hunt job finished:\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
+        issueAlert(hunt.notifier, message, continueProcess);
+      } else {
+        return continueProcess();
+      }
+    } else if (hunt.failedSessionIds && hunt.failedSessionIds.length > 0 && changesSearchingFailedSessions) {
+      // there are still failed sessions, but there were also changes,
+      // so keep going
+      // uninitialize hunts so that the running job with failed sessions will kick off again
+      internals.proccessHuntJobsInitialized = false;
+      return continueProcess();
+    } else if (!changesSearchingFailedSessions) {
+      options.searchingFailedSessions = false; // no longer searching failed sessions
+      // there were no changes, we're still struggling to connect to one or
+      // more renote nodes, so error out
+      return pauseHuntJobWithError(huntId, hunt, {
+        value: 'Error hunting previously unreachable sessions. There is likely a node down. Please contact your administrator.'
+      });
+    }
+  });
 }
 
 // Actually do the search against ES and process the results.
