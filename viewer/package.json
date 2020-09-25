@@ -38,7 +38,6 @@
     "lint": "cd .. ; npm run lint-viewer"
   },
   "devDependencies": {
-    "chalk": "^2.0.1",
     "copy-webpack-plugin": "^6.0.3",
     "css-loader": "^3.4.2",
     "d3": "^5.7.0",

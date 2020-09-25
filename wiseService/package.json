@@ -19,7 +19,6 @@
     "lint": "cd .. ; npm run lint-wise"
   },
   "devDependencies": {
-    "chalk": "^4.1.0",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^6.0.3",
     "css-loader": "^3.6.0",

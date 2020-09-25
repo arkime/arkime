@@ -79,6 +79,7 @@
     "babel-preset-stage-2": "^6.24.1",
     "bootstrap": "^4.5.2",
     "bootstrap-vue": "^2.17.3",
+    "chalk": "^4.1.0",
     "eslint": "^6.8.0",
     "eslint-config-standard": "^12.0.0-alpha.0",
     "eslint-friendly-formatter": "^4.0.1",

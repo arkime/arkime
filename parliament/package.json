@@ -24,7 +24,6 @@
     "serve-favicon": "^2.5.0"
   },
   "devDependencies": {
-    "chalk": "^2.0.1",
     "copy-webpack-plugin": "^6.0.3",
     "css-loader": "^2.1.1",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
