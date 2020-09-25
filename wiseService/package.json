@@ -19,7 +19,6 @@
     "lint": "cd .. ; npm run lint-wise"
   },
   "devDependencies": {
-    "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^6.0.3",
     "css-loader": "^3.6.0",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
