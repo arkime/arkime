@@ -47,7 +47,6 @@
     "jquery": "^3.5.0",
     "json-loader": "^0.5.7",
     "moment-timezone": "^0.5.31",
-    "node-notifier": "^5.1.2",
     "nodemon": "^2.0.3",
     "optimize-css-assets-webpack-plugin": "^5.0.3",
     "ora": "^1.2.0",
