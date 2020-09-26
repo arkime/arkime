@@ -297,7 +297,13 @@ void moloch_rules_load_add_field(MolochRule_t *rule, int pos, char *key)
             loading.fieldsTree6[pos] = New_Patricia(128);
         }
 
-        if (strchr(key, '.') != 0) {
+        if (strcmp(key, "ipv4") == 0) {
+            make_and_lookup(rule->tree4[pos], "0.0.0.0/0");
+            node = make_and_lookup(loading.fieldsTree4[pos], "0.0.0.0/0");
+        } else if (strcmp(key, "ipv6") == 0) {
+            make_and_lookup(rule->tree6[pos], "::/0");
+            node = make_and_lookup(loading.fieldsTree6[pos], "::/0");
+        } else if (strchr(key, '.') != 0) {
             make_and_lookup(rule->tree4[pos], key);
             node = make_and_lookup(loading.fieldsTree4[pos], key);
         } else {

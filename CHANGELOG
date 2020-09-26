@@ -37,6 +37,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - db - new reindex command
   - capture - http2 header fields were not always indexed correctly
   - capture - fix g_hash_table_contains warning
+  - capture - rules can use special ip values ipv4 and ipv6 now
   - moloch_update_geo.sh - fix possible security issue
 
 
