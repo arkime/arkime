@@ -18,7 +18,7 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.4.1 2020/09/xx
+2.4.1 2020/09/28
   - NOTICE - db.pl upgrade is required
   - NOTICE - the elasticsearch and usersElasticsearch variables must start with http:// or https://
   - release - node 12.18.4
