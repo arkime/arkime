@@ -18,6 +18,9 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
+2.4.2 2020/10/xx
+  - NOTE - this is the last version to support ES 6
+
 2.4.1 2020/09/28
   - NOTICE - db.pl upgrade is required
   - NOTICE - the elasticsearch and usersElasticsearch variables must start with http:// or https://
