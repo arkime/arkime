@@ -31,6 +31,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - handle hunts with bad regex better
   - viewer - change capture stats default length to 200
   - viewer - fix password change with aes256Encryption turned on
+  - viewer - handle hunts when nodes are down better
   - wise - UI improvements
   - wise - theatstream mode sqlite3 no longer copies the db, use sqlite3-copy for old behaviour
   - parliament - show bits instead of bytes
@@ -106,7 +107,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - fixed left/right keys not working in search bar after visiting stats page
   - viewer - support cancel for multies
   - viewer - cleaned up some of the Help docs
-  - capture - new parsers arp, bgp, igmp, isis, lldp, ospf, pim, 
+  - capture - new parsers arp, bgp, igmp, isis, lldp, ospf, pim,
   - capture - protocol parsing code has been refactored, can now write parsers
               of ethernet and other ip protocols
   - capture - new disableParsers, default of arp.so
