@@ -492,9 +492,106 @@
       </h3>
       <p>
         The Connections page allows a user to view a tree force graph based on a source node and destination node of their choosing. Relationships may be visually determined using this method.
-        For example, set your Src node to ip.src, Dst node to ip.dst:port and you will be able to visualize the relationship of source IP addresses to destination IP address / port combinations.
-        Those who prefer to analyze session data visually may rely heavily on these graphs. The default settings for this page may be set in the settings page.
+        For example, set your source node to ip.src, destination node to ip.dst:port and you will be able to visualize the relationship of source IP addresses to destination IP address / port combinations.
+        Those who prefer to analyze session data visually may rely heavily on these graphs.
       </p>
+      <p>
+        <em>
+          <strong>Note:</strong>
+          The default settings for the source and destination nodes may be set in the settings general page.
+        </em>
+      </p>
+      <div class="ml-4">
+        <h6>
+          <span class="fa fa-mouse-pointer fa-fw"></span>&nbsp;
+          Node/Link Info
+        </h6>
+        <p>
+          Hover over a link or a node to view more information about it. You can configure the fields that you see in these information
+          popups by clicking the <span class="fa fa-circle-o"></span> button to configure the node popups and the
+          <span class="fa fa-link"></span> button to configure link popups.
+          <br>
+          <em>
+            <strong>Tip:</strong>
+            Click the escape button to easily close a popup.
+          </em>
+        </p>
+        <h6>
+          <span class="fa fa-link fa-fw"></span>&nbsp;
+          Node/Link Weight
+        </h6>
+        <p>
+          You can change the weight of the links and nodes in the graph by selecting a different option in the
+          "Node/Link Weight" dropdown menu.
+        </p>
+        <h6>
+          <span class="fa fa-lock fa-fw"></span>&nbsp;
+          Lock Nodes
+        </h6>
+        <p>
+          Click and drag nodes to lock them into place. Click the <span class="fa fa-unlock"></span>
+          button in the top right of the graph to unlock nodes.
+        </p>
+        <h6>
+          <span class="fa fa-download fa-fw"></span>&nbsp;
+          Download Graph
+        </h6>
+        <p>
+          Click the <span class="fa fa-download fa-fw"></span> button in the top right
+          of the graph to download a png of the visible parts of the graph.
+        </p>
+        <h6>
+          <span class="fa fa-arrows-v fa-fw"></span>&nbsp;
+          Link Length
+        </h6>
+        <p>
+          Click the <span class="fa fa-plus"></span><span class="fa fa-arrows-v"></span> and
+          <span class="fa fa-minus"></span><span class="fa fa-arrows-v"></span> buttons to increase or decrease the
+          distance between the nodes.
+        </p>
+        <h6>
+          <span class="fa fa-text-width fa-fw"></span>&nbsp;
+          Text Size
+        </h6>
+        <p>
+          Click the <span class="fa fa-long-arrow-up"></span><span class="fa fa-font"></span> and
+          <span class="fa fa-long-arrow-down"></span><span class="fa fa-font"></span> buttons to increase or decrease the
+          size of the labels beside each node.
+        </p>
+        <h6>
+          <span class="fa fa-search fa-fw"></span>&nbsp;
+          Zoom
+        </h6>
+        <p>
+          Scroll up or down, or click the <span class="fa fa-search-plus"></span> and
+          <span class="fa fa-search-minus"></span> buttons to zoom in an out.
+        </p>
+        <h6>
+          <span class="fa fa-magic fa-fw"></span>&nbsp;
+          Baseline
+        </h6>
+        <p>
+          You can specify a "Baseline" time range to show changes in the network by
+          highlighting new or old conections appearing in and disappearing from the network.
+          You'll see indications next to each node label and in node popups to describe the state of each node:
+          <ul>
+            <li>New nodes ( ✨) - in actual but not baseline results.</li>
+            <li>Old nodes ( 🚫) - only in baseline results.</li>
+            <li>Both nodes - in both actual and baseline results.</li>
+          </ul>
+        </p>
+        <p>
+          Once you have selected a time range as your baseline, you will see a new control called "Baseline Visibility"
+          that allows you to choose from these options:
+          <ul>
+            <li>All Nodes - all nodes are visible</li>
+            <li>Actual Nodes - nodes present in the "current" timeframe query results are visible</li>
+            <li>Baseline Nodes - nodes present in the "baseline" timeframe query results are visible</li>
+            <li>New Nodes Only - nodes present in the "current" but NOT the "baseline" timeframe are visible</li>
+            <li>Baseline Nodes Only - nodes present in the "baseline" but NOT the "current" timeframe are visible</li>
+          </ul>
+        </p>
+      </div>
 
       <hr>
 
