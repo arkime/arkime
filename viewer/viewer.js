@@ -50,6 +50,7 @@ try {
   var uuid = require('uuidv4').default;
   var RE2 = require('re2');
   var path = require('path');
+  var contentDisposition = require('content-disposition');
 } catch (e) {
   console.log("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -6687,7 +6688,7 @@ app.get('/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', checkProxyRequest, f
       return res.end('Error');
     }
     res.setHeader('Content-Type', 'application/force-download');
-    res.setHeader('Content-Disposition', 'attachment; filename=' + req.params.bodyName);
+    res.setHeader('content-disposition', contentDisposition(req.params.bodyName));
     return res.end(data);
   });
 });
@@ -6752,7 +6753,7 @@ app.get('/bodyHash/:hash', logAction('bodyhash'), function (req, res) {
                 return res.end(err);
               } else if (item) {
                 noCache(req, res, 'application/force-download');
-                res.setHeader('content-disposition', 'attachment; filename=' + item.bodyName + '.pellet');
+                res.setHeader('content-disposition', contentDisposition(item.bodyName + '.pellet'));
                 return res.end(item.data);
               } else {
                 res.status(400);
@@ -6784,7 +6785,7 @@ app.get('/:nodeName/:id/bodyHash/:hash', checkProxyRequest, function (req, res) 
       return res.end(err);
     } else if (item) {
       noCache(req, res, 'application/force-download');
-      res.setHeader('content-disposition', 'attachment; filename=' + item.bodyName + '.pellet');
+      res.setHeader('content-disposition', contentDisposition(item.bodyName + '.pellet'));
       return res.end(item.data);
     } else {
       res.status(400);
