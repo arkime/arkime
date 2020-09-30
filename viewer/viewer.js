@@ -8067,6 +8067,45 @@ function updateHuntStatus (req, res, status, successText, errorText) {
   });
 }
 
+function validateUserIds (userIdList) {
+  return new Promise((resolve, reject) => {
+    const query = {
+      _source: ['userId'],
+      from: 0,
+      size: 10000,
+      query: { // exclude the shared user from results
+        bool: { must_not: { term: { userId: '_moloch_shared' } } }
+      }
+    };
+
+    Db.searchUsers(query, (error, users) => {
+      if (error) {
+        reject('Unable to validate userIds');
+      }
+
+      let usersList = [];
+      for (let user of users.hits.hits) {
+        usersList.push(user._source.userId);
+      }
+
+      let validUsers = [];
+      let invalidUsers = [];
+      for (let user of userIdList) {
+        if (usersList.indexOf(user) > -1) {
+          validUsers.push(user);
+        } else {
+          invalidUsers.push(user);
+        }
+      }
+
+      resolve({
+        validUsers: validUsers,
+        invalidUsers: invalidUsers
+      });
+    });
+  });
+}
+
 app.post('/hunt', [noCacheJson, logAction('hunt'), checkCookieToken, checkPermissions(['packetSearch'])], (req, res) => {
   // make sure viewer is not multi
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
@@ -8114,15 +8153,44 @@ app.post('/hunt', [noCacheJson, logAction('hunt'), checkCookieToken, checkPermis
     stopTime: req.body.hunt.query.stopTime,
     view: req.body.hunt.query.view
   };
-  hunt.users = commaStringToArray(req.body.hunt.users);
 
-  Db.createHunt(hunt, function (err, result) {
-    if (err) { console.log('create hunt error', err, result); }
-    hunt.id = result._id;
-    processHuntJobs(() => {
-      return res.send(JSON.stringify({ success: true, hunt: hunt }));
+  function doneCb (hunt, invalidUsers) {
+    Db.createHunt(hunt, function (err, result) {
+      if (err) { console.log('create hunt error', err, result); }
+      hunt.id = result._id;
+      processHuntJobs(() => {
+        let response = {
+          success: true,
+          hunt: hunt
+        };
+
+        if (invalidUsers) {
+          response.invalidUsers = invalidUsers;
+        }
+
+        return res.send(JSON.stringify(response));
+      });
     });
-  });
+  }
+
+  if (!req.body.hunt.users || !req.body.hunt.users.length) {
+    return doneCb(hunt);
+  }
+
+  let reqUsers = commaStringToArray(req.body.hunt.users);
+
+  validateUserIds(reqUsers)
+    .then((response) => {
+      hunt.users = response.validUsers;
+
+      // dedupe the array of users
+      hunt.users = [...new Set(hunt.users)];
+
+      return doneCb(hunt, response.invalidUsers);
+    })
+    .catch((error) => {
+      res.molochError(500, error);
+    });
 });
 
 app.get('/hunt/list', [noCacheJson, recordResponseTime, checkPermissions(['packetSearch']), setCookie], (req, res) => {
@@ -8222,6 +8290,87 @@ app.put('/hunt/:id/pause', [noCacheJson, logAction('hunt/:id/pause'), checkCooki
 app.put('/hunt/:id/play', [noCacheJson, logAction('hunt/:id/play'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
   updateHuntStatus(req, res, 'queued', 'Queued hunt item successfully', 'Error starting hunt job');
+});
+
+app.delete('/hunt/:id/users/:user', [noCacheJson, logAction('hunt/:id/users/:user'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
+  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
+
+  Db.get('hunts', 'hunt', req.params.id, (err, hit) => {
+    if (err) {
+      console.log('Unable to fetch hunt to remove user', err, hit);
+      return res.molochError(500, 'Unable to fetch hunt to remove user');
+    }
+
+    let hunt = hit._source;
+
+    if (!hunt.users || !hunt.users.length) {
+      return res.molochError(404, 'There are no users that have access to view this hunt');
+    }
+
+    let userIdx = hunt.users.indexOf(req.params.user);
+
+    if (userIdx < 0) { // user doesn't have access to this hunt
+      return res.molochError(404, 'That user does not have access to this hunt');
+    }
+
+    // remove the user from the list
+    hunt.users.splice(userIdx, 1);
+
+    Db.setHunt(req.params.id, hunt, (err, info) => {
+      if (err) {
+        console.log('Unable to remove user', err, info);
+        return res.molochError(500, 'Unable to remove user');
+      }
+      res.send(JSON.stringify({ success: true, users: hunt.users }));
+    });
+  });
+});
+
+app.post('/hunt/:id/users', [noCacheJson, logAction('hunt/:id/users/:user'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
+  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
+
+  if (!req.body.users) { return res.molochError(403, 'You must provide users in a comma separated string'); }
+
+  Db.get('hunts', 'hunt', req.params.id, (err, hit) => {
+    if (err) {
+      console.log('Unable to fetch hunt to add user(s)', err, hit);
+      return res.molochError(500, 'Unable to fetch hunt to add user(s)');
+    }
+
+    let hunt = hit._source;
+    let reqUsers = commaStringToArray(req.body.users);
+
+    validateUserIds(reqUsers)
+      .then((response) => {
+        if (!response.validUsers.length) {
+          return res.molochError(404, 'Unable to validate user IDs provided');
+        }
+
+        if (!hunt.users) {
+          hunt.users = response.validUsers;
+        } else {
+          hunt.users = hunt.users.concat(response.validUsers);
+        }
+
+        // dedupe the array of users
+        hunt.users = [...new Set(hunt.users)];
+
+        Db.setHunt(req.params.id, hunt, (err, info) => {
+          if (err) {
+            console.log('Unable to add user(s)', err, info);
+            return res.molochError(500, 'Unable to add user(s)');
+          }
+          res.send(JSON.stringify({
+            success: true,
+            users: hunt.users,
+            invalidUsers: response.invalidUsers
+          }));
+        });
+      })
+      .catch((error) => {
+        res.molochError(500, error);
+      });
+  });
 });
 
 app.get('/:nodeName/hunt/:huntId/remote/:sessionId', [noCacheJson], function (req, res) {
