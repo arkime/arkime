@@ -9660,5 +9660,6 @@ Db.initialize({ host: internals.elasticBase,
   ca: Config.getCaTrustCerts(Config.nodeName()),
   requestTimeout: Config.get('elasticsearchTimeout', 300),
   esProfile: Config.esProfile,
-  debug: Config.debug
+  debug: Config.debug,
+  getSessionBySearch: Config.get('getSessionBySearch', '')
 }, main);

@@ -41,6 +41,8 @@ var internals = { fileId2File: {},
 exports.initialize = function (info, cb) {
   internals.multiES = info.multiES === 'true' || info.multiES === true || false;
   internals.debug = info.debug || 0;
+  internals.getSessionBySearch = info.getSessionBySearch || false;
+
   delete info.multiES;
   delete info.debug;
 
@@ -185,36 +187,52 @@ exports.getWithOptions = function (index, type, id, options, cb) {
 
 // Get a session from ES and decode packetPos if requested
 exports.getSession = function (id, options, cb) {
-    exports.getWithOptions(exports.sid2Index(id), 'session', exports.sid2Id(id), options, (err, session) => {
+  function fixPacketPos (session, fields) {
+    if (!fields.packetPos || fields.packetPos.length === 0) {
+      return cb(null, session);
+    }
+    exports.fileIdToFile(fields.node, -1 * fields.packetPos[0], (fileInfo) => {
+      // Neg numbers aren't encoded, if pos is 0 same gap as last gap, otherwise last + pos
+      if (fileInfo.packetPosEncoding === 'gap0') {
+        let last = 0;
+        let lastgap = 0;
+        for (let i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
+          if (fields.packetPos[i] < 0) {
+            last = 0;
+          } else {
+            if (fields.packetPos[i] === 0) {
+              fields.packetPos[i] = last + lastgap;
+            } else {
+              lastgap = fields.packetPos[i];
+              fields.packetPos[i] += last;
+            }
+            last = fields.packetPos[i];
+          }
+        }
+      }
+      return cb(null, session);
+    });
+  }
+
+  if (internals.getSessionBySearch) {
+    exports.search(exports.sid2Index(id), '_doc', { query: { ids: { values: [exports.sid2Id(id)] } } }, options, (err, results) => {
+      if (err) { return cb(err); }
+      if (!results.hits || !results.hits.hits || results.hits.hits.length === 0) { return cb('Not found'); }
+      let session = results.hits.hits[0];
+      session.found = true;
+      if (options && options._source && !options._source.includes('packetPos')) {
+        return cb(null, session);
+      }
+      return fixPacketPos(session, session._source || session.fields);
+    });
+  } else {
+    exports.getWithOptions(exports.sid2Index(id), '_doc', exports.sid2Id(id), options, (err, session) => {
       if (err || (options && options._source && !options._source.includes('packetPos'))) {
         return cb(err, session);
       }
-      let fields = session._source || session.fields;
-      if (!fields.packetPos || fields.packetPos.length === 0) {
-        return cb(err, session);
-      }
-      exports.fileIdToFile(fields.node, -1 * fields.packetPos[0], (fileInfo) => {
-        // Neg numbers aren't encoded, if pos is 0 same gap as last gap, otherwise last + pos
-        if (fileInfo.packetPosEncoding === 'gap0') {
-          let last = 0;
-          let lastgap = 0;
-          for (let i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
-            if (fields.packetPos[i] < 0) {
-              last = 0;
-            } else {
-              if (fields.packetPos[i] === 0) {
-                fields.packetPos[i] = last + lastgap;
-              } else {
-                lastgap = fields.packetPos[i];
-                fields.packetPos[i] += last;
-              }
-              last = fields.packetPos[i];
-            }
-          }
-        }
-        return cb(err, session);
-      });
+      return fixPacketPos(session, session._source || session.fields);
     });
+  }
 };
 
 exports.index = function (index, type, id, document, cb) {
