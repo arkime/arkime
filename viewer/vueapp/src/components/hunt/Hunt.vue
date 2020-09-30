@@ -164,7 +164,7 @@
               </div>
               <div class="row">
                 <!-- packet search text & text type -->
-                <div class="form-group col-lg-6 col-md-12">
+                <div class="form-group col-12">
                   <div class="input-group input-group-sm">
                     <span class="input-group-prepend cursor-help"
                       v-b-tooltip.hover
@@ -263,6 +263,8 @@
                     </a>
                   </div>
                 </div> <!-- /packet search text & text type -->
+              </div>
+              <div class="row">
                 <!-- packet search direction -->
                 <div class="form-group col-lg-3 col-md-12">
                   <div class="form-check">
@@ -323,6 +325,24 @@
                     </label>
                   </div>
                 </div> <!-- /packet search type -->
+                <!-- users -->
+                <div class="form-group col-lg-6 col-md-12">
+                  <div class="input-group input-group-sm mt-">
+                    <span class="input-group-prepend cursor-help"
+                      v-b-tooltip.hover
+                      title="Let these users view the results of this hunt">
+                      <span class="input-group-text">
+                        <span class="fa fa-user">
+                        </span>
+                      </span>
+                    </span>
+                    <input type="text"
+                      v-model="jobUsers"
+                      placeholder="Comma separated list of usernames to add to this hunt"
+                      class="form-control"
+                    />
+                  </div>
+                </div> <!-- /users -->
               </div>
               <div class="row">
                 <div class="col-12 mt-1">
@@ -365,9 +385,8 @@
               Running Hunt Job:
               {{ runningJob.name }} by
               {{ runningJob.userId }}
-              <span class="pull-right"
-                v-if="user.userId === runningJob.userId || user.createEnabled">
-                <button
+              <span class="pull-right">
+                <button v-if="user.userId === runningJob.userId || user.createEnabled"
                   @click="removeJob(runningJob, 'results')"
                   :disabled="runningJob.disabled"
                   type="button"
@@ -381,22 +400,25 @@
                     class="fa fa-spinner fa-spin fa-fw">
                   </span>
                 </button>
-                <button type="button"
-                  @click="openSessions(runningJob)"
-                  v-if="runningJob.matchedSessions"
-                  :id="`openresults${runningJob.id}`"
-                  class="ml-1 pull-right btn btn-sm btn-theme-primary">
-                  <span class="fa fa-folder-open fa-fw">
-                  </span>
-                </button>
-                <b-tooltip v-if="runningJob.matchedSessions"
-                  :target="`openresults${runningJob.id}`">
-                  Open <strong>partial</strong> results in a new Sessions tab.
-                  <br>
-                  <strong>Note:</strong> ES takes a while to update sessions, so your results
-                  might take a minute to show up.
-                </b-tooltip>
-                <button @click="pauseJob(runningJob)"
+                <span v-if="user.userId === runningJob.userId || user.createEnabled || runningJob.users.indexOf(user.userId) > -1">
+                  <button type="button"
+                    @click="openSessions(runningJob)"
+                    v-if="runningJob.matchedSessions"
+                    :id="`openresults${runningJob.id}`"
+                    class="ml-1 pull-right btn btn-sm btn-theme-primary">
+                    <span class="fa fa-folder-open fa-fw">
+                    </span>
+                  </button>
+                  <b-tooltip v-if="runningJob.matchedSessions"
+                    :target="`openresults${runningJob.id}`">
+                    Open <strong>partial</strong> results in a new Sessions tab.
+                    <br>
+                    <strong>Note:</strong> ES takes a while to update sessions, so your results
+                    might take a minute to show up.
+                  </b-tooltip>
+                </span>
+                <button v-if="user.userId === runningJob.userId || user.createEnabled"
+                  @click="pauseJob(runningJob)"
                   :disabled="runningJob.loading"
                   type="button"
                   v-b-tooltip.hover
@@ -415,7 +437,7 @@
               <div class="row">
                 <div class="col">
                   <toggle-btn
-                    v-if="user.userId === runningJob.userId || user.createEnabled"
+                    v-if="user.userId === runningJob.userId || user.createEnabled || runningJob.users.indexOf(user.userId) > -1"
                     :opened="runningJob.expanded"
                     @toggle="toggleJobDetail(runningJob)">
                   </toggle-btn>
@@ -423,7 +445,7 @@
                     id="runningJob"
                     v-b-tooltip.hover
                     style="height:26px;"
-                    :class="{'progress-toggle':user.userId === runningJob.userId || user.createEnabled}">
+                    :class="{'progress-toggle':user.userId === runningJob.userId || user.createEnabled || runningJob.users.indexOf(user.userId) > -1}">
                     <div class="progress-bar bg-success progress-bar-striped progress-bar-animated"
                       role="progressbar"
                       :style="{width: runningJob.progress + '%'}"
@@ -436,7 +458,7 @@
                   <b-tooltip target="runningJob">
                     <div class="mt-2">
                       Found <strong>{{ runningJob.matchedSessions | commaString }}</strong> sessions
-                      <span v-if="user.userId === runningJob.userId || user.createEnabled">
+                      <span v-if="user.userId === runningJob.userId || user.createEnabled || runningJob.users.indexOf(user.userId) > -1">
                         matching <strong>{{ runningJob.search }}</strong> ({{ runningJob.searchType }})
                       </span>
                       <span v-if="runningJob.failedSessionIds && runningJob.failedSessionIds.length">
@@ -536,7 +558,7 @@
             <tr :key="`${job.id}-row`">
               <td>
                 <toggle-btn
-                  v-if="user.userId === job.userId || user.createEnabled"
+                  v-if="user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1"
                   :opened="job.expanded"
                   @toggle="toggleJobDetail(job)">
                 </toggle-btn>
@@ -587,7 +609,7 @@
                 {{ job.userId }}
               </td>
               <td>
-                <span v-if="user.userId === job.userId || user.createEnabled">
+                <span v-if="user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1">
                   {{ job.search }} ({{ job.searchType }})
                 </span>
               </td>
@@ -598,26 +620,26 @@
                 {{ job.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
               </td>
               <td>
-                <span v-if="user.userId === job.userId || user.createEnabled">
+                <span v-if="user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1">
                   {{ job.id }}
                 </span>
               </td>
               <td>
-                <span v-if="user.userId === job.userId || user.createEnabled">
-                  <button
-                    @click="removeJob(job, 'results')"
-                    :disabled="job.loading"
-                    type="button"
-                    v-b-tooltip.hover
-                    title="Remove this job from history"
-                    class="ml-1 pull-right btn btn-sm btn-danger">
-                    <span v-if="!job.loading"
-                      class="fa fa-trash-o fa-fw">
-                    </span>
-                    <span v-else
-                      class="fa fa-spinner fa-spin fa-fw">
-                    </span>
-                  </button>
+                <button v-if="user.userId === job.userId || user.createEnabled"
+                  @click="removeJob(job, 'results')"
+                  :disabled="job.loading"
+                  type="button"
+                  v-b-tooltip.hover
+                  title="Remove this job from history"
+                  class="ml-1 pull-right btn btn-sm btn-danger">
+                  <span v-if="!job.loading"
+                    class="fa fa-trash-o fa-fw">
+                  </span>
+                  <span v-else
+                    class="fa fa-spinner fa-spin fa-fw">
+                  </span>
+                </button>
+                <span v-if="user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1">
                   <button type="button"
                     @click="openSessions(job)"
                     v-if="job.matchedSessions"
@@ -633,35 +655,35 @@
                     <strong>Note:</strong> ES takes a while to update sessions, so your results
                     might take a minute to show up.
                   </b-tooltip>
-                  <button v-if="job.status === 'running' || job.status === 'queued'"
-                    :disabled="job.loading"
-                    @click="pauseJob(job)"
-                    type="button"
-                    v-b-tooltip.hover
-                    title="Pause this job"
-                    class="pull-right btn btn-sm btn-warning">
-                    <span v-if="!job.loading"
-                      class="fa fa-pause fa-fw">
-                    </span>
-                    <span v-else
-                      class="fa fa-spinner fa-spin fa-fw">
-                    </span>
-                  </button>
-                  <button v-else-if="job.status === 'paused'"
-                    :disabled="job.loading"
-                    @click="playJob(job)"
-                    type="button"
-                    v-b-tooltip.hover
-                    title="Play this job"
-                    class="pull-right btn btn-sm btn-theme-secondary">
-                    <span v-if="!job.loading"
-                      class="fa fa-play fa-fw">
-                    </span>
-                    <span v-else
-                      class="fa fa-spinner fa-spin fa-fw">
-                    </span>
-                  </button>
                 </span>
+                <button v-if="(job.status === 'running' || job.status === 'queued') && (user.userId === job.userId || user.createEnabled)"
+                  :disabled="job.loading"
+                  @click="pauseJob(job)"
+                  type="button"
+                  v-b-tooltip.hover
+                  title="Pause this job"
+                  class="pull-right btn btn-sm btn-warning">
+                  <span v-if="!job.loading"
+                    class="fa fa-pause fa-fw">
+                  </span>
+                  <span v-else
+                    class="fa fa-spinner fa-spin fa-fw">
+                  </span>
+                </button>
+                <button v-else-if="job.status === 'paused' && (user.userId === job.userId || user.createEnabled)"
+                  :disabled="job.loading"
+                  @click="playJob(job)"
+                  type="button"
+                  v-b-tooltip.hover
+                  title="Play this job"
+                  class="pull-right btn btn-sm btn-theme-secondary">
+                  <span v-if="!job.loading"
+                    class="fa fa-play fa-fw">
+                  </span>
+                  <span v-else
+                    class="fa fa-spinner fa-spin fa-fw">
+                  </span>
+                </button>
               </td>
             </tr>
             <tr :key="`${job.id}-detail`"
@@ -785,7 +807,7 @@
             <tr :key="`${job.id}-row`">
               <td>
                 <toggle-btn
-                  v-if="user.userId === job.userId || user.createEnabled"
+                  v-if="user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1"
                   :opened="job.expanded"
                   @toggle="toggleJobDetail(job)">
                 </toggle-btn>
@@ -842,7 +864,7 @@
                 {{ job.userId }}
               </td>
               <td>
-                <span v-if="user.userId === job.userId || user.createEnabled">
+                <span v-if="user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1">
                   {{ job.search }} ({{ job.searchType }})
                 </span>
               </td>
@@ -853,26 +875,26 @@
                 {{ job.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
               </td>
               <td>
-                <span v-if="user.userId === job.userId || user.createEnabled">
+                <span v-if="user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1">
                   {{ job.id }}
                 </span>
               </td>
               <td>
-                <span v-if="user.userId === job.userId || user.createEnabled">
-                  <button
-                    @click="removeJob(job, 'historyResults')"
-                    :disabled="job.loading"
-                    type="button"
-                    v-b-tooltip.hover
-                    title="Remove this job from history"
-                    class="ml-1 pull-right btn btn-sm btn-danger">
-                    <span v-if="!job.loading"
-                      class="fa fa-trash-o fa-fw">
-                    </span>
-                    <span v-else
-                      class="fa fa-spinner fa-spin fa-fw">
-                    </span>
-                  </button>
+                <button v-if="user.userId === job.userId || user.createEnabled"
+                  @click="removeJob(job, 'historyResults')"
+                  :disabled="job.loading"
+                  type="button"
+                  v-b-tooltip.hover
+                  title="Remove this job from history"
+                  class="ml-1 pull-right btn btn-sm btn-danger">
+                  <span v-if="!job.loading"
+                    class="fa fa-trash-o fa-fw">
+                  </span>
+                  <span v-else
+                    class="fa fa-spinner fa-spin fa-fw">
+                  </span>
+                </button>
+                <template v-if="user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1">
                   <button type="button"
                     @click="openSessions(job)"
                     v-if="job.matchedSessions"
@@ -888,25 +910,25 @@
                     <strong>Note:</strong> ES takes a while to update sessions, so your results
                     might take a minute to show up.
                   </b-tooltip>
-                  <button v-if="!job.unrunnable"
-                    type="button"
-                    @click="rerunJob(job)"
-                    v-b-tooltip.hover
-                    title="Rerun this hunt job using the current time frame and search criteria."
-                    class="ml-1 pull-right btn btn-sm btn-theme-secondary">
-                    <span class="fa fa-refresh fa-fw">
-                    </span>
-                  </button>
-                  <button v-if="!job.unrunnable"
-                    type="button"
-                    @click="repeatJob(job)"
-                    v-b-tooltip.hover
-                    title="Repeat this hunt job using its time frame and search criteria."
-                    class="ml-1 pull-right btn btn-sm btn-theme-tertiary">
-                    <span class="fa fa-repeat fa-fw">
-                    </span>
-                  </button>
-                </span>
+                </template>
+                <button v-if="!job.unrunnable && (user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1)"
+                  type="button"
+                  @click="rerunJob(job)"
+                  v-b-tooltip.hover
+                  title="Rerun this hunt job using the current time frame and search criteria."
+                  class="ml-1 pull-right btn btn-sm btn-theme-secondary">
+                  <span class="fa fa-refresh fa-fw">
+                  </span>
+                </button>
+                <button v-if="!job.unrunnable && (user.userId === job.userId || user.createEnabled)"
+                  type="button"
+                  @click="repeatJob(job)"
+                  v-b-tooltip.hover
+                  title="Repeat this hunt job using its time frame and search criteria."
+                  class="ml-1 pull-right btn btn-sm btn-theme-tertiary">
+                  <span class="fa fa-repeat fa-fw">
+                  </span>
+                </button>
               </td>
             </tr>
             <tr :key="`${job.id}-detail`"
@@ -1014,6 +1036,7 @@ export default {
       jobDst: true,
       jobType: 'raw',
       jobNotifier: undefined,
+      jobUsers: '',
       // notifiers
       notifiers: undefined,
       // hunt limits
@@ -1095,6 +1118,7 @@ export default {
     },
     cancelCreateForm: function () {
       this.jobName = '';
+      this.jobUsers = '';
       this.jobSearch = '';
       this.createFormError = '';
       this.createFormOpened = false;
@@ -1133,13 +1157,15 @@ export default {
         dst: this.jobDst,
         totalSessions: this.sessions.recordsFiltered,
         query: this.sessionsQuery,
-        notifier: this.jobNotifier
+        notifier: this.jobNotifier,
+        users: this.jobUsers
       };
 
       this.axios.post('hunt', { hunt: newJob })
         .then((response) => {
           this.createFormOpened = false;
           this.jobName = '';
+          this.jobUsers = '';
           this.jobSearch = '';
           this.createFormError = '';
           this.jobNotifier = undefined;

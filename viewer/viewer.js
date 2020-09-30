@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 65;
+const MIN_DB_VERSION = 66;
 // ----------------------------------------------------------------------------
 // Modules
 // ----------------------------------------------------------------------------
@@ -8114,6 +8114,7 @@ app.post('/hunt', [noCacheJson, logAction('hunt'), checkCookieToken, checkPermis
     stopTime: req.body.hunt.query.stopTime,
     view: req.body.hunt.query.view
   };
+  hunt.users = commaStringToArray(req.body.hunt.users);
 
   Db.createHunt(hunt, function (err, result) {
     if (err) { console.log('create hunt error', err, result); }
@@ -8176,7 +8177,7 @@ app.get('/hunt/list', [noCacheJson, recordResponseTime, checkPermissions(['packe
         }
 
         // Since hunt isn't cached we can just modify
-        if (!req.user.createEnabled && req.user.userId !== hunt.userId) {
+        if (!req.user.createEnabled && req.user.userId !== hunt.userId && hunt.users.indexOf(req.user.userId) < 0) {
           hunt.search = '';
           hunt.searchType = '';
           hunt.id = '';
@@ -8363,9 +8364,9 @@ app.get('/lookups', [noCacheJson, getSettingUserCache, recordResponseTime], func
   });
 });
 
-function createLookupsArray (lookupsString) {
+function commaStringToArray (commaString) {
   // split string on commas and newlines
-  let values = lookupsString.split(/[,\n]+/g);
+  let values = commaString.split(/[,\n]+/g);
 
   // remove any empty values
   values = values.filter(function (val) {
@@ -8414,7 +8415,7 @@ app.post('/lookups', [noCacheJson, getSettingUserDb, logAction('lookups'), check
         variable.userId = user.userId;
 
         // comma/newline separated value -> array of values
-        const values = createLookupsArray(variable.value);
+        const values = commaStringToArray(variable.value);
         variable[variable.type] = values;
 
         const type = variable.type;
@@ -8469,7 +8470,7 @@ app.put('/lookups/:id', [noCacheJson, getSettingUserDb, logAction('lookups/:id')
     }
 
     // comma/newline separated value -> array of values
-    const values = createLookupsArray(sentVar.value);
+    const values = commaStringToArray(sentVar.value);
     sentVar[sentVar.type] = values;
     sentVar.userId = fetchedVar._source.userId;
 
