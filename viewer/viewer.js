@@ -3222,7 +3222,7 @@ function sessionsListFromIds (req, ids, fields, cb) {
   let fixFields = nonArrayFields.filter(function (x) { return fields.indexOf(x) !== -1; });
 
   async.eachLimit(ids, 10, function (id, nextCb) {
-    Db.getWithOptions(Db.sid2Index(id), 'session', Db.sid2Id(id), { _source: fields.join(',') }, function (err, session) {
+    Db.getSession(id, { _source: fields.join(',') }, function (err, session) {
       if (err) {
         return nextCb(null);
       }
@@ -6576,7 +6576,7 @@ function localSessionDetail (req, res) {
  * Get SPI data for a session
  */
 app.get('/:nodeName/session/:id/detail', cspHeader, logAction(), (req, res) => {
-  Db.getWithOptions(Db.sid2Index(req.params.id), 'session', Db.sid2Id(req.params.id), {}, function (err, session) {
+  Db.getSession(req.params.id, {}, function (err, session) {
     if (err || !session.found) {
       return res.end("Couldn't look up SPI data, error for session " + safeStr(req.params.id) + ' Error: ' + err);
     }
