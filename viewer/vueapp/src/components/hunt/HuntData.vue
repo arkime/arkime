@@ -143,7 +143,9 @@
         </button>
         <template v-if="showAddUsers">
           <div class="input-group input-group-sm mb-3 mt-2">
-            <div class="input-group-prepend">
+            <div class="input-group-prepend cursor-help"
+              v-b-tooltip.hover
+              title="Let these users view the results of this hunt">
               <span class="input-group-text">
                 Users
               </span>
@@ -151,6 +153,8 @@
             <input type="text"
               v-model="newUsers"
               class="form-control"
+              v-focus-input="focusInput"
+              @keyup.enter="addUsers(newUsers, job)"
               placeholder="Comma separated list of user IDs"
             />
             <div class="input-group-append">
@@ -199,6 +203,7 @@
 
 <script>
 import HuntStatus from './HuntStatus';
+import FocusInput from '../utils/FocusInput';
 
 export default {
   name: 'HuntData',
@@ -207,10 +212,12 @@ export default {
     user: Object
   },
   components: { HuntStatus },
+  directives: { FocusInput },
   data: function () {
     return {
       newUsers: '',
-      showAddUsers: false
+      showAddUsers: false,
+      focusInput: false
     };
   },
   methods: {
@@ -223,10 +230,11 @@ export default {
     addUsers: function (users, job) {
       this.$emit('addUsers', users, job);
       this.toggleAddUsers();
-      this.newUsers = '';
     },
     toggleAddUsers: function () {
+      this.newUsers = '';
       this.showAddUsers = !this.showAddUsers;
+      this.focusInput = this.showAddUsers;
     }
   }
 };

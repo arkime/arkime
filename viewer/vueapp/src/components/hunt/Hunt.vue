@@ -1061,24 +1061,22 @@ export default {
       this.$store.commit('setIssueSearch', true);
       this.rerunJob(job);
     },
-    /* TODO ECR - user area jumps and shows empty users for a second */
     removeUser: function (user, job) {
       this.$set(job, 'usersError', '');
 
       this.axios.delete(`hunt/${job.id}/users/${user}`)
         .then((response) => {
-          this.$set(job, 'users', response.users);
+          this.$set(job, 'users', response.data.users);
         }, (error) => {
-          this.$set(job, 'usersError', error);
+          this.$set(job, 'usersError', error.text || error);
         });
     },
-    /* TODO ECR - doesn't show new users immediately */
     addUsers: function (users, job) {
       this.$set(job, 'usersError', '');
 
       this.axios.post(`hunt/${job.id}/users`, { users: users })
         .then((response) => {
-          this.$set(job, 'users', response.users);
+          this.$set(job, 'users', response.data.users);
         }, (error) => {
           this.$set(job, 'usersError', error.text || error);
         });
