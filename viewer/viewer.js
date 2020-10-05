@@ -50,6 +50,7 @@ try {
   var uuid = require('uuidv4').default;
   var RE2 = require('re2');
   var path = require('path');
+  var contentDisposition = require('content-disposition');
 } catch (e) {
   console.log("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -3221,7 +3222,7 @@ function sessionsListFromIds (req, ids, fields, cb) {
   let fixFields = nonArrayFields.filter(function (x) { return fields.indexOf(x) !== -1; });
 
   async.eachLimit(ids, 10, function (id, nextCb) {
-    Db.getWithOptions(Db.sid2Index(id), 'session', Db.sid2Id(id), { _source: fields.join(',') }, function (err, session) {
+    Db.getSession(id, { _source: fields.join(',') }, function (err, session) {
       if (err) {
         return nextCb(null);
       }
@@ -6575,7 +6576,7 @@ function localSessionDetail (req, res) {
  * Get SPI data for a session
  */
 app.get('/:nodeName/session/:id/detail', cspHeader, logAction(), (req, res) => {
-  Db.getWithOptions(Db.sid2Index(req.params.id), 'session', Db.sid2Id(req.params.id), {}, function (err, session) {
+  Db.getSession(req.params.id, {}, function (err, session) {
     if (err || !session.found) {
       return res.end("Couldn't look up SPI data, error for session " + safeStr(req.params.id) + ' Error: ' + err);
     }
@@ -6687,7 +6688,7 @@ app.get('/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', checkProxyRequest, f
       return res.end('Error');
     }
     res.setHeader('Content-Type', 'application/force-download');
-    res.setHeader('Content-Disposition', 'attachment; filename=' + req.params.bodyName);
+    res.setHeader('content-disposition', contentDisposition(req.params.bodyName));
     return res.end(data);
   });
 });
@@ -6752,7 +6753,7 @@ app.get('/bodyHash/:hash', logAction('bodyhash'), function (req, res) {
                 return res.end(err);
               } else if (item) {
                 noCache(req, res, 'application/force-download');
-                res.setHeader('content-disposition', 'attachment; filename=' + item.bodyName + '.pellet');
+                res.setHeader('content-disposition', contentDisposition(item.bodyName + '.pellet'));
                 return res.end(item.data);
               } else {
                 res.status(400);
@@ -6784,7 +6785,7 @@ app.get('/:nodeName/:id/bodyHash/:hash', checkProxyRequest, function (req, res) 
       return res.end(err);
     } else if (item) {
       noCache(req, res, 'application/force-download');
-      res.setHeader('content-disposition', 'attachment; filename=' + item.bodyName + '.pellet');
+      res.setHeader('content-disposition', contentDisposition(item.bodyName + '.pellet'));
       return res.end(item.data);
     } else {
       res.status(400);
@@ -9809,5 +9810,6 @@ Db.initialize({ host: internals.elasticBase,
   ca: Config.getCaTrustCerts(Config.nodeName()),
   requestTimeout: Config.get('elasticsearchTimeout', 300),
   esProfile: Config.esProfile,
-  debug: Config.debug
+  debug: Config.debug,
+  getSessionBySearch: Config.get('getSessionBySearch', '')
 }, main);

@@ -29,6 +29,7 @@
     "start:dev": "node viewer.js -c config.dev.ini & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
     "start:test": "node viewer.js --debug -c ../tests/config.test.ini -n test & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
     "start:testuser": "nodemon viewer.js -c ../tests/config.test.ini -n testuser & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
+    "dev": "nodemon viewer.js -c ../tests/config.test.ini -n testuser & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
     "start:testuserdebug": "node viewer.js -c ../tests/config.test.ini -n testuser --debug & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
     "start:multiviewer": "node multies.js -c ../tests/config.test.ini -n all",
     "start:testmultiviewer": "node viewer.js -c ../tests/config.test.ini -n testmulties & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
