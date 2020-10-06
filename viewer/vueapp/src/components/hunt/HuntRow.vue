@@ -97,7 +97,7 @@
         </button>
         <b-tooltip v-if="job.matchedSessions"
           :target="`openresults${job.id}`">
-          Open <strong>partial</strong> results in a new Sessions tab.
+          Open results in a new Sessions tab.
           <br>
           <strong>Note:</strong> ES takes a while to update sessions, so your results
           might take a minute to show up.
