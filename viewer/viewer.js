@@ -8245,8 +8245,12 @@ app.get('/hunt/list', [noCacheJson, recordResponseTime, checkPermissions(['packe
           continue;
         }
 
-        // Since hunt isn't cached we can just modify
+        hunt.users = hunt.users || [];
+
+        // clear out secret fields for users who don't have access to that hunt
+        // if the user is not an admin and didn't create the hunt and isn't part of the user's list
         if (!req.user.createEnabled && req.user.userId !== hunt.userId && hunt.users.indexOf(req.user.userId) < 0) {
+          // since hunt isn't cached we can just modify
           hunt.search = '';
           hunt.searchType = '';
           hunt.id = '';

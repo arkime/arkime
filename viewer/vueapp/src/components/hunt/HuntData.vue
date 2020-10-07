@@ -117,7 +117,8 @@
         <strong>{{ job.query.stopTime * 1000 | timezoneDateString(user.settings.timezone, false) }}</strong>
       </div>
     </div>
-    <div class="row mb-2">
+    <div class="row mb-2"
+      v-if="user.userId === job.userId || user.createEnabled">
       <div class="col-12">
         <span class="fa fa-fw fa-share-alt">
         </span>&nbsp;
@@ -176,6 +177,14 @@
             {{ job.usersError }}
           </div>
         </template>
+      </div>
+    </div>
+    <div class="row mb-2"
+      v-else-if="job.users.indexOf(user.userId) > -1">
+      <div class="col-12">
+        <span class="fa fa-fw fa-share-alt">
+        </span>&nbsp;
+        This job is being shared with you. You can view the results and rerun it.
       </div>
     </div>
     <template v-if="job.errors">
