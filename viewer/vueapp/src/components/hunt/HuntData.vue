@@ -136,6 +136,10 @@
               </button>
             </span>
           </template>
+          <template v-else-if="job.users && !job.users.length">
+            This hunt is not being shared.
+            Click this button to share it with other users:
+          </template>
           <button class="btn btn-xs btn-theme-secondary ml-1"
             title="Share this hunt with user(s)"
             v-b-tooltip.hover.right
@@ -169,13 +173,6 @@
                   Add User(s)
                 </button>
               </div>
-            </div>
-          </template>
-          <template v-if="job.usersError">
-            <div class="text-danger ml-4">
-              <span class="fa fa-fw fa-exclamation-triangle">
-              </span>&nbsp;
-              {{ job.usersError }}
             </div>
           </template>
         </div>

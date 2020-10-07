@@ -736,6 +736,27 @@
 
     </div> <!-- /packet search jobs content -->
 
+    <!-- floating error -->
+    <transition name="slide-fade">
+      <div v-if="floatingError"
+        class="card floating-msg">
+        <div class="card-body">
+          <a @click="floatingError = !floatingError"
+            class="no-decoration cursor-pointer pull-right"
+            v-b-tooltip.hover
+            title="Dismiss">
+            <span class="fa fa-close">
+            </span>
+          </a>
+          <span class="text-danger">
+            <span class="fa fa-exclamation-triangle">
+            </span>&nbsp;
+            {{ floatingError }}
+          </span>
+        </div>
+      </div>
+    </transition> <!-- /floating error -->
+
   </div>
 
 </template>
@@ -781,6 +802,7 @@ export default {
       queuedListLoadingError: '',
       historyListError: '',
       historyListLoadingError: '',
+      floatingError: '',
       loading: true,
       results: [], // running/queued/paused hunt jobs
       historyResults: { // finished hunt jobs
@@ -1064,23 +1086,23 @@ export default {
       this.rerunJob(job);
     },
     removeUser: function (user, job) {
-      this.$set(job, 'usersError', '');
+      this.$set(this, 'floatingError', '');
 
       this.axios.delete(`hunt/${job.id}/users/${user}`)
         .then((response) => {
           this.$set(job, 'users', response.data.users);
         }, (error) => {
-          this.$set(job, 'usersError', error.text || error);
+          this.$set(this, 'floatingError', error.text || error);
         });
     },
     addUsers: function (users, job) {
-      this.$set(job, 'usersError', '');
+      this.$set(this, 'floatingError', '');
 
       this.axios.post(`hunt/${job.id}/users`, { users: users })
         .then((response) => {
           this.$set(job, 'users', response.data.users);
         }, (error) => {
-          this.$set(job, 'usersError', error.text || error);
+          this.$set(this, 'floatingError', error.text || error);
         });
     },
     /* helper functions ---------------------------------------------------- */
@@ -1259,7 +1281,6 @@ export default {
 </script>
 
 <style scoped>
-
 .packet-search-content {
   margin-top: 10px;
 }
@@ -1343,5 +1364,36 @@ form.hunt-create-navbar {
 .regex-help {
   margin-top: 3px;
   margin-left: 6px;
+}
+
+/* floating message */
+.floating-msg {
+  position: fixed;
+  bottom: 15px;
+  left: 10px;
+  z-index: 999;
+  width: 350px;
+}
+
+.card {
+  background-color: var(--color-gray-lighter);
+  border: 1px solid var(--color-gray-light);
+  -webkit-box-shadow: 4px 4px 16px -2px black;
+     -moz-box-shadow: 4px 4px 16px -2px black;
+          box-shadow: 4px 4px 16px -2px black;
+}
+.card > .card-body {
+  padding: 0.8rem;
+}
+
+.slide-fade-enter-active {
+  transition: all .8s ease;
+}
+.slide-fade-leave-active {
+  transition: all .8s ease;
+}
+.slide-fade-enter, .slide-fade-leave-to {
+  transform: translateX(-365px);
+  opacity: 0;
 }
 </style>
