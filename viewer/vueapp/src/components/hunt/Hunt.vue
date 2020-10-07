@@ -326,7 +326,8 @@
                   </div>
                 </div> <!-- /packet search type -->
                 <!-- users -->
-                <div class="form-group col-lg-6 col-md-12">
+                <div class="form-group col-lg-6 col-md-12"
+                  v-if="!anonymousMode">
                   <div class="input-group input-group-sm mt-">
                     <span class="input-group-prepend cursor-help"
                       v-b-tooltip.hover
@@ -808,7 +809,8 @@ export default {
       notifiers: undefined,
       // hunt limits
       huntWarn: this.$constants.MOLOCH_HUNTWARN,
-      huntLimit: this.$constants.MOLOCH_HUNTLIMIT
+      huntLimit: this.$constants.MOLOCH_HUNTLIMIT,
+      anonymousMode: this.$constants.MOLOCH_ANONYMOUS_MODE
     };
   },
   computed: {

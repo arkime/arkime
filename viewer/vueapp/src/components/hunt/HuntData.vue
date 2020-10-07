@@ -117,68 +117,70 @@
         <strong>{{ job.query.stopTime * 1000 | timezoneDateString(user.settings.timezone, false) }}</strong>
       </div>
     </div>
-    <div class="row mb-2"
-      v-if="user.userId === job.userId || user.createEnabled">
-      <div class="col-12">
-        <span class="fa fa-fw fa-share-alt">
-        </span>&nbsp;
-        <template v-if="job.users && job.users.length">
-          This job is being shared with these other users:
-          <span v-for="user in job.users"
-            :key="user"
-            class="badge badge-secondary ml-1">
-            {{ user }}
-            <button type="button"
-              class="close"
-              @click="removeUser(user, job)">
-              &times;
-            </button>
-          </span>
-        </template>
-        <button class="btn btn-xs btn-theme-secondary ml-1"
-          title="Share this hunt with user(s)"
-          v-b-tooltip.hover.right
-          @click="toggleAddUsers">
-          <span class="fa fa-plus-circle">
-          </span>
-        </button>
-        <template v-if="showAddUsers">
-          <div class="input-group input-group-sm mb-3 mt-2">
-            <div class="input-group-prepend cursor-help"
-              v-b-tooltip.hover
-              title="Let these users view the results of this hunt">
-              <span class="input-group-text">
-                Users
-              </span>
-            </div>
-            <input type="text"
-              v-model="newUsers"
-              class="form-control"
-              v-focus-input="focusInput"
-              @keyup.enter="addUsers(newUsers, job)"
-              placeholder="Comma separated list of user IDs"
-            />
-            <div class="input-group-append">
-              <button class="btn btn-warning"
-                @click="toggleAddUsers">
-                Cancel
+    <template v-if="!anonymousMode">
+      <div class="row mb-2"
+        v-if="user.userId === job.userId || user.createEnabled">
+        <div class="col-12">
+          <span class="fa fa-fw fa-share-alt">
+          </span>&nbsp;
+          <template v-if="job.users && job.users.length">
+            This job is being shared with these other users:
+            <span v-for="user in job.users"
+              :key="user"
+              class="badge badge-secondary ml-1">
+              {{ user }}
+              <button type="button"
+                class="close"
+                @click="removeUser(user, job)">
+                &times;
               </button>
-              <button class="btn btn-theme-tertiary"
-                @click="addUsers(newUsers, job)">
-                Add User(s)
-              </button>
+            </span>
+          </template>
+          <button class="btn btn-xs btn-theme-secondary ml-1"
+            title="Share this hunt with user(s)"
+            v-b-tooltip.hover.right
+            @click="toggleAddUsers">
+            <span class="fa fa-plus-circle">
+            </span>
+          </button>
+          <template v-if="showAddUsers">
+            <div class="input-group input-group-sm mb-3 mt-2">
+              <div class="input-group-prepend cursor-help"
+                v-b-tooltip.hover
+                title="Let these users view the results of this hunt">
+                <span class="input-group-text">
+                  Users
+                </span>
+              </div>
+              <input type="text"
+                v-model="newUsers"
+                class="form-control"
+                v-focus-input="focusInput"
+                @keyup.enter="addUsers(newUsers, job)"
+                placeholder="Comma separated list of user IDs"
+              />
+              <div class="input-group-append">
+                <button class="btn btn-warning"
+                  @click="toggleAddUsers">
+                  Cancel
+                </button>
+                <button class="btn btn-theme-tertiary"
+                  @click="addUsers(newUsers, job)">
+                  Add User(s)
+                </button>
+              </div>
             </div>
-          </div>
-        </template>
-        <template v-if="job.usersError">
-          <div class="text-danger ml-4">
-            <span class="fa fa-fw fa-exclamation-triangle">
-            </span>&nbsp;
-            {{ job.usersError }}
-          </div>
-        </template>
+          </template>
+          <template v-if="job.usersError">
+            <div class="text-danger ml-4">
+              <span class="fa fa-fw fa-exclamation-triangle">
+              </span>&nbsp;
+              {{ job.usersError }}
+            </div>
+          </template>
+        </div>
       </div>
-    </div>
+    </template>
     <div class="row mb-2"
       v-else-if="job.users.indexOf(user.userId) > -1">
       <div class="col-12">
@@ -226,7 +228,8 @@ export default {
     return {
       newUsers: '',
       showAddUsers: false,
-      focusInput: false
+      focusInput: false,
+      anonymousMode: this.$constants.MOLOCH_ANONYMOUS_MODE
     };
   },
   methods: {

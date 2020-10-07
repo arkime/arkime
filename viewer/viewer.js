@@ -1025,7 +1025,7 @@ function checkHuntAccess (req, res, next) {
     // an admin can do anything to any hunt
     return next();
   } else {
-    Db.get('hunts', 'hunt', req.params.id, (err, huntHit) => {
+    Db.getHunt(req.params.id, (err, huntHit) => {
       if (err) {
         console.log('error', err);
         return res.molochError(500, err);
@@ -8035,7 +8035,7 @@ function processHuntJobs (cb) {
 }
 
 function updateHuntStatus (req, res, status, successText, errorText) {
-  Db.get('hunts', 'hunt', req.params.id, (err, hit) => {
+  Db.getHunt(req.params.id, (err, hit) => {
     if (err) {
       console.log(errorText, err, hit);
       return res.molochError(500, errorText);
@@ -8079,24 +8079,25 @@ function validateUserIds (userIdList) {
       }
     };
 
+    // don't even bother searching for users if in anonymous mode
+    if (!!app.locals.noPasswordSecret && !Config.get('regressionTests', false)) {
+      resolve({ validUsers: [], invalidUsers: [] });
+    }
+
     Db.searchUsers(query, (error, users) => {
       if (error) {
         reject('Unable to validate userIds');
       }
 
       let usersList = [];
-      for (let user of users.hits.hits) {
-        usersList.push(user._source.userId);
-      }
+      usersList = users.hits.hits.map((user) => {
+        return user._source.userId;
+      });
 
       let validUsers = [];
       let invalidUsers = [];
       for (let user of userIdList) {
-        if (usersList.indexOf(user) > -1) {
-          validUsers.push(user);
-        } else {
-          invalidUsers.push(user);
-        }
+        usersList.indexOf(user) > -1 ? validUsers.push(user) : invalidUsers.push(user);
       }
 
       resolve({
@@ -8157,7 +8158,10 @@ app.post('/hunt', [noCacheJson, logAction('hunt'), checkCookieToken, checkPermis
 
   function doneCb (hunt, invalidUsers) {
     Db.createHunt(hunt, function (err, result) {
-      if (err) { console.log('create hunt error', err, result); }
+      if (err) {
+        console.log('create hunt error', err, result);
+        return res.molochError(500, 'Error creating hunt - ' + err);
+      }
       hunt.id = result._id;
       processHuntJobs(() => {
         let response = {
@@ -8300,7 +8304,7 @@ app.put('/hunt/:id/play', [noCacheJson, logAction('hunt/:id/play'), checkCookieT
 app.delete('/hunt/:id/users/:user', [noCacheJson, logAction('hunt/:id/users/:user'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
 
-  Db.get('hunts', 'hunt', req.params.id, (err, hit) => {
+  Db.getHunt(req.params.id, (err, hit) => {
     if (err) {
       console.log('Unable to fetch hunt to remove user', err, hit);
       return res.molochError(500, 'Unable to fetch hunt to remove user');
@@ -8336,7 +8340,7 @@ app.post('/hunt/:id/users', [noCacheJson, logAction('hunt/:id/users/:user'), che
 
   if (!req.body.users) { return res.molochError(403, 'You must provide users in a comma separated string'); }
 
-  Db.get('hunts', 'hunt', req.params.id, (err, hit) => {
+  Db.getHunt( req.params.id, (err, hit) => {
     if (err) {
       console.log('Unable to fetch hunt to add user(s)', err, hit);
       return res.molochError(500, 'Unable to fetch hunt to add user(s)');
@@ -9441,7 +9445,8 @@ app.use(cspHeader, setCookie, (req, res) => {
     themeUrl: theme === 'custom-theme' ? 'user.css' : '',
     huntWarn: Config.get('huntWarn', 100000),
     huntLimit: limit,
-    serverNonce: res.locals.nonce
+    serverNonce: res.locals.nonce,
+    anonymousMode: !!app.locals.noPasswordSecret
   };
 
   // Create a fresh Vue app instance
