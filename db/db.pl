@@ -4309,7 +4309,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
         checkForOld5Indices();
         checkForOld6Indices();
-    } elsif ($main::versionNumber <= 65) {
+    } elsif ($main::versionNumber <= 66) {
         checkForOld5Indices();
         checkForOld6Indices();
         sessions2Update();
