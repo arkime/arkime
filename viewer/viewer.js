@@ -8340,7 +8340,7 @@ app.post('/hunt/:id/users', [noCacheJson, logAction('hunt/:id/users/:user'), che
 
   if (!req.body.users) { return res.molochError(403, 'You must provide users in a comma separated string'); }
 
-  Db.getHunt( req.params.id, (err, hit) => {
+  Db.getHunt(req.params.id, (err, hit) => {
     if (err) {
       console.log('Unable to fetch hunt to add user(s)', err, hit);
       return res.molochError(500, 'Unable to fetch hunt to add user(s)');
