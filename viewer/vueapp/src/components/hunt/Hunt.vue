@@ -1375,14 +1375,14 @@ form.hunt-create-navbar {
   width: 350px;
 }
 
-.card {
+.floating-msg .card {
   background-color: var(--color-gray-lighter);
   border: 1px solid var(--color-gray-light);
   -webkit-box-shadow: 4px 4px 16px -2px black;
      -moz-box-shadow: 4px 4px 16px -2px black;
           box-shadow: 4px 4px 16px -2px black;
 }
-.card > .card-body {
+.floating-msg .card > .card-body {
   padding: 0.8rem;
 }
 
