@@ -181,7 +181,6 @@ passport.use(new DigestStrategy({ qop: 'auth', realm: Config.get('httpRealm', 'M
     });
   },
   function (options, done) {
-    // TODO:  Should check nonce here
     return done(null, true);
   }
 ));
@@ -428,6 +427,9 @@ if (Config.get('passwordSecret')) {
       if (!err && suser && suser.found) {
         req.user.settings = suser._source.settings || {};
         req.user.views = suser._source.views;
+        req.user.columnConfigs = suser._source.columnConfigs;
+        req.user.spiviewFieldConfigs = suser._source.spiviewFieldConfigs;
+        req.user.tableStates = suser._source.tableStates;
       }
       next();
     });
@@ -1348,8 +1350,8 @@ function getSettingUserCache (req, res, next) {
   Db.getUserCache(req.query.userId, function (err, user) {
     if (err || !user || !user.found) {
       if (app.locals.noPasswordSecret) {
-        // TODO: send anonymous user's settings
-        req.settingUser = {};
+        req.settingUser = JSON.parse(JSON.stringify(req.user));
+        delete req.settingUser.found;
       } else {
         req.settingUser = null;
       }
@@ -1382,8 +1384,8 @@ function getSettingUserDb (req, res, next) {
   Db.getUser(userId, function (err, user) {
     if (err || !user || !user.found) {
       if (app.locals.noPasswordSecret) {
-        // TODO: send anonymous user's settings
-        req.settingUser = {};
+        req.settingUser = JSON.parse(JSON.stringify(req.user));
+        delete req.settingUser.found;
       } else {
         return res.molochError(403, 'Unknown user');
       }
