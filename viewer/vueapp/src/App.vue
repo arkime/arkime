@@ -633,4 +633,11 @@ input {
   background-image: none !important;
   background-attachment: none !important;
 }
+
+/* badge remove button */
+.badge > button.close {
+  line-height: 0.4;
+  font-size: 1.2rem;
+  margin-left: 0.3rem;
+}
 </style>

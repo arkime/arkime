@@ -825,6 +825,9 @@ exports.deleteHuntItem = function (id, cb) {
 exports.setHunt = function (id, doc, cb) {
   return internals.elasticSearchClient.index({ index: fixIndex('hunts'), type: '_doc', body: doc, id: id, refresh: true, timeout: '10m' }, cb);
 };
+exports.getHunt = function (id, cb) {
+  return internals.usersElasticSearchClient.get({ index: fixIndex('hunts'), type: '_doc', id: id }, cb);
+};
 
 exports.searchLookups = function (query, cb) {
   return internals.elasticSearchClient.search({ index: fixIndex('lookups'), body: query, rest_total_hits_as_int: true }, cb);
