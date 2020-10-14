@@ -1,22 +1,22 @@
 <template>
   <span>
     <span v-if="status === 'running'"
-      v-b-tooltip.hover
+      v-b-tooltip.hover.right
       title="Starting"
       class="fa fa-play-circle fa-fw cursor-help">
     </span>
     <span v-else-if="status === 'paused'"
-      v-b-tooltip.hover
+      v-b-tooltip.hover.right
       title="Paused"
       class="fa fa-pause fa-fw cursor-help">
     </span>
     <span v-else-if="status === 'queued'"
-      v-b-tooltip.hover
+      v-b-tooltip.hover.right
       :title="`Queued (#${queueCount} in the queue)`"
       class="fa fa-clock-o fa-fw cursor-help">
     </span>
     <span v-else-if="status === 'finished'"
-      v-b-tooltip.hover
+      v-b-tooltip.hover.right
       title="Finished"
       class="fa fa-check fa-fw cursor-help">
     </span>
@@ -31,6 +31,10 @@
 <script>
 export default {
   name: 'HuntStatus',
-  props: [ 'status', 'queueCount', 'hideText' ]
+  props: {
+    status: String,
+    hideText: Boolean,
+    queueCount: Number
+  }
 };
 </script>

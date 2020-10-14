@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 65;
+const MIN_DB_VERSION = 66;
 // ----------------------------------------------------------------------------
 // Modules
 // ----------------------------------------------------------------------------
@@ -50,6 +50,7 @@ try {
   var uuid = require('uuidv4').default;
   var RE2 = require('re2');
   var path = require('path');
+  var contentDisposition = require('content-disposition');
 } catch (e) {
   console.log("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -180,7 +181,6 @@ passport.use(new DigestStrategy({ qop: 'auth', realm: Config.get('httpRealm', 'M
     });
   },
   function (options, done) {
-    // TODO:  Should check nonce here
     return done(null, true);
   }
 ));
@@ -427,6 +427,9 @@ if (Config.get('passwordSecret')) {
       if (!err && suser && suser.found) {
         req.user.settings = suser._source.settings || {};
         req.user.views = suser._source.views;
+        req.user.columnConfigs = suser._source.columnConfigs;
+        req.user.spiviewFieldConfigs = suser._source.spiviewFieldConfigs;
+        req.user.tableStates = suser._source.tableStates;
       }
       next();
     });
@@ -1024,7 +1027,7 @@ function checkHuntAccess (req, res, next) {
     // an admin can do anything to any hunt
     return next();
   } else {
-    Db.get('hunts', 'hunt', req.params.id, (err, huntHit) => {
+    Db.getHunt(req.params.id, (err, huntHit) => {
       if (err) {
         console.log('error', err);
         return res.molochError(500, err);
@@ -1347,8 +1350,8 @@ function getSettingUserCache (req, res, next) {
   Db.getUserCache(req.query.userId, function (err, user) {
     if (err || !user || !user.found) {
       if (app.locals.noPasswordSecret) {
-        // TODO: send anonymous user's settings
-        req.settingUser = {};
+        req.settingUser = JSON.parse(JSON.stringify(req.user));
+        delete req.settingUser.found;
       } else {
         req.settingUser = null;
       }
@@ -1381,8 +1384,8 @@ function getSettingUserDb (req, res, next) {
   Db.getUser(userId, function (err, user) {
     if (err || !user || !user.found) {
       if (app.locals.noPasswordSecret) {
-        // TODO: send anonymous user's settings
-        req.settingUser = {};
+        req.settingUser = JSON.parse(JSON.stringify(req.user));
+        delete req.settingUser.found;
       } else {
         return res.molochError(403, 'Unknown user');
       }
@@ -3221,7 +3224,7 @@ function sessionsListFromIds (req, ids, fields, cb) {
   let fixFields = nonArrayFields.filter(function (x) { return fields.indexOf(x) !== -1; });
 
   async.eachLimit(ids, 10, function (id, nextCb) {
-    Db.getWithOptions(Db.sid2Index(id), 'session', Db.sid2Id(id), { _source: fields.join(',') }, function (err, session) {
+    Db.getSession(id, { _source: fields.join(',') }, function (err, session) {
       if (err) {
         return nextCb(null);
       }
@@ -6575,7 +6578,7 @@ function localSessionDetail (req, res) {
  * Get SPI data for a session
  */
 app.get('/:nodeName/session/:id/detail', cspHeader, logAction(), (req, res) => {
-  Db.getWithOptions(Db.sid2Index(req.params.id), 'session', Db.sid2Id(req.params.id), {}, function (err, session) {
+  Db.getSession(req.params.id, {}, function (err, session) {
     if (err || !session.found) {
       return res.end("Couldn't look up SPI data, error for session " + safeStr(req.params.id) + ' Error: ' + err);
     }
@@ -6687,7 +6690,7 @@ app.get('/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', checkProxyRequest, f
       return res.end('Error');
     }
     res.setHeader('Content-Type', 'application/force-download');
-    res.setHeader('Content-Disposition', 'attachment; filename=' + req.params.bodyName);
+    res.setHeader('content-disposition', contentDisposition(req.params.bodyName));
     return res.end(data);
   });
 });
@@ -6752,7 +6755,7 @@ app.get('/bodyHash/:hash', logAction('bodyhash'), function (req, res) {
                 return res.end(err);
               } else if (item) {
                 noCache(req, res, 'application/force-download');
-                res.setHeader('content-disposition', 'attachment; filename=' + item.bodyName + '.pellet');
+                res.setHeader('content-disposition', contentDisposition(item.bodyName + '.pellet'));
                 return res.end(item.data);
               } else {
                 res.status(400);
@@ -6784,7 +6787,7 @@ app.get('/:nodeName/:id/bodyHash/:hash', checkProxyRequest, function (req, res) 
       return res.end(err);
     } else if (item) {
       noCache(req, res, 'application/force-download');
-      res.setHeader('content-disposition', 'attachment; filename=' + item.bodyName + '.pellet');
+      res.setHeader('content-disposition', contentDisposition(item.bodyName + '.pellet'));
       return res.end(item.data);
     } else {
       res.status(400);
@@ -8034,7 +8037,7 @@ function processHuntJobs (cb) {
 }
 
 function updateHuntStatus (req, res, status, successText, errorText) {
-  Db.get('hunts', 'hunt', req.params.id, (err, hit) => {
+  Db.getHunt(req.params.id, (err, hit) => {
     if (err) {
       console.log(errorText, err, hit);
       return res.molochError(500, errorText);
@@ -8063,6 +8066,46 @@ function updateHuntStatus (req, res, status, successText, errorText) {
       }
       res.send(JSON.stringify({ success: true, text: successText }));
       processHuntJobs();
+    });
+  });
+}
+
+function validateUserIds (userIdList) {
+  return new Promise((resolve, reject) => {
+    const query = {
+      _source: ['userId'],
+      from: 0,
+      size: 10000,
+      query: { // exclude the shared user from results
+        bool: { must_not: { term: { userId: '_moloch_shared' } } }
+      }
+    };
+
+    // don't even bother searching for users if in anonymous mode
+    if (!!app.locals.noPasswordSecret && !Config.get('regressionTests', false)) {
+      resolve({ validUsers: [], invalidUsers: [] });
+    }
+
+    Db.searchUsers(query, (error, users) => {
+      if (error) {
+        reject('Unable to validate userIds');
+      }
+
+      let usersList = [];
+      usersList = users.hits.hits.map((user) => {
+        return user._source.userId;
+      });
+
+      let validUsers = [];
+      let invalidUsers = [];
+      for (let user of userIdList) {
+        usersList.indexOf(user) > -1 ? validUsers.push(user) : invalidUsers.push(user);
+      }
+
+      resolve({
+        validUsers: validUsers,
+        invalidUsers: invalidUsers
+      });
     });
   });
 }
@@ -8115,13 +8158,46 @@ app.post('/hunt', [noCacheJson, logAction('hunt'), checkCookieToken, checkPermis
     view: req.body.hunt.query.view
   };
 
-  Db.createHunt(hunt, function (err, result) {
-    if (err) { console.log('create hunt error', err, result); }
-    hunt.id = result._id;
-    processHuntJobs(() => {
-      return res.send(JSON.stringify({ success: true, hunt: hunt }));
+  function doneCb (hunt, invalidUsers) {
+    Db.createHunt(hunt, function (err, result) {
+      if (err) {
+        console.log('create hunt error', err, result);
+        return res.molochError(500, 'Error creating hunt - ' + err);
+      }
+      hunt.id = result._id;
+      processHuntJobs(() => {
+        let response = {
+          success: true,
+          hunt: hunt
+        };
+
+        if (invalidUsers) {
+          response.invalidUsers = invalidUsers;
+        }
+
+        return res.send(JSON.stringify(response));
+      });
     });
-  });
+  }
+
+  if (!req.body.hunt.users || !req.body.hunt.users.length) {
+    return doneCb(hunt);
+  }
+
+  let reqUsers = commaStringToArray(req.body.hunt.users);
+
+  validateUserIds(reqUsers)
+    .then((response) => {
+      hunt.users = response.validUsers;
+
+      // dedupe the array of users
+      hunt.users = [...new Set(hunt.users)];
+
+      return doneCb(hunt, response.invalidUsers);
+    })
+    .catch((error) => {
+      res.molochError(500, error);
+    });
 });
 
 app.get('/hunt/list', [noCacheJson, recordResponseTime, checkPermissions(['packetSearch']), setCookie], (req, res) => {
@@ -8175,8 +8251,12 @@ app.get('/hunt/list', [noCacheJson, recordResponseTime, checkPermissions(['packe
           continue;
         }
 
-        // Since hunt isn't cached we can just modify
-        if (!req.user.createEnabled && req.user.userId !== hunt.userId) {
+        hunt.users = hunt.users || [];
+
+        // clear out secret fields for users who don't have access to that hunt
+        // if the user is not an admin and didn't create the hunt and isn't part of the user's list
+        if (!req.user.createEnabled && req.user.userId !== hunt.userId && hunt.users.indexOf(req.user.userId) < 0) {
+          // since hunt isn't cached we can just modify
           hunt.search = '';
           hunt.searchType = '';
           hunt.id = '';
@@ -8221,6 +8301,87 @@ app.put('/hunt/:id/pause', [noCacheJson, logAction('hunt/:id/pause'), checkCooki
 app.put('/hunt/:id/play', [noCacheJson, logAction('hunt/:id/play'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
   updateHuntStatus(req, res, 'queued', 'Queued hunt item successfully', 'Error starting hunt job');
+});
+
+app.delete('/hunt/:id/users/:user', [noCacheJson, logAction('hunt/:id/users/:user'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
+  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
+
+  Db.getHunt(req.params.id, (err, hit) => {
+    if (err) {
+      console.log('Unable to fetch hunt to remove user', err, hit);
+      return res.molochError(500, 'Unable to fetch hunt to remove user');
+    }
+
+    let hunt = hit._source;
+
+    if (!hunt.users || !hunt.users.length) {
+      return res.molochError(404, 'There are no users that have access to view this hunt');
+    }
+
+    let userIdx = hunt.users.indexOf(req.params.user);
+
+    if (userIdx < 0) { // user doesn't have access to this hunt
+      return res.molochError(404, 'That user does not have access to this hunt');
+    }
+
+    // remove the user from the list
+    hunt.users.splice(userIdx, 1);
+
+    Db.setHunt(req.params.id, hunt, (err, info) => {
+      if (err) {
+        console.log('Unable to remove user', err, info);
+        return res.molochError(500, 'Unable to remove user');
+      }
+      res.send(JSON.stringify({ success: true, users: hunt.users }));
+    });
+  });
+});
+
+app.post('/hunt/:id/users', [noCacheJson, logAction('hunt/:id/users/:user'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
+  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
+
+  if (!req.body.users) { return res.molochError(403, 'You must provide users in a comma separated string'); }
+
+  Db.getHunt(req.params.id, (err, hit) => {
+    if (err) {
+      console.log('Unable to fetch hunt to add user(s)', err, hit);
+      return res.molochError(500, 'Unable to fetch hunt to add user(s)');
+    }
+
+    let hunt = hit._source;
+    let reqUsers = commaStringToArray(req.body.users);
+
+    validateUserIds(reqUsers)
+      .then((response) => {
+        if (!response.validUsers.length) {
+          return res.molochError(404, 'Unable to validate user IDs provided');
+        }
+
+        if (!hunt.users) {
+          hunt.users = response.validUsers;
+        } else {
+          hunt.users = hunt.users.concat(response.validUsers);
+        }
+
+        // dedupe the array of users
+        hunt.users = [...new Set(hunt.users)];
+
+        Db.setHunt(req.params.id, hunt, (err, info) => {
+          if (err) {
+            console.log('Unable to add user(s)', err, info);
+            return res.molochError(500, 'Unable to add user(s)');
+          }
+          res.send(JSON.stringify({
+            success: true,
+            users: hunt.users,
+            invalidUsers: response.invalidUsers
+          }));
+        });
+      })
+      .catch((error) => {
+        res.molochError(500, error);
+      });
+  });
 });
 
 app.get('/:nodeName/hunt/:huntId/remote/:sessionId', [noCacheJson], function (req, res) {
@@ -8363,9 +8524,9 @@ app.get('/lookups', [noCacheJson, getSettingUserCache, recordResponseTime], func
   });
 });
 
-function createLookupsArray (lookupsString) {
+function commaStringToArray (commaString) {
   // split string on commas and newlines
-  let values = lookupsString.split(/[,\n]+/g);
+  let values = commaString.split(/[,\n]+/g);
 
   // remove any empty values
   values = values.filter(function (val) {
@@ -8414,7 +8575,7 @@ app.post('/lookups', [noCacheJson, getSettingUserDb, logAction('lookups'), check
         variable.userId = user.userId;
 
         // comma/newline separated value -> array of values
-        const values = createLookupsArray(variable.value);
+        const values = commaStringToArray(variable.value);
         variable[variable.type] = values;
 
         const type = variable.type;
@@ -8469,7 +8630,7 @@ app.put('/lookups/:id', [noCacheJson, getSettingUserDb, logAction('lookups/:id')
     }
 
     // comma/newline separated value -> array of values
-    const values = createLookupsArray(sentVar.value);
+    const values = commaStringToArray(sentVar.value);
     sentVar[sentVar.type] = values;
     sentVar.userId = fetchedVar._source.userId;
 
@@ -9286,7 +9447,8 @@ app.use(cspHeader, setCookie, (req, res) => {
     themeUrl: theme === 'custom-theme' ? 'user.css' : '',
     huntWarn: Config.get('huntWarn', 100000),
     huntLimit: limit,
-    serverNonce: res.locals.nonce
+    serverNonce: res.locals.nonce,
+    anonymousMode: !!app.locals.noPasswordSecret && !Config.get('regressionTests', false)
   };
 
   // Create a fresh Vue app instance
@@ -9659,5 +9821,6 @@ Db.initialize({ host: internals.elasticBase,
   ca: Config.getCaTrustCerts(Config.nodeName()),
   requestTimeout: Config.get('elasticsearchTimeout', 300),
   esProfile: Config.esProfile,
-  debug: Config.debug
+  debug: Config.debug,
+  getSessionBySearch: Config.get('getSessionBySearch', '')
 }, main);

@@ -24,12 +24,11 @@ $ENV{'TZ'} = 'US/Eastern';
 ################################################################################
 sub doGeo {
     if (! -f "ipv4-address-space.csv") {
-        # Certs are hard MKAY
-        system("wget --no-check-certificate https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv");
+        system("wget https://s3.amazonaws.com/files.molo.ch/testing/ipv4-address-space.csv");
     }
 
     if (! -f "oui.txt") {
-        system("wget --no-check-certificate -O oui.txt https://raw.githubusercontent.com/wireshark/wireshark/master/manuf");
+        system("wget https://s3.amazonaws.com/files.molo.ch/testing/oui.txt");
     }
 
     if (! -f "GeoLite2-Country.mmdb") {

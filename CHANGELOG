@@ -20,6 +20,8 @@ NOTICE: Restart wiseService before capture when upgrading
 
 2.4.2 2020/10/xx
   - NOTE - this is the last version to support ES 6
+  - viewer - support utf8 chars in content-disposition
+  - capture - QUIC version 5x detection
 
 2.4.1 2020/09/28
   - NOTICE - db.pl upgrade is required

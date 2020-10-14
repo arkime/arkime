@@ -60,6 +60,7 @@
 # 63 - Upgrade for ES 7.x: sequence_v3, fields_v3, queries_v3, files_v6, users_v7, dstats_v4, stats_v4, hunts_v2
 # 64 - lock shortcuts
 # 65 - hunt unrunnable and failedSessionIds
+# 66 - share hunts
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -69,7 +70,7 @@ use POSIX;
 use IO::Compress::Gzip qw(gzip $GzipError);
 use strict;
 
-my $VERSION = 65;
+my $VERSION = 66;
 my $verbose = 0;
 my $PREFIX = "";
 my $SECURE = 1;
@@ -2480,6 +2481,9 @@ sub huntsUpdate
       },
       "failedSessionIds": {
         "type": "keyword"
+      },
+      "users": {
+        "type": "keyword"
       }
     }
   }
@@ -4305,7 +4309,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
         checkForOld5Indices();
         checkForOld6Indices();
-    } elsif ($main::versionNumber <= 65) {
+    } elsif ($main::versionNumber <= 66) {
         checkForOld5Indices();
         checkForOld6Indices();
         sessions2Update();
