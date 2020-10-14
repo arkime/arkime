@@ -88,27 +88,41 @@
           <span v-if="value.shared"
             class="fa fa-share-square">
           </span>
-
+          <!-- view action buttons -->
           <button class="btn btn-xs btn-danger pull-right ml-1"
             type="button"
+            v-b-tooltip.hover.top
+            title="Delete this view."
             @click.stop.prevent="deleteView(value, key)">
             <span class="fa fa-trash-o">
             </span>
           </button>
-          <button class="btn btn-xs btn-warning pull-right"
+          <button class="btn btn-xs btn-warning pull-right ml-1"
             type="button"
-            :id="'updateview' + key"
+            v-b-tooltip.hover.top
+            title="Edit this view."
             @click.stop.prevent="modView(views[key])">
             <span class="fa fa-edit">
             </span>
           </button>
-
+          <button class="btn btn-xs btn-theme-secondary pull-right ml-1"
+            type="button"
+            v-b-tooltip.hover.top
+            title="Put this view's search expression into the search input. Note: this does not issue a search."
+            @click.stop.prevent="applyView(value)">
+            <span class="fa fa-share fa-flip-horizontal">
+            </span>
+          </button>
+          <button v-if="value.sessionsColConfig && $route.name === 'Sessions'"
+            class="btn btn-xs btn-theme-tertiary pull-right"
+            type="button"
+            v-b-tooltip.hover.top
+            title="Apply this view's column configuration to the sessions table. Note: this will issue a search and update the sessions table columns"
+            @click.stop.prevent="applyColumns(value)">
+            <span class="fa fa-columns">
+            </span>
+          </button> <!-- /view action buttons -->
           {{ key }}&nbsp;
-          <span v-if="value.sessionsColConfig"
-            class="fa fa-columns cursor-help"
-            v-b-tooltip.hover
-            title="This view has a sessions table column configuration and sort order associated with it. Applying this view will also update the sessions table.">
-          </span>
         </b-dropdown-item>
       </b-dropdown> <!-- /views dropdown menu -->
 
@@ -130,6 +144,7 @@
 
       <!-- search box typeahead -->
       <expression-typeahead
+        @modView="modView"
         @applyExpression="applyParams"
         @changeExpression="changeExpression">
       </expression-typeahead> <!-- /search box typeahead -->
@@ -357,7 +372,7 @@ export default {
       this.messageType = undefined;
       this.$parent.$emit('recalc-collapse');
     },
-    applyExpression: function () {
+    applyExpression: function (expression) {
       this.$router.push({
         query: {
           ...this.$route.query,
@@ -454,6 +469,16 @@ export default {
 
       this.$emit('setView');
     },
+    applyView: function (view) {
+      this.expression = view.expression;
+      this.$store.commit('setFocusSearch', true);
+      setTimeout(() => { // unfocus input for further re-focusing
+        this.$store.commit('setFocusSearch', false);
+      }, 1000);
+    },
+    applyColumns: function (view) {
+      this.$emit('setColumns', view.sessionsColConfig);
+    },
     /* helper functions ------------------------------------------ */
     getViews: function () {
       UserService.getViews()
@@ -526,7 +551,7 @@ export default {
 
 <style>
 .view-menu-dropdown .dropdown-menu {
-  width: 200px;
+  width: 300px;
 }
 </style>
 

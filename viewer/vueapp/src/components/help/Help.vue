@@ -386,10 +386,50 @@
           Views
         </h6>
         <p>
-          A "View" is an expression that gets added to existing queries. It limits the session set and is analogous to a database view.
-          The eyeball icon ( <span class="fa fa-eye"></span> ) button allows an analyst to: overlay a saved "View" onto their current query,
-          save the current query as a new "View", update a "View" preset to match the current query, or delete a "View" preset.
-          "View"s should be used for common search queries that an analyst regularly finds themselves running.
+          A "View" is a search expression that gets added to existing queries.
+          It limits the session set and is analogous to a database view.
+          Views should be used for common search queries that an analyst regularly finds themselves running.
+        </p>
+        <p>
+          A user can save the current Sessions column configuration alongside a view.
+          If a view is saved with a column configuration, when the view is applied,
+          the Sessions table columns are updated as well.
+        </p>
+        <p>
+          Additionally, a user can easily save a search expression as a view by clicking the save
+          button ( <span class="fa fa-save"></span> ) to the right of the search expression input.
+        </p>
+        <p>
+          To view your views, click the eyeball button
+          ( <span class="fa fa-eye"></span> ). This menu allows an analyst to:
+          <ul>
+            <li>
+              Apply a view by clicking its name. This overlays the view onto the current query and issues a search.
+              If the Session's table colums were saved with the view, the table columns are updated.
+            </li>
+            <li>
+              Click "New View" to add the current query as a new view.
+            </li>
+            <li>
+              Update a view by clicking the edit button.
+              ( <span class="fa fa-edit"></span> )
+            </li>
+            <li>
+              Delete a view by clicking the delete button.
+              ( <span class="fa fa-trash-o"></span> )
+            </li>
+
+            <li>
+              Put the view's search expression into the search expression input
+              by clicking the apply expression button. ( <span class="fa fa-share fa-flip-horizontal"></span> )
+              Note: this does not issue a search.
+            </li>
+            <li>
+              Apply this view's column configuration to the sessions table by clicking
+              the apply column button. ( <span class="fa fa-columns"></span> )
+              Note: this will issue a search and update the sessions table columns.
+            </li>
+          </ul>
         </p>
         <h6>
           <span class="fa fa-fw fa-exchange"></span>&nbsp;

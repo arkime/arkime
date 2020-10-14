@@ -14,7 +14,8 @@
           :start="query.start"
           :timezone="user.settings.timezone"
           @changeSearch="cancelAndLoad(true)"
-          @setView="loadNewView()">
+          @setView="loadNewView"
+          @setColumns="loadColumns">
         </moloch-search> <!-- /search navbar -->
 
         <!-- paging navbar -->
@@ -680,6 +681,10 @@ export default {
       this.$nextTick(() => {
         this.loadData(true);
       });
+    },
+    loadColumns: function (colConfig) {
+      this.tableState = colConfig;
+      this.loadData(true);
     },
     /* show the overflow when a dropdown in a column header is shown. otherwise,
      * the dropdown is cut off and scrolls vertically in the column header */
