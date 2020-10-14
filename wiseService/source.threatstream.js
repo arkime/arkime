@@ -505,7 +505,7 @@ ThreatStreamSource.prototype.openDb = function () {
     realDb.run('BEGIN IMMEDIATE', beginImmediate);
   } else if (!this.db) {
     // Open the DB if not already opened.
-    this.db = new sqlite3.Database(dbFile + '.moloch', sqlite3.OPEN_READONLY);
+    this.db = new sqlite3.Database(dbFile, sqlite3.OPEN_READONLY);
   }
 };
 // ----------------------------------------------------------------------------
