@@ -34,11 +34,11 @@
 
     <!-- visualizations -->
     <moloch-visualizations
-      v-if="mapData && graphData && capStartTime"
+      v-if="mapData && graphData && capStartTimes.length"
       :graph-data="graphData"
       :map-data="mapData"
       :primary="true"
-      :cap-start-time="capStartTime"
+      :cap-start-times="capStartTimes"
       :timezone="user.settings.timezone"
       :timelineDataFilters="timelineDataFilters"
       @fetchMapData="cancelAndLoad(true)">
@@ -600,7 +600,7 @@ export default {
       stickyHeader: false,
       tableHeaderOverflow: undefined,
       showFitButton: false,
-      capStartTime: undefined
+      capStartTimes: []
     };
   },
   created: function () {
@@ -1457,11 +1457,18 @@ export default {
     getCaptureStats: function () {
       this.$http.get('stats.json')
         .then((response) => {
-          // TODO ECR - which capture process?
-          this.capStartTime = response.data.data[0].startTime * 1000;
+          for (let data of response.data.data) {
+            this.capStartTimes.push({
+              nodeName: data.nodeName,
+              startTime: data.startTime * 1000
+            });
+          }
         })
         .catch((error) => {
-          this.capStartTime = 1;
+          this.capStartTimes = [{
+            nodeName: 'none',
+            startTime: 1
+          }];
         });
     },
     /**

@@ -270,10 +270,7 @@ export default {
       type: Array,
       required: true
     },
-    capStartTime: {
-      type: Number,
-      default: 1
-    }
+    capStartTimes: Array
   },
   data: function () {
     return {
@@ -291,8 +288,7 @@ export default {
       graphOptions: {},
       showMap: undefined,
       stickyViz: false,
-      barWidth: 1,
-      capReadableTime: this.$options.filters.timezoneDateString(this.capStartTime, this.timezone || 'local', false)
+      barWidth: 1
     };
   },
   computed: {
@@ -595,10 +591,22 @@ export default {
         // it is only 1px wide, but the hover displays if a user hovers over the
         // surrounding line by half a bar width on either side (so it should
         // still allow a user to see tooltips for data)
-        if (pos.x1 >= this.capStartTime - (this.barWidth / 2) && pos.x1 < this.capStartTime + (this.barWidth / 2)) {
+        let capNode, capStartTime;
+        let isInCapTimeRange = false;
+        for (let cap of this.capStartTimes) {
+          if (cap.startTime) {
+            if (pos.x1 >= cap.startTime - (this.barWidth / 2) && pos.x1 < cap.startTime + (this.barWidth / 2)) {
+              capNode = cap.nodeName;
+              capStartTime = cap.startTime;
+              isInCapTimeRange = true;
+              break;
+            }
+          }
+        }
+        if (isInCapTimeRange) {
           $(document.body).find('#tooltip').remove();
           let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
-                              Capture started at ${this.capReadableTime}
+                              Capture node ${capNode} started at ${this.$options.filters.timezoneDateString(capStartTime, this.timezone || 'local', false)}
                             </div>`;
 
           $(tooltipHTML).css({
@@ -725,9 +733,7 @@ export default {
           color: foregroundColor,
           hoverable: true,
           clickable: true,
-          markings: [
-            { color: '#666', xaxis: { from: this.capStartTime, to: this.capStartTime } }
-          ]
+          markings: []
         },
         zoom: {
           interactive: false,
@@ -740,6 +746,16 @@ export default {
           frameRate: 20
         }
       };
+
+      for (let capture of this.capStartTimes) {
+        this.graphOptions.grid.markings.push({
+          color: '#666',
+          xaxis: {
+            from: capture.startTime,
+            to: capture.startTime
+          }
+        });
+      }
     },
     /* helper MAP functions */
     onMapResize: function () {
