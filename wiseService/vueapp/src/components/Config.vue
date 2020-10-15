@@ -1,23 +1,13 @@
 <template>
   <!-- container -->
   <div>
-    <Alert :initialAlert="alertState.text" :variant="alertState.variant" v-on:clear-initialAlert="alertState.text = ''"/>
-
-    <b-form-input
-      class="input-box"
-      :value="this.configCode"
-    >
-    </b-form-input>
-
-    <b-button
-      class="ml-auto mr-2"
-      style="display: block"
-      variant="primary"
-      :disabled="saveEnabled"
-      @click="saveConfig()"
-    >
-      Save Config & Restart
-    </b-button>
+    <div class="ml-5 mr-5">
+      <Alert
+        :initialAlert="alertState.text"
+        :variant="alertState.variant"
+        v-on:clear-initialAlert="alertState.text = ''"
+      />
+    </div>
 
     <div class="d-flex flex-row">
       <!-- Sources sidebar -->
@@ -65,8 +55,28 @@
 
       <!-- Selected Source Input Fields -->
       <div class="d-flex flex-column px-5 pt-2 w-100">
-        <h2 class="text-center">{{selectedSourceKey}}</h2>
-        <div v-if="configDefs[selectedSourceSplit]" class="subtext text-center mt-1 mb-4 mx-5">
+        <h2>
+          <form class="form-inline pull-right ml-5">
+            <div class="input-group">
+              <input type="text"
+                class="form-control"
+                v-model="configCode"
+              />
+              <div class="input-group-append">
+                <b-button
+                  class="ml-auto"
+                  variant="primary"
+                  :disabled="!saveEnabled"
+                  @click="saveConfig"
+                >
+                  Save Config &amp; Restart
+                </b-button>
+              </div>
+            </div>
+          </form>
+          {{ selectedSourceKey }}
+        </h2>
+        <div v-if="configDefs[selectedSourceSplit]" class="subtext mt-1 mb-4">
           <div v-if="configDefs[selectedSourceSplit].description">
             {{ configDefs[selectedSourceSplit].description }}
           </div>
@@ -236,7 +246,7 @@ export default {
         { text: 'Config', value: 'config' },
         { text: 'Edit', value: 'edit' }
       ],
-      configCode: 'aaaa'
+      configCode: ''
     };
   },
   computed: {
@@ -262,7 +272,7 @@ export default {
       }
     },
     saveEnabled: function () {
-      return !(JSON.stringify(this.currConfig) !== JSON.stringify(this.currConfigBefore));
+      return JSON.stringify(this.currConfig) !== JSON.stringify(this.currConfigBefore) && this.configCode.length > 0;
     },
     fileActionsDisabled: function () {
       return this.currFile === this.currFileBefore;

@@ -41,6 +41,7 @@ const axios = require('axios');
 const passport = require('passport');
 const DigestStrategy = require('passport-http').DigestStrategy;
 const elasticsearch = require('elasticsearch');
+const chalk = require('chalk');
 
 require('console-stamp')(console, '[HH:MM:ss.l]');
 
@@ -94,7 +95,7 @@ var internals = {
   workers: 1,
   regressionTests: false,
   webconfig: false,
-  configCode: 'aaaa' /*crypto.randomBytes(20).toString('base64').replace(/[=+\/]/g, '').substr(0,6) */
+  configCode: crypto.randomBytes(20).toString('base64').replace(/[=+\/]/g, '').substr(0,6)
 };
 
 internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 'sha256'];
@@ -115,7 +116,9 @@ function processArgs (argv) {
       internals.regressionTests = true;
     } else if (argv[i] === '--webconfig') {
       internals.webconfig = true;
-      console.log(`IMPORTANT - Config pin code is: ${internals.configCode}`);
+      console.log(chalk.cyan(
+        `${chalk.bgCyan.black('IMPORTANT')} - Config pin code is: ${internals.configCode}`
+      ));
     } else if (argv[i] === '--workers') {
       i++;
       internals.workers = +argv[i];
