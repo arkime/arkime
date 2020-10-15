@@ -435,7 +435,7 @@ ThreatStreamSource.prototype.openDbCopy = function () {
         realDb = null;
 
         var tempDb = new sqlite3.Database(dbFile + '.temp');
-        tempDb.run('CREATE INDEX md5_index ON ts (md5)', (err) => {
+        tempDb.run('CREATE INDEX IF NOT EXISTS md5_index ON ts (md5)', (err) => {
           tempDb.close();
           if (this.db) {
             this.db.close();
@@ -487,7 +487,7 @@ ThreatStreamSource.prototype.openDb = function () {
       }, 30 * 1000); // Try to lock in 30 seconds
     }
 
-    realDb.run('CREATE INDEX md5_index ON ts (md5)', (err) => {
+    realDb.run('CREATE INDEX IF NOT EXISTS md5_index ON ts (md5)', (err) => {
       realDb.run('END', (err) => {
         if (this.db) {
           this.db.close();
