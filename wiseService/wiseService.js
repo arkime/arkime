@@ -95,7 +95,7 @@ var internals = {
   workers: 1,
   regressionTests: false,
   webconfig: false,
-  configCode: crypto.randomBytes(20).toString('base64').replace(/[=+\/]/g, '').substr(0,6)
+  configCode: crypto.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 6)
 };
 
 internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 'sha256'];
