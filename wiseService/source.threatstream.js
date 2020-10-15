@@ -497,10 +497,10 @@ ThreatStreamSource.prototype.openDb = function () {
     });
   };
 
-  // If the last copy time doesn't match start the copy process.
+  // If the last create time doesn't match reopen and make sure index is there
   // This will also run on startup.
-  if (this.mtime !== dbStat.mtime.getTime()) {
-    this.mtime = dbStat.mtime.getTime();
+  if (this.ctime !== dbStat.ctime.getTime()) {
+    this.ctime = dbStat.ctime.getTime();
     realDb = new sqlite3.Database(dbFile);
     realDb.run('BEGIN IMMEDIATE', beginImmediate);
   } else if (!this.db) {
