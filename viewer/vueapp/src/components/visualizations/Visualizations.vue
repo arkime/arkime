@@ -592,6 +592,9 @@ export default {
       // triggered when hovering over the graph
       $(this.plotArea).on('plothover', (event, pos, item) => {
         // show capture process start time tooltip
+        // it is only 1px wide, but the hover displays if a user hovers over the
+        // surrounding line by half a bar width on either side (so it should
+        // still allow a user to see tooltips for data)
         if (pos.x1 >= this.capStartTime - (this.barWidth / 2) && pos.x1 < this.capStartTime + (this.barWidth / 2)) {
           $(document.body).find('#tooltip').remove();
           let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
