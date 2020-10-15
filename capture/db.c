@@ -1371,7 +1371,9 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         "\"deltaOverloadDropped\": %" PRIu64 ","
         "\"deltaESDropped\": %" PRIu64 ","
         "\"esHealthMS\": %" PRIu64 ","
-        "\"deltaMS\": %" PRIu64
+        "\"deltaMS\": %" PRIu64 ","
+        "\"runningTime\": %" PRIu64 ","
+        "\"startTime\": %" PRIu64
         "}",
         VERSION,
         config.nodeName,
@@ -1413,7 +1415,9 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         (overloadDropped - lastOverloadDropped[n]),
         (esDropped - lastESDropped[n]),
         esHealthMS,
-        diffms);
+        diffms,
+        currentTime.tv_sec - startTime.tv_sec,
+        startTime.tv_sec);
 
     lastTime[n]            = currentTime;
     lastBytes[n]           = totalBytes;

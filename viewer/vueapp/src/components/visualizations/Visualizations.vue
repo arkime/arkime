@@ -269,6 +269,10 @@ export default {
     timelineDataFilters: {
       type: Array,
       required: true
+    },
+    capStartTime: {
+      type: Number,
+      default: 1
     }
   },
   data: function () {
@@ -286,7 +290,9 @@ export default {
       graph: undefined,
       graphOptions: {},
       showMap: undefined,
-      stickyViz: false
+      stickyViz: false,
+      barWidth: 1,
+      capReadableTime: this.$options.filters.timezoneDateString(this.capStartTime, this.timezone || 'local', false)
     };
   },
   computed: {
@@ -585,6 +591,21 @@ export default {
       let previousPoint;
       // triggered when hovering over the graph
       $(this.plotArea).on('plothover', (event, pos, item) => {
+        // show capture process start time tooltip
+        if (pos.x1 >= this.capStartTime - (this.barWidth / 2) && pos.x1 < this.capStartTime + (this.barWidth / 2)) {
+          $(document.body).find('#tooltip').remove();
+          let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
+                              Capture started at ${this.capReadableTime}
+                            </div>`;
+
+          $(tooltipHTML).css({
+            top: pos.pageY - 30,
+            left: pos.pageX - 8
+          }).appendTo(document.body);
+
+          return;
+        }
+
         if (item) {
           if (!previousPoint ||
             previousPoint.dataIndex !== item.dataIndex ||
@@ -657,12 +678,12 @@ export default {
         this.graph[i].bars = { show: showBars };
       }
 
+      this.barWidth = (this.graphData.interval * 1000) / 1.7;
+
       this.graphOptions = { // flot graph options
         series: {
           stack: true,
-          bars: {
-            barWidth: (this.graphData.interval * 1000) / 1.7
-          },
+          bars: { barWidth: this.barWidth },
           lines: {
             fill: true
           }
@@ -700,7 +721,10 @@ export default {
           borderWidth: 0,
           color: foregroundColor,
           hoverable: true,
-          clickable: true
+          clickable: true,
+          markings: [
+            { color: '#666', xaxis: { from: this.capStartTime, to: this.capStartTime } }
+          ]
         },
         zoom: {
           interactive: false,

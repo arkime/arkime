@@ -34,10 +34,11 @@
 
     <!-- visualizations -->
     <moloch-visualizations
-      v-if="mapData && graphData"
+      v-if="mapData && graphData && capStartTime"
       :graph-data="graphData"
       :map-data="mapData"
       :primary="true"
+      :cap-start-time="capStartTime"
       :timezone="user.settings.timezone"
       :timelineDataFilters="timelineDataFilters"
       @fetchMapData="cancelAndLoad(true)">
@@ -598,10 +599,12 @@ export default {
       infoFieldVisMenuOpen: false,
       stickyHeader: false,
       tableHeaderOverflow: undefined,
-      showFitButton: false
+      showFitButton: false,
+      capStartTime: undefined
     };
   },
   created: function () {
+    this.getCaptureStats();
     this.getColumnWidths();
     this.getTableState(); // IMPORTANT: kicks off the initial search query!
     this.getCustomColumnConfigurations();
@@ -1450,6 +1453,16 @@ export default {
         this.error = error.text || error;
         this.loading = false;
       });
+    },
+    getCaptureStats: function () {
+      this.$http.get('stats.json')
+        .then((response) => {
+          // TODO ECR - which capture process?
+          this.capStartTime = response.data.data[0].startTime * 1000;
+        })
+        .catch((error) => {
+          this.capStartTime = 1;
+        });
     },
     /**
      * Saves the table state
