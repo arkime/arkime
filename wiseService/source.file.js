@@ -33,11 +33,6 @@ function FileSource (api, section) {
     return;
   }
 
-  if (api.isWebConfig() && !api.isFileDirs(this.file)) {
-    console.log(`${this.section} - ERROR not loading since ${this.file} outside of fileDirs`);
-    return;
-  }
-
   if (!fs.existsSync(this.file)) {
     console.log(`${this.section} - ERROR not loading since ${this.file} doesn't exist`);
     return;
@@ -90,10 +85,6 @@ FileSource.prototype.getRaw = function (cb) {
 };
 // ----------------------------------------------------------------------------
 FileSource.prototype.putRaw = function (body, cb) {
-  if (!this.api.isFileDirs(this.file)) {
-    return cb('File path not part of filedirs');
-  }
-
   fs.writeFile(this.file, body, (err) => {
     return cb(err);
   });

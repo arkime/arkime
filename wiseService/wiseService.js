@@ -46,7 +46,6 @@ require('console-stamp')(console, '[HH:MM:ss.l]');
 
 var internals = {
   configFile: '/data/moloch/etc/wiseService.ini',
-  fileDirs: ['/data/moloch/wisefiles'],
   debug: 0,
   insecure: false,
   fieldsTS: 0,
@@ -94,7 +93,8 @@ var internals = {
   rightClicks: {},
   workers: 1,
   regressionTests: false,
-  webconfig: false
+  webconfig: false,
+  configCode: 'aaaa' /*crypto.randomBytes(20).toString('base64').replace(/[=+\/]/g, '').substr(0,6) */
 };
 
 internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 'sha256'];
@@ -115,12 +115,10 @@ function processArgs (argv) {
       internals.regressionTests = true;
     } else if (argv[i] === '--webconfig') {
       internals.webconfig = true;
+      console.log(`IMPORTANT - Config pin code is: ${internals.configCode}`);
     } else if (argv[i] === '--workers') {
       i++;
       internals.workers = +argv[i];
-    } else if (argv[i] === '--filedirs') {
-      i++;
-      internals.fileDirs = argv[i].split(',');
     } else if (argv[i] === '--help') {
       console.log('wiseService.js [<options>]');
       console.log('');
@@ -132,18 +130,6 @@ function processArgs (argv) {
       console.log('  --workers <b>         Number of worker processes to create');
 
       process.exit(0);
-    }
-  }
-
-  // Make sure filedirs directories exist and get the real path
-  if (internals.webconfig) {
-    for (let i = 0; i < internals.fileDirs.length; i++) {
-      try {
-        internals.fileDirs[i] = fs.realpathSync(internals.fileDirs[i]);
-      } catch (e) {
-        console.log(`ERROR - can't access ${internals.fileDirs[i]}, either create the directory or use --filedirs options`);
-        process.exit(0);
-      }
     }
   }
 }
@@ -349,6 +335,16 @@ function checkAdmin (req, res, next) {
 }
 
 // ----------------------------------------------------------------------------
+function checkConfigCode (req, res, next) {
+  console.log(req.body);
+  if (req.body !== undefined && req.body.configCode !== undefined && req.body.configCode === internals.configCode) {
+    return next();
+  } else {
+      return res.send(JSON.stringify({ success: false, text: 'Not admin' })); // not specific error
+  }
+}
+
+// ----------------------------------------------------------------------------
 // Sources
 // ----------------------------------------------------------------------------
 function newFieldsTS () {
@@ -430,11 +426,6 @@ function splitRemain (str, separator, limit) {
     ret.push(str.join(separator));
 
     return ret;
-}
-// ----------------------------------------------------------------------------
-function isFileDirs (path) {
-  path = fs.realpathSync(path);
-  return internals.fileDirs.some(c => path.startsWith(c));
 }
 // ----------------------------------------------------------------------------
 function buildSourceApi () {
@@ -559,7 +550,6 @@ function buildSourceApi () {
         internals.configDefs[sourceName] = configDef;
       }
     },
-    isFileDirs: isFileDirs,
     isWebConfig: function () { return internals.webconfig; },
     funcName: funcName,
     app: app
@@ -1040,7 +1030,7 @@ app.get('/config/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
                    filePath: internals.configFile });
 });
 // ----------------------------------------------------------------------------
-app.put('/config/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser], (req, res) => {
+app.put(`/config/save`, [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser, checkConfigCode], (req, res) => {
   if (req.body.config === undefined) {
     return res.send({ success: false, text: 'Missing config' });
   }

@@ -3,6 +3,12 @@
   <div>
     <Alert :initialAlert="alertState.text" :variant="alertState.variant" v-on:clear-initialAlert="alertState.text = ''"/>
 
+    <b-form-input
+      class="input-box"
+      :value="this.configCode"
+    >
+    </b-form-input>
+
     <b-button
       class="ml-auto mr-2"
       style="display: block"
@@ -229,7 +235,8 @@ export default {
       configViews: [
         { text: 'Config', value: 'config' },
         { text: 'Edit', value: 'edit' }
-      ]
+      ],
+      configCode: 'aaaa'
     };
   },
   computed: {
@@ -331,7 +338,7 @@ export default {
         }
       }
 
-      WiseService.saveCurrConfig(this.currConfig)
+      WiseService.saveCurrConfig(this.currConfig, this.configCode)
         .then((data) => {
           if (!data.success) {
             throw data;

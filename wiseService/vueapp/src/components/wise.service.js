@@ -86,9 +86,9 @@ export default {
         });
     });
   },
-  saveCurrConfig: function (config) {
+  saveCurrConfig: function (config, configCode) {
     return new Promise((resolve, reject) => {
-      Vue.axios.put('config/save', { config: config })
+      Vue.axios.put('config/save', { config: config, configCode: configCode })
         .then((response) => {
           resolve(response.data);
         })
