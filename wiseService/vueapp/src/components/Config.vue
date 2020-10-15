@@ -61,6 +61,9 @@
               <input type="text"
                 class="form-control"
                 v-model="configCode"
+                placeholder="Config pin code"
+                v-b-tooltip.hover.left
+                title="The config pin code can be found in the output from running the WISE UI"
               />
               <div class="input-group-append">
                 <b-button
