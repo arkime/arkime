@@ -595,36 +595,6 @@ export default {
       let previousPoint;
       // triggered when hovering over the graph
       $(this.plotArea).on('plothover', (event, pos, item) => {
-        // show capture process start time tooltip
-        // it is only 1px wide, but the hover displays if a user hovers over the
-        // surrounding line by half a bar width on either side (so it should
-        // still allow a user to see tooltips for data)
-        let capNode, capStartTime;
-        let isInCapTimeRange = false;
-        for (let cap of this.capStartTimes) {
-          if (cap.startTime) {
-            if (pos.x1 >= cap.startTime - (this.barWidth / 2) && pos.x1 < cap.startTime + (this.barWidth / 2)) {
-              capNode = cap.nodeName;
-              capStartTime = cap.startTime;
-              isInCapTimeRange = true;
-              break;
-            }
-          }
-        }
-        if (isInCapTimeRange) {
-          $(document.body).find('#tooltip').remove();
-          let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
-                              Capture node ${capNode} started at ${this.$options.filters.timezoneDateString(capStartTime, this.timezone || 'local', false)}
-                            </div>`;
-
-          $(tooltipHTML).css({
-            top: pos.pageY - 30,
-            left: pos.pageX - 8
-          }).appendTo(document.body);
-
-          return;
-        }
-
         if (item) {
           if (!previousPoint ||
             previousPoint.dataIndex !== item.dataIndex ||
@@ -668,6 +638,32 @@ export default {
         } else {
           $(document.body).find('#tooltip').remove();
           previousPoint = null;
+          // show capture process start time tooltip
+          // it is only 1px wide, but the hover displays if a user hovers over the
+          // surrounding line by half a bar width on either side (so it should
+          // still allow a user to see tooltips for data)
+          let capNode, capStartTime;
+          let isInCapTimeRange = false;
+          for (let cap of this.capStartTimes) {
+            if (cap.startTime) {
+              if (pos.x1 >= cap.startTime - (this.barWidth / 2) && pos.x1 < cap.startTime + (this.barWidth / 2)) {
+                capNode = cap.nodeName;
+                capStartTime = cap.startTime;
+                isInCapTimeRange = true;
+                break;
+              }
+            }
+          }
+          if (isInCapTimeRange) {
+            let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
+                                Capture node ${capNode} started at ${this.$options.filters.timezoneDateString(capStartTime, this.timezone || 'local', false)}
+                              </div>`;
+
+            $(tooltipHTML).css({
+              top: pos.pageY - 30,
+              left: pos.pageX - 8
+            }).appendTo(document.body);
+          }
         }
       });
     },
