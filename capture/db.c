@@ -1372,7 +1372,6 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         "\"deltaESDropped\": %" PRIu64 ","
         "\"esHealthMS\": %" PRIu64 ","
         "\"deltaMS\": %" PRIu64 ","
-        "\"runningTime\": %" PRIu64 ","
         "\"startTime\": %" PRIu64
         "}",
         VERSION,
@@ -1416,7 +1415,6 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         (esDropped - lastESDropped[n]),
         esHealthMS,
         diffms,
-        currentTime.tv_sec - startTime.tv_sec,
         startTime.tv_sec);
 
     lastTime[n]            = currentTime;
