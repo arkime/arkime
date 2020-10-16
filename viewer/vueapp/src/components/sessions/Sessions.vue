@@ -591,6 +591,7 @@ export default {
       fields: [],
       graphData: undefined,
       mapData: undefined,
+      capStartTimes: [],
       colQuery: '', // query for columns to toggle visibility
       newColConfigName: '', // name of new custom column config
       viewChanged: false,
@@ -599,8 +600,7 @@ export default {
       infoFieldVisMenuOpen: false,
       stickyHeader: false,
       tableHeaderOverflow: undefined,
-      showFitButton: false,
-      capStartTimes: []
+      showFitButton: false
     };
   },
   created: function () {
@@ -1454,6 +1454,7 @@ export default {
         this.loading = false;
       });
     },
+    /* Fetches capture stats to show the last time each capture node started */
     getCaptureStats: function () {
       this.$http.get('stats.json')
         .then((response) => {

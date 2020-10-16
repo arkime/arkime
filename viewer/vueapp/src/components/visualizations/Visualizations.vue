@@ -270,7 +270,15 @@ export default {
       type: Array,
       required: true
     },
-    capStartTimes: Array
+    capStartTimes: {
+      type: Array,
+      default: () => {
+        return [{
+          nodeName: 'none',
+          startTime: 1
+        }];
+      }
+    }
   },
   data: function () {
     return {
@@ -749,7 +757,7 @@ export default {
 
       for (let capture of this.capStartTimes) {
         this.graphOptions.grid.markings.push({
-          color: '#666',
+          color: foregroundColor || '#666',
           xaxis: {
             from: capture.startTime,
             to: capture.startTime
