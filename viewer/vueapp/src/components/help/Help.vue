@@ -453,9 +453,37 @@
           Visualizations
         </h6>
         <p>
-          The section above the Sessions table contains a visualisation of the query's output. This quick glance visualization may be viewed by Session count, Packets count, or Databytes count.
-          Clicking and dragging over bars within the chart will drill into the selected time frame so only it is selected.
-          Additionally, a user can click the "+" or "-" magnifying glasses to quickly zoom out or zoom in the time window being observed.
+          The timeline graphs on the Sessions, SPIView, and SPIGraph pages
+          contain a visualisation of the query's output.
+          <ul>
+            <li>
+              View by Session count, Packets count, Bytes count, or Databytes count.
+              Packets, Bytes and Databytes show source and destination separated
+              by color.
+            </li>
+            <li>
+              Select between a line or bar chart.
+            </li>
+            <li>
+              Click and drag over sections of the chart to drill into the
+              selected time frame. Note: this issues a new query.
+            </li>
+            <li>
+              Click the + or - magnifying glass buttons to quickly zoom in or
+              out of the time window being observed. Note: this issues a new query.
+            </li>
+            <li>
+              Click the &lt; or &gt; buttons to move backwards or forwards in
+              time. Use the dropdown to select how far this shift is. Note: this
+              issues a new query.
+            </li>
+            <li>
+              View the last times capture nodes were started (shown by a vertical
+              line). Use this indicator to avoid incorrect assumptions about sessions.
+              When a capture process restarts there is a loss of protocol state
+              awareness and segment counts are restarted.
+            </li>
+          </ul>
         </p>
         <h6>
           <span class="fa fa-fw fa-exchange"></span>&nbsp;

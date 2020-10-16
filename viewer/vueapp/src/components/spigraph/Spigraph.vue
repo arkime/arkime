@@ -146,12 +146,13 @@
     </MolochCollapsible>
 
     <!-- main visualization -->
-    <div v-if="spiGraphType === 'default' && mapData && graphData && fieldObj">
+    <div v-if="spiGraphType === 'default' && mapData && graphData && fieldObj && capStartTimes.length">
       <moloch-visualizations
         id="primary"
         :graph-data="graphData"
         :map-data="mapData"
         :primary="true"
+        :cap-start-times="capStartTimes"
         :timezone="user.settings.timezone"
         :timelineDataFilters="timelineDataFilters"
         @fetchMapData="cancelAndLoad(true)">
@@ -291,6 +292,7 @@ export default {
       filtered: 0,
       graphData: undefined,
       mapData: undefined,
+      capStartTimes: [],
       refresh: 0,
       recordsTotal: 0,
       recordsFiltered: 0,
@@ -369,6 +371,8 @@ export default {
       this.cancelAndLoad(true);
       this.changeRefreshInterval();
     });
+
+    this.getCaptureStats();
 
     FieldService.get(true)
       .then((result) => {
@@ -530,6 +534,24 @@ export default {
         this.loading = false;
         this.error = error.text || error;
       });
+    },
+    /* Fetches capture stats to show the last time each capture node started */
+    getCaptureStats: function () {
+      this.$http.get('stats.json')
+        .then((response) => {
+          for (let data of response.data.data) {
+            this.capStartTimes.push({
+              nodeName: data.nodeName,
+              startTime: data.startTime * 1000
+            });
+          }
+        })
+        .catch((error) => {
+          this.capStartTimes = [{
+            nodeName: 'none',
+            startTime: 1
+          }];
+        });
     }
   },
   beforeDestroy: function () {

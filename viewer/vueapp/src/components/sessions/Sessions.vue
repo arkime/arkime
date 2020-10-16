@@ -34,10 +34,11 @@
 
     <!-- visualizations -->
     <moloch-visualizations
-      v-if="mapData && graphData"
+      v-if="mapData && graphData && capStartTimes.length"
       :graph-data="graphData"
       :map-data="mapData"
       :primary="true"
+      :cap-start-times="capStartTimes"
       :timezone="user.settings.timezone"
       :timelineDataFilters="timelineDataFilters"
       @fetchMapData="cancelAndLoad(true)">
@@ -590,6 +591,7 @@ export default {
       fields: [],
       graphData: undefined,
       mapData: undefined,
+      capStartTimes: [],
       colQuery: '', // query for columns to toggle visibility
       newColConfigName: '', // name of new custom column config
       viewChanged: false,
@@ -602,6 +604,7 @@ export default {
     };
   },
   created: function () {
+    this.getCaptureStats();
     this.getColumnWidths();
     this.getTableState(); // IMPORTANT: kicks off the initial search query!
     this.getCustomColumnConfigurations();
@@ -1450,6 +1453,24 @@ export default {
         this.error = error.text || error;
         this.loading = false;
       });
+    },
+    /* Fetches capture stats to show the last time each capture node started */
+    getCaptureStats: function () {
+      this.$http.get('stats.json')
+        .then((response) => {
+          for (let data of response.data.data) {
+            this.capStartTimes.push({
+              nodeName: data.nodeName,
+              startTime: data.startTime * 1000
+            });
+          }
+        })
+        .catch((error) => {
+          this.capStartTimes = [{
+            nodeName: 'none',
+            startTime: 1
+          }];
+        });
     },
     /**
      * Saves the table state

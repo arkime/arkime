@@ -269,6 +269,15 @@ export default {
     timelineDataFilters: {
       type: Array,
       required: true
+    },
+    capStartTimes: {
+      type: Array,
+      default: () => {
+        return [{
+          nodeName: 'none',
+          startTime: 1
+        }];
+      }
     }
   },
   data: function () {
@@ -286,7 +295,8 @@ export default {
       graph: undefined,
       graphOptions: {},
       showMap: undefined,
-      stickyViz: false
+      stickyViz: false,
+      barWidth: 1
     };
   },
   computed: {
@@ -628,6 +638,32 @@ export default {
         } else {
           $(document.body).find('#tooltip').remove();
           previousPoint = null;
+          // show capture process start time tooltip
+          // it is only 1px wide, but the hover displays if a user hovers over the
+          // surrounding line by half a bar width on either side (so it should
+          // still allow a user to see tooltips for data)
+          let capNode, capStartTime;
+          let isInCapTimeRange = false;
+          for (let cap of this.capStartTimes) {
+            if (cap.startTime) {
+              if (pos.x1 >= cap.startTime - (this.barWidth / 2) && pos.x1 < cap.startTime + (this.barWidth / 2)) {
+                capNode = cap.nodeName;
+                capStartTime = cap.startTime;
+                isInCapTimeRange = true;
+                break;
+              }
+            }
+          }
+          if (isInCapTimeRange) {
+            let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
+                                Capture node ${capNode} started at ${this.$options.filters.timezoneDateString(capStartTime, this.timezone || 'local', false)}
+                              </div>`;
+
+            $(tooltipHTML).css({
+              top: pos.pageY - 30,
+              left: pos.pageX - 8
+            }).appendTo(document.body);
+          }
         }
       });
     },
@@ -657,12 +693,12 @@ export default {
         this.graph[i].bars = { show: showBars };
       }
 
+      this.barWidth = (this.graphData.interval * 1000) / 1.7;
+
       this.graphOptions = { // flot graph options
         series: {
           stack: true,
-          bars: {
-            barWidth: (this.graphData.interval * 1000) / 1.7
-          },
+          bars: { barWidth: this.barWidth },
           lines: {
             fill: true
           }
@@ -700,7 +736,8 @@ export default {
           borderWidth: 0,
           color: foregroundColor,
           hoverable: true,
-          clickable: true
+          clickable: true,
+          markings: []
         },
         zoom: {
           interactive: false,
@@ -713,6 +750,16 @@ export default {
           frameRate: 20
         }
       };
+
+      for (let capture of this.capStartTimes) {
+        this.graphOptions.grid.markings.push({
+          color: foregroundColor || '#666',
+          xaxis: {
+            from: capture.startTime,
+            to: capture.startTime
+          }
+        });
+      }
     },
     /* helper MAP functions */
     onMapResize: function () {
