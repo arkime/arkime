@@ -67,7 +67,7 @@
           </small>
           <router-link
             :to="{ path: helpLink.href, query: helpLink.query, params: { nav: true } }">
-            <span class="fa fa-lg fa-fw fa-question-circle mr-2 ml-2 help-link"
+            <span class="fa fa-lg fa-fw fa-question-circle mr-2 ml-2 help-link text-theme-button text-theme-gray-hover"
               v-b-tooltip.hover
               title="HELP!">
             </span>
@@ -75,7 +75,7 @@
           <e-s-health></e-s-health>
         </b-navbar-nav>
         <div v-if="isAToolBarPage"
-          class="toggleChevrons ml-2"
+          class="toggleChevrons ml-2 text-theme-button text-theme-gray-hover"
           @click="toggleToolBars">
           <i v-if="showToolBars"
             v-b-tooltip.hover
@@ -262,14 +262,13 @@ ul.navbar-nav {
   margin-left: 20px;
 }
 .toggleChevrons {
-  color: var(--color-button, #FFF);
   align-items: center;
   cursor: pointer;
   display: flex;
   justify-content: center;
 }
 .help-link {
-  color: rgba(255, 255, 255, 0.75);
+  color: auto;
   margin-top: 9px;
 }
 

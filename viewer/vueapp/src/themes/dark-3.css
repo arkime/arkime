@@ -14,12 +14,12 @@ body.dark-3-theme {
 
 
   /* theme colors */
-  --color-primary         : #8A8A8A;
-  --color-primary-dark    : #9F9F9F;
-  --color-primary-darker  : #C3C3C3;
-  --color-primary-light   : #636363;
-  --color-primary-lighter : #454545;
-  --color-primary-lightest: #333333;
+  --color-primary         : #666666;
+  --color-primary-dark    : #7D7D7D;
+  --color-primary-darker  : #999999;
+  --color-primary-light   : #4F4F4F;
+  --color-primary-lighter : #424242;
+  --color-primary-lightest: #383838;
 
   --color-secondary         : #2AA198;
   --color-secondary-dark    : #23837B;
