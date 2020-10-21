@@ -228,6 +228,9 @@
 </template>
 
 <script>
+// imports
+import moment from 'moment-timezone';
+
 // map imports
 import '../../../../public/jquery-jvectormap-1.2.2.min.js';
 import '../../../../public/jquery-jvectormap-world-en.js';
@@ -768,6 +771,42 @@ export default {
             to: capture.startTime
           }
         });
+      }
+
+      // add business hours to graph if they exist
+      if (!this.$constants.MOLOCH_DAY_START || !this.$constants.MOLOCH_DAY_END) {
+        return;
+      }
+      let businessStart = this.$constants.MOLOCH_DAY_START;
+      let businessStop = this.$constants.MOLOCH_DAY_END;
+      let startDate = moment(this.graphData.xmin); // the start of the graph
+      let stopDate = moment(this.graphData.xmax); // the end of the graph
+      let daysInRange = stopDate.diff(startDate, 'days'); // # days in graph
+      // don't bother showing business days if we're looking at more than a month of data
+      if (daysInRange > 31) { return; }
+
+      let day = stopDate.startOf('day');
+      let color = 'rgba(255, 210, 50, 0.2)';
+      while (daysInRange >= 0) { // iterate through each day starting from the end
+        let dayOfWeek = day.day();
+        // only display business hours on the weekday
+        if (dayOfWeek !== 6 && dayOfWeek !== 0) { // 6 = Saturday, 0 = Sunday
+          // console.log('day of week', dayOfWeek);
+          // get the start of the business day
+          let dayStart = day.clone().add(businessStart, 'hours');
+          // get the end of the business day
+          let dayStop = day.clone().add(businessStop, 'hours');
+          // add business hours for this day to graph
+          this.graphOptions.grid.markings.push({
+            color: color,
+            xaxis: {
+              from: dayStart.valueOf(),
+              to: dayStop.valueOf()
+            }
+          });
+        }
+        day.subtract(24, 'hours'); // go back a day
+        daysInRange--;
       }
     },
     /* helper MAP functions */

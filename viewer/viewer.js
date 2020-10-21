@@ -9449,7 +9449,9 @@ app.use(cspHeader, setCookie, (req, res) => {
     huntWarn: Config.get('huntWarn', 100000),
     huntLimit: limit,
     serverNonce: res.locals.nonce,
-    anonymousMode: !!app.locals.noPasswordSecret && !Config.get('regressionTests', false)
+    anonymousMode: !!app.locals.noPasswordSecret && !Config.get('regressionTests', false),
+    dayStart: Config.get('businessDayStart', false),
+    dayEnd: Config.get('businessDayEnd', false)
   };
 
   // Create a fresh Vue app instance
