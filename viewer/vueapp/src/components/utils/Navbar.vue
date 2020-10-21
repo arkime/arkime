@@ -65,12 +65,28 @@
           <small class="navbar-text mr-2 text-right">
             v{{ molochVersion }}
           </small>
+          <router-link
+            :to="{ path: helpLink.href, query: helpLink.query, params: { nav: true } }">
+            <span class="fa fa-lg fa-fw fa-question-circle mr-2 ml-2 help-link"
+              v-b-tooltip.hover
+              title="HELP!">
+            </span>
+          </router-link>
           <e-s-health></e-s-health>
         </b-navbar-nav>
-
-        <div v-if="isAToolBarPage" class="toggleChevrons ml-2" @click="toggleToolBars">
-          <i v-if="showToolBars" v-b-tooltip.hover class="fa fa-chevron-circle-up fa-lg" title="Hide toolbars"></i>
-          <i v-else v-b-tooltip.hover class="fa fa-chevron-circle-down fa-lg" title="Unhide toolbars"></i>
+        <div v-if="isAToolBarPage"
+          class="toggleChevrons ml-2"
+          @click="toggleToolBars">
+          <i v-if="showToolBars"
+            v-b-tooltip.hover
+            class="fa fa-chevron-circle-up fa-fw fa-lg"
+            title="Hide toolbars">
+          </i>
+          <i v-else
+            v-b-tooltip.hover
+            class="fa fa-chevron-circle-down fa-fw fa-lg"
+            title="Unhide toolbars">
+          </i>
         </div>
 
       </b-collapse>
@@ -251,6 +267,10 @@ ul.navbar-nav {
   cursor: pointer;
   display: flex;
   justify-content: center;
+}
+.help-link {
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 9px;
 }
 
 .navbar-text {
