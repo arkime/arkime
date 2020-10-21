@@ -288,63 +288,84 @@ a.no-decoration { text-decoration: none; }
 }
 
 /* themed buttons */
+a[class*=' btn-theme'],
+div[class*=' btn-theme'],
+button[class*=' btn-theme'] {
+  color: var(--color-button, #FFF) !important;
+}
+
 .btn-clear-input {
   color: var(--color-foreground, #555) !important;
   background-color: var(--color-background, #EEE) !important;
   border-color: var(--color-gray) !important;
 }
 
+.btn.btn-danger,
+.btn.btn-primary,
 .btn.btn-theme-primary {
-  color           : #FFFFFF;
+  color           : var(--color-button, #FFF);
   background-color: var(--color-primary);
   border-color    : var(--color-primary-dark);
 }
+.btn.btn-danger:hover,
+.btn.btn-primary:hover,
 .btn.btn-theme-primary:hover {
   background-color: var(--color-primary-dark);
   border-color    : var(--color-primary-darker);
 }
+.btn.btn-danger.active,
+.btn.btn-primary.active,
 .btn.btn-theme-primary.active {
   background-color: var(--color-primary-darker);
   border-color    : var(--color-primary-darker);
 }
 
+.btn.btn-warning,
 .btn.btn-theme-secondary {
-  color           : #FFFFFF;
+  color           : var(--color-button, #FFF);
   background-color: var(--color-secondary);
   border-color    : var(--color-secondary-dark);
 }
+.btn.btn-warning:hover,
 .btn.btn-theme-secondary:hover {
   background-color: var(--color-secondary-dark);
   border-color    : var(--color-secondary-darker);
 }
+.btn.btn-warning.active,
 .btn.btn-theme-secondary.active {
   background-color: var(--color-secondary-darker);
   border-color    : var(--color-secondary-darker);
 }
 
+.btn.btn-success,
 .btn.btn-theme-tertiary {
-  color           : #FFFFFF;
+  color           : var(--color-button, #FFF);
   background-color: var(--color-tertiary);
   border-color    : var(--color-tertiary-dark);
 }
+.btn.btn-success:hover,
 .btn.btn-theme-tertiary:hover {
   background-color: var(--color-tertiary-dark);
   border-color    : var(--color-tertiary-darker);
 }
+.btn.btn-success:active,
 .btn.btn-theme-tertiary.active {
   background-color: var(--color-tertiary-darker);
   border-color    : var(--color-tertiary-darker);
 }
 
+.btn.btn-info,
 .btn.btn-theme-quaternary {
-  color           : #FFFFFF;
+  color           : var(--color-button, #FFF);
   background-color: var(--color-quaternary);
   border-color    : var(--color-quaternary-dark);
 }
+.btn.btn-info:hover,
 .btn.btn-theme-quaternary:hover {
   background-color: var(--color-quaternary-dark);
   border-color    : var(--color-quaternary-darker);
 }
+.btn.btn-info.active,
 .btn.btn-theme-quaternary.active {
   background-color: var(--color-quaternary-darker);
   border-color    : var(--color-quaternary-darker);
@@ -364,6 +385,7 @@ label.btn-radio.active:hover:not(:disabled),
 button.btn-checkbox.active:hover:not(:disabled),
 div.btn-checkbox > label.active:hover:not(:disabled) {
   background-color: var(--color-primary-darker) !important;
+  color: var(--color-button, #FFF) !important;
 }
 label.btn-radio:hover:not(:disabled),
 button.btn-checkbox:hover:not(:disabled),
@@ -376,6 +398,7 @@ button.btn-checkbox.active:not(:disabled),
 div.btn-checkbox > label.active:not(:disabled) {
   border-color    : var(--color-primary) !important;
   background-color: var(--color-primary) !important;
+  color: var(--color-button, #FFF) !important;
 }
 label.btn-radio:disabled,
 button.btn-checkbox:disabled,
@@ -467,6 +490,28 @@ div.btn-checkbox > label:disabled {
 }
 .alert.alert-sm button.close {
   padding: 0 .5rem;
+}
+
+/* theme alert areas */
+.alert.alert-info {
+  color: var(--color-primary);
+  border-color: var(--color-primary-darkest);
+  background-color: var(--color-primary-lightest);
+}
+.alert.alert-danger {
+  color: var(--color-secondary);
+  border-color: var(--color-secondary-darkest);
+  background-color: var(--color-secondary-lightest);
+}
+.alert.alert-success {
+  color: var(--color-tertiary);
+  border-color: var(--color-tertiary-darkest);
+  background-color: var(--color-tertiary-lightest);
+}
+.alert.alert-warning {
+  color: var(--color-quaternary);
+  border-color: var(--color-quaternary-darkest);
+  background-color: var(--color-quaternary-lightest);
 }
 
 /* sub navbars */

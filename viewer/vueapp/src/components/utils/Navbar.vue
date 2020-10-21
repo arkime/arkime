@@ -246,25 +246,26 @@ ul.navbar-nav {
   margin-left: 20px;
 }
 .toggleChevrons {
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--color-button, #FFF);
   align-items: center;
   cursor: pointer;
   display: flex;
   justify-content: center;
 }
 
+.navbar-text {
+  color: var(--color-button, #FFF);
+}
+
 a.nav-link > a {
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--color-button, #FFF);
 }
 a.nav-link:hover {
   background-color: var(--color-primary);
 }
 li.nav-item.router-link-active > a.nav-link {
   background-color: var(--color-primary);
-}
-li.nav-item.router-link-active > a.nav-link > a {
-  color: #FFFFFF;
 }
 
 /* apply theme colors to navbar */
@@ -280,22 +281,18 @@ p { /* ::first-letter only works on blocks */
 }
 /* need this so that styled first letters don't expand the text */
 p.shortcut-letter::first-letter {
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--color-button, #FFF);
 }
 li.nav-item.router-link-active > a.nav-link p.shortcut-letter::first-letter {
-  color: #FFFFFF !important;
-}
-/* make sure hover still works */
-.nav-link:hover p.shortcut-letter::first-letter {
-  color: rgba(255, 255, 255, 0.75) !important;
+  color: var(--color-button, #FFF);
 }
 /* style the sortcut letter */
 p.shortcut-letter.holding-shift::first-letter {
-  color: var(--color-tertiary-lighter) !important;
+  color: var(--color-foreground-accent-dark) !important;
 }
 /* color the help shortcut letter in the tooltip */
 .help-shortcut {
-  color: var(--color-tertiary-lighter);
+  color: var(--color-foreground-accent-dark);
 }
 
 /* move the top nav content to the left to accommodate the sticky sessions

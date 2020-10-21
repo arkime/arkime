@@ -1174,7 +1174,7 @@ export default {
   border-radius: 4px 0 0 4px;
   cursor: pointer;
   background-color: var(--color-secondary);
-  color: #FFFFFF;
+  color: var(--color-button, #FFF);
 }
 
 .sticky-viz .sticky-viz-btn {

@@ -3,6 +3,8 @@ body.custom-theme
   --color-background: colorBackground
   --color-foreground: colorForeground
   --color-foreground-accent: colorForegroundAccent
+  --color-foreground-accent-dark: darken(convert(colorForegroundAccent), 12)
+  --color-foreground-accent-light: lighten(convert(colorForegroundAccent), 12)
 
   if (dark(convert(colorBackground)))
     --color-white       : colorBlack
@@ -12,6 +14,7 @@ body.custom-theme
     --color-gray-light  : colorGrayDark
     --color-gray-lighter: colorGrayDarker
     --color-black       : colorWhite
+    --color-button      : colorWhite
   else
     --color-white       : colorWhite
     --color-gray-dark   : colorGrayDark
@@ -20,6 +23,7 @@ body.custom-theme
     --color-gray-light  : colorGrayLight
     --color-gray-lighter: colorGrayLighter
     --color-black       : colorBlack
+    --color-button      : colorBlack
 
   /* theme colors */
   --color-primary         : colorPrimary
