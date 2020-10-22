@@ -790,7 +790,6 @@ export default {
         let dayOfWeek = day.day();
         // only display business hours on the specified business days
         if (businessDays.indexOf(dayOfWeek.toString()) >= 0) {
-          // console.log('day of week', dayOfWeek);
           // get the start of the business day
           let dayStart = day.clone().add(this.$constants.MOLOCH_BUSINESS_DAY_START, 'hours');
           // get the end of the business day
