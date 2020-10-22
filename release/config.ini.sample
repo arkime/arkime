@@ -259,6 +259,14 @@ packetThreads=2
 #businessDayStart=9
 #businessDayEnd=17
 
+# Business Days
+# Comma separated list of days
+# If set, displays the business hours on only the days provided here
+# Business hours must be set for these to be of use
+# Values are the days of the week as numbers, the week starts at Sunday = 0 and ends on Saturday = 6
+# (default is Monday - Friday 1,2,3,4,5)
+#businessDays=1,2,3,4,5
+
 # ADVANCED - Semicolon ';' seperated list of files to load for config.  Files are loaded
 # in order and can replace values set in this file or previous files.
 #includes=

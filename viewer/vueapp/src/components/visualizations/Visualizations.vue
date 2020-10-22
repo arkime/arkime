@@ -774,11 +774,10 @@ export default {
       }
 
       // add business hours to graph if they exist
-      if (!this.$constants.MOLOCH_DAY_START || !this.$constants.MOLOCH_DAY_END) {
+      if (!this.$constants.MOLOCH_BUSINESS_DAY_START || !this.$constants.MOLOCH_BUSINESS_DAY_END) {
         return;
       }
-      let businessStart = this.$constants.MOLOCH_DAY_START;
-      let businessStop = this.$constants.MOLOCH_DAY_END;
+      let businessDays = this.$constants.MOLOCH_BUSINESS_DAYS.split(',');
       let startDate = moment(this.graphData.xmin); // the start of the graph
       let stopDate = moment(this.graphData.xmax); // the end of the graph
       let daysInRange = stopDate.diff(startDate, 'days'); // # days in graph
@@ -790,12 +789,12 @@ export default {
       while (daysInRange >= 0) { // iterate through each day starting from the end
         let dayOfWeek = day.day();
         // only display business hours on the weekday
-        if (dayOfWeek !== 6 && dayOfWeek !== 0) { // 6 = Saturday, 0 = Sunday
+        if (businessDays.indexOf(dayOfWeek.toString()) >= 0) { // TODO 6 = Saturday, 0 = Sunday
           // console.log('day of week', dayOfWeek);
           // get the start of the business day
-          let dayStart = day.clone().add(businessStart, 'hours');
+          let dayStart = day.clone().add(this.$constants.MOLOCH_BUSINESS_DAY_START, 'hours');
           // get the end of the business day
-          let dayStop = day.clone().add(businessStop, 'hours');
+          let dayStop = day.clone().add(this.$constants.MOLOCH_BUSINESS_DAY_END, 'hours');
           // add business hours for this day to graph
           this.graphOptions.grid.markings.push({
             color: color,
