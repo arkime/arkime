@@ -788,8 +788,8 @@ export default {
       let color = 'rgba(255, 210, 50, 0.2)';
       while (daysInRange >= 0) { // iterate through each day starting from the end
         let dayOfWeek = day.day();
-        // only display business hours on the weekday
-        if (businessDays.indexOf(dayOfWeek.toString()) >= 0) { // TODO 6 = Saturday, 0 = Sunday
+        // only display business hours on the specified business days
+        if (businessDays.indexOf(dayOfWeek.toString()) >= 0) {
           // console.log('day of week', dayOfWeek);
           // get the start of the business day
           let dayStart = day.clone().add(this.$constants.MOLOCH_BUSINESS_DAY_START, 'hours');
