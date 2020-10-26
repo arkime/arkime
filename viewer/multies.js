@@ -51,8 +51,6 @@ var clients = {};
 var nodes = [];
 var clusters = {};
 var activeESNodes = [];
-var httpAgent  =  new http.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 100});
-var httpsAgent =  new https.Agent(Object.assign({keepAlive: true, keepAliveMsecs:5000, maxSockets: 100}, esSSLOptions));
 var httpAgent = new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 });
 var httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 }, esSSLOptions));
 
@@ -119,15 +117,15 @@ function node2Prefix (node) {
   return '';
 }
 
-function removeClusterFromQueryUrl(url) {
-  var base = url.split("?")[0];
-  var query = url.split("?")[1];
-  if(query) {
-    var query_array = query.split("&");
+function removeClusterFromQueryUrl (url) {
+  var base = url.split('?')[0];
+  var query = url.split('?')[1];
+  if (query) {
+    var queryArray = query.split('&');
     var newQuery = [];
-    for (var i = 0; i < query_array.length; i++) {
-      if(query_array[i].indexOf('_cluster') === -1) {
-        newQuery.push(query_array[i]);
+    for (var i = 0; i < queryArray.length; i++) {
+      if (queryArray[i].indexOf('_cluster') === -1) {
+        newQuery.push(queryArray[i]);
       }
     }
    newQuery = newQuery.join('&');
@@ -138,34 +136,33 @@ function removeClusterFromQueryUrl(url) {
   return url;
 }
 
-
-function getActiveNodes(clusterin){
-  if(clusterin) {
-    if(!Array.isArray(clusterin)) {
+function getActiveNodes (clusterin) {
+  if (clusterin) {
+    if (!Array.isArray(clusterin)) {
       clusterin = [clusterin];
     }
-    var tmp_nodes = [];
-    for(var i = 0; i < clusterin.length; i++) {
-      if(clusters[clusterin[i]]) { // cluster -> node
-        tmp_nodes.push(clusters[clusterin[i]]);
+    var tmpNodes = [];
+    for (var i = 0; i < clusterin.length; i++) {
+      if (clusters[clusterin[i]]) { // cluster -> node
+        tmpNodes.push(clusters[clusterin[i]]);
       }
     }
-    var active_nodes = [];
+    var activeNodes = [];
     activeESNodes.slice().forEach((node) => {
-      if(tmp_nodes.includes(node)) {
-        active_nodes.push(node);
+      if (tmpNodes.includes(node)) {
+        activeNodes.push(node);
       }
     });
-    return active_nodes;
+    return activeNodes;
   } else {
     return activeESNodes.slice();
   }
 }
 
-function simpleGather(req, res, bodies, doneCb) {
+function simpleGather (req, res, bodies, doneCb) {
   var cluster = null;
-  if(req.query._cluster) {
-    cluster = Array.isArray(req.query._cluster) ? req.query._cluster : req.query._cluster.split(",");
+  if (req.query._cluster) {
+    cluster = Array.isArray(req.query._cluster) ? req.query._cluster : req.query._cluster.split(',');
     req.url = removeClusterFromQueryUrl(req.url);
     delete req.query._cluster;
   }
@@ -803,7 +800,6 @@ function msearch (req, res) {
 app.post('/:index/:type/:id/_update', function (req, res) {
   var body = JSON.parse(req.body);
   if (body._cluster && clusters[body._cluster]) {
-
     var node = clusters[body._cluster];
     delete body._cluster;
 
@@ -814,7 +810,7 @@ app.post('/:index/:type/:id/_update', function (req, res) {
       return res.send(result);
     });
   } else {
-    console.log ('ERROR - body of the request does not contain escluster field', req.method, req.url, req.body);
+    console.log('ERROR - body of the request does not contain escluster field', req.method, req.url, req.body);
     return res.end();
   }
 });
@@ -823,7 +819,6 @@ app.post(['/:index/history', '/*history*/_doc'], simpleGatherFirst);
 
 app.post('/:index/:type/_msearch', msearch);
 app.post('/_msearch', msearch);
-
 app.get('/:index/_count', simpleGatherAdd);
 app.post('/:index/_count', simpleGatherAdd);
 app.get('/:index/:type/_count', simpleGatherAdd);
@@ -877,9 +872,9 @@ nodes.forEach((node) => {
   });
 });
 
-var clusterList = Config.get("multiESClusters", "").split(";");
-if (clusterList.length === 0 || clusterList[0] === "") {
-  console.log("ERROR - Empty multiESClusters");
+var clusterList = Config.get('multiESClusters', '').split(';');
+if (clusterList.length === 0 || clusterList[0] === '') {
+  console.log('ERROR - Empty multiESClusters');
   process.exit(1);
 }
 

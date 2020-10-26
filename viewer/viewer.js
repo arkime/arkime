@@ -3229,7 +3229,7 @@ function sessionsListFromIds (req, ids, fields, cb) {
   let fixFields = nonArrayFields.filter(function (x) { return fields.indexOf(x) !== -1; });
 
   async.eachLimit(ids, 10, function (id, nextCb) {
-    let options = { _source: fields.join(",") };
+    let options = { _source: fields.join(',') };
     if (req.query.cluster && Config.get('multiES', false)) { options._cluster = req.query.cluster; }
 
     Db.getSession(id, options, function (err, session) {
@@ -4843,7 +4843,6 @@ app.get('/sessions.json', [noCacheJson, recordResponseTime, logAction('sessions'
   let options = {};
   if (req.query.cancelId) { options = { cancelId: `${req.user.userId}::${req.query.cancelId}` }; }
   if (req.query.cluster && Config.get('multiES', false)) { options._cluster = req.query.cluster; }
-  
   buildSessionQuery(req, function (bsqErr, query, indices) {
     if (bsqErr) {
       const r = {
@@ -4887,7 +4886,7 @@ app.get('/sessions.json', [noCacheJson, recordResponseTime, logAction('sessions'
     }
 
     Promise.all([Db.searchPrimary(indices, 'session', query, options),
-      Db.numberOfDocuments('sessions2-*', options._cluster ? {_cluster: options._cluster} : {}),
+      Db.numberOfDocuments('sessions2-*', options._cluster ? { _cluster: options._cluster } : {}),
       Db.healthCachePromise()
     ]).then(([sessions, total, health]) => {
       if (Config.debug) {
@@ -4983,7 +4982,7 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
 
     Promise.all([
       Db.healthCachePromise(),
-      Db.numberOfDocuments('sessions2-*', options._cluster ? {_cluster: options._cluster} : {}),
+      Db.numberOfDocuments('sessions2-*', options._cluster ? { _cluster: options._cluster } : {}),
       Db.searchPrimary(indices, 'session', query, options)
     ]).then(([health, total, result]) => {
       if (result.error) { throw result.error; }
@@ -5600,7 +5599,7 @@ function buildConnections (req, res, cb) {
           if (req.query.cluster && Config.get('multiES', false)) { options._cluster = req.query.cluster; }
 
           if (Config.debug) {
-            console.log('buildConnections query', JSON.stringify(query, null, 2));
+            console.log('buildConnections query', JSON.stringify(req.query, null, 2));
           }
 
           if (asrc === undefined || adst === undefined) {

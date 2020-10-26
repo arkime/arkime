@@ -665,7 +665,7 @@ exports.addTagsToSession = function (index, id, tags, escluster, cb) {
   exports.updateSession(index, id, body, cb);
 };
 
-exports.removeTagsFromSession = function (index, id, tags, node, cb) {
+exports.removeTagsFromSession = function (index, id, tags, escluster, cb) {
   let script = `
     if (ctx._source.tags != null) {
       for (int i = 0; i < params.tags.length; i++) {
@@ -1130,7 +1130,7 @@ exports.numberOfDocuments = function (index, options) {
     exports.merge(params, options);
     return internals.elasticSearchClient.count(params);
   }
-  
+
   return new Promise((resolve, reject) => {
     let count = 0;
     let str = internals.prefix + 'sessions2-';
